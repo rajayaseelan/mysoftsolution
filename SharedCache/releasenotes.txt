@@ -1,0 +1,166 @@
+!!! Abstract
+
+*SharedCache* is a high-performance, distributed caching system. Although application-neutral, it's commonly used to speed up dynamic Web applications by alleviating database load. *SharedCache* runs as a distributed windows service on every web and / or application server farm to cache data objects in memory out of process. Your stored objects can be accessed from any of your servers in your farm.
+
+!!! Release Date
+
+* Feb 12, 2008
+
+!!! Release Number
+
+* {"pre_release_1.0.2.132"}
+
+!!! Pre-Release Documentation available as download or at:
+
+* [url:http://sharedcachedocu.indexus.net]
+
+!!! Major Pre-Release Changes:
+
+pre_release_1.0.2.125
+* removed anything around auto-detection of additional instances (UDP)
+* added server configuration section for replicated servers
+* Logging consistent
+* removed several code files which were not used anymore
+* protocol bug fix around CacheItemPriority serialization
+ 
+pre_release_1.0.2.126
+* protocol bug fix around timestamp serialization
+* extension of internal protocol serializer instead of normal binary serialization
+* removed SharedCache.SharedCacheClient project from the solution due no usage
+* centralisation of all network checks about DNS and IP addresses.
+
+pre_release_1.0.2.127
+* deleted constants which are not used anymore within the project.
+* usage of IpAddress.Any for the server, this means upon development develpers can use: 127.0.0.1
+* introduction on cache provider to clear() all cache data with one single call instead to iterate over all key's.
+
+pre_release_1.0.2.128
+* added first basic method (single thread) to run comparsion test on different hosts - multi threaded will follow.
+* updated client provider with the ip 127.0.0.1 - developers should be able now to run it out of the box. 
+
+pre_release_1.0.2.129
+* fixed [workitem:4992]:  the configuration "-1" has been fixed for the CacheAmountOfObjects config entry.
+* extended client measurment test methods
+* TcpServer: makes now usage of the .net default ThreadPool - ThreadPool.QueueUserWorkItem() - for more info checkout also: http://netrsc.blogspot.com/2007/02/another-extract-from-scalenet-threading.html
+* introduction to the logging method Force(), even if Logging Enabled is false the startup parameters are important to log. 
+* Fatal & FatalException are written even if Loggging Enabled is false
+* Enable administrator to set ThreadPool boundries: TcpServerMaxThreadToSet / TcpServerMinThreadToSet
+* Enable administrator to set ThreadPool boundries: TcpServerMaxIOThreadToSet / TcpServerMinIOThreadToSet
+
+pre_release_1.0.2.131
+* fixed [workitem:5002]: Exception: System.Net.Sockets.SocketException was unhandled ([url:http://www.codeplex.com/SharedCache/WorkItem/View.aspx?WorkItemId=5002])
+* added solution for future unit tests, howto load / unload server upon test start / stop - firewall issue is commented on the following link: http://forums.asp.net/p/1201909/2094184.aspx
+
+pre_release_1.0.2.132
+* added reference lib. ICSharpCode.SharpZipLib to make first compression tests
+* commented serialization test for DateTime - instead of using BinarySerialization one of the upcomming version
+  will provide special UTC datetime (this makes the amount of sending data smaller)
+* made several importanted changes within IndexusMessage Protocol and also within the server to handle the messages: ([url:protocol serialization optimization|http://www.codeplex.com/SharedCache/WorkItem/View.aspx?WorkItemId=5046])
+	most important change is that from this version we do not use anymore Binary Serialization for: TimeStamp, Expire and Data (KeyValuePair). Instead of this 
+	we use a new Properties (with an empty payload - we measure just the protocol size): 
+		- Unix Time with this change we decreased object size from: 451 to 303 (size reduction: ~33%)
+		- after changeing also string Key, byte[] Payload same object size arrived to: 70 (amazing size reduction: ~85%)
+* Client makes usage of Compression - ICSharpCode.SharpZipLib - this will minimize payload around 25% of its originally size.
+		- Issue Tracker Item: [url:Compression enabling|http://www.codeplex.com/SharedCache/WorkItem/View.aspx?WorkItemId=5003]
+* added first unit test
+* extended Sample Application with comparsion of different objects to measure time
+
+pre_release_1.0.2.134
+* [workitem:5127] fixed an additional problem with the UTC datetime transfers, due previous changes cleaup patterns crashed and transferred only the unix time but not the offset.
+* [workitem:5126] to test this a test client method implemented 700. to see its working correctly you will have to set the ServiceCacheCleanupThreadJob to 30000 on the server app.config and run client and server as console.
+* Extende Configuration option for: ServiceCacheCleanupThreadJob; If config is -1 client is fully responsible to clear cache because objects with expiry date will not be deleted anymore.
+* code from jayrock has been deleted because of implemented RFC - its only support up to year 3000, this prevent the system to use DateTime.MaxValue
+* server handles exploded since some code were deleted by mistake
+* [workitem:5128] implmented client connection pool to save client resources, the amount of concurrent TCPClients are set as default value. Later version maybe will enable some configuration for this value
+* Provider
+** [workitem:5131] Fixed Provider Multihost Clear() -> Provider has been changed
+** [workitem:5129] Fixed Provider Multihost Stats() -> Provider has been changed
+** [workitem:5130] Fixed Provider Multihost GetAllKeys(string host) -> Provider has been changed - possibility to receive from all server togher or just from a single instance.
+* [workitem:5048] Remove usage of DNS.GetHostEntry()
+
+pre_release_1.0.2.135
+ * added testing option for retrieving key's which are not available
+ 
+pre_release_1.0.2.136
+ * [workitem:5241] - Updated Notify Familiy Stat Overview - option to receive all cache node sizes and amount of objects
+ * free up imidiatly data from RAM after removing from the cache.
+
+!!! pre_release_2.0.0.140
+* created async server - more information about it here: [url:Threaded Async TCP Server with blocking Client|http://netrsc.blogspot.com/2008/02/threaded-asynchronous-tcp-server-with.html]
+* performance test with new client / server architcture available - more information about it over here: [url:Shared Cache - compare results between version 1.0.2.134 and 2.0.0.140 and upper|http://netrsc.blogspot.com/2008/02/shared-cache-compare-results-between.html]
+* created additional test options
+** updated: 410 - Concurrent Usage Test -> updated for discussion: [url:Error 10048|https://www.codeplex.com/Thread/View.aspx?ProjectName=SharedCache&ThreadId=21782]
+** added: 540 - Check Hit Ratio 
+** added: 800 - Long Term Tests Cache Test
+* updated client statistics with Hit Ratio Sucess / Failed and percentage
+* updated notify server node stats overview
+* removed .Net base ThreadPool calls and replaced them with added custom thread pool as a packet process 
+* removed server configuration settings for TcpServerMinThreadToSet / TcpServerMinIOThreadToSet since server is using a custom threadpool
+* Client Connection Pool is working now without any problems, for each server node a min. of 3 sockets stay open [url:The TcpClientConnectionPool is not work?|https://www.codeplex.com/Thread/View.aspx?ProjectName=SharedCache&ThreadId=21796]
+* Uploaded first Metric Report based on NDepend [url:NDepend report|http://www.sharedcache.com/NDependReports/2008_02/12_20_52/NDependReport.html]
+* Updated some first Unit Tests - additional onces will follow in the next few day's
+* Updated Documenation [url:online docs for pre_release_2.0.0.140|http://sharedcachedocu.indexus.net]
+
+!!! Suggestions
+* Do not use anymore the COM.CacheUtil.XXX Methods, all methods are exposed over the SharedCache Cache Provider. Have a look at the sample application for how to use it.
+
+!!! Pre-Release known issues
+* Network overview within Notify application have been removed - a new version will follow soon.
+* Still missing UnitTests
+
+!!! Test Application Cleanup:
+* we tried to make it more like a real application. Instead of a database we use now 2 XML files (country.xml & region.xml) which contains several 1000's records together.
+* Created an normal structure: Data Access Layer & Business Logic Layer
+
+!!! .Net Cache Provider extensions
+* the provider contains now two additional options
+** Option 1: Receive all keys on a specific host (if you work locally you can simple pass null as parameter).
+** Option 2: Receive statistic information from a specific host.
+
+!!! Notice: 
+* what means a pre-release_X.X.X.XXX: while development reaches a point were requested implementations are done but they still not 100% ready for production. Be careful while you're using this pre_releases.
+
+
+!!! tips & tricks:
+* if you install the server on the same server we suggest to use different locations for the log files. 
+eg. 
+{{
+Server: h:\app_logs\server\
+client: j:\app_logs\client\
+}}
+
+if you have communication problems check your firewall file: C:\WINDOWS\pfirewall.log
+
+**************************************************************
+
+centralise dns calls like this:
+
+IPAddress FirstDnsEntry(string hostName)
+{
+    IPHostEntry IPHost = Dns.Resolve(hostName);
+    IPAddress[] addr = IPHost.AddressList;
+    if (addr.Length == 0) throw new Exception("No IP addresses");
+    return addr[0];
+}
+
+		foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+		{
+    		Console.WriteLine(nic.Name);
+    		foreach (UnicastIPAddressInformation addrInfo in nic.GetIPProperties().UnicastAddresses)
+    		{
+        		Console.WriteLine("\t" + addrInfo.Address);
+    		}
+		}
+		Console.ReadLine();
+
+
+**************************************************************
+
+
+
+<!--
+			If this configuration is disabled [0] the thread will not be started for 
+			automatic cleanup instead of that upon receive the time will be evaluated 
+			and then the item in case its expired it will be deleted.
+		-->
+		<add key="ServiceCacheCleanupThreadJobEnable" value= "1" />

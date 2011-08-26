@@ -1,0 +1,2325 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Country>
+	<ConCountry>
+		<nCountryId>1</nCountryId>
+		<cName>Afghanistan</cName>
+		<cIso2>AF</cIso2>
+		<cIso3>AFG</cIso3>
+		<cCapitalCity>Kabul</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Afghani</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>2</nCountryId>
+		<cName>Albania</cName>
+		<cIso2>AL</cIso2>
+		<cIso3>ALB</cIso3>
+		<cCapitalCity>Tirana</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Lek</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>3</nCountryId>
+		<cName>Algeria</cName>
+		<cIso2>DZ</cIso2>
+		<cIso3>DZA</cIso3>
+		<cCapitalCity>Algiers</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Algerian Dinar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>4</nCountryId>
+		<cName>American Samoa</cName>
+		<cIso2>AS</cIso2>
+		<cIso3>ASM</cIso3>
+		<cCapitalCity>Pago Pago</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>5</nCountryId>
+		<cName>Andorra</cName>
+		<cIso2>AD</cIso2>
+		<cIso3>AND</cIso3>
+		<cCapitalCity>Andorra la Vella</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>6</nCountryId>
+		<cName>Angola</cName>
+		<cIso2>AO</cIso2>
+		<cIso3>AGO</cIso3>
+		<cCapitalCity>Luanda</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Kwanza</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>7</nCountryId>
+		<cName>Anguilla</cName>
+		<cIso2>AI</cIso2>
+		<cIso3>AIA</cIso3>
+		<cCapitalCity>The Valley</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>East Caribbean Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>8</nCountryId>
+		<cName>Antarctica</cName>
+		<cIso2>AQ</cIso2>
+		<cIso3>ATA</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Antarctic Region</cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>9</nCountryId>
+		<cName>Antigua and Barbuda</cName>
+		<cIso2>AG</cIso2>
+		<cIso3>ATG</cIso3>
+		<cCapitalCity>Saint John's</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>East Caribbean Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>10</nCountryId>
+		<cName>Argentina</cName>
+		<cIso2>AR</cIso2>
+		<cIso3>ARG</cIso3>
+		<cCapitalCity>Buenos Aires</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Argentine Peso</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>11</nCountryId>
+		<cName>Armenia</cName>
+		<cIso2>AM</cIso2>
+		<cIso3>ARM</cIso3>
+		<cCapitalCity>Yerevan</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Armenian Dram</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>12</nCountryId>
+		<cName>Aruba</cName>
+		<cIso2>AW</cIso2>
+		<cIso3>ABW</cIso3>
+		<cCapitalCity>Oranjestad</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Aruban Guilder</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>14</nCountryId>
+		<cName>Australia</cName>
+		<cIso2>AU</cIso2>
+		<cIso3>AUS</cIso3>
+		<cCapitalCity>Canberra</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Australian dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>15</nCountryId>
+		<cName>Austria</cName>
+		<cIso2>AT</cIso2>
+		<cIso3>AUT</cIso3>
+		<cCapitalCity>Vienna</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>16</nCountryId>
+		<cName>Azerbaijan</cName>
+		<cIso2>AZ</cIso2>
+		<cIso3>AZE</cIso3>
+		<cCapitalCity>Baku (Baki)</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Azerbaijani Manat</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>17</nCountryId>
+		<cName>Bahamas</cName>
+		<cIso2>BS</cIso2>
+		<cIso3>BHS</cIso3>
+		<cCapitalCity>Nassau</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Bahamian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>18</nCountryId>
+		<cName>Bahrain</cName>
+		<cIso2>BH</cIso2>
+		<cIso3>BHR</cIso3>
+		<cCapitalCity>Manama</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Bahraini Dinar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>20</nCountryId>
+		<cName>Bangladesh</cName>
+		<cIso2>BD</cIso2>
+		<cIso3>BGD</cIso3>
+		<cCapitalCity>Dhaka</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Taka</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>21</nCountryId>
+		<cName>Barbados</cName>
+		<cIso2>BB</cIso2>
+		<cIso3>BRB</cIso3>
+		<cCapitalCity>Bridgetown</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Barbados Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>23</nCountryId>
+		<cName>Belarus</cName>
+		<cIso2>BY</cIso2>
+		<cIso3>BLR</cIso3>
+		<cCapitalCity>Minsk</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Belarussian Ruble</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>24</nCountryId>
+		<cName>Belgium</cName>
+		<cIso2>BE</cIso2>
+		<cIso3>BEL</cIso3>
+		<cCapitalCity>Brussels</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>25</nCountryId>
+		<cName>Belize</cName>
+		<cIso2>BZ</cIso2>
+		<cIso3>BLZ</cIso3>
+		<cCapitalCity>Belmopan</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Belize Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>26</nCountryId>
+		<cName>Benin</cName>
+		<cIso2>BJ</cIso2>
+		<cIso3>BEN</cIso3>
+		<cCapitalCity>Porto-Novo </cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BCEAO</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>27</nCountryId>
+		<cName>Bermuda</cName>
+		<cIso2>BM</cIso2>
+		<cIso3>BMU</cIso3>
+		<cCapitalCity>Hamilton</cCapitalCity>
+		<cMapReference>North America</cMapReference>
+		<cCurrency>Bermudian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>28</nCountryId>
+		<cName>Bhutan</cName>
+		<cIso2>BT</cIso2>
+		<cIso3>BTN</cIso3>
+		<cCapitalCity>Thimphu</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Ngultrum</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>29</nCountryId>
+		<cName>Bolivia</cName>
+		<cIso2>BO</cIso2>
+		<cIso3>BOL</cIso3>
+		<cCapitalCity>La Paz /Sucre</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Boliviano</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>30</nCountryId>
+		<cName>Bosnia Hercegovina</cName>
+		<cIso2>BA</cIso2>
+		<cIso3>BIH</cIso3>
+		<cCapitalCity>Sarajevo</cCapitalCity>
+		<cMapReference>Bosnia and Herzegovina, Europe</cMapReference>
+		<cCurrency>Convertible Marka</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>31</nCountryId>
+		<cName>Botswana</cName>
+		<cIso2>BW</cIso2>
+		<cIso3>BWA</cIso3>
+		<cCapitalCity>Gaborone</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Pula</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>32</nCountryId>
+		<cName>Bouvet Island</cName>
+		<cIso2>BV</cIso2>
+		<cIso3>BVT</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Antarctic Region</cMapReference>
+		<cCurrency>Norwegian Krone</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>33</nCountryId>
+		<cName>Brazil</cName>
+		<cIso2>BR</cIso2>
+		<cIso3>BRA</cIso3>
+		<cCapitalCity>Brasilia</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Brazilian Real</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>34</nCountryId>
+		<cName>British Indian Ocean Territory</cName>
+		<cIso2>IO</cIso2>
+		<cIso3>IOT</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>World</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>35</nCountryId>
+		<cName>British Virgin Islands</cName>
+		<cIso2>VG</cIso2>
+		<cIso3>VGB</cIso3>
+		<cCapitalCity>Road Town</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>36</nCountryId>
+		<cName>Brunei</cName>
+		<cIso2>BN</cIso2>
+		<cIso3>BRN</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference></cMapReference>
+		<cCurrency>Brunei Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>37</nCountryId>
+		<cName>Bulgaria</cName>
+		<cIso2>BG</cIso2>
+		<cIso3>BGR</cIso3>
+		<cCapitalCity>Sofia</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Lev</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>38</nCountryId>
+		<cName>Burkina Faso</cName>
+		<cIso2>BF</cIso2>
+		<cIso3>BFA</cIso3>
+		<cCapitalCity>Ouagadougou</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BCEAO</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>39</nCountryId>
+		<cName>Myanmar</cName>
+		<cIso2>MM</cIso2>
+		<cIso3>MMR</cIso3>
+		<cCapitalCity>Rangoon</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>kyat</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>40</nCountryId>
+		<cName>Burundi</cName>
+		<cIso2>BI</cIso2>
+		<cIso3>BDI</cIso3>
+		<cCapitalCity>Bujumbura</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Burundi Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>41</nCountryId>
+		<cName>Cambodia</cName>
+		<cIso2>KH</cIso2>
+		<cIso3>KHM</cIso3>
+		<cCapitalCity>Phnom Penh</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Riel</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>42</nCountryId>
+		<cName>Cameroon</cName>
+		<cIso2>CM</cIso2>
+		<cIso3>CMR</cIso3>
+		<cCapitalCity>Yaounde</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BEAC</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>43</nCountryId>
+		<cName>Canada</cName>
+		<cIso2>CA</cIso2>
+		<cIso3>CAN</cIso3>
+		<cCapitalCity>Ottawa</cCapitalCity>
+		<cMapReference>North America</cMapReference>
+		<cCurrency>Canadian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>44</nCountryId>
+		<cName>Cape Verde</cName>
+		<cIso2>CV</cIso2>
+		<cIso3>CPV</cIso3>
+		<cCapitalCity>Praia</cCapitalCity>
+		<cMapReference>World</cMapReference>
+		<cCurrency>Cape Verdean Escudo</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>45</nCountryId>
+		<cName>Cayman Islands</cName>
+		<cIso2>KY</cIso2>
+		<cIso3>CYM</cIso3>
+		<cCapitalCity>George Town</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Cayman Islands Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>46</nCountryId>
+		<cName>Central African Republic</cName>
+		<cIso2>CF</cIso2>
+		<cIso3>CAF</cIso3>
+		<cCapitalCity>Bangui</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BEAC</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>47</nCountryId>
+		<cName>Chad</cName>
+		<cIso2>TD</cIso2>
+		<cIso3>TCD</cIso3>
+		<cCapitalCity>N'Djamena</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BEAC</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>48</nCountryId>
+		<cName>Chile</cName>
+		<cIso2>CL</cIso2>
+		<cIso3>CHL</cIso3>
+		<cCapitalCity>Santiago</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Chilean Peso</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>49</nCountryId>
+		<cName>China</cName>
+		<cIso2>CN</cIso2>
+		<cIso3>CHN</cIso3>
+		<cCapitalCity>Beijing</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Yuan Renminbi</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>50</nCountryId>
+		<cName>Christmas Island</cName>
+		<cIso2>CX</cIso2>
+		<cIso3>CXR</cIso3>
+		<cCapitalCity>The Settlement</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Australian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>52</nCountryId>
+		<cName>Cocos (Keeling) Islands</cName>
+		<cIso2>CC</cIso2>
+		<cIso3>CCK</cIso3>
+		<cCapitalCity>West Island</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Australian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>53</nCountryId>
+		<cName>Colombia</cName>
+		<cIso2>CO</cIso2>
+		<cIso3>COL</cIso3>
+		<cCapitalCity>Bogota</cCapitalCity>
+		<cMapReference>South America, Central America and the Caribbean</cMapReference>
+		<cCurrency>Colombian Peso</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>54</nCountryId>
+		<cName>Comoros</cName>
+		<cIso2>KM</cIso2>
+		<cIso3>COM</cIso3>
+		<cCapitalCity>Moroni</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Comoro Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>55</nCountryId>
+		<cName>Congo (Kinshasa)</cName>
+		<cIso2>CD</cIso2>
+		<cIso3>COD</cIso3>
+		<cCapitalCity>Kinshasa</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Franc Congolais</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>56</nCountryId>
+		<cName>Congo (Brazzaville)</cName>
+		<cIso2>CG</cIso2>
+		<cIso3>COG</cIso3>
+		<cCapitalCity>Brazzaville</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BEAC</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>57</nCountryId>
+		<cName>Cook Islands</cName>
+		<cIso2>CK</cIso2>
+		<cIso3>COK</cIso3>
+		<cCapitalCity>Avarua</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>New Zealand Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>58</nCountryId>
+		<cName>Coral Sea Islands</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>59</nCountryId>
+		<cName>Costa Rica</cName>
+		<cIso2>CR</cIso2>
+		<cIso3>CRI</cIso3>
+		<cCapitalCity>San Jose</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Costa Rican Colon</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>60</nCountryId>
+		<cName>Ivory Coast</cName>
+		<cIso2>CI</cIso2>
+		<cIso3>CIV</cIso3>
+		<cCapitalCity>Yamoussoukro</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BCEAO</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>61</nCountryId>
+		<cName>Croatia</cName>
+		<cIso2>HR</cIso2>
+		<cIso3>HRV</cIso3>
+		<cCapitalCity>Zagreb</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Kuna</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>62</nCountryId>
+		<cName>Cuba</cName>
+		<cIso2>CU</cIso2>
+		<cIso3>CUB</cIso3>
+		<cCapitalCity>Havana</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Cuban Peso</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>63</nCountryId>
+		<cName>Cyprus</cName>
+		<cIso2>CY</cIso2>
+		<cIso3>CYP</cIso3>
+		<cCapitalCity>Nicosia</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Cyprus Pound</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>64</nCountryId>
+		<cName>Czech Republic</cName>
+		<cIso2>CZ</cIso2>
+		<cIso3>CZE</cIso3>
+		<cCapitalCity>Prague</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Czech Koruna</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>65</nCountryId>
+		<cName>Denmark</cName>
+		<cIso2>DK</cIso2>
+		<cIso3>DNK</cIso3>
+		<cCapitalCity>Copenhagen</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Danish Krone</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>66</nCountryId>
+		<cName>Djibouti</cName>
+		<cIso2>DJ</cIso2>
+		<cIso3>DJI</cIso3>
+		<cCapitalCity>Djibouti</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Djibouti Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>67</nCountryId>
+		<cName>Dominica</cName>
+		<cIso2>DM</cIso2>
+		<cIso3>DMA</cIso3>
+		<cCapitalCity>Roseau</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>East Caribbean Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>68</nCountryId>
+		<cName>Dominican Republic</cName>
+		<cIso2>DO</cIso2>
+		<cIso3>DOM</cIso3>
+		<cCapitalCity>Santo Domingo</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Dominican Peso</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>69</nCountryId>
+		<cName>East Timor</cName>
+		<cIso2>TL</cIso2>
+		<cIso3>TLS</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference></cMapReference>
+		<cCurrency>Timor Escudo</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>70</nCountryId>
+		<cName>Ecuador</cName>
+		<cIso2>EC</cIso2>
+		<cIso3>ECU</cIso3>
+		<cCapitalCity>Quito</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>71</nCountryId>
+		<cName>Egypt</cName>
+		<cIso2>EG</cIso2>
+		<cIso3>EGY</cIso3>
+		<cCapitalCity>Cairo</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Egyptian Pound</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>72</nCountryId>
+		<cName>El Salvador</cName>
+		<cIso2>SV</cIso2>
+		<cIso3>SLV</cIso3>
+		<cCapitalCity>San Salvador</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>El Salvador Colon</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>73</nCountryId>
+		<cName>Equatorial Guinea</cName>
+		<cIso2>GQ</cIso2>
+		<cIso3>GNQ</cIso3>
+		<cCapitalCity>Malabo</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BEAC</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>74</nCountryId>
+		<cName>Eritrea</cName>
+		<cIso2>ER</cIso2>
+		<cIso3>ERI</cIso3>
+		<cCapitalCity>Asmara</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Nakfa</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>75</nCountryId>
+		<cName>Estonia</cName>
+		<cIso2>EE</cIso2>
+		<cIso3>EST</cIso3>
+		<cCapitalCity>Tallinn</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Kroon</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>76</nCountryId>
+		<cName>Ethiopia</cName>
+		<cIso2>ET</cIso2>
+		<cIso3>ETH</cIso3>
+		<cCapitalCity>Addis Ababa</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Ethiopian Birr</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>78</nCountryId>
+		<cName>Falkland Islands</cName>
+		<cIso2>FK</cIso2>
+		<cIso3>FLK</cIso3>
+		<cCapitalCity>Stanley</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Falkland Islands Pound</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>79</nCountryId>
+		<cName>Faroe Islands</cName>
+		<cIso2>FO</cIso2>
+		<cIso3>FRO</cIso3>
+		<cCapitalCity>Torshavn</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Danish Krone</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>80</nCountryId>
+		<cName>Fiji</cName>
+		<cIso2>FJ</cIso2>
+		<cIso3>FJI</cIso3>
+		<cCapitalCity>Suva</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Fijian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>81</nCountryId>
+		<cName>Finland</cName>
+		<cIso2>FI</cIso2>
+		<cIso3>FIN</cIso3>
+		<cCapitalCity>Helsinki</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>82</nCountryId>
+		<cName>France</cName>
+		<cIso2>FR</cIso2>
+		<cIso3>FRA</cIso3>
+		<cCapitalCity>Paris</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>84</nCountryId>
+		<cName>French Guiana</cName>
+		<cIso2>GF</cIso2>
+		<cIso3>GUF</cIso3>
+		<cCapitalCity>Cayenne</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>85</nCountryId>
+		<cName>French Polynesia</cName>
+		<cIso2>PF</cIso2>
+		<cIso3>PYF</cIso3>
+		<cCapitalCity>Papeete</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>CFP Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>86</nCountryId>
+		<cName>French Southern Territories</cName>
+		<cIso2>TF</cIso2>
+		<cIso3>ATF</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Antarctic Region</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>87</nCountryId>
+		<cName>Gabon</cName>
+		<cIso2>GA</cIso2>
+		<cIso3>GAB</cIso3>
+		<cCapitalCity>Libreville</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BEAC</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>88</nCountryId>
+		<cName>Gambia</cName>
+		<cIso2>GM</cIso2>
+		<cIso3>GMB</cIso3>
+		<cCapitalCity>Banjul</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Dalasi</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>89</nCountryId>
+		<cName>Gaza Strip</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>New Israeli Shekel</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>90</nCountryId>
+		<cName>Georgia</cName>
+		<cIso2>GE</cIso2>
+		<cIso3>GEO</cIso3>
+		<cCapitalCity>T'bilisi</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Lari</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>91</nCountryId>
+		<cName>Germany</cName>
+		<cIso2>DE</cIso2>
+		<cIso3>DEU</cIso3>
+		<cCapitalCity>Berlin</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>92</nCountryId>
+		<cName>Ghana</cName>
+		<cIso2>GH</cIso2>
+		<cIso3>GHA</cIso3>
+		<cCapitalCity>Accra</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Cedi</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>93</nCountryId>
+		<cName>Gibraltar</cName>
+		<cIso2>GI</cIso2>
+		<cIso3>GIB</cIso3>
+		<cCapitalCity>Gibraltar</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Gibraltar Pound</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>95</nCountryId>
+		<cName>Greece</cName>
+		<cIso2>GR</cIso2>
+		<cIso3>GRC</cIso3>
+		<cCapitalCity>Athens</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>96</nCountryId>
+		<cName>Greenland</cName>
+		<cIso2>GL</cIso2>
+		<cIso3>GRL</cIso3>
+		<cCapitalCity>Nuuk</cCapitalCity>
+		<cMapReference>Arctic Region</cMapReference>
+		<cCurrency>Danish Krone</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>97</nCountryId>
+		<cName>Grenada</cName>
+		<cIso2>GD</cIso2>
+		<cIso3>GRD</cIso3>
+		<cCapitalCity>Saint George's</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>East Caribbean Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>98</nCountryId>
+		<cName>Guadeloupe</cName>
+		<cIso2>GP</cIso2>
+		<cIso3>GLP</cIso3>
+		<cCapitalCity>Basse-Terre</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>99</nCountryId>
+		<cName>Guam</cName>
+		<cIso2>GU</cIso2>
+		<cIso3>GUM</cIso3>
+		<cCapitalCity>Hagatna</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>100</nCountryId>
+		<cName>Guatemala</cName>
+		<cIso2>GT</cIso2>
+		<cIso3>GTM</cIso3>
+		<cCapitalCity>Guatemala</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Quetzal</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>101</nCountryId>
+		<cName>Guernsey</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity>Saint Peter Port</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Pound Sterling</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>102</nCountryId>
+		<cName>Guinea</cName>
+		<cIso2>GN</cIso2>
+		<cIso3>GIN</cIso3>
+		<cCapitalCity>Conakry</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Guinean Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>103</nCountryId>
+		<cName>Guinea-Bissau</cName>
+		<cIso2>GW</cIso2>
+		<cIso3>GNB</cIso3>
+		<cCapitalCity>Bissau</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BCEAO</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>104</nCountryId>
+		<cName>Guyana</cName>
+		<cIso2>GY</cIso2>
+		<cIso3>GUY</cIso3>
+		<cCapitalCity>Georgetown</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Guyana Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>105</nCountryId>
+		<cName>Haiti</cName>
+		<cIso2>HT</cIso2>
+		<cIso3>HTI</cIso3>
+		<cCapitalCity>Port-au-Prince</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Gourde</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>106</nCountryId>
+		<cName>Heard Island and McDonald Islands</cName>
+		<cIso2>HM</cIso2>
+		<cIso3>HMD</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Antarctic Region</cMapReference>
+		<cCurrency>Australian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>107</nCountryId>
+		<cName>Vatican City</cName>
+		<cIso2>VA</cIso2>
+		<cIso3>VAT</cIso3>
+		<cCapitalCity>Vatican City</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>108</nCountryId>
+		<cName>Honduras</cName>
+		<cIso2>HN</cIso2>
+		<cIso3>HND</cIso3>
+		<cCapitalCity>Tegucigalpa</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Lempira</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>109</nCountryId>
+		<cName>Hong Kong</cName>
+		<cIso2>HK</cIso2>
+		<cIso3>HKG</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Hong Kong Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>110</nCountryId>
+		<cName>Howland Island</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>111</nCountryId>
+		<cName>Hungary</cName>
+		<cIso2>HU</cIso2>
+		<cIso3>HUN</cIso3>
+		<cCapitalCity>Budapest</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Forint</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>112</nCountryId>
+		<cName>Iceland</cName>
+		<cIso2>IS</cIso2>
+		<cIso3>ISL</cIso3>
+		<cCapitalCity>Reykjavik</cCapitalCity>
+		<cMapReference>Arctic Region</cMapReference>
+		<cCurrency>Iceland Krona</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>113</nCountryId>
+		<cName>India</cName>
+		<cIso2>IN</cIso2>
+		<cIso3>IND</cIso3>
+		<cCapitalCity>New Delhi</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Indian Rupee</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>114</nCountryId>
+		<cName>Indonesia</cName>
+		<cIso2>ID</cIso2>
+		<cIso3>IDN</cIso3>
+		<cCapitalCity>Jakarta</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Rupiah</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>115</nCountryId>
+		<cName>Iran</cName>
+		<cIso2>IR</cIso2>
+		<cIso3>IRN</cIso3>
+		<cCapitalCity>Tehran</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Iranian Rial</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>116</nCountryId>
+		<cName>Iraq</cName>
+		<cIso2>IQ</cIso2>
+		<cIso3>IRQ</cIso3>
+		<cCapitalCity>Baghdad</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Iraqi Dinar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>117</nCountryId>
+		<cName>Ireland</cName>
+		<cIso2>IE</cIso2>
+		<cIso3>IRL</cIso3>
+		<cCapitalCity>Dublin</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>118</nCountryId>
+		<cName>Israel</cName>
+		<cIso2>IL</cIso2>
+		<cIso3>ISR</cIso3>
+		<cCapitalCity>Jerusalem</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>New Israeli Sheqel</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>119</nCountryId>
+		<cName>Italy</cName>
+		<cIso2>IT</cIso2>
+		<cIso3>ITA</cIso3>
+		<cCapitalCity>Rome</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>120</nCountryId>
+		<cName>Jamaica</cName>
+		<cIso2>JM</cIso2>
+		<cIso3>JAM</cIso3>
+		<cCapitalCity>Kingston</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Jamaican dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>121</nCountryId>
+		<cName>Jan Mayen</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Arctic Region</cMapReference>
+		<cCurrency>Norway Kroner</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>122</nCountryId>
+		<cName>Japan</cName>
+		<cIso2>JP</cIso2>
+		<cIso3>JPN</cIso3>
+		<cCapitalCity>Tokyo</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Yen</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>123</nCountryId>
+		<cName>Jarvis Island</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>124</nCountryId>
+		<cName>Jersey</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity>Saint Helier</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Pound Sterling</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>125</nCountryId>
+		<cName>Johnston Atoll</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>126</nCountryId>
+		<cName>Jordan</cName>
+		<cIso2>JO</cIso2>
+		<cIso3>JOR</cIso3>
+		<cCapitalCity>Amman</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Jordanian Dinar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>127</nCountryId>
+		<cName>Juan de Nova Island</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>128</nCountryId>
+		<cName>Kazakhstan</cName>
+		<cIso2>KZ</cIso2>
+		<cIso3>KAZ</cIso3>
+		<cCapitalCity>Astana</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Tenge</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>129</nCountryId>
+		<cName>Kenya</cName>
+		<cIso2>KE</cIso2>
+		<cIso3>KEN</cIso3>
+		<cCapitalCity>Nairobi</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Kenyan shilling</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>130</nCountryId>
+		<cName>Kingman Reef</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>131</nCountryId>
+		<cName>Kiribati</cName>
+		<cIso2>KI</cIso2>
+		<cIso3>KIR</cIso3>
+		<cCapitalCity>Tarawa</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Australian dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>132</nCountryId>
+		<cName>North Korea</cName>
+		<cIso2>KP</cIso2>
+		<cIso3>PRK</cIso3>
+		<cCapitalCity>P'yongyang</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>North Korean Won</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>133</nCountryId>
+		<cName>South Korea</cName>
+		<cIso2>KR</cIso2>
+		<cIso3>KOR</cIso3>
+		<cCapitalCity>Seoul</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Won</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>134</nCountryId>
+		<cName>Kuwait</cName>
+		<cIso2>KW</cIso2>
+		<cIso3>KWT</cIso3>
+		<cCapitalCity>Kuwait</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Kuwaiti Dinar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>135</nCountryId>
+		<cName>Kyrgyzstan</cName>
+		<cIso2>KG</cIso2>
+		<cIso3>KGZ</cIso3>
+		<cCapitalCity>Bishkek</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Som</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>136</nCountryId>
+		<cName>Laos</cName>
+		<cIso2>LA</cIso2>
+		<cIso3>LAO</cIso3>
+		<cCapitalCity>Vientiane</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Kip</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>137</nCountryId>
+		<cName>Latvia</cName>
+		<cIso2>LV</cIso2>
+		<cIso3>LVA</cIso3>
+		<cCapitalCity>Riga</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Latvian Lats</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>138</nCountryId>
+		<cName>Lebanon</cName>
+		<cIso2>LB</cIso2>
+		<cIso3>LBN</cIso3>
+		<cCapitalCity>Beirut</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Lebanese Pound</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>139</nCountryId>
+		<cName>Lesotho</cName>
+		<cIso2>LS</cIso2>
+		<cIso3>LSO</cIso3>
+		<cCapitalCity>Maseru</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Loti</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>140</nCountryId>
+		<cName>Liberia</cName>
+		<cIso2>LR</cIso2>
+		<cIso3>LBR</cIso3>
+		<cCapitalCity>Monrovia</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Liberian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>141</nCountryId>
+		<cName>Libya</cName>
+		<cIso2>LY</cIso2>
+		<cIso3>LBY</cIso3>
+		<cCapitalCity>Tripoli</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Libyan Dinar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>142</nCountryId>
+		<cName>Liechtenstein</cName>
+		<cIso2>LI</cIso2>
+		<cIso3>LIE</cIso3>
+		<cCapitalCity>Vaduz</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Swiss Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>143</nCountryId>
+		<cName>Lithuania</cName>
+		<cIso2>LT</cIso2>
+		<cIso3>LTU</cIso3>
+		<cCapitalCity>Vilnius</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Lithuanian Litas</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>144</nCountryId>
+		<cName>Luxembourg</cName>
+		<cIso2>LU</cIso2>
+		<cIso3>LUX</cIso3>
+		<cCapitalCity>Luxembourg</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>145</nCountryId>
+		<cName>Macao S.A.R.</cName>
+		<cIso2>MO</cIso2>
+		<cIso3>MAC</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Pataca</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>146</nCountryId>
+		<cName>Macedonia</cName>
+		<cIso2>MK</cIso2>
+		<cIso3>MKD</cIso3>
+		<cCapitalCity>Skopje</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Denar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>147</nCountryId>
+		<cName>Madagascar</cName>
+		<cIso2>MG</cIso2>
+		<cIso3>MDG</cIso3>
+		<cCapitalCity>Antananarivo</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Malagasy Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>148</nCountryId>
+		<cName>Malawi</cName>
+		<cIso2>MW</cIso2>
+		<cIso3>MWI</cIso3>
+		<cCapitalCity>Lilongwe</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Kwacha</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>149</nCountryId>
+		<cName>Malaysia</cName>
+		<cIso2>MY</cIso2>
+		<cIso3>MYS</cIso3>
+		<cCapitalCity>Kuala Lumpur</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Malaysian Ringgit</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>150</nCountryId>
+		<cName>Maldives</cName>
+		<cIso2>MV</cIso2>
+		<cIso3>MDV</cIso3>
+		<cCapitalCity>Male</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Rufiyaa</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>151</nCountryId>
+		<cName>Mali</cName>
+		<cIso2>ML</cIso2>
+		<cIso3>MLI</cIso3>
+		<cCapitalCity>Bamako</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BCEAO</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>152</nCountryId>
+		<cName>Malta</cName>
+		<cIso2>MT</cIso2>
+		<cIso3>MLT</cIso3>
+		<cCapitalCity>Valletta</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Maltese Lira</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>153</nCountryId>
+		<cName>Isle of Man</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity>Douglas</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Pound Sterling</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>154</nCountryId>
+		<cName>Marshall Islands</cName>
+		<cIso2>MH</cIso2>
+		<cIso3>MHL</cIso3>
+		<cCapitalCity>Majuro</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>155</nCountryId>
+		<cName>Martinique</cName>
+		<cIso2>MQ</cIso2>
+		<cIso3>MTQ</cIso3>
+		<cCapitalCity>Fort-de-France</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>156</nCountryId>
+		<cName>Mauritania</cName>
+		<cIso2>MR</cIso2>
+		<cIso3>MRT</cIso3>
+		<cCapitalCity>Nouakchott</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Ouguiya</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>157</nCountryId>
+		<cName>Mauritius</cName>
+		<cIso2>MU</cIso2>
+		<cIso3>MUS</cIso3>
+		<cCapitalCity>Port Louis</cCapitalCity>
+		<cMapReference>World</cMapReference>
+		<cCurrency>Mauritius Rupee</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>158</nCountryId>
+		<cName>Mayotte</cName>
+		<cIso2>YT</cIso2>
+		<cIso3>MYT</cIso3>
+		<cCapitalCity>Mamoutzou</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>159</nCountryId>
+		<cName>Mexico</cName>
+		<cIso2>MX</cIso2>
+		<cIso3>MEX</cIso3>
+		<cCapitalCity>Mexico</cCapitalCity>
+		<cMapReference>North America</cMapReference>
+		<cCurrency>Mexican Peso</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>160</nCountryId>
+		<cName>Micronesia</cName>
+		<cIso2>FM</cIso2>
+		<cIso3>FSM</cIso3>
+		<cCapitalCity>Palikir</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>163</nCountryId>
+		<cName>Moldova</cName>
+		<cIso2>MD</cIso2>
+		<cIso3>MDA</cIso3>
+		<cCapitalCity>Chisinau</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Moldovan Leu</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>164</nCountryId>
+		<cName>Monaco</cName>
+		<cIso2>MC</cIso2>
+		<cIso3>MCO</cIso3>
+		<cCapitalCity>Monaco</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>165</nCountryId>
+		<cName>Mongolia</cName>
+		<cIso2>MN</cIso2>
+		<cIso3>MNG</cIso3>
+		<cCapitalCity>Ulaanbaatar</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Tugrik</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>166</nCountryId>
+		<cName>Montenegro</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference></cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>167</nCountryId>
+		<cName>Montserrat</cName>
+		<cIso2>MS</cIso2>
+		<cIso3>MSR</cIso3>
+		<cCapitalCity>Plymouth</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>East Caribbean Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>168</nCountryId>
+		<cName>Morocco</cName>
+		<cIso2>MA</cIso2>
+		<cIso3>MAR</cIso3>
+		<cCapitalCity>Rabat</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Moroccan Dirham</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>169</nCountryId>
+		<cName>Mozambique</cName>
+		<cIso2>MZ</cIso2>
+		<cIso3>MOZ</cIso3>
+		<cCapitalCity>Maputo</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Metical</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>171</nCountryId>
+		<cName>Namibia</cName>
+		<cIso2>NA</cIso2>
+		<cIso3>NAM</cIso3>
+		<cCapitalCity>Windhoek</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Namibian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>172</nCountryId>
+		<cName>Nauru</cName>
+		<cIso2>NR</cIso2>
+		<cIso3>NRU</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Australian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>173</nCountryId>
+		<cName>Navassa Island</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>174</nCountryId>
+		<cName>Nepal</cName>
+		<cIso2>NP</cIso2>
+		<cIso3>NPL</cIso3>
+		<cCapitalCity>Kathmandu</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Nepalese Rupee</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>175</nCountryId>
+		<cName>Netherlands</cName>
+		<cIso2>NL</cIso2>
+		<cIso3>NLD</cIso3>
+		<cCapitalCity>Amsterdam</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>176</nCountryId>
+		<cName>Netherlands Antilles</cName>
+		<cIso2>AN</cIso2>
+		<cIso3>ANT</cIso3>
+		<cCapitalCity>Willemstad</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Netherlands Antillean guilder</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>177</nCountryId>
+		<cName>New Caledonia</cName>
+		<cIso2>NC</cIso2>
+		<cIso3>NCL</cIso3>
+		<cCapitalCity>Noumea</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>CFP Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>178</nCountryId>
+		<cName>New Zealand</cName>
+		<cIso2>NZ</cIso2>
+		<cIso3>NZL</cIso3>
+		<cCapitalCity>Wellington</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>New Zealand Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>179</nCountryId>
+		<cName>Nicaragua</cName>
+		<cIso2>NI</cIso2>
+		<cIso3>NIC</cIso3>
+		<cCapitalCity>Managua</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Cordoba Oro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>180</nCountryId>
+		<cName>Niger</cName>
+		<cIso2>NE</cIso2>
+		<cIso3>NER</cIso3>
+		<cCapitalCity>Niamey</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BCEAO</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>181</nCountryId>
+		<cName>Nigeria</cName>
+		<cIso2>NG</cIso2>
+		<cIso3>NGA</cIso3>
+		<cCapitalCity>Abuja</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Naira</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>182</nCountryId>
+		<cName>Niue</cName>
+		<cIso2>NU</cIso2>
+		<cIso3>NIU</cIso3>
+		<cCapitalCity>Alofi</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>New Zealand Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>183</nCountryId>
+		<cName>Norfolk Island</cName>
+		<cIso2>NF</cIso2>
+		<cIso3>NFK</cIso3>
+		<cCapitalCity>Kingston</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Australian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>184</nCountryId>
+		<cName>Northern Mariana Islands</cName>
+		<cIso2>MP</cIso2>
+		<cIso3>MNP</cIso3>
+		<cCapitalCity>Saipan</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>185</nCountryId>
+		<cName>Norway</cName>
+		<cIso2>NO</cIso2>
+		<cIso3>NOR</cIso3>
+		<cCapitalCity>Oslo</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Norwegian Krone</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>186</nCountryId>
+		<cName>Oman</cName>
+		<cIso2>OM</cIso2>
+		<cIso3>OMN</cIso3>
+		<cCapitalCity>Muscat</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Rial Omani</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>187</nCountryId>
+		<cName>Pakistan</cName>
+		<cIso2>PK</cIso2>
+		<cIso3>PAK</cIso3>
+		<cCapitalCity>Islamabad</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Pakistan Rupee</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>188</nCountryId>
+		<cName>Palau</cName>
+		<cIso2>PW</cIso2>
+		<cIso3>PLW</cIso3>
+		<cCapitalCity>Koror</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>189</nCountryId>
+		<cName>Palmyra Atoll</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>190</nCountryId>
+		<cName>Panama</cName>
+		<cIso2>PA</cIso2>
+		<cIso3>PAN</cIso3>
+		<cCapitalCity>Panama</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>balboa</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>191</nCountryId>
+		<cName>Papua New Guinea</cName>
+		<cIso2>PG</cIso2>
+		<cIso3>PNG</cIso3>
+		<cCapitalCity>Port Moresby</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Kina</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>193</nCountryId>
+		<cName>Paraguay</cName>
+		<cIso2>PY</cIso2>
+		<cIso3>PRY</cIso3>
+		<cCapitalCity>Asuncion</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Guarani</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>194</nCountryId>
+		<cName>Peru</cName>
+		<cIso2>PE</cIso2>
+		<cIso3>PER</cIso3>
+		<cCapitalCity>Lima</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Nuevo Sol</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>195</nCountryId>
+		<cName>Philippines</cName>
+		<cIso2>PH</cIso2>
+		<cIso3>PHL</cIso3>
+		<cCapitalCity>Manila</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Philippine Peso</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>196</nCountryId>
+		<cName>Pitcairn</cName>
+		<cIso2>PN</cIso2>
+		<cIso3>PCN</cIso3>
+		<cCapitalCity>Adamstown</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>New Zealand Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>197</nCountryId>
+		<cName>Poland</cName>
+		<cIso2>PL</cIso2>
+		<cIso3>POL</cIso3>
+		<cCapitalCity>Warsaw</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Zloty</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>198</nCountryId>
+		<cName>Portugal</cName>
+		<cIso2>PT</cIso2>
+		<cIso3>PRT</cIso3>
+		<cCapitalCity>Lisbon</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>199</nCountryId>
+		<cName>Puerto Rico</cName>
+		<cIso2>PR</cIso2>
+		<cIso3>PRI</cIso3>
+		<cCapitalCity>San Juan</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>200</nCountryId>
+		<cName>Qatar</cName>
+		<cIso2>QA</cIso2>
+		<cIso3>QAT</cIso3>
+		<cCapitalCity>Doha</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Qatari Rial</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>202</nCountryId>
+		<cName>Romania</cName>
+		<cIso2>RO</cIso2>
+		<cIso3>ROU</cIso3>
+		<cCapitalCity>Bucharest</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Leu</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>203</nCountryId>
+		<cName>Russia</cName>
+		<cIso2>RU</cIso2>
+		<cIso3>RUS</cIso3>
+		<cCapitalCity>Moscow</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Russian Ruble</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>204</nCountryId>
+		<cName>Rwanda</cName>
+		<cIso2>RW</cIso2>
+		<cIso3>RWA</cIso3>
+		<cCapitalCity>Kigali</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Rwanda Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>205</nCountryId>
+		<cName>Saint Helena</cName>
+		<cIso2>SH</cIso2>
+		<cIso3>SHN</cIso3>
+		<cCapitalCity>Jamestown</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Saint Helenian Pound</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>206</nCountryId>
+		<cName>Saint Kitts and Nevis</cName>
+		<cIso2>KN</cIso2>
+		<cIso3>KNA</cIso3>
+		<cCapitalCity>Basseterre</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>East Caribbean Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>207</nCountryId>
+		<cName>Saint Lucia</cName>
+		<cIso2>LC</cIso2>
+		<cIso3>LCA</cIso3>
+		<cCapitalCity>Castries</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>East Caribbean Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>208</nCountryId>
+		<cName>Saint Pierre and Miquelon</cName>
+		<cIso2>PM</cIso2>
+		<cIso3>SPM</cIso3>
+		<cCapitalCity>Saint-Pierre</cCapitalCity>
+		<cMapReference>North America</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>209</nCountryId>
+		<cName>Saint Vincent and the Grenadines</cName>
+		<cIso2>VC</cIso2>
+		<cIso3>VCT</cIso3>
+		<cCapitalCity>Kingstown</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>East Caribbean Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>210</nCountryId>
+		<cName>Samoa</cName>
+		<cIso2>WS</cIso2>
+		<cIso3>WSM</cIso3>
+		<cCapitalCity>Apia</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Tala</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>211</nCountryId>
+		<cName>San Marino</cName>
+		<cIso2>SM</cIso2>
+		<cIso3>SMR</cIso3>
+		<cCapitalCity>San Marino</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>212</nCountryId>
+		<cName>Sao Tome and Principe</cName>
+		<cIso2>ST</cIso2>
+		<cIso3>STP</cIso3>
+		<cCapitalCity>Sao Tome</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Dobra</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>213</nCountryId>
+		<cName>Saudi Arabia</cName>
+		<cIso2>SA</cIso2>
+		<cIso3>SAU</cIso3>
+		<cCapitalCity>Riyadh</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Saudi Riyal</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>214</nCountryId>
+		<cName>Senegal</cName>
+		<cIso2>SN</cIso2>
+		<cIso3>SEN</cIso3>
+		<cCapitalCity>Dakar</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BCEAO</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>215</nCountryId>
+		<cName>Serbia</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference></cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>216</nCountryId>
+		<cName>Serbia and Montenegro</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference></cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>217</nCountryId>
+		<cName>Seychelles</cName>
+		<cIso2>SC</cIso2>
+		<cIso3>SYC</cIso3>
+		<cCapitalCity>Victoria</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Seychelles Rupee</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>218</nCountryId>
+		<cName>Sierra Leone</cName>
+		<cIso2>SL</cIso2>
+		<cIso3>SLE</cIso3>
+		<cCapitalCity>Freetown</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Leone</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>219</nCountryId>
+		<cName>Singapore</cName>
+		<cIso2>SG</cIso2>
+		<cIso3>SGP</cIso3>
+		<cCapitalCity>Singapore</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Singapore Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>220</nCountryId>
+		<cName>Slovakia</cName>
+		<cIso2>SK</cIso2>
+		<cIso3>SVK</cIso3>
+		<cCapitalCity>Bratislava</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Slovak Koruna</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>221</nCountryId>
+		<cName>Slovenia</cName>
+		<cIso2>SI</cIso2>
+		<cIso3>SVN</cIso3>
+		<cCapitalCity>Ljubljana</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Tolar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>222</nCountryId>
+		<cName>Solomon Islands</cName>
+		<cIso2>SB</cIso2>
+		<cIso3>SLB</cIso3>
+		<cCapitalCity>Honiara</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Solomon Islands Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>223</nCountryId>
+		<cName>Somalia</cName>
+		<cIso2>SO</cIso2>
+		<cIso3>SOM</cIso3>
+		<cCapitalCity>Mogadishu</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Somali Shilling</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>224</nCountryId>
+		<cName>South Africa</cName>
+		<cIso2>ZA</cIso2>
+		<cIso3>ZAF</cIso3>
+		<cCapitalCity>Pretoria</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Rand</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>225</nCountryId>
+		<cName>South Georgia and the South Sandwich Islands</cName>
+		<cIso2>GS</cIso2>
+		<cIso3>SGS</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Antarctic Region</cMapReference>
+		<cCurrency>Pound Sterling</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>226</nCountryId>
+		<cName>Spain</cName>
+		<cIso2>ES</cIso2>
+		<cIso3>ESP</cIso3>
+		<cCapitalCity>Madrid</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Euro</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>228</nCountryId>
+		<cName>Sri Lanka</cName>
+		<cIso2>LK</cIso2>
+		<cIso3>LKA</cIso3>
+		<cCapitalCity>Colombo</cCapitalCity>
+		<cMapReference>Asia</cMapReference>
+		<cCurrency>Sri Lanka Rupee</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>229</nCountryId>
+		<cName>Sudan</cName>
+		<cIso2>SD</cIso2>
+		<cIso3>SDN</cIso3>
+		<cCapitalCity>Khartoum</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Sudanese Dinar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>230</nCountryId>
+		<cName>Suriname</cName>
+		<cIso2>SR</cIso2>
+		<cIso3>SUR</cIso3>
+		<cCapitalCity>Paramaribo</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Suriname Guilder</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>231</nCountryId>
+		<cName>Svalbard and Jan Mayen</cName>
+		<cIso2>SJ</cIso2>
+		<cIso3>SJM</cIso3>
+		<cCapitalCity>Longyearbyen</cCapitalCity>
+		<cMapReference>Arctic Region</cMapReference>
+		<cCurrency>Norwegian Krone</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>232</nCountryId>
+		<cName>Swaziland</cName>
+		<cIso2>SZ</cIso2>
+		<cIso3>SWZ</cIso3>
+		<cCapitalCity>Mbabane</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Lilangeni</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>233</nCountryId>
+		<cName>Sweden</cName>
+		<cIso2>SE</cIso2>
+		<cIso3>SWE</cIso3>
+		<cCapitalCity>Stockholm</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Swedish Krona</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>234</nCountryId>
+		<cName>Switzerland</cName>
+		<cIso2>CH</cIso2>
+		<cIso3>CHE</cIso3>
+		<cCapitalCity>Bern</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Swiss Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>235</nCountryId>
+		<cName>Syria</cName>
+		<cIso2>SY</cIso2>
+		<cIso3>SYR</cIso3>
+		<cCapitalCity>Damascus</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Syrian Pound</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>236</nCountryId>
+		<cName>Taiwan</cName>
+		<cIso2>TW</cIso2>
+		<cIso3>TWN</cIso3>
+		<cCapitalCity>Taipei</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>New Taiwan Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>237</nCountryId>
+		<cName>Tajikistan</cName>
+		<cIso2>TJ</cIso2>
+		<cIso3>TJK</cIso3>
+		<cCapitalCity>Dushanbe</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Somoni</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>238</nCountryId>
+		<cName>Tanzania</cName>
+		<cIso2>TZ</cIso2>
+		<cIso3>TZA</cIso3>
+		<cCapitalCity>Dar es Salaam</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Tanzanian Shilling</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>239</nCountryId>
+		<cName>Thailand</cName>
+		<cIso2>TH</cIso2>
+		<cIso3>THA</cIso3>
+		<cCapitalCity>Bangkok</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Baht</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>240</nCountryId>
+		<cName>Togo</cName>
+		<cIso2>TG</cIso2>
+		<cIso3>TGO</cIso3>
+		<cCapitalCity>Lome</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>CFA Franc BCEAO</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>241</nCountryId>
+		<cName>Tokelau</cName>
+		<cIso2>TK</cIso2>
+		<cIso3>TKL</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>New Zealand Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>242</nCountryId>
+		<cName>Tonga</cName>
+		<cIso2>TO</cIso2>
+		<cIso3>TON</cIso3>
+		<cCapitalCity>Nuku'alofa</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Pa'anga</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>243</nCountryId>
+		<cName>Trinidad and Tobago</cName>
+		<cIso2>TT</cIso2>
+		<cIso3>TTO</cIso3>
+		<cCapitalCity>Port-of-Spain</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>Trinidad and Tobago Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>245</nCountryId>
+		<cName>Tunisia</cName>
+		<cIso2>TN</cIso2>
+		<cIso3>TUN</cIso3>
+		<cCapitalCity>Tunis</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Tunisian Dinar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>246</nCountryId>
+		<cName>Turkey</cName>
+		<cIso2>TR</cIso2>
+		<cIso3>TUR</cIso3>
+		<cCapitalCity>Ankara</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Turkish Lira</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>247</nCountryId>
+		<cName>Turkmenistan</cName>
+		<cIso2>TM</cIso2>
+		<cIso3>TKM</cIso3>
+		<cCapitalCity>Ashgabat</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Manat</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>248</nCountryId>
+		<cName>Turks and Caicos Islands</cName>
+		<cIso2>TC</cIso2>
+		<cIso3>TCA</cIso3>
+		<cCapitalCity>Cockburn Town</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>249</nCountryId>
+		<cName>Tuvalu</cName>
+		<cIso2>TV</cIso2>
+		<cIso3>TUV</cIso3>
+		<cCapitalCity>Funafuti</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Australian Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>250</nCountryId>
+		<cName>Uganda</cName>
+		<cIso2>UG</cIso2>
+		<cIso3>UGA</cIso3>
+		<cCapitalCity>Kampala</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Uganda Shilling</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>251</nCountryId>
+		<cName>Ukraine</cName>
+		<cIso2>UA</cIso2>
+		<cIso3>UKR</cIso3>
+		<cCapitalCity>Kiev</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Hryvnia</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>252</nCountryId>
+		<cName>United Arab Emirates</cName>
+		<cIso2>AE</cIso2>
+		<cIso3>ARE</cIso3>
+		<cCapitalCity>Abu Dhabi</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>UAE Dirham</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>253</nCountryId>
+		<cName>United Kingdom</cName>
+		<cIso2>GB</cIso2>
+		<cIso3>GBR</cIso3>
+		<cCapitalCity>London</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Pound Sterling</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>254</nCountryId>
+		<cName>United States</cName>
+		<cIso2>US</cIso2>
+		<cIso3>USA</cIso3>
+		<cCapitalCity>Washington, DC</cCapitalCity>
+		<cMapReference>North America</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>256</nCountryId>
+		<cName>Uruguay</cName>
+		<cIso2>UY</cIso2>
+		<cIso3>URY</cIso3>
+		<cCapitalCity>Montevideo</cCapitalCity>
+		<cMapReference>South America</cMapReference>
+		<cCurrency>Peso Uruguayo</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>257</nCountryId>
+		<cName>Uzbekistan</cName>
+		<cIso2>UZ</cIso2>
+		<cIso3>UZB</cIso3>
+		<cCapitalCity>Tashkent</cCapitalCity>
+		<cMapReference>Commonwealth of Independent States</cMapReference>
+		<cCurrency>Uzbekistan Sum</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>258</nCountryId>
+		<cName>Vanuatu</cName>
+		<cIso2>VU</cIso2>
+		<cIso3>VUT</cIso3>
+		<cCapitalCity>Port-Vila</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>Vatu</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>259</nCountryId>
+		<cName>Venezuela</cName>
+		<cIso2>VE</cIso2>
+		<cIso3>VEN</cIso3>
+		<cCapitalCity>Caracas</cCapitalCity>
+		<cMapReference>South America, Central America and the Caribbean</cMapReference>
+		<cCurrency>Bolivar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>260</nCountryId>
+		<cName>Vietnam</cName>
+		<cIso2>VN</cIso2>
+		<cIso3>VNM</cIso3>
+		<cCapitalCity>Hanoi</cCapitalCity>
+		<cMapReference>Southeast Asia</cMapReference>
+		<cCurrency>Dong</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>261</nCountryId>
+		<cName>U.S. Virgin Islands</cName>
+		<cIso2>VI</cIso2>
+		<cIso3>VIR</cIso3>
+		<cCapitalCity>Charlotte Amalie</cCapitalCity>
+		<cMapReference>Central America and the Caribbean</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>262</nCountryId>
+		<cName>Virgin Islands (UK)</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference></cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>263</nCountryId>
+		<cName>Virgin Islands (US)</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference></cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>264</nCountryId>
+		<cName>Wake Island</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>US Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>265</nCountryId>
+		<cName>Wallis and Futuna</cName>
+		<cIso2>WF</cIso2>
+		<cIso3>WLF</cIso3>
+		<cCapitalCity>Mata-Utu</cCapitalCity>
+		<cMapReference>Oceania</cMapReference>
+		<cCurrency>CFP Franc</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>266</nCountryId>
+		<cName>West Bank</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>New Israeli Shekel</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>267</nCountryId>
+		<cName>Western Sahara</cName>
+		<cIso2>EH</cIso2>
+		<cIso3>ESH</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Moroccan Dirham</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>270</nCountryId>
+		<cName>Yemen</cName>
+		<cIso2>YE</cIso2>
+		<cIso3>YEM</cIso3>
+		<cCapitalCity>Sanaa</cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency>Yemeni Rial</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>271</nCountryId>
+		<cName>Yugoslavia</cName>
+		<cIso2>YU</cIso2>
+		<cIso3>YUG</cIso3>
+		<cCapitalCity>Belgrade</cCapitalCity>
+		<cMapReference>Europe</cMapReference>
+		<cCurrency>Yugoslavian Dinar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>272</nCountryId>
+		<cName>Zaire</cName>
+		<cIso2>--</cIso2>
+		<cIso3>--</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference></cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>273</nCountryId>
+		<cName>Zambia</cName>
+		<cIso2>ZM</cIso2>
+		<cIso3>ZWB</cIso3>
+		<cCapitalCity>Lusaka</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Kwacha</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>274</nCountryId>
+		<cName>Zimbabwe</cName>
+		<cIso2>ZW</cIso2>
+		<cIso3>ZWE</cIso3>
+		<cCapitalCity>Harare</cCapitalCity>
+		<cMapReference>Africa</cMapReference>
+		<cCurrency>Zimbabwe Dollar</cCurrency>
+	</ConCountry>
+	<ConCountry>
+		<nCountryId>275</nCountryId>
+		<cName>Palestinian Territory</cName>
+		<cIso2>PS</cIso2>
+		<cIso3>PSE</cIso3>
+		<cCapitalCity></cCapitalCity>
+		<cMapReference>Middle East</cMapReference>
+		<cCurrency></cCurrency>
+	</ConCountry>
+</Country>

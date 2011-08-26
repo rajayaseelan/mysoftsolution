@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
+  <Class Name="SharedCache.WinServiceCommon.Sockets.ManageClientTcpSocketConnectionPoolFactory">
+    <Position X="1.5" Y="0.5" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAAAAAAAAAAAABAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>Sockets\ManageClientTcpSocketConnectionPoolFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SharedCache.WinServiceCommon.Sockets.TcpSocketConnectionPool">
+    <Position X="9.25" Y="2.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAgCAAAACAEAAAABACAAAACAAACAgAAAgQAAAAAAA=</HashCode>
+      <FileName>Sockets\TcpSocketConnectionPool.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SharedCache.WinServiceCommon.Sockets.ManageServerTcpSocketConnectionPoolFactory">
+    <Position X="5.25" Y="0.5" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAAAAAAEAAAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>Sockets\ManageServerTcpSocketConnectionPoolFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SharedCache.WinServiceCommon.Sockets.ManageTcpSocketConnectionPool">
+    <Position X="6.25" Y="2.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAEAAAAAAQBAAAAAAAAAAEAAAAAIAAQAAAAAAA=</HashCode>
+      <FileName>Sockets\ManageTcpSocketConnectionPool.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SharedCache.WinServiceCommon.Sockets.SharedCacheStateObject" BaseTypeListCollapsed="true">
+    <Position X="1.25" Y="2.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>FIAAABAAACAAAQAADgFAAAoAQAAIAAAAAABAAACAQAA=</HashCode>
+      <FileName>Sockets\SharedCacheStateObject.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SharedCache.WinServiceCommon.Sockets.SharedCacheTcpClient" BaseTypeListCollapsed="true">
+    <Position X="3.75" Y="2.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AggAAAAAACAAQAAAAEAAAAAACAAACAgAAAgwAAKAQAA=</HashCode>
+      <FileName>Sockets\SharedCacheTcpClient.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Font Name="Microsoft Sans Serif" Size="8.25" />
+</ClassDiagram>

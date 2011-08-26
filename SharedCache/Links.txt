@@ -1,0 +1,26 @@
+http://www.cs.technion.ac.il/~biham/Reports/Tiger/tiger/tiger.html
+http://www.codeplex.com/EnyimMemcached 
+
+
+http://jacksonito.blogspot.com/2007/03/aspnet-output-caching-using-memcached.html
+
+http://www.vccafe.com/2007/09/26/as-web-20-goes-global-israel-gets-on-the-map/
+
+http://netcode.ru/dotnet/?artID=6581 cache 
+http://www.codeproject.com/KB/recipes/andregenericcache.aspx?print=true
+ 
+http://docs.msdnaa.net/ark_new3.0/cd3/content/Books%5C0735617791_CSharpForJavaDevelopers_Ch09.pdf
+ 
+ 
+http://blog.falafel.com/CategoryView,category,C%23.aspx (And, putting it all together:)
+
+
+
+Cache Cleanup:
+
+
+// some links with additional information
+http://en.wikipedia.org/wiki/Cache_algorithms
+http://www.ag-nbi.de/lehre/0607/V_NBI/folien/08-Caching.pdf
+http://caching.ulf-wendel.de/ersetzungsstrategien/lru_variationen.php
+http://209.85.129.104/search?q=cache:gTIby33gQG0J:www.cs.usask.ca/faculty/carey/papers/webcaching.ps+%22caching+strategies%22+lru&hl=de&ct=clnk&cd=9&gl=ch&client=firefox-a

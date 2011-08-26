@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--<?xml version="1.0"?>-->
+<doc>
+	<members>
+		<member name="R:Project">
+			<summary>
+				Shared Cache is high performance distributed cache and clustered .Net cache for enterprise application running in server farms.
+
+				Shared Cache provides distributed replicated cache to minimize the load factor. It consists the usage of two or more servers in a farm. It's replicated all data within the cluster. The big plus is simple, you have all your cache nodes on all differnet servers. In case one of your servers get restarted, it will receive all nodes automatically from its parent.
+
+				All data is available locally which minimizes the way and any Get operation is faster then to call a third system.
+			</summary>
+		</member>
+		<member name="N:SharedCache.Notify">
+			<summary>
+				it's a combination of overview and management console. It run's as a try icon near the system time. Through the notifier you receive the abiliaty to 
+						make remote restarts or to request some basic information and statistics.
+			</summary>
+		</member>
+		<member name="N:SharedCache.Version">
+			<summary>
+				This is a webservice project which populates the current active deployed version. Notify can request a status update 
+						in case there is a newer version available a message appears in the about window.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinService">
+			<summary>
+					 Contains some Windows Service Logics and the differnet instances and Perf. Counters.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon">
+			<summary>
+				Contains common project logic and common classes.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon.Configuration.Client">
+			<summary>
+				Contains client provider logic.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon.Configuration.Server">
+			<summary>
+				Contains server provider logic.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon.Configuration.Server">
+			<summary>
+				Contains server provider logic.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon.Extenders">
+			<summary>
+				Defines used interfaces.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon.Formatters">
+			<summary>
+				Populate various Serializable logic
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon.Handler">
+			<summary>
+				Polulates Config, Hash, Logging, Network and NetworkMessage logics. This is a common used namespace.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon.Provider.Cache">
+			<summary>
+				Provides the cache provider logic for clients.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon.Provider.Server">
+			<summary>
+				Provides the provider logic to replicate data to various servers.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon.Provider.Session">
+			<summary>
+				Provides the session provider logic for clients.
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceCommon.SystemManagement">
+			<summary>
+				Populate some system resources information like CPU / Memory
+			</summary>
+		</member>
+		<member name="N:SharedCache.WinServiceTestClient">
+			<summary>
+				Contains a sample test application with various options to demonstrate how the server works.
+			</summary>
+		</member>
+		<member name="N:NLog.Config">
+			<summary>
+				NLog is an external logging option. please google for nlog for more information.
+			</summary>
+		</member>
+	</members>
+</doc>

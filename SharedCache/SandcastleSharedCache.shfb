@@ -1,0 +1,100 @@
+﻿<project schemaVersion="1.6.0.7">
+    <assemblies>
+        <assembly assemblyPath=".\SharedCache.WinService\bin\Debug\NLog.dll" xmlCommentsPath=".\SharedCache.WinService\bin\Debug\NLog.xml" commentsOnly="False" />
+        <assembly assemblyPath=".\SharedCache.Notify\bin\Debug\SharedCache.Notify.exe" xmlCommentsPath=".\SharedCache.Notify\bin\Debug\SharedCache.Notify.xml" commentsOnly="False" />
+        <assembly assemblyPath=".\SharedCache.Version\bin\SharedCache.Version.dll" xmlCommentsPath=".\SharedCache.Version\bin\SharedCache.Version.xml" commentsOnly="False" />
+        <assembly assemblyPath=".\SharedCache.WinService\bin\Debug\SharedCache.WinService.exe" xmlCommentsPath=".\SharedCache.WinService\bin\Debug\SharedCache.WinService.xml" commentsOnly="False" />
+        <assembly assemblyPath=".\SharedCache.Version\bin\SharedCache.WinServiceCommon.dll" xmlCommentsPath=".\SharedCache.Version\bin\SharedCache.WinServiceCommon.xml" commentsOnly="False" />
+        <assembly assemblyPath=".\SharedCache.WinServiceTestClient\bin\Debug\SharedCache.WinServiceTestClient.exe" xmlCommentsPath=".\SharedCache.WinServiceTestClient\bin\Debug\SharedCache.WinServiceTestClient.xml" commentsOnly="False" />
+    </assemblies>
+    <namespaceSummaries>
+        <namespaceSummaryItem name="" isDocumented="False" />
+        <namespaceSummaryItem name="CustomUIControls" isDocumented="False" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.Notify" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.Notify.Properties" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.Notify.version" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.SetupHelper" isDocumented="False" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.SharedCacheClient" isDocumented="False" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.Testing" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.Version" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinService" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.Configuration.Client" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.Configuration.Server" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.Extenders" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.Formatters" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.Handler" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.Provider.Cache" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.Provider.Server" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.Provider.Session" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.SystemManagement" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.Udp" isDocumented="False" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceCommon.Udp.Command" isDocumented="False" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceTestClient" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceTestClient.BLL" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceTestClient.Common" isDocumented="True" />
+        <namespaceSummaryItem name="MergeSystem.Indexus.WinServiceTestClient.DAL" isDocumented="True" />
+        <namespaceSummaryItem name="NLog" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Conditions" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Config" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Filters" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Internal" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Internal.FileAppenders" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Internal.NetworkSenders" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Internal.Win32" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.LayoutRenderers" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Layouts" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Targets" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Targets.Compound" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Targets.Wrappers" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Web" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Win32" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Win32.LayoutRenderers" isDocumented="False" />
+        <namespaceSummaryItem name="NLog.Win32.Targets" isDocumented="False" />
+    </namespaceSummaries>
+    <componentConfigurations>
+        <component id="Code Block Component" enabled="True" configuration="&lt;component type=&quot;SandcastleBuilder.Components.CodeBlockComponent&quot; assembly=&quot;{@SHFBFolder}SandcastleBuilder.Components.dll&quot; id=&quot;Code Block Component&quot;&gt;&lt;!-- Base path for relative filenames in source attributes (optional) --&gt;&lt;basePath value=&quot;{@ProjectFolder}&quot; /&gt;&lt;!-- Connect to language filter (optional).  If omitted,&#xD;&#xA;                 language filtering is enabled by default. --&gt;&lt;languageFilter value=&quot;true&quot; /&gt;&lt;!-- Code colorizer options (required).&#xD;&#xA;                 Attributes:&#xD;&#xA;                    Language syntax configuration file (required)&#xD;&#xA;                    XSLT style file (required)&#xD;&#xA;                    &quot;Copy&quot; image file URL (required)&#xD;&#xA;                    Default language (optional)&#xD;&#xA;                    Enable line numbering (optional)&#xD;&#xA;                    Enable outlining (optional)&#xD;&#xA;                    Tab size override (optional, 0 = Use syntax file setting)&#xD;&#xA;                    Use language name as default title (optional) --&gt;&lt;colorizer syntaxFile=&quot;{@SHFBFolder}Colorizer\highlight.xml&quot; styleFile=&quot;{@SHFBFolder}Colorizer\highlight.xsl&quot; copyImageUrl=&quot;../icons/CopyCode.gif&quot; language=&quot;cs&quot; numberLines=&quot;true&quot; outlining=&quot;true&quot; tabSize=&quot;2&quot; defaultTitle=&quot;true&quot; /&gt;&lt;/component&gt;" />
+        <component id="Post-transform Component" enabled="True" configuration="&lt;component type=&quot;SandcastleBuilder.Components.PostTransformComponent&quot; assembly=&quot;{@SHFBFolder}SandcastleBuilder.Components.dll&quot; id=&quot;Post-transform Component&quot;&gt;&lt;!-- Code colorizer files (required).&#xD;&#xA;                 Attributes:&#xD;&#xA;                    Stylesheet file (required)&#xD;&#xA;                    Script file (required)&#xD;&#xA;                    &quot;Copy&quot; image file (required) --&gt;&lt;colorizer stylesheet=&quot;{@SHFBFolder}Colorizer\highlight.css&quot; scriptFile=&quot;{@SHFBFolder}Colorizer\highlight.js&quot; copyImage=&quot;{@SHFBFolder}Colorizer\CopyCode.gif&quot; /&gt;&lt;!-- Output path for the files (required).  This should match the&#xD;&#xA;                 output path of the HTML files (see SaveComponent below). --&gt;&lt;outputPath value=&quot;Output\html&quot; /&gt;&lt;!-- Logo image file (optional).  Filename is required. The height,&#xD;&#xA;                 width, altText, placement, and alignment attributes are&#xD;&#xA;                 optional. --&gt;&lt;logoFile filename=&quot;D:\Dev\codeplex\SharedCache\SanscastleDocLogo.gif&quot; height=&quot;0&quot; width=&quot;0&quot; altText=&quot;indeXus.Net Shared Cache&quot; placement=&quot;left&quot; alignment=&quot;left&quot; /&gt;&lt;/component&gt;" />
+    </componentConfigurations>
+    <ProjectSummary>indeXus.Net Shared Cache - high distributed cache utility</ProjectSummary>
+    <MissingTags>Summary, Parameter, Returns, Value, AutoDocumentCtors, TypeParameter</MissingTags>
+    <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
+    <HtmlHelp1xCompilerPath path="" />
+    <HtmlHelp2xCompilerPath path="" />
+    <OutputPath>.\Help\</OutputPath>
+    <SandcastlePath path="" />
+    <WorkingPath path="" />
+    <CleanIntermediates>True</CleanIntermediates>
+    <KeepLogFile>True</KeepLogFile>
+    <BuildLogFile path="" />
+    <HelpFileFormat>Help1xAndWebsite</HelpFileFormat>
+    <CppCommentsFixup>False</CppCommentsFixup>
+    <FrameworkVersion>3.5</FrameworkVersion>
+    <IndentHtml>False</IndentHtml>
+    <Preliminary>False</Preliminary>
+    <RootNamespaceContainer>True</RootNamespaceContainer>
+    <RootNamespaceTitle>indeXus.Net Shared Cache</RootNamespaceTitle>
+    <HelpTitle>Shared Cache based on Sandcastle</HelpTitle>
+    <HtmlHelpName>SharedCache</HtmlHelpName>
+    <Language>en-US</Language>
+    <CopyrightHref>http://www.sharedcache.com</CopyrightHref>
+    <CopyrightText>http://www.SharedCache.com - Roni Schuetz</CopyrightText>
+    <FeedbackEMailAddress>sharedcache@sharedcache.com</FeedbackEMailAddress>
+    <FeedbackEMailLinkText>sharedcache@sharedcache.com</FeedbackEMailLinkText>
+    <HeaderText>Shared Cache</HeaderText>
+    <FooterText>For additional information and latest releases go to: http://www.SharedCache.com</FooterText>
+    <ProjectLinkType>None</ProjectLinkType>
+    <SdkLinkType>Msdn</SdkLinkType>
+    <SdkLinkTarget>Blank</SdkLinkTarget>
+    <PresentationStyle>vs2005</PresentationStyle>
+    <NamingMethod>MemberName</NamingMethod>
+    <SyntaxFilters>Standard</SyntaxFilters>
+    <ShowFeedbackControl>False</ShowFeedbackControl>
+    <BinaryTOC>True</BinaryTOC>
+    <IncludeFavorites>True</IncludeFavorites>
+    <CollectionTocStyle>Hierarchical</CollectionTocStyle>
+    <IncludeStopWordList>True</IncludeStopWordList>
+    <PlugInNamespaces>ms.vsipcc+, ms.vsexpresscc+</PlugInNamespaces>
+    <HelpFileVersion>1.0.0.0</HelpFileVersion>
+    <ContentPlacement>AboveNamespaces</ContentPlacement>
+</project>
