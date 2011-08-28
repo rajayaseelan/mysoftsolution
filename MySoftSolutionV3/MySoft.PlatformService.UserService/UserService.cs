@@ -76,12 +76,12 @@ namespace MySoft.PlatformService.UserService
 
         public IList<UserInfo> GetUsers()
         {
-            //Thread.Sleep(3000);
+            Thread.Sleep(100);
             //throw new Exception("sdfsad");
 
             var list = new List<UserInfo>();
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 list.Add(new UserInfo { Name = "test" + i, Description = "testtest" + i });
             }

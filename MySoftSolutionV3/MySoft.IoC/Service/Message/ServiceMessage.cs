@@ -153,10 +153,10 @@ namespace MySoft.IoC.Message
 
         void SocketClient_OnClose(SocketBase socket)
         {
+            client.Dispose();
+
             //断开服务器
             isConnected = false;
-
-            client.Dispose();
         }
 
         void SocketClient_OnError(SocketBase socket, Exception exception)

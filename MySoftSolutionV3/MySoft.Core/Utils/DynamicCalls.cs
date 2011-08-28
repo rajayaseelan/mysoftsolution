@@ -130,7 +130,7 @@ namespace MySoft
                 // converts the DynamicMethod to a FastInvokeHandler delegate to call to the method
                 FastInvokeHandler invoker = (FastInvokeHandler)dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
 
-                dictInvoker.Add(methodInfo, invoker);
+                dictInvoker[methodInfo] = invoker;
 
                 return invoker;
             }
@@ -164,7 +164,7 @@ namespace MySoft
                 // converts the DynamicMethod to a FastCreateInstanceHandler delegate to create the object
                 FastCreateInstanceHandler creator = (FastCreateInstanceHandler)dynamicMethod.CreateDelegate(typeof(FastCreateInstanceHandler));
 
-                dictCreator.Add(type, creator);
+                dictCreator[type] = creator;
 
                 return creator;
             }
@@ -201,7 +201,7 @@ namespace MySoft
                 // converts the DynamicMethod to a FastPropertyGetHandler delegate to get the property
                 FastPropertyGetHandler getter = (FastPropertyGetHandler)dynamicMethod.CreateDelegate(typeof(FastPropertyGetHandler));
 
-                dictGetter.Add(propInfo, getter);
+                dictGetter[propInfo] = getter;
 
                 return getter;
             }
@@ -241,7 +241,7 @@ namespace MySoft
                 // converts the DynamicMethod to a FastPropertyGetHandler delegate to get the property
                 FastPropertySetHandler setter = (FastPropertySetHandler)dynamicMethod.CreateDelegate(typeof(FastPropertySetHandler));
 
-                dictSetter.Add(propInfo, setter);
+                dictSetter[propInfo] = setter;
 
                 return setter;
             }

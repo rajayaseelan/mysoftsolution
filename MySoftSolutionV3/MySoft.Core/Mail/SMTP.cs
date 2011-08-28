@@ -608,7 +608,7 @@ namespace MySoft.Mail
             string log = string.Format("SyncSendMail from ({0}) to ({1}), {2}.", mMailFrom, String.Join("|", mMailTo), result.Message);
             //写邮件发送日志
             SimpleLog.Instance.WriteLog("Mail", string.Format("{0} subject: {1}", log, mMailSubject));
-            //Console.WriteLine(log);
+            Console.WriteLine(log);
 
             return result;
         }
@@ -755,7 +755,7 @@ namespace MySoft.Mail
 
             //写邮件发送日志
             SimpleLog.Instance.WriteLogForDir("Mail", string.Format("{0} subject: {1}", log, mMailSubject));
-            //Console.WriteLine(log);
+            Console.WriteLine(log);
         }
 
         #endregion

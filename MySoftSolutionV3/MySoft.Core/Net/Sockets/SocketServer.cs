@@ -351,8 +351,7 @@ namespace MySoft.Net.Sockets
                 }
                 catch (Exception e)
                 {
-                    //Console.WriteLine("Error:SocketServer: While in NotifyConnectedClients" +
-                        //e.Message);
+                    Console.WriteLine("Error:SocketServer: While in NotifyConnectedClients" + e.Message);
                     //System.Diagnostics.Debugger.Break();
                 }
             }

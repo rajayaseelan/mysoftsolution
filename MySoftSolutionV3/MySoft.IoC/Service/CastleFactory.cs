@@ -97,7 +97,7 @@ namespace MySoft.IoC
                     foreach (var node in config.Nodes)
                     {
                         if (node.Value.MaxPool < 1) throw new WarningException("Minimum pool size 1£¡");
-                        if (node.Value.MaxPool > 100) throw new WarningException("Maximum pool size 100£¡");
+                        if (node.Value.MaxPool > 500) throw new WarningException("Maximum pool size 500£¡");
 
                         var proxy = new ProxyService(container, node.Value);
                         instance.proxies[node.Key.ToLower()] = proxy;

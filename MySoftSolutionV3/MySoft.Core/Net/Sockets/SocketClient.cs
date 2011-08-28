@@ -241,7 +241,7 @@ namespace MySoft.Net.Sockets
             }
             catch (Exception e)
             {
-                //Console.WriteLine("Error:SocketClient: Got Exception while ParseMessage");
+                Console.WriteLine("Error:SocketClient: Got Exception while ParseMessage");
             }
         }
 
@@ -304,7 +304,7 @@ namespace MySoft.Net.Sockets
             }
             catch (Exception e)
             {
-                //Console.WriteLine("Error:SocketClient: Got Exception while ReceiveComplite");
+                Console.WriteLine("Error:SocketClient: Got Exception while ReceiveComplite");
 
                 try
                 {
@@ -332,7 +332,7 @@ namespace MySoft.Net.Sockets
             }
             catch (Exception)
             {
-                //Console.WriteLine("Error:SocketClient: Got Exception while SendComplete");
+                Console.WriteLine("Error:SocketClient: Got Exception while SendComplete");
             }
         }
 
@@ -383,7 +383,7 @@ namespace MySoft.Net.Sockets
             }
             catch (System.Net.Sockets.SocketException e)
             {
-                //Console.WriteLine("Error:SocketClient: Got Exception while Connect:" + e.Message);
+                Console.WriteLine("Error:SocketClient: Got Exception while Connect:" + e.Message);
                 throw;
             }
         }
