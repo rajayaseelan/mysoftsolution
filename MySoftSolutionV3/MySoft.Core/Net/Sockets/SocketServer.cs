@@ -31,7 +31,7 @@ namespace MySoft.Net.Sockets
         /// <summary>
         /// max accepting socket connections
         /// </summary>
-        private int maxAccept;
+        private int maxAccept = 1000;
         public int MaxAccept
         {
             get { return maxAccept; }
@@ -261,7 +261,7 @@ namespace MySoft.Net.Sockets
                 // Create a new TCPListner and start it up
                 var endpoint = GetIPEndPoint(this.ipAddress, this.port);
                 this.tcpListener = new TcpListener(endpoint);
-                this.tcpListener.Start();
+                this.tcpListener.Start(maxAccept);
 
                 // Start the listening thread if one is currently not running
                 ThreadStart tsThread = new ThreadStart(AcceptThread);
