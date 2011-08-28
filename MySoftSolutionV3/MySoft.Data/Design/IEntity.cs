@@ -78,11 +78,6 @@ namespace MySoft.Data
         EntityState GetObjectState();
 
         /// <summary>
-        /// 获取原始对象
-        /// </summary>
-        EntityBase GetOriginalObject();
-
-        /// <summary>
         /// 使用propertyName获取值信息
         /// </summary>
         /// <param name="propertyName"></param>

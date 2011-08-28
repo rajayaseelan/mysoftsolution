@@ -133,7 +133,6 @@ namespace MySoft.Data
         {
             lock (this)
             {
-                bool isChanged = false;
                 //如果是从数据库中读出的实体，则判断是否需要更新
                 if (isFromDB)
                 {
@@ -141,35 +140,20 @@ namespace MySoft.Data
                     {
                         if (!oldValue.Equals(newValue))
                         {
-                            AddFieldsToUpdate(new Field[] { field });
-                            isChanged = true;
+                            AddFieldsToUpdate(field);
                         }
                     }
                     else if (newValue != null)
                     {
                         if (!newValue.Equals(oldValue))
                         {
-                            AddFieldsToUpdate(new Field[] { field });
-                            isChanged = true;
-                        }
-                    }
-
-                    //如果值有改变，则保留原始对象
-                    if (isChanged && originalObject == null)
-                    {
-                        try
-                        {
-                            originalObject = this.As<IEntityBase>().CloneObject();
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new DataException(ex.Message);
+                            AddFieldsToUpdate(field);
                         }
                     }
                 }
                 else
                 {
-                    AddFieldsToUpdate(new Field[] { field });
+                    AddFieldsToUpdate(field);
                 }
             }
         }
@@ -184,7 +168,19 @@ namespace MySoft.Data
 
             foreach (Field field in fields)
             {
-                if (!updatelist.Exists(p => p.Name == field.Name))
+                AddFieldsToUpdate(field);
+            }
+        }
+
+        /// <summary>
+        /// 添加字段到修改列表
+        /// </summary>
+        /// <param name="fields"></param>
+        private void AddFieldsToUpdate(Field field)
+        {
+            if (!updatelist.Exists(p => p.Name == field.Name))
+            {
+                lock (updatelist)
                 {
                     updatelist.Add(field);
                 }
@@ -201,7 +197,10 @@ namespace MySoft.Data
 
             foreach (Field field in fields)
             {
-                updatelist.RemoveAll(p => p.Name == field.Name);
+                lock (updatelist)
+                {
+                    updatelist.RemoveAll(p => p.Name == field.Name);
+                }
             }
         }
 
@@ -217,7 +216,10 @@ namespace MySoft.Data
             {
                 if (!removeinsertlist.Exists(p => p.Name == field.Name))
                 {
-                    removeinsertlist.Add(field);
+                    lock (removeinsertlist)
+                    {
+                        removeinsertlist.Add(field);
+                    }
                 }
             }
         }

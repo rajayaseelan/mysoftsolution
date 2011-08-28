@@ -472,8 +472,8 @@ namespace MySoft.IoC
 
                         if (resMsg != null && resMsg.Data != null && resMsg.RowCount > 0)
                         {
-                            //默认缓存2秒
-                            CacheHelper.Insert(cacheKey, resMsg, 2);
+                            //默认缓存5秒
+                            CacheHelper.Insert(cacheKey, resMsg, 5);
                         }
                     }
                     else

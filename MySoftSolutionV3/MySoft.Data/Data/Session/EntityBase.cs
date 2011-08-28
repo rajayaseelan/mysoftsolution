@@ -30,7 +30,6 @@ namespace MySoft.Data
     {
         protected List<Field> updatelist = new List<Field>();
         protected List<Field> removeinsertlist = new List<Field>();
-        protected EntityBase originalObject;
         protected bool isUpdate = false;
         protected bool isFromDB = false;
 
@@ -145,14 +144,6 @@ namespace MySoft.Data
                 throw new DataException(string.Format("实体【{0}】中未找到属性为【{1}】的字段信息！", this.GetType().FullName, propertyName));
             }
             return field;
-        }
-
-        /// <summary>
-        /// 获取原始对象
-        /// </summary>
-        EntityBase IEntityBase.GetOriginalObject()
-        {
-            return originalObject;
         }
 
         /// <summary>
