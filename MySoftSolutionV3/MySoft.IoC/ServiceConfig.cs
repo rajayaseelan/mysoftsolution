@@ -40,7 +40,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default maxbuffer number.
         /// </summary>
-        public const int DEFAULT_MAXBUFFER_NUMBER = 4096;
+        public const int DEFAULT_MAXBUFFER_NUMBER = 8192;
 
         /// <summary>
         /// The default maxpool number.
