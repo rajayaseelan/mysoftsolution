@@ -11,7 +11,6 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Message;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using MySoft.Net.Server;
 using MySoft.Net.Sockets;
 
 namespace MySoft.IoC
@@ -23,8 +22,7 @@ namespace MySoft.IoC
     {
         private IServiceContainer container;
         private CastleServiceConfiguration config;
-        private SocketServerManager manager;
-        private IList<EndPoint> clients;
+        private SocketServer server;
         private TimeStatusCollection statuslist;
         private HighestStatus highest;
         private DateTime startTime;
@@ -52,26 +50,13 @@ namespace MySoft.IoC
             this.container = new SimpleServiceContainer(CastleFactoryType.Local, hashTypes);
             this.container.OnError += new ErrorLogEventHandler(container_OnError);
             this.container.OnLog += new LogEventHandler(container_OnLog);
-            this.clients = new List<EndPoint>();
             this.statuslist = new TimeStatusCollection(config.Records);
             this.highest = new HighestStatus();
             this.startTime = DateTime.Now;
 
-            //服务器配置
-            SocketServerConfiguration ssc = new SocketServerConfiguration
-            {
-                Host = config.Host,
-                Port = config.Port,
-                MaxConnectCount = config.MaxConnect,
-                MaxBufferSize = config.MaxBuffer
-            };
-
             //实例化Socket服务
-            manager = new SocketServerManager(ssc);
-            manager.OnConnectFilter += new ConnectionFilterEventHandler(SocketServerManager_OnConnectFilter);
-            manager.OnDisconnected += new DisconnectionEventHandler(SocketServerManager_OnDisconnected);
-            manager.OnBinaryInput += new BinaryInputEventHandler(SocketServerManager_OnBinaryInput);
-            manager.OnMessageOutput += new EventHandler<LogOutEventArgs>(SocketServerManager_OnMessageOutput);
+            server = new SocketServer();
+            server.MaxAccept = config.MaxConnect;
 
             Thread thread = new Thread(() =>
             {
@@ -146,9 +131,8 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            this.Stop();
-            manager = null;
-            clients = null;
+            server.Dispose();
+            server = null;
             statuslist = null;
             highest = null;
 
@@ -174,7 +158,13 @@ namespace MySoft.IoC
             //写发布服务信息
             if (isWriteLog) Publish();
 
-            manager.Server.Start();
+            AcceptHandler accept = SocketServer_OnAccept;
+            MessageHandler message = SocketServer_OnMessage;
+            CloseHandler close = SocketServer_OnClose;
+            ErrorHandler error = SocketServer_OnError;
+
+            //启动服务
+            server.Start(config.Host, config.Port, config.MaxBuffer, null, message, accept, close, error);
         }
 
         /// <summary>
@@ -217,7 +207,7 @@ namespace MySoft.IoC
         {
             get
             {
-                return string.Format("{0}://{1}/", manager.Server.Socket.ProtocolType, manager.Server.Socket.LocalEndPoint).ToLower();
+                return string.Format("{0}://{1}/", server.Listener.Server.ProtocolType, server.Listener.LocalEndpoint).ToLower();
             }
         }
 
@@ -248,7 +238,7 @@ namespace MySoft.IoC
         /// </summary>
         public void Stop()
         {
-            manager.Server.Stop();
+            server.Stop();
         }
 
         #endregion
@@ -295,41 +285,25 @@ namespace MySoft.IoC
 
         #region 侦听事件
 
-        bool SocketServerManager_OnConnectFilter(SocketAsyncEventArgs socketAsync)
+        void SocketServer_OnAccept(SocketClient socket)
         {
-            if (OnLog != null) OnLog(string.Format("User connection {0}！", socketAsync.AcceptSocket.RemoteEndPoint), LogType.Information);
-
-            //将地址加入到列表中
-            lock (clients)
-            {
-                clients.Add(socketAsync.AcceptSocket.RemoteEndPoint);
-            }
-
-            return true;
+            container_OnLog(string.Format("User connection {0}！", socket.ClientSocket.RemoteEndPoint), LogType.Information);
         }
 
-        void SocketServerManager_OnMessageOutput(object sender, LogOutEventArgs e)
+        void SocketServer_OnError(SocketBase socket, Exception exception)
         {
-            container_OnLog(e.Message, e.Type);
+            container_OnError(exception);
         }
 
-        void SocketServerManager_OnDisconnected(int error, SocketAsyncEventArgs socketAsync)
+        void SocketServer_OnClose(SocketBase socket)
         {
-            container_OnLog(string.Format("User Disconnect {0}！", socketAsync.AcceptSocket.RemoteEndPoint), LogType.Error);
-            socketAsync.UserToken = null;
-
-            //将地址从列表中移除
-            lock (clients)
-            {
-                clients.Remove(socketAsync.AcceptSocket.RemoteEndPoint);
-            }
-
-            socketAsync.AcceptSocket.Close();
+            var client = socket as SocketClient;
+            container_OnLog(string.Format("User Disconnect {0}！", client.ClientSocket.RemoteEndPoint), LogType.Error);
         }
 
-        void SocketServerManager_OnBinaryInput(byte[] buffer, SocketAsyncEventArgs socketAsync)
+        void SocketServer_OnMessage(SocketBase socket, int iNumberOfBytes)
         {
-            using (BufferReader read = new BufferReader(buffer))
+            using (BufferReader read = new BufferReader(socket.RawBuffer))
             {
                 int length;
                 int cmd;
@@ -347,7 +321,7 @@ namespace MySoft.IoC
                                 if (reqMsg != null)
                                 {
                                     //发送响应信息
-                                    GetSendResponse(socketAsync, reqMsg);
+                                    GetSendResponse(socket, reqMsg);
                                 }
                             }
                         }
@@ -371,20 +345,20 @@ namespace MySoft.IoC
                                 PacketObject = resMsg
                             };
 
-                            byte[] data = BufferFormat.FormatFCA(packet);
-
                             //发送数据到服务端
-                            manager.Server.SendData(socketAsync.AcceptSocket, data);
+                            (socket as SocketClient).Send(packet);
                         }
                     }
                     else //现在还没登入 如果有其他命令的请求那么 断开连接
                     {
-                        manager.Server.Disconnect(socketAsync.AcceptSocket);
+                        var client = socket as SocketClient;
+                        client.Disconnect();
                     }
                 }
                 else //无法读取数据包 断开连接
                 {
-                    manager.Server.Disconnect(socketAsync.AcceptSocket);
+                    var client = socket as SocketClient;
+                    client.Disconnect();
                 }
             }
         }
@@ -392,9 +366,9 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取响应信息并发送
         /// </summary>
-        /// <param name="socketAsync"></param>
+        /// <param name="socket"></param>
         /// <param name="reqMsg"></param>
-        private void GetSendResponse(SocketAsyncEventArgs socketAsync, RequestMessage reqMsg)
+        private void GetSendResponse(SocketBase socket, RequestMessage reqMsg)
         {
             //如果是状态请求，则直接返回数据
             if (!IsServiceCounter(reqMsg))
@@ -411,7 +385,7 @@ namespace MySoft.IoC
                     };
 
                     //发送数据到服务端
-                    manager.Server.SendData(socketAsync.AcceptSocket, BufferFormat.FormatFCA(packet));
+                    (socket as SocketClient).Send(packet);
                 }
             }
             else
@@ -447,13 +421,12 @@ namespace MySoft.IoC
                         PacketObject = resMsg
                     };
 
-                    byte[] data = BufferFormat.FormatFCA(packet);
+                    //发送数据到服务端
+                    int len;
+                    (socket as SocketClient).Send(packet, out len);
 
                     //计算流量
-                    status.DataFlow += data.Length;
-
-                    //发送数据到服务端
-                    manager.Server.SendData(socketAsync.AcceptSocket, data);
+                    status.DataFlow += len;
                 }
                 else
                 {
@@ -471,47 +444,75 @@ namespace MySoft.IoC
         private ResponseMessage CallMethod(RequestMessage reqMsg)
         {
             //获取返回的消息
-            ResponseMessage response = null;
+            ResponseMessage resMsg = null;
 
             try
             {
-                //生成一个异步调用委托
-                AsyncMethodCaller caller = new AsyncMethodCaller(p =>
-                {
-                    return container.CallService(p, config.LogTime);
-                });
+                //Console.WriteLine("{0} begin => {1},{2}", DateTime.Now, reqMsg.ServiceName, reqMsg.SubServiceName);
 
-                //开始异步调用
-                IAsyncResult result = caller.BeginInvoke(reqMsg, null, null);
+                //处理cacheKey信息
+                string cacheKey = string.Format("IoC_Cache_{0}_{1}", reqMsg.SubServiceName, reqMsg.Parameters);
+                resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
 
-                //等待信号
-                if (result.AsyncWaitHandle.WaitOne())
+                if (resMsg == null)
                 {
-                    response = caller.EndInvoke(result);
+                    //生成一个异步调用委托
+                    AsyncMethodCaller caller = new AsyncMethodCaller(p =>
+                    {
+                        return container.CallService(p, config.LogTime);
+                    });
+
+                    //开始异步调用
+                    IAsyncResult result = caller.BeginInvoke(reqMsg, null, null);
+
+                    //等待信号
+                    if (result.AsyncWaitHandle.WaitOne())
+                    {
+                        resMsg = caller.EndInvoke(result);
+
+                        if (resMsg != null && resMsg.Data != null && resMsg.RowCount > 0)
+                        {
+                            //默认缓存5秒
+                            CacheHelper.Insert(cacheKey, resMsg, 1);
+                        }
+                    }
+                    else
+                    {
+                        result.AsyncWaitHandle.Close();
+                        throw new NullReferenceException("Call service response is null！");
+                    }
                 }
                 else
                 {
-                    result.AsyncWaitHandle.Close();
-                    throw new NullReferenceException("Call service response is null！");
+                    //为了数据能返回，需要把过期时间与传输ID修改
+                    resMsg.TransactionId = reqMsg.TransactionId;
+                    resMsg.Expiration = reqMsg.Expiration;
+
+                    //fromCached = true;
                 }
+
+                //if (fromCached)
+                //    Console.WriteLine("{0} end(cache:{3}) => {1},{2}", DateTime.Now, reqMsg.ServiceName, reqMsg.SubServiceName, resMsg.RowCount);
+                //else
+                //    Console.WriteLine("{0} end({3}) => {1},{2}", DateTime.Now, reqMsg.ServiceName, reqMsg.SubServiceName, resMsg.RowCount);
             }
             catch (Exception ex)
             {
                 //抛出错误信息
                 container_OnError(ex);
 
-                response = new ResponseMessage();
-                response.TransactionId = reqMsg.TransactionId;
-                response.ServiceName = reqMsg.ServiceName;
-                response.SubServiceName = reqMsg.SubServiceName;
-                response.Parameters = reqMsg.Parameters;
-                response.Expiration = reqMsg.Expiration;
-                response.Compress = reqMsg.Compress;
-                response.Encrypt = reqMsg.Encrypt;
-                response.Exception = ex;
+                resMsg = new ResponseMessage();
+                resMsg.TransactionId = reqMsg.TransactionId;
+                resMsg.ServiceName = reqMsg.ServiceName;
+                resMsg.SubServiceName = reqMsg.SubServiceName;
+                resMsg.Parameters = reqMsg.Parameters;
+                resMsg.Expiration = reqMsg.Expiration;
+                resMsg.Compress = reqMsg.Compress;
+                resMsg.Encrypt = reqMsg.Encrypt;
+                resMsg.Exception = ex;
             }
 
-            return response;
+            return resMsg;
         }
 
         /// <summary>
@@ -637,17 +638,15 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<ConnectInfo> GetConnectInfoList()
         {
-            lock (clients)
+            var clients = server.SocketClientList.Cast<SocketClient>().ToList();
+            var dict = clients.ToLookup(p => p.ClientSocket.RemoteEndPoint.ToString().Split(':')[0]);
+            IList<ConnectInfo> list = new List<ConnectInfo>();
+            foreach (var item in dict)
             {
-                var dict = clients.ToLookup(p => p.ToString().Split(':')[0]);
-                IList<ConnectInfo> list = new List<ConnectInfo>();
-                foreach (var item in dict)
-                {
-                    list.Add(new ConnectInfo { IP = item.Key, Count = item.Count() });
-                }
-
-                return list;
+                list.Add(new ConnectInfo { IP = item.Key, Count = item.Count() });
             }
+
+            return list;
         }
 
         #endregion

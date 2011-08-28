@@ -32,6 +32,20 @@ namespace MySoft.IoC.Message
             }
         }
 
+        /// <summary>
+        /// ¼ÇÂ¼Êý
+        /// </summary>
+        public int RowCount
+        {
+            get
+            {
+                if (data == null)
+                    return 0;
+                else
+                    return data.Count;
+            }
+        }
+
         private Exception exception;
 
         /// <summary>

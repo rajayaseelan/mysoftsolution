@@ -4,7 +4,6 @@ using System.Text;
 using MySoft.IoC;
 using System.Collections;
 using MySoft.Remoting;
-using MySoft.Net.Server;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
 

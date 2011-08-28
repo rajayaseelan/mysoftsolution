@@ -213,11 +213,6 @@ namespace MySoft.Net.Sockets
 
         #region 系列化数据
 
-        /// <summary>
-        /// 直接格式化一个带FormatClassAttibutes 标签的类，返回BYTE[]数组，此数组可以直接发送不需要组合所数据包。所以也称为类抽象数据包
-        /// </summary>
-        /// <param name="o"></param>
-        /// <returns></returns>
         public static byte[] FormatFCA(DataPacket o)
         {
             if (o == null || o.PacketObject == null) return new byte[0];

@@ -1,16 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using MySoft.Net.Client;
 using System.Net.Sockets;
-using MySoft.Net.Sockets;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
+using MySoft.Net.Sockets;
 
 namespace MySoft.IoC.Message
 {
+    /// <summary>
+    /// 连接到服务器事件
+    /// </summary>
+    /// <param name="socket"></param>
+    /// <param name="ip"></param>
+    /// <param name="port"></param>
+    /// <returns></returns>
+    public delegate bool ConnectServerHandler(SocketClient socket, string ip, int port);
+
     /// <summary>
     /// 服务消息
     /// </summary>
@@ -18,7 +22,7 @@ namespace MySoft.IoC.Message
     {
         public event ServiceMessageEventHandler SendCallback;
 
-        private SocketClientManager manager;
+        private SocketClient client;
         private ILog logger;
         private bool isConnected = false;
         private string node;
@@ -32,10 +36,11 @@ namespace MySoft.IoC.Message
             this.ip = node.IP;
             this.port = node.Port;
 
-            manager = new SocketClientManager();
-            manager.OnConnected += new ConnectionEventHandler(SocketClientManager_OnConnected);
-            manager.OnDisconnected += new DisconnectionEventHandler(SocketClientManager_OnDisconnected);
-            manager.OnReceived += new ReceiveEventHandler(SocketClientManager_OnReceived);
+            MessageHandler message = SocketClient_OnMessage;
+            CloseHandler close = SocketClient_OnClose;
+            ErrorHandler error = SocketClient_OnError;
+
+            client = new SocketClient(8192, null, message, close, error);
         }
 
         /// <summary>
@@ -49,37 +54,65 @@ namespace MySoft.IoC.Message
         /// <summary>
         /// 发送数据包
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="packet"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        public void Send(DataPacket data, TimeSpan timeout)
+        public void Send(DataPacket packet, TimeSpan timeout)
         {
             //如果连接断开，直接抛出异常
             if (!isConnected)
             {
                 //尝试连接到服务器
-                isConnected = manager.Client.ConnectTo(ip, port, timeout);
-
-                if (!isConnected)
+                var handler = new ConnectServerHandler((csocket, cip, cport) =>
                 {
+                    csocket.Connect(cip, cport);
+                    return csocket.Connected;
+                });
+
+                var ar = handler.BeginInvoke(client, ip, port, null, null);
+
+                if (!ar.AsyncWaitHandle.WaitOne(timeout))
+                {
+                    ar.AsyncWaitHandle.Close();
                     throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Remote node : {2}", ip, port, node));
+                }
+                else
+                {
+                    isConnected = handler.EndInvoke(ar);
                 }
             }
 
-            if (data == null || data.PacketObject == null)
+            if (packet == null || packet.PacketObject == null)
             {
                 return;
             }
 
-            byte[] buffer = BufferFormat.FormatFCA(data);
-            manager.Client.SendData(buffer);
+            client.Send(packet);
         }
 
         #region Socket消息委托
 
-        void SocketClientManager_OnReceived(byte[] buffer, Socket socket)
+        /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="resMsg"></param>
+        private void SendMessage(ResponseMessage resMsg)
         {
-            using (BufferReader read = new BufferReader(buffer))
+            if (SendCallback != null)
+            {
+                var args = new ServiceMessageEventArgs
+                {
+                    Result = resMsg,
+                    Socket = client.ClientSocket
+                };
+
+                SendCallback(this, args);
+            }
+        }
+
+        void SocketClient_OnMessage(SocketBase socket, int iNumberOfBytes)
+        {
+            using (BufferReader read = new BufferReader(socket.RawBuffer))
             {
                 int length;
                 int cmd;
@@ -118,37 +151,18 @@ namespace MySoft.IoC.Message
             }
         }
 
-        /// <summary>
-        /// 发送消息
-        /// </summary>
-        /// <param name="resMsg"></param>
-        private void SendMessage(ResponseMessage resMsg)
-        {
-            if (SendCallback != null)
-            {
-                var args = new ServiceMessageEventArgs
-                {
-                    Result = resMsg,
-                    Socket = manager.Client.Socket
-                };
-
-                SendCallback(this, args);
-            }
-        }
-
-        void SocketClientManager_OnDisconnected(string message, Socket socket)
+        void SocketClient_OnClose(SocketBase socket)
         {
             //断开服务器
             isConnected = false;
 
-            //断开套接字
-            socket.Disconnect(true);
+            client.Dispose();
         }
 
-        void SocketClientManager_OnConnected(string message, bool connected, Socket socket)
+        void SocketClient_OnError(SocketBase socket, Exception exception)
         {
-            //连上服务器
-            this.isConnected = connected;
+            //错误处理
+            logger.WriteError(exception);
         }
 
         #endregion
@@ -158,19 +172,8 @@ namespace MySoft.IoC.Message
         /// </summary>
         public void Dispose()
         {
-            try
-            {
-                Socket sock = manager.Client.Socket;
-                sock.Shutdown(SocketShutdown.Both);
-                sock.Close();
-
-                manager = null;
-            }
-            catch (Exception)
-            {
-            }
-
-            GC.SuppressFinalize(this);
+            client.Dispose();
+            client = null;
         }
     }
 }

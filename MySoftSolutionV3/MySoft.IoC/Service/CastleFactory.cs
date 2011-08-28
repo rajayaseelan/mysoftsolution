@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using MySoft.Net.Client;
 using System.Threading;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
