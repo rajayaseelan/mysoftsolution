@@ -590,6 +590,228 @@
             </summary>
             <returns>Return a new ManualResetEvent object</returns>
         </member>
+        <member name="T:MySoft.Net.Sockets.SocketClient">
+            <summary> 
+            This class abstracts a socket 
+            </summary>
+        </member>
+        <member name="T:MySoft.Net.Sockets.SocketBase">
+            <summary>
+            Abstract class that defines base implementations
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketBase.userArg">
+            <summary>
+            A reference to a user defined object
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketBase.messageHandler">
+            <summary>
+            A reference to a user supplied function to be called when a socket message arrives 
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketBase.closeHandler">
+            <summary>
+            A reference to a user supplied function to be called when a socket connection is closed 
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketBase.errorHandler">
+            <summary>
+            A reference to a user supplied function to be called when a socket error occurs
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketBase.disposed">
+            <summary>
+            Flag to indicate if the class has been disposed
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketBase.ipAddress">
+            <summary>
+            The IpAddress the client is connect to
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketBase.port">
+            <summary>
+            The Port to either connect to or listen on
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketBase.rawBuffer">
+            <summary>
+            A raw buffer to capture data comming off the socket
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketBase.sizeOfRawBuffer">
+            <summary>
+            Size of the raw buffer for received socket data
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Sockets.SocketBase.IpAddress">
+            <summary> 
+            The IpAddress the client is connect to 
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Sockets.SocketBase.Port">
+            <summary>
+            The Port to either connect to or listen on
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Sockets.SocketBase.UserArg">
+            <summary>
+            A reference to a user defined object
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Sockets.SocketBase.RawBuffer">
+            <summary>
+            A raw buffer to capture data comming off the socket
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Sockets.SocketBase.SizeOfRawBuffer">
+            <summary>
+            Size of the raw buffer for received socket data
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketClient.networkStream">
+            <summary>
+            A network stream object 
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketClient.tcpClient">
+            <summary>
+            A TcpClient object for socket connection 
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketClient.callbackReadMethod">
+            <summary>
+            A callback object for processing recieved socket data 
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketClient.callbackWriteMethod">
+            <summary>
+            A callback object for processing send socket data
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketClient.receiveBufferSize">
+            <summary>
+            Size of the receive buffer. Defaults to 1048576
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketClient.sendBufferSize">
+            <summary>
+            Size of the send buffer. Defaults to 1048576
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketClient.socketServer">
+            <summary>
+            The SocketServer for this socket object
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketClient.clientSocket">
+            <summary>
+            The socket for the client connection 
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.#ctor(System.Int32,System.Object,MySoft.Net.Sockets.MessageEventHandler,MySoft.Net.Sockets.CloseEventHandler,MySoft.Net.Sockets.ErrorEventHandler)">
+            <summary> 
+            Constructor for client support
+            </summary>
+            <param name="sizeOfRawBuffer"> The size of the raw buffer </param>
+            <param name="userArg"> A Reference to the Users arguments </param>
+            <param name="messageHandler">  Reference to the user defined message handler method </param>
+            <param name="closeHandler">  Reference to the user defined close handler method </param>
+            <param name="errorHandler">  Reference to the user defined error handler method </param>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.#ctor(MySoft.Net.Sockets.SocketServer,System.Net.Sockets.Socket,System.String,System.Int32,System.Int32,System.Object,MySoft.Net.Sockets.MessageEventHandler,MySoft.Net.Sockets.CloseEventHandler,MySoft.Net.Sockets.ErrorEventHandler)">
+            <summary> Constructor for SocketServer Suppport </summary>
+            <param name="socketServer"> A Reference to the parent SocketServer </param>
+            <param name="clientSocket"> The Socket object we are encapsulating </param>
+            <param name="socketListArray"> The index of the SocketServer Socket List Array </param>
+            <param name="ipAddress"> The IpAddress of the remote server </param>
+            <param name="port"> The Port of the remote server </param>
+            <param name="messageHandler"> Reference to the user defined message handler function </param>
+            <param name="closeHandler"> Reference to the user defined close handler function </param>
+            <param name="errorHandler"> Reference to the user defined error handler function </param>
+            <param name="sizeOfRawBuffer"> The size of the raw buffer </param>
+            <param name="userArg"> A Reference to the Users arguments </param>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.#ctor(System.Int32,System.Int32,System.Int32,System.Object,MySoft.Net.Sockets.MessageEventHandler,MySoft.Net.Sockets.CloseEventHandler,MySoft.Net.Sockets.ErrorEventHandler)">
+            <summary> 
+            Overloaded constructor for client support
+            </summary>
+            <param name="sendBufferSize"></param>
+            <param name="receiveBufferSize"></param>
+            <param name="sizeOfRawBuffer"> The size of the raw buffer </param>
+            <param name="userArg"> A Reference to the Users arguments </param>
+            <param name="messageHandler">  Reference to the user defined message handler method </param>
+            <param name="closeHandler">  Reference to the user defined close handler method </param>
+            <param name="errorHandler">  Reference to the user defined error handler method </param>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.Finalize">
+            <summary> 
+            Finialize 
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.Dispose">
+            <summary>
+            Disposes of internal objects
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.ReceiveComplete(System.IAsyncResult)">
+            <summary> 
+            Called when a message arrives
+             </summary>
+            <param name="ar"> An async result interface </param>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.SendComplete(System.IAsyncResult)">
+            <summary> 
+            Called when a message is sent
+             </summary>
+            <param name="ar"> An async result interface </param>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.Connect(System.String,System.Int32)">
+            <summary> 
+            Function used to connect to a server 
+            </summary>
+            <param name="strIpAddress"> The address to connect to </param>
+            <param name="iPort"> The Port to connect to </param>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.Disconnect">
+            <summary> 
+            Function used to disconnect from the server 
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.Send(MySoft.Net.Sockets.DataPacket)">
+            <summary> 
+            Function to send a raw buffer to the server 
+            </summary>
+            <param name="rawBuffer"> A Raw buffer of bytes to send </param>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.Send(MySoft.Net.Sockets.DataPacket,System.Int32@)">
+            <summary> 
+            Function to send a raw buffer to the server 
+            </summary>
+            <param name="rawBuffer"> A Raw buffer of bytes to send </param>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.Send(System.Byte[])">
+            <summary> 
+            Function to send a raw buffer to the server 
+            </summary>
+            <param name="rawBuffer"> A Raw buffer of bytes to send </param>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketClient.Receive">
+            <summary> 
+            Wait for a message to arrive
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Sockets.SocketClient.Connected">
+            <summary>
+            Socket Connected
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Sockets.SocketClient.ClientSocket">
+            <summary> 
+            The socket for the client connection 
+            </summary>
+        </member>
         <member name="T:MySoft.Logger.ILog">
             <summary>
             日志接口
@@ -1787,139 +2009,25 @@
             RemotingHost集合
             </summary>
         </member>
-        <member name="T:MySoft.Net.Client.SocketClientManager">
-            <summary>
-            默认Socket客户端
+        <member name="T:MySoft.Net.Sockets.AcceptEventHandler">
+            <summary> 
+            Called when a socket connection is accepted 
             </summary>
         </member>
-        <member name="M:MySoft.Net.Client.SocketClientManager.#ctor">
-            <summary>
-            实例化Socket客户端管理器
+        <member name="T:MySoft.Net.Sockets.MessageEventHandler">
+            <summary> 
+            Called when a message is received 
             </summary>
         </member>
-        <member name="E:MySoft.Net.Client.SocketClientManager.OnReceived">
-            <summary>
-            数据包接收
-            </summary>
+        <member name="T:MySoft.Net.Sockets.CloseEventHandler">
+            <summary> 
+            Called when a connection is closed
+             </summary>
         </member>
-        <member name="E:MySoft.Net.Client.SocketClientManager.OnConnected">
+        <member name="T:MySoft.Net.Sockets.ErrorEventHandler">
             <summary>
-            连上服务器
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Client.SocketClientManager.OnDisconnected">
-            <summary>
-            断开连接
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Client.SocketClientManager.BuffListManger">
-            <summary>
-            数据包缓冲类
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Client.SocketClientManager.Client">
-            <summary>
-            SOCKETCLIENT对象
-            </summary>
-        </member>
-        <member name="T:MySoft.Net.Client.ConnectionEventHandler">
-            <summary>
-            连接事件
-            </summary>
-            <param name="message"></param>
-            <param name="connected"></param>
-            <param name="socket"></param>
-        </member>
-        <member name="T:MySoft.Net.Client.ReceiveEventHandler">
-            <summary>
-            接收事件
-            </summary>
-            <param name="buffer"></param>
-            <param name="socket"></param>
-        </member>
-        <member name="T:MySoft.Net.Client.DisconnectionEventHandler">
-            <summary>
-            退出事件
-            </summary>
-            <param name="message"></param>
-            <param name="socket"></param>
-        </member>
-        <member name="T:MySoft.Net.Client.SocketClient">
-            <summary>
-            ZYSOCKET 客户端
-            （一个简单的异步SOCKET客户端，性能不错。支持.NET 3.0以上版本。适用于silverlight)
-            </summary>
-        </member>
-        <member name="F:MySoft.Net.Client.SocketClient.socket">
-            <summary>
-            SOCKET对象
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Client.SocketClient.#ctor">
-            <summary>
-            实例化Socket客户端
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Client.SocketClient.BeginConnectTo(System.String,System.Int32)">
-            <summary>
-            异步连接到指定的服务器
-            </summary>
-            <param name="host"></param>
-            <param name="port"></param>
-        </member>
-        <member name="M:MySoft.Net.Client.SocketClient.ConnectTo(System.String,System.Int32,System.TimeSpan)">
-            <summary>
-            连接到指定服务器
-            </summary>
-            <param name="host"></param>
-            <param name="port"></param>
-            <param name="timeout"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Net.Client.SocketClient.ConnectTo(System.String,System.Int32)">
-            <summary>
-            连接到指定服务器
-            </summary>
-            <param name="host"></param>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Net.Client.SocketClient.SendData(System.Byte[])">
-            <summary>
-            发送数据包
-            </summary>
-            <param name="buffer"></param>
-            <param name="buffer"></param>
-        </member>
-        <member name="P:MySoft.Net.Client.SocketClient.Socket">
-            <summary>
-            SOCKET对象
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Client.SocketClient.ReceiveTimeout">
-            <summary>
-            SOCKET 的  ReceiveTimeout属性
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Client.SocketClient.SendTimeout">
-            <summary>
-            SOCKET 的 SendTimeout
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Client.SocketClient.OnConnected">
-            <summary>
-            连接成功事件
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Client.SocketClient.OnReceived">
-            <summary>
-            数据包进入事件
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Client.SocketClient.OnDisconnected">
-            <summary>
-            出错或断开触发事件
-            </summary>
+             Called when a socket error occurs 
+             </summary>
         </member>
         <member name="T:Newtonsoft.Json.Serialization.JsonStringContract">
             <summary>
@@ -6863,6 +6971,85 @@
             <b>System.Text.RegularExpression.Regex</b> class's <b>Replace()</b> method is used to replace
             the match in <see cref="!:Timeout"/> with the value in <b>SendTo</b>.</remarks>
         </member>
+        <member name="T:MySoft.Net.Sockets.SocketServer">
+            <summary> 
+            This class abstracts a socket server 
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketServer.acceptHandler">
+            <summary>
+            A reference to a user supplied function to be called when a socket connection is accepted
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketServer.tcpListener">
+            <summary> 
+            A TcpListener object to accept socket connections 
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketServer.acceptThread">
+            <summary>
+            A thread to process accepting socket connections
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketServer.maxAccept">
+            <summary>
+            max accepting socket connections
+            </summary>
+        </member>
+        <member name="F:MySoft.Net.Sockets.SocketServer.socketClientList">
+            <summary>
+            An Array of SocketClient objects 
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketServer.#ctor">
+            <summary>
+            Default constructor
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketServer.Finalize">
+            <summary>
+            Finalizer
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketServer.Dispose">
+            <summary>
+            Release objects
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketServer.AcceptThread">
+            <summary>
+            Function to process and accept socket connection requests
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketServer.Start(System.String,System.Int32,System.Int32,System.Object,MySoft.Net.Sockets.MessageEventHandler,MySoft.Net.Sockets.AcceptEventHandler,MySoft.Net.Sockets.CloseEventHandler,MySoft.Net.Sockets.ErrorEventHandler)">
+            <summary> 
+            Function to start the SocketServer 
+            </summary>
+            <param name="ipAddress"> The IpAddress to listening on </param>
+            <param name="port"> The Port to listen on </param>
+            <param name="sizeOfRawBuffer"> Size of the Raw Buffer </param>
+            <param name="userArg"> User supplied arguments </param>
+            <param name="messageHandler"> Function pointer to the user MessageHandler function </param>
+            <param name="acceptHandler"> Function pointer to the user AcceptHandler function </param>
+            <param name="closeHandler"> Function pointer to the user CloseHandler function </param>
+            <param name="errorHandler"> Function pointer to the user ErrorHandler function </param>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketServer.Stop">
+            <summary> 
+            Function to stop the SocketServer.  It can be restarted with Start 
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Sockets.SocketServer.NotifyConnectedClients(System.Byte[])">
+            <summary>
+            Notifies connected clients of new alert from system
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="P:MySoft.Net.Sockets.SocketServer.ConnectedClientCount">
+            <summary>
+            The number of clients connected
+            </summary>
+        </member>
         <member name="T:Newtonsoft.Json.Serialization.ObjectConstructor`1">
             <summary>
             Represents a method that constructs an object.
@@ -8296,212 +8483,6 @@
         <member name="T:MySoft.Security.MD5">
             <summary>
             MD5加密
-            </summary>
-        </member>
-        <member name="T:MySoft.Net.Server.ConnectionFilterEventHandler">
-            <summary>
-            连接的代理
-            </summary>
-            <param name="socketAsync"></param>
-        </member>
-        <member name="T:MySoft.Net.Server.DisconnectionEventHandler">
-            <summary>
-            断开连接的代理
-            </summary>
-            <param name="error">错误代码</param>
-            <param name="socketAsync"></param>
-        </member>
-        <member name="T:MySoft.Net.Server.BinaryInputEventHandler">
-            <summary>
-            数据包输入代理
-            </summary>
-            <param name="buffer">输入包</param>
-            <param name="socketAsync"></param>
-        </member>
-        <member name="T:MySoft.Net.Server.SocketServer">
-             <summary>
-             ZYSOCKET框架 服务器端
-            （通过6W个连接测试。理论上支持10W个连接，可谓.NET最强SOCKET模型）
-             </summary>
-        </member>
-        <member name="F:MySoft.Net.Server.SocketServer.isDisposed">
-            <summary>
-            用来确定是否以释放
-            </summary>
-        </member>
-        <member name="F:MySoft.Net.Server.SocketServer.BuffManagers">
-            <summary>
-            数据包管理
-            </summary>
-        </member>
-        <member name="F:MySoft.Net.Server.SocketServer.SocketAsynPool">
-            <summary>
-            Socket异步对象池
-            </summary>
-        </member>
-        <member name="F:MySoft.Net.Server.SocketServer.socket">
-            <summary>
-            SOCK对象
-            </summary>
-        </member>
-        <member name="F:MySoft.Net.Server.SocketServer.MaxBufferSize">
-            <summary>
-            接收包大小
-            </summary>
-        </member>
-        <member name="F:MySoft.Net.Server.SocketServer.MaxConnectCount">
-            <summary>
-            最大用户连接
-            </summary>
-        </member>
-        <member name="F:MySoft.Net.Server.SocketServer.IPEndPoint">
-            <summary>
-            IP端点
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServer.LogOutEvent(System.Object,MySoft.Logger.LogType,System.String)">
-            <summary>
-            输出消息
-            </summary>
-            <param name="o"></param>
-            <param name="type"></param>
-            <param name="message"></param>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServer.CallBackEvent(System.IAsyncResult)">
-            <summary>
-            事件处理完的回调函数
-            </summary>
-            <param name="ar"></param>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServer.#ctor(System.Net.IPAddress,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            实例化SocketServer类
-            </summary>
-            <param name="ipaddress"></param>
-            <param name="port"></param>
-            <param name="maxconnectcount"></param>
-            <param name="maxbuffersize"></param>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServer.#ctor(System.Net.IPEndPoint,System.Int32,System.Int32)">
-            <summary>
-            实例化SocketServer类
-            </summary>
-            <param name="ipendpoint"></param>
-            <param name="maxconnectcount"></param>
-            <param name="maxbuffersize"></param>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServer.#ctor(System.String,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            实例化SocketServer类
-            </summary>
-            <param name="host"></param>
-            <param name="port"></param>
-            <param name="maxconnectcount"></param>
-            <param name="maxbuffersize"></param>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServer.Run">
-            <summary>
-            启动
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServer.Start">
-            <summary>
-            启动
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServer.Stop">
-            <summary>
-            停止
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServer.SendData(System.Net.Sockets.Socket,System.Byte[])">
-            <summary>
-            发送数据包
-            </summary>
-            <param name="socket"></param>
-            <param name="buffer"></param>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServer.Disconnect(System.Net.Sockets.Socket)">
-            <summary>
-            断开此SOCKET
-            </summary>
-            <param name="socket"></param>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketServer.Socket">
-            <summary>
-            Socket对象
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Server.SocketServer.OnConnectFilter">
-            <summary>
-            连接传入处理
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Server.SocketServer.OnDisconnected">
-            <summary>
-            异常错误通常是用户断开处理
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Server.SocketServer.OnBinaryInput">
-            <summary>
-            数据输入处理
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketServer.NoDelay">
-            <summary>
-            是否关闭SOCKET Delay算法
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketServer.ReceiveTimeout">
-            <summary>
-            SOCKET 的  ReceiveTimeout属性
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketServer.SendTimeout">
-            <summary>
-            SOCKET 的 SendTimeout
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketServer.GetMaxUserConnect">
-            <summary>
-            最大用户连接数
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Server.SocketServer.OnMessageOutput">
-            <summary>
-            输出消息
-            </summary>
-        </member>
-        <member name="T:MySoft.Net.Server.LogOutEventArgs">
-            <summary>
-            日志输出事件参数
-            </summary>
-        </member>
-        <member name="F:MySoft.Net.Server.LogOutEventArgs.type">
-            <summary>
-            消息类型
-            </summary>     
-        </member>
-        <member name="F:MySoft.Net.Server.LogOutEventArgs.message">
-            <summary>
-            消息
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Server.LogOutEventArgs.#ctor(MySoft.Logger.LogType,System.String)">
-            <summary>
-            实例化LogOutEventArgs
-            </summary>
-            <param name="type"></param>
-            <param name="message"></param>
-        </member>
-        <member name="P:MySoft.Net.Server.LogOutEventArgs.Type">
-            <summary>
-            消息类型
-            </summary>  
-        </member>
-        <member name="P:MySoft.Net.Server.LogOutEventArgs.Message">
-            <summary>
-            消息
             </summary>
         </member>
         <member name="M:Newtonsoft.Json.Utilities.ConvertUtils.Convert``1(System.Object)">
@@ -13695,6 +13676,11 @@
             	<c>true</c> if this instance can convert the specified value type; otherwise, <c>false</c>.
             </returns>
         </member>
+        <member name="T:MySoft.Net.FTP.FtpDataStream">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:SharpZip.Zip.UseZip64">
             <summary>
             Determines how entries are tested to see if they should use Zip64 extensions or not.
@@ -15699,13 +15685,6 @@
             <summary>
             完毕
             </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Net.Sockets.BufferFormat.FormatFCA(MySoft.Net.Sockets.DataPacket)">
-            <summary>
-            直接格式化一个带FormatClassAttibutes 标签的类，返回BYTE[]数组，此数组可以直接发送不需要组合所数据包。所以也称为类抽象数据包
-            </summary>
-            <param name="o"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Net.Sockets.BufferFormat.GetSocketBytes(System.Int32)">
@@ -17842,40 +17821,6 @@
             <param name="parameters">Parameters to pass to the method</param>
             <returns>Object</returns>
         </member>
-        <member name="T:MySoft.Net.Server.SocketAsyncEventArgsPool">
-            <summary>
-            Based on example from http://msdn2.microsoft.com/en-us/library/system.net.sockets.socketasynceventargs.socketasynceventargs.aspx
-            Represents a collection of reusable SocketAsyncEventArgs objects.  
-            </summary>
-        </member>
-        <member name="F:MySoft.Net.Server.SocketAsyncEventArgsPool.pool">
-            <summary>
-            SocketAsyncEventArgs栈
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketAsyncEventArgsPool.#ctor(System.Int32)">
-            <summary>
-            初始化SocketAsyncEventArgs池
-            </summary>
-            <param name="capacity">最大可能使用的SocketAsyncEventArgs对象.</param>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketAsyncEventArgsPool.Pop">
-            <summary>
-            弹出一个SocketAsyncEventArgs
-            </summary>
-            <returns>SocketAsyncEventArgs removed from the pool.</returns>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketAsyncEventArgsPool.Push(System.Net.Sockets.SocketAsyncEventArgs)">
-            <summary>
-            添加一个 SocketAsyncEventArgs
-            </summary>
-            <param name="item">SocketAsyncEventArgs instance to add to the pool.</param>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketAsyncEventArgsPool.Count">
-            <summary>
-            返回SocketAsyncEventArgs池中的 数量
-            </summary>
-        </member>
         <member name="T:Newtonsoft.Json.Schema.ValidationEventArgs">
             <summary>
             Returns detailed information related to the <see cref="T:Newtonsoft.Json.Schema.ValidationEventHandler"/>.
@@ -18284,47 +18229,6 @@
             <param name="Key"></param>
             <returns></returns>
         </member>
-        <member name="T:MySoft.Net.Sockets.SocketConfig">
-            <summary>
-            接点读取类
-            （一个简单的读取appconfig的类)
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Sockets.SocketConfig.ReadString(System.String)">
-            <summary>
-            读取接点到字符串
-            </summary>
-            <param name="key">key</param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Net.Sockets.SocketConfig.ReadInt32(System.String)">
-            <summary>
-            读取一个整数
-            </summary>
-            <param name="key"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Net.Sockets.SocketConfig.ReadFloat(System.String)">
-            <summary>
-            读取一个浮点数
-            </summary>
-            <param name="key"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Net.Sockets.SocketConfig.ReadLong(System.String)">
-            <summary>
-            读取一个长整型
-            </summary>
-            <param name="key"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Net.Sockets.SocketConfig.ReadBoolean(System.String)">
-            <summary>
-            读取一个布尔值
-            </summary>
-            <param name="key"></param>
-            <returns></returns>
-        </member>
         <member name="T:MySoft.Net.Sockets.BufferReader">
             <summary>
             数据包读取类
@@ -18439,11 +18343,6 @@
         <member name="P:MySoft.Net.Sockets.BufferReader.Postion">
             <summary>
             当前其位置
-            </summary>
-        </member>
-        <member name="T:MySoft.Net.Server.BufferManager">
-            <summary>
-            数据包缓冲池
             </summary>
         </member>
         <member name="T:Newtonsoft.Json.Serialization.JsonPrimitiveContract">
@@ -19220,67 +19119,6 @@
         <member name="P:MySoft.RESTful.AuthenticationUser.AuthEmail">
             <summary>
             认证用户邮箱
-            </summary>
-        </member>
-        <member name="T:MySoft.Net.Server.SocketServerConfiguration">
-            <summary>
-            string host, int port, int maxconnectcount, int maxbuffersize
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketServerConfiguration.Host">
-            <summary>
-            主机信息，可以为localhost或any
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketServerConfiguration.Port">
-            <summary>
-            侦听端口
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketServerConfiguration.MaxConnectCount">
-            <summary>
-            最大连接数
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketServerConfiguration.MaxBufferSize">
-            <summary>
-            最大缓冲大小
-            </summary>
-        </member>
-        <member name="T:MySoft.Net.Server.SocketServerManager">
-            <summary>
-            默认Socket服务端
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Server.SocketServerManager.#ctor(MySoft.Net.Server.SocketServerConfiguration)">
-            <summary>
-            实例化Socket服务端管理器
-            </summary>
-            <param name="config"></param>
-        </member>
-        <member name="E:MySoft.Net.Server.SocketServerManager.OnBinaryInput">
-            <summary>
-            数据包接收
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Server.SocketServerManager.OnDisconnected">
-            <summary>
-            异常错误通常是用户断开处理
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Server.SocketServerManager.OnMessageOutput">
-            <summary>
-            消息输出
-            </summary>
-        </member>
-        <member name="E:MySoft.Net.Server.SocketServerManager.OnConnectFilter">
-            <summary>
-            连接筛选
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Server.SocketServerManager.Server">
-            <summary>
-            SOCKETSERVER对象
             </summary>
         </member>
         <member name="T:Newtonsoft.Json.Utilities.StringBuffer">
@@ -23167,30 +23005,6 @@
              Test method which can be implemented to check if a given method can
              be accessed by a user given the following role.
              NOTE:  This does not have any implementation...it's only used as a placeholder
-            </summary>
-        </member>
-        <member name="T:MySoft.Net.Sockets.BufferList">
-            <summary>
-            数据包组合类
-            功能描述:保持数据包完整性。
-            （通过互联网发送数据包，实际上是将一个较大的包拆分成诺干小包，此类的功能就是讲诺干小包重新组合成完整的数据包）
-            此类是线程安全的
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Sockets.BufferList.#ctor(System.Int32)">
-            <summary>
-            数据包组合类
-            </summary>
-            <param name="maxSize">数据包有可能出现的最大长度。如果不想服务器被人攻击到内存崩溃请按实际情况设置</param>
-        </member>
-        <member name="P:MySoft.Net.Sockets.BufferList.ByteList">
-            <summary>
-            数据包列表
-            </summary>
-        </member>
-        <member name="P:MySoft.Net.Sockets.BufferList.MaxSize">
-            <summary>
-            数据包有可能出现的最大长度。如果不想服务器被人攻击到内存崩溃请按实际情况设置
             </summary>
         </member>
         <member name="M:Newtonsoft.Json.Utilities.EnumUtils.Parse``1(System.String)">

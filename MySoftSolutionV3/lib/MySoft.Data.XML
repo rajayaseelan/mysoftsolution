@@ -78,11 +78,6 @@
             获取对象状态
             </summary>
         </member>
-        <member name="M:MySoft.Data.IEntityBase.GetOriginalObject">
-            <summary>
-            获取原始对象
-            </summary>
-        </member>
         <member name="M:MySoft.Data.IEntityBase.GetValue(System.String)">
             <summary>
             使用propertyName获取值信息
@@ -6352,11 +6347,6 @@
             <param name="propertyName"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.EntityBase.MySoft#Data#IEntityBase#GetOriginalObject">
-            <summary>
-            获取原始对象
-            </summary>
-        </member>
         <member name="M:MySoft.Data.EntityBase.MySoft#Data#IEntityBase#GetObjectState">
             <summary>
             获取对象状态
@@ -6603,6 +6593,12 @@
             <param name="newValue"></param>
         </member>
         <member name="M:MySoft.Data.Entity.AddFieldsToUpdate(System.Collections.Generic.IList{MySoft.Data.Field})">
+            <summary>
+            添加字段到修改列表
+            </summary>
+            <param name="fields"></param>
+        </member>
+        <member name="M:MySoft.Data.Entity.AddFieldsToUpdate(MySoft.Data.Field)">
             <summary>
             添加字段到修改列表
             </summary>

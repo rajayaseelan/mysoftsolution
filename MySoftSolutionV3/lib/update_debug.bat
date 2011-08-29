@@ -11,7 +11,6 @@ copy ..\MySoft.Data.PostgreSQL\bin\Debug\MySoft.Data.PostgreSQL.dll /Y
 copy ..\MySoft.Core\bin\Debug\MySoft.Core.dll /Y
 copy ..\MySoft.IoC\bin\Debug\MySoft.IoC.dll /Y
 copy ..\MySoft.Web\bin\Debug\MySoft.Web.dll /Y
-copy ..\MySoft.Controls\bin\Debug\MySoft.Controls.dll /Y
 copy ..\MySoft.RESTful\bin\Debug\MySoft.RESTful.dll /Y
 
 copy ..\MySoft.Common\bin\Debug\MySoft.Common.xml /Y
@@ -24,7 +23,6 @@ copy ..\MySoft.Data.SQLite\bin\Debug\MySoft.Data.SQLite.xml /Y
 copy ..\MySoft.Core\bin\Debug\MySoft.Core.xml /Y
 copy ..\MySoft.IoC\bin\Debug\MySoft.IoC.xml /Y
 copy ..\MySoft.Web\bin\Debug\MySoft.Web.xml /Y
-copy ..\MySoft.Controls\bin\Debug\MySoft.Controls.xml /Y
 copy ..\MySoft.RESTful\bin\Debug\MySoft.RESTful.xml /Y
 
 copy ..\MySoft.Tools.EntityDesign\bin\Debug\MySoft.Tools.EntityDesign.exe /Y
@@ -43,7 +41,6 @@ copy ..\MySoft.Data.PostgreSQL\bin\Debug\MySoft.Data.PostgreSQL.dll E:\SOURCE_SV
 copy ..\MySoft.Core\bin\Debug\MySoft.Core.dll E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.IoC\bin\Debug\MySoft.IoC.dll E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.Web\bin\Debug\MySoft.Web.dll E:\SOURCE_SVN\MyReference\MySoft /Y
-copy ..\MySoft.Controls\bin\Debug\MySoft.Controls.dll E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.RESTful\bin\Debug\MySoft.RESTful.dll E:\SOURCE_SVN\MyReference\MySoft /Y
 
 copy ..\MySoft.Common\bin\Debug\MySoft.Common.xml E:\SOURCE_SVN\MyReference\MySoft /Y
@@ -56,7 +53,6 @@ copy ..\MySoft.Data.PostgreSQL\bin\Debug\MySoft.Data.PostgreSQL.xml E:\SOURCE_SV
 copy ..\MySoft.Core\bin\Debug\MySoft.Core.xml E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.IoC\bin\Debug\MySoft.IoC.xml E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.Web\bin\Debug\MySoft.Web.xml E:\SOURCE_SVN\MyReference\MySoft /Y
-copy ..\MySoft.Controls\bin\Debug\MySoft.Controls.xml E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.RESTful\bin\Debug\MySoft.RESTful.xml E:\SOURCE_SVN\MyReference\MySoft /Y
 
 copy ..\MySoft.Tools.EntityDesign\bin\Debug\MySoft.Tools.EntityDesign.exe E:\SOURCE_SVN\MyReference\MySoft /Y

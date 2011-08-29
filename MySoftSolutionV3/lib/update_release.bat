@@ -11,7 +11,6 @@ copy ..\MySoft.Data.PostgreSQL\bin\Release\MySoft.Data.PostgreSQL.dll /Y
 copy ..\MySoft.Core\bin\Release\MySoft.Core.dll /Y
 copy ..\MySoft.IoC\bin\Release\MySoft.IoC.dll /Y
 copy ..\MySoft.Web\bin\Release\MySoft.Web.dll /Y
-copy ..\MySoft.Controls\bin\Release\MySoft.Controls.dll /Y
 copy ..\MySoft.RESTful\bin\Release\MySoft.RESTful.dll /Y
 
 copy ..\MySoft.Common\bin\Release\MySoft.Common.xml /Y
@@ -24,7 +23,6 @@ copy ..\MySoft.Data.SQLite\bin\Release\MySoft.Data.SQLite.xml /Y
 copy ..\MySoft.Core\bin\Release\MySoft.Core.xml /Y
 copy ..\MySoft.IoC\bin\Release\MySoft.IoC.xml /Y
 copy ..\MySoft.Web\bin\Release\MySoft.Web.xml /Y
-copy ..\MySoft.Controls\bin\Release\MySoft.Controls.xml /Y
 copy ..\MySoft.RESTful\bin\Release\MySoft.RESTful.xml /Y
 
 copy ..\MySoft.Tools.EntityDesign\bin\Release\MySoft.Tools.EntityDesign.exe /Y
@@ -43,7 +41,6 @@ copy ..\MySoft.Data.PostgreSQL\bin\Release\MySoft.Data.PostgreSQL.dll E:\SOURCE_
 copy ..\MySoft.Core\bin\Release\MySoft.Core.dll E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.IoC\bin\Release\MySoft.IoC.dll E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.Web\bin\Release\MySoft.Web.dll E:\SOURCE_SVN\MyReference\MySoft /Y
-copy ..\MySoft.Controls\bin\Release\MySoft.Controls.dll E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.RESTful\bin\Release\MySoft.RESTful.dll E:\SOURCE_SVN\MyReference\MySoft /Y
 
 copy ..\MySoft.Common\bin\Release\MySoft.Common.xml E:\SOURCE_SVN\MyReference\MySoft /Y
@@ -56,7 +53,6 @@ copy ..\MySoft.Data.PostgreSQL\bin\Release\MySoft.Data.PostgreSQL.xml E:\SOURCE_
 copy ..\MySoft.Core\bin\Release\MySoft.Core.xml E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.IoC\bin\Release\MySoft.IoC.xml E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.Web\bin\Release\MySoft.Web.xml E:\SOURCE_SVN\MyReference\MySoft /Y
-copy ..\MySoft.Controls\bin\Release\MySoft.Controls.xml E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.RESTful\bin\Release\MySoft.RESTful.xml E:\SOURCE_SVN\MyReference\MySoft /Y
 
 copy ..\MySoft.Tools.EntityDesign\bin\Release\MySoft.Tools.EntityDesign.exe E:\SOURCE_SVN\MyReference\MySoft /Y

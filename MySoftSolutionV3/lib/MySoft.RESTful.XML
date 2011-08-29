@@ -640,6 +640,16 @@
             Xml
             </summary>
         </member>
+        <member name="F:MySoft.RESTful.ParameterFormat.Text">
+            <summary>
+            Text
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.ParameterFormat.Html">
+            <summary>
+            Html
+            </summary>
+        </member>
         <member name="T:MySoft.RESTful.Business.BusinessRESTfulContext">
             <summary>
             默认服务上下文

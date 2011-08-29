@@ -140,16 +140,73 @@
             Castle服务
             </summary>
         </member>
+        <member name="T:MySoft.IoC.ServerMoniter">
+            <summary>
+            服务监控
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetServiceInfoList">
+            <summary>
+            获取服务信息列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.ClearStatus">
+            <summary>
+            清除所有服务器状态
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetServerStatus">
+            <summary>
+            服务状态信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetLatestStatus">
+            <summary>
+            获取最后一次服务状态
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetHighestStatus">
+            <summary>
+            获取最高状态信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetSummaryStatus">
+            <summary>
+            汇总状态信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetTimeStatusList">
+            <summary>
+            获取服务状态列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetConnectInfoList">
+            <summary>
+            获取连接客户信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="E:MySoft.IoC.ServerMoniter.OnLog">
+            <summary>
+            OnLog event.
+            </summary>
+        </member>
+        <member name="E:MySoft.IoC.ServerMoniter.OnError">
+            <summary>
+            OnError event.
+            </summary>
+        </member>
         <member name="M:MySoft.IoC.CastleService.#ctor(MySoft.IoC.Configuration.CastleServiceConfiguration)">
             <summary>
             实例化CastleService
             </summary>
             <param name="config"></param>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.Dispose">
-            <summary>
-            资源释放
-            </summary>
         </member>
         <member name="M:MySoft.IoC.CastleService.Start">
             <summary>
@@ -172,11 +229,16 @@
             停止服务
             </summary>
         </member>
-        <member name="M:MySoft.IoC.CastleService.GetSendResponse(System.Net.Sockets.SocketAsyncEventArgs,MySoft.IoC.Message.RequestMessage)">
+        <member name="M:MySoft.IoC.CastleService.Dispose">
+            <summary>
+            资源释放
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.CastleService.GetSendResponse(MySoft.Net.Sockets.SocketBase,MySoft.IoC.Message.RequestMessage)">
             <summary>
             获取响应信息并发送
             </summary>
-            <param name="socketAsync"></param>
+            <param name="socket"></param>
             <param name="reqMsg"></param>
         </member>
         <member name="M:MySoft.IoC.CastleService.CallMethod(MySoft.IoC.Message.RequestMessage)">
@@ -191,53 +253,6 @@
             判断是否需要计数
             </summary>
             <param name="request"></param>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.GetServiceInfoList">
-            <summary>
-            获取服务信息列表
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.ClearStatus">
-            <summary>
-            清除所有服务器状态
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.GetServerStatus">
-            <summary>
-            服务状态信息
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.GetLatestStatus">
-            <summary>
-            获取最后一次服务状态
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.GetHighestStatus">
-            <summary>
-            获取最高状态信息
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.GetSummaryStatus">
-            <summary>
-            汇总状态信息
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.GetTimeStatusList">
-            <summary>
-            获取服务状态列表
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.GetConnectInfoList">
-            <summary>
-            获取连接客户信息
-            </summary>
-            <returns></returns>
         </member>
         <member name="P:MySoft.IoC.CastleService.Container">
             <summary>
@@ -254,19 +269,9 @@
             最大连接数
             </summary>
         </member>
-        <member name="P:MySoft.IoC.CastleService.MaxBuffer">
+        <member name="P:MySoft.IoC.CastleService.BufferSize">
             <summary>
-            最大缓冲区
-            </summary>
-        </member>
-        <member name="E:MySoft.IoC.CastleService.OnLog">
-            <summary>
-            OnLog event.
-            </summary>
-        </member>
-        <member name="E:MySoft.IoC.CastleService.OnError">
-            <summary>
-            OnError event.
+            缓冲区大小
             </summary>
         </member>
         <member name="T:MySoft.IoC.Services.BaseService">
@@ -388,6 +393,12 @@
             Gets or sets the type.
             </summary>
             <value>The type.</value>
+        </member>
+        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.BufferSize">
+            <summary>
+            Gets or sets the buffersize
+            </summary>
+            <value>The buffersize.</value>
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.AppName">
             <summary>
@@ -875,6 +886,11 @@
             </summary>
             <value>The data.</value>
         </member>
+        <member name="P:MySoft.IoC.Message.ResponseMessage.RowCount">
+            <summary>
+            记录数
+            </summary>
+        </member>
         <member name="P:MySoft.IoC.Message.ResponseMessage.Exception">
             <summary>
             Gets or sets the exception.
@@ -1025,11 +1041,11 @@
             </summary>
             <value>The maxconnect.</value>
         </member>
-        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.MaxBuffer">
+        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.BufferSize">
             <summary>
-            Gets or sets the maxbuffer
+            Gets or sets the buffersize
             </summary>
-            <value>The maxbuffer.</value>
+            <value>The buffersize.</value>
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.LogTime">
             <summary>
@@ -1093,7 +1109,7 @@
             The default maxconnect number.
             </summary>
         </member>
-        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_MAXBUFFER_NUMBER">
+        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_BUFFERSIZE_NUMBER">
             <summary>
             The default maxbuffer number.
             </summary>
@@ -1230,12 +1246,11 @@
             服务消息
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Message.ServiceMessage.Send(MySoft.Net.Sockets.DataPacket,System.TimeSpan)">
+        <member name="M:MySoft.IoC.Message.ServiceMessage.Send(MySoft.Net.Sockets.DataPacket)">
             <summary>
             发送数据包
             </summary>
-            <param name="data"></param>
-            <param name="timeout"></param>
+            <param name="packet"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.IoC.Message.ServiceMessage.SendMessage(MySoft.IoC.Message.ResponseMessage)">
