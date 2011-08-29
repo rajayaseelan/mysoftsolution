@@ -23,7 +23,7 @@ namespace MySoft.IoC
         private ServiceMessagePool reqPool;
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
-        public ProxyService(ILog logger, RemoteNode node, int maxbuffer)
+        public ProxyService(ILog logger, RemoteNode node, int bufferSize)
         {
             this.logger = logger;
             this.node = node;
@@ -34,7 +34,7 @@ namespace MySoft.IoC
             reqPool = new ServiceMessagePool(node.MaxPool);
             for (int i = 0; i < node.MaxPool; i++)
             {
-                var request = new ServiceMessage(node, logger, maxbuffer);
+                var request = new ServiceMessage(node, logger, bufferSize);
                 request.SendCallback += new ServiceMessageEventHandler(client_SendMessage);
 
                 //ÇëÇó¶ËÈëÕ»

@@ -29,7 +29,7 @@ namespace MySoft.IoC.Message
         private string ip;
         private int port;
 
-        public ServiceMessage(RemoteNode node, ILog logger, int maxbuffer)
+        public ServiceMessage(RemoteNode node, ILog logger, int bufferSize)
         {
             this.logger = logger;
             this.node = node.Key;
@@ -40,7 +40,7 @@ namespace MySoft.IoC.Message
             CloseHandler close = SocketClient_OnClose;
             ErrorHandler error = SocketClient_OnError;
 
-            client = new SocketClient(maxbuffer, null, message, close, error);
+            client = new SocketClient(bufferSize, null, message, close, error);
         }
 
         /// <summary>

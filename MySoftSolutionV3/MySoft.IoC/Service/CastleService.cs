@@ -164,7 +164,7 @@ namespace MySoft.IoC
             ErrorHandler error = SocketServer_OnError;
 
             //启动服务
-            server.Start(config.Host, config.Port, config.MaxBuffer, null, message, accept, close, error);
+            server.Start(config.Host, config.Port, config.BufferSize, null, message, accept, close, error);
         }
 
         /// <summary>
@@ -229,7 +229,7 @@ namespace MySoft.IoC
         {
             get
             {
-                return config.MaxConnect * config.MaxBuffer;
+                return config.MaxConnect * config.BufferSize;
             }
         }
 
@@ -472,8 +472,8 @@ namespace MySoft.IoC
 
                         if (resMsg != null && resMsg.Data != null && resMsg.RowCount > 0)
                         {
-                            //默认缓存5秒
-                            CacheHelper.Insert(cacheKey, resMsg, 5);
+                            //默认缓存1秒
+                            CacheHelper.Insert(cacheKey, resMsg, 1);
                         }
                     }
                     else
