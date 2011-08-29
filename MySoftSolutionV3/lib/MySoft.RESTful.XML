@@ -1,0 +1,730 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MySoft.RESTful</name>
+    </assembly>
+    <members>
+        <member name="T:MySoft.RESTful.IRESTfulService">
+            <summary>
+            RESTful接口
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.PostJsonEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            POST入口
+            </summary>
+            <param name="kind">发布的分类</param>
+            <param name="method">发布的方法名称</param>
+            <param name="parameters">请求参数</param>
+            <returns>字节数据流</returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.DeleteJsonEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            POST入口
+            </summary>
+            <param name="kind">发布的分类</param>
+            <param name="method">发布的方法名称</param>
+            <param name="parameters">请求参数</param>
+            <returns>字节数据流</returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.PutJsonEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            POST入口
+            </summary>
+            <param name="kind">发布的分类</param>
+            <param name="method">发布的方法名称</param>
+            <param name="parameters">请求参数</param>
+            <returns>字节数据流</returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.GetJsonEntry(System.String,System.String)">
+            <summary>
+            GET入口
+            </summary>
+            <param name="kind">发布的业务分类</param>
+            <param name="method">发布的业务方法</param>
+            <returns>字节数据流</returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.PostXmlEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            POST入口
+            </summary>
+            <param name="kind">发布的分类</param>
+            <param name="method">发布的方法名称</param>
+            <param name="parameters">请求参数</param>
+            <returns>字节数据流</returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.DeleteXmlEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            POST入口
+            </summary>
+            <param name="kind">发布的分类</param>
+            <param name="method">发布的方法名称</param>
+            <param name="parameters">请求参数</param>
+            <returns>字节数据流</returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.PutXmlEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            POST入口
+            </summary>
+            <param name="kind">发布的分类</param>
+            <param name="method">发布的方法名称</param>
+            <param name="parameters">请求参数</param>
+            <returns>字节数据流</returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.GetXmlEntry(System.String,System.String)">
+            <summary>
+            GET入口
+            </summary>
+            <param name="kind">发布的业务分类</param>
+            <param name="method">发布的业务方法</param>
+            <returns>字节数据流</returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.GetEntryCallBack(System.String,System.String)">
+            <summary>
+            带有回调地址的Get入口
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.GetMethodHtml">
+            <summary>
+            发布接口的实时html文档
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.IRESTfulService.Context">
+            <summary>
+            内容对象
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.Business.BusinessState">
+            <summary>
+            业务状态枚举
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.Business.BusinessState.ACTIVATED">
+            <summary>
+            激活状态
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.Business.BusinessState.SHUTDOWN">
+            <summary>
+            关闭状态
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.RESTfulException">
+            <summary>
+            业务异常
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.RESTfulException.#ctor(MySoft.RESTful.RESTfulCode,System.String)">
+            <summary>
+            实例 化BusinessException
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+        </member>
+        <member name="M:MySoft.RESTful.RESTfulException.#ctor(System.String)">
+            <summary>
+            实例 化BusinessException
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="P:MySoft.RESTful.RESTfulException.Code">
+            <summary>
+            状态码
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.Business.Pool.IBusinessPool">
+            <summary>
+            业务池接口
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.IBusinessPool.AddKindModel(System.String,MySoft.RESTful.Business.BusinessKindModel)">
+            <summary>
+            添加业务类别和业务对象,如果业务对象已经添加则不会再次绑定
+            </summary>
+            <param name="businessKindName">业务类别</param>
+            <param name="metadata">业务对象</param>
+            <returns>返回该业务类别下的业务模型实例</returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.IBusinessPool.CheckAuthorized(MySoft.RESTful.ParameterFormat,System.String,System.String)">
+            <summary>
+            检查方法
+            </summary>
+            <param name="parameterFormat"></param>
+            <param name="businessKindName"></param>
+            <param name="businessMethodName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.IBusinessPool.FindMethod(System.String,System.String)">
+            <summary>
+            查找业务元数据对象
+            </summary>
+            <param name="businessKindName">业务员类型名称</param>
+            <param name="businessModelName">业务方法名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.IBusinessPool.GetKindModel(System.String)">
+            <summary>
+            获取业务类别绑定的所有业务对象
+            </summary>
+            <param name="businessKindName">业务类别</param>
+            <returns>和当前业务类别绑定的业务类别对象</returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.IBusinessPool.RemoveKindModel(System.String)">
+            <summary>
+            移除指定的业务类别绑定的所有对象
+            </summary>
+            <param name="businessKindName">业务类别</param>
+            <returns>返回移除的业务类别对象</returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.IBusinessPool.RemoveMethodModel(System.String,System.String)">
+            <summary>
+            移除指定业务类别下的业务对象包括重载的业务方法
+            </summary>
+            <param name="businessKindName">业务类别</param>
+            <param name="businessMethodName">业务方法</param>
+            <returns>返回该业务类别下的业务模型实例</returns>
+        </member>
+        <member name="T:MySoft.RESTful.Business.Register.IBusinessRegister">
+            <summary>
+            业务注册器
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Register.IBusinessRegister.Register(MySoft.RESTful.Business.Pool.IBusinessPool)">
+            <summary>
+            注册业务
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.XmlSerializer">
+            <summary>
+            xml系列化
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.ISerializer">
+            <summary>
+            系列化接口
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.Business.BusinessMethodModel">
+            <summary>
+            业务方法模型
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.Business.BusinessStateModel">
+            <summary>
+            业务状态
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessStateModel.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessStateModel.Description">
+            <summary>
+            描述
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessStateModel.State">
+            <summary>
+            业务接口状态
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.Authorized">
+            <summary>
+            是否认证
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.SubmitType">
+            <summary>
+            方法调用类型
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.Instance">
+            <summary>
+            业务执行对象
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.Method">
+            <summary>
+            执行的业务实例方法
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.Parameters">
+            <summary>
+            业务示例方法参数
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.ParametersCount">
+            <summary>
+            业务实例方法参数个数
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.IsPassCheck">
+            <summary>
+            是否通过检查
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.CheckMessage">
+            <summary>
+            异常消息
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.IRESTfulContext">
+            <summary>
+            默认服务上下文
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulContext.MakeApiDocument(System.Uri)">
+            <summary>
+            生成API文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulContext.IsAuthorized(MySoft.RESTful.ParameterFormat,System.String,System.String)">
+            <summary>
+            是否需要认证
+            </summary>
+            <param name="format"></param>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulContext.Invoke(MySoft.RESTful.ParameterFormat,System.String,System.String,System.String)">
+            <summary>
+            方法调用
+            </summary>
+            <param name="format"></param>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.RESTful.DefaultRESTfulService">
+            <summary>
+            默认的RESTful服务
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.#ctor">
+            <summary>
+            实例化DefaultRESTfulService
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.PostJsonEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            实现Post方式Json响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.DeleteJsonEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            实现Delete方式Json响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.PutJsonEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            实现Put方式Json响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetJsonEntry(System.String,System.String)">
+            <summary>
+            实现Get方式Json响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.PostXmlEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            实现Post方式Xml响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.DeleteXmlEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            实现Delete方式Xml响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.PutXmlEntry(System.String,System.String,System.IO.Stream)">
+            <summary>
+            实现Put方式Xml响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetXmlEntry(System.String,System.String)">
+            <summary>
+            实现Get方式Xml响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetEntryCallBack(System.String,System.String)">
+            <summary>
+            实现Get方式Jsonp响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetMethodHtml">
+            <summary>
+            获取方法的html文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.RESTful.DefaultRESTfulService.Context">
+            <summary>
+            上下文处理
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.DefaultRESTfulService.IsRecordErrorLog">
+            <summary>
+            是否记录错误日志
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.JsonSerializer">
+            <summary>
+            Json系列化
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.Business.Pool.DefaultBusinessPool">
+            <summary>
+            默认业务池
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.DefaultBusinessPool.#ctor">
+            <summary>
+            实例化DefaultBusinessPool
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.DefaultBusinessPool.GetKindModel(System.String)">
+            <summary>
+            获取业务模型
+            </summary>
+            <param name="businessKindName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.DefaultBusinessPool.AddKindModel(System.String,MySoft.RESTful.Business.BusinessKindModel)">
+            <summary>
+            添加业务模型
+            </summary>
+            <param name="businessKindName"></param>
+            <param name="businessKindModel"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.DefaultBusinessPool.RemoveKindModel(System.String)">
+            <summary>
+            移除业务模型
+            </summary>
+            <param name="businessKindName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.DefaultBusinessPool.RemoveMethodModel(System.String,System.String)">
+            <summary>
+            移除业务模型
+            </summary>
+            <param name="businessKindName"></param>
+            <param name="businessMethodName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.DefaultBusinessPool.CheckAuthorized(MySoft.RESTful.ParameterFormat,System.String,System.String)">
+            <summary>
+            检查方法
+            </summary>
+            <param name="parameterFormat"></param>
+            <param name="businessKindName"></param>
+            <param name="businessMethodName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Pool.DefaultBusinessPool.FindMethod(System.String,System.String)">
+            <summary>
+            查找方法
+            </summary>
+            <param name="businessKindName"></param>
+            <param name="businessMethodName"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.RESTful.Business.Pool.DefaultBusinessPool.KindMethods">
+            <summary>
+            获取业务池对象
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.RESTfulResult">
+            <summary>
+            RESTful结果
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulResult.Code">
+            <summary>
+            代码
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulResult.Message">
+            <summary>
+            消息
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.RESTfulCode">
+            <summary>
+            RESTfulCode
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.OK">
+            <summary>
+            正确返回数据
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.AUTH_FAULT">
+            <summary>
+            认证失败
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.AUTH_ERROR">
+            <summary>
+            验证错误
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_ERROR">
+            <summary>
+            业务错误
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_KIND_NOT_FOUND">
+            <summary>
+            业务类型没找到
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_METHOD_NOT_FOUND">
+            <summary>
+            业务方法没找到
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_KIND_NO_ACTIVATED">
+            <summary>
+            业务类型不是激活状态
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_METHOD_NO_ACTIVATED">
+            <summary>
+            业务方法不是激活状态
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_METHOD_PARAMS_COUNT_NOT_MATCH">
+            <summary>
+            业务方法参数个数不匹配
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH">
+            <summary>
+            业务方法参数类型不匹配
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_METHOD_CALL_TYPE_NOT_MATCH">
+            <summary>
+            业务方法调用类型不匹配
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_METHOD_NOT_PASS_CHECK">
+            <summary>
+            业务方法没有通过检查
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.ParameterHelper">
+            <summary>
+            参数处理
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.ParameterHelper.Resolve(System.Collections.Specialized.NameValueCollection)">
+            <summary>
+            解析参数
+            </summary>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.ParameterHelper.Resolve(System.String,MySoft.RESTful.ParameterFormat)">
+            <summary>
+            解析参数
+            </summary>
+            <param name="parameters"></param>
+            <param name="format"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.ParameterHelper.Convert(System.Reflection.ParameterInfo[],Newtonsoft.Json.Linq.JObject)">
+            <summary>
+            参数解析
+            </summary>
+            <param name="paramters"></param>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.RESTful.Business.Register.NativeBusinessRegister">
+            <summary>
+            本地业务注册器,读取本地配置文件,加载程序集,反射获取需要绑定的业务接口对象和业务方法
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Register.NativeBusinessRegister.CheckGetSubmitType(System.Reflection.ParameterInfo[])">
+            <summary>
+            检查Get类型的参数
+            </summary>
+            <param name="paramsInfo"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.RESTful.AuthenticationManager">
+            <summary>
+            认证工厂
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.AuthenticationManager.auths">
+            <summary>
+            RESTful配置文件
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.AuthenticationManager.InitializeContext">
+            <summary>
+            初始化上下文
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.AuthenticationManager.SetCookie(System.String)">
+            <summary>
+            设置Cookie
+            </summary>
+            <param name="cookie"></param>
+        </member>
+        <member name="M:MySoft.RESTful.AuthenticationManager.Authorize">
+            <summary>
+            进行认证
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.RESTful.ParameterFormat">
+            <summary>
+            参数格式
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.ParameterFormat.Jsonp">
+            <summary>
+            Jsonp
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.ParameterFormat.Json">
+            <summary>
+            Json
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.ParameterFormat.Xml">
+            <summary>
+            Xml
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.Business.BusinessRESTfulContext">
+            <summary>
+            默认服务上下文
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.Business.BusinessRESTfulContext.pool">
+            <summary>
+            业务池
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.Business.BusinessRESTfulContext.register">
+            <summary>
+            业务注册
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.#ctor">
+            <summary>
+            实例化BusinessRESTfulContext
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.#ctor(MySoft.RESTful.Business.Pool.IBusinessPool)">
+            <summary>
+            实例化BusinessRESTfulContext
+            </summary>
+            <param name="pool"></param>
+        </member>
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.#ctor(MySoft.RESTful.Business.Register.IBusinessRegister)">
+            <summary>
+            实例化BusinessRESTfulContext
+            </summary>
+            <param name="register"></param>
+        </member>
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.#ctor(MySoft.RESTful.Business.Pool.IBusinessPool,MySoft.RESTful.Business.Register.IBusinessRegister)">
+            <summary>
+            实例化BusinessRESTfulContext
+            </summary>
+            <param name="pool"></param>
+            <param name="register"></param>
+        </member>
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.IsAuthorized(MySoft.RESTful.ParameterFormat,System.String,System.String)">
+            <summary>
+            是否需要认证
+            </summary>
+            <param name="format"></param>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.Invoke(MySoft.RESTful.ParameterFormat,System.String,System.String,System.String)">
+            <summary>
+            方法调用
+            </summary>
+            <param name="format"></param>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.MakeApiDocument(System.Uri)">
+            <summary>
+            生成API文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.RESTful.SerializerFactory">
+            <summary>
+            系列化工厂
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.SerializerFactory.Create(MySoft.RESTful.ParameterFormat)">
+            <summary>
+            创建系列化
+            </summary>
+            <param name="format"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.RESTful.Business.BusinessKindModel">
+            <summary>
+            业务类别模型
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessKindModel.MethodModels">
+            <summary>
+            业务元数据集合,封装了该类别下所有的业务方法和业务对象
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<EntityDesignConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <CompileMode>Debug</CompileMode>
+  <InputDllName>EntityDesign.dll</InputDllName>
+  <OutputLanguage>C#</OutputLanguage>
+  <OutputNamespace>EntityModel</OutputNamespace>
+  <EntityCodePath>..\EntityModel\Entities.cs</EntityCodePath>
+</EntityDesignConfiguration>
