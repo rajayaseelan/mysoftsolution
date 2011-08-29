@@ -127,13 +127,13 @@ namespace MySoft.IoC
             //写发布服务信息
             if (isWriteLog) Publish();
 
-            AcceptEventHandler accept = SocketServer_OnAccept;
-            MessageEventHandler message = SocketServer_OnMessage;
-            CloseEventHandler close = SocketServer_OnClose;
-            ErrorEventHandler error = SocketServer_OnError;
+            AcceptEventHandler acceptEvent = SocketServer_OnAccept;
+            MessageEventHandler messageEvent = SocketServer_OnMessage;
+            CloseEventHandler closeEvent = SocketServer_OnClose;
+            ErrorEventHandler errorEvent = SocketServer_OnError;
 
             //启动服务
-            server.Start(config.Host, config.Port, config.BufferSize, null, message, accept, close, error);
+            server.Start(config.Host, config.Port, config.BufferSize, null, messageEvent, acceptEvent, closeEvent, errorEvent);
         }
 
         /// <summary>
@@ -423,7 +423,10 @@ namespace MySoft.IoC
                             int times = resMsg.RowCount / 100;
 
                             //默认缓存5秒
-                            if (times > 0) CacheHelper.Insert(cacheKey, resMsg, times);
+                            if (times > 0)
+                                CacheHelper.Insert(cacheKey, resMsg, times);
+                            else
+                                CacheHelper.Insert(cacheKey, resMsg, 1);
                         }
                     }
                 }

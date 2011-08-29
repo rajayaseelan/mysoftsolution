@@ -27,11 +27,11 @@ namespace MySoft.IoC.Message
             this.ip = node.IP;
             this.port = node.Port;
 
-            MessageEventHandler message = SocketClient_OnMessage;
-            CloseEventHandler close = SocketClient_OnClose;
-            ErrorEventHandler error = SocketClient_OnError;
+            MessageEventHandler messageEvent = SocketClient_OnMessage;
+            CloseEventHandler closeEvent = SocketClient_OnClose;
+            ErrorEventHandler errorEvent = SocketClient_OnError;
 
-            client = new SocketClient(bufferSize, null, message, close, error);
+            client = new SocketClient(bufferSize, null, messageEvent, closeEvent, errorEvent);
         }
 
         /// <summary>
