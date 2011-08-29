@@ -24,8 +24,10 @@ namespace MySoft.PlatformService
                 optionalArgs = args[0];
             }
 
-            InitColor();
             Console.Title = "PlatformService Installer";
+
+            var color = Console.BackgroundColor;
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
 
             if (!string.IsNullOrEmpty(optionalArgs))
             {
@@ -49,6 +51,11 @@ namespace MySoft.PlatformService
                     case "/console":
                         {
                             if (server.StartConsole())
+                            {
+                                Console.ReadLine();
+                                server.StopConsole();
+                            }
+                            else
                             {
                                 Console.ReadLine();
                             }
@@ -93,7 +100,7 @@ namespace MySoft.PlatformService
                 }
             }
 
-            InitColor();
+            Console.BackgroundColor = color;
         }
 
         static void PrintHelp()
@@ -110,12 +117,6 @@ namespace MySoft.PlatformService
             Console.WriteLine(@"/i | /install : 安装为windows服务 (仅当前配置有效)");
             Console.WriteLine(@"/u | /uninstall : 卸载windows服务 (仅当前配置有效)");
             Console.WriteLine("----------------------------------------------");
-        }
-
-        static void InitColor()
-        {
-            Console.BackgroundColor = ConsoleColor.Black;
-            Console.ForegroundColor = ConsoleColor.Gray;
         }
     }
 }

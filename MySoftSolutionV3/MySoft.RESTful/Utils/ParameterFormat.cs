@@ -21,6 +21,14 @@ namespace MySoft.RESTful
         /// <summary>
         /// Xml
         /// </summary>
-        Xml
+        Xml,
+        /// <summary>
+        /// Text
+        /// </summary>
+        Text,
+        /// <summary>
+        /// Html
+        /// </summary>
+        Html
     }
 }

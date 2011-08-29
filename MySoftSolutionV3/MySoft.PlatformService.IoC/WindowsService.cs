@@ -75,8 +75,6 @@ namespace MySoft.PlatformService.IoC
         {
             if (startMode == StartMode.Console)
             {
-                Console.BackgroundColor = ConsoleColor.DarkBlue;
-                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("[{0}] => Service ready started...", DateTime.Now);
 
                 server.Start();
@@ -96,6 +94,7 @@ namespace MySoft.PlatformService.IoC
         {
             if (startMode == StartMode.Console)
             {
+                Console.WriteLine("[{0}] => Service ready stopped...", DateTime.Now);
                 server.Stop();
             }
             else
@@ -113,13 +112,19 @@ namespace MySoft.PlatformService.IoC
                 string message = string.Format("[{0}] => ({1}) {2}", DateTime.Now, type, log);
                 lock (syncobj)
                 {
+                    //保存当前颜色
+                    var color = Console.ForegroundColor;
+
                     if (type == LogType.Error)
                         Console.ForegroundColor = ConsoleColor.Red;
                     else if (type == LogType.Warning)
                         Console.ForegroundColor = ConsoleColor.Yellow;
                     else
-                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine(message);
+
+                    //恢复当前颜色
+                    Console.ForegroundColor = color;
                 }
             }
         }
@@ -135,11 +140,17 @@ namespace MySoft.PlatformService.IoC
                 }
                 lock (syncobj)
                 {
+                    //保存当前颜色
+                    var color = Console.ForegroundColor;
+
                     if (exception is WarningException)
                         Console.ForegroundColor = ConsoleColor.Yellow;
                     else
                         Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(message);
+
+                    //恢复当前颜色
+                    Console.ForegroundColor = color;
                 }
             }
             else

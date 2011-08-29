@@ -27,9 +27,9 @@ namespace MySoft.IoC.Message
             this.ip = node.IP;
             this.port = node.Port;
 
-            MessageHandler message = SocketClient_OnMessage;
-            CloseHandler close = SocketClient_OnClose;
-            ErrorHandler error = SocketClient_OnError;
+            MessageEventHandler message = SocketClient_OnMessage;
+            CloseEventHandler close = SocketClient_OnClose;
+            ErrorEventHandler error = SocketClient_OnError;
 
             client = new SocketClient(bufferSize, null, message, close, error);
         }

@@ -7,11 +7,6 @@ using System.Threading;
 namespace MySoft.Net.Sockets
 {
     /// <summary> 
-    /// Called when a socket connection is accepted 
-    /// </summary>
-    public delegate void AcceptHandler(SocketClient socket);
-
-    /// <summary> 
     /// This class abstracts a socket server 
     /// </summary>
     public class SocketServer : SocketBase
@@ -19,7 +14,7 @@ namespace MySoft.Net.Sockets
         /// <summary>
         /// A reference to a user supplied function to be called when a socket connection is accepted
         /// </summary>
-        private AcceptHandler acceptHandler;
+        private AcceptEventHandler acceptHandler;
         /// <summary> 
         /// A TcpListener object to accept socket connections 
         /// </summary>
@@ -92,8 +87,8 @@ namespace MySoft.Net.Sockets
 
         protected virtual SocketClient AcceptedSocketClient(SocketServer socketServer,
             Socket clientSocket, string ipAddress, int port,
-            int sizeOfRawBuffer, object userArg, MessageHandler messageHandler,
-            CloseHandler closeHandler, ErrorHandler errorHandler)
+            int sizeOfRawBuffer, object userArg, MessageEventHandler messageHandler,
+            CloseEventHandler closeHandler, ErrorEventHandler errorHandler)
         {
             return new SocketClient(socketServer, clientSocket,
                 ipAddress, port, sizeOfRawBuffer, userArg, messageHandler,
@@ -130,9 +125,9 @@ namespace MySoft.Net.Sockets
                             this.Port,                                                 // The port the client connected to
                             this.SizeOfRawBuffer,                                      // The size of the byte array for storing messages
                             this.UserArg,                                              // Application developer state
-                            new Sockets.MessageHandler(this.messageHandler),    // Application developer Message Handler
-                            new Sockets.CloseHandler(this.closeHandler),        // Application developer Close Handler
-                            new Sockets.ErrorHandler(this.errorHandler));       // Application developer Error Handler
+                            new Sockets.MessageEventHandler(this.messageHandler),    // Application developer Message Handler
+                            new Sockets.CloseEventHandler(this.closeHandler),        // Application developer Close Handler
+                            new Sockets.ErrorEventHandler(this.errorHandler));       // Application developer Error Handler
 
                         socketClientList.Add(socket);
                         // Call the Accept Handler
@@ -216,8 +211,8 @@ namespace MySoft.Net.Sockets
         /// <param name="closeHandler"> Function pointer to the user CloseHandler function </param>
         /// <param name="errorHandler"> Function pointer to the user ErrorHandler function </param>
         public void Start(string ipAddress, int port, int sizeOfRawBuffer, object userArg,
-            MessageHandler messageHandler, AcceptHandler acceptHandler, CloseHandler closeHandler,
-            ErrorHandler errorHandler)
+            MessageEventHandler messageHandler, AcceptEventHandler acceptHandler, CloseEventHandler closeHandler,
+            ErrorEventHandler errorHandler)
         {
             // Is an AcceptThread currently running
             if (this.acceptThread == null)

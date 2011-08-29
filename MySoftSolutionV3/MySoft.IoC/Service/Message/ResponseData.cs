@@ -19,7 +19,7 @@ namespace MySoft.IoC.Message
         private byte[] keys;
         private byte[] buffer;
         private object value;
-        private int count = -1;
+        private int count;
 
         /// <summary>
         /// 返回的结果
@@ -132,7 +132,7 @@ namespace MySoft.IoC.Message
                 }
             }
 
-            return -1;
+            return 1;
         }
     }
 }

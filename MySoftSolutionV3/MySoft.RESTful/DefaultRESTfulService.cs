@@ -210,6 +210,10 @@ namespace MySoft.RESTful
                 response.ContentType = "application/json;charset=utf-8";
             else if (format == ParameterFormat.Xml)
                 response.ContentType = "text/xml;charset=utf-8";
+            else if (format == ParameterFormat.Text)
+                response.ContentType = "text/plain";
+            else if (format == ParameterFormat.Html)
+                response.ContentType = "text/html";
 
             object result = null;
 

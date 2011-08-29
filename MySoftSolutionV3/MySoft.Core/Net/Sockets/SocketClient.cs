@@ -73,8 +73,8 @@ namespace MySoft.Net.Sockets
         /// <param name="closeHandler">  Reference to the user defined close handler method </param>
         /// <param name="errorHandler">  Reference to the user defined error handler method </param>
         public SocketClient(int sizeOfRawBuffer, object userArg,
-            MessageHandler messageHandler, CloseHandler closeHandler,
-            ErrorHandler errorHandler)
+            MessageEventHandler messageHandler, CloseEventHandler closeHandler,
+            ErrorEventHandler errorHandler)
         {
             // Create the raw buffer
             this.SizeOfRawBuffer = sizeOfRawBuffer;
@@ -110,8 +110,8 @@ namespace MySoft.Net.Sockets
         /// <param name="userArg"> A Reference to the Users arguments </param>
         public SocketClient(SocketServer socketServer, Socket clientSocket,
             string ipAddress, int port, int sizeOfRawBuffer,
-            object userArg, MessageHandler messageHandler, CloseHandler closeHandler,
-            ErrorHandler errorHandler)
+            object userArg, MessageEventHandler messageHandler, CloseEventHandler closeHandler,
+            ErrorEventHandler errorHandler)
             : this(sizeOfRawBuffer, userArg, messageHandler, closeHandler, errorHandler)
         {
 
@@ -155,9 +155,9 @@ namespace MySoft.Net.Sockets
         public SocketClient(int sendBufferSize, int receiveBufferSize,
             int sizeOfRawBuffer,
             object userArg,
-            MessageHandler messageHandler,
-            CloseHandler closeHandler,
-            ErrorHandler errorHandler
+            MessageEventHandler messageHandler,
+            CloseEventHandler closeHandler,
+            ErrorEventHandler errorHandler
             )
             : this(sizeOfRawBuffer, userArg, messageHandler, closeHandler, errorHandler)
         {

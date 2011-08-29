@@ -1,21 +1,26 @@
 using System;
 
 namespace MySoft.Net.Sockets
-{
+{    
+    /// <summary> 
+    /// Called when a socket connection is accepted 
+    /// </summary>
+    public delegate void AcceptEventHandler(SocketClient socket);
+
 	/// <summary> 
 	/// Called when a message is received 
 	/// </summary>
-	public delegate void MessageHandler(SocketBase socket, int iNumberOfBytes);
+	public delegate void MessageEventHandler(SocketBase socket, int iNumberOfBytes);
     
 	/// <summary> 
 	/// Called when a connection is closed
 	///  </summary>
-	public delegate void CloseHandler(SocketBase socket);
+	public delegate void CloseEventHandler(SocketBase socket);
     
 	/// <summary>
 	///  Called when a socket error occurs 
 	///  </summary>
-	public delegate void ErrorHandler(SocketBase socket, Exception exception);
+	public delegate void ErrorEventHandler(SocketBase socket, Exception exception);
 
 	/// <summary>
 	/// Abstract class that defines base implementations
@@ -30,15 +35,15 @@ namespace MySoft.Net.Sockets
 		/// <summary>
 		/// A reference to a user supplied function to be called when a socket message arrives 
 		/// </summary>
-		protected internal MessageHandler messageHandler;
+		protected internal MessageEventHandler messageHandler;
 		/// <summary>
 		/// A reference to a user supplied function to be called when a socket connection is closed 
 		/// </summary>
-		protected internal CloseHandler closeHandler;
+		protected internal CloseEventHandler closeHandler;
 		/// <summary>
 		/// A reference to a user supplied function to be called when a socket error occurs
 		/// </summary>
-		protected internal ErrorHandler errorHandler;
+		protected internal ErrorEventHandler errorHandler;
 		/// <summary>
 		/// Flag to indicate if the class has been disposed
 		/// </summary>

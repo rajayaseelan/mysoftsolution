@@ -195,6 +195,20 @@ namespace MySoft.PlatformService
         }
 
         /// <summary>
+        /// 从控制台停止
+        /// </summary>
+        public void StopConsole()
+        {
+            if (WindowsService != null)
+            {
+                WindowsService.StartMode = StartMode.Console;
+                WindowsService.Stop();
+
+                Console.WriteLine("控制台已经退出......");
+            }
+        }
+
+        /// <summary>
         /// 运行服务服务
         /// </summary>
         public void StartService(string serviceName)

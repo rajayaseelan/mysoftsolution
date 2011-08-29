@@ -127,10 +127,10 @@ namespace MySoft.IoC
             //写发布服务信息
             if (isWriteLog) Publish();
 
-            AcceptHandler accept = SocketServer_OnAccept;
-            MessageHandler message = SocketServer_OnMessage;
-            CloseHandler close = SocketServer_OnClose;
-            ErrorHandler error = SocketServer_OnError;
+            AcceptEventHandler accept = SocketServer_OnAccept;
+            MessageEventHandler message = SocketServer_OnMessage;
+            CloseEventHandler close = SocketServer_OnClose;
+            ErrorEventHandler error = SocketServer_OnError;
 
             //启动服务
             server.Start(config.Host, config.Port, config.BufferSize, null, message, accept, close, error);
@@ -240,7 +240,7 @@ namespace MySoft.IoC
         void SocketServer_OnClose(SocketBase socket)
         {
             var client = socket as SocketClient;
-            container_OnLog(string.Format("User Disconnect {0}！", client.ClientSocket.RemoteEndPoint), LogType.Error);
+            container_OnLog(string.Format("User Disconnection {0}！", client.ClientSocket.RemoteEndPoint), LogType.Error);
         }
 
         void SocketServer_OnMessage(SocketBase socket, int iNumberOfBytes)
@@ -417,10 +417,13 @@ namespace MySoft.IoC
                     {
                         resMsg = handler.EndInvoke(ar);
 
-                        if (resMsg != null && resMsg.Data != null && resMsg.RowCount > 0)
+                        if (resMsg != null && resMsg.Data != null)
                         {
-                            //默认缓存1秒
-                            CacheHelper.Insert(cacheKey, resMsg, 1);
+                            //以100为单位进行缓存处理
+                            int times = resMsg.RowCount / 100;
+
+                            //默认缓存5秒
+                            if (times > 0) CacheHelper.Insert(cacheKey, resMsg, times);
                         }
                     }
                 }
