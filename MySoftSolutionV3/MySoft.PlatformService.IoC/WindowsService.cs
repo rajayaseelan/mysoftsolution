@@ -82,7 +82,7 @@ namespace MySoft.PlatformService.IoC
                 server.Start();
 
                 Console.WriteLine("[{0}] => Server host: {1}", DateTime.Now, server.ServerUrl);
-                Console.WriteLine("[{0}] => Max connect: {1} -> Max Buffer: {2} bytes", DateTime.Now, server.MaxConnect, server.MaxBuffer);
+                Console.WriteLine("[{0}] => Max connect: {1} -> BufferSize: {2} bytes", DateTime.Now, server.MaxConnect, server.BufferSize);
                 Console.WriteLine("[{0}] => Logger status: On  -> Log time: {1} seconds", DateTime.Now, config.LogTime);
                 Console.WriteLine("[{0}] => Press enter to exit and stop service...", DateTime.Now);
             }

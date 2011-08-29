@@ -192,13 +192,13 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 最大缓冲区
+        /// 缓冲区大小
         /// </summary>
-        public int MaxBuffer
+        public int BufferSize
         {
             get
             {
-                return config.MaxConnect * config.BufferSize;
+                return config.BufferSize;
             }
         }
 
