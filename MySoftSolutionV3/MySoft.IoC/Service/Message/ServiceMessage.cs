@@ -7,15 +7,6 @@ using MySoft.Net.Sockets;
 namespace MySoft.IoC.Message
 {
     /// <summary>
-    /// 连接到服务器事件
-    /// </summary>
-    /// <param name="socket"></param>
-    /// <param name="ip"></param>
-    /// <param name="port"></param>
-    /// <returns></returns>
-    public delegate bool ConnectServerHandler(SocketClient socket, string ip, int port);
-
-    /// <summary>
     /// 服务消息
     /// </summary>
     public class ServiceMessage : IDisposable
@@ -55,30 +46,21 @@ namespace MySoft.IoC.Message
         /// 发送数据包
         /// </summary>
         /// <param name="packet"></param>
-        /// <param name="timeout"></param>
         /// <returns></returns>
-        public void Send(DataPacket packet, TimeSpan timeout)
+        public void Send(DataPacket packet)
         {
             //如果连接断开，直接抛出异常
             if (!isConnected)
             {
-                //尝试连接到服务器
-                var handler = new ConnectServerHandler((csocket, cip, cport) =>
+                try
                 {
-                    csocket.Connect(cip, cport);
-                    return csocket.Connected;
-                });
-
-                var ar = handler.BeginInvoke(client, ip, port, null, null);
-
-                if (!ar.AsyncWaitHandle.WaitOne(timeout))
-                {
-                    ar.AsyncWaitHandle.Close();
-                    throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Remote node : {2}", ip, port, node));
+                    //连接到服务器
+                    client.Connect(ip, port);
+                    isConnected = client.Connected;
                 }
-                else
+                catch (SocketException e)
                 {
-                    isConnected = handler.EndInvoke(ar);
+                    throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Remote node : {2} -> {3}:{4}", ip, port, node, e.ErrorCode, e.Message));
                 }
             }
 

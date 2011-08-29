@@ -63,6 +63,7 @@
     <Compile Include="Mvp\Presenter\Presenter.cs" />
     <Compile Include="Mvp\Presenter\PresenterFactory.cs" />
     <Compile Include="Service\Message\ResponseData.cs" />
+    <Compile Include="Service\ServerMoniter.cs" />
     <Compile Include="Service\ServiceInterpreter.cs" />
     <Compile Include="Service\Services\BigInteger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

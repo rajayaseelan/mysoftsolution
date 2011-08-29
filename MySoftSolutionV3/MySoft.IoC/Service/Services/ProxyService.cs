@@ -92,23 +92,23 @@ namespace MySoft.IoC
                 };
 
                 //发送数据包到服务端
-                reqService.Send(packet, TimeSpan.FromSeconds(reqMsg.Timeout));
+                reqService.Send(packet);
 
                 //开始计时
                 Stopwatch watch = Stopwatch.StartNew();
 
                 //获取消息
-                AsyncMethodCaller caller = new AsyncMethodCaller(GetResponse);
+                AsyncMethodCaller handler = new AsyncMethodCaller(GetResponse);
 
                 //异步调用
-                IAsyncResult result = caller.BeginInvoke(reqMsg, null, null);
+                IAsyncResult ar = handler.BeginInvoke(reqMsg, null, null);
 
                 ResponseMessage resMsg = null;
 
                 // Wait for the WaitHandle to become signaled.
-                if (!result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))
+                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))
                 {
-                    result.AsyncWaitHandle.Close();
+                    ar.AsyncWaitHandle.Close();
                     watch.Stop();
 
                     string title = string.Format("Call ({0}:{1}) remote service ({2},{3}) failure.", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName);
@@ -123,7 +123,7 @@ namespace MySoft.IoC
                 {
                     // Perform additional processing here.
                     // Call EndInvoke to retrieve the results.
-                    resMsg = caller.EndInvoke(result);
+                    resMsg = handler.EndInvoke(ar);
                 }
 
                 watch.Stop();

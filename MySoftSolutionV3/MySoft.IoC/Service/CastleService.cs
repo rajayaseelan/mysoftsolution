@@ -18,15 +18,8 @@ namespace MySoft.IoC
     /// <summary>
     /// Castle服务
     /// </summary>
-    public class CastleService : IStatusService, IDisposable, ILogable, IErrorLogable
+    public class CastleService : ServerMoniter, IDisposable
     {
-        private IServiceContainer container;
-        private CastleServiceConfiguration config;
-        private SocketServer server;
-        private TimeStatusCollection statuslist;
-        private HighestStatus highest;
-        private DateTime startTime;
-
         /// <summary>
         /// 服务容器
         /// </summary>
@@ -40,104 +33,80 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="config"></param>
         public CastleService(CastleServiceConfiguration config)
+            : base(config)
         {
-            this.config = config;
-
-            //注入内部的服务
-            Hashtable hashTypes = new Hashtable();
-            hashTypes[typeof(IStatusService)] = this;
-
-            this.container = new SimpleServiceContainer(CastleFactoryType.Local, hashTypes);
-            this.container.OnError += new ErrorLogEventHandler(container_OnError);
-            this.container.OnLog += new LogEventHandler(container_OnLog);
-            this.statuslist = new TimeStatusCollection(config.Records);
-            this.highest = new HighestStatus();
-            this.startTime = DateTime.Now;
-
-            //实例化Socket服务
-            server = new SocketServer();
-            server.MaxAccept = config.MaxConnect;
-
-            Thread thread = new Thread(() =>
-            {
-                while (true)
-                {
-                    try
-                    {
-                        //获取最后一秒状态
-                        var status = statuslist.GetLast();
-
-                        //计算时间
-                        if (status.RequestCount > 0)
-                        {
-                            //处理最高值 
-                            #region 处理最高值
-
-                            //流量
-                            if (status.DataFlow > highest.DataFlow)
-                            {
-                                highest.DataFlow = status.DataFlow;
-                                highest.DataFlowCounterTime = status.CounterTime;
-                            }
-
-                            //成功
-                            if (status.SuccessCount > highest.SuccessCount)
-                            {
-                                highest.SuccessCount = status.SuccessCount;
-                                highest.SuccessCountCounterTime = status.CounterTime;
-                            }
-
-                            //失败
-                            if (status.ErrorCount > highest.ErrorCount)
-                            {
-                                highest.ErrorCount = status.ErrorCount;
-                                highest.ErrorCountCounterTime = status.CounterTime;
-                            }
-
-                            //请求总数
-                            if (status.RequestCount > highest.RequestCount)
-                            {
-                                highest.RequestCount = status.RequestCount;
-                                highest.RequestCountCounterTime = status.CounterTime;
-                            }
-
-                            //耗时
-                            if (status.ElapsedTime > highest.ElapsedTime)
-                            {
-                                highest.ElapsedTime = status.ElapsedTime;
-                                highest.ElapsedTimeCounterTime = status.CounterTime;
-                            }
-
-                            #endregion
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        //写错误日志
-                        SimpleLog.Instance.WriteLog(ex);
-                    }
-
-                    //每1秒处理一次
-                    Thread.Sleep(1000);
-                }
-            });
-
+            Thread thread = new Thread(DoWork);
             thread.IsBackground = true;
             thread.Start();
         }
 
-        /// <summary>
-        /// 资源释放
-        /// </summary>
-        public void Dispose()
-        {
-            server.Dispose();
-            server = null;
-            statuslist = null;
-            highest = null;
+        #region 定时统计
 
-            GC.SuppressFinalize(this);
+        void DoWork()
+        {
+            while (true)
+            {
+                try
+                {
+                    //获取最后一秒状态
+                    var status = statuslist.GetLast();
+
+                    //计算时间
+                    if (status.RequestCount > 0)
+                    {
+                        //处理最高值 
+                        #region 处理最高值
+
+                        //流量
+                        if (status.DataFlow > highest.DataFlow)
+                        {
+                            highest.DataFlow = status.DataFlow;
+                            highest.DataFlowCounterTime = status.CounterTime;
+                        }
+
+                        //成功
+                        if (status.SuccessCount > highest.SuccessCount)
+                        {
+                            highest.SuccessCount = status.SuccessCount;
+                            highest.SuccessCountCounterTime = status.CounterTime;
+                        }
+
+                        //失败
+                        if (status.ErrorCount > highest.ErrorCount)
+                        {
+                            highest.ErrorCount = status.ErrorCount;
+                            highest.ErrorCountCounterTime = status.CounterTime;
+                        }
+
+                        //请求总数
+                        if (status.RequestCount > highest.RequestCount)
+                        {
+                            highest.RequestCount = status.RequestCount;
+                            highest.RequestCountCounterTime = status.CounterTime;
+                        }
+
+                        //耗时
+                        if (status.ElapsedTime > highest.ElapsedTime)
+                        {
+                            highest.ElapsedTime = status.ElapsedTime;
+                            highest.ElapsedTimeCounterTime = status.CounterTime;
+                        }
+
+                        #endregion
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //写错误日志
+                    SimpleLog.Instance.WriteLog(ex);
+                }
+
+                //每1秒处理一次
+                Thread.Sleep(1000);
+            }
         }
+
+        #endregion
 
         #region 启动停止服务
 
@@ -241,45 +210,18 @@ namespace MySoft.IoC
             server.Stop();
         }
 
-        #endregion
-
-        void container_OnLog(string log, LogType type)
-        {
-            try
-            {
-                if (OnLog != null) OnLog(log, type);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        void container_OnError(Exception exception)
-        {
-            try
-            {
-                if (OnError != null) OnError(exception);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        #region ILogable Members
-
         /// <summary>
-        /// OnLog event.
+        /// 资源释放
         /// </summary>
-        public event LogEventHandler OnLog;
+        public void Dispose()
+        {
+            server.Dispose();
+            server = null;
+            statuslist = null;
+            highest = null;
 
-        #endregion
-
-        #region IErrorLogable Members
-
-        /// <summary>
-        /// OnError event.
-        /// </summary>
-        public event ErrorLogEventHandler OnError;
+            GC.SuppressFinalize(this);
+        }
 
         #endregion
 
@@ -457,29 +399,29 @@ namespace MySoft.IoC
                 if (resMsg == null)
                 {
                     //生成一个异步调用委托
-                    AsyncMethodCaller caller = new AsyncMethodCaller(p =>
+                    AsyncMethodCaller handler = new AsyncMethodCaller(p =>
                     {
                         return container.CallService(p, config.LogTime);
                     });
 
                     //开始异步调用
-                    IAsyncResult result = caller.BeginInvoke(reqMsg, null, null);
+                    IAsyncResult ar = handler.BeginInvoke(reqMsg, null, null);
 
                     //等待信号
-                    if (result.AsyncWaitHandle.WaitOne())
+                    if (!ar.AsyncWaitHandle.WaitOne())
                     {
-                        resMsg = caller.EndInvoke(result);
+                        ar.AsyncWaitHandle.Close();
+                        throw new NullReferenceException("Call service response is null！");
+                    }
+                    else
+                    {
+                        resMsg = handler.EndInvoke(ar);
 
                         if (resMsg != null && resMsg.Data != null && resMsg.RowCount > 0)
                         {
                             //默认缓存1秒
                             CacheHelper.Insert(cacheKey, resMsg, 1);
                         }
-                    }
-                    else
-                    {
-                        result.AsyncWaitHandle.Close();
-                        throw new NullReferenceException("Call service response is null！");
                     }
                 }
                 else
@@ -525,128 +467,6 @@ namespace MySoft.IoC
             if (request.ServiceName == typeof(IStatusService).FullName) return false;
 
             return true;
-        }
-
-        #endregion
-
-        #region IStatusService 成员
-
-        /// <summary>
-        /// 获取服务信息列表
-        /// </summary>
-        /// <returns></returns>
-        public IList<ServiceInfo> GetServiceInfoList()
-        {
-            var list = new List<ServiceInfo>();
-            foreach (Type type in container.GetInterfaces<ServiceContractAttribute>())
-            {
-                var service = new ServiceInfo
-                {
-                    Assembly = type.Assembly.FullName,
-                    Name = type.FullName,
-                    Methods = CoreHelper.GetMethodsFromType(type)
-                };
-
-                list.Add(service);
-            }
-            return list.ToArray();
-        }
-
-        /// <summary>
-        /// 清除所有服务器状态
-        /// </summary>
-        public void ClearStatus()
-        {
-            lock (statuslist)
-            {
-                statuslist.Clear();
-                highest = new HighestStatus();
-            }
-        }
-
-        /// <summary>
-        /// 服务状态信息
-        /// </summary>
-        /// <returns></returns>
-        public ServerStatus GetServerStatus()
-        {
-            ServerStatus status = new ServerStatus
-            {
-                StartDate = startTime,
-                TotalSeconds = (int)DateTime.Now.Subtract(startTime).TotalSeconds,
-                Highest = GetHighestStatus(),
-                Latest = GetLatestStatus(),
-                Summary = GetSummaryStatus()
-            };
-
-            return status;
-        }
-
-        /// <summary>
-        /// 获取最后一次服务状态
-        /// </summary>
-        /// <returns></returns>
-        public TimeStatus GetLatestStatus()
-        {
-            return statuslist.GetLast();
-        }
-
-        /// <summary>
-        /// 获取最高状态信息
-        /// </summary>
-        /// <returns></returns>
-        public HighestStatus GetHighestStatus()
-        {
-            return highest;
-        }
-
-        /// <summary>
-        /// 汇总状态信息
-        /// </summary>
-        /// <returns></returns>
-        public SummaryStatus GetSummaryStatus()
-        {
-            //获取状态列表
-            var list = GetTimeStatusList();
-
-            //统计状态信息
-            SummaryStatus status = new SummaryStatus
-            {
-                RunningSeconds = list.Count,
-                RequestCount = list.Sum(p => p.RequestCount),
-                SuccessCount = list.Sum(p => p.SuccessCount),
-                ErrorCount = list.Sum(p => p.ErrorCount),
-                ElapsedTime = list.Sum(p => p.ElapsedTime),
-                DataFlow = list.Sum(p => p.DataFlow),
-            };
-
-            return status;
-        }
-
-        /// <summary>
-        /// 获取服务状态列表
-        /// </summary>
-        /// <returns></returns>
-        public IList<TimeStatus> GetTimeStatusList()
-        {
-            return statuslist.ToList();
-        }
-
-        /// <summary>
-        /// 获取连接客户信息
-        /// </summary>
-        /// <returns></returns>
-        public IList<ConnectInfo> GetConnectInfoList()
-        {
-            var clients = server.SocketClientList.Cast<SocketClient>().ToList();
-            var dict = clients.ToLookup(p => p.ClientSocket.RemoteEndPoint.ToString().Split(':')[0]);
-            IList<ConnectInfo> list = new List<ConnectInfo>();
-            foreach (var item in dict)
-            {
-                list.Add(new ConnectInfo { IP = item.Key, Count = item.Count() });
-            }
-
-            return list;
         }
 
         #endregion

@@ -241,7 +241,7 @@ namespace MySoft.Net.Sockets
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error:SocketClient: Got Exception while ParseMessage");
+                Console.WriteLine("Error:SocketClient: Got Exception while ParseMessage -> " + e.Message);
             }
         }
 
@@ -304,7 +304,7 @@ namespace MySoft.Net.Sockets
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error:SocketClient: Got Exception while ReceiveComplite");
+                Console.WriteLine("Error:SocketClient: Got Exception while ReceiveComplite -> " + e.Message);
 
                 try
                 {
@@ -330,9 +330,9 @@ namespace MySoft.Net.Sockets
                 if (this.networkStream.CanWrite)
                     this.networkStream.EndWrite(ar);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine("Error:SocketClient: Got Exception while SendComplete");
+                Console.WriteLine("Error:SocketClient: Got Exception while SendComplete -> " + e.Message);
             }
         }
 
@@ -383,7 +383,7 @@ namespace MySoft.Net.Sockets
             }
             catch (System.Net.Sockets.SocketException e)
             {
-                Console.WriteLine("Error:SocketClient: Got Exception while Connect:" + e.Message);
+                Console.WriteLine("Error:SocketClient: Got Exception while Connect -> " + e.ErrorCode + ":" + e.Message);
                 throw;
             }
         }
@@ -444,7 +444,7 @@ namespace MySoft.Net.Sockets
             //(clientSocket != null) && (this.clientSocket.Connected == true))
             {
                 // Issue an asynchronus write
-                this.networkStream.BeginWrite(rawBuffer, 0, rawBuffer.GetLength(0), this.callbackWriteMethod, null);
+                this.networkStream.BeginWrite(rawBuffer, 0, rawBuffer.Length, this.callbackWriteMethod, null);
                 return true;
             }
             else

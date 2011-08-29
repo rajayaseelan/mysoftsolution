@@ -170,35 +170,13 @@ namespace MySoft.Net.Sockets
             IPEndPoint myEnd = new IPEndPoint(IPAddress.Any, port);
             if (!host.Equals("any", StringComparison.CurrentCultureIgnoreCase))
             {
-                if (!String.IsNullOrEmpty(host))
+                IPHostEntry p = Dns.GetHostEntry(Dns.GetHostName());
+                foreach (IPAddress s in p.AddressList)
                 {
-                    IPHostEntry p = Dns.GetHostEntry(Dns.GetHostName());
-                    foreach (IPAddress s in p.AddressList)
+                    if (s.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        if (s.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            myEnd = new IPEndPoint(s, port);
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        myEnd = new IPEndPoint(IPAddress.Parse(host), port);
-                    }
-                    catch (FormatException)
-                    {
-                        IPHostEntry p = Dns.GetHostEntry(Dns.GetHostName());
-                        foreach (IPAddress s in p.AddressList)
-                        {
-                            if (s.AddressFamily == AddressFamily.InterNetwork)
-                            {
-                                myEnd = new IPEndPoint(s, port);
-                                break;
-                            }
-                        }
+                        myEnd = new IPEndPoint(s, port);
+                        break;
                     }
                 }
             }
