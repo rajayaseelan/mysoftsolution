@@ -310,8 +310,7 @@ namespace MySoft.Net.Sockets
                 {
                     SocketClient socket = (SocketClient)this.socketClientList[x];
 
-                    if (socket.ClientSocket.Connected == true &&
-                        socket.Send(rawBuffer) == true)
+                    if (socket.ClientSocket.Connected == true && socket.Send(rawBuffer) == true)
                         count++;
                     else
                     {

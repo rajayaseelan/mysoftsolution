@@ -19,14 +19,27 @@ namespace MySoft.IoC.Message
         private string node;
         private string ip;
         private int port;
+        private int bufferSize;
 
+        /// <summary>
+        /// 实例化ServiceMessage
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="logger"></param>
+        /// <param name="bufferSize"></param>
         public ServiceMessage(RemoteNode node, ILog logger, int bufferSize)
         {
             this.logger = logger;
             this.node = node.Key;
             this.ip = node.IP;
             this.port = node.Port;
+            this.bufferSize = bufferSize;
 
+            this.CreateNew();
+        }
+
+        private void CreateNew()
+        {
             MessageEventHandler messageEvent = SocketClient_OnMessage;
             CloseEventHandler closeEvent = SocketClient_OnClose;
             ErrorEventHandler errorEvent = SocketClient_OnError;
@@ -54,6 +67,9 @@ namespace MySoft.IoC.Message
             {
                 try
                 {
+                    //如果client对象已经销毁，则重新创建一个
+                    if (client.Disposed) CreateNew();
+
                     //连接到服务器
                     client.Connect(ip, port);
                     isConnected = client.Connected;
@@ -155,7 +171,10 @@ namespace MySoft.IoC.Message
         public void Dispose()
         {
             client.Dispose();
+
+            logger = null;
             client = null;
+            isConnected = false;
         }
     }
 }

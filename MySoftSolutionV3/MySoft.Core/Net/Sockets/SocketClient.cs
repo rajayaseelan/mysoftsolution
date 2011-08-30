@@ -304,7 +304,19 @@ namespace MySoft.Net.Sockets
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error:SocketClient: Got Exception while ReceiveComplite -> " + e.Message);
+                var ex = (e.InnerException is SocketException) ? (e.InnerException as SocketException) : null;
+                if (ex != null)
+                {
+                    Console.WriteLine("Error:SocketClient: Got Exception while ReceiveComplite -> " + ex.ErrorCode + ":" + ex.Message);
+
+                    //Dispose networkStream resource
+                    if (ex.SocketErrorCode == SocketError.ConnectionReset)
+                    {
+                        this.Dispose();
+                    }
+                }
+                else
+                    Console.WriteLine("Error:SocketClient: Got Exception while ReceiveComplite -> " + e.Message);
 
                 try
                 {
