@@ -266,8 +266,8 @@ namespace MySoft.Net.Sockets
             }
 
             // Wait for all of the socket client objects to be destroyed
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            //GC.Collect();
+            //GC.WaitForPendingFinalizers();
 
             // Clear the Handler Functions
             this.messageHandler = null;
