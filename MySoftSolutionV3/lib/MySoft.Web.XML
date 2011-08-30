@@ -987,6 +987,21 @@
             <param name="key"></param>
             <returns></returns>
         </member>
+        <member name="M:MySoft.Web.UI.CallbackParams.To``1">
+            <summary>
+            将当前集合转换成对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Web.UI.CallbackParams.To``1(System.String)">
+            <summary>
+            将当前集合转换成对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="prefix"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.Web.UI.CallbackParams.ToNameValueCollection">
             <summary>
             返回NameValueCollection

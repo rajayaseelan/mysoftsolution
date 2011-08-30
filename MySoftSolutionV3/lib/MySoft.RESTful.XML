@@ -9,6 +9,22 @@
             RESTful接口
             </summary>
         </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.GetTextEntry(System.String,System.String)">
+            <summary>
+            GET入口
+            </summary>
+            <param name="kind">发布的业务分类</param>
+            <param name="method">发布的业务方法</param>
+            <returns>字节数据流</returns>
+        </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.GetHtmlEntry(System.String,System.String)">
+            <summary>
+            GET入口
+            </summary>
+            <param name="kind">发布的业务分类</param>
+            <param name="method">发布的业务方法</param>
+            <returns>字节数据流</returns>
+        </member>
         <member name="M:MySoft.RESTful.IRESTfulService.PostJsonEntry(System.String,System.String,System.IO.Stream)">
             <summary>
             POST入口
@@ -390,6 +406,22 @@
             <param name="method"></param>
             <returns></returns>
         </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetTextEntry(System.String,System.String)">
+            <summary>
+            实现Get方式Json响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetHtmlEntry(System.String,System.String)">
+            <summary>
+            实现Get方式Json响应
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.RESTful.DefaultRESTfulService.GetMethodHtml">
             <summary>
             获取方法的html文档
@@ -619,6 +651,11 @@
             进行认证
             </summary>
             <returns></returns>
+        </member>
+        <member name="T:MySoft.RESTful.TextSerializer">
+            <summary>
+            Text系列化
+            </summary>
         </member>
         <member name="T:MySoft.RESTful.ParameterFormat">
             <summary>

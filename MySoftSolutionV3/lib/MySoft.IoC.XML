@@ -1246,6 +1246,14 @@
             服务消息
             </summary>
         </member>
+        <member name="M:MySoft.IoC.Message.ServiceMessage.#ctor(MySoft.IoC.Configuration.RemoteNode,MySoft.Logger.ILog,System.Int32)">
+            <summary>
+            实例化ServiceMessage
+            </summary>
+            <param name="node"></param>
+            <param name="logger"></param>
+            <param name="bufferSize"></param>
+        </member>
         <member name="M:MySoft.IoC.Message.ServiceMessage.Send(MySoft.Net.Sockets.DataPacket)">
             <summary>
             发送数据包
