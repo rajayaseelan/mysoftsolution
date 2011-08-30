@@ -112,10 +112,32 @@ namespace MySoft.Web.UI
         }
 
         /// <summary>
+        /// 将当前集合转换成对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T To<T>()
+        {
+            return To<T>(null);
+        }
+
+        /// <summary>
+        /// 将当前集合转换成对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
+        public T To<T>(string prefix)
+        {
+            ObjectBuilder<T> builder = new ObjectBuilder<T>(prefix);
+            return builder.Bind(ToNameValueCollection());
+        }
+
+        /// <summary>
         /// 返回NameValueCollection
         /// </summary>
         /// <returns></returns>
-        public NameValueCollection ToNameValueCollection()
+        private NameValueCollection ToNameValueCollection()
         {
             NameValueCollection values = new NameValueCollection();
             foreach (var pair in dictValues)

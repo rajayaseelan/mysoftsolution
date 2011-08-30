@@ -6,6 +6,6 @@ namespace MySoft.Web.UI
     /// </summary>
     public interface IAjaxInitHandler
     {
-        void OnAjaxInit();
+        void OnAjaxInit(CallbackParams callbackParams);
     }
 }

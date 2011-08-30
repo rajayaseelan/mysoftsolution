@@ -60,12 +60,14 @@ namespace MySoft.Web.UI
                 }
                 else
                 {
+                    var args = GetCallbackParams();
+
                     //只有启用Ajax，才调用初始化方法
                     if (info.CurrentPage is IAjaxInitHandler)
-                        (info.CurrentPage as IAjaxInitHandler).OnAjaxInit();
+                        (info.CurrentPage as IAjaxInitHandler).OnAjaxInit(args);
 
                     if (info.CurrentPage is IAjaxProcessHandler)
-                        (info.CurrentPage as IAjaxProcessHandler).OnAjaxProcess(GetCallbackParams());
+                        (info.CurrentPage as IAjaxProcessHandler).OnAjaxProcess(args);
 
                     bool AjaxRegister = WebHelper.GetRequestParam<bool>(info.CurrentPage.Request, "X-Ajax-Register", false);
                     bool AjaxRequest = WebHelper.GetRequestParam<bool>(info.CurrentPage.Request, "X-Ajax-Request", false);
@@ -146,11 +148,13 @@ namespace MySoft.Web.UI
                     Control control = info.CurrentPage.LoadControl(templatePath.ToLower().EndsWith(".ascx") ? templatePath : templatePath + ".ascx");
                     if (control != null)
                     {
+                        var args = GetCallbackParams();
+
                         if (control is IAjaxInitHandler)
-                            (control as IAjaxInitHandler).OnAjaxInit();
+                            (control as IAjaxInitHandler).OnAjaxInit(args);
 
                         if (control is IAjaxProcessHandler)
-                            (control as IAjaxProcessHandler).OnAjaxProcess(GetCallbackParams());
+                            (control as IAjaxProcessHandler).OnAjaxProcess(args);
 
                         StringBuilder sb = new StringBuilder();
                         control.RenderControl(new HtmlTextWriter(new StringWriter(sb)));
@@ -262,11 +266,13 @@ namespace MySoft.Web.UI
                     Control control = info.CurrentPage.LoadControl(path);
                     if (control != null)
                     {
+                        var args = GetCallbackParams();
+
                         if (control is IAjaxInitHandler)
-                            (control as IAjaxInitHandler).OnAjaxInit();
+                            (control as IAjaxInitHandler).OnAjaxInit(args);
 
                         if (control is IAjaxProcessHandler)
-                            (control as IAjaxProcessHandler).OnAjaxProcess(GetCallbackParams());
+                            (control as IAjaxProcessHandler).OnAjaxProcess(args);
 
                         StringBuilder sb = new StringBuilder();
                         control.RenderControl(new HtmlTextWriter(new StringWriter(sb)));

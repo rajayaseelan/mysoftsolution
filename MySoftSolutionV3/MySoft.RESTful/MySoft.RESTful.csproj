@@ -70,6 +70,7 @@
     <Compile Include="Utils\ParameterFormat.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
     <Compile Include="Utils\XmlSerializer.cs" />
+    <Compile Include="Utils\TextSerializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MySoft.Core\MySoft.Core.csproj">

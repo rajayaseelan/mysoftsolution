@@ -15,6 +15,30 @@ namespace MySoft.RESTful
         /// </summary>
         IRESTfulContext Context { get; set; }
 
+        #region text 方式
+
+        /// <summary>
+        /// GET入口
+        /// </summary>
+        /// <param name="kind">发布的业务分类</param>
+        /// <param name="method">发布的业务方法</param>
+        /// <returns>字节数据流</returns>
+        [OperationContract]
+        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "get.text/{kind}.{method}")]
+        Stream GetTextEntry(string kind, string method);
+
+        /// <summary>
+        /// GET入口
+        /// </summary>
+        /// <param name="kind">发布的业务分类</param>
+        /// <param name="method">发布的业务方法</param>
+        /// <returns>字节数据流</returns>
+        [OperationContract]
+        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "get.html/{kind}.{method}")]
+        Stream GetHtmlEntry(string kind, string method);
+
+        #endregion
+
         #region json 方式
 
         /// <summary>

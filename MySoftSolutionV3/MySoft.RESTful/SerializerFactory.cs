@@ -17,6 +17,9 @@ namespace MySoft.RESTful
             {
                 case ParameterFormat.Xml:
                     return new XmlSerializer();
+                case ParameterFormat.Text:
+                case ParameterFormat.Html:
+                    return new TextSerializer();
                 case ParameterFormat.Json:
                 default:
                     return new JsonSerializer();

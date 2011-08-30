@@ -170,6 +170,28 @@ namespace MySoft.RESTful
         }
 
         /// <summary>
+        /// 实现Get方式Json响应
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public Stream GetTextEntry(string kind, string method)
+        {
+            return GetResponseStream(ParameterFormat.Text, kind, method, null);
+        }
+
+        /// <summary>
+        /// 实现Get方式Json响应
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public Stream GetHtmlEntry(string kind, string method)
+        {
+            return GetResponseStream(ParameterFormat.Html, kind, method, null);
+        }
+
+        /// <summary>
         /// 获取方法的html文档
         /// </summary>
         /// <returns></returns>
@@ -236,6 +258,8 @@ namespace MySoft.RESTful
                     {
                         if (format == ParameterFormat.Json || format == ParameterFormat.Jsonp)
                             result = "{}";
+                        else if (format == ParameterFormat.Html)
+                            response.ContentType = "text/html";
                         else
                             response.ContentType = "text/plain";
 
