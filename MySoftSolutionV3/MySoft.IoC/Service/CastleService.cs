@@ -410,7 +410,6 @@ namespace MySoft.IoC
                     //等待信号
                     if (!ar.AsyncWaitHandle.WaitOne())
                     {
-                        ar.AsyncWaitHandle.Close();
                         throw new NullReferenceException("Call service response is null！");
                     }
                     else
