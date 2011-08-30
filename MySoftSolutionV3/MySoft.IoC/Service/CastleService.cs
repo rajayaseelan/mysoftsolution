@@ -407,9 +407,10 @@ namespace MySoft.IoC
                     //开始异步调用
                     IAsyncResult ar = handler.BeginInvoke(reqMsg, null, null);
 
-                    //等待信号
-                    if (!ar.AsyncWaitHandle.WaitOne())
+                    //等待信号，5分钟超时
+                    if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMinutes(5)))
                     {
+                        ar.AsyncWaitHandle.Close();
                         throw new NullReferenceException("Call service response is null！");
                     }
                     else

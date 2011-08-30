@@ -109,6 +109,7 @@ namespace MySoft.IoC
                 if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))
                 {
                     watch.Stop();
+                    ar.AsyncWaitHandle.Close();
 
                     string title = string.Format("Call ({0}:{1}) remote service ({2},{3}) failure.", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName);
                     string body = string.Format("¡¾{5}¡¿Call ({0}:{1}) remote service ({2},{3}) failure. timeout ({4} ms)£¡", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName, watch.ElapsedMilliseconds, reqMsg.TransactionId);
