@@ -101,7 +101,7 @@ namespace MySoft.IoC
                 AsyncMethodCaller handler = new AsyncMethodCaller(GetResponse);
 
                 //Òì²½µ÷ÓÃ
-                IAsyncResult ar = handler.BeginInvoke(reqMsg, null, null);
+                IAsyncResult ar = handler.BeginInvoke(reqMsg, r => { }, handler);
 
                 ResponseMessage resMsg = null;
 
