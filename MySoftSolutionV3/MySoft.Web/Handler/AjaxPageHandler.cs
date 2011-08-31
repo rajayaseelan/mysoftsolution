@@ -1,12 +1,13 @@
 using System.Text;
 using System.Web;
+using System.Web.SessionState;
 
 namespace MySoft.Web
 {
     /// <summary>
     /// 异步处理Handler
     /// </summary>
-    public class AjaxPageHandler : IHttpHandler
+    public class AjaxPageHandler : IHttpHandler, IRequiresSessionState
     {
         // 摘要:
         //     获取一个值，该值指示其他请求是否可以使用 System.Web.IHttpHandler 实例。

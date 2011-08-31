@@ -104,7 +104,7 @@ namespace MySoft.IoC
             #region 处理缓存
 
             //处理cacheKey信息
-            string cacheKey = string.Format("{0}_{1}", reqMsg.SubServiceName, reqMsg.Parameters);
+            string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.SubServiceName, reqMsg.Parameters);
 
             bool isAllowCache = false;
             double cacheTime = config.CacheTime; //默认缓存时间与系统设置的时间一致

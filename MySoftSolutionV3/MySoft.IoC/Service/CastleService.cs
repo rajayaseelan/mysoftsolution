@@ -393,7 +393,7 @@ namespace MySoft.IoC
                 //Console.WriteLine("{0} begin => {1},{2}", DateTime.Now, reqMsg.ServiceName, reqMsg.SubServiceName);
 
                 //处理cacheKey信息
-                string cacheKey = string.Format("IoC_Cache_{0}_{1}", reqMsg.SubServiceName, reqMsg.Parameters);
+                string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.SubServiceName, reqMsg.Parameters);
                 resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
 
                 if (resMsg == null)
@@ -410,7 +410,8 @@ namespace MySoft.IoC
                     //等待信号，5分钟超时
                     if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMinutes(5)))
                     {
-                        ar.AsyncWaitHandle.Close();
+                        try { ar.AsyncWaitHandle.Close(); }
+                        catch { }
                         throw new NullReferenceException("Call service response is null！");
                     }
                     else
