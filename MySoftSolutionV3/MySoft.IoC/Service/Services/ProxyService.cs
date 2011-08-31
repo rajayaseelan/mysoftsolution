@@ -112,8 +112,8 @@ namespace MySoft.IoC
                     catch { }
                     watch.Stop();
 
-                    string title = string.Format("Call ({0}:{1}) remote service ({2},{3}) failure.", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName);
-                    string body = string.Format("¡¾{5}¡¿Call ({0}:{1}) remote service ({2},{3}) failure. timeout ({4} ms)£¡", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName, watch.ElapsedMilliseconds, reqMsg.TransactionId);
+                    string title = string.Format("Call ({0}:{1}) remote service ({2},{3}) timeout.", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName);
+                    string body = string.Format("¡¾{5}¡¿Call ({0}:{1}) remote service ({2},{3}) timeout ({4} ms)£¡", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName, watch.ElapsedMilliseconds, reqMsg.TransactionId);
                     throw new WarningException(body)
                     {
                         ApplicationName = reqMsg.AppName,

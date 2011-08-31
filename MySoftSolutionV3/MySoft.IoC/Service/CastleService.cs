@@ -408,11 +408,11 @@ namespace MySoft.IoC
                     IAsyncResult ar = handler.BeginInvoke(reqMsg, null, null);
 
                     //等待信号，5分钟超时
-                    if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMinutes(5)))
+                    if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMinutes(10)))
                     {
                         try { ar.AsyncWaitHandle.Close(); }
                         catch { }
-                        throw new NullReferenceException("Call service response is null！");
+                        throw new WarningException(string.Format("Call service ({0},{1}) timeout 10 minutes！", reqMsg.ServiceName, reqMsg.SubServiceName));
                     }
                     else
                     {
