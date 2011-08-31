@@ -186,15 +186,18 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<ConnectInfo> GetConnectInfoList()
         {
-            var clients = server.SocketClientList.Cast<SocketClient>().ToList();
-            var dict = clients.ToLookup(p => p.ClientSocket.RemoteEndPoint.ToString().Split(':')[0]);
-            IList<ConnectInfo> list = new List<ConnectInfo>();
-            foreach (var item in dict)
+            try
             {
-                list.Add(new ConnectInfo { IP = item.Key, Count = item.Count() });
+                return server.SocketClientList.Cast<SocketClient>().GroupBy(p => p.IpAddress)
+                     .Select(p => new ConnectInfo { IP = p.Key, Count = p.Count() })
+                     .ToList();
             }
+            catch (Exception ex)
+            {
+                container_OnError(ex);
 
-            return list;
+                return new List<ConnectInfo>();
+            }
         }
 
         #endregion

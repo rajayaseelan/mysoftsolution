@@ -35,11 +35,6 @@ namespace MySoft.IoC.Message
             this.port = node.Port;
             this.bufferSize = bufferSize;
 
-            this.CreateNew();
-        }
-
-        private void CreateNew()
-        {
             MessageEventHandler messageEvent = SocketClient_OnMessage;
             CloseEventHandler closeEvent = SocketClient_OnClose;
             ErrorEventHandler errorEvent = SocketClient_OnError;
@@ -67,9 +62,6 @@ namespace MySoft.IoC.Message
             {
                 try
                 {
-                    //如果client对象已经销毁，则重新创建一个
-                    if (client.Disposed) CreateNew();
-
                     //连接到服务器
                     client.Connect(ip, port);
                     isConnected = client.Connected;

@@ -153,11 +153,6 @@ namespace MySoft.Net.Sockets
         {
         }
 
-        public bool Disposed
-        {
-            get { return disposed; }
-        }
-
         #endregion
     }
 }

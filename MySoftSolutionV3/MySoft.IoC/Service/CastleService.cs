@@ -176,7 +176,14 @@ namespace MySoft.IoC
         {
             get
             {
-                return string.Format("{0}://{1}/", server.Listener.Server.ProtocolType, server.Listener.LocalEndpoint).ToLower();
+                try
+                {
+                    return string.Format("{0}://{1}/", server.Listener.Server.ProtocolType, server.Listener.LocalEndpoint).ToLower();
+                }
+                catch
+                {
+                    return "Please start server listener.";
+                }
             }
         }
 

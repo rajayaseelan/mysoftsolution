@@ -50,8 +50,13 @@ namespace MySoft.IoC
             foreach (Type type in GetInterfaces<ServiceContractAttribute>())
             {
                 object instance = null;
-                try { instance = this[type]; }
-                catch { }
+                try
+                {
+                    instance = this[type];
+                }
+                catch
+                {
+                }
 
                 //判断实例是否从接口分配
                 if (instance != null && type.IsAssignableFrom(instance.GetType()))

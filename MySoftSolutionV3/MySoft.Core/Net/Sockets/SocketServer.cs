@@ -100,9 +100,9 @@ namespace MySoft.Net.Sockets
         private void AcceptThread()
         {
             Socket clientSocket = null;
-            try
+            for (; ; )
             {
-                for (; ; )
+                try
                 {
                     // If a client connects, accept the connection
                     clientSocket = this.tcpListener.AcceptSocket();
@@ -134,11 +134,20 @@ namespace MySoft.Net.Sockets
                         this.acceptHandler(socket);
                     }
                 }
-            }
-            catch (System.Net.Sockets.SocketException e)
-            {
-                // Did we stop the TCPListener
-                if (e.ErrorCode != 10004)
+                catch (System.Net.Sockets.SocketException e)
+                {
+                    // Did we stop the TCPListener
+                    if (e.ErrorCode != 10004)
+                    {
+                        // Call the error handler
+                        this.errorHandler(null, e);
+                        // Close the socket down if it exists
+                        if (clientSocket != null)
+                            if (clientSocket.Connected)
+                                clientSocket.Close();
+                    }
+                }
+                catch (Exception e)
                 {
                     // Call the error handler
                     this.errorHandler(null, e);
@@ -147,15 +156,6 @@ namespace MySoft.Net.Sockets
                         if (clientSocket.Connected)
                             clientSocket.Close();
                 }
-            }
-            catch (Exception e)
-            {
-                // Call the error handler
-                this.errorHandler(null, e);
-                // Close the socket down if it exists
-                if (clientSocket != null)
-                    if (clientSocket.Connected)
-                        clientSocket.Close();
             }
         }
 
