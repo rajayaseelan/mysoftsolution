@@ -1,15 +1,11 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Message;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using MySoft.Threading;
-using MySoft.Net.Sockets;
 
 namespace MySoft.IoC
 {
@@ -20,40 +16,34 @@ namespace MySoft.IoC
     {
         private ILog logger;
         private RemoteNode node;
-        private ServiceMessagePool reqPool;
+        private ServiceRequestPool reqPool;
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
-        public ProxyService(ILog logger, RemoteNode node, int bufferSize)
+        public ProxyService(ILog logger, RemoteNode node)
         {
             this.logger = logger;
             this.node = node;
+            this.reqPool = new ServiceRequestPool(node.MaxPool);
 
-            #region socket通讯
-
-            //实例化服务池
-            reqPool = new ServiceMessagePool(node.MaxPool);
+            //服务请求池化
             for (int i = 0; i < node.MaxPool; i++)
             {
-                var request = new ServiceMessage(node, logger, bufferSize);
-                request.SendCallback += new ServiceMessageEventHandler(client_SendMessage);
+                ServiceRequest reqService = new ServiceRequest(node, logger);
+                reqService.OnCallback += new ServiceMessageEventHandler(reqService_OnCallback);
 
-                //请求端入栈
-                reqPool.Push(request);
+                this.reqPool.Push(reqService);
             }
-
-            #endregion
         }
 
-        void client_SendMessage(object sender, ServiceMessageEventArgs seviceMsg)
+        void reqService_OnCallback(object sender, ServiceMessageEventArgs args)
         {
-            var resMsg = seviceMsg.Result;
+            var resMsg = args.Result;
             if (resMsg.Expiration > DateTime.Now)
             {
-                //数据结果加入到集合中
                 hashtable[resMsg.TransactionId] = resMsg;
             }
 
-            seviceMsg = null;
+            args = null;
         }
 
         /// <summary>
@@ -61,7 +51,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        private string GetMessageKey(RequestBase value)
+        private string GetMessageKey(MessageBase value)
         {
             return string.Format("Message_{0}", value.TransactionId);
         }
@@ -77,7 +67,7 @@ namespace MySoft.IoC
             //如果池为空
             if (reqPool.Count == 0)
             {
-                throw new Exception("Service pool is empty！");
+                throw new Exception("Service request pool is empty！");
             }
 
             //从池中弹出一个可用请求
@@ -85,14 +75,8 @@ namespace MySoft.IoC
 
             try
             {
-                DataPacket packet = new DataPacket
-                {
-                    PacketID = reqMsg.TransactionId,
-                    PacketObject = reqMsg
-                };
-
-                //发送数据包到服务端
-                reqService.Send(packet);
+                //发送消息
+                reqService.SendMessage(reqMsg);
 
                 //开始计时
                 Stopwatch watch = Stopwatch.StartNew();
@@ -148,8 +132,7 @@ namespace MySoft.IoC
             }
             finally
             {
-                //将SocketRequest入栈
-                reqPool.Push(reqService);
+                this.reqPool.Push(reqService);
             }
         }
 
@@ -178,6 +161,7 @@ namespace MySoft.IoC
             }
         }
 
+
         #region IService 成员
 
         /// <summary>
@@ -197,15 +181,17 @@ namespace MySoft.IoC
         {
             try
             {
-                for (int i = 0; i < reqPool.Count; i++)
+                while (reqPool.Count > 0)
                 {
-                    ServiceMessage args = reqPool.Pop();
-                    args.Dispose();
+                    var reqService = reqPool.Pop();
+                    reqService.Dispose();
                 }
             }
             catch (Exception)
             {
             }
+
+            this.reqPool = null;
 
             GC.SuppressFinalize(this);
         }

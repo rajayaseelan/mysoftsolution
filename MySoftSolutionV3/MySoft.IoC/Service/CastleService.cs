@@ -11,7 +11,9 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Message;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using MySoft.Net.Sockets;
+using MySoft.Communication.Scs.Server;
+using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC
 {
@@ -20,6 +22,8 @@ namespace MySoft.IoC
     /// </summary>
     public class CastleService : ServerMoniter, IDisposable
     {
+        private IScsServer server;
+        private string serverUrl;
         /// <summary>
         /// 服务容器
         /// </summary>
@@ -35,6 +39,21 @@ namespace MySoft.IoC
         public CastleService(CastleServiceConfiguration config)
             : base(config)
         {
+            //实例化Socket服务
+            ScsTcpEndPoint endPoint = null;
+            if (string.Compare(config.Host, "any", true) == 0)
+            {
+                config.Host = "127.0.0.1";
+                endPoint = new ScsTcpEndPoint(config.Port);
+            }
+            else
+                endPoint = new ScsTcpEndPoint(config.Host, config.Port);
+
+            this.serverUrl = endPoint.ToString();
+            this.server = ScsServerFactory.CreateServer(endPoint);
+            this.server.ClientConnected += new EventHandler<ServerClientEventArgs>(server_ClientConnected);
+            this.server.ClientDisconnected += new EventHandler<ServerClientEventArgs>(server_ClientDisconnected);
+
             Thread thread = new Thread(DoWork);
             thread.IsBackground = true;
             thread.Start();
@@ -127,13 +146,8 @@ namespace MySoft.IoC
             //写发布服务信息
             if (isWriteLog) Publish();
 
-            AcceptEventHandler acceptEvent = SocketServer_OnAccept;
-            MessageEventHandler messageEvent = SocketServer_OnMessage;
-            CloseEventHandler closeEvent = SocketServer_OnClose;
-            ErrorEventHandler errorEvent = SocketServer_OnError;
-
             //启动服务
-            server.Start(config.Host, config.Port, config.BufferSize, null, messageEvent, acceptEvent, closeEvent, errorEvent);
+            server.Start();
         }
 
         /// <summary>
@@ -174,44 +188,12 @@ namespace MySoft.IoC
         /// </summary>
         public string ServerUrl
         {
-            get
-            {
-                try
-                {
-                    return string.Format("{0}://{1}/", server.Listener.Server.ProtocolType, server.Listener.LocalEndpoint).ToLower();
-                }
-                catch
-                {
-                    return "Please start server listener.";
-                }
-            }
-        }
-
-        /// <summary>
-        /// 最大连接数
-        /// </summary>
-        public int MaxConnect
-        {
-            get
-            {
-                return config.MaxConnect;
-            }
-        }
-
-        /// <summary>
-        /// 缓冲区大小
-        /// </summary>
-        public int BufferSize
-        {
-            get
-            {
-                return config.BufferSize;
-            }
+            get { return serverUrl.ToLower(); }
         }
 
         /// <summary>
         /// 停止服务
-        /// </summary>
+        /// </summary>1
         public void Stop()
         {
             server.Stop();
@@ -222,7 +204,9 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            server.Dispose();
+            server.Stop();
+            server.Clients.ClearAll();
+
             server = null;
             statuslist = null;
             highest = null;
@@ -234,80 +218,58 @@ namespace MySoft.IoC
 
         #region 侦听事件
 
-        void SocketServer_OnAccept(SocketClient socket)
+        void server_ClientConnected(object sender, ServerClientEventArgs e)
         {
-            container_OnLog(string.Format("User connection {0}！", socket.ClientSocket.RemoteEndPoint), LogType.Information);
+            var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
+            container_OnLog(string.Format("User connection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Information);
+            e.Client.MessageReceived += new EventHandler<MessageEventArgs>(Client_MessageReceived);
+            e.Client.MessageSent += new EventHandler<MessageEventArgs>(Client_MessageSent);
         }
 
-        void SocketServer_OnError(SocketBase socket, Exception exception)
+        void Client_MessageSent(object sender, MessageEventArgs e)
         {
-            container_OnError(exception);
+            //暂不作处理
         }
 
-        void SocketServer_OnClose(SocketBase socket)
+        void server_ClientDisconnected(object sender, ServerClientEventArgs e)
         {
-            var client = socket as SocketClient;
-            container_OnLog(string.Format("User Disconnection {0}！", client.ClientSocket.RemoteEndPoint), LogType.Error);
+            var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
+            container_OnLog(string.Format("User Disconnection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Error);
         }
 
-        void SocketServer_OnMessage(SocketBase socket, int iNumberOfBytes)
+        void Client_MessageReceived(object sender, MessageEventArgs e)
         {
-            using (BufferReader read = new BufferReader(socket.RawBuffer))
+            //不是指定消息不处理
+            if (e.Message is ScsRawDataMessage)
             {
-                int length;
-                int cmd;
-                Guid pid;
+                //获取client发送端
+                var client = sender as IScsServerClient;
 
-                if (read.ReadInt32(out length) && read.ReadInt32(out cmd) && read.ReadGuid(out pid) && length == read.Length)
+                try
                 {
-                    if (cmd == -10000)//请求结果信息
-                    {
-                        try
-                        {
-                            RequestMessage reqMsg;
-                            if (read.ReadObject(out reqMsg))
-                            {
-                                if (reqMsg != null)
-                                {
-                                    //发送响应信息
-                                    GetSendResponse(socket, reqMsg);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            container_OnError(ex);
+                    var data = e.Message as ScsRawDataMessage;
+                    RequestMessage reqMsg = SerializationManager.DeserializeBin<RequestMessage>(data.MessageData);
 
-                            var resMsg = new ResponseMessage
-                            {
-                                TransactionId = pid,
-                                Expiration = DateTime.Now.AddMinutes(1),
-                                Compress = false,
-                                Encrypt = false,
-                                ReturnType = ex.GetType(),
-                                Exception = ex
-                            };
-
-                            DataPacket packet = new DataPacket
-                            {
-                                PacketID = resMsg.TransactionId,
-                                PacketObject = resMsg
-                            };
-
-                            //发送数据到服务端
-                            (socket as SocketClient).Send(packet);
-                        }
-                    }
-                    else //现在还没登入 如果有其他命令的请求那么 断开连接
-                    {
-                        var client = socket as SocketClient;
-                        client.Disconnect();
-                    }
+                    //发送响应信息
+                    GetSendResponse(client, reqMsg);
                 }
-                else //无法读取数据包 断开连接
+                catch (Exception ex)
                 {
-                    var client = socket as SocketClient;
-                    client.Disconnect();
+                    container_OnError(ex);
+
+                    var resMsg = new ResponseMessage
+                    {
+                        TransactionId = new Guid(e.Message.RepliedMessageId),
+                        Expiration = DateTime.Now.AddMinutes(1),
+                        Compress = false,
+                        Encrypt = false,
+                        ReturnType = ex.GetType(),
+                        Exception = ex
+                    };
+
+                    //发送数据到服务端
+                    var buffer = SerializationManager.SerializeBin(resMsg);
+                    client.SendMessage(new ScsRawDataMessage(buffer, e.Message.RepliedMessageId));
                 }
             }
         }
@@ -315,9 +277,9 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取响应信息并发送
         /// </summary>
-        /// <param name="socket"></param>
+        /// <param name="client"></param>
         /// <param name="reqMsg"></param>
-        private void GetSendResponse(SocketBase socket, RequestMessage reqMsg)
+        private void GetSendResponse(IScsServerClient client, RequestMessage reqMsg)
         {
             //如果是状态请求，则直接返回数据
             if (!IsServiceCounter(reqMsg))
@@ -325,17 +287,9 @@ namespace MySoft.IoC
                 //调用请求方法
                 var resMsg = CallMethod(reqMsg);
 
-                if (resMsg != null)
-                {
-                    DataPacket packet = new DataPacket
-                    {
-                        PacketID = resMsg.TransactionId,
-                        PacketObject = resMsg
-                    };
-
-                    //发送数据到服务端
-                    (socket as SocketClient).Send(packet);
-                }
+                //发送数据到服务端
+                var buffer = SerializationManager.SerializeBin(resMsg);
+                client.SendMessage(new ScsRawDataMessage(buffer, reqMsg.TransactionId.ToString()));
             }
             else
             {
@@ -364,18 +318,12 @@ namespace MySoft.IoC
                     else
                         status.ErrorCount++;
 
-                    DataPacket packet = new DataPacket
-                    {
-                        PacketID = resMsg.TransactionId,
-                        PacketObject = resMsg
-                    };
-
-                    //发送数据到服务端
-                    int len;
-                    (socket as SocketClient).Send(packet, out len);
+                    var buffer = SerializationManager.SerializeBin(resMsg);
 
                     //计算流量
-                    status.DataFlow += len;
+                    status.DataFlow += buffer.Length;
+
+                    client.SendMessage(new ScsRawDataMessage(buffer, reqMsg.TransactionId.ToString()));
                 }
                 else
                 {
@@ -397,8 +345,6 @@ namespace MySoft.IoC
 
             try
             {
-                //Console.WriteLine("{0} begin => {1},{2}", DateTime.Now, reqMsg.ServiceName, reqMsg.SubServiceName);
-
                 //处理cacheKey信息
                 string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.SubServiceName, reqMsg.Parameters);
                 resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
@@ -441,14 +387,7 @@ namespace MySoft.IoC
                     //为了数据能返回，需要把过期时间与传输ID修改
                     resMsg.TransactionId = reqMsg.TransactionId;
                     resMsg.Expiration = reqMsg.Expiration;
-
-                    //fromCached = true;
                 }
-
-                //if (fromCached)
-                //    Console.WriteLine("{0} end(cache:{3}) => {1},{2}", DateTime.Now, reqMsg.ServiceName, reqMsg.SubServiceName, resMsg.RowCount);
-                //else
-                //    Console.WriteLine("{0} end({3}) => {1},{2}", DateTime.Now, reqMsg.ServiceName, reqMsg.SubServiceName, resMsg.RowCount);
             }
             catch (Exception ex)
             {
@@ -479,6 +418,29 @@ namespace MySoft.IoC
             if (request.ServiceName == typeof(IStatusService).FullName) return false;
 
             return true;
+        }
+
+        /// <summary>
+        /// 获取连接客户信息
+        /// </summary>
+        /// <returns></returns>
+        public override IList<ConnectInfo> GetConnectInfoList()
+        {
+            try
+            {
+                var items = server.Clients.GetAllItems();
+
+                //统计客户端数量
+                return items.Select(p => p.RemoteEndPoint as ScsTcpEndPoint).GroupBy(p => p.IpAddress)
+                     .Select(p => new ConnectInfo { IP = p.Key, Count = p.Count() })
+                     .ToList();
+            }
+            catch (Exception ex)
+            {
+                container_OnError(ex);
+
+                return new List<ConnectInfo>();
+            }
         }
 
         #endregion

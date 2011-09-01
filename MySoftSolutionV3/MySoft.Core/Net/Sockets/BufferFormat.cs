@@ -217,30 +217,23 @@ namespace MySoft.Net.Sockets
         {
             if (o == null || o.PacketObject == null) return new byte[0];
 
-            BufferTypeAttribute fca = CoreHelper.GetTypeAttribute<BufferTypeAttribute>(o.PacketObject.GetType());
-            if (fca != null)
+            List<byte> bufflist = new List<byte>();
+
+            //将包ID加入到数据包中
+            bufflist.AddRange(o.PacketID.ToByteArray());
+
+            //系列化后的数据包
+            bufflist.AddRange(SerializeObject(o.PacketObject));
+
+            //插入数据包大小
+            int l = bufflist.Count + 4;
+            byte[] data = GetSocketBytes(l);
+            for (int i = data.Length - 1; i >= 0; i--)
             {
-                List<byte> bufflist = new List<byte>();
-                bufflist.AddRange(GetSocketBytes(fca.BufferCmdType));
-
-                //将包ID加入到数据包中
-                bufflist.AddRange(o.PacketID.ToByteArray());
-
-                byte[] classdata = SerializeObject(o.PacketObject);
-                bufflist.AddRange(GetSocketBytes(classdata.Length));
-                bufflist.AddRange(classdata);
-
-                int l = bufflist.Count + 4;
-                byte[] data = GetSocketBytes(l);
-                for (int i = data.Length - 1; i >= 0; i--)
-                {
-                    bufflist.Insert(0, data[i]);
-                }
-
-                return bufflist.ToArray();
+                bufflist.Insert(0, data[i]);
             }
 
-            throw new EntryPointNotFoundException("无法找到 BufferTypeAttribute 标签");
+            return bufflist.ToArray();
         }
 
         #endregion

@@ -16,8 +16,6 @@ namespace MySoft.IoC.Configuration
         private int port = 8888;
         private double logtime = ServiceConfig.DEFAULT_LOGTIME_NUMBER;             //超时多长输出日志，默认为1秒
         private int records = ServiceConfig.DEFAULT_RECORD_NUMBER;                 //默认记录3600次   //记录条数，默认为3600条，1小时记录
-        private int maxconnect = ServiceConfig.DEFAULT_MAXCONNECT_NUMBER;
-        private int buffersize = ServiceConfig.DEFAULT_BUFFERSIZE_NUMBER;
 
         /// <summary>
         /// 获取远程对象配置
@@ -53,12 +51,6 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["port"] != null && xmlnode["port"].Value.Trim() != string.Empty)
                 port = Convert.ToInt32(xmlnode["port"].Value);
 
-            if (xmlnode["maxconnect"] != null && xmlnode["maxconnect"].Value.Trim() != string.Empty)
-                maxconnect = Convert.ToInt32(xmlnode["maxconnect"].Value);
-
-            if (xmlnode["buffersize"] != null && xmlnode["buffersize"].Value.Trim() != string.Empty)
-                buffersize = Convert.ToInt32(xmlnode["buffersize"].Value);
-
             if (xmlnode["logtime"] != null && xmlnode["logtime"].Value.Trim() != string.Empty)
                 logtime = Convert.ToDouble(xmlnode["logtime"].Value);
 
@@ -84,26 +76,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return port; }
             set { port = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the maxconnect
-        /// </summary>
-        /// <value>The maxconnect.</value>
-        public int MaxConnect
-        {
-            get { return maxconnect; }
-            set { maxconnect = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the buffersize
-        /// </summary>
-        /// <value>The buffersize.</value>
-        public int BufferSize
-        {
-            get { return buffersize; }
-            set { buffersize = value; }
         }
 
         /// <summary>

@@ -9,6 +9,6 @@ namespace MySoft.IoC.Message
     /// 服务消息委托
     /// </summary>
     /// <param name="sender"></param>
-    /// <param name="message"></param>
-    public delegate void ServiceMessageEventHandler(object sender, ServiceMessageEventArgs message);
+    /// <param name="args"></param>
+    public delegate void ServiceMessageEventHandler(object sender, ServiceMessageEventArgs args);
 }

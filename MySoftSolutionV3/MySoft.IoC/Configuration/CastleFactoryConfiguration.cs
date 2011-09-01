@@ -23,7 +23,6 @@ namespace MySoft.IoC.Configuration
         private double logtime = ServiceConfig.DEFAULT_LOGTIME_NUMBER;       //超时多长输出日志，默认为1秒
         private double timeout = ServiceConfig.DEFAULT_TIMEOUT_NUMBER;       //默认超时时间        30秒
         private double cachetime = ServiceConfig.DEFAULT_CACHETIME_NUMBER;   //默认缓存时间        60秒
-        private int buffersize = ServiceConfig.DEFAULT_BUFFERSIZE_NUMBER;
 
         /// <summary>
         /// 获取远程对象配置
@@ -79,9 +78,6 @@ namespace MySoft.IoC.Configuration
 
             if (xmlnode["appname"] != null && xmlnode["appname"].Value.Trim() != string.Empty)
                 appName = xmlnode["appname"].Value;
-
-            if (xmlnode["buffersize"] != null && xmlnode["buffersize"].Value.Trim() != string.Empty)
-                buffersize = Convert.ToInt32(xmlnode["buffersize"].Value);
 
             foreach (XmlNode child in node.ChildNodes)
             {
@@ -139,16 +135,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return type; }
             set { type = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the buffersize
-        /// </summary>
-        /// <value>The buffersize.</value>
-        public int BufferSize
-        {
-            get { return buffersize; }
-            set { buffersize = value; }
         }
 
         /// <summary>

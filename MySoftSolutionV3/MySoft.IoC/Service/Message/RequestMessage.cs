@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using MySoft.Net.Sockets;
+using MySoft.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Message
 {
@@ -9,7 +9,7 @@ namespace MySoft.IoC.Message
     /// request base
     /// </summary>
     [Serializable]
-    public abstract class RequestBase
+    public abstract class MessageBase
     {
         private string serviceName;
         private string subServiceName;
@@ -156,8 +156,7 @@ namespace MySoft.IoC.Message
     /// The request msg.
     /// </summary>
     [Serializable]
-    [BufferType(-10000)]
-    public class RequestMessage : RequestBase
+    public class RequestMessage : MessageBase
     {
         #region Private Members
 

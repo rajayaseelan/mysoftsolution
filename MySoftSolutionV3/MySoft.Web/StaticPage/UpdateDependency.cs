@@ -313,7 +313,14 @@ namespace MySoft.Web
             bool isUpdate = false;
             foreach (DateTime absoluteDateTime in absoluteDateTimes)
             {
-                isUpdate = currentDate.Ticks >= absoluteDateTime.Ticks;
+                //如果日期不一致，则把日期先变成一致
+                if (absoluteDateTime.Day != currentDate.Day)
+                {
+                    absoluteDateTimes[index] = absoluteDateTime.AddDays(currentDate.Day - absoluteDateTime.Day);
+                }
+
+                var span = currentDate.Subtract(absoluteDateTime);
+                isUpdate = span.Ticks > 0 && span.TotalMinutes < 5;
                 if (isUpdate)
                 {
                     switch (updateType)

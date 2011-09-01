@@ -319,7 +319,6 @@
     <Compile Include="Net\Sockets\BinaryUtil.cs" />
     <Compile Include="Net\Sockets\BufferFormat.cs" />
     <Compile Include="Net\Sockets\BufferReader.cs" />
-    <Compile Include="Net\Sockets\BufferTypeAttribute.cs" />
     <Compile Include="Net\Sockets\DataPacket.cs" />
     <Compile Include="Net\Sockets\SocketBase.cs" />
     <Compile Include="Net\Sockets\SocketClient.cs" />

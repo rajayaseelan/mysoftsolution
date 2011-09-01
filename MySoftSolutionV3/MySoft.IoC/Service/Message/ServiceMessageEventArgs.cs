@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net.Sockets;
+using MySoft.Communication.Scs.Client;
 
 namespace MySoft.IoC.Message
 {
@@ -17,8 +18,8 @@ namespace MySoft.IoC.Message
         public ResponseMessage Result { get; set; }
 
         /// <summary>
-        /// 返回通讯的Socket对象
+        /// 返回通讯的Client对象
         /// </summary>
-        public Socket Socket { get; set; }
+        public IScsClient Client { get; set; }
     }
 }

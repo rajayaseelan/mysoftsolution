@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Data;
-using MySoft.Net.Sockets;
 
 namespace MySoft.IoC.Message
 {
@@ -10,8 +9,7 @@ namespace MySoft.IoC.Message
     /// The response msg.
     /// </summary>
     [Serializable]
-    [BufferType(10000)]
-    public class ResponseMessage : RequestBase
+    public class ResponseMessage : MessageBase
     {
         private ResponseData data;
 

@@ -1,26 +1,27 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using MySoft.Logger;
 using MySoft.IoC.Configuration;
-using MySoft.Net.Sockets;
-using System.Collections;
+using MySoft.Logger;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// 服务监控
     /// </summary>
-    public class ServerMoniter : IStatusService, ILogable, IErrorLogable
+    public abstract class ServerMoniter : IStatusService, ILogable, IErrorLogable
     {
         protected IServiceContainer container;
         protected CastleServiceConfiguration config;
-        protected SocketServer server;
         protected TimeStatusCollection statuslist;
         protected HighestStatus highest;
         private DateTime startTime;
 
+        /// <summary>
+        /// 实例化ServerMoniter
+        /// </summary>
+        /// <param name="config"></param>
         public ServerMoniter(CastleServiceConfiguration config)
         {
             this.config = config;
@@ -35,10 +36,6 @@ namespace MySoft.IoC
             this.statuslist = new TimeStatusCollection(config.Records);
             this.highest = new HighestStatus();
             this.startTime = DateTime.Now;
-
-            //实例化Socket服务
-            server = new SocketServer();
-            server.MaxAccept = config.MaxConnect;
         }
 
         #region ILogable Members
@@ -184,21 +181,7 @@ namespace MySoft.IoC
         /// 获取连接客户信息
         /// </summary>
         /// <returns></returns>
-        public IList<ConnectInfo> GetConnectInfoList()
-        {
-            try
-            {
-                return server.SocketClientList.Cast<SocketClient>().GroupBy(p => p.IpAddress)
-                     .Select(p => new ConnectInfo { IP = p.Key, Count = p.Count() })
-                     .ToList();
-            }
-            catch (Exception ex)
-            {
-                container_OnError(ex);
-
-                return new List<ConnectInfo>();
-            }
-        }
+        public abstract IList<ConnectInfo> GetConnectInfoList();
 
         #endregion
     }

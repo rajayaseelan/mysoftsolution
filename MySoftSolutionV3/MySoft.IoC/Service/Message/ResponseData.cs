@@ -67,7 +67,7 @@ namespace MySoft.IoC.Message
         /// <param name="reqBase"></param>
         /// <param name="keys"></param>
         /// <param name="value"></param>
-        public ResponseData(RequestBase reqBase, byte[] keys, object value)
+        public ResponseData(MessageBase reqBase, byte[] keys, object value)
         {
             this.compress = reqBase.Compress;
             this.encrypt = reqBase.Encrypt;

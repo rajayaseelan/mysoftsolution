@@ -33,16 +33,6 @@ namespace MySoft.IoC
         public const int DEFAULT_RECORD_NUMBER = 3600; //3600次
 
         /// <summary>
-        /// The default maxconnect number.
-        /// </summary>
-        public const int DEFAULT_MAXCONNECT_NUMBER = 10000;
-
-        /// <summary>
-        /// The default maxbuffer number.
-        /// </summary>
-        public const int DEFAULT_BUFFERSIZE_NUMBER = 8192;
-
-        /// <summary>
         /// The default maxpool number.
         /// </summary>
         public const int DEFAULT_CLIENTPOOL_NUMBER = 10;
