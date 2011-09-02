@@ -88,6 +88,11 @@ namespace MySoft.Web
             get { return updateSuccess; }
             set { updateSuccess = value; }
         }
+
+        public AbstractUpdateDependency()
+        {
+            this.updateSuccess = true;
+        }
     }
 
     /// <summary>

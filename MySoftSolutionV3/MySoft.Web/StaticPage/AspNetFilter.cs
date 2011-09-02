@@ -116,7 +116,11 @@ namespace MySoft.Web
                 if (HttpContext.Current.Response.ContentType.ToLower().Contains("text/html"))
                 {
                     //处理内容
-                    byte[] data = encoding.GetBytes(ReplaceContext(content));
+                    byte[] data = null;
+                    if (replace)
+                        data = encoding.GetBytes(WebHelper.ReplaceContext(content, extension));
+                    else
+                        data = encoding.GetBytes(content);
 
                     //Write out the response to the browser.
                     m_sink.Write(data, 0, data.Length);
@@ -131,40 +135,6 @@ namespace MySoft.Web
                 //Write out the response to the browser.
                 m_sink.Write(buffer, offset, count);
             }
-        }
-
-        /// <summary>
-        /// 处理内容
-        /// </summary>
-        /// <param name="content"></param>
-        /// <returns></returns>
-        protected string ReplaceContext(string content)
-        {
-            if (replace && !string.IsNullOrEmpty(extension))
-            {
-                string p0 = "(<a\\s*href\\s*=\\s*[\'|\"]+)(?:\\s*(?<url>(?!=(?<http>http.\\/\\/)|(?<www>www\\.))([\\w+-\\/]*).aspx)(.*?[\'|\"]))";
-                string p1 = "(<option\\s*value\\s*=\\s*[\'|\"]+)(?:\\s*(?<url>(?!=(?<http>http.\\/\\/)|(?<www>www\\.))([\\w+-\\/]*).aspx)(.*?[\'|\"]))";
-                string p2 = "(action\\s*=\\s*[\'|\"]+)(?:\\s*(?<url>(?!=(?<http>http.\\/\\/)|(?<www>www\\.))([\\w+-\\/]*)" + extension + ")(.*?[\'|\"]))";
-                string p = "$1$2{0}$3";
-
-                string[,] pattern = {
-                                        { p0, string.Format(p, extension) },
-                                        { p1, string.Format(p, extension) },
-                                        { p2, string.Format(p, ".aspx") }
-                                    };
-
-                //将生成的内容进行替换
-                for (int i = 0; i < pattern.GetLength(0); i++)
-                {
-                    Regex reg = new Regex(pattern[i, 0], RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                    if (reg.IsMatch(content))
-                    {
-                        content = reg.Replace(content, pattern[i, 1]);
-                    }
-                }
-            }
-
-            return content;
         }
     }
 }

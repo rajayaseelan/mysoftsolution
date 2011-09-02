@@ -1,14 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.SessionState;
 using System.Web.UI;
 using MySoft.Web.Configuration;
-using MySoft.Logger;
-using System.IO.Compression;
-using System.Net;
-using System.Text;
 
 namespace MySoft.Web
 {
@@ -79,8 +77,7 @@ namespace MySoft.Web
                             //需要生成静态页面
                             if (!File.Exists(staticFile))  //静态页面不存在
                             {
-                                var filter = new ResponseFilter(context.Response.Filter, staticFile, rule.ValidateString, config.Replace, config.Extension);
-                                context.Response.Filter = filter;
+                                CreateStaticFile(filePath, staticFile, rule.ValidateString, config.Replace, config.Extension);
                                 break;
                             }
                             else
@@ -94,15 +91,13 @@ namespace MySoft.Web
                                 int span = (int)DateTime.Now.Subtract(file.LastWriteTime).TotalSeconds;
                                 if (rule.Timeout > 0 && span >= rule.Timeout) //静态页面过期
                                 {
-                                    var filter = new ResponseFilter(context.Response.Filter, staticFile, rule.ValidateString, config.Replace, config.Extension);
-                                    context.Response.Filter = filter;
+                                    CreateStaticFile(filePath, staticFile, rule.ValidateString, config.Replace, config.Extension);
                                     break;
                                 }
                                 //检测是否需要更新
                                 else if (!string.IsNullOrEmpty(rule.UpdateFor) && CheckUpdate(context, rule.UpdateFor))
                                 {
-                                    var filter = new ResponseFilter(context.Response.Filter, staticFile, rule.ValidateString, config.Replace, config.Extension);
-                                    context.Response.Filter = filter;
+                                    CreateStaticFile(filePath, staticFile, rule.ValidateString, config.Replace, config.Extension);
                                     break;
                                 }
                                 else
@@ -155,11 +150,26 @@ namespace MySoft.Web
         }
 
         /// <summary>
+        /// 创建静态文件
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="savePath"></param>
+        /// <param name="validateString"></param>
+        /// <param name="replace"></param>
+        /// <param name="extension"></param>
+        private void CreateStaticFile(string filePath, string savePath, string validateString, bool replace, string extension)
+        {
+            SingleStaticPageItem item = new SingleStaticPageItem(filePath, savePath, validateString);
+            if (replace) item.Callback += new CallbackEventHandler(p => WebHelper.ReplaceContext(p, extension));
+            item.Update(TimeSpan.FromSeconds(1));
+        }
+
+        /// <summary>
         /// 设置内容格式
         /// </summary>
         /// <param name="context"></param>
         /// <param name="fileExtension"></param>
-        private static void SetContentType(HttpContext context, string fileExtension)
+        private void SetContentType(HttpContext context, string fileExtension)
         {
             //判断是否为xml格式
             if (fileExtension.ToLower() == ".xml")

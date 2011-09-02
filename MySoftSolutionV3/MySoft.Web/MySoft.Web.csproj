@@ -73,8 +73,10 @@
     <Compile Include="CacheControl\Configuration\CacheControlConfiguration.cs" />
     <Compile Include="CacheControl\Configuration\CacheControlRule.cs" />
     <Compile Include="CacheControl\Configuration\CacheControlRuleCollection.cs" />
+    <Compile Include="StaticPage\AspNetFilter.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="StaticPage\StaticPageException.cs" />
-    <Compile Include="StaticPage\AspNetFilter.cs" />
     <Compile Include="URLRewriter\BaseModuleRewriter.cs" />
     <Compile Include="URLRewriter\Configuration\RewriterConfiguration.cs" />
     <Compile Include="URLRewriter\Configuration\RewriterConfigurationHandler.cs" />
@@ -101,7 +103,6 @@
     <Compile Include="StaticPage\Configuration\StaticPageRuleCollection.cs" />
     <Compile Include="StaticPage\StaticPageHandler.cs" />
     <Compile Include="Handler\PageHandlerFactory.cs" />
-    <Compile Include="StaticPage\ResponseFilter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebUI\Ajax\AjaxRequest.cs" />
     <Compile Include="WebUI\Ajax\CallbackParam.cs" />

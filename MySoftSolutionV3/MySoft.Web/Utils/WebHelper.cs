@@ -6,6 +6,7 @@ using System.Text;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI;
+using System.Text.RegularExpressions;
 
 namespace MySoft.Web
 {
@@ -543,6 +544,37 @@ namespace MySoft.Web
         {
             return txtStr.Replace(" ", "&nbsp;").Replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;").
                 Replace("<", "&lt;").Replace(">", "&gt;").Replace("\r", "").Replace("\n", "<br />");
+        }
+
+        /// <summary>
+        /// 处理内容
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        public static string ReplaceContext(string content, string extension)
+        {
+            string p0 = "(<a\\s*href\\s*=\\s*[\'|\"]+)(?:\\s*(?<url>(?!=(?<http>http.\\/\\/)|(?<www>www\\.))([\\w+-\\/]*).aspx)(.*?[\'|\"]))";
+            string p1 = "(<option\\s*value\\s*=\\s*[\'|\"]+)(?:\\s*(?<url>(?!=(?<http>http.\\/\\/)|(?<www>www\\.))([\\w+-\\/]*).aspx)(.*?[\'|\"]))";
+            string p2 = "(action\\s*=\\s*[\'|\"]+)(?:\\s*(?<url>(?!=(?<http>http.\\/\\/)|(?<www>www\\.))([\\w+-\\/]*)" + extension + ")(.*?[\'|\"]))";
+            string p = "$1$2{0}$3";
+
+            string[,] pattern = {
+                                        { p0, string.Format(p, extension) },
+                                        { p1, string.Format(p, extension) },
+                                        { p2, string.Format(p, ".aspx") }
+                                    };
+
+            //将生成的内容进行替换
+            for (int i = 0; i < pattern.GetLength(0); i++)
+            {
+                Regex reg = new Regex(pattern[i, 0], RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                if (reg.IsMatch(content))
+                {
+                    content = reg.Replace(content, pattern[i, 1]);
+                }
+            }
+
+            return content;
         }
 
         #endregion
