@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Aspect
 {
     /// <summary>
     /// Aspect代理管理器

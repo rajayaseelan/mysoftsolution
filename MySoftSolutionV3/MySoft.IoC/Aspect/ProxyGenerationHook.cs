@@ -2,7 +2,7 @@
 using System.Reflection;
 using Castle.DynamicProxy;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Aspect
 {
     public class ProxyGenerationHook : IProxyGenerationHook
     {

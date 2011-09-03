@@ -1,7 +1,7 @@
 ﻿using Castle.Core.Interceptor;
 using Castle.DynamicProxy;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Aspect
 {
     /// <summary>
     /// AOP拦截器

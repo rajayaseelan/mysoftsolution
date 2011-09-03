@@ -14,6 +14,8 @@ namespace MySoft.IoC.Configuration
     {
         private string host = "any";
         private int port = 8888;
+        private bool encrypt = false;
+        private bool compress = false;
         private double logtime = ServiceConfig.DEFAULT_LOGTIME_NUMBER;             //超时多长输出日志，默认为1秒
         private int records = ServiceConfig.DEFAULT_RECORD_NUMBER;                 //默认记录3600次   //记录条数，默认为3600条，1小时记录
 
@@ -51,6 +53,12 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["port"] != null && xmlnode["port"].Value.Trim() != string.Empty)
                 port = Convert.ToInt32(xmlnode["port"].Value);
 
+            if (xmlnode["encrypt"] != null && xmlnode["encrypt"].Value.Trim() != string.Empty)
+                encrypt = Convert.ToBoolean(xmlnode["encrypt"].Value);
+
+            if (xmlnode["compress"] != null && xmlnode["compress"].Value.Trim() != string.Empty)
+                compress = Convert.ToBoolean(xmlnode["compress"].Value);
+
             if (xmlnode["logtime"] != null && xmlnode["logtime"].Value.Trim() != string.Empty)
                 logtime = Convert.ToDouble(xmlnode["logtime"].Value);
 
@@ -76,6 +84,26 @@ namespace MySoft.IoC.Configuration
         {
             get { return port; }
             set { port = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the encrypt.
+        /// </summary>
+        /// <value>The encrypt.</value>
+        public bool Encrypt
+        {
+            get { return encrypt; }
+            set { encrypt = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the compress.
+        /// </summary>
+        /// <value>The format.</value>
+        public bool Compress
+        {
+            get { return compress; }
+            set { compress = value; }
         }
 
         /// <summary>

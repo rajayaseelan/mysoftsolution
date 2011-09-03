@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Aspect
 {
     /// <summary>
     /// 切面方法选择器

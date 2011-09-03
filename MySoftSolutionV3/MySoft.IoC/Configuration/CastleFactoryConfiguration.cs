@@ -12,12 +12,9 @@ namespace MySoft.IoC.Configuration
     /// </summary>
     public class CastleFactoryConfiguration : ConfigurationBase
     {
-        private CastleFactoryType type = CastleFactoryType.Local;
-        private bool encrypt = false;
-        private bool compress = false;
-
         private IDictionary<string, RemoteNode> nodes = new Dictionary<string, RemoteNode>();
-        private string defaultKey;          //默认服务
+        private CastleFactoryType type = CastleFactoryType.Local;
+        private string defaultKey;              //默认服务
         private string appName;                 //host名称
         private bool throwerror = true;         //抛出异常
         private double logtime = ServiceConfig.DEFAULT_LOGTIME_NUMBER;       //超时多长输出日志，默认为1秒
@@ -55,12 +52,6 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["type"] != null && xmlnode["type"].Value.Trim() != string.Empty)
                 type = (CastleFactoryType)Enum.Parse(typeof(CastleFactoryType), xmlnode["type"].Value, true);
 
-            if (xmlnode["encrypt"] != null && xmlnode["encrypt"].Value.Trim() != string.Empty)
-                encrypt = Convert.ToBoolean(xmlnode["encrypt"].Value);
-
-            if (xmlnode["compress"] != null && xmlnode["compress"].Value.Trim() != string.Empty)
-                compress = Convert.ToBoolean(xmlnode["compress"].Value);
-
             if (xmlnode["timeout"] != null && xmlnode["timeout"].Value.Trim() != string.Empty)
                 timeout = Convert.ToDouble(xmlnode["timeout"].Value);
 
@@ -94,6 +85,12 @@ namespace MySoft.IoC.Configuration
                     //最大连接池
                     if (childnode["maxpool"] != null && childnode["maxpool"].Value.Trim() != string.Empty)
                         remoteNode.MaxPool = Convert.ToInt32(childnode["maxpool"].Value);
+
+                    if (childnode["encrypt"] != null && childnode["encrypt"].Value.Trim() != string.Empty)
+                        remoteNode.Encrypt = Convert.ToBoolean(childnode["encrypt"].Value);
+
+                    if (childnode["compress"] != null && childnode["compress"].Value.Trim() != string.Empty)
+                        remoteNode.Compress = Convert.ToBoolean(childnode["compress"].Value);
 
                     //处理默认的服务
                     if (string.IsNullOrEmpty(defaultKey))
@@ -145,26 +142,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return appName; }
             set { appName = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the encrypt.
-        /// </summary>
-        /// <value>The encrypt.</value>
-        public bool Encrypt
-        {
-            get { return encrypt; }
-            set { encrypt = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the compress.
-        /// </summary>
-        /// <value>The format.</value>
-        public bool Compress
-        {
-            get { return compress; }
-            set { compress = value; }
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Castle.DynamicProxy;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Aspect
 {
     /// <summary>
     /// AOP工厂类

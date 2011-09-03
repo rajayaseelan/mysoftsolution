@@ -15,7 +15,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default timeout number. 
         /// </summary>
-        public const double DEFAULT_TIMEOUT_NUMBER = 60; //30秒
+        public const double DEFAULT_TIMEOUT_NUMBER = 300; //300秒
 
         /// <summary>
         /// The default cachetime number.
@@ -25,7 +25,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default logtime number.
         /// </summary>
-        public const double DEFAULT_LOGTIME_NUMBER = 5; //1秒
+        public const double DEFAULT_LOGTIME_NUMBER = 5; //5秒
 
         /// <summary>
         /// The default record number.
@@ -35,7 +35,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default maxpool number.
         /// </summary>
-        public const int DEFAULT_CLIENTPOOL_NUMBER = 10;
+        public const int DEFAULT_CLIENTPOOL_NUMBER = 50;
 
         #endregion
     }

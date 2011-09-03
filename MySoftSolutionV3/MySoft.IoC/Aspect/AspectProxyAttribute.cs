@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Aspect
 {
     /// <summary>
     /// 拦截器属性

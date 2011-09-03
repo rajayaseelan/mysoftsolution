@@ -14,6 +14,8 @@ namespace MySoft.IoC.Configuration
         private string ip;
         private int port;
         private string key;
+        private bool encrypt = false;
+        private bool compress = false;
         private int maxpool = ServiceConfig.DEFAULT_CLIENTPOOL_NUMBER;
 
         /// <summary>
@@ -44,6 +46,26 @@ namespace MySoft.IoC.Configuration
         {
             get { return port; }
             set { port = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the encrypt.
+        /// </summary>
+        /// <value>The encrypt.</value>
+        public bool Encrypt
+        {
+            get { return encrypt; }
+            set { encrypt = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the compress.
+        /// </summary>
+        /// <value>The format.</value>
+        public bool Compress
+        {
+            get { return compress; }
+            set { compress = value; }
         }
 
         /// <summary>
