@@ -1,0 +1,1431 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MySoft.Common</name>
+    </assembly>
+    <members>
+        <member name="T:MySoft.Common.FunctionHelper">
+            <summary>
+            Function ：功能函数类，字符串处理类等
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.IsValiable(System.String,System.String)">
+            <summary>
+            判断输入的字符串是否完全匹配正则
+            </summary>
+            <param name="RegexExpression">正则表达式</param>
+            <param name="str">待判断的字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConvertURL(System.String,System.String)">
+            <summary>
+            转换代码中的URL路径为绝对URL路径
+            </summary>
+            <param name="sourceString">源代码</param>
+            <param name="replaceURL">替换要添加的URL</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.GetImgFileUrl(System.String)">
+            <summary>
+            获取代码中所有图片的以HTTP开头的URL地址
+            </summary>
+            <param name="sourceString">代码内容</param>
+            <returns>ArrayList</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.GetFileUrlPath(System.String)">
+            <summary>
+            获取代码中所有文件的以HTTP开头的URL地址
+            </summary>
+            <param name="sourceString">代码内容</param>
+            <returns>ArrayList</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.SqlParame(System.String)">
+            <summary>
+            获取一条SQL语句中的所参数
+            </summary>
+            <param name="sql">SQL语句</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.OracleParame(System.String)">
+            <summary>
+            获取一条SQL语句中的所参数
+            </summary>
+            <param name="sql">SQL语句</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConvertText(System.String)">
+            <summary>
+            将HTML代码转化成纯文本
+            </summary>
+            <param name="sourceHTML">HTML代码</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.GetAppSettings(System.String)">
+            <summary>
+            获取 web.config 文件中指定 key 的值
+            </summary>
+            <param name="keyName">key名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.WriteDate(System.String,System.Int32)">
+            <summary>
+            按照指定格式输出时间
+            </summary>
+            <param name="NowDate">时间</param>
+            <param name="type">输出类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.GetInfo(System.String,System.Int32)">
+            <summary>
+            判断客户端操作系统和浏览器的配置
+            </summary>
+            <param name="Info">客户端返回的头信息(Request.UserAgent)</param>
+            <param name="Type">获取类型：1为操作系统， 2为浏览器</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.GetMAC_Address">
+            <summary>
+            获取服务器本机的MAC地址
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConvertDirURL(System.String)">
+            <summary>
+            转换文件路径中不规则字符
+            </summary>
+            <param name="path"></param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConvertXmlString(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="str"></param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConvertIntDateTime(System.Double)">
+            <summary>
+            转换一个double型数字串为时间，起始 0 为 1970-01-01 08:00:00
+            原理就是，每过一秒就在这个数字串上累加一
+            </summary>
+            <param name="d">double 型数字</param>
+            <returns>DateTime</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConvertDateTimeInt(System.DateTime)">
+            <summary>
+            转换时间为一个double型数字串，起始 0 为 1970-01-01 08:00:00
+            原理就是，每过一秒就在这个数字串上累加一
+            </summary>
+            <param name="time">时间</param>
+            <returns>double</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.GetFileName(System.String)">
+            <summary>
+            获取一个URL中引用的文件名称（包括后缀符）
+            </summary>
+            <param name="url">URL地址</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.AddFirst(System.String,System.String)">
+            <summary>
+            检测某一字符串的第一个字符是否与指定的
+            字符一致，否则在该字符串前加上这个字符
+            </summary>
+            <param name="Strings">字符串</param>
+            <param name="Str">字符</param>
+            <returns>返回 string</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.AddLast(System.String,System.String)">
+            <summary>
+            检测某一字符串的最后一个字符是否与指定的
+            字符一致，否则在该字符串末尾加上这个字符
+            </summary>
+            <param name="Strings">字符串</param>
+            <param name="Str">字符</param>
+            <returns>返回 string</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.DelFirst(System.String,System.String)">
+            <summary>
+            检测某一字符串的第一个字符是否与指定的
+            字符一致，相同则去掉这个字符
+            </summary>
+            <param name="Strings">字符串</param>
+            <param name="Str">字符</param>
+            <returns>返回 string</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.DelLast(System.String,System.String)">
+            <summary>
+            检测某一字符串的最后一个字符是否与指定的
+            字符一致，相同则去掉这个字符
+            </summary>
+            <param name="Strings">字符串</param>
+            <param name="Str">字符</param>
+            <returns>返回 string</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.GetRealPath(System.String)">
+            <summary>
+            获取一个目录的绝对路径（适用于WEB应用程序）
+            </summary>
+            <param name="folderPath">目录路径</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.GetRealFile(System.String)">
+            <summary>
+            获取一个文件的绝对路径（适用于WEB应用程序）
+            </summary>
+            <param name="filePath">文件路径</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.HtmlEncode(System.String)">
+            <summary>
+            对字符串进行 HTML 编码操作
+            </summary>
+            <param name="str">字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.HtmlDecode(System.String)">
+            <summary>
+            对 HTML 字符串进行解码操作
+            </summary>
+            <param name="str">字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConvertScript(System.String)">
+            <summary>
+            对脚本程序进行处理
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.SplitArray(System.String,System.Char)">
+            <summary>
+            将一个字符串以某一特定字符分割成字符串数组
+            </summary>
+            <param name="Strings">字符串</param>
+            <param name="str">分割字符</param>
+            <returns>string[]</returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.InArray(System.String,System.String,System.Char)">
+            <summary>
+            检测一个字符串，是否存在于一个以固定分割符分割的字符串中
+            </summary>
+            <param name="str">字符串</param>
+            <param name="Strings">固定分割符分割的字符串</param>
+            <param name="Str">分割符</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.InArray(System.String,System.String[])">
+            <summary>
+            检测一个字符串，是否存在于一个以固定分割符分割的字符串中
+            </summary>
+            <param name="str">字符串</param>
+            <param name="array">字符串数组</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.CheckValiable(System.Object)">
+            <summary>
+            检测值是否有效，为 null 或 "" 均为无效
+            </summary>
+            <param name="obj">要检测的值</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConstructSplitSQL(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.String)">
+            <summary>
+            获取分页操作SQL语句(对于排序的字段必须建立索引，优化分页提取方式)
+            </summary>
+            <param name="tblName">操作表名称</param>
+            <param name="fldName">排序的索引字段</param>
+            <param name="PageIndex">当前页</param>
+            <param name="PageSize">每页显示记录数</param>
+            <param name="totalRecord">总记录数</param>
+            <param name="OrderType">排序方式(0升序，1为降序)</param>
+            <param name="strWhere">检索的条件语句，不需要再加WHERE关键字</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConstructSplitSQL(System.String,System.String,System.Int32,System.Int32,System.String,System.Int32,System.String)">
+            <summary>
+            获取分页操作SQL语句(对于排序的字段必须建立索引)
+            </summary>
+            <param name="tblName">操作表名</param>
+            <param name="fldName">操作索引字段名称</param>
+            <param name="PageIndex">当前页</param>
+            <param name="PageSize">每页显示记录数</param>
+            <param name="rtnFields">返回字段集合，中间用逗号格开。返回全部用“*”</param>
+            <param name="OrderType">排序方式(0升序，1为降序)</param>
+            <param name="strWhere">检索的条件语句，不需要再加WHERE关键字</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConstructSplitSQL(System.String,System.String,System.String,System.Int32,System.Int32,System.String,System.Int32,System.String)">
+            <summary>
+            获取分页操作SQL语句(对于排序的字段必须建立索引)
+            </summary>
+            <param name="tblName">操作表名</param>
+            <param name="fldName">操作索引字段名称</param>
+            <param name="unionCondition">用于连接的条件，例如: LEFT JOIN UserInfo u ON (u.UserID = b.UserID)</param>
+            <param name="PageIndex">当前页</param>
+            <param name="PageSize">每页显示记录数</param>
+            <param name="rtnFields">返回字段集合，中间用逗号格开。返回全部用“*”</param>
+            <param name="OrderType">排序方式，0升序，1为降序</param>
+            <param name="strWhere">检索的条件语句，不需要再加WHERE关键字</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConstructSplitSQL_TOP(System.String,System.String,System.Int32,System.Int32,System.String,System.Int32,System.String)">
+            <summary>
+            获取分页操作SQL语句(对于排序的字段必须建立索引)
+            </summary>
+            <param name="tblName">操作表名</param>
+            <param name="fldName">操作索引字段名称</param>
+            <param name="PageIndex">当前页</param>
+            <param name="PageSize">每页显示记录数</param>
+            <param name="rtnFields">返回字段集合，中间用逗号格开。返回全部用“*”</param>
+            <param name="OrderType">排序方式(0升序，1为降序)</param>
+            <param name="strWhere">检索的条件语句，不需要再加WHERE关键字</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FunctionHelper.ConstructSplitSQL_sort(System.String,System.String,System.Int32,System.Int32,System.String,System.Int32,System.String,System.String)">
+            <summary>
+            获取分页操作SQL语句(对于排序的字段必须建立索引)
+            </summary>
+            <param name="tblName">操作表名</param>
+            <param name="fldName">操作索引字段名称</param>
+            <param name="PageIndex">当前页</param>
+            <param name="PageSize">每页显示记录数</param>
+            <param name="rtnFields">返回字段集合，中间用逗号格开。返回全部用“*”</param>
+            <param name="OrderType">排序方式(0升序，1为降序)</param>
+            <param name="sort">排序表达式</param>
+            <param name="strWhere">检索的条件语句，不需要再加WHERE关键字</param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.Common.StringHelper">
+            <summary>
+            字符串的处理函数集
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.RemoveSurplusSpaces(System.String)">
+            <summary>
+            移除多余的空格，保留一个空格
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.ConvertStreamToString(System.IO.Stream)">
+            <summary>
+            将 Stream 转化成 string
+            </summary>
+            <param name="s">Stream流</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.ConvertSql(System.String)">
+            <summary>
+            对传递的参数字符串进行处理，防止注入式攻击
+            </summary>
+            <param name="str">传递的参数字符串</param>
+            <returns>String</returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.FormatNUM(System.Int64)">
+            <summary>
+            格式化占用空间大小的输出
+            </summary>
+            <param name="size">大小</param>
+            <returns>返回 String</returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.IsValidEmail(System.String)">
+            <summary>
+            判断字符串是否为有效的邮件地址
+            </summary>
+            <param name="email"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.IsValidURL(System.String)">
+            <summary>
+            判断字符串是否为有效的URL地址
+            </summary>
+            <param name="url"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.IsValidInt(System.String)">
+            <summary>
+            判断字符串是否为Int类型的
+            </summary>
+            <param name="val"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.IsNum(System.String)">
+            <summary>
+            检测字符串是否全为正整数
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.IsDouble(System.String)">
+            <summary>
+            检测字符串是否全为数字型
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.Strings(System.Char,System.Int32)">
+            <summary>
+            输出由同一字符组成的指定长度的字符串
+            </summary>
+            <param name="Char">输出字符，如：A</param>
+            <param name="i">指定长度</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.Len(System.String)">
+            <summary>
+            返回字符串的真实长度，一个汉字字符相当于两个单位长度
+            </summary>
+            <param name="str">指定字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.MakeName">
+            <summary>
+            以日期为标准获得一个绝对的名称
+            </summary>
+            <returns>返回 String</returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.GetLen(System.String)">
+            <summary>
+            返回字符串的真实长度，一个汉字字符相当于两个单位长度(使用Encoding类)
+            </summary>
+            <param name="str">指定字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.CutLen(System.String,System.Int32,System.String)">
+            <summary>
+            按照字符串的实际长度截取指定长度的字符串
+            </summary>
+            <param name="text">字符串</param>
+            <param name="Length">指定长度</param>
+            <param name="showomit">显示省略号</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.RandomNUM(System.Int32)">
+            <summary>
+            获取指定长度的纯数字随机数字串
+            </summary>
+            <param name="intLong">数字串长度</param>
+            <returns>字符串</returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.RandomSTR(System.Int32)">
+            <summary>
+            获取一个由26个小写字母组成的指定长度的随即字符串
+            </summary>
+            <param name="intLong">指定长度</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.RandomNUMSTR(System.Int32)">
+            <summary>
+            获取一个由数字和26个小写字母组成的指定长度的随即字符串
+            </summary>
+            <param name="intLong">指定长度</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.StringHelper.ConvertSpellFirst(System.String)">
+            <summary>
+            将指定字符串中的汉字转换为拼音首字母的缩写，其中非汉字保留为原字符
+            </summary>
+            <param name="text"></param>
+            <returns></returns>
+        </member>
+        <member name="F:MySoft.Common.StringHelper.pyvalue">
+            
+             <summary> 
+            将汉字转换成为拼音 
+             </summary> 
+        </member>
+        <member name="M:MySoft.Common.StringHelper.ConvertSpellFull(System.String)">
+            <summary>
+            将指定字符串中的汉字转换为拼音字母，其中非汉字保留为原字符
+            </summary>
+            <param name="text">要转换的文本内容</param>
+            <returns>string</returns>
+        </member>
+        <member name="T:MySoft.Common.CommonHelper">
+            <summary>
+            WebUtility : 基于System.Web的拓展类。
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.CommonHelper.ValidateUrl(System.String)">
+            <summary>
+            检测指定的 Uri 是否有效
+            </summary>
+            <param name="url">指定的Url地址</param>
+            <returns>bool</returns>
+        </member>
+        <member name="M:MySoft.Common.CommonHelper.DownloadFile(System.String,System.String,System.Int64)">
+            <summary>
+            输出硬盘文件，提供下载 支持大文件、续传、速度限制、资源占用小
+            </summary>
+            <param name="_fileName">下载文件名</param>
+            <param name="_fullPath">带文件名下载路径</param>
+            <param name="_speed">每秒允许下载的字节数</param>
+            <returns>返回是否成功</returns>
+        </member>
+        <member name="M:MySoft.Common.CommonHelper.Download(System.String,System.String)">
+            <summary>
+            下载服务器上的文件（适用于非WEB路径下，且是大文件，该方法在IE中不会显示下载进度）
+            </summary>
+            <param name="path">下载文件的绝对路径</param>
+            <param name="saveName">保存的文件名，包括后缀符</param>
+        </member>
+        <member name="M:MySoft.Common.CommonHelper.DownloadFile(System.String,System.String)">
+            <summary>
+            下载服务器上的文件（适用于非WEB路径下，且是大文件，该方法在IE中会显示下载进度）
+            </summary>
+            <param name="path">下载文件的绝对路径</param>
+            <param name="saveName">保存的文件名，包括后缀符</param>
+        </member>
+        <member name="M:MySoft.Common.CommonHelper.LoadURLString(System.String)">
+            <summary>
+            从指定的URL下载页面内容(使用WebRequest)
+            </summary>
+            <param name="url">指定URL</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.CommonHelper.LoadPageContent(System.String)">
+            <summary>
+            从指定的URL下载页面内容(使用WebClient)
+            </summary>
+            <param name="url">指定URL</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.CommonHelper.RemoteGetFile(System.String,System.String)">
+            <summary>
+            远程提取文件保存至服务器上(使用WebRequest)
+            </summary>
+            <param name="url">一个URI上的文件</param>
+            <param name="saveurl">文件保存在服务器上的全路径</param>
+        </member>
+        <member name="M:MySoft.Common.CommonHelper.WebClientGetFile(System.String,System.String)">
+            <summary>
+            远程提取一个文件保存至服务器上(使用WebClient)
+            </summary>
+            <param name="url">一个URI上的文件</param>
+            <param name="saveurl">保存文件</param>
+        </member>
+        <member name="M:MySoft.Common.CommonHelper.WebClientGetFile(System.String[],System.String[])">
+            <summary>
+            远程提取一组文件保存至服务器上(使用WebClient)
+            </summary>
+            <param name="urls">一组URI上的文件</param>
+            <param name="saveurls">保存文件</param>
+        </member>
+        <member name="M:MySoft.Common.CommonHelper.UploadFile(System.Web.HttpPostedFile,System.String,System.Int32,System.Boolean,System.String)">
+            <summary>
+            上传文件
+            </summary>
+            <param name="upfile">获取客户段上传的文件</param>
+            <param name="limitType">允许上传的文件类型，null值为无限制</param>
+            <param name="limitSize">上传文件的大小限制(0为无限制)</param>
+            <param name="autoName">是否自动命名</param>
+            <param name="savepath">上传文件的保存路径</param>
+            <returns>string[]</returns>
+        </member>
+        <member name="T:MySoft.Common.ServiceMethod">
+            <summary>
+            ServiceMethod : 自定义服务的操作方式。
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.ServiceMethod.CheckUser">
+            <summary>
+            验证用户登陆
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.ServiceMethod.AddUser">
+            <summary>
+            添加用户
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.ServiceMethod.ChangeUser">
+            <summary>
+            修改用户信息
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.ServiceMethod.DeleteUser">
+            <summary>
+            注销删除用户
+            </summary>
+        </member>
+        <member name="T:MySoft.Common.DESCrypto">
+            <summary>
+            DESCrypto : 采用DES对称加密方式的加密/解密。
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.DESCrypto.EncryptString(System.Byte[],System.String,System.String)">
+            <summary>
+            加密方法
+            </summary>
+            <param name="inputByteArray">要加密的byte[]内容</param>
+            <param name="sKey">加密使用的密钥</param>
+            <param name="sIV">加密使用的密钥初始化向量</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.DESCrypto.EncryptString(System.String,System.String,System.String)">
+            <summary>
+            加密方法
+            </summary>
+            <param name="pToEncrypt">要加密的文本内容</param>
+            <param name="sKey">加密使用的密钥</param>
+            <param name="sIV">加密使用的密钥初始化向量</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.DESCrypto.EncryptBytes(System.Byte[],System.String,System.String)">
+            <summary>
+            加密方法
+            </summary>
+            <param name="inputByteArray">要加密的byte[]内容</param>
+            <param name="sKey">加密使用的密钥</param>
+            <param name="sIV">加密使用的密钥初始化向量</param>
+            <returns>byte[]</returns>
+        </member>
+        <member name="M:MySoft.Common.DESCrypto.EncryptBytes(System.String,System.String,System.String)">
+            <summary>
+            加密方法
+            </summary>
+            <param name="pToEncrypt">要加密的文本内容</param>
+            <param name="sKey">加密使用的密钥</param>
+            <param name="sIV">加密使用的密钥初始化向量</param>
+            <returns>byte[]</returns>
+        </member>
+        <member name="M:MySoft.Common.DESCrypto.DecryptString(System.String,System.String)">
+            <summary>
+            解密方法
+            </summary>
+            <param name="pToDecrypt">要解密的文本内容</param>
+            <param name="sKey">解密使用的密钥</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.DESCrypto.DecryptString(System.String,System.String,System.String)">
+            <summary>
+            解密方法
+            </summary>
+            <param name="pToDecrypt">要解密的文本内容</param>
+            <param name="sKey">解密使用的密钥</param>
+            <param name="sIV">解密使用的密钥初始化向量</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.DESCrypto.DecryptBytes(System.String,System.String)">
+            <summary>
+            解密方法
+            </summary>
+            <param name="pToDecrypt">要解密的文本内容</param>
+            <param name="sKey">解密使用的密钥</param>
+            <returns>byte[]</returns>
+        </member>
+        <member name="M:MySoft.Common.DESCrypto.DecryptBytes(System.String,System.String,System.String)">
+            <summary>
+            解密方法
+            </summary>
+            <param name="pToDecrypt">要解密的文本内容</param>
+            <param name="sKey">解密使用的密钥</param>
+            <param name="sIV">解密使用的密钥初始化向量</param>
+            <returns>byte[]</returns>
+        </member>
+        <member name="T:MySoft.Common.PostService">
+            <summary>
+            PostService : 自定义服务
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.PostService.Send(System.String,System.String)">
+            <summary>
+            向指定 Uri 地址以 POST 方式发送文本数据
+            </summary>
+            <param name="PostUrl">目标Uri地址</param>
+            <param name="Content">要发送的文本内容</param>
+            <returns>WebResponse</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.Send(System.String,System.Byte[])">
+            <summary>
+            向指定 Uri 地址以 POST 方式发送 byte[] 数据
+            </summary>
+            <param name="PostUrl">目标Uri地址</param>
+            <param name="Content">要发送的文本内容</param>
+            <returns>WebResponse</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.Send(System.String,System.String,System.Collections.Hashtable)">
+            <summary>
+            向指定 Uri 地址以 POST 方式发送文本数据
+            </summary>
+            <param name="PostUrl">目标Uri地址</param>
+            <param name="Content">要发送的文本内容</param>
+            <param name="headerCollection">要通过 Header 传送的数据集合</param>
+            <returns>WebResponse</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.Send(System.String,System.Byte[],System.Collections.Hashtable)">
+            <summary>
+            向指定 Uri 地址以 POST 方式发送二进制数据
+            </summary>
+            <param name="PostUrl">目标Uri地址</param>
+            <param name="Content">要发送的二进制内容</param>
+            <param name="headerCollection">要通过 Header 传送的数据集合</param>
+            <returns>WebResponse</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.ReceiveToString(System.String@)">
+            <summary>
+            获取以 POST 方式发送过来的流数据和 Header 中的信息
+            </summary>
+            <param name="RsaDESSTRING">用于DES加密解密的 Key 和 IV 的集合</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.ReceiveToBytes(System.String@)">
+            <summary>
+            获取以 POST 方式发送过来的流数据和 Header 中的信息
+            </summary>
+            <param name="RsaDESSTRING">用于DES加密解密的 Key 和 IV 的集合</param>
+            <returns>byte[]</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.GetResponseStream(System.Net.WebResponse)">
+            <summary>
+            发送方获取接收方返回的信息
+            </summary>
+            <param name="res">返回给发送方的 Response 对象</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.EncryptString(System.String,System.String,System.String,System.String,System.String@)">
+            <summary>
+            加密文本并返回 string
+            </summary>
+            <param name="Content">加密内容</param>
+            <param name="publicKey">公钥(XML格式)</param>
+            <param name="desKey">DES密钥</param>
+            <param name="desIV">DES向量</param>
+            <param name="rsaDes">经RSA加密后的desKey与desIV的集合</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.EncryptBytes(System.String,System.String,System.String,System.String,System.String@)">
+            <summary>
+            加密文本并返回 byte[]
+            </summary>
+            <param name="Content">加密内容</param>
+            <param name="publicKey">公钥(XML格式)</param>
+            <param name="desKey">DES密钥</param>
+            <param name="desIV">DES向量</param>
+            <param name="rsaDes">经RSA加密后的desKey与desIV的集合</param>
+            <returns>byte[]</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.EncryptString(System.Byte[],System.String,System.String,System.String,System.String@)">
+            <summary>
+            加密 byte[] 并返回 string
+            </summary>
+            <param name="Content">加密内容</param>
+            <param name="publicKey">公钥(XML格式)</param>
+            <param name="desKey">DES密钥</param>
+            <param name="desIV">DES向量</param>
+            <param name="rsaDes">经RSA加密后的desKey与desIV的集合</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.EncryptBytes(System.Byte[],System.String,System.String,System.String,System.String@)">
+            <summary>
+            加密 byte[] 并返回 byte[]
+            </summary>
+            <param name="Content">加密内容</param>
+            <param name="publicKey">公钥(XML格式)</param>
+            <param name="desKey">DES密钥</param>
+            <param name="desIV">DES向量</param>
+            <param name="rsaDes">经RSA加密后的desKey与desIV的集合</param>
+            <returns>byte[]</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.DecryptString(System.String,System.String,System.String,System.String@,System.String@)">
+            <summary>
+            解密函数
+            </summary>
+            <param name="Content">解密内容</param>
+            <param name="privateKey">私钥(XML格式)</param>
+            <param name="rsaDes">经RSA加密后的desKey与desIV的集合</param>
+            <param name="desKey">经RSA解密后的desKey</param>
+            <param name="desIV">经RSA解密后的desKey</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.PostService.DecryptBytes(System.String,System.String,System.String,System.String@,System.String@)">
+            <summary>
+            解密函数
+            </summary>
+            <param name="Content">解密内容</param>
+            <param name="privateKey">私钥(XML格式)</param>
+            <param name="rsaDes">经RSA加密后的desKey与desIV的集合</param>
+            <param name="desKey">经RSA解密后的desKey</param>
+            <param name="desIV">经RSA解密后的desKey</param>
+            <returns>byte[]</returns>
+        </member>
+        <member name="T:MySoft.Common.SymmCrypto">
+            <summary>
+            SymmCrypto : 实现.Net框架下的带密钥的加密/解密算法封装类。
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.SymmCrypto.#ctor(MySoft.Common.SymmCrypto.SymmProvEnum)">
+            <remarks> 
+            使用.Net SymmetricAlgorithm 类的构造器. 
+            </remarks> 
+        </member>
+        <member name="M:MySoft.Common.SymmCrypto.#ctor(System.Security.Cryptography.SymmetricAlgorithm)">
+            <remarks> 
+            使用自定义SymmetricAlgorithm类的构造器. 
+            </remarks> 
+        </member>
+        <member name="M:MySoft.Common.SymmCrypto.GetLegalKey(System.String)">
+            <remarks> 
+            Depending on the legal key size limitations of  
+            a specific CryptoService provider and length of  
+            the private key provided, padding the secret key  
+            with space character to meet the legal size of the algorithm. 
+            </remarks> 
+        </member>
+        <member name="M:MySoft.Common.SymmCrypto.Encrypting(System.String,System.String)">
+            <summary>
+            对字符串进行密钥加密
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.SymmCrypto.Decrypting(System.String,System.String)">
+            <summary>
+            对字符串进行密钥解密
+            </summary>
+        </member>
+        <member name="T:MySoft.Common.SymmCrypto.SymmProvEnum">
+            <summary>
+            加密/解密算法的方式
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.SymmCrypto.SymmProvEnum.DES">
+            <summary>
+            DES算法
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.SymmCrypto.SymmProvEnum.RC2">
+            <summary>
+            RC2算法
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.SymmCrypto.SymmProvEnum.Rijndael">
+            <summary>
+            Rijndael算法
+            </summary>
+        </member>
+        <member name="T:MySoft.Common.XmlHandler">
+            <summary>
+            xml 的摘要说明。
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.LoadXml(System.String)">
+            <summary>
+            加载xml文档
+            </summary>
+            <param name="xml"></param>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.GetValue(System.String)">
+            <summary>
+            取得名称为name的结点的值
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.CreateRoot(System.String)">
+            <summary>
+            创建一个包含version和指定根节点的XmlDocument
+            </summary>
+            <param name="rootName"></param>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.AppendChild(System.String,System.String)">
+            <summary>
+            增加一个子结点
+            </summary>
+            <param name="name"></param>
+            <param name="_value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.AddChild(System.Xml.XmlElement,System.String,System.String)">
+            <summary>
+            为一个XmlElement添加子节点，并返回添加的子节点引用
+            </summary>
+            <param name="xe"></param>
+            <param name="sField"></param>
+            <param name="sValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.AddChild(System.Xml.XmlElement,System.Xml.XmlDocument,System.String)">
+            <summary>
+            为一个XmlElement添加子节点，并返回添加的子节点引用
+            </summary>
+            <param name="xe"></param>
+            <param name="xd"></param>
+            <param name="sField"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.AddAttribute(System.Xml.XmlElement,System.String,System.String)">
+            <summary>
+            为一个节点添加属性
+            </summary>
+            <param name="xe"></param>
+            <param name="strName"></param>
+            <param name="strValue"></param>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.AddAttribute(System.Xml.XmlDocument,System.Xml.XmlElement,System.String,System.String)">
+            <summary>
+            为一个节点添加属性，不是系统表
+            </summary>
+            <param name="xdoc"></param>
+            <param name="xe"></param>
+            <param name="strName"></param>
+            <param name="strValue"></param>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.FindXnByName(System.Xml.XmlNodeList,System.String)">
+            <summary>
+            通过节点名称找到指定的节点
+            </summary>
+            <param name="xnl"></param>
+            <param name="strName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.GetXaValue(System.Xml.XmlAttributeCollection,System.String)">
+            <summary>
+            找到指定名称属性的值
+            </summary>
+            <param name="xac"></param>
+            <param name="strName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.GetXnValue(System.Xml.XmlNodeList,System.String)">
+            <summary>
+            找到指定名称属性的值
+            </summary>
+            <param name="xnl"></param>
+            <param name="strName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.SetXaValue(System.Xml.XmlAttributeCollection,System.String,System.String)">
+            <summary>
+            为一个属性指定值
+            </summary>
+            <param name="xac"></param>
+            <param name="strName"></param>
+            <param name="strValue"></param>
+        </member>
+        <member name="M:MySoft.Common.XmlHandler.FindXnByXa(System.Xml.XmlNodeList,System.String,System.String)">
+            <summary>
+            寻找具有指定名称和属性/值组合的节点
+            </summary>
+            <param name="xnl"></param>
+            <param name="strXaName"></param>
+            <param name="strXaValue"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.Common.ServiceClient">
+            <summary>
+            ServiceMethod : 客户端可以调用服务的类。
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.ServiceClient.Send(System.String,System.String,System.Boolean,System.Boolean)">
+            <summary>
+            发送 byte[] 数据，可选择加密或明文发送
+            </summary>
+            <param name="PostUri"></param>
+            <param name="Content">待加密的内容</param>
+            <param name="IsEncryptoSend">是否加密发送</param>
+            <param name="enableKeyIV">是否允许DES的加密算法Key,IV使用一致的</param>
+            <returns>WebResponse</returns>
+        </member>
+        <member name="M:MySoft.Common.ServiceClient.Send(System.String,MySoft.Common.PostUserInfo,System.Boolean,System.Boolean)">
+            <summary>
+            发送 byte[] 数据，可选择加密或明文发送
+            </summary>
+            <param name="PostUri"></param>
+            <param name="pui">待加密的内容</param>
+            <param name="IsEncryptoSend">是否加密发送</param>
+            <param name="enableKeyIV">是否允许DES的加密算法Key,IV使用一致的</param>
+            <returns>WebResponse</returns>
+        </member>
+        <member name="M:MySoft.Common.ServiceClient.GetResponseContent(System.Net.WebResponse,System.String@)">
+            <summary>
+            发送方获取接收方返回的信息
+            </summary>
+            <param name="res">返回给发送方的 Response 对象</param>
+            <param name="CS_RESULT">返回操作结果</param>
+            <returns>string</returns>
+        </member>
+        <member name="M:MySoft.Common.ServiceClient.InvokeWebservice(System.String,System.String,System.String,System.String,System.Object[])">
+            <summary> 
+            根据指定的信息，调用远程WebService方法 
+            </summary> 
+            <param name="url">WebService的http形式的地址</param> 
+            <param name="namespace">欲调用的WebService的命名空间</param> 
+            <param name="classname">欲调用的WebService的类名（不包括命名空间前缀）</param> 
+            <param name="methodname">欲调用的WebService的方法名</param> 
+            <param name="args">参数列表</param> 
+            <returns>WebService的执行结果</returns> 
+            <remarks> 
+            如果调用失败，将会抛出Exception。请调用的时候，适当截获异常。 
+            异常信息可能会发生在两个地方： 
+            1、动态构造WebService的时候，CompileAssembly失败。 
+            2、WebService本身执行失败。 
+            </remarks> 
+            <example> 
+            <code> 
+            object obj = InvokeWebservice("http://localhost/GSP_WorkflowWebservice/common.asmx","Genersoft.Platform.Service.Workflow","Common","GetToolType",new object[]{"1"}); 
+            </code> 
+            </example> 
+        </member>
+        <member name="T:MySoft.Common.RSACrypto">
+            <summary>
+            RSACryption : 采用RSA不对称加密方式的加密/解密及数字签名。
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.RSAKey(System.String@,System.String@)">
+            <summary>
+            产生私钥 和公钥 
+            </summary>
+            <param name="xmlKeys"></param>
+            <param name="xmlPublicKey"></param>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.RSAEncrypt(System.String,System.String)">
+            <summary>
+            RSA的加密函数
+            </summary>
+            <param name="xmlPublicKey"></param>
+            <param name="m_strEncryptString"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.RSAEncrypt(System.String,System.Byte[])">
+            <summary>
+            RSA的加密函数 
+            </summary>
+            <param name="xmlPublicKey"></param>
+            <param name="EncryptString"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.RSADecrypt(System.String,System.String)">
+            <summary>
+            RSA的解密函数 
+            </summary>
+            <param name="xmlPrivateKey"></param>
+            <param name="m_strDecryptString"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.RSADecrypt(System.String,System.Byte[])">
+            <summary>
+            RSA的解密函数
+            </summary>
+            <param name="xmlPrivateKey"></param>
+            <param name="DecryptString"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.GetHash(System.String,System.Byte[]@)">
+            <summary>
+            获取Hash描述表 
+            </summary>
+            <param name="m_strSource"></param>
+            <param name="HashData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.GetHash(System.String,System.String@)">
+            <summary>
+            获取Hash描述表
+            </summary>
+            <param name="m_strSource"></param>
+            <param name="strHashData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.GetHash(System.IO.FileStream,System.Byte[]@)">
+            <summary>
+            获取Hash描述表 
+            </summary>
+            <param name="objFile"></param>
+            <param name="HashData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.GetHash(System.IO.FileStream,System.String@)">
+            <summary>
+            获取Hash描述表
+            </summary>
+            <param name="objFile"></param>
+            <param name="strHashData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.SignatureFormatter(System.String,System.Byte[],System.Byte[]@)">
+            <summary>
+            RSA签名
+            </summary>
+            <param name="p_strKeyPrivate"></param>
+            <param name="HashbyteSignature"></param>
+            <param name="EncryptedSignatureData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.SignatureFormatter(System.String,System.Byte[],System.String@)">
+            <summary>
+            RSA签名 
+            </summary>
+            <param name="p_strKeyPrivate"></param>
+            <param name="HashbyteSignature"></param>
+            <param name="m_strEncryptedSignatureData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.SignatureFormatter(System.String,System.String,System.Byte[]@)">
+            <summary>
+            RSA签名
+            </summary>
+            <param name="p_strKeyPrivate"></param>
+            <param name="m_strHashbyteSignature"></param>
+            <param name="EncryptedSignatureData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.SignatureFormatter(System.String,System.String,System.String@)">
+            <summary>
+            RSA签名
+            </summary>
+            <param name="p_strKeyPrivate"></param>
+            <param name="m_strHashbyteSignature"></param>
+            <param name="m_strEncryptedSignatureData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.SignatureDeformatter(System.String,System.Byte[],System.Byte[])">
+            <summary>
+             RSA 签名验证 
+            </summary>
+            <param name="p_strKeyPublic"></param>
+            <param name="HashbyteDeformatter"></param>
+            <param name="DeformatterData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.SignatureDeformatter(System.String,System.String,System.Byte[])">
+            <summary>
+            RSA 签名验证
+            </summary>
+            <param name="p_strKeyPublic"></param>
+            <param name="p_strHashbyteDeformatter"></param>
+            <param name="DeformatterData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.SignatureDeformatter(System.String,System.Byte[],System.String)">
+            <summary>
+            RSA 签名验证
+            </summary>
+            <param name="p_strKeyPublic"></param>
+            <param name="HashbyteDeformatter"></param>
+            <param name="p_strDeformatterData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.RSACrypto.SignatureDeformatter(System.String,System.String,System.String)">
+            <summary>
+            RSA 签名验证
+            </summary>
+            <param name="p_strKeyPublic"></param>
+            <param name="p_strHashbyteDeformatter"></param>
+            <param name="p_strDeformatterData"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.Common.PostUserInfo">
+            <summary>
+            PostUserInfo : 构造传递用户数据。
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.PostUserInfo.#ctor">
+            <summary>
+            构造函数
+            </summary>
+        </member>
+        <member name="P:MySoft.Common.PostUserInfo.UID">
+            <summary>
+            用户编号
+            </summary>
+        </member>
+        <member name="P:MySoft.Common.PostUserInfo.UserID">
+            <summary>
+            用户名
+            </summary>
+        </member>
+        <member name="P:MySoft.Common.PostUserInfo.UserPwd">
+            <summary>
+            用户密码
+            </summary>
+        </member>
+        <member name="P:MySoft.Common.PostUserInfo.UserMail">
+            <summary>
+            用户邮件地址
+            </summary>
+        </member>
+        <member name="P:MySoft.Common.PostUserInfo.OldUserPwd">
+            <summary>
+            旧密码
+            </summary>
+        </member>
+        <member name="P:MySoft.Common.PostUserInfo.Method">
+            <summary>
+            自定义服务的操作方式
+            </summary>
+        </member>
+        <member name="T:MySoft.Common.WebGDI">
+            <summary>
+            WebGDI : 文字图片、水印图片。
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.WebGDI.GetThumbnailImage(System.Int32,System.Int32,System.String,System.String,System.Int32,System.Int32,System.Drawing.Font)">
+            <summary>
+            生成缩微图，并加上阴影文字
+            </summary>
+            <param name="Width">生成缩微图的宽度</param>
+            <param name="Height">生成缩微图的高度</param>
+            <param name="SourceImg"></param>
+            <param name="Text"></param>
+            <param name="Left"></param>
+            <param name="Top"></param>
+            <param name="font">new Font("Fixedsys", 9, FontStyle.Regular)</param>
+        </member>
+        <member name="M:MySoft.Common.WebGDI.GetWaterMarkTextImage(System.String,System.String,System.String,MySoft.Common.wmPosition,System.String)">
+            <summary>
+            在一张图片的指定位置处加入水印文字
+            </summary>
+            <param name="SourceImage">指定源图片的绝对路径</param>
+            <param name="Text">指定文本</param>
+            <param name="fontFamily">文本字体</param>
+            <param name="textPos">指定位置</param>
+            <param name="SaveImage">保存图片的绝对路径</param>
+        </member>
+        <member name="M:MySoft.Common.WebGDI.GetWaterMarkPicImage(System.String,System.String,MySoft.Common.wmPosition,System.String)">
+            <summary>
+            在一张图片的指定位置处加入一张具有水印效果的图片
+            </summary>
+            <param name="SourceImage">指定源图片的绝对路径</param>
+            <param name="WaterMarkImage">指定水印图片的绝对路径</param>
+            <param name="wmPos">指定位置</param>
+            <param name="SaveImage">保存图片的绝对路径</param>
+        </member>
+        <member name="M:MySoft.Common.WebGDI.GetWarterMarkPicTextImage(System.String,System.String,System.String,System.String,MySoft.Common.wmPosition,MySoft.Common.wmPosition,System.String)">
+            <summary>
+            在一张图片的指定位置处加入一张具有水印效果的图片和一段文本
+            </summary>
+            <param name="SourceImage"></param>
+            <param name="WaterMarkImage"></param>
+            <param name="Text"></param>
+            <param name="fontFamily"></param>
+            <param name="wmPos"></param>
+            <param name="textPos"></param>
+            <param name="SaveImage"></param>
+        </member>
+        <member name="M:MySoft.Common.WebGDI.MakeSpamImageGen(System.String,System.String)">
+            <summary>
+            生成验证码图片
+            </summary>
+            <param name="sessionName"></param>
+            <param name="str"></param>
+        </member>
+        <member name="M:MySoft.Common.WebGDI.JustImage(System.String,System.Int32,System.Int32)">
+            <summary>
+            检测指定图片是否符合标准
+            </summary>
+            <param name="imgLoc"></param>
+            <param name="width"></param>
+            <param name="height"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.WebGDI.ImageMark(System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="imgLoc"></param>
+            <param name="wmLoc"></param>
+        </member>
+        <member name="M:MySoft.Common.WebGDI.ImageMark(System.String,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="imgLoc"></param>
+            <param name="wmLoc"></param>
+            <param name="wmAlign"></param>
+        </member>
+        <member name="M:MySoft.Common.WebGDI.GetEncoderInfo(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="mimeType"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.Common.wmPosition">
+            <summary>
+            水印效果在源图片中的位置
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.wmPosition.MM">
+            <summary>
+            绝对居中
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.wmPosition.LT">
+            <summary>
+            左上
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.wmPosition.LB">
+            <summary>
+            左下
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.wmPosition.CT">
+            <summary>
+            中上
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.wmPosition.CB">
+            <summary>
+            中下
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.wmPosition.RT">
+            <summary>
+            右上
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.wmPosition.RB">
+            <summary>
+            右下
+            </summary>
+        </member>
+        <member name="T:MySoft.Common.FileHelper">
+            <summary>
+            FileHelper : 文件系统的处理类
+            </summary>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.ReadFile(System.String)">
+            <summary>
+            以文件流的形式读取指定文件的内容
+            </summary>
+            <param name="file">指定的文件及其全路径</param>
+            <returns>返回 String</returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.WriteFile(System.String,System.String)">
+            <summary>
+            以文件流的形式将内容写入到指定文件中（如果该文件或文件夹不存在则创建）
+            </summary>
+            <param name="file">文件名和指定路径</param>
+            <param name="fileContent">文件内容</param>
+            <returns>返回布尔值</returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.WriteFile(System.String,System.String,System.Boolean)">
+            <summary>
+            以文件流的形式将内容写入到指定文件中（如果该文件或文件夹不存在则创建）
+            </summary>
+            <param name="file">文件名和指定路径</param>
+            <param name="fileContent">文件内容</param>
+            <param name="Append">是否追加指定内容到该文件中</param>
+            <returns>返回布尔值</returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.GetDirectoryAllInfos(System.String,MySoft.Common.FileHelper.FsoMethod)">
+            <summary>
+            获取指定目录下的所有目录及其文件信息
+            </summary>
+            <param name="dir">文件夹</param>
+            <param name="method">获取方式。</param>
+            <returns>DataTable</returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.SearchDirectoryAllInfo(System.String,System.String)">
+            <summary>
+            获取指定目录下的文件信息
+            </summary>
+            <param name="dir"></param>
+            <param name="search"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.GetDirectoryAllInfo(System.IO.DirectoryInfo,MySoft.Common.FileHelper.FsoMethod)">
+            <summary>
+            获取指定目录下的所有目录及其文件信息
+            </summary>
+            <param name="d">实例化的目录</param>
+            <param name="method">获取方式。1、仅获取文件夹结构  2、仅获取文件结构  3、同时获取文件和文件夹信息</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.CopyDT(System.Data.DataTable,System.Data.DataTable)">
+            <summary>
+            将两个结构一样的 DataTable 组合成一个 DataTable
+            </summary>
+            <param name="parent"></param>
+            <param name="child"></param>
+            <returns>DataTable</returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.GetDirInfos(System.String)">
+            <summary>
+            获取指定文件夹的信息，如：文件夹大小，文件夹数，文件数
+            </summary>
+            <param name="dir">指定文件夹路径</param>
+            <returns>返回 String</returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.GetDirectoryInfos(System.String,MySoft.Common.FileHelper.FsoMethod)">
+            <summary>
+            获取指定目录的目录信息
+            </summary>
+            <param name="dir">指定目录</param>
+            <param name="method">获取方式。1、仅获取文件夹结构  2、仅获取文件结构  3、同时获取文件和文件夹信息</param>
+            <returns>返回 DataTable</returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.IsExist(System.String,MySoft.Common.FileHelper.FsoMethod)">
+            <summary>
+            判断文件或文件夹是否存在
+            </summary>
+            <param name="file">指定文件及其路径</param>
+            <param name="method">判断方式</param>
+            <returns>返回布尔值</returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.Create(System.String,MySoft.Common.FileHelper.FsoMethod)">
+            <summary>
+            新建文件或文件夹
+            </summary>
+            <param name="file">文件或文件夹及其路径</param>
+            <param name="method">新建方式</param>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.CopyFile(System.String,System.String)">
+            <summary>
+            复制文件，如果目标文件已经存在则覆盖掉
+            </summary>
+            <param name="oldFile">源文件</param>
+            <param name="newFile">目标文件</param>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.CopyFileStream(System.String,System.String)">
+            <summary>
+            以流的形式复制拷贝文件
+            </summary>
+            <param name="oldPath">源文件</param>
+            <param name="newPath">目标文件</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.CopyDirectory(System.String,System.String)">
+            <summary>
+            复制文件夹中的所有内容及其子目录所有文件
+            </summary>
+            <param name="oldDir">源文件夹及其路径</param>
+            <param name="newDir">目标文件夹及其路径</param>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.Move(System.String,System.String,MySoft.Common.FileHelper.FsoMethod)">
+            <summary>
+            移动文件或文件夹
+            </summary>
+            <param name="oldFile">原始文件或文件夹</param>
+            <param name="newFile">目标文件或文件夹</param>
+            <param name="method">移动方式：1、为移动文件，2、为移动文件夹</param>
+        </member>
+        <member name="M:MySoft.Common.FileHelper.Delete(System.String,MySoft.Common.FileHelper.FsoMethod)">
+            <summary>
+            删除文件或文件夹
+            </summary>
+            <param name="file">文件或文件夹及其路径</param>
+            <param name="method">删除方式：1、为删除文件，2、为删除文件夹</param>
+        </member>
+        <member name="T:MySoft.Common.FileHelper.FsoMethod">
+            <summary>
+            文件系统的处理对象
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.FileHelper.FsoMethod.Folder">
+            <summary>
+            仅用于处理文件夹
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.FileHelper.FsoMethod.File">
+            <summary>
+            仅用于处理文件
+            </summary>
+        </member>
+        <member name="F:MySoft.Common.FileHelper.FsoMethod.All">
+            <summary>
+            文件和文件夹都参与处理
+            </summary>
+        </member>
+    </members>
+</doc>

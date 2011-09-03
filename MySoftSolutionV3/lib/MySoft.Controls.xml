@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MySoft.Controls</name>
+    </assembly>
+    <members>
+        <member name="T:MySoft.Web.UI.Controls.Repeater">
+            <summary>
+            强类型Repeater (支持分页)
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UI.Controls.Repeater.DataItemType">
+            <summary>
+            DataItem数据类型
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UI.Controls.Repeater.DataSource">
+            <summary>
+            DataSource为HtmlPager时支持分页
+            </summary>
+        </member>
+        <member name="T:MySoft.Web.UI.Controls.Repeater`1">
+            <summary>
+            强类型Repeater (支持分页)
+            </summary>
+            <typeparam name="TDataItem"></typeparam>
+        </member>
+        <member name="M:MySoft.Web.UI.Controls.HtmlEditor.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            呈现在客户端时生成的代码 
+            </summary>
+            <param name="writer"></param>
+        </member>
+    </members>
+</doc>
