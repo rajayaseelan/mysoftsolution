@@ -1,1 +1,0 @@
-<%@ Application Codebehind="Global.asax.cs" Inherits="MySoft.RESTful.Web.Global" Language="C#" %>
