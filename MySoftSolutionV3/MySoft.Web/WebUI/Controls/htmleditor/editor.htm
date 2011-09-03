@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312;">
+    <title>简单Html编辑器</title>
+    <script src="editfunc.js" type="text/javascript"></script>
+    <script src="colorSelect.js" type="text/javascript"></script>
+    <script src="portraitSelect.js" type="text/javascript"></script>
+    <link href="editor.css" rel="stylesheet" type="text/css" />
+</head>
+<body">
+    <table style="border-right: #c5c5c5 1px solid; border-top: #c5c5c5 1px solid; border-left: #c5c5c5 1px solid; border-bottom: #c5c5c5 1px solid; font-size: 12px" cellspacing="0" cellpadding="0" width="100%" background="images/bg.gif" border="0">
+        <tbody>
+            <tr>
+                <td style="padding-left: 5px" valign="middle" height="31">
+                    <table cellspacing="0" cellpadding="0" border="0">
+                        <tbody>
+                            <tr>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="剪切" onclick="format('Cut')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/1.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="复制" onclick="format('Copy')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/2.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="粘贴" onclick="format('Paste')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/3.gif" width="20" /></td>
+                                <td class="ico"><img height="20" src="images/line.gif" width="4" /></td>
+                                <td class="ico2"><img onmousedown="fSetBorderMouseDown(this)" id="imgFontface" onmouseover="fSetBorderMouseOver(this)" title="字体" onclick="fGetEv(event);fDisplayElement('fontface','')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/4.gif" width="25" /></td>
+                                <td class="ico2"><img onmousedown="fSetBorderMouseDown(this)" id="imgFontsize" onmouseover="fSetBorderMouseOver(this)" title="字号" onclick="fGetEv(event);fDisplayElement('fontsize','')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/5.gif" width="25" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="加粗" onclick="format('Bold');" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/6.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="斜体" onclick="format('Italic');" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/7.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="下划线" onclick="format('Underline')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/8.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="左对齐" onclick="format('Justifyleft')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/9.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="中间对齐" onclick="format('Justifycenter')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/10.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="右对齐" onclick="format('Justifyright')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/11.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="数字编号" onclick="format('Insertorderedlist')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/12.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="项目编号" onclick="format('Insertunorderedlist')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/13.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="增加缩进" onclick="format('Outdent')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/14.gif" width="20" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="减少缩进" onclick="format('Indent')" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/15.gif" width="20" /></td>
+                                <td class="ico3"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="字体颜色" onclick="foreColor(event)" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/16.gif" width="23" /></td>
+                                <td class="ico2"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="背景颜色" onclick="backColor(event)" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/17.gif" width="24" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="增加链接" onclick="createLink()" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/18.gif" width="21" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="增加图片" onclick="createImg()" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/19.gif" width="21" /></td>
+                                <td class="ico"><img onmousedown="fSetBorderMouseDown(this)" onmouseover="fSetBorderMouseOver(this)" title="魔法表情" onclick="addPortrait(event)" onmouseout="fSetBorderMouseOut(this)" height="20" src="images/20.gif" width="22" /></td>
+                                <td class="ico4">&nbsp;</td>
+                                <td style="font-size: 12px">&nbsp;</td>
+                                <td style="font-size: 12px"><input language="javascript" onmouseover="fSetModeTip(this)" onclick="setMode(this.checked)" onmouseout="fHideTip()" type="checkbox" name="switchMode" id="switchMode"/><label for="switchMode">HTML</label></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div id="dvForeColor" style="display: none; left: -500px; width: 100px; position: absolute; top: -500px; height: 100px">
+        <table style="border-right: #888888 1px solid; border-top: #888888 1px solid; border-left: #888888 1px solid; border-bottom: #888888 1px solid" height="25" cellspacing="0" cellpadding="0" width="218">
+            <tbody>
+                <tr>
+                    <td id="tdView" width="110">&nbsp;</td>
+                    <td id="tdColorCode" align="middle" bgcolor="#ffffff"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="dvPortrait" style="display: none; left: -500px; width: 100px; position: absolute; top: -500px; height: 100px">
+    </div>
+    <div id="fontface" style="border-right: #838383 1px solid; padding-right: 1px; border-top: #838383 1px solid;
+        display: none; padding-left: 1px; z-index: 99; background: #ffffff; left: 2px;
+        padding-bottom: 1px; border-left: #838383 1px solid; width: 110px; padding-top: 1px;
+        border-bottom: #838383 1px solid; position: absolute; top: 35px; height: 270px">
+        <a class="n" style="font: 12px '宋体'" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="javascript:void(0)">宋体</a>
+        <a class="n" style="font: 12px '黑体'" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="javascript:void(0)">黑体</a>
+        <a class="n" style="font: 12px '楷体'" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="javascript:void(0)">楷体</a>
+        <a class="n" style="font: 12px '隶书'" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="javascript:void(0)">隶书</a>
+        <a class="n" style="font: 12px '幼圆'" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="###">幼圆</a>
+        <a class="n" style="font: 12px Arial" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="###">Arial</a>
+        <a class="n" style="font: 12px 'Arial Narrow'" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="###">Arial Narrow</a>
+        <a class="n" style="font: 12px 'Arial Black'" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="###">Arial Black</a>
+        <a class="n" style="font: 12px 'Comic Sans MS'" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="###">Comic Sans MS</a>
+        <a class="n" style="font: 12px Courier" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="###">Courier</a>
+        <a class="n" style="font: 12px System" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="###">System</a>
+        <a class="n" style="font: 12px 'Times New Roman'" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="javascript:void(0)">Times New Roman</a>
+        <a class="n" style="font: 12px Verdana" onclick="format('fontname',this.innerHTML);this.parentNode.style.display='none'" href="javascript:void(0)">Verdana</a>
+    </div>
+    <div id="fontsize" style="border-right: #838383 1px solid; padding-right: 1px; border-top: #838383 1px solid;
+        display: none; padding-left: 1px; background: #ffffff; left: 26px; padding-bottom: 1px;
+        border-left: #838383 1px solid; width: 115px; padding-top: 1px; border-bottom: #838383 1px solid;
+        position: absolute; top: 35px; height: 160px">
+        <a class="n" style="font-size: xx-small; line-height: 120%" onclick="format('fontsize',1);this.parentNode.style.display='none'" href="javascript:void(0)">极小</a>
+        <a class="n" style="font-size: x-small; line-height: 120%" onclick="format('fontsize',2);this.parentNode.style.display='none'" href="javascript:void(0)">特小</a>
+        <a class="n" style="font-size: small; line-height: 120%" onclick="format('fontsize',3);this.parentNode.style.display='none'" href="javascript:void(0)">小</a>
+        <a class="n" style="font-size: medium; line-height: 120%" onclick="format('fontsize',4);this.parentNode.style.display='none'" href="##">中</a>
+        <a class="n" style="font-size: large; line-height: 120%" onclick="format('fontsize',5);this.parentNode.style.display='none'" href="javascript:void(0)">大</a>
+        <a class="n" style="font-size: x-large; line-height: 120%" onclick="format('fontsize',6);this.parentNode.style.display='none'" href="javascript:void(0)">特大</a>
+        <a class="n" style="font-size: xx-large; line-height: 140%" onclick="format('fontsize',7);this.parentNode.style.display='none'" href="javascript:void(0)">极大</a>
+    </div>
+    <script language="JavaScript" type="text/javascript">
+		<!--
+        var height = document.body.clientHeight; //document.body.clientHeight;
+        document.write('<div id="divEditor"><table width="100%" height:287px border="0" cellspacing="0" cellpadding="0" ><tr><td style="border:1px solid #C5C5C5; border-top:0;">');
+        document.write('<IFRAME class="HtmlEditor" ID="HtmlEditor" name="HtmlEditor" style=" height:' + (height - 35) + 'px;width:100%;" frameBorder="0" marginHeight=0 marginWidth=0 src="blankpage.htm"></IFRAME>');
+        document.write('</td></tr></table></div>');
+        document.write('<textarea ID="sourceEditor" style="height:' + (height - 35) + 'px;width:100%;font-size:12px; display:none"></textarea>');
+
+        var doc = document.frames.HtmlEditor.document;
+        doc.designMode = "On";
+        window.setTimeout('document.frames.HtmlEditor.focus()', 100);
+        //-->
+    </script>
+</body>
+</html>
