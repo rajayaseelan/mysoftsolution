@@ -4,136 +4,808 @@
         <name>MySoft.IoC</name>
     </assembly>
     <members>
-        <member name="T:MySoft.IoC.TimeStatus">
+        <member name="T:MySoft.IoC.Status.TimeStatus">
             <summary>
             时间状态信息
             </summary>
         </member>
-        <member name="T:MySoft.IoC.SecondStatus">
+        <member name="T:MySoft.IoC.Status.SecondStatus">
             <summary>
             每秒服务器状态信息
             </summary>
         </member>
-        <member name="P:MySoft.IoC.SecondStatus.DataFlow">
+        <member name="P:MySoft.IoC.Status.SecondStatus.DataFlow">
             <summary>
             数据流量
             </summary>
         </member>
-        <member name="P:MySoft.IoC.SecondStatus.RequestCount">
+        <member name="P:MySoft.IoC.Status.SecondStatus.RequestCount">
             <summary>
             请求数
             </summary>
         </member>
-        <member name="P:MySoft.IoC.SecondStatus.SuccessCount">
+        <member name="P:MySoft.IoC.Status.SecondStatus.SuccessCount">
             <summary>
             成功计数
             </summary>
         </member>
-        <member name="P:MySoft.IoC.SecondStatus.ErrorCount">
+        <member name="P:MySoft.IoC.Status.SecondStatus.ErrorCount">
             <summary>
             错误数
             </summary>
         </member>
-        <member name="P:MySoft.IoC.SecondStatus.ElapsedTime">
+        <member name="P:MySoft.IoC.Status.SecondStatus.ElapsedTime">
             <summary>
             总耗时
             </summary>
         </member>
-        <member name="P:MySoft.IoC.SecondStatus.AverageDataFlow">
+        <member name="P:MySoft.IoC.Status.SecondStatus.AverageDataFlow">
             <summary>
             平均数据流量（每次请求）
             </summary>
         </member>
-        <member name="P:MySoft.IoC.SecondStatus.AverageElapsedTime">
+        <member name="P:MySoft.IoC.Status.SecondStatus.AverageElapsedTime">
             <summary>
             平均耗时（每次请求）
             </summary>
         </member>
-        <member name="P:MySoft.IoC.TimeStatus.CounterTime">
+        <member name="P:MySoft.IoC.Status.TimeStatus.CounterTime">
             <summary>
             记数时间
             </summary>
         </member>
-        <member name="T:MySoft.IoC.TimeStatusCollection">
+        <member name="T:MySoft.IoC.Status.TimeStatusCollection">
             <summary>
             时间状态集合
             </summary>
         </member>
-        <member name="M:MySoft.IoC.TimeStatusCollection.GetOrCreate(System.DateTime)">
+        <member name="M:MySoft.IoC.Status.TimeStatusCollection.GetOrCreate(System.DateTime)">
             <summary>
             获取或创建
             </summary>
             <param name="value"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.TimeStatusCollection.ToList">
+        <member name="M:MySoft.IoC.Status.TimeStatusCollection.ToList">
             <summary>
             返回列表
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.TimeStatusCollection.GetLast">
+        <member name="M:MySoft.IoC.Status.TimeStatusCollection.GetLast">
             <summary>
             获取最后一条
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.TimeStatusCollection.Clear">
+        <member name="M:MySoft.IoC.Status.TimeStatusCollection.Clear">
             <summary>
             清除字典中的数据
             </summary>
         </member>
-        <member name="T:MySoft.IoC.IStatusService">
+        <member name="T:MySoft.IoC.Messages.ServiceMessageEventArgs">
             <summary>
-            状态服务 (超时为30秒，缓存1秒)
+            服务响应事件参数
             </summary>
         </member>
-        <member name="M:MySoft.IoC.IStatusService.GetServiceInfoList">
+        <member name="P:MySoft.IoC.Messages.ServiceMessageEventArgs.Result">
             <summary>
-            获取服务信息列表
+            响应的消息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ServiceMessageEventArgs.Client">
+            <summary>
+            返回通讯的Client对象
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel">
+            <summary>
+            This class is used to communicate with a remote application over TCP/IP protocol.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase">
+            <summary>
+            This class provides base functionality for all communication channel classes.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Channels.ICommunicationChannel">
+            <summary>
+            Represents a communication channel.
+            A communication channel is used to communicate (send/receive messages) with a remote application.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Messengers.IMessenger">
+            <summary>
+            Represents an object that can send and receive messages.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messengers.IMessenger.SendMessage(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Sends a message to the remote application.
+            </summary>
+            <param name="message">Message to be sent</param>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Communication.Messengers.IMessenger.MessageReceived">
+            <summary>
+            This event is raised when a new message is received.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Communication.Messengers.IMessenger.MessageSent">
+            <summary>
+            This event is raised when a new message is sent without any error.
+            It does not guaranties that message is properly handled and processed by remote application.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messengers.IMessenger.WireProtocol">
+            <summary>
+            Gets/sets wire protocol that is used while reading and writing messages.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messengers.IMessenger.LastReceivedMessageTime">
+            <summary>
+            Gets the time of the last succesfully received message.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messengers.IMessenger.LastSentMessageTime">
+            <summary>
+            Gets the time of the last succesfully sent message.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.ICommunicationChannel.Start">
+            <summary>
+            Starts the communication with remote application.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.ICommunicationChannel.Disconnect">
+            <summary>
+            Closes messenger.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Communication.Channels.ICommunicationChannel.Disconnected">
+            <summary>
+            This event is raised when client disconnected from server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Channels.ICommunicationChannel.RemoteEndPoint">
+            <summary>
+             Gets endpoint of remote application.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Channels.ICommunicationChannel.CommunicationState">
+            <summary>
+            Gets the current communication state.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.#ctor">
+            <summary>
+            Constructor.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.Disconnect">
+            <summary>
+            Disconnects from remote application and closes this channel.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.Start">
+            <summary>
+            Starts the communication with remote application.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.SendMessage(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Sends a message to the remote application.
+            </summary>
+            <param name="message">Message to be sent</param>
+            <exception cref="T:System.ArgumentNullException">Throws ArgumentNullException if message is null</exception>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.StartInternal">
+            <summary>
+            Starts the communication with remote application really.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.SendMessageInternal(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Sends a message to the remote application.
+            This method is overrided by derived classes to really send to message.
+            </summary>
+            <param name="message">Message to be sent</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.OnDisconnected">
+            <summary>
+            Raises Disconnected event.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.OnMessageReceived(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Raises MessageReceived event.
+            </summary>
+            <param name="message">Received message</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.OnMessageSent(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Raises MessageSent event.
+            </summary>
+            <param name="message">Received message</param>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.MessageReceived">
+            <summary>
+            This event is raised when a new message is received.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.MessageSent">
+            <summary>
+            This event is raised when a new message is sent without any error.
+            It does not guaranties that message is properly handled and processed by remote application.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.Disconnected">
+            <summary>
+            This event is raised when communication channel closed.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.RemoteEndPoint">
+            <summary>
+             Gets endpoint of remote application.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.CommunicationState">
+            <summary>
+            Gets the current communication state.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.LastReceivedMessageTime">
+            <summary>
+            Gets the time of the last succesfully received message.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.LastSentMessageTime">
+            <summary>
+            Gets the time of the last succesfully sent message.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.WireProtocol">
+            <summary>
+            Gets/sets wire protocol that the channel uses.
+            This property must set before first communication.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.ReceiveBufferSize">
+            <summary>
+            Size of the buffer that is used to receive bytes from TCP socket.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel._buffer">
+            <summary>
+            This buffer is used to receive bytes 
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel._clientSocket">
+            <summary>
+            Socket object to send/reveice messages.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel._running">
+            <summary>
+            A flag to control thread's running
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel._syncLock">
+            <summary>
+            This object is just used for thread synchronizing (locking).
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.#ctor(System.Net.Sockets.Socket)">
+            <summary>
+            Creates a new TcpCommunicationChannel object.
+            </summary>
+            <param name="clientSocket">A connected Socket object that is
+            used to communicate over network</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.Disconnect">
+            <summary>
+            Disconnects from remote application and closes channel.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.StartInternal">
+            <summary>
+            Starts the thread to receive messages from socket.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.SendMessageInternal(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Sends a message to the remote application.
+            </summary>
+            <param name="message">Message to be sent</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.ReceiveCallback(System.IAsyncResult)">
+            <summary>
+            This method is used as callback method in _clientSocket's BeginReceive method.
+            It reveives bytes from socker.
+            </summary>
+            <param name="ar">Asyncronous call result</param>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.RemoteEndPoint">
+            <summary>
+             Gets the endpoint of remote application.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Client.Tcp.TcpHelper">
+            <summary>
+            This class is used to simplify TCP socket operations.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.Tcp.TcpHelper.ConnectToServer(System.Net.EndPoint,System.Int32)">
+            <summary>
+            This code is used to connect to a TCP socket with timeout option.
+            </summary>
+            <param name="endPoint">IP endpoint of remote server</param>
+            <param name="timeoutMs">Timeout to wait until connect</param>
+            <returns>Socket object connected to server</returns>
+            <exception cref="T:System.Net.Sockets.SocketException">Throws SocketException if can not connect.</exception>
+            <exception cref="T:System.TimeoutException">Throws TimeoutException if can not connect within specified timeoutMs</exception>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Client.IConnectableClient">
+            <summary>
+            Represents a client for SCS servers.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.IConnectableClient.Connect">
+            <summary>
+            Connects to server.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.IConnectableClient.Disconnect">
+            <summary>
+            Disconnects from server.
+            Does nothing if already disconnected.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Client.IConnectableClient.Connected">
+            <summary>
+            This event is raised when client connected to server.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Client.IConnectableClient.Disconnected">
+            <summary>
+            This event is raised when client disconnected from server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Client.IConnectableClient.ConnectTimeout">
+            <summary>
+            Timeout for connecting to a server (as milliseconds).
+            Default value: 15 seconds (15000 ms).
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Client.IConnectableClient.CommunicationState">
+            <summary>
+            Gets the current communication state.
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.MessageBase">
+            <summary>
+            request base
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.ReturnType">
+            <summary>
+            Gets or sets the returnType.
+            </summary>
+            <value>The returnType.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.TransactionId">
+            <summary>
+            Gets or sets the transaction id.
+            </summary>
+            <value>The transaction id.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.ServiceName">
+            <summary>
+            Gets or sets the name of the service.
+            </summary>
+            <value>The name of the service.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.SubServiceName">
+            <summary>
+            Gets or sets the name of the sub service.
+            </summary>
+            <value>The name of the sub service.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.Parameters">
+            <summary>
+            Gets or sets the parameters.
+            </summary>
+            <value>The parameters.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.Expiration">
+            <summary>
+            Gets or sets the expiration.
+            </summary>
+            <value>The expiration.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.Message">
+            <summary>
+            响应的消息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.RequestMessage">
+            <summary>
+            The request msg.
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.RequestMessage.AppName">
+            <summary>
+            Gets or sets the name of the appName.
+            </summary>
+            <value>The name of the appName.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.RequestMessage.HostName">
+            <summary>
+            Gets or sets the name of the hostName.
+            </summary>
+            <value>The name of the hostName.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.RequestMessage.Timeout">
+            <summary>
+            Gets or sets the timeout of the service.
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.RequestMessage.IPAddress">
+            <summary>
+            Gets or sets the request address
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.RequestMessage.Message">
+            <summary>
+            请求的消息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.CastleFactory">
+            <summary>
+            The service factory.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.#ctor(MySoft.IoC.Configuration.CastleFactoryConfiguration,MySoft.IoC.IServiceContainer)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MySoft.IoC.CastleFactory"/> class.
+            </summary>
+            <param name="container">The container.</param>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.Create">
+            <summary>
+            Creates this instance.
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.IStatusService.ClearStatus">
+        <member name="M:MySoft.IoC.CastleFactory.CreateNew(MySoft.IoC.Configuration.CastleFactoryConfiguration)">
             <summary>
-            清除服务器状态
+            Creates this instance. Used in a multithreaded environment
             </summary>
+            <param name="config"></param>
+            <param name="name">service name</param>
+            <returns>The service factoru new instance.</returns>
         </member>
-        <member name="M:MySoft.IoC.IStatusService.GetServerStatus">
+        <member name="M:MySoft.IoC.CastleFactory.RegisterCacheDependent(MySoft.Cache.ICacheDependent)">
             <summary>
-            获取服务状态信息（包括SummaryStatus，HighestStatus，TimeStatus）
+            注册缓存依赖
             </summary>
+            <param name="cache"></param>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.ResolveService``1">
+            <summary>
+            Gets local the service.
+            </summary>
+            <returns>The service implemetation instance.</returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetService``1">
+            <summary>
+            Gets the service.
+            </summary>
+            <returns>The service implemetation instance.</returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetService``1(MySoft.IoC.ServiceNode)">
+            <summary>
+            Gets the service.
+            </summary>
+            <param name="node">The node name.</param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.IStatusService.GetSummaryStatus">
+        <member name="M:MySoft.IoC.CastleFactory.GetService``1(System.String)">
             <summary>
-            获取汇总状态信息
+            Gets the service.
             </summary>
+            <param name="nodeKey">The node key.</param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.IStatusService.GetHighestStatus">
+        <member name="P:MySoft.IoC.CastleFactory.ServiceContainer">
             <summary>
-            获取最高状态信息
+            Gets the service container.
             </summary>
-            <returns></returns>
+            <value>The service container.</value>
         </member>
-        <member name="M:MySoft.IoC.IStatusService.GetLatestStatus">
+        <member name="E:MySoft.IoC.CastleFactory.OnLog">
             <summary>
-            获取最后一次服务状态
+            OnLog event.
             </summary>
-            <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.IStatusService.GetTimeStatusList">
+        <member name="E:MySoft.IoC.CastleFactory.OnError">
             <summary>
-            获取时段的服务状态信息
+            OnError event.
             </summary>
-            <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.IStatusService.GetConnectInfoList">
+        <member name="T:MySoft.Communication.Scs.Communication.Messages.ScsTextMessage">
             <summary>
-            获取所有的客户端信息
+            This message is used to send/receive a text as message data.
             </summary>
-            <returns></returns>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Messages.ScsMessage">
+            <summary>
+            Represents a message that is sent and received by server and client.
+            This is the base class for all messages.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Messages.IScsMessage">
+            <summary>
+            Represents a message that is sent and received by server and client.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messages.IScsMessage.DataLength">
+            <summary>
+            data length for this message. 
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messages.IScsMessage.MessageId">
+            <summary>
+            Unique identified for this message. 
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messages.IScsMessage.RepliedMessageId">
+            <summary>
+            Unique identified for this message. 
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsMessage.#ctor">
+            <summary>
+            Creates a new ScsMessage.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsMessage.#ctor(System.String)">
+            <summary>
+            Creates a new reply ScsMessage.
+            </summary>
+            <param name="repliedMessageId">
+            Replied message id if this is a reply for
+            a message.
+            </param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsMessage.ToString">
+            <summary>
+            Creates a string to represents this object.
+            </summary>
+            <returns>A string to represents this object</returns>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messages.ScsMessage.DataLength">
+            <summary>
+            data length for this message. 
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messages.ScsMessage.MessageId">
+            <summary>
+            Unique identified for this message.
+            Default value: New GUID.
+            Do not change if you do not want to do low level changes
+            such as custom wire protocols.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messages.ScsMessage.RepliedMessageId">
+            <summary>
+            This property is used to indicate that this is
+            a Reply message to a message.
+            It may be null if this is not a reply message.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsTextMessage.#ctor">
+            <summary>
+            Creates a new ScsTextMessage object.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsTextMessage.#ctor(System.String)">
+            <summary>
+            Creates a new ScsTextMessage object with Text property.
+            </summary>
+            <param name="text">Message text that is being transmitted</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsTextMessage.#ctor(System.String,System.String)">
+            <summary>
+            Creates a new reply ScsTextMessage object with Text property.
+            </summary>
+            <param name="text">Message text that is being transmitted</param>
+            <param name="repliedMessageId">
+            Replied message id if this is a reply for
+            a message.
+            </param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsTextMessage.ToString">
+            <summary>
+            Creates a string to represents this object.
+            </summary>
+            <returns>A string to represents this object</returns>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messages.ScsTextMessage.Text">
+            <summary>
+            Message text that is being transmitted.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Messages.MessageEventArgs">
+            <summary>
+            Stores message to be used by an event.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.MessageEventArgs.#ctor(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Creates a new MessageEventArgs object.
+            </summary>
+            <param name="message">Message object that is associated with this event</param>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messages.MessageEventArgs.Message">
+            <summary>
+            Message object that is associated with this event.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Client.ScsClientBase">
+            <summary>
+            This class provides base functionality for client classes.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Client.IScsClient">
+            <summary>
+            Represents a client to connect to server.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Client.ScsClientBase.DefaultConnectionAttemptTimeout">
+            <summary>
+            Default timeout value for connecting a server.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Client.ScsClientBase._communicationChannel">
+            <summary>
+            The communication channel that is used by client to send and receive messages.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Client.ScsClientBase._pingTimer">
+            <summary>
+            This timer is used to send PingMessage messages to server periodically.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.#ctor">
+            <summary>
+            Constructor.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.Connect">
+            <summary>
+            Connects to server.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.Disconnect">
+            <summary>
+            Disconnects from server.
+            Does nothing if already disconnected.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.Dispose">
+            <summary>
+            Disposes this object and closes underlying connection.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.SendMessage(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Sends a message to the server.
+            </summary>
+            <param name="message">Message to be sent</param>
+            <exception cref="T:MySoft.Communication.Scs.Communication.CommunicationStateException">Throws a CommunicationStateException if client is not connected to the server.</exception>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.CreateCommunicationChannel">
+            <summary>
+            This method is implemented by derived classes to create appropriate communication channel.
+            </summary>
+            <returns>Ready communication channel to communicate</returns>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.CommunicationChannel_MessageReceived(System.Object,MySoft.Communication.Scs.Communication.Messages.MessageEventArgs)">
+            <summary>
+            Handles MessageReceived event of _communicationChannel object.
+            </summary>
+            <param name="sender">Source of event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.CommunicationChannel_MessageSent(System.Object,MySoft.Communication.Scs.Communication.Messages.MessageEventArgs)">
+            <summary>
+            Handles MessageSent event of _communicationChannel object.
+            </summary>
+            <param name="sender">Source of event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.CommunicationChannel_Disconnected(System.Object,System.EventArgs)">
+            <summary>
+            Handles Disconnected event of _communicationChannel object.
+            </summary>
+            <param name="sender">Source of event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.PingTimer_Elapsed(System.Object,System.EventArgs)">
+            <summary>
+            Handles Elapsed event of _pingTimer to send PingMessage messages to server.
+            </summary>
+            <param name="sender">Source of event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.OnConnected">
+            <summary>
+            Raises Connected event.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.OnDisconnected">
+            <summary>
+            Raises Disconnected event.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.OnMessageReceived(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Raises MessageReceived event.
+            </summary>
+            <param name="message">Received message</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.OnMessageSent(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Raises MessageSent event.
+            </summary>
+            <param name="message">Received message</param>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Client.ScsClientBase.MessageReceived">
+            <summary>
+            This event is raised when a new message is received.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Client.ScsClientBase.MessageSent">
+            <summary>
+            This event is raised when a new message is sent without any error.
+            It does not guaranties that message is properly handled and processed by remote application.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Client.ScsClientBase.Connected">
+            <summary>
+            This event is raised when communication channel closed.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Client.ScsClientBase.Disconnected">
+            <summary>
+            This event is raised when client disconnected from server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Client.ScsClientBase.ConnectTimeout">
+            <summary>
+            Timeout for connecting to a server (as milliseconds).
+            Default value: 15 seconds (15000 ms).
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Client.ScsClientBase.WireProtocol">
+            <summary>
+            Gets/sets wire protocol that is used while reading and writing messages.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Client.ScsClientBase.CommunicationState">
+            <summary>
+            Gets the communication state of the Client.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Client.ScsClientBase.LastReceivedMessageTime">
+            <summary>
+            Gets the time of the last succesfully received message.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Client.ScsClientBase.LastSentMessageTime">
+            <summary>
+            Gets the time of the last succesfully received message.
+            </summary>
         </member>
         <member name="T:MySoft.IoC.CastleService">
             <summary>
@@ -144,6 +816,64 @@
             <summary>
             服务监控
             </summary>
+        </member>
+        <member name="T:MySoft.IoC.Status.IStatusService">
+            <summary>
+            状态服务 (超时为30秒，缓存1秒)
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.GetServiceInfoList">
+            <summary>
+            获取服务信息列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.ClearStatus">
+            <summary>
+            清除服务器状态
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.GetServerStatus">
+            <summary>
+            获取服务状态信息（包括SummaryStatus，HighestStatus，TimeStatus）
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.GetSummaryStatus">
+            <summary>
+            获取汇总状态信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.GetHighestStatus">
+            <summary>
+            获取最高状态信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.GetLatestStatus">
+            <summary>
+            获取最后一次服务状态
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.GetTimeStatusList">
+            <summary>
+            获取时段的服务状态信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.GetConnectInfoList">
+            <summary>
+            获取所有的客户端信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.#ctor(MySoft.IoC.Configuration.CastleServiceConfiguration)">
+            <summary>
+            实例化ServerMoniter
+            </summary>
+            <param name="config"></param>
         </member>
         <member name="M:MySoft.IoC.ServerMoniter.GetServiceInfoList">
             <summary>
@@ -227,32 +957,38 @@
         <member name="M:MySoft.IoC.CastleService.Stop">
             <summary>
             停止服务
-            </summary>
+            </summary>1
         </member>
         <member name="M:MySoft.IoC.CastleService.Dispose">
             <summary>
             资源释放
             </summary>
         </member>
-        <member name="M:MySoft.IoC.CastleService.GetSendResponse(MySoft.Net.Sockets.SocketBase,MySoft.IoC.Message.RequestMessage)">
+        <member name="M:MySoft.IoC.CastleService.GetSendResponse(MySoft.Communication.Scs.Server.IScsServerClient,MySoft.IoC.Messages.RequestMessage)">
             <summary>
             获取响应信息并发送
             </summary>
-            <param name="socket"></param>
+            <param name="client"></param>
             <param name="reqMsg"></param>
         </member>
-        <member name="M:MySoft.IoC.CastleService.CallMethod(MySoft.IoC.Message.RequestMessage)">
+        <member name="M:MySoft.IoC.CastleService.CallMethod(MySoft.IoC.Messages.RequestMessage)">
             <summary>
             调用 方法
             </summary>
             <param name="reqMsg"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.CastleService.IsServiceCounter(MySoft.IoC.Message.RequestMessage)">
+        <member name="M:MySoft.IoC.CastleService.IsServiceCounter(MySoft.IoC.Messages.RequestMessage)">
             <summary>
             判断是否需要计数
             </summary>
             <param name="request"></param>
+        </member>
+        <member name="M:MySoft.IoC.CastleService.GetConnectInfoList">
+            <summary>
+            获取连接客户信息
+            </summary>
+            <returns></returns>
         </member>
         <member name="P:MySoft.IoC.CastleService.Container">
             <summary>
@@ -264,109 +1000,44 @@
             获取服务的ServerUrl地址
             </summary>
         </member>
-        <member name="P:MySoft.IoC.CastleService.MaxConnect">
+        <member name="T:MySoft.Communication.Scs.Communication.Protocols.IScsWireProtocolFactory">
             <summary>
-            最大连接数
+             Defines a Wire Protocol Factory class that is used to create Wire Protocol objects.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.CastleService.BufferSize">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.IScsWireProtocolFactory.CreateWireProtocol">
             <summary>
-            缓冲区大小
+            Creates a new Wire Protocol object.
+            </summary>
+            <returns>Newly created wire protocol object</returns>
+        </member>
+        <member name="T:MySoft.IoC.Messages.CustomWireProtocolFactory">
+            <summary>
+            自定义工厂类
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Services.BaseService">
+        <member name="M:MySoft.IoC.Messages.CustomWireProtocolFactory.CreateWireProtocol">
             <summary>
-            The base class of services.
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.IService">
-            <summary>
-            interface of all services.
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.IService.CallService(MySoft.IoC.Message.RequestMessage,System.Double)">
-            <summary>
-            Calls the service.
-            </summary>
-            <param name="reqMsg">The MSG.</param>
-            <returns>The result.</returns>
-        </member>
-        <member name="P:MySoft.IoC.IService.ServiceName">
-            <summary>
-            Gets the name of the service.
-            </summary>
-            <value>The name of the service.</value>
-        </member>
-        <member name="F:MySoft.IoC.Services.BaseService.logger">
-            <summary>
-             The service logger
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Services.BaseService.serviceName">
-            <summary>
-            The service name.
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.BaseService.#ctor(MySoft.Logger.ILog,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:MySoft.IoC.Services.BaseService"/> class.
-            </summary>
-            <param name="serviceName">Name of the service.</param>
-        </member>
-        <member name="M:MySoft.IoC.Services.BaseService.Run(MySoft.IoC.Message.RequestMessage)">
-            <summary>
-            Runs the specified MSG.
-            </summary>
-            <param name="reqMsg">The MSG.</param>
-            <returns>The msg.</returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.BaseService.CallService(MySoft.IoC.Message.RequestMessage,System.Double)">
-            <summary>
-            Calls the service.
-            </summary>
-            <param name="reqMsg">The MSG.</param>
-            <returns>The msg.</returns>
-        </member>
-        <member name="P:MySoft.IoC.Services.BaseService.ServiceName">
-            <summary>
-            Gets the name of the service.
-            </summary>
-            <value>The name of the service.</value>
-        </member>
-        <member name="T:MySoft.IoC.PresenterFactory">
-            <summary>
-            Presenter Factory
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.PresenterFactory.Create">
-            <summary>
-            Creates this singleton instance.
+            创建WireProtocol
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.PresenterFactory.GetPresenter``1(System.Object)">
-            <summary>
-            Gets the presenter.
-            </summary>
-            <param name="view">The view.</param>
-            <returns></returns>
-        </member>
-        <member name="T:MySoft.IoC.InterceptorSelector">
+        <member name="T:MySoft.IoC.Aspect.InterceptorSelector">
             <summary>
             拦截器选择
             </summary>
         </member>
-        <member name="T:MySoft.IoC.AspectProxyAttribute">
+        <member name="T:MySoft.IoC.Aspect.AspectProxyAttribute">
             <summary>
             拦截器属性
             </summary>
         </member>
-        <member name="P:MySoft.IoC.AspectProxyAttribute.InterceptorType">
+        <member name="P:MySoft.IoC.Aspect.AspectProxyAttribute.InterceptorType">
             <summary>
             拦截器对象
             </summary>
         </member>
-        <member name="P:MySoft.IoC.AspectProxyAttribute.Arguments">
+        <member name="P:MySoft.IoC.Aspect.AspectProxyAttribute.Arguments">
             <summary>
             拦截器参数
             </summary>
@@ -394,29 +1065,11 @@
             </summary>
             <value>The type.</value>
         </member>
-        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.BufferSize">
-            <summary>
-            Gets or sets the buffersize
-            </summary>
-            <value>The buffersize.</value>
-        </member>
         <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.AppName">
             <summary>
             Gets or sets the app name.
             </summary>
             <value>The host name.</value>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.Encrypt">
-            <summary>
-            Gets or sets the encrypt.
-            </summary>
-            <value>The encrypt.</value>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.Compress">
-            <summary>
-            Gets or sets the compress.
-            </summary>
-            <value>The format.</value>
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.Timeout">
             <summary>
@@ -454,27 +1107,92 @@
             </summary>
             <value>The nodes.</value>
         </member>
-        <member name="T:MySoft.IoC.Message.ServiceMessageEventArgs">
+        <member name="T:MySoft.Communication.Scs.Communication.CommunicationException">
             <summary>
-            服务响应事件参数
+            This application is thrown in a communication error.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Message.ServiceMessageEventArgs.Result">
+        <member name="M:MySoft.Communication.Scs.Communication.CommunicationException.#ctor">
             <summary>
-            响应的消息
+            Contstructor.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Message.ServiceMessageEventArgs.Socket">
+        <member name="M:MySoft.Communication.Scs.Communication.CommunicationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
             <summary>
-            返回通讯的Socket对象
+            Contstructor for serializing.
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Message.ServiceMessageEventHandler">
+        <member name="M:MySoft.Communication.Scs.Communication.CommunicationException.#ctor(System.String)">
             <summary>
-            服务消息委托
+            Contstructor.
             </summary>
-            <param name="sender"></param>
-            <param name="message"></param>
+            <param name="message">Exception message</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.CommunicationException.#ctor(System.String,System.Exception)">
+            <summary>
+            Contstructor.
+            </summary>
+            <param name="message">Exception message</param>
+            <param name="innerException">Inner exception</param>
+        </member>
+        <member name="T:MySoft.IoC.Services.BaseService">
+            <summary>
+            The base class of services.
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.IService">
+            <summary>
+            interface of all services.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.IService.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
+            <summary>
+            Calls the service.
+            </summary>
+            <param name="reqMsg">The MSG.</param>
+            <returns>The result.</returns>
+        </member>
+        <member name="P:MySoft.IoC.IService.ServiceName">
+            <summary>
+            Gets the name of the service.
+            </summary>
+            <value>The name of the service.</value>
+        </member>
+        <member name="F:MySoft.IoC.Services.BaseService.logger">
+            <summary>
+             The service logger
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Services.BaseService.serviceName">
+            <summary>
+            The service name.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Services.BaseService.#ctor(MySoft.Logger.ILog,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MySoft.IoC.Services.BaseService"/> class.
+            </summary>
+            <param name="serviceName">Name of the service.</param>
+        </member>
+        <member name="M:MySoft.IoC.Services.BaseService.Run(MySoft.IoC.Messages.RequestMessage)">
+            <summary>
+            Runs the specified MSG.
+            </summary>
+            <param name="reqMsg">The MSG.</param>
+            <returns>The msg.</returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.BaseService.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
+            <summary>
+            Calls the service.
+            </summary>
+            <param name="reqMsg">The MSG.</param>
+            <returns>The msg.</returns>
+        </member>
+        <member name="P:MySoft.IoC.Services.BaseService.ServiceName">
+            <summary>
+            Gets the name of the service.
+            </summary>
+            <value>The name of the service.</value>
         </member>
         <member name="T:MySoft.IoC.Configuration.RemoteNode">
             <summary>
@@ -499,53 +1217,148 @@
             </summary>
             <value>The port.</value>
         </member>
+        <member name="P:MySoft.IoC.Configuration.RemoteNode.Encrypt">
+            <summary>
+            Gets or sets the encrypt.
+            </summary>
+            <value>The encrypt.</value>
+        </member>
+        <member name="P:MySoft.IoC.Configuration.RemoteNode.Compress">
+            <summary>
+            Gets or sets the compress.
+            </summary>
+            <value>The format.</value>
+        </member>
         <member name="P:MySoft.IoC.Configuration.RemoteNode.MaxPool">
             <summary>
             Gets or sets the maxpool.
             </summary>
             <value>The maxpool.</value>
         </member>
-        <member name="T:MySoft.IoC.Message.ServiceMessagePool">
+        <member name="T:MySoft.Communication.Scs.Communication.Protocols.IScsWireProtocol">
             <summary>
-            服务消息池
+            Represents a byte-level communication protocol between applications.
             </summary>
         </member>
-        <member name="F:MySoft.IoC.Message.ServiceMessagePool.pool">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.IScsWireProtocol.GetBytes(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
             <summary>
-            ServiceRequest栈
+            Serializes a message to a byte array to send to remote application.
+            This method is synchronized. So, only one thread can call it concurrently.
+            </summary>
+            <param name="message">Message to be serialized</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.IScsWireProtocol.CreateMessages(System.Byte[])">
+            <summary>
+            Builds messages from a byte array that is received from remote application.
+            The Byte array may contain just a part of a message, the protocol must
+            cumulate bytes to build messages.
+            This method is synchronized. So, only one thread can call it concurrently.
+            </summary>
+            <param name="receivedBytes">Received bytes from remote application</param>
+            <returns>
+            List of messages.
+            Protocol can generate more than one message from a byte array.
+            Also, if received bytes are not sufficient to build a message, the protocol
+            may return an empty list (and save bytes to combine with next method call).
+            </returns>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.IScsWireProtocol.Reset">
+            <summary>
+            This method is called when connection with remote application is reset (connection is renewing or first connecting).
+            So, wire protocol must reset itself.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Message.ServiceMessagePool.#ctor(System.Int32)">
+        <member name="T:MySoft.Communication.Scs.Communication.Channels.IConnectionListener">
             <summary>
-            初始化ServiceRequest池
-            </summary>
-            <param name="capacity">最大可能使用的ServiceRequest对象.</param>
-        </member>
-        <member name="M:MySoft.IoC.Message.ServiceMessagePool.Pop">
-            <summary>
-            弹出一个ServiceRequest
-            </summary>
-            <returns>ServiceRequest removed from the pool.</returns>
-        </member>
-        <member name="M:MySoft.IoC.Message.ServiceMessagePool.Push(MySoft.IoC.Message.ServiceMessage)">
-            <summary>
-            添加一个 ServiceRequest
-            </summary>
-            <param name="item">ServiceRequest instance to add to the pool.</param>
-        </member>
-        <member name="P:MySoft.IoC.Message.ServiceMessagePool.Count">
-            <summary>
-            返回ServiceRequest池中的 数量
+            Represents a communication listener.
+            A connection listener is used to accept incoming client connection requests.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.ServiceCache.CacheObject">
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.IConnectionListener.Start">
             <summary>
-            缓存对象
+            Starts listening incoming connections.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.ServiceCache.Parameters">
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.IConnectionListener.Stop">
             <summary>
-            参数信息
+            Stops listening incoming connections.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Communication.Channels.IConnectionListener.CommunicationChannelConnected">
+            <summary>
+            This event is raised when a new communication channel connected.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelEventArgs">
+            <summary>
+            Stores communication channel information to be used by an event.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelEventArgs.#ctor(MySoft.Communication.Scs.Communication.Channels.ICommunicationChannel)">
+            <summary>
+            Creates a new CommunicationChannelEventArgs object.
+            </summary>
+            <param name="channel">Communication channel that is associated with this event</param>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelEventArgs.Channel">
+            <summary>
+            Communication channel that is associated with this event.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Client.ClientReConnecter">
+            <summary>
+            This class is used to automatically re-connect to server if disconnected.
+            It attempts to reconnect to server periodically until connection established.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Client.ClientReConnecter._client">
+            <summary>
+            Reference to client object.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Client.ClientReConnecter._reconnectTimer">
+            <summary>
+            Timer to  attempt ro reconnect periodically.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Client.ClientReConnecter._disposed">
+            <summary>
+            Indicates the dispose state of this object.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ClientReConnecter.#ctor(MySoft.Communication.Scs.Client.IConnectableClient)">
+            <summary>
+            Creates a new ClientReConnecter object.
+            It is not needed to start ClientReConnecter since it automatically
+            starts when the client disconnected.
+            </summary>
+            <param name="client">Reference to client object</param>
+            <exception cref="T:System.ArgumentNullException">Throws ArgumentNullException if client is null.</exception>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ClientReConnecter.Dispose">
+            <summary>
+            Disposes this object.
+            Does nothing if already disposed.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ClientReConnecter.Client_Disconnected(System.Object,System.EventArgs)">
+            <summary>
+            Handles Disconnected event of _client object.
+            </summary>
+            <param name="sender">Source of the event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.ClientReConnecter.ReconnectTimer_Elapsed(System.Object,System.EventArgs)">
+            <summary>
+            Hadles Elapsed event of _reconnectTimer.
+            </summary>
+            <param name="sender">Source of the event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Client.ClientReConnecter.ReConnectCheckPeriod">
+            <summary>
+            Reconnect check period.
+            Default: 20 seconds.
             </summary>
         </member>
         <member name="T:MySoft.IoC.SimpleServiceContainer">
@@ -654,7 +1467,7 @@
             </summary>
             <param name="obj">The obj.</param>
         </member>
-        <member name="M:MySoft.IoC.SimpleServiceContainer.CallService(MySoft.IoC.Message.RequestMessage,System.Double)">
+        <member name="M:MySoft.IoC.SimpleServiceContainer.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
             <summary>
             Calls the service.
             </summary>
@@ -723,12 +1536,632 @@
             OnError event.
             </summary>
         </member>
-        <member name="T:MySoft.IoC.AspectFactory">
+        <member name="T:MySoft.IoC.Messages.ResponseMessage">
+            <summary>
+            The response msg.
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ResponseMessage.Data">
+            <summary>
+            Gets or sets the data.
+            </summary>
+            <value>The data.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ResponseMessage.Exception">
+            <summary>
+            Gets or sets the exception.
+            </summary>
+            <value>The exception.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ResponseMessage.RowCount">
+            <summary>
+            记录数
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ResponseMessage.Message">
+            <summary>
+            Gets the message.
+            </summary>
+            <value>The message.</value>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Server.ServerClientEventArgs">
+            <summary>
+            Stores client information to be used by an event.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ServerClientEventArgs.#ctor(MySoft.Communication.Scs.Server.IScsServerClient)">
+            <summary>
+            Creates a new ServerClientEventArgs object.
+            </summary>
+            <param name="client">Client that is associated with this event</param>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.ServerClientEventArgs.Client">
+            <summary>
+            Client that is associated with this event.
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Mvp.IPresenter">
+            <summary>
+            The extended interface of all presenters
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.IPresenter.BindView(System.Object)">
+            <summary>
+            Binds the view.
+            </summary>
+            <param name="view">The view.</param>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.IPresenter.BindModels(System.Object[])">
+            <summary>
+            Binds the models.
+            </summary>
+            <param name="model">The models.</param>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.IPresenter.TypeOfView">
+            <summary>
+            Gets the type of view.
+            </summary>
+            <value>The type of view.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.IPresenter.TypeOfModels">
+            <summary>
+            Gets the types of model.
+            </summary>
+            <value>The types of model.</value>
+        </member>
+        <member name="T:MySoft.IoC.Mvp.Presenter`1">
+            <summary>
+            Base class of all presenters
+            </summary>
+            <typeparam name="ViewType"></typeparam>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`1.view">
+            <summary>
+            The view
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`1.BindView(System.Object)">
+            <summary>
+            Binds the view.
+            </summary>
+            <param name="view">The view.</param>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`1.BindModels(System.Object[])">
+            <summary>
+            Binds the models.
+            </summary>
+            <param name="model">The models.</param>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`1.Initialized">
+            <summary>
+            Gets a value indicating whether this <see cref="T:MySoft.IoC.Mvp.Presenter`1"/> is initialized.
+            </summary>
+            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`1.TypeOfView">
+            <summary>
+            Gets the type of the view.
+            </summary>
+            <value>The type of the view.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`1.TypeOfModels">
+            <summary>
+            Gets the types of the model.
+            </summary>
+            <value>The types of the model.</value>
+        </member>
+        <member name="T:MySoft.IoC.Mvp.Presenter`2">
+            <summary>
+            Base class of all presenters
+            </summary>
+            <typeparam name="ViewType"></typeparam>
+            <typeparam name="IModelType"></typeparam>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`2.view">
+            <summary>
+            The view
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`2.model">
+            <summary>
+            The model
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`2.BindView(System.Object)">
+            <summary>
+            Binds the view.
+            </summary>
+            <param name="view">The view.</param>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`2.BindModels(System.Object[])">
+            <summary>
+            Binds the models.
+            </summary>
+            <param name="model">The models.</param>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`2.Initialized">
+            <summary>
+            Gets a value indicating whether this <see cref="T:MySoft.IoC.Mvp.Presenter`2"/> is initialized.
+            Only when both view and model are binded, a presenter is initialized.
+            </summary>
+            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`2.TypeOfView">
+            <summary>
+            Gets the type of the view.
+            </summary>
+            <value>The type of the view.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`2.TypeOfModels">
+            <summary>
+            Gets the types of the model.
+            </summary>
+            <value>The types of the model.</value>
+        </member>
+        <member name="T:MySoft.IoC.Mvp.Presenter`3">
+            <summary>
+            Base class of all presenters
+            </summary>
+            <typeparam name="ViewType"></typeparam>
+            <typeparam name="IModelType1"></typeparam>
+            <typeparam name="IModelType2"></typeparam>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`3.view">
+            <summary>
+            The view
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`3.model1">
+            <summary>
+            The model 1
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`3.model2">
+            <summary>
+            The model 2
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`3.BindView(System.Object)">
+            <summary>
+            Binds the view.
+            </summary>
+            <param name="view">The view.</param>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`3.BindModels(System.Object[])">
+            <summary>
+            Binds the models.
+            </summary>
+            <param name="model">The models.</param>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`3.Initialized">
+            <summary>
+            Gets a value indicating whether this <see cref="T:MySoft.IoC.Mvp.Presenter`3"/> is initialized.
+            </summary>
+            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`3.TypeOfView">
+            <summary>
+            Gets the type of the view.
+            </summary>
+            <value>The type of the view.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`3.TypeOfModels">
+            <summary>
+            Gets the types of the model.
+            </summary>
+            <value>The types of the model.</value>
+        </member>
+        <member name="T:MySoft.IoC.Mvp.Presenter`4">
+            <summary>
+            Base class of all presenters
+            </summary>
+            <typeparam name="ViewType"></typeparam>
+            <typeparam name="IModelType1"></typeparam>
+            <typeparam name="IModelType2"></typeparam>
+            <typeparam name="IModelType3"></typeparam>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`4.view">
+            <summary>
+            The view
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`4.model1">
+            <summary>
+            The model 1
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`4.model2">
+            <summary>
+            The model 2
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`4.model3">
+            <summary>
+            The model 3
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`4.BindView(System.Object)">
+            <summary>
+            Binds the view.
+            </summary>
+            <param name="view">The view.</param>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`4.BindModels(System.Object[])">
+            <summary>
+            Binds the models.
+            </summary>
+            <param name="model">The models.</param>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`4.Initialized">
+            <summary>
+            Gets a value indicating whether this <see cref="T:MySoft.IoC.Mvp.Presenter`4"/> is initialized.
+            </summary>
+            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`4.TypeOfView">
+            <summary>
+            Gets the type of the view.
+            </summary>
+            <value>The type of the view.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`4.TypeOfModels">
+            <summary>
+            Gets the types of the model.
+            </summary>
+            <value>The types of the model.</value>
+        </member>
+        <member name="T:MySoft.IoC.Mvp.Presenter`5">
+            <summary>
+            Base class of all presenters
+            </summary>
+            <typeparam name="ViewType"></typeparam>
+            <typeparam name="IModelType1"></typeparam>
+            <typeparam name="IModelType2"></typeparam>
+            <typeparam name="IModelType3"></typeparam>
+            <typeparam name="IModelType4"></typeparam>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`5.view">
+            <summary>
+            The view
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`5.model1">
+            <summary>
+            The model 1
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`5.model2">
+            <summary>
+            The model 2
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`5.model3">
+            <summary>
+            The model 3
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`5.model4">
+            <summary>
+            The model 4
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`5.BindView(System.Object)">
+            <summary>
+            Binds the view.
+            </summary>
+            <param name="view">The view.</param>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`5.BindModels(System.Object[])">
+            <summary>
+            Binds the models.
+            </summary>
+            <param name="model">The models.</param>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`5.Initialized">
+            <summary>
+            Gets a value indicating whether this <see cref="T:MySoft.IoC.Mvp.Presenter`5"/> is initialized.
+            </summary>
+            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`5.TypeOfView">
+            <summary>
+            Gets the type of the view.
+            </summary>
+            <value>The type of the view.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`5.TypeOfModels">
+            <summary>
+            Gets the types of the model.
+            </summary>
+            <value>The types of the model.</value>
+        </member>
+        <member name="T:MySoft.IoC.Mvp.Presenter`6">
+            <summary>
+            Base class of all presenters
+            </summary>
+            <typeparam name="ViewType"></typeparam>
+            <typeparam name="IModelType1"></typeparam>
+            <typeparam name="IModelType2"></typeparam>
+            <typeparam name="IModelType3"></typeparam>
+            <typeparam name="IModelType4"></typeparam>
+            <typeparam name="IModelType5"></typeparam>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`6.view">
+            <summary>
+            The view
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`6.model1">
+            <summary>
+            The model 1
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`6.model2">
+            <summary>
+            The model 2
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`6.model3">
+            <summary>
+            The model 3
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`6.model4">
+            <summary>
+            The model 4
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`6.model5">
+            <summary>
+            The model 5
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`6.BindView(System.Object)">
+            <summary>
+            Binds the view.
+            </summary>
+            <param name="view">The view.</param>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`6.BindModels(System.Object[])">
+            <summary>
+            Binds the models.
+            </summary>
+            <param name="model">The models.</param>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`6.Initialized">
+            <summary>
+            Gets a value indicating whether this <see cref="T:MySoft.IoC.Mvp.Presenter`6"/> is initialized.
+            </summary>
+            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`6.TypeOfView">
+            <summary>
+            Gets the type of the view.
+            </summary>
+            <value>The type of the view.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`6.TypeOfModels">
+            <summary>
+            Gets the types of the model.
+            </summary>
+            <value>The types of the model.</value>
+        </member>
+        <member name="T:MySoft.IoC.Mvp.Presenter`7">
+            <summary>
+            Base class of all presenters
+            </summary>
+            <typeparam name="ViewType"></typeparam>
+            <typeparam name="IModelType1"></typeparam>
+            <typeparam name="IModelType2"></typeparam>
+            <typeparam name="IModelType3"></typeparam>
+            <typeparam name="IModelType4"></typeparam>
+            <typeparam name="IModelType5"></typeparam>
+            <typeparam name="IModelType6"></typeparam>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`7.view">
+            <summary>
+            The view
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`7.model1">
+            <summary>
+            The model 1
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`7.model2">
+            <summary>
+            The model 2
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`7.model3">
+            <summary>
+            The model 3
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`7.model4">
+            <summary>
+            The model 4
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`7.model5">
+            <summary>
+            The model 5
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Mvp.Presenter`7.model6">
+            <summary>
+            The model 6
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`7.BindView(System.Object)">
+            <summary>
+            Binds the view.
+            </summary>
+            <param name="view">The view.</param>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.Presenter`7.BindModels(System.Object[])">
+            <summary>
+            Binds the models.
+            </summary>
+            <param name="model">The models.</param>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`7.Initialized">
+            <summary>
+            Gets a value indicating whether this <see cref="T:MySoft.IoC.Mvp.Presenter`7"/> is initialized.
+            </summary>
+            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`7.TypeOfView">
+            <summary>
+            Gets the type of the view.
+            </summary>
+            <value>The type of the view.</value>
+        </member>
+        <member name="P:MySoft.IoC.Mvp.Presenter`7.TypeOfModels">
+            <summary>
+            Gets the types of the model.
+            </summary>
+            <value>The types of the model.</value>
+        </member>
+        <member name="T:MySoft.IoC.ServiceNode">
+            <summary>
+            服务节点
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServiceNode.Parse(System.String,System.Int32)">
+            <summary>
+            返回一个远程节点
+            </summary>
+            <param name="ip"></param>
+            <param name="port"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServiceNode.Parse(System.String)">
+            <summary>
+            返回一个远程节点
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.IoC.ServiceInterpreter">
+            <summary>
+            服务解析器
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServiceInterpreter.ProcessResource(Castle.Core.Resource.IResource,Castle.MicroKernel.SubSystems.Configuration.IConfigurationStore)">
+            <summary>
+            处理资源
+            </summary>
+            <param name="source"></param>
+            <param name="store"></param>
+        </member>
+        <member name="T:MySoft.IoC.Messages.ScsResultMessage">
+            <summary>
+            This message is used to send/receive a raw byte array as message data.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Messages.ScsResultMessage.#ctor">
+            <summary>
+            Default empty constructor.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Messages.ScsResultMessage.#ctor(MySoft.IoC.Messages.MessageBase)">
+            <summary>
+            Creates a new ScsResultMessage object with Data property.
+            </summary>
+            <param name="Data">Message data that is being transmitted</param>
+        </member>
+        <member name="M:MySoft.IoC.Messages.ScsResultMessage.#ctor(MySoft.IoC.Messages.MessageBase,System.String)">
+            <summary>
+            Creates a new reply ScsResultMessage object with Data property.
+            </summary>
+            <param name="Data">Message data that is being transmitted</param>
+            <param name="repliedMessageId">
+            Replied message id if this is a reply for
+            a message.
+            </param>
+        </member>
+        <member name="M:MySoft.IoC.Messages.ScsResultMessage.ToString">
+            <summary>
+            Creates a string to represents this object.
+            </summary>
+            <returns>A string to represents this object</returns>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ScsResultMessage.MessageValue">
+            <summary>
+            Message data that is being transmitted.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Messages.ScsRawDataMessage">
+            <summary>
+            This message is used to send/receive a raw byte array as message data.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsRawDataMessage.#ctor">
+            <summary>
+            Default empty constructor.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsRawDataMessage.#ctor(System.Byte[])">
+            <summary>
+            Creates a new ScsRawDataMessage object with MessageData property.
+            </summary>
+            <param name="messageData">Message data that is being transmitted</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsRawDataMessage.#ctor(System.Byte[],System.String)">
+            <summary>
+            Creates a new reply ScsRawDataMessage object with MessageData property.
+            </summary>
+            <param name="messageData">Message data that is being transmitted</param>
+            <param name="repliedMessageId">
+            Replied message id if this is a reply for
+            a message.
+            </param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsRawDataMessage.ToString">
+            <summary>
+            Creates a string to represents this object.
+            </summary>
+            <returns>A string to represents this object</returns>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messages.ScsRawDataMessage.MessageData">
+            <summary>
+            Message data that is being transmitted.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.EndPoints.ScsEndPoint">
+            <summary>
+             Represents a server side end point in SCS.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.EndPoints.ScsEndPoint.CreateEndPoint(System.String)">
+            <summary>
+            Create a Scs End Point from a string.
+            Address must be formatted as: protocol://address
+            For example: tcp://89.43.104.179:10048 for a TCP endpoint with
+            IP 89.43.104.179 and port 10048.
+            </summary>
+            <param name="endPointAddress">Address to create endpoint</param>
+            <returns>Created end point</returns>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.EndPoints.ScsEndPoint.CreateServer">
+            <summary>
+            Creates a Scs Server that uses this end point to listen incoming connections.
+            </summary>
+            <returns>Scs Server</returns>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.EndPoints.ScsEndPoint.CreateClient">
+            <summary>
+            Creates a Scs Server that uses this end point to connect to server.
+            </summary>
+            <returns>Scs Client</returns>
+        </member>
+        <member name="T:MySoft.IoC.Aspect.AspectFactory">
             <summary>
             AOP工厂类
             </summary>
         </member>
-        <member name="M:MySoft.IoC.AspectFactory.CreateProxy(System.Type,MySoft.IoC.AspectInterceptor[])">
+        <member name="M:MySoft.IoC.Aspect.AspectFactory.CreateProxy(System.Type,MySoft.IoC.Aspect.AspectInterceptor[])">
             <summary>
             创建一个实例方式的拦截器
             </summary>
@@ -736,7 +2169,7 @@
             <param name="interceptors"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.AspectFactory.CreateProxy``1(MySoft.IoC.AspectInterceptor[])">
+        <member name="M:MySoft.IoC.Aspect.AspectFactory.CreateProxy``1(MySoft.IoC.Aspect.AspectInterceptor[])">
             <summary>
             创建一个实例方式的拦截器
             </summary>
@@ -744,7 +2177,7 @@
             <param name="interceptors"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.AspectFactory.CreateProxy``2(MySoft.IoC.AspectInterceptor[])">
+        <member name="M:MySoft.IoC.Aspect.AspectFactory.CreateProxy``2(MySoft.IoC.Aspect.AspectInterceptor[])">
             <summary>
             创建一个接口方式的拦截器
             </summary>
@@ -753,155 +2186,173 @@
             <param name="interceptors"></param>
             <returns></returns>
         </member>
-        <member name="T:MySoft.IoC.ServerStatus">
+        <member name="T:MySoft.IoC.Status.ServiceInfo">
             <summary>
-            服务器状态信息
+            服务信息
             </summary>
         </member>
-        <member name="P:MySoft.IoC.ServerStatus.StartDate">
+        <member name="P:MySoft.IoC.Status.ServiceInfo.Assembly">
             <summary>
-            开始时间
+            程序集
             </summary>
         </member>
-        <member name="P:MySoft.IoC.ServerStatus.TotalSeconds">
+        <member name="P:MySoft.IoC.Status.ServiceInfo.Name">
             <summary>
-            汇总时间
+            服务名称
             </summary>
         </member>
-        <member name="P:MySoft.IoC.ServerStatus.Summary">
+        <member name="P:MySoft.IoC.Status.ServiceInfo.Methods">
             <summary>
-            汇总状态信息
+            服务方法
             </summary>
         </member>
-        <member name="P:MySoft.IoC.ServerStatus.Highest">
+        <member name="T:MySoft.IoC.ProxyService">
             <summary>
-            最高状态信息
+            服务代理
             </summary>
         </member>
-        <member name="P:MySoft.IoC.ServerStatus.Latest">
+        <member name="M:MySoft.IoC.ProxyService.GetMessageKey(MySoft.IoC.Messages.MessageBase)">
             <summary>
-            最新状态信息
+            获取缓存的Key
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ProxyService.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
+            <summary>
+            调用方法
+            </summary>
+            <param name="reqMsg"></param>
+            <param name="logTimeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ProxyService.GetResponse(MySoft.IoC.Messages.RequestMessage)">
+            <summary>
+            获取响应的消息
+            </summary>
+            <param name="reqMsg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ProxyService.Dispose">
+            <summary>
+            清理资源
             </summary>
         </member>
-        <member name="T:MySoft.IoC.ServiceNodeInfo">
+        <member name="P:MySoft.IoC.ProxyService.ServiceName">
             <summary>
-            The service node info.
+            服务名称
             </summary>
         </member>
-        <member name="M:MySoft.IoC.ServiceNodeInfo.#ctor">
+        <member name="T:MySoft.Communication.Scs.Server.ScsServerFactory">
             <summary>
-            Initializes a new instance of the <see cref="T:MySoft.IoC.ServiceNodeInfo"/> class.
+            This class is used to create SCS servers.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.ServiceNodeInfo.ToString">
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerFactory.CreateServer(MySoft.Communication.Scs.Communication.EndPoints.ScsEndPoint)">
             <summary>
-            Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            Creates a new SCS Server using an EndPoint.
             </summary>
-            <returns>
-            A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-            </returns>
+            <param name="endPoint">Endpoint that represents address of the server</param>
+            <returns>Created TCP server</returns>
         </member>
-        <member name="P:MySoft.IoC.ServiceNodeInfo.Key">
+        <member name="T:MySoft.Communication.Scs.Communication.CommunicationStates">
             <summary>
-            Gets or sets the DEFAULT_KEY.
-            </summary>
-            <value>The DEFAULT_KEY.</value>
-        </member>
-        <member name="P:MySoft.IoC.ServiceNodeInfo.Sevice">
-            <summary>
-            Gets or sets the sevice.
-            </summary>
-            <value>The sevice.</value>
-        </member>
-        <member name="P:MySoft.IoC.ServiceNodeInfo.Implementation">
-            <summary>
-            Gets or sets the implementation.
-            </summary>
-            <value>The implementation.</value>
-        </member>
-        <member name="T:MySoft.IoC.Message.ResponseMessage">
-            <summary>
-            The response msg.
+            Communication states.
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Message.RequestBase">
+        <member name="F:MySoft.Communication.Scs.Communication.CommunicationStates.Connected">
             <summary>
-            request base
+            Connected.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Message.RequestBase.ReturnType">
+        <member name="F:MySoft.Communication.Scs.Communication.CommunicationStates.Disconnected">
             <summary>
-            Gets or sets the returnType.
-            </summary>
-            <value>The returnType.</value>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestBase.TransactionId">
-            <summary>
-            Gets or sets the transaction id.
-            </summary>
-            <value>The transaction id.</value>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestBase.ServiceName">
-            <summary>
-            Gets or sets the name of the service.
-            </summary>
-            <value>The name of the service.</value>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestBase.SubServiceName">
-            <summary>
-            Gets or sets the name of the sub service.
-            </summary>
-            <value>The name of the sub service.</value>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestBase.Parameters">
-            <summary>
-            Gets or sets the parameters.
-            </summary>
-            <value>The parameters.</value>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestBase.Expiration">
-            <summary>
-            Gets or sets the expiration.
-            </summary>
-            <value>The expiration.</value>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestBase.Compress">
-            <summary>
-            Gets or sets the compress of the service.
+            Disconnected.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Message.RequestBase.Encrypt">
+        <member name="T:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener">
             <summary>
-            Gets or sets the encrypt of the service.
+            This class is used to listen and accept incoming TCP
+            connection requests on a TCP port.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Message.RequestBase.Message">
+        <member name="T:MySoft.Communication.Scs.Communication.Channels.ConnectionListenerBase">
             <summary>
-            响应的消息
+            This class provides base functionality for communication listener classes.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Message.ResponseMessage.Data">
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.ConnectionListenerBase.Start">
             <summary>
-            Gets or sets the data.
-            </summary>
-            <value>The data.</value>
-        </member>
-        <member name="P:MySoft.IoC.Message.ResponseMessage.RowCount">
-            <summary>
-            记录数
+            Starts listening incoming connections.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Message.ResponseMessage.Exception">
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.ConnectionListenerBase.Stop">
             <summary>
-            Gets or sets the exception.
+            Stops listening incoming connections.
             </summary>
-            <value>The exception.</value>
         </member>
-        <member name="P:MySoft.IoC.Message.ResponseMessage.Message">
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.ConnectionListenerBase.OnCommunicationChannelConnected(MySoft.Communication.Scs.Communication.Channels.ICommunicationChannel)">
             <summary>
-            Gets the message.
+            Raises CommunicationChannelConnected event.
             </summary>
-            <value>The message.</value>
+            <param name="client"></param>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Communication.Channels.ConnectionListenerBase.CommunicationChannelConnected">
+            <summary>
+            This event is raised when a new communication channel is connected.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener._endPoint">
+            <summary>
+            The endpoint address of the server to listen incoming connections.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener._listenerSocket">
+            <summary>
+            Server socket to listen incoming connection requests.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener._thread">
+            <summary>
+            The thread to listen socket
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener._running">
+            <summary>
+            A flag to control thread's running
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener.#ctor(MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint)">
+            <summary>
+            Creates a new TcpConnectionListener for given endpoint.
+            </summary>
+            <param name="endPoint">The endpoint address of the server to listen incoming connections</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener.Start">
+            <summary>
+            Starts listening incoming connections.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener.Stop">
+            <summary>
+            Stops listening incoming connections.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener.StartSocket">
+            <summary>
+            Starts listening socket.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener.StopSocket">
+            <summary>
+            Stops listening socket.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener.DoListenAsThread">
+            <summary>
+            Entrance point of the thread.
+            This method is used by the thread to listen incoming requests.
+            </summary>
         </member>
         <member name="T:MySoft.IoC.IoCException">
             <summary>
@@ -943,17 +2394,241 @@
             返回消息
             </summary>
         </member>
-        <member name="T:MySoft.IoC.AspectSwitcherAttribute">
+        <member name="T:MySoft.IoC.Status.ServerStatus">
+            <summary>
+            服务器状态信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ServerStatus.StartDate">
+            <summary>
+            开始时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ServerStatus.TotalSeconds">
+            <summary>
+            汇总时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ServerStatus.Summary">
+            <summary>
+            汇总状态信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ServerStatus.Highest">
+            <summary>
+            最高状态信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ServerStatus.Latest">
+            <summary>
+            最新状态信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.ServiceInvocationHandler">
+            <summary>
+            The base impl class of the service interface, this class is used by service factory to emit service interface impl automatically at runtime.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServiceInvocationHandler.#ctor(MySoft.IoC.Configuration.CastleFactoryConfiguration,MySoft.IoC.IServiceContainer,MySoft.IoC.IService,System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MySoft.IoC.ServiceInvocationHandler"/> class.
+            </summary>
+            <param name="container">config.</param>
+            <param name="container">The container.</param>
+            <param name="serviceInterfaceType">Type of the service interface.</param>
+        </member>
+        <member name="M:MySoft.IoC.ServiceInvocationHandler.CallService(System.Reflection.MethodInfo,System.Object[])">
+            <summary>
+            Calls the service.
+            </summary>
+            <param name="methodInfo">Name of the sub service.</param>
+            <param name="paramValues">The param values.</param>
+            <returns>The result.</returns>
+        </member>
+        <member name="M:MySoft.IoC.ServiceInvocationHandler.Invoke(System.Object,System.Reflection.MethodInfo,System.Object[])">
+            <summary>
+            响应委托
+            </summary>
+            <param name="proxy"></param>
+            <param name="method"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Server.Tcp.ScsTcpServer">
+            <summary>
+            This class is used to create a TCP server.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Server.ScsServerBase">
+            <summary>
+            This class provides base functionality for server classes.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Server.IScsServer">
+            <summary>
+            Represents a SCS server that is used to accept and manage client connections.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.IScsServer.Start">
+            <summary>
+            Starts the server.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.IScsServer.Stop">
+            <summary>
+            Stops the server.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Server.IScsServer.ClientConnected">
+            <summary>
+            This event is raised when a new client connected to the server.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Server.IScsServer.ClientDisconnected">
+            <summary>
+            This event is raised when a client disconnected from the server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.IScsServer.WireProtocolFactory">
+            <summary>
+            Gets/sets wire protocol factory to create IWireProtocol objects.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.IScsServer.Clients">
+            <summary>
+            A collection of clients that are connected to the server.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Server.ScsServerBase._connectionListener">
+            <summary>
+            This object is used to listen incoming connections.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerBase.#ctor">
+            <summary>
+            Constructor.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerBase.Start">
+            <summary>
+            Starts the server.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerBase.Stop">
+            <summary>
+            Stops the server.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerBase.CreateConnectionListener">
+            <summary>
+            This method is implemented by derived classes to create appropriate connection listener to listen incoming connection requets.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerBase.ConnectionListener_CommunicationChannelConnected(System.Object,MySoft.Communication.Scs.Communication.Channels.CommunicationChannelEventArgs)">
+            <summary>
+            Handles CommunicationChannelConnected event of _connectionListener object.
+            </summary>
+            <param name="sender">Source of event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerBase.Client_Disconnected(System.Object,System.EventArgs)">
+            <summary>
+            Handles Disconnected events of all connected clients.
+            </summary>
+            <param name="sender">Source of event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerBase.OnClientConnected(MySoft.Communication.Scs.Server.IScsServerClient)">
+            <summary>
+            Raises ClientConnected event.
+            </summary>
+            <param name="client">Connected client</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerBase.OnClientDisconnected(MySoft.Communication.Scs.Server.IScsServerClient)">
+            <summary>
+            Raises ClientDisconnected event.
+            </summary>
+            <param name="client">Disconnected client</param>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Server.ScsServerBase.ClientConnected">
+            <summary>
+            This event is raised when a new client is connected.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Server.ScsServerBase.ClientDisconnected">
+            <summary>
+            This event is raised when a client disconnected from the server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.ScsServerBase.WireProtocolFactory">
+            <summary>
+            Gets/sets wire protocol that is used while reading and writing messages.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.ScsServerBase.Clients">
+            <summary>
+            A collection of clients that are connected to the server.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Server.Tcp.ScsTcpServer._endPoint">
+            <summary>
+            The endpoint address of the server to listen incoming connections.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.Tcp.ScsTcpServer.#ctor(MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint)">
+            <summary>
+            Creates a new ScsTcpServer object.
+            </summary>
+            <param name="endPoint">The endpoint address of the server to listen incoming connections</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.Tcp.ScsTcpServer.CreateConnectionListener">
+            <summary>
+            Creates a TCP connection listener.
+            </summary>
+            <returns>Created listener object</returns>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Server.IScsServerClient">
+            <summary>
+            Represents a client from a perspective of a server.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.IScsServerClient.Disconnect">
+            <summary>
+            Disconnects from server.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Server.IScsServerClient.Disconnected">
+            <summary>
+            This event is raised when client disconnected from server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.IScsServerClient.ClientId">
+            <summary>
+            Unique identifier for this client in server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.IScsServerClient.RemoteEndPoint">
+            <summary>
+             Gets endpoint of remote application.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.IScsServerClient.CommunicationState">
+            <summary>
+            Gets the current communication state.
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Aspect.AspectSwitcherAttribute">
             <summary>
             切面方法选择器
             </summary>
         </member>
-        <member name="P:MySoft.IoC.AspectSwitcherAttribute.InterceptorTypes">
+        <member name="P:MySoft.IoC.Aspect.AspectSwitcherAttribute.InterceptorTypes">
             <summary>
             使用拦截器的类型
             </summary>
         </member>
-        <member name="P:MySoft.IoC.AspectSwitcherAttribute.UseAspect">
+        <member name="P:MySoft.IoC.Aspect.AspectSwitcherAttribute.UseAspect">
             <summary>
             是否使用切面处理
             </summary>
@@ -975,36 +2650,6 @@
             </summary>
             <param name="info">存储对象序列化和反序列化所需的全部数据</param>
             <param name="context">描述给定的序列化流的源和目标，并提供一个由调用方定义的附加上下文</param>
-        </member>
-        <member name="T:MySoft.IoC.HighestStatus">
-            <summary>
-            最高峰状态
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HighestStatus.DataFlowCounterTime">
-            <summary>
-            最高流量发生时间
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HighestStatus.RequestCountCounterTime">
-            <summary>
-            最大请求发生时间
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HighestStatus.SuccessCountCounterTime">
-            <summary>
-            最多成功请求发生时间
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HighestStatus.ErrorCountCounterTime">
-            <summary>
-            最多错误请求发生时间
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HighestStatus.ElapsedTimeCounterTime">
-            <summary>
-            最耗时请求发生时间
-            </summary>
         </member>
         <member name="T:MySoft.IoC.Configuration.CastleServiceConfiguration">
             <summary>
@@ -1035,17 +2680,17 @@
             </summary>
             <value>The port.</value>
         </member>
-        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.MaxConnect">
+        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.Encrypt">
             <summary>
-            Gets or sets the maxconnect
+            Gets or sets the encrypt.
             </summary>
-            <value>The maxconnect.</value>
+            <value>The encrypt.</value>
         </member>
-        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.BufferSize">
+        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.Compress">
             <summary>
-            Gets or sets the buffersize
+            Gets or sets the compress.
             </summary>
-            <value>The buffersize.</value>
+            <value>The format.</value>
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.LogTime">
             <summary>
@@ -1104,651 +2749,460 @@
             The default record number.
             </summary>
         </member>
-        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_MAXCONNECT_NUMBER">
-            <summary>
-            The default maxconnect number.
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_BUFFERSIZE_NUMBER">
-            <summary>
-            The default maxbuffer number.
-            </summary>
-        </member>
         <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_CLIENTPOOL_NUMBER">
             <summary>
             The default maxpool number.
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Message.ResponseData">
+        <member name="T:MySoft.Communication.Scs.Communication.Messages.ScsPingMessage">
             <summary>
-            返回的数据
+            This message is used to send/receive ping messages.
+            Ping messages is used to keep connection alive between server and client.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Message.ResponseData.#ctor(MySoft.IoC.Message.RequestBase,System.Byte[],System.Object)">
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsPingMessage.#ctor">
             <summary>
-            实例化ResultData
+             Creates a new PingMessage object.
             </summary>
-            <param name="reqBase"></param>
-            <param name="keys"></param>
-            <param name="value"></param>
         </member>
-        <member name="P:MySoft.IoC.Message.ResponseData.Value">
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsPingMessage.#ctor(System.String)">
             <summary>
-            返回的结果
+            Creates a new reply PingMessage object.
             </summary>
+            <param name="repliedMessageId">
+            Replied message id if this is a reply for
+            a message.
+            </param>
         </member>
-        <member name="P:MySoft.IoC.Message.ResponseData.Count">
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsPingMessage.ToString">
             <summary>
-            记录数
+            Creates a string to represents this object.
             </summary>
+            <returns>A string to represents this object</returns>
         </member>
-        <member name="T:MySoft.IoC.SummaryStatus">
+        <member name="T:MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint">
             <summary>
-            汇总状态信息
+            Represens a TCP end point in SCS.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.SummaryStatus.RunningSeconds">
+        <member name="M:MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint.#ctor(System.Int32)">
             <summary>
-            运行总时间
+            Creates a new ScsTcpEndPoint object with specified port number.
             </summary>
+            <param name="tcpPort">Listening TCP Port for incoming connection requests on server</param>
         </member>
-        <member name="P:MySoft.IoC.SummaryStatus.AverageDataFlow">
+        <member name="M:MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint.#ctor(System.String,System.Int32)">
             <summary>
-            平均数据流量（每秒）
+            Creates a new ScsTcpEndPoint object with specified IP address and port number.
             </summary>
+            <param name="ipAddress">IP address of the server</param>
+            <param name="port">Listening TCP Port for incoming connection requests on server</param>
         </member>
-        <member name="P:MySoft.IoC.SummaryStatus.AverageRequestCount">
+        <member name="M:MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint.#ctor(System.String)">
             <summary>
-            平均请求数（每秒）
+            Creates a new ScsTcpEndPoint from a string address.
+            Address format must be like IPAddress:Port (For example: 127.0.0.1:10085).
             </summary>
+            <param name="address">TCP end point Address</param>
+            <returns>Created ScsTcpEndpoint object</returns>
         </member>
-        <member name="P:MySoft.IoC.SummaryStatus.AverageSuccessCount">
+        <member name="M:MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint.CreateServer">
             <summary>
-            平均成功数（每秒）
+            Creates a Scs Server that uses this end point to listen incoming connections.
             </summary>
+            <returns>Scs Server</returns>
         </member>
-        <member name="P:MySoft.IoC.SummaryStatus.AverageErrorCount">
+        <member name="M:MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint.CreateClient">
             <summary>
-            平均错误数（每秒）
+            Creates a Scs Client that uses this end point to connect to server.
             </summary>
+            <returns>Scs Client</returns>
         </member>
-        <member name="T:MySoft.IoC.ServiceInfo">
+        <member name="M:MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint.ToString">
             <summary>
-            服务信息
+            Generates a string representation of this end point object.
             </summary>
+            <returns>String representation of this end point object</returns>
         </member>
-        <member name="P:MySoft.IoC.ServiceInfo.Assembly">
+        <member name="P:MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint.IpAddress">
             <summary>
-            程序集
+             IP address of the server.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.ServiceInfo.Name">
+        <member name="P:MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint.TcpPort">
             <summary>
-            服务名称
+             Listening TCP Port for incoming connection requests on server.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.ServiceInfo.Methods">
+        <member name="T:MySoft.IoC.Messages.CustomWireProtocol">
             <summary>
-            服务方法
+            自定义系列化协议
             </summary>
         </member>
-        <member name="T:MySoft.IoC.ProxyService">
+        <member name="T:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol">
             <summary>
-            服务代理
+            Default communication protocol between server and clients to send and receive a message.
+            It uses .NET binary serialization to write and read messages.
+            
+            A Message format:
+            [Message Length (4 bytes)][Serialized Message Content]
+            
+            If a message is serialized to byte array as N bytes, this protocol
+            adds 4 bytes size information to head of the message bytes, so total length is (4 + N) bytes.
+            
+            This class can be derived to change serializer (default: BinaryFormatter). To do this,
+            SerializeMessage and DeserializeMessage methods must be overrided.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.ProxyService.GetMessageKey(MySoft.IoC.Message.RequestBase)">
+        <member name="F:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.MaxMessageLength">
             <summary>
-            获取缓存的Key
+            Maximum length of a message.
             </summary>
-            <param name="value"></param>
-            <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.ProxyService.CallService(MySoft.IoC.Message.RequestMessage,System.Double)">
+        <member name="F:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol._receiveMemoryStream">
             <summary>
-            调用方法
+            This MemoryStream object is used to collect receiving bytes to build messages.
             </summary>
-            <param name="reqMsg"></param>
-            <param name="logTimeout"></param>
-            <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.ProxyService.GetResponse(MySoft.IoC.Message.RequestMessage)">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.#ctor">
             <summary>
-            获取响应的消息
+            Creates a new instance of BinarySerializationProtocol.
             </summary>
-            <param name="reqMsg"></param>
-            <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.ProxyService.Dispose">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.GetBytes(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
             <summary>
-            清理资源
+            Serializes a message to a byte array to send to remote application.
+            This method is synchronized. So, only one thread can call it concurrently.
             </summary>
+            <param name="message">Message to be serialized</param>
+            <exception cref="T:MySoft.Communication.Scs.Communication.CommunicationException">Throws CommunicationException if message is bigger than maximum allowed message length.</exception>
         </member>
-        <member name="P:MySoft.IoC.ProxyService.ServiceName">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.CreateMessages(System.Byte[])">
             <summary>
-            服务名称
+            Builds messages from a byte array that is received from remote application.
+            The Byte array may contain just a part of a message, the protocol must
+            cumulate bytes to build messages.
+            This method is synchronized. So, only one thread can call it concurrently.
             </summary>
+            <param name="receivedBytes">Received bytes from remote application</param>
+            <returns>
+            List of messages.
+            Protocol can generate more than one message from a byte array.
+            Also, if received bytes are not sufficient to build a message, the protocol
+            may return an empty list (and save bytes to combine with next method call).
+            </returns>
         </member>
-        <member name="T:MySoft.IoC.ServiceInterpreter">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.Reset">
             <summary>
-            服务解析器
+            This method is called when connection with remote application is reset (connection is renewing or first connecting).
+            So, wire protocol must reset itself.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.ServiceInterpreter.ProcessResource(Castle.Core.Resource.IResource,Castle.MicroKernel.SubSystems.Configuration.IConfigurationStore)">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.SerializeMessage(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
             <summary>
-            处理资源
+            This method is used to serialize a IScsMessage to a byte array.
+            This method can be overrided by derived classes to change serialization strategy.
+            It is a couple with DeserializeMessage method and must be overrided together.
             </summary>
-            <param name="source"></param>
-            <param name="store"></param>
+            <param name="message">Message to be serialized</param>
+            <returns>
+            Serialized message bytes.
+            Does not include length of the message.
+            </returns>
         </member>
-        <member name="T:MySoft.IoC.Message.ServiceMessage">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.DeserializeMessage(System.Byte[])">
             <summary>
-            服务消息
+            This method is used to deserialize a IScsMessage from it's bytes.
+            This method can be overrided by derived classes to change deserialization strategy.
+            It is a couple with SerializeMessage method and must be overrided together.
             </summary>
+            <param name="bytes">
+            Bytes of message to be deserialized (does not include message length. It consist
+            of a single whole message)
+            </param>
+            <returns>Deserialized message</returns>
         </member>
-        <member name="M:MySoft.IoC.Message.ServiceMessage.#ctor(MySoft.IoC.Configuration.RemoteNode,MySoft.Logger.ILog,System.Int32)">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.ReadSingleMessage(System.Collections.Generic.ICollection{MySoft.Communication.Scs.Communication.Messages.IScsMessage})">
             <summary>
-            实例化ServiceMessage
+            This method tries to read a single message and add to the messages collection. 
             </summary>
-            <param name="node"></param>
-            <param name="logger"></param>
-            <param name="bufferSize"></param>
+            <param name="messages">Messages collection to collect messages</param>
+            <returns>
+            Returns a boolean value indicates that if there is a need to re-call this method.
+            </returns>
+            <exception cref="T:MySoft.Communication.Scs.Communication.CommunicationException">Throws CommunicationException if message is bigger than maximum allowed message length.</exception>
         </member>
-        <member name="M:MySoft.IoC.Message.ServiceMessage.Send(MySoft.Net.Sockets.DataPacket)">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.WriteInt32(System.Byte[],System.Int32,System.Int32)">
             <summary>
-            发送数据包
+            Writes a int value to a byte array from a starting index.
             </summary>
-            <param name="packet"></param>
-            <returns></returns>
+            <param name="buffer">Byte array to write int value</param>
+            <param name="startIndex">Start index of byte array to write</param>
+            <param name="number">An integer value to write</param>
         </member>
-        <member name="M:MySoft.IoC.Message.ServiceMessage.SendMessage(MySoft.IoC.Message.ResponseMessage)">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.ReadInt32(System.IO.Stream)">
             <summary>
-            发送消息
+            Deserializes and returns a serialized integer.
             </summary>
-            <param name="resMsg"></param>
+            <returns>Deserialized integer</returns>
         </member>
-        <member name="M:MySoft.IoC.Message.ServiceMessage.Dispose">
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.ReadByteArray(System.IO.Stream,System.Int32)">
             <summary>
-            清理资源
+            Reads a byte array with specified length.
             </summary>
+            <param name="stream">Stream to read from</param>
+            <param name="length">Length of the byte array to read</param>
+            <returns>Read byte array</returns>
+            <exception cref="T:System.IO.EndOfStreamException">Throws EndOfStreamException if can not read from stream.</exception>
         </member>
-        <member name="P:MySoft.IoC.Message.ServiceMessage.IsConnected">
+        <member name="T:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocol.DeserializationAppDomainBinder">
             <summary>
-            是否连接
+            This class is used in deserializing to allow deserializing objects that are defined
+            in assemlies that are load in runtime (like PlugIns).
             </summary>
         </member>
-        <member name="T:MySoft.IoC.IPresenter">
+        <member name="M:MySoft.IoC.Messages.CustomWireProtocol.#ctor(System.Boolean,System.Boolean)">
             <summary>
-            The extended interface of all presenters
+            实例化CustomBinarySerializationProtocol
             </summary>
+            <param name="compress"></param>
+            <param name="encrypt"></param>
         </member>
-        <member name="M:MySoft.IoC.IPresenter.BindView(System.Object)">
+        <member name="T:MySoft.IoC.Messages.ServiceMessageEventHandler">
             <summary>
-            Binds the view.
+            服务消息委托
             </summary>
-            <param name="view">The view.</param>
+            <param name="sender"></param>
+            <param name="args"></param>
         </member>
-        <member name="M:MySoft.IoC.IPresenter.BindModels(System.Object[])">
+        <member name="T:MySoft.IoC.Status.HighestStatus">
             <summary>
-            Binds the models.
+            最高峰状态
             </summary>
-            <param name="model">The models.</param>
         </member>
-        <member name="P:MySoft.IoC.IPresenter.TypeOfView">
+        <member name="P:MySoft.IoC.Status.HighestStatus.DataFlowCounterTime">
             <summary>
-            Gets the type of view.
+            最高流量发生时间
             </summary>
-            <value>The type of view.</value>
         </member>
-        <member name="P:MySoft.IoC.IPresenter.TypeOfModels">
+        <member name="P:MySoft.IoC.Status.HighestStatus.RequestCountCounterTime">
             <summary>
-            Gets the types of model.
+            最大请求发生时间
             </summary>
-            <value>The types of model.</value>
         </member>
-        <member name="T:MySoft.IoC.Presenter`1">
+        <member name="P:MySoft.IoC.Status.HighestStatus.SuccessCountCounterTime">
             <summary>
-            Base class of all presenters
+            最多成功请求发生时间
             </summary>
-            <typeparam name="ViewType"></typeparam>
         </member>
-        <member name="F:MySoft.IoC.Presenter`1.view">
+        <member name="P:MySoft.IoC.Status.HighestStatus.ErrorCountCounterTime">
             <summary>
-            The view
+            最多错误请求发生时间
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Presenter`1.BindView(System.Object)">
+        <member name="P:MySoft.IoC.Status.HighestStatus.ElapsedTimeCounterTime">
             <summary>
-            Binds the view.
+            最耗时请求发生时间
             </summary>
-            <param name="view">The view.</param>
         </member>
-        <member name="M:MySoft.IoC.Presenter`1.BindModels(System.Object[])">
+        <member name="P:MySoft.IoC.ServiceCache.CacheObject">
             <summary>
-            Binds the models.
+            缓存对象
             </summary>
-            <param name="model">The models.</param>
         </member>
-        <member name="P:MySoft.IoC.Presenter`1.Initialized">
+        <member name="P:MySoft.IoC.ServiceCache.Parameters">
             <summary>
-            Gets a value indicating whether this <see cref="T:MySoft.IoC.Presenter`1"/> is initialized.
+            参数信息
             </summary>
-            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
         </member>
-        <member name="P:MySoft.IoC.Presenter`1.TypeOfView">
+        <member name="T:MySoft.Communication.Scs.Client.ScsClientFactory">
             <summary>
-            Gets the type of the view.
+            This class is used to create SCS Clients to connect to a SCS server.
             </summary>
-            <value>The type of the view.</value>
         </member>
-        <member name="P:MySoft.IoC.Presenter`1.TypeOfModels">
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientFactory.CreateClient(MySoft.Communication.Scs.Communication.EndPoints.ScsEndPoint)">
             <summary>
-            Gets the types of the model.
+            Creates a new client to connect to a server using an end point.
             </summary>
-            <value>The types of the model.</value>
+            <param name="endpoint">End point of the server to connect it</param>
+            <returns>Created TCP client</returns>
         </member>
-        <member name="T:MySoft.IoC.Presenter`2">
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientFactory.CreateClient(System.String)">
             <summary>
-            Base class of all presenters
+            Creates a new client to connect to a server using an end point.
             </summary>
-            <typeparam name="ViewType"></typeparam>
-            <typeparam name="IModelType"></typeparam>
+            <param name="endpointAddress">End point address of the server to connect it</param>
+            <returns>Created TCP client</returns>
         </member>
-        <member name="F:MySoft.IoC.Presenter`2.view">
-            <summary>
-            The view
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`2.model">
-            <summary>
-            The model
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`2.BindView(System.Object)">
-            <summary>
-            Binds the view.
-            </summary>
-            <param name="view">The view.</param>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`2.BindModels(System.Object[])">
-            <summary>
-            Binds the models.
-            </summary>
-            <param name="model">The models.</param>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`2.Initialized">
-            <summary>
-            Gets a value indicating whether this <see cref="T:MySoft.IoC.Presenter`2"/> is initialized.
-            Only when both view and model are binded, a presenter is initialized.
-            </summary>
-            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`2.TypeOfView">
-            <summary>
-            Gets the type of the view.
-            </summary>
-            <value>The type of the view.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`2.TypeOfModels">
-            <summary>
-            Gets the types of the model.
-            </summary>
-            <value>The types of the model.</value>
-        </member>
-        <member name="T:MySoft.IoC.Presenter`3">
-            <summary>
-            Base class of all presenters
-            </summary>
-            <typeparam name="ViewType"></typeparam>
-            <typeparam name="IModelType1"></typeparam>
-            <typeparam name="IModelType2"></typeparam>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`3.view">
-            <summary>
-            The view
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`3.model1">
-            <summary>
-            The model 1
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`3.model2">
-            <summary>
-            The model 2
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`3.BindView(System.Object)">
-            <summary>
-            Binds the view.
-            </summary>
-            <param name="view">The view.</param>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`3.BindModels(System.Object[])">
-            <summary>
-            Binds the models.
-            </summary>
-            <param name="model">The models.</param>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`3.Initialized">
-            <summary>
-            Gets a value indicating whether this <see cref="T:MySoft.IoC.Presenter`3"/> is initialized.
-            </summary>
-            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`3.TypeOfView">
-            <summary>
-            Gets the type of the view.
-            </summary>
-            <value>The type of the view.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`3.TypeOfModels">
-            <summary>
-            Gets the types of the model.
-            </summary>
-            <value>The types of the model.</value>
-        </member>
-        <member name="T:MySoft.IoC.Presenter`4">
-            <summary>
-            Base class of all presenters
-            </summary>
-            <typeparam name="ViewType"></typeparam>
-            <typeparam name="IModelType1"></typeparam>
-            <typeparam name="IModelType2"></typeparam>
-            <typeparam name="IModelType3"></typeparam>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`4.view">
-            <summary>
-            The view
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`4.model1">
-            <summary>
-            The model 1
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`4.model2">
-            <summary>
-            The model 2
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`4.model3">
-            <summary>
-            The model 3
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`4.BindView(System.Object)">
-            <summary>
-            Binds the view.
-            </summary>
-            <param name="view">The view.</param>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`4.BindModels(System.Object[])">
-            <summary>
-            Binds the models.
-            </summary>
-            <param name="model">The models.</param>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`4.Initialized">
-            <summary>
-            Gets a value indicating whether this <see cref="T:MySoft.IoC.Presenter`4"/> is initialized.
-            </summary>
-            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`4.TypeOfView">
-            <summary>
-            Gets the type of the view.
-            </summary>
-            <value>The type of the view.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`4.TypeOfModels">
-            <summary>
-            Gets the types of the model.
-            </summary>
-            <value>The types of the model.</value>
-        </member>
-        <member name="T:MySoft.IoC.Presenter`5">
-            <summary>
-            Base class of all presenters
-            </summary>
-            <typeparam name="ViewType"></typeparam>
-            <typeparam name="IModelType1"></typeparam>
-            <typeparam name="IModelType2"></typeparam>
-            <typeparam name="IModelType3"></typeparam>
-            <typeparam name="IModelType4"></typeparam>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`5.view">
-            <summary>
-            The view
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`5.model1">
-            <summary>
-            The model 1
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`5.model2">
-            <summary>
-            The model 2
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`5.model3">
-            <summary>
-            The model 3
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`5.model4">
-            <summary>
-            The model 4
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`5.BindView(System.Object)">
-            <summary>
-            Binds the view.
-            </summary>
-            <param name="view">The view.</param>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`5.BindModels(System.Object[])">
-            <summary>
-            Binds the models.
-            </summary>
-            <param name="model">The models.</param>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`5.Initialized">
-            <summary>
-            Gets a value indicating whether this <see cref="T:MySoft.IoC.Presenter`5"/> is initialized.
-            </summary>
-            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`5.TypeOfView">
-            <summary>
-            Gets the type of the view.
-            </summary>
-            <value>The type of the view.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`5.TypeOfModels">
-            <summary>
-            Gets the types of the model.
-            </summary>
-            <value>The types of the model.</value>
-        </member>
-        <member name="T:MySoft.IoC.Presenter`6">
-            <summary>
-            Base class of all presenters
-            </summary>
-            <typeparam name="ViewType"></typeparam>
-            <typeparam name="IModelType1"></typeparam>
-            <typeparam name="IModelType2"></typeparam>
-            <typeparam name="IModelType3"></typeparam>
-            <typeparam name="IModelType4"></typeparam>
-            <typeparam name="IModelType5"></typeparam>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`6.view">
-            <summary>
-            The view
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`6.model1">
-            <summary>
-            The model 1
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`6.model2">
-            <summary>
-            The model 2
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`6.model3">
-            <summary>
-            The model 3
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`6.model4">
-            <summary>
-            The model 4
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`6.model5">
-            <summary>
-            The model 5
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`6.BindView(System.Object)">
-            <summary>
-            Binds the view.
-            </summary>
-            <param name="view">The view.</param>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`6.BindModels(System.Object[])">
-            <summary>
-            Binds the models.
-            </summary>
-            <param name="model">The models.</param>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`6.Initialized">
-            <summary>
-            Gets a value indicating whether this <see cref="T:MySoft.IoC.Presenter`6"/> is initialized.
-            </summary>
-            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`6.TypeOfView">
-            <summary>
-            Gets the type of the view.
-            </summary>
-            <value>The type of the view.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`6.TypeOfModels">
-            <summary>
-            Gets the types of the model.
-            </summary>
-            <value>The types of the model.</value>
-        </member>
-        <member name="T:MySoft.IoC.Presenter`7">
-            <summary>
-            Base class of all presenters
-            </summary>
-            <typeparam name="ViewType"></typeparam>
-            <typeparam name="IModelType1"></typeparam>
-            <typeparam name="IModelType2"></typeparam>
-            <typeparam name="IModelType3"></typeparam>
-            <typeparam name="IModelType4"></typeparam>
-            <typeparam name="IModelType5"></typeparam>
-            <typeparam name="IModelType6"></typeparam>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`7.view">
-            <summary>
-            The view
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`7.model1">
-            <summary>
-            The model 1
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`7.model2">
-            <summary>
-            The model 2
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`7.model3">
-            <summary>
-            The model 3
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`7.model4">
-            <summary>
-            The model 4
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`7.model5">
-            <summary>
-            The model 5
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Presenter`7.model6">
-            <summary>
-            The model 6
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`7.BindView(System.Object)">
-            <summary>
-            Binds the view.
-            </summary>
-            <param name="view">The view.</param>
-        </member>
-        <member name="M:MySoft.IoC.Presenter`7.BindModels(System.Object[])">
-            <summary>
-            Binds the models.
-            </summary>
-            <param name="model">The models.</param>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`7.Initialized">
-            <summary>
-            Gets a value indicating whether this <see cref="T:MySoft.IoC.Presenter`7"/> is initialized.
-            </summary>
-            <value><c>true</c> if initialized; otherwise, <c>false</c>.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`7.TypeOfView">
-            <summary>
-            Gets the type of the view.
-            </summary>
-            <value>The type of the view.</value>
-        </member>
-        <member name="P:MySoft.IoC.Presenter`7.TypeOfModels">
-            <summary>
-            Gets the types of the model.
-            </summary>
-            <value>The types of the model.</value>
-        </member>
-        <member name="T:MySoft.IoC.AspectInterceptor">
+        <member name="T:MySoft.IoC.Aspect.AspectInterceptor">
             <summary>
             AOP拦截器
             </summary>
         </member>
-        <member name="M:MySoft.IoC.AspectInterceptor.PerformProceed(Castle.DynamicProxy.IInvocation)">
+        <member name="M:MySoft.IoC.Aspect.AspectInterceptor.PerformProceed(Castle.DynamicProxy.IInvocation)">
             <summary>
             进行时的方法
             </summary>
             <param name="invocation"></param>
         </member>
-        <member name="M:MySoft.IoC.AspectInterceptor.PostProceed(Castle.DynamicProxy.IInvocation)">
+        <member name="M:MySoft.IoC.Aspect.AspectInterceptor.PostProceed(Castle.DynamicProxy.IInvocation)">
             <summary>
             处理后的方法
             </summary>
             <param name="invocation"></param>
         </member>
-        <member name="M:MySoft.IoC.AspectInterceptor.PreProceed(Castle.DynamicProxy.IInvocation)">
+        <member name="M:MySoft.IoC.Aspect.AspectInterceptor.PreProceed(Castle.DynamicProxy.IInvocation)">
             <summary>
             处理前的方法
             </summary>
             <param name="invocation"></param>
         </member>
-        <member name="T:MySoft.IoC.AspectManager">
+        <member name="T:MySoft.IoC.Status.ConnectInfo">
+            <summary>
+            连接信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ConnectInfo.IP">
+            <summary>
+            连接的IP
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ConnectInfo.Count">
+            <summary>
+            连接数
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Status.SummaryStatus">
+            <summary>
+            汇总状态信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.SummaryStatus.RunningSeconds">
+            <summary>
+            运行总时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.SummaryStatus.AverageDataFlow">
+            <summary>
+            平均数据流量（每秒）
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.SummaryStatus.AverageRequestCount">
+            <summary>
+            平均请求数（每秒）
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.SummaryStatus.AverageSuccessCount">
+            <summary>
+            平均成功数（每秒）
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.SummaryStatus.AverageErrorCount">
+            <summary>
+            平均错误数（每秒）
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.ServiceRequestPool">
+            <summary>
+            服务消息池
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.ServiceRequestPool.pool">
+            <summary>
+            ServiceRequest栈
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServiceRequestPool.#ctor(System.Int32)">
+            <summary>
+            初始化ServiceRequest池
+            </summary>
+            <param name="capacity">最大可能使用的ServiceRequest对象.</param>
+        </member>
+        <member name="M:MySoft.IoC.ServiceRequestPool.Pop">
+            <summary>
+            弹出一个ServiceRequest
+            </summary>
+            <returns>ServiceRequest removed from the pool.</returns>
+        </member>
+        <member name="M:MySoft.IoC.ServiceRequestPool.Push(MySoft.IoC.ServiceRequest)">
+            <summary>
+            添加一个 ServiceRequest
+            </summary>
+            <param name="item">ServiceRequest instance to add to the pool.</param>
+        </member>
+        <member name="P:MySoft.IoC.ServiceRequestPool.Count">
+            <summary>
+            返回ServiceRequest池中的 数量
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Server.ScsServerManager">
+            <summary>
+            Provides some functionality that are used by servers.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Server.ScsServerManager._lastClientId">
+            <summary>
+            Used to set an auto incremential unique identifier to clients.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerManager.GetClientId">
+            <summary>
+            Gets an unique number to be used as idenfitier of a client.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.CommunicationStateException">
+            <summary>
+            This application is thrown if communication is not expected state.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.CommunicationStateException.#ctor">
+            <summary>
+            Contstructor.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.CommunicationStateException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Contstructor for serializing.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.CommunicationStateException.#ctor(System.String)">
+            <summary>
+            Contstructor.
+            </summary>
+            <param name="message">Exception message</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.CommunicationStateException.#ctor(System.String,System.Exception)">
+            <summary>
+            Contstructor.
+            </summary>
+            <param name="message">Exception message</param>
+            <param name="innerException">Inner exception</param>
+        </member>
+        <member name="T:MySoft.IoC.Mvp.PresenterFactory">
+            <summary>
+            Presenter Factory
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.PresenterFactory.Create">
+            <summary>
+            Creates this singleton instance.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Mvp.PresenterFactory.GetPresenter``1(System.Object)">
+            <summary>
+            Gets the presenter.
+            </summary>
+            <param name="view">The view.</param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.IoC.Aspect.AspectManager">
             <summary>
             Aspect代理管理器
             </summary>
         </member>
-        <member name="M:MySoft.IoC.AspectManager.GetService``1(System.Object)">
+        <member name="M:MySoft.IoC.Aspect.AspectManager.GetService``1(System.Object)">
             <summary>
             获取Aspect服务
             </summary>
@@ -1756,19 +3210,198 @@
             <param name="service"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.AspectManager.GetService(System.Object)">
+        <member name="M:MySoft.IoC.Aspect.AspectManager.GetService(System.Object)">
             <summary>
             获取Aspect服务
             </summary>
             <param name="service"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.AspectManager.CreateService(System.Type)">
+        <member name="M:MySoft.IoC.Aspect.AspectManager.CreateService(System.Type)">
             <summary>
             创建Aspect服务
             </summary>
             <param name="serviceType"></param>
             <returns></returns>
+        </member>
+        <member name="T:MySoft.IoC.Configuration.CastleServiceConfigurationHandler">
+            <summary>
+            服务配置类
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Configuration.CastleFactoryConfigurationHandler">
+            <summary>
+            服务配置类
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Threading.Timer">
+            <summary>
+            This class is a timer that performs some tasks periodically.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Threading.Timer._taskTimer">
+            <summary>
+            This timer is used to perfom the task at spesified intervals.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Threading.Timer._running">
+            <summary>
+            Indicates that whether timer is running or stopped.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Threading.Timer._performingTasks">
+            <summary>
+            Indicates that whether performing the task or _taskTimer is in sleep mode.
+            This field is used to wait executing tasks when stopping Timer.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Threading.Timer.#ctor(System.Int32)">
+            <summary>
+            Creates a new Timer.
+            </summary>
+            <param name="period">Task period of timer (as milliseconds)</param>
+        </member>
+        <member name="M:MySoft.Communication.Threading.Timer.#ctor(System.Int32,System.Boolean)">
+            <summary>
+            Creates a new Timer.
+            </summary>
+            <param name="period">Task period of timer (as milliseconds)</param>
+            <param name="runOnStart">Indicates whether timer raises Elapsed event on Start method of Timer for once</param>
+        </member>
+        <member name="M:MySoft.Communication.Threading.Timer.Start">
+            <summary>
+            Starts the timer.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Threading.Timer.Stop">
+            <summary>
+            Stops the timer.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Threading.Timer.WaitToStop">
+            <summary>
+            Waits the service to stop.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Threading.Timer.TimerCallBack(System.Object)">
+            <summary>
+            This method is called by _taskTimer.
+            </summary>
+            <param name="state">Not used argument</param>
+        </member>
+        <member name="E:MySoft.Communication.Threading.Timer.Elapsed">
+            <summary>
+            This event is raised periodically according to Period of Timer.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Threading.Timer.Period">
+            <summary>
+            Task period of timer (as milliseconds).
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Threading.Timer.RunOnStart">
+            <summary>
+            Indicates whether timer raises Elapsed event on Start method of Timer for once.
+            Default: False.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Protocols.WireProtocolManager">
+            <summary>
+            This class is used to get default protocols.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.WireProtocolManager.GetDefaultWireProtocolFactory">
+            <summary>
+            Creates a default wire protocol factory object to be used on communicating of applications.
+            </summary>
+            <returns>A new instance of default wire protocol</returns>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.WireProtocolManager.GetDefaultWireProtocol">
+            <summary>
+            Creates a default wire protocol object to be used on communicating of applications.
+            </summary>
+            <returns>A new instance of default wire protocol</returns>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocolFactory">
+            <summary>
+            This class is used to create Binary Serialization Protocol objects.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Protocols.BinarySerialization.BinarySerializationProtocolFactory.CreateWireProtocol">
+            <summary>
+            Creates a new Wire Protocol object.
+            </summary>
+            <returns>Newly created wire protocol object</returns>
+        </member>
+        <member name="T:MySoft.IoC.ServiceRequest">
+            <summary>
+            服务请求类
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServiceRequest.#ctor(MySoft.IoC.Configuration.RemoteNode,MySoft.Logger.ILog)">
+            <summary>
+            实例化ServiceMessage
+            </summary>
+            <param name="node"></param>
+            <param name="logger"></param>
+        </member>
+        <member name="M:MySoft.IoC.ServiceRequest.SendMessage(MySoft.IoC.Messages.RequestMessage)">
+            <summary>
+            发送数据包
+            </summary>
+            <param name="reqMsg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServiceRequest.Dispose">
+            <summary>
+            清理资源
+            </summary>
+        </member>
+        <member name="E:MySoft.IoC.ServiceRequest.OnCallback">
+            <summary>
+            数据回调
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.ServiceRequest.IsConnected">
+            <summary>
+            是否连接
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.ServiceNodeInfo">
+            <summary>
+            The service node info.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServiceNodeInfo.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MySoft.IoC.ServiceNodeInfo"/> class.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServiceNodeInfo.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            </returns>
+        </member>
+        <member name="P:MySoft.IoC.ServiceNodeInfo.Key">
+            <summary>
+            Gets or sets the DEFAULT_KEY.
+            </summary>
+            <value>The DEFAULT_KEY.</value>
+        </member>
+        <member name="P:MySoft.IoC.ServiceNodeInfo.Sevice">
+            <summary>
+            Gets or sets the sevice.
+            </summary>
+            <value>The sevice.</value>
+        </member>
+        <member name="P:MySoft.IoC.ServiceNodeInfo.Implementation">
+            <summary>
+            Gets or sets the implementation.
+            </summary>
+            <value>The implementation.</value>
         </member>
         <member name="T:MySoft.IoC.Services.AsyncMethodCaller">
             <summary>
@@ -1788,119 +3421,12 @@
             </summary>
             <param name="classType">Type of the service interface.</param>
         </member>
-        <member name="M:MySoft.IoC.Services.DynamicService.Run(MySoft.IoC.Message.RequestMessage)">
+        <member name="M:MySoft.IoC.Services.DynamicService.Run(MySoft.IoC.Messages.RequestMessage)">
             <summary>
             Runs the specified MSG.
             </summary>
             <param name="reqMsg">The MSG.</param>
             <returns>The msg.</returns>
-        </member>
-        <member name="T:MySoft.IoC.ServiceNode">
-            <summary>
-            服务节点
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.ServiceNode.Parse(System.String,System.Int32)">
-            <summary>
-            返回一个远程节点
-            </summary>
-            <param name="ip"></param>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ServiceNode.Parse(System.String)">
-            <summary>
-            返回一个远程节点
-            </summary>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="T:MySoft.IoC.Message.RequestMessage">
-            <summary>
-            The request msg.
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestMessage.AppName">
-            <summary>
-            Gets or sets the name of the appName.
-            </summary>
-            <value>The name of the appName.</value>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestMessage.HostName">
-            <summary>
-            Gets or sets the name of the hostName.
-            </summary>
-            <value>The name of the hostName.</value>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestMessage.Timeout">
-            <summary>
-            Gets or sets the timeout of the service.
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestMessage.IPAddress">
-            <summary>
-            Gets or sets the request address
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Message.RequestMessage.Message">
-            <summary>
-            请求的消息
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.Configuration.CastleServiceConfigurationHandler">
-            <summary>
-            服务配置类
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.Configuration.CastleFactoryConfigurationHandler">
-            <summary>
-            服务配置类
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.ServiceInvocationHandler">
-            <summary>
-            The base impl class of the service interface, this class is used by service factory to emit service interface impl automatically at runtime.
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.ServiceInvocationHandler.#ctor(MySoft.IoC.Configuration.CastleFactoryConfiguration,MySoft.IoC.IServiceContainer,MySoft.IoC.IService,System.Type)">
-            <summary>
-            Initializes a new instance of the <see cref="T:MySoft.IoC.ServiceInvocationHandler"/> class.
-            </summary>
-            <param name="container">config.</param>
-            <param name="container">The container.</param>
-            <param name="serviceInterfaceType">Type of the service interface.</param>
-        </member>
-        <member name="M:MySoft.IoC.ServiceInvocationHandler.CallService(System.Reflection.MethodInfo,System.Object[])">
-            <summary>
-            Calls the service.
-            </summary>
-            <param name="methodInfo">Name of the sub service.</param>
-            <param name="paramValues">The param values.</param>
-            <returns>The result.</returns>
-        </member>
-        <member name="M:MySoft.IoC.ServiceInvocationHandler.Invoke(System.Object,System.Reflection.MethodInfo,System.Object[])">
-            <summary>
-            响应委托
-            </summary>
-            <param name="proxy"></param>
-            <param name="method"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="T:MySoft.IoC.ConnectInfo">
-            <summary>
-            连接信息
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.ConnectInfo.IP">
-            <summary>
-            连接的IP
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.ConnectInfo.Count">
-            <summary>
-            连接数
-            </summary>
         </member>
         <member name="T:MySoft.IoC.ParameterCollection">
             <summary>
@@ -1974,78 +3500,210 @@
             y [yOffset:yOffset+yLen], and d [dOffset:dOffset+mod].
             </remarks>
         </member>
-        <member name="T:MySoft.IoC.CastleFactory">
+        <member name="T:MySoft.Communication.Threading.ThreadSafeSortedList`2">
             <summary>
-            The service factory.
+            This class is used to store key-value based items in a thread safe manner.
+            It uses System.Collections.Generic.SortedList internally.
+            </summary>
+            <typeparam name="TK">Key type</typeparam>
+            <typeparam name="TV">Value type</typeparam>
+        </member>
+        <member name="F:MySoft.Communication.Threading.ThreadSafeSortedList`2._items">
+            <summary>
+            Internal collection to store items.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.CastleFactory.#ctor(MySoft.IoC.Configuration.CastleFactoryConfiguration,MySoft.IoC.IServiceContainer)">
+        <member name="F:MySoft.Communication.Threading.ThreadSafeSortedList`2._lock">
             <summary>
-            Initializes a new instance of the <see cref="T:MySoft.IoC.CastleFactory"/> class.
-            </summary>
-            <param name="container">The container.</param>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.Create">
-            <summary>
-            Creates this instance.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.CreateNew(MySoft.IoC.Configuration.CastleFactoryConfiguration)">
-            <summary>
-            Creates this instance. Used in a multithreaded environment
-            </summary>
-            <param name="config"></param>
-            <param name="name">service name</param>
-            <returns>The service factoru new instance.</returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.RegisterCacheDependent(MySoft.Cache.ICacheDependent)">
-            <summary>
-            注册缓存依赖
-            </summary>
-            <param name="cache"></param>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.ResolveService``1">
-            <summary>
-            Gets local the service.
-            </summary>
-            <returns>The service implemetation instance.</returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.GetService``1">
-            <summary>
-            Gets the service.
-            </summary>
-            <returns>The service implemetation instance.</returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.GetService``1(MySoft.IoC.ServiceNode)">
-            <summary>
-            Gets the service.
-            </summary>
-            <param name="node">The node name.</param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.GetService``1(System.String)">
-            <summary>
-            Gets the service.
-            </summary>
-            <param name="nodeKey">The node key.</param>
-            <returns></returns>
-        </member>
-        <member name="P:MySoft.IoC.CastleFactory.ServiceContainer">
-            <summary>
-            Gets the service container.
-            </summary>
-            <value>The service container.</value>
-        </member>
-        <member name="E:MySoft.IoC.CastleFactory.OnLog">
-            <summary>
-            OnLog event.
+            Used to synchronize access to _items list.
             </summary>
         </member>
-        <member name="E:MySoft.IoC.CastleFactory.OnError">
+        <member name="M:MySoft.Communication.Threading.ThreadSafeSortedList`2.#ctor">
             <summary>
-            OnError event.
+            Creates a new ThreadSafeSortedList object.
             </summary>
+        </member>
+        <member name="M:MySoft.Communication.Threading.ThreadSafeSortedList`2.ContainsKey(`0)">
+            <summary>
+            Checks if collection contains spesified key.
+            </summary>
+            <param name="key">Key to check</param>
+            <returns>True; if collection contains given key</returns>
+        </member>
+        <member name="M:MySoft.Communication.Threading.ThreadSafeSortedList`2.ContainsValue(`1)">
+            <summary>
+            Checks if collection contains spesified item.
+            </summary>
+            <param name="item">Item to check</param>
+            <returns>True; if collection contains given item</returns>
+        </member>
+        <member name="M:MySoft.Communication.Threading.ThreadSafeSortedList`2.Remove(`0)">
+            <summary>
+            Removes an item from collection.
+            </summary>
+            <param name="key">Key of item to remove</param>
+        </member>
+        <member name="M:MySoft.Communication.Threading.ThreadSafeSortedList`2.GetAllItems">
+            <summary>
+            Gets all items in collection.
+            </summary>
+            <returns>Item list</returns>
+        </member>
+        <member name="M:MySoft.Communication.Threading.ThreadSafeSortedList`2.ClearAll">
+            <summary>
+            Removes all items from list.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Threading.ThreadSafeSortedList`2.GetAndClearAllItems">
+            <summary>
+            Gets then removes all items in collection.
+            </summary>
+            <returns>Item list</returns>
+        </member>
+        <member name="P:MySoft.Communication.Threading.ThreadSafeSortedList`2.Item(`0)">
+            <summary>
+            Gets/adds/replaces an item by key.
+            </summary>
+            <param name="key">Key to get/set value</param>
+            <returns>Item associated with this key</returns>
+        </member>
+        <member name="P:MySoft.Communication.Threading.ThreadSafeSortedList`2.Count">
+            <summary>
+            Gets count of items in the collection.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Server.ScsServerClient">
+            <summary>
+            This class represents a client in server side.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Server.ScsServerClient._communicationChannel">
+            <summary>
+            The communication channel that is used by client to send and receive messages.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerClient.#ctor(MySoft.Communication.Scs.Communication.Channels.ICommunicationChannel)">
+            <summary>
+            Creates a new ScsClient object.
+            </summary>
+            <param name="communicationChannel">The communication channel that is used by client to send and receive messages</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerClient.Disconnect">
+            <summary>
+            Disconnects from client and closes underlying communication channel.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerClient.SendMessage(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Sends a message to the client.
+            </summary>
+            <param name="message">Message to be sent</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerClient.CommunicationChannel_Disconnected(System.Object,System.EventArgs)">
+            <summary>
+            Handles Disconnected event of _communicationChannel object.
+            </summary>
+            <param name="sender">Source of event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerClient.CommunicationChannel_MessageReceived(System.Object,MySoft.Communication.Scs.Communication.Messages.MessageEventArgs)">
+            <summary>
+            Handles MessageReceived event of _communicationChannel object.
+            </summary>
+            <param name="sender">Source of event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerClient.CommunicationChannel_MessageSent(System.Object,MySoft.Communication.Scs.Communication.Messages.MessageEventArgs)">
+            <summary>
+            Handles MessageSent event of _communicationChannel object.
+            </summary>
+            <param name="sender">Source of event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerClient.OnDisconnected">
+            <summary>
+            Raises Disconnected event.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerClient.OnMessageReceived(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Raises MessageReceived event.
+            </summary>
+            <param name="message">Received message</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerClient.OnMessageSent(MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
+            <summary>
+            Raises MessageSent event.
+            </summary>
+            <param name="message">Received message</param>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Server.ScsServerClient.MessageReceived">
+            <summary>
+            This event is raised when a new message is received.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Server.ScsServerClient.MessageSent">
+            <summary>
+            This event is raised when a new message is sent without any error.
+            It does not guaranties that message is properly handled and processed by remote application.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Server.ScsServerClient.Disconnected">
+            <summary>
+            This event is raised when client is disconnected from server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.ScsServerClient.ClientId">
+            <summary>
+            Unique identifier for this client in server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.ScsServerClient.CommunicationState">
+            <summary>
+            Gets the communication state of the Client.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.ScsServerClient.WireProtocol">
+            <summary>
+            Gets/sets wire protocol that is used while reading and writing messages.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.ScsServerClient.RemoteEndPoint">
+            <summary>
+             Gets endpoint of remote application.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.ScsServerClient.LastReceivedMessageTime">
+            <summary>
+            Gets the time of the last succesfully received message.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.ScsServerClient.LastSentMessageTime">
+            <summary>
+            Gets the time of the last succesfully received message.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Client.Tcp.ScsTcpClient">
+            <summary>
+            This class is used to communicate with server over TCP/IP protocol.
+            </summary>
+        </member>
+        <member name="F:MySoft.Communication.Scs.Client.Tcp.ScsTcpClient._serverEndPoint">
+            <summary>
+            The endpoint address of the server.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.Tcp.ScsTcpClient.#ctor(MySoft.Communication.Scs.Communication.EndPoints.Tcp.ScsTcpEndPoint)">
+            <summary>
+            Creates a new ScsTcpClient object.
+            </summary>
+            <param name="serverEndPoint">The endpoint address to connect to the server</param>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Client.Tcp.ScsTcpClient.CreateCommunicationChannel">
+            <summary>
+            Creates a communication channel using ServerIpAddress and ServerPort.
+            </summary>
+            <returns>Ready communication channel to communicate</returns>
         </member>
     </members>
 </doc>

@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MySoft.PlatformService</name>
+    </assembly>
+    <members>
+        <member name="T:MySoft.PlatformService.ServiceInformation">
+            <summary>
+            服务信息
+            </summary>
+        </member>
+        <member name="P:MySoft.PlatformService.ServiceInformation.ServicePath">
+            <summary>
+            服务路径
+            </summary>
+        </member>
+        <member name="P:MySoft.PlatformService.ServiceInformation.Description">
+            <summary>
+            描述信息
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.InstallerUtils.GetServiceList(System.String,System.ServiceProcess.ServiceControllerStatus)">
+            <summary>
+            获取服务列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.PlatformService.InstallerUtils.GetServiceList(System.String)">
+            <summary>
+            获取服务列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.PlatformService.InstallerServer">
+            <summary>
+            安装服务类
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.InstallerServer.ListService(System.String,System.String)">
+            <summary>
+            列出服务
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.InstallerServer.StartConsole">
+            <summary>
+            从控制台运行
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.InstallerServer.StopConsole">
+            <summary>
+            从控制台停止
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.InstallerServer.StartService(System.String)">
+            <summary>
+            运行服务服务
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.InstallerServer.StopService(System.String)">
+            <summary>
+            停止服务服务
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.InstallerServer.InstallService">
+            <summary>
+            安装服务器为window服务
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.InstallerServer.UninstallService">
+            <summary>
+            卸载window服务
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.InstallerServer.GetTransactedInstaller">
+            <summary>
+            获取当前的安装信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.PlatformService.InstallerServer.InstallerConfig">
+            <summary>
+            安装配置
+            </summary>
+        </member>
+        <member name="P:MySoft.PlatformService.InstallerServer.WindowsService">
+            <summary>
+            当前服务
+            </summary>
+        </member>
+        <member name="F:MySoft.PlatformService.BusinessService.components">
+            <summary> 
+            必需的设计器变量。
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.BusinessService.Dispose(System.Boolean)">
+            <summary>
+            清理所有正在使用的资源。
+            </summary>
+            <param name="disposing">如果应释放托管资源，为 true；否则为 false。</param>
+        </member>
+        <member name="M:MySoft.PlatformService.BusinessService.InitializeComponent">
+            <summary> 
+            设计器支持所需的方法 - 不要
+            使用代码编辑器修改此方法的内容。
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.BusinessInstaller.Initialize(MySoft.Installer.Configuration.InstallerConfiguration)">
+            <summary>
+            初始化服务
+            </summary>
+        </member>
+        <member name="F:MySoft.PlatformService.BusinessInstaller.components">
+            <summary>
+            必需的设计器变量。
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.BusinessInstaller.Dispose(System.Boolean)">
+            <summary> 
+            清理所有正在使用的资源。
+            </summary>
+            <param name="disposing">如果应释放托管资源，为 true；否则为 false。</param>
+        </member>
+        <member name="M:MySoft.PlatformService.BusinessInstaller.InitializeComponent">
+            <summary>
+            设计器支持所需的方法 - 不要
+            使用代码编辑器修改此方法的内容。
+            </summary>
+        </member>
+    </members>
+</doc>

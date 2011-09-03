@@ -369,6 +369,13 @@
             <param name="txtStr">The TXT STR.</param>
             <returns>The formated str.</returns>
         </member>
+        <member name="M:MySoft.Web.WebHelper.ReplaceContext(System.String,System.String)">
+            <summary>
+            处理内容
+            </summary>
+            <param name="content"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.Web.WebHelper.LoadResources(System.String,System.Globalization.CultureInfo)">
             <summary>
             Loads the resources.
@@ -612,58 +619,20 @@
             by the <b>PageParser</b> class, which is the same class that the default ASP.NET PageHandlerFactory delegates
             to.</returns>
         </member>
-        <member name="T:MySoft.Web.ResponseFilter">
-            <summary>
-            生成htm静态页面
-            </summary>
-        </member>
-        <member name="T:MySoft.Web.AspNetFilter">
-            <summary>
-            字符串筛选器
-            </summary>
-        </member>
-        <member name="M:MySoft.Web.AspNetFilter.WriteContent(System.String)">
-            <summary>
-            写内容
-            </summary>
-            <param name="content"></param>
-        </member>
-        <member name="M:MySoft.Web.AspNetFilter.WriteComplete">
-            <summary>
-            写内容结束
-            </summary>
-        </member>
-        <member name="M:MySoft.Web.AspNetFilter.ReplaceContext(System.String)">
-            <summary>
-            处理内容
-            </summary>
-            <param name="content"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Web.ResponseFilter.WriteFile(System.Object)">
-            <summary>
-            写文件
-            </summary>
-            <param name="state"></param>
-        </member>
-        <member name="M:MySoft.Web.ResponseFilter.IsFileOpen(System.String)">
-            <summary>
-            判断文件是否打开
-            </summary>
-            <param name="filePath"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Web.ResponseFilter.RemoveRootPath(System.String)">
-            <summary>
-            去除根目录
-            </summary>
-            <param name="path"></param>
-            <returns></returns>
-        </member>
         <member name="T:MySoft.Web.StaticPageHandler">
             <summary>
             静态页生成Handler
             </summary>
+        </member>
+        <member name="M:MySoft.Web.StaticPageHandler.CreateStaticFile(System.String,System.String,System.String,System.Boolean,System.String)">
+            <summary>
+            创建静态文件
+            </summary>
+            <param name="filePath"></param>
+            <param name="savePath"></param>
+            <param name="validateString"></param>
+            <param name="replace"></param>
+            <param name="extension"></param>
         </member>
         <member name="M:MySoft.Web.StaticPageHandler.SetContentType(System.Web.HttpContext,System.String)">
             <summary>
@@ -1035,7 +1004,7 @@
             更新依赖，包含 SlidingUpdateTime 和 AbsoluteUpdateTime 
             </summary>
         </member>
-        <member name="M:MySoft.Web.IUpdateDependency.HasUpdate(System.DateTime)">
+        <member name="M:MySoft.Web.IUpdateDependency.HasUpdate(System.DateTime,System.Int32)">
             <summary>
             判断是否需要更新
             </summary>
@@ -1087,7 +1056,7 @@
             定时生成基类
             </summary>
         </member>
-        <member name="M:MySoft.Web.AbstractUpdateDependency.HasUpdate(System.DateTime)">
+        <member name="M:MySoft.Web.AbstractUpdateDependency.HasUpdate(System.DateTime,System.Int32)">
             <summary>
             检测是否需要更新
             </summary>
@@ -1815,6 +1784,22 @@
             <param name="requestedRawUrl">The RawUrl being requested (includes path and querystring).</param>
             <param name="app">The HttpApplication instance.</param>
         </member>
+        <member name="T:MySoft.Web.AspNetFilter">
+            <summary>
+            字符串筛选器
+            </summary>
+        </member>
+        <member name="M:MySoft.Web.AspNetFilter.WriteContent(System.String)">
+            <summary>
+            写内容
+            </summary>
+            <param name="content"></param>
+        </member>
+        <member name="M:MySoft.Web.AspNetFilter.WriteComplete">
+            <summary>
+            写内容结束
+            </summary>
+        </member>
         <member name="T:MySoft.Web.Configuration.CacheControlRuleCollection">
             <summary>
             The RewriterRuleCollection models a set of RewriterRules in the Web.config file.
@@ -2264,6 +2249,11 @@
             重试间隔(单位:分钟)
             </summary>
         </member>
+        <member name="P:MySoft.Web.SingleStaticPageItem.InMinutes">
+            <summary>
+            多少分钟之内才生成
+            </summary>
+        </member>
         <member name="T:MySoft.Web.StaticPageParamInfo">
             <summary>
             参数信息
@@ -2403,6 +2393,11 @@
         <member name="P:MySoft.Web.ParamStaticPageItem.RetryInterval">
             <summary>
             重试间隔(单位:分钟)
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.ParamStaticPageItem.InMinutes">
+            <summary>
+            多少分钟之内才生成
             </summary>
         </member>
         <member name="T:MySoft.Web.StaticPageManager">

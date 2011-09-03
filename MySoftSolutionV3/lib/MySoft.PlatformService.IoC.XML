@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MySoft.PlatformService.IoC</name>
+    </assembly>
+    <members>
+        <member name="T:MySoft.PlatformService.IoC.WindowsService">
+            <summary>
+            Windows服务
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.IoC.WindowsService.#ctor">
+            <summary>
+            实例化Windows服务
+            </summary>
+        </member>
+        <member name="M:MySoft.PlatformService.IoC.WindowsService.WindowsService_UnhandledException(System.Object,System.UnhandledExceptionEventArgs)">
+            <summary>
+            处理线程异常
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:MySoft.PlatformService.IoC.WindowsService.Init">
+            <summary>
+            初始化方法
+            </summary>
+        </member>
+        <member name="P:MySoft.PlatformService.IoC.WindowsService.StartMode">
+            <summary>
+            设置运行类型
+            </summary>
+        </member>
+    </members>
+</doc>

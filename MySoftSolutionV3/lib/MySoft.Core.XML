@@ -10749,16 +10749,6 @@
             </summary>
             <param name="cacheTime"></param>
         </member>
-        <member name="P:MySoft.IoC.OperationContractAttribute.Compress">
-            <summary>
-            是否压缩
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.OperationContractAttribute.Encrypt">
-            <summary>
-            是否加密
-            </summary>
-        </member>
         <member name="T:SharpZip.Zip.DescriptorData">
             <summary>
             Holds data pertinent to a data descriptor.
@@ -14560,23 +14550,6 @@
         <member name="P:MySoft.RESTful.PublishKind.Enabled">
             <summary>
             是否启用
-            </summary>
-        </member>
-        <member name="T:MySoft.Net.Sockets.BufferTypeAttribute">
-            <summary>
-            数据包格式化类
-            （凡是打了此标记的类才能够被 BufferFormat.FormatFCA 处理)
-            </summary>
-        </member>
-        <member name="M:MySoft.Net.Sockets.BufferTypeAttribute.#ctor(System.Int32)">
-            <summary>
-            数据包格式化类
-            </summary>
-            <param name="bufferCmdType">数据包命令类型</param>
-        </member>
-        <member name="P:MySoft.Net.Sockets.BufferTypeAttribute.BufferCmdType">
-            <summary>
-            数据包命令类型
             </summary>
         </member>
         <member name="T:Newtonsoft.Json.Serialization.ReflectionValueProvider">
