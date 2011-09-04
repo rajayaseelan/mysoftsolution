@@ -46,8 +46,7 @@ namespace MySoft.Web
 
             //检测是否为Ajax调用
             bool AjaxProcess = WebHelper.GetRequestParam<bool>(context.Request, "X-Ajax-Process", false);
-            bool IsStaticPage = WebHelper.GetRequestParam<bool>(context.Request, "StaticPage", false);
-            if (!AjaxProcess && !IsStaticPage && context.Request.RequestType == "GET")
+            if (!AjaxProcess && context.Request.RequestType == "GET")
             {
                 var config = StaticPageConfiguration.GetConfig();
 
@@ -108,8 +107,9 @@ namespace MySoft.Web
                                     SetContentType(context, fileExtension);
 
                                     //将文件写入流中
-                                    context.Server.Transfer(staticFile);
-                                    return;
+                                    context.Response.Clear();
+                                    context.Response.WriteFile(staticFile);
+                                    context.Response.End();
                                 }
                             }
                         }
@@ -130,7 +130,7 @@ namespace MySoft.Web
 
             //进行错误处理，如果出错，则转到原有的静态页面
             try
-            {                
+            {
                 //if (sendToUrl.IndexOf('?') > 0) sendToUrl = sendToUrl.Substring(0, sendToUrl.IndexOf('?'));
                 //IHttpHandler handler = BuildManager.CreateInstanceFromVirtualPath(sendToUrl, typeof(Page)) as IHttpHandler;
 
@@ -148,7 +148,9 @@ namespace MySoft.Web
                     SetContentType(context, fileExtension);
 
                     //将文件写入流中
+                    context.Response.Clear();
                     context.Response.WriteFile(staticFile);
+                    context.Response.End();
                 }
                 else
                     throw ex;
@@ -167,8 +169,8 @@ namespace MySoft.Web
         {
             string[] arr = filePath.Split('?');
             string url = arr[0];
-            string query = "StaticPage=true";
-            if (arr.Length > 0) query += "&" + arr[1];
+            string query = new Random().NextDouble().ToString();
+            if (arr.Length > 0) query = arr[1] + "&" + query;
 
             SingleStaticPageItem item = new SingleStaticPageItem(url, query, savePath, validateString);
             if (replace) item.Callback += new CallbackEventHandler(p => WebHelper.ReplaceContext(p, extension));
