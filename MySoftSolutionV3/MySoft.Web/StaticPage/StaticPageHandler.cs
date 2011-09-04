@@ -7,6 +7,8 @@ using System.Web;
 using System.Web.SessionState;
 using System.Web.UI;
 using MySoft.Web.Configuration;
+using System.Web.Compilation;
+using System.Threading;
 
 namespace MySoft.Web
 {
@@ -37,15 +39,15 @@ namespace MySoft.Web
         //     和 Server）的引用。
         public void ProcessRequest(HttpContext context)
         {
-            string url = context.Request.Url.PathAndQuery;
-            string sendToUrl = url;
-            string filePath = context.Request.PhysicalApplicationPath;
+            string sendToUrl = context.Request.Url.PathAndQuery;
+            string applicationPath = context.Request.PhysicalApplicationPath;
             string staticFile = null, fileExtension = null;
             bool htmlExists = false;
 
             //检测是否为Ajax调用
             bool AjaxProcess = WebHelper.GetRequestParam<bool>(context.Request, "X-Ajax-Process", false);
-            if (!AjaxProcess)
+            bool IsStaticPage = WebHelper.GetRequestParam<bool>(context.Request, "IsStaticPage", false);
+            if (!AjaxProcess && !IsStaticPage && context.Request.RequestType == "GET")
             {
                 var config = StaticPageConfiguration.GetConfig();
 
@@ -63,12 +65,12 @@ namespace MySoft.Web
                         // Create a regex (note that IgnoreCase is set...)
                         Regex reg = new Regex(lookFor, RegexOptions.IgnoreCase);
 
-                        if (reg.IsMatch(url))
+                        if (reg.IsMatch(sendToUrl))
                         {
                             isMatch = true;
 
                             // match found - do any replacement needed
-                            string staticUrl = RewriterUtils.ResolveUrl(context.Request.ApplicationPath, reg.Replace(url, rule.WriteTo));
+                            string staticUrl = RewriterUtils.ResolveUrl(context.Request.ApplicationPath, reg.Replace(sendToUrl, rule.WriteTo));
                             staticFile = context.Server.MapPath(staticUrl);
 
                             //将域名进行替换
@@ -77,7 +79,7 @@ namespace MySoft.Web
                             //需要生成静态页面
                             if (!File.Exists(staticFile))  //静态页面不存在
                             {
-                                CreateStaticFile(filePath, staticFile, rule.ValidateString, config.Replace, config.Extension);
+                                CreateStaticFile(sendToUrl, staticFile, rule.ValidateString, config.Replace, config.Extension);
                                 break;
                             }
                             else
@@ -91,13 +93,13 @@ namespace MySoft.Web
                                 int span = (int)DateTime.Now.Subtract(file.LastWriteTime).TotalSeconds;
                                 if (rule.Timeout > 0 && span >= rule.Timeout) //静态页面过期
                                 {
-                                    CreateStaticFile(filePath, staticFile, rule.ValidateString, config.Replace, config.Extension);
+                                    CreateStaticFile(sendToUrl, staticFile, rule.ValidateString, config.Replace, config.Extension);
                                     break;
                                 }
                                 //检测是否需要更新
                                 else if (!string.IsNullOrEmpty(rule.UpdateFor) && CheckUpdate(context, rule.UpdateFor))
                                 {
-                                    CreateStaticFile(filePath, staticFile, rule.ValidateString, config.Replace, config.Extension);
+                                    CreateStaticFile(sendToUrl, staticFile, rule.ValidateString, config.Replace, config.Extension);
                                     break;
                                 }
                                 else
@@ -107,7 +109,7 @@ namespace MySoft.Web
 
                                     //将文件写入流中
                                     context.Response.WriteFile(staticFile);
-                                    return;
+                                    context.Response.End();
                                 }
                             }
                         }
@@ -130,10 +132,15 @@ namespace MySoft.Web
             try
             {
                 string sendToUrlLessQString;
-                RewriterUtils.RewriteUrl(context, sendToUrl, out sendToUrlLessQString, out filePath);
-                IHttpHandler handler = PageParser.GetCompiledPageInstance(sendToUrlLessQString, filePath, context);
+                RewriterUtils.RewriteUrl(context, sendToUrl, out sendToUrlLessQString, out applicationPath);
+                IHttpHandler handler = PageParser.GetCompiledPageInstance(sendToUrlLessQString, applicationPath, context);
+
+                //if (sendToUrl.IndexOf('?') > 0) sendToUrl = sendToUrl.Substring(0, sendToUrl.IndexOf('?'));
+                //IHttpHandler handler = BuildManager.CreateInstanceFromVirtualPath(sendToUrl, typeof(Page)) as IHttpHandler;
+
                 handler.ProcessRequest(context);
             }
+            catch (ThreadAbortException) { }
             catch (Exception ex)
             {
                 if (htmlExists && !string.IsNullOrEmpty(staticFile))
@@ -143,6 +150,7 @@ namespace MySoft.Web
 
                     //将文件写入流中
                     context.Response.WriteFile(staticFile);
+                    context.Response.End();
                 }
                 else
                     throw ex;
@@ -159,7 +167,12 @@ namespace MySoft.Web
         /// <param name="extension"></param>
         private void CreateStaticFile(string filePath, string savePath, string validateString, bool replace, string extension)
         {
-            SingleStaticPageItem item = new SingleStaticPageItem(filePath, savePath, validateString);
+            string[] arr = filePath.Split('?');
+            string url = arr[0];
+            string query = "IsStaticPage=true";
+            if (arr.Length > 0) query += "&" + arr[1];
+
+            SingleStaticPageItem item = new SingleStaticPageItem(url, query, savePath, validateString);
             if (replace) item.Callback += new CallbackEventHandler(p => WebHelper.ReplaceContext(p, extension));
             item.Update(TimeSpan.FromSeconds(1));
         }

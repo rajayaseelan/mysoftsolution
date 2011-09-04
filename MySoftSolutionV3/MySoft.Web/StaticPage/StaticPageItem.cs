@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Linq;
 using MySoft.Logger;
+using System.Collections;
 
 namespace MySoft.Web
 {
@@ -388,11 +389,13 @@ namespace MySoft.Web
         {
             ThreadPool.QueueUserWorkItem(obj =>
             {
-                TimeSpan span = (TimeSpan)obj;
+                ArrayList arr = obj as ArrayList;
+                IStaticPageItem item = (IStaticPageItem)arr[0];
+                TimeSpan span = (TimeSpan)arr[1];
                 Thread.Sleep(span);
 
-                (this as IUpdateItem).Update(DateTime.MaxValue);
-            }, timeSpan);
+                item.Update();
+            }, new ArrayList { this, timeSpan });
         }
 
         /// <summary>
