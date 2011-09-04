@@ -169,7 +169,7 @@ namespace MySoft.Web
         {
             string[] arr = filePath.Split('?');
             string url = arr[0];
-            string query = new Random().NextDouble().ToString();
+            string query = "r=" + new Random().NextDouble().ToString();
             if (arr.Length > 0) query = arr[1] + "&" + query;
 
             SingleStaticPageItem item = new SingleStaticPageItem(url, query, savePath, validateString);

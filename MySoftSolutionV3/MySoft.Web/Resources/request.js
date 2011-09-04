@@ -68,7 +68,7 @@ function AJAXRequest() {
         if (!xmlHttp) return false;
         if (!pm || !purl || (pa == undefined)) return false;
         var ev = { url: purl, content: pc, method: pm };
-        purl+=(purl.indexOf("?")>-1?"&":"?")+Math.random();
+        purl+=(purl.indexOf("?")>-1?"&r=":"?r=")+Math.random();
         xmlHttp.open(pm, purl, pa);
         AJAX.onrequeststart(ev);
         xmlHttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
