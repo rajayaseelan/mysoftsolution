@@ -368,7 +368,7 @@ namespace MySoft.Web
                 string logText = string.Format("{0}\r\n生成文件【{1}】失败！", ex.Message, savePath);
 
                 //将日志写入文件
-                SimpleLog.Instance.WriteLogForDir("StaticPage", new StaticPageException(logText, ex));
+                SimpleLog.Instance.WriteLog(new StaticPageException(logText, ex));
             }
         }
 
