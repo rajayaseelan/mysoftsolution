@@ -41,8 +41,6 @@ namespace MySoft.Web
         {
             string sendToUrl = context.Request.Url.PathAndQuery;
             string applicationPath = context.Request.PhysicalApplicationPath;
-            string staticFile = null, fileExtension = null;
-            bool htmlExists = false;
 
             //检测是否为Ajax调用
             bool AjaxProcess = WebHelper.GetRequestParam<bool>(context.Request, "X-Ajax-Process", false);
@@ -70,7 +68,7 @@ namespace MySoft.Web
 
                             // match found - do any replacement needed
                             string staticUrl = RewriterUtils.ResolveUrl(context.Request.ApplicationPath, reg.Replace(sendToUrl, rule.WriteTo));
-                            staticFile = context.Server.MapPath(staticUrl);
+                            string staticFile = context.Server.MapPath(staticUrl);
 
                             //将域名进行替换
                             staticFile = staticFile.Replace("{domain}", context.Request.Url.Authority);
@@ -86,8 +84,6 @@ namespace MySoft.Web
                             {
                                 //静态页面存在
                                 FileInfo file = new FileInfo(staticFile);
-                                htmlExists = file.Exists;
-                                fileExtension = file.Extension;
 
                                 //按秒检测页面重新生成
                                 int span = (int)DateTime.Now.Subtract(file.LastWriteTime).TotalSeconds;
@@ -107,7 +103,7 @@ namespace MySoft.Web
                                 else
                                 {
                                     //设置格式
-                                    SetContentType(context, fileExtension);
+                                    SetContentType(context, file.Extension);
 
                                     //将文件写入流中
                                     context.Response.Clear();
@@ -143,20 +139,9 @@ namespace MySoft.Web
                 handler.ProcessRequest(context);
             }
             catch (ThreadAbortException) { }
-            catch (Exception ex)
+            catch (Exception)
             {
-                if (htmlExists && !string.IsNullOrEmpty(staticFile))
-                {
-                    //设置格式
-                    SetContentType(context, fileExtension);
-
-                    //将文件写入流中
-                    context.Response.Clear();
-                    context.Response.WriteFile(staticFile);
-                    context.Response.End();
-                }
-                else
-                    throw ex;
+                throw;
             }
         }
 
