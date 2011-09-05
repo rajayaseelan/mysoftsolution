@@ -78,7 +78,8 @@ namespace MySoft.Web
                             //需要生成静态页面
                             if (!File.Exists(staticFile))  //静态页面不存在
                             {
-                                CreateStaticFile(sendToUrl, staticFile, rule.ValidateString, config.Replace, config.Extension);
+                                var filter = new ResponseFilter(context.Response.Filter, staticFile, rule.ValidateString, config.Replace, config.Extension);
+                                context.Response.Filter = filter;
                                 break;
                             }
                             else
@@ -92,13 +93,15 @@ namespace MySoft.Web
                                 int span = (int)DateTime.Now.Subtract(file.LastWriteTime).TotalSeconds;
                                 if (rule.Timeout > 0 && span >= rule.Timeout) //静态页面过期
                                 {
-                                    CreateStaticFile(sendToUrl, staticFile, rule.ValidateString, config.Replace, config.Extension);
+                                    var filter = new ResponseFilter(context.Response.Filter, staticFile, rule.ValidateString, config.Replace, config.Extension);
+                                    context.Response.Filter = filter;
                                     break;
                                 }
                                 //检测是否需要更新
                                 else if (!string.IsNullOrEmpty(rule.UpdateFor) && CheckUpdate(context, rule.UpdateFor))
                                 {
-                                    CreateStaticFile(sendToUrl, staticFile, rule.ValidateString, config.Replace, config.Extension);
+                                    var filter = new ResponseFilter(context.Response.Filter, staticFile, rule.ValidateString, config.Replace, config.Extension);
+                                    context.Response.Filter = filter;
                                     break;
                                 }
                                 else
@@ -155,26 +158,6 @@ namespace MySoft.Web
                 else
                     throw ex;
             }
-        }
-
-        /// <summary>
-        /// 创建静态文件
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="savePath"></param>
-        /// <param name="validateString"></param>
-        /// <param name="replace"></param>
-        /// <param name="extension"></param>
-        private void CreateStaticFile(string filePath, string savePath, string validateString, bool replace, string extension)
-        {
-            string[] arr = filePath.Split('?');
-            string url = arr[0];
-            string query = "r=" + new Random().NextDouble().ToString();
-            if (arr.Length > 0) query = arr[1] + "&" + query;
-
-            SingleStaticPageItem item = new SingleStaticPageItem(url, query, savePath, validateString);
-            if (replace) item.Callback += new CallbackEventHandler(p => WebHelper.ReplaceContext(p, extension));
-            item.Update(TimeSpan.FromSeconds(1));
         }
 
         /// <summary>

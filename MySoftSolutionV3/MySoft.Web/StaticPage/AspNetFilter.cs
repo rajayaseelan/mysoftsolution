@@ -118,7 +118,7 @@ namespace MySoft.Web
                     //处理内容
                     byte[] data = null;
                     if (replace)
-                        data = encoding.GetBytes(WebHelper.ReplaceContext(content, extension));
+                        data = encoding.GetBytes(ReplaceContext(content));
                     else
                         data = encoding.GetBytes(content);
 
@@ -135,6 +135,11 @@ namespace MySoft.Web
                 //Write out the response to the browser.
                 m_sink.Write(buffer, offset, count);
             }
+        }
+
+        protected string ReplaceContext(string content)
+        {
+            return WebHelper.ReplaceContext(content, extension);
         }
     }
 }

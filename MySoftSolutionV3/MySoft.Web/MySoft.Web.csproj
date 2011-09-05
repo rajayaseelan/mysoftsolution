@@ -76,6 +76,9 @@
     <Compile Include="StaticPage\AspNetFilter.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="StaticPage\ResponseFilter.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="StaticPage\StaticPageException.cs" />
     <Compile Include="URLRewriter\BaseModuleRewriter.cs" />
     <Compile Include="URLRewriter\Configuration\RewriterConfiguration.cs" />
