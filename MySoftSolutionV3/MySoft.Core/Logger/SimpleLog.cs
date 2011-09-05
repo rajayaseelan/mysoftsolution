@@ -34,27 +34,31 @@ namespace MySoft.Logger
             {
                 while (true)
                 {
-                    var list = new List<LogInfo>();
-                    lock (logqueue)
+                    if (logqueue.Count > 0)
                     {
-                        list.AddRange(logqueue.ToArray());
-                        logqueue.Clear();
+                        var list = new List<LogInfo>();
+                        lock (logqueue)
+                        {
+                            list.AddRange(logqueue.ToArray());
+                            logqueue.Clear();
+                        }
+
+                        list.ForEach(loginfo =>
+                        {
+                            try
+                            {
+                                string dir = Path.GetDirectoryName(loginfo.FilePath);
+                                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                                File.AppendAllText(loginfo.FilePath, loginfo.Log, Encoding.UTF8);
+                            }
+                            catch { }
+
+                            Thread.Sleep(10);
+                        });
                     }
 
-                    list.ForEach(loginfo =>
-                    {
-                        try
-                        {
-                            if (!Directory.Exists(Path.GetDirectoryName(loginfo.FilePath)))
-                            {
-                                Directory.CreateDirectory(Path.GetDirectoryName(loginfo.FilePath));
-                            }
-                            File.AppendAllText(loginfo.FilePath, loginfo.Log);
-                        }
-                        catch { }
-                    });
-
-                    Thread.Sleep(1000);
+                    //等待100毫秒
+                    Thread.Sleep(100);
                 }
             });
         }

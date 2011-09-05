@@ -26,9 +26,6 @@ namespace MySoft.Web
         //静态页生成项
         private static List<IStaticPageItem> staticPageItems = new List<IStaticPageItem>();
 
-        //写日志
-        private static readonly SimpleLog logger = new SimpleLog(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StaticLog"));
-
         #region 启动静态页生成
 
         /// <summary>
@@ -340,52 +337,38 @@ namespace MySoft.Web
         /// <summary>
         ///  保存字符串到路径
         /// </summary>
-        /// <param name="result">结果字符串</param>
+        /// <param name="content">结果字符串</param>
         /// <param name="savePath">文件保存路径</param>
         /// <param name="outEncoding">文件保存页面编码</param>
-        internal static void SaveFile(string result, string savePath, Encoding outEncoding)
+        internal static void SaveFile(string content, string savePath, Encoding outEncoding)
         {
-            StreamWriter writer = null;
             try
             {
-                if (!File.Exists(savePath))
+                //将内容写入文件
+                string dir = Path.GetDirectoryName(savePath);
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+                //创建一个写文件流
+                using (StreamWriter sw = new StreamWriter(File.Create(savePath), outEncoding))
                 {
-                    FileInfo info = new FileInfo(savePath);
-                    if (!info.Directory.Exists)
+                    if (sw.BaseStream.CanWrite)
                     {
-                        info.Directory.Create();
+                        sw.Write(content);
+                        sw.Flush();
                     }
-                    writer = new StreamWriter(info.Create(), outEncoding);
-                }
-                else
-                {
-                    writer = new StreamWriter(savePath, false, outEncoding);
+
+                    sw.Close();
                 }
 
-                //如果基础流可写
-                if (writer.BaseStream.CanWrite)
-                {
-                    writer.Write(result);
-                    writer.Flush();
-
-                    //生成文件成功写日志
-                    SaveLog(string.Format("生成文件【{0}】成功！", savePath), LogType.Information);
-                }
+                //生成文件成功写日志
+                SaveLog(string.Format("生成文件【{0}】成功！", savePath), LogType.Information);
             }
             catch (IOException ex)
             {
-                string logFile = string.Format("ERROR_{0}.log", DateTime.Today.ToString("yyyyMMdd"));
                 string logText = string.Format("{0}\r\n生成文件【{1}】失败！", ex.Message, savePath);
 
                 //将日志写入文件
-                logger.WriteLog(logFile, logText);
-            }
-            finally
-            {
-                if (writer != null)
-                {
-                    writer.Close();
-                }
+                SimpleLog.Instance.WriteLogForDir("StaticPage", new StaticPageException(logText, ex));
             }
         }
 

@@ -129,18 +129,9 @@ namespace MySoft.RESTful
                 {
                     if (auth.Authorize())
                     {
-                        //检测是否设置了Current.User
-                        if (AuthenticationContext.Current.User == null)
-                        {
-                            result.Code = RESTfulCode.AUTH_FAULT.ToString();
-                            result.Message = "Not set authentication user!";
-                        }
-                        else
-                        {
-                            result.Code = RESTfulCode.OK.ToString();
-                            result.Message = "Authentication success!";
-                        }
-
+                        //认证成功
+                        result.Code = RESTfulCode.OK.ToString();
+                        result.Message = "Authentication success!";
                         break;
                     }
                 }
