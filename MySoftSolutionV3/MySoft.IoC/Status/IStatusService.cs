@@ -57,6 +57,26 @@ namespace MySoft.IoC.Status
         /// 获取所有的客户端信息
         /// </summary>
         /// <returns></returns>
-        IList<ConnectInfo> GetConnectInfoList();
+        IList<ConnectionInfo> GetConnectInfoList();
+
+        /// <summary>
+        /// 获取服务器进程信息
+        /// </summary>
+        /// <returns></returns>
+        IList<ProcessInfo> GetProcessInfos();
+
+        /// <summary>
+        /// 获取服务器进程信息
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        IList<ProcessInfo> GetProcessInfos(params int[] ids);
+
+        /// <summary>
+        /// 获取服务器进程信息
+        /// </summary>
+        /// <param name="names"></param>
+        /// <returns></returns>
+        IList<ProcessInfo> GetProcessInfos(params string[] names);
     }
 }

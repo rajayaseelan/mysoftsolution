@@ -20,6 +20,7 @@
 <body>
     <form id="form1" runat="server">
     <div>
+        <div><% = perfValue.Replace("\n","<br/>") %></div>
         <ul>
             <% if (status != null)
                { %>
@@ -130,7 +131,7 @@
             <li><b>客户端连接信息</b></li>
             <%
                    int index = 1;
-                   foreach (MySoft.IoC.Status.ConnectInfo client in clients)
+                   foreach (MySoft.IoC.Status.ConnectionInfo client in clients)
                    {%>
             <li>
                 <% = index %>
@@ -143,7 +144,6 @@
     </div>
     </form>
     <script type="text/javascript">
-
         var timer = function () {
             document.location.reload();
         };

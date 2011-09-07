@@ -10,7 +10,7 @@ namespace MySoft.IoC.Status
     /// 连接信息
     /// </summary>
     [Serializable]
-    public class ConnectInfo
+    public class ConnectionInfo
     {
         private string ip;
         /// <summary>

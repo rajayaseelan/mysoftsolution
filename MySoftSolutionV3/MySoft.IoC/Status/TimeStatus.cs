@@ -57,7 +57,7 @@ namespace MySoft.IoC.Status
                     //如果总数大于传入的总数
                     if (dictStatus.Count >= maxCount)
                     {
-                        var firstKey = dictStatus.Keys.FirstOrDefault();
+                        var firstKey = dictStatus.Min(p => p.Key);
                         if (firstKey != null) dictStatus.Remove(firstKey);
                     }
 
@@ -84,11 +84,12 @@ namespace MySoft.IoC.Status
         /// 获取最后一条
         /// </summary>
         /// <returns></returns>
-        public TimeStatus GetLast()
+        public TimeStatus GetNewest()
         {
             lock (dictStatus)
             {
-                var status = dictStatus.Values.LastOrDefault();
+                var key = dictStatus.Max(p => p.Key);
+                var status = dictStatus.FirstOrDefault(p => p.Key == key).Value;
                 if (status == null)
                     return new TimeStatus { CounterTime = DateTime.Now };
                 else

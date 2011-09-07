@@ -43,9 +43,11 @@
     <Reference Include="Castle.Windsor">
       <HintPath>..\lib\Castle\Castle.Windsor.dll</HintPath>
     </Reference>
+    <Reference Include="CustomMarshalers" />
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -140,9 +142,12 @@
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
+    <Compile Include="Services\Monitor.cs" />
+    <Compile Include="Status\PerfProcess.cs" />
+    <Compile Include="Status\ProcessInfo.cs" />
     <Compile Include="Status\ServiceInfo.cs" />
     <Compile Include="Status\SummaryStatus.cs" />
-    <Compile Include="Status\ConnectInfo.cs" />
+    <Compile Include="Status\ConnectionInfo.cs" />
     <Compile Include="Status\IStatusService.cs" />
     <Compile Include="Status\ServerStatus.cs" />
     <Compile Include="ServiceRequest.cs" />

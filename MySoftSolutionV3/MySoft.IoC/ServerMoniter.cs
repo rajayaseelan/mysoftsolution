@@ -3,21 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MySoft.IoC.Configuration;
-using MySoft.Logger;
 using MySoft.IoC.Status;
+using MySoft.Logger;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// 服务监控
     /// </summary>
-    public abstract class ServerMoniter : IStatusService, ILogable, IErrorLogable
+    public abstract class ServerMoniter : IStatusService, ILogable, IErrorLogable, IDisposable
     {
         protected IServiceContainer container;
         protected CastleServiceConfiguration config;
         protected TimeStatusCollection statuslist;
-        protected HighestStatus highest;
+        private IList<ProcessInfo> processes;
         private DateTime startTime;
+        private Monitor monitor;
 
         /// <summary>
         /// 实例化ServerMoniter
@@ -35,8 +37,17 @@ namespace MySoft.IoC
             this.container.OnError += new ErrorLogEventHandler(container_OnError);
             this.container.OnLog += new LogEventHandler(container_OnLog);
             this.statuslist = new TimeStatusCollection(config.Records);
-            this.highest = new HighestStatus();
             this.startTime = DateTime.Now;
+
+            this.processes = new List<ProcessInfo>();
+            this.monitor = new Monitor();
+            this.monitor.Changed += new Monitor.ProcessUpdate(monitor_Changed);
+            this.monitor.Start();
+        }
+
+        void monitor_Changed(List<ProcessInfo> processes)
+        {
+            this.processes = processes;
         }
 
         #region ILogable Members
@@ -106,7 +117,6 @@ namespace MySoft.IoC
             lock (statuslist)
             {
                 statuslist.Clear();
-                highest = new HighestStatus();
             }
         }
 
@@ -134,7 +144,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public TimeStatus GetLatestStatus()
         {
-            return statuslist.GetLast();
+            return statuslist.GetNewest();
         }
 
         /// <summary>
@@ -143,6 +153,42 @@ namespace MySoft.IoC
         /// <returns></returns>
         public HighestStatus GetHighestStatus()
         {
+            var highest = new HighestStatus();
+            var list = statuslist.ToList();
+
+            //处理最高值 
+            #region 处理最高值
+
+            if (list.Count > 0)
+            {
+                //流量
+                highest.DataFlow = list.Max(p => p.DataFlow);
+                if (highest.DataFlow > 0)
+                    highest.DataFlowCounterTime = list.First(p => p.DataFlow == highest.DataFlow).CounterTime;
+
+                //成功
+                highest.SuccessCount = list.Max(p => p.SuccessCount);
+                if (highest.SuccessCount > 0)
+                    highest.SuccessCountCounterTime = list.First(p => p.SuccessCount == highest.SuccessCount).CounterTime;
+
+                //失败
+                highest.ErrorCount = list.Max(p => p.ErrorCount);
+                if (highest.ErrorCount > 0)
+                    highest.ErrorCountCounterTime = list.First(p => p.ErrorCount == highest.ErrorCount).CounterTime;
+
+                //请求总数
+                highest.RequestCount = list.Max(p => p.RequestCount);
+                if (highest.RequestCount > 0)
+                    highest.RequestCountCounterTime = list.First(p => p.RequestCount == highest.RequestCount).CounterTime;
+
+                //耗时
+                highest.ElapsedTime = list.Max(p => p.ElapsedTime);
+                if (highest.ElapsedTime > 0)
+                    highest.ElapsedTimeCounterTime = list.First(p => p.ElapsedTime == highest.ElapsedTime).CounterTime;
+            }
+
+            #endregion
+
             return highest;
         }
 
@@ -179,10 +225,68 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 获取服务器进程信息
+        /// </summary>
+        /// <returns></returns>
+        public IList<ProcessInfo> GetProcessInfos()
+        {
+            return processes.OrderBy(p => p.Title).ToList();
+        }
+
+        /// <summary>
+        /// 获取服务器进程信息
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        public IList<ProcessInfo> GetProcessInfos(params int[] ids)
+        {
+            if (ids != null && ids.Length > 0)
+            {
+                return processes.Where(p => ids.Contains(p.Id)).ToList();
+            }
+            else
+            {
+                return new List<ProcessInfo>();
+            }
+        }
+
+        /// <summary>
+        /// 获取服务器进程信息
+        /// </summary>
+        /// <param name="names"></param>
+        /// <returns></returns>
+        public IList<ProcessInfo> GetProcessInfos(params string[] names)
+        {
+            if (names != null && names.Length > 0)
+            {
+                var list = names.Select(p => p.ToLower()).ToList();
+                return processes.Where(p => list.Contains(p.Name.ToLower()) ||
+                    list.Contains(p.Title.ToLower())).ToList();
+            }
+            else
+            {
+                return new List<ProcessInfo>();
+            }
+        }
+
+        /// <summary>
         /// 获取连接客户信息
         /// </summary>
         /// <returns></returns>
-        public abstract IList<ConnectInfo> GetConnectInfoList();
+        public abstract IList<ConnectionInfo> GetConnectInfoList();
+
+        #endregion
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 销毁资源
+        /// </summary>
+        public virtual void Dispose()
+        {
+            this.monitor.Stop();
+            this.monitor = null;
+        }
 
         #endregion
     }

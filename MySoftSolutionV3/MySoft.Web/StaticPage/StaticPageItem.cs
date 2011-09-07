@@ -362,7 +362,7 @@ namespace MySoft.Web
             }
             catch (Exception ex)
             {
-                StaticPageManager.SaveError(ex, string.Format("生成静态文件{0}失败！", RemoveRootPath(staticurl)));
+                StaticPageManager.SaveError(new StaticPageException(string.Format("生成静态文件{0}失败！", RemoveRootPath(staticurl)), ex));
                 //如果出错，则继续往下执行
 
                 //全部生成成功才设置最后更新时间,否则往后推10分钟重新生成
@@ -679,7 +679,7 @@ namespace MySoft.Web
                         }
                         catch (Exception ex)
                         {
-                            StaticPageManager.SaveError(ex, string.Format("获取参数{0}的值出错，URL：{1}！", paramInfo.ParamName, templatePath));
+                            StaticPageManager.SaveError(new StaticPageException(string.Format("获取参数{0}的值出错，URL：{1}！", paramInfo.ParamName, templatePath), ex));
                             return;
                         }
 
@@ -774,7 +774,7 @@ namespace MySoft.Web
                     }
                     catch (Exception ex)
                     {
-                        StaticPageManager.SaveError(ex, string.Format("生成静态文件{0}失败！", RemoveRootPath(staticurl)));
+                        StaticPageManager.SaveError(new StaticPageException(string.Format("生成静态文件{0}失败！", RemoveRootPath(staticurl)), ex));
                         //如果出错，则继续往下执行
 
                         //把生成出错的url加入列表
@@ -795,7 +795,7 @@ namespace MySoft.Web
                 if (!allUpdateSuccess)
                 {
                     string html = string.Join("\r\n", updateErrorList.ToArray());
-                    throw new Exception("静态页未能全部生成成功，需要延迟重新生成！" + "\r\n" + html);
+                    throw new StaticPageException("【" + updateErrorList.Count + "】个静态页未生成成功，需要延迟重新生成！" + "\r\n" + html);
                 }
 
                 //全部生成成功才设置最后更新时间
@@ -808,8 +808,11 @@ namespace MySoft.Web
             }
             catch (Exception ex)
             {
-                StaticPageManager.SaveError(ex, "调用静态页生成方法Update时发生异常：" + ex.Message);
                 //如果出错，则继续往下执行
+                if (ex is StaticPageException)
+                    StaticPageManager.SaveError(ex as StaticPageException);
+                else
+                    StaticPageManager.SaveError(new StaticPageException("调用静态页生成方法Update时发生异常：" + ex.Message, ex));
 
                 //全部生成成功才设置最后更新时间,否则往后推10分钟重新生成
                 if (updateTime == DateTime.MaxValue)

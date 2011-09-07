@@ -13,9 +13,7 @@ namespace MySoft
 
         private static void GarbageCollect()
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         }
 
         /// <summary>

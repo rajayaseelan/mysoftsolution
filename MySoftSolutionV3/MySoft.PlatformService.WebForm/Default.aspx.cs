@@ -8,13 +8,15 @@ using MySoft.PlatformService.UserService;
 using MySoft.IoC;
 using System.Net;
 using MySoft.IoC.Status;
+using System.Text;
 
 namespace MySoft.PlatformService.WebForm
 {
     public partial class _Default : System.Web.UI.Page
     {
         protected ServerStatus status;
-        protected IList<ConnectInfo> clients;
+        protected IList<ConnectionInfo> clients;
+        protected string perfValue;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -22,6 +24,16 @@ namespace MySoft.PlatformService.WebForm
             {
                 try
                 {
+                    var p = CastleFactory.Create().GetService<IStatusService>("bbb").GetProcessInfos(2532);
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var a in p)
+                    {
+                        sb.AppendFormat("{0} - {1} - {2} - {3} - {4} - {5}", a.Name, a.Id, a.Title, a.Path, a.WorkingSet, a.CpuUsage);
+                        sb.Append("<br/>");
+                    }
+
+                    perfValue = sb.ToString();
+
                     status = CastleFactory.Create().GetService<IStatusService>("bbbb").GetServerStatus();
                     clients = CastleFactory.Create().GetService<IStatusService>("bbbb").GetConnectInfoList();
                 }

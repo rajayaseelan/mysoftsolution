@@ -18,7 +18,7 @@ namespace MySoft.IoC
     /// <summary>
     /// Castle服务
     /// </summary>
-    public class CastleService : ServerMoniter, IDisposable
+    public class CastleService : ServerMoniter
     {
         private IScsServer server;
         private string serverUrl;
@@ -52,79 +52,7 @@ namespace MySoft.IoC
             this.server.ClientConnected += new EventHandler<ServerClientEventArgs>(server_ClientConnected);
             this.server.ClientDisconnected += new EventHandler<ServerClientEventArgs>(server_ClientDisconnected);
             this.server.WireProtocolFactory = new CustomWireProtocolFactory(config.Compress, config.Encrypt);
-
-            Thread thread = new Thread(DoWork);
-            thread.IsBackground = true;
-            thread.Start();
         }
-
-        #region 定时统计
-
-        void DoWork()
-        {
-            while (true)
-            {
-                try
-                {
-                    //获取最后一秒状态
-                    var status = statuslist.GetLast();
-
-                    //计算时间
-                    if (status.RequestCount > 0)
-                    {
-                        //处理最高值 
-                        #region 处理最高值
-
-                        //流量
-                        if (status.DataFlow > highest.DataFlow)
-                        {
-                            highest.DataFlow = status.DataFlow;
-                            highest.DataFlowCounterTime = status.CounterTime;
-                        }
-
-                        //成功
-                        if (status.SuccessCount > highest.SuccessCount)
-                        {
-                            highest.SuccessCount = status.SuccessCount;
-                            highest.SuccessCountCounterTime = status.CounterTime;
-                        }
-
-                        //失败
-                        if (status.ErrorCount > highest.ErrorCount)
-                        {
-                            highest.ErrorCount = status.ErrorCount;
-                            highest.ErrorCountCounterTime = status.CounterTime;
-                        }
-
-                        //请求总数
-                        if (status.RequestCount > highest.RequestCount)
-                        {
-                            highest.RequestCount = status.RequestCount;
-                            highest.RequestCountCounterTime = status.CounterTime;
-                        }
-
-                        //耗时
-                        if (status.ElapsedTime > highest.ElapsedTime)
-                        {
-                            highest.ElapsedTime = status.ElapsedTime;
-                            highest.ElapsedTimeCounterTime = status.CounterTime;
-                        }
-
-                        #endregion
-                    }
-                }
-                catch (Exception ex)
-                {
-                    //写错误日志
-                    SimpleLog.Instance.WriteLog(ex);
-                }
-
-                //每1秒处理一次
-                Thread.Sleep(1000);
-            }
-        }
-
-        #endregion
 
         #region 启动停止服务
 
@@ -201,14 +129,15 @@ namespace MySoft.IoC
         /// <summary>
         /// 资源释放
         /// </summary>
-        public void Dispose()
+        public override void Dispose()
         {
+            base.Dispose();
+
             server.Stop();
             server.Clients.ClearAll();
 
             server = null;
             statuslist = null;
-            highest = null;
 
             GC.SuppressFinalize(this);
         }
@@ -411,7 +340,7 @@ namespace MySoft.IoC
         /// 获取连接客户信息
         /// </summary>
         /// <returns></returns>
-        public override IList<ConnectInfo> GetConnectInfoList()
+        public override IList<ConnectionInfo> GetConnectInfoList()
         {
             try
             {
@@ -419,14 +348,14 @@ namespace MySoft.IoC
 
                 //统计客户端数量
                 return items.Select(p => p.RemoteEndPoint as ScsTcpEndPoint).GroupBy(p => p.IpAddress)
-                     .Select(p => new ConnectInfo { IP = p.Key, Count = p.Count() })
+                     .Select(p => new ConnectionInfo { IP = p.Key, Count = p.Count() })
                      .ToList();
             }
             catch (Exception ex)
             {
                 container_OnError(ex);
 
-                return new List<ConnectInfo>();
+                return new List<ConnectionInfo>();
             }
         }
 

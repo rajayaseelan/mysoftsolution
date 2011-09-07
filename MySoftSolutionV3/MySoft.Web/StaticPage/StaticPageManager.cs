@@ -160,7 +160,7 @@ namespace MySoft.Web
             }
             catch (Exception ex)
             {
-                SaveError(ex, string.Format("生成静态文件{0}失败！", savePath));
+                SaveError(new StaticPageException(string.Format("生成静态文件{0}失败！", savePath), ex));
                 return false;
             }
         }
@@ -180,7 +180,7 @@ namespace MySoft.Web
             }
             catch (Exception ex)
             {
-                SaveError(ex, string.Format("生成静态文件{0}失败！", savePath));
+                SaveError(new StaticPageException(string.Format("生成静态文件{0}失败！", savePath), ex));
                 return false;
             }
         }
@@ -203,7 +203,7 @@ namespace MySoft.Web
             }
             catch (Exception ex)
             {
-                SaveError(ex, string.Format("生成静态文件{0}失败！", savePath));
+                SaveError(new StaticPageException(string.Format("生成静态文件{0}失败！", savePath), ex));
                 return false;
             }
         }
@@ -224,7 +224,7 @@ namespace MySoft.Web
             }
             catch (Exception ex)
             {
-                SaveError(ex, string.Format("生成静态文件{0}失败！", savePath));
+                SaveError(new StaticPageException(string.Format("生成静态文件{0}失败！", savePath), ex));
                 return false;
             }
         }
@@ -246,7 +246,7 @@ namespace MySoft.Web
             }
             catch (Exception ex)
             {
-                SaveError(ex, string.Format("生成静态文件{0}失败！", savePath));
+                SaveError(new StaticPageException(string.Format("生成静态文件{0}失败！", savePath), ex));
                 return false;
             }
         }
@@ -267,7 +267,7 @@ namespace MySoft.Web
             }
             catch (Exception ex)
             {
-                SaveError(ex, string.Format("生成静态文件{0}失败！", savePath));
+                SaveError(new StaticPageException(string.Format("生成静态文件{0}失败！", savePath), ex));
                 return false;
             }
         }
@@ -387,14 +387,12 @@ namespace MySoft.Web
         /// <summary>
         /// 保存错误
         /// </summary>
-        /// <param name="log"></param>
         /// <param name="ex"></param>
-        internal static void SaveError(Exception ex, string log)
+        internal static void SaveError(StaticPageException ex)
         {
             if (OnError != null)
             {
-                var exception = new StaticPageException(log, ex);
-                try { OnError(exception); }
+                try { OnError(ex); }
                 catch { }
             }
         }
