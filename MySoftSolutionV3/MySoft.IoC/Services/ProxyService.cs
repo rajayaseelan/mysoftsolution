@@ -47,16 +47,6 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 获取缓存的Key
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        private string GetMessageKey(MessageBase value)
-        {
-            return string.Format("Message_{0}", value.TransactionId);
-        }
-
-        /// <summary>
         /// 调用方法
         /// </summary>
         /// <param name="reqMsg"></param>
