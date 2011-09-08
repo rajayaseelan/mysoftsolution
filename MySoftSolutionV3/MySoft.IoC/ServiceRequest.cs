@@ -17,7 +17,7 @@ namespace MySoft.IoC
         /// <summary>
         /// 数据回调
         /// </summary>
-        public event ServiceMessageEventHandler OnCallback;
+        public event EventHandler<ServiceMessageEventArgs> OnCallback;
 
         private IScsClient client;
         private ILog logger;

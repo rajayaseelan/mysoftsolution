@@ -10,7 +10,7 @@ namespace MySoft.IoC.Messages
     /// <summary>
     /// 服务响应事件参数
     /// </summary>
-    public class ServiceMessageEventArgs
+    public class ServiceMessageEventArgs : EventArgs
     {
         /// <summary>
         /// 响应的消息

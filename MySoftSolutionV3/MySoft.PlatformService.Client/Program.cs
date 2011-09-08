@@ -82,7 +82,7 @@ namespace MySoft.PlatformService.Client
             //CastleFactory.Create().OnLog += new LogEventHandler(mq_OnLog);
             //Console.ReadKey();
 
-            int count = 1;
+            int count = 10;
 
             var castle = CastleFactory.Create();
             //castle.RegisterCacheDependent(DefaultCacheDependent.Create());

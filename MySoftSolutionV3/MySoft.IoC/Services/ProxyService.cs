@@ -29,7 +29,7 @@ namespace MySoft.IoC
             for (int i = 0; i < node.MaxPool; i++)
             {
                 ServiceRequest reqService = new ServiceRequest(node, logger);
-                reqService.OnCallback += new ServiceMessageEventHandler(reqService_OnCallback);
+                reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
 
                 this.reqPool.Push(reqService);
             }
@@ -92,8 +92,6 @@ namespace MySoft.IoC
                 // Wait for the WaitHandle to become signaled.
                 if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))
                 {
-                    try { ar.AsyncWaitHandle.Close(); }
-                    catch { }
                     watch.Stop();
 
                     string title = string.Format("Call ({0}:{1}) remote service ({2},{3}) timeout.", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName);
@@ -106,12 +104,12 @@ namespace MySoft.IoC
                 }
                 else
                 {
+                    watch.Stop();
+
                     // Perform additional processing here.
                     // Call EndInvoke to retrieve the results.
                     resMsg = handler.EndInvoke(ar);
                 }
-
-                watch.Stop();
 
                 //如果时间超过预定，则输出日志
                 if (watch.ElapsedMilliseconds > logTimeout * 1000)
@@ -125,6 +123,7 @@ namespace MySoft.IoC
                         ApplicationName = reqMsg.AppName,
                         ExceptionHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                     };
+
                     logger.WriteError(exception);
                 }
 

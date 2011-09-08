@@ -203,7 +203,7 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
 
                 Disconnect();
             }

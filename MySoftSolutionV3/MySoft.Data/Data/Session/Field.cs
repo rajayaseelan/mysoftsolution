@@ -704,17 +704,17 @@ namespace MySoft.Data
         /// <returns></returns>
         public Field Func(string funName, params string[] args)
         {
-            return Func(0, funName, args);
+            return Func(funName, 0, args);
         }
 
         /// <summary>
         /// º¯Êý´¦Àí
         /// </summary>
-        /// <param name="findex"></param>
         /// <param name="funName"></param>
+        /// <param name="findex"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public Field Func(int findex, string funName, params string[] args)
+        public Field Func(string funName, int findex, params string[] args)
         {
             if (string.IsNullOrEmpty(funName))
             {

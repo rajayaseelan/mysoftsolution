@@ -297,9 +297,9 @@ namespace MySoft.IoC
                 IAsyncResult ar = handler.BeginInvoke(reqMsg, r => { }, handler);
 
                 //等待信号，等待5分钟
-                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMinutes(5)))
+                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))
                 {
-                    throw new WarningException(string.Format("Call service ({0},{1}) timeout 5 minutes！", reqMsg.ServiceName, reqMsg.SubServiceName));
+                    throw new WarningException(string.Format("Call service ({0},{1}) timeout " + (long)TimeSpan.FromSeconds(reqMsg.Timeout).TotalMilliseconds + " ms！", reqMsg.ServiceName, reqMsg.SubServiceName));
                 }
                 else
                 {

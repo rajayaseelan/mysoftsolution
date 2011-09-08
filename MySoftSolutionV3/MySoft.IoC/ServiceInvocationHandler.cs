@@ -52,8 +52,6 @@ namespace MySoft.IoC
             reqMsg.SubServiceName = methodInfo.ToString();                  //方法名称
             reqMsg.ReturnType = methodInfo.ReturnType;                      //返回类型
             reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
-            //reqMsg.Encrypt = config.Encrypt;                                                              //传递传输与压缩格式
-            //reqMsg.Compress = config.Compress;                                                       //设置压缩格式
             reqMsg.Timeout = config.Timeout;                                //设置超时时间
             reqMsg.Expiration = DateTime.Now.AddSeconds(config.Timeout);    //设置过期时间
 

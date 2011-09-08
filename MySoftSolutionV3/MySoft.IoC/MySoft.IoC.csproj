@@ -114,7 +114,6 @@
     </Compile>
     <Compile Include="Messages\ScsResultMessage.cs" />
     <Compile Include="Messages\ServiceMessageEventArgs.cs" />
-    <Compile Include="Messages\ServiceMessageEventHandler.cs" />
     <Compile Include="ServiceRequestPool.cs" />
     <Compile Include="ServerMoniter.cs" />
     <Compile Include="ServiceInterpreter.cs" />
