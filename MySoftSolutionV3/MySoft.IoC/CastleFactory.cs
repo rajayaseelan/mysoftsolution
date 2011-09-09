@@ -229,7 +229,10 @@ namespace MySoft.IoC
                     lock (lockObject)
                     {
                         IService service = container;
-                        if (!container.Kernel.HasComponent(typeof(IServiceInterfaceType)))
+                        object instance = null;
+                        try { instance = container[serviceType]; }
+                        catch { }
+                        if (!container.Kernel.HasComponent(serviceType) || instance == null)
                         {
                             if (singleton.proxies.Count == 0)
                             {
@@ -262,7 +265,7 @@ namespace MySoft.IoC
                         var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                         iocService = (IServiceInterfaceType)dynamicProxy;
-                        CacheHelper.Insert(serviceKey, iocService, 60);
+                        CacheHelper.Permanent(serviceKey, iocService);
 
                         handler = null;
                         dynamicProxy = null;

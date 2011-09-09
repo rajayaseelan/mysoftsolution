@@ -19,35 +19,35 @@ namespace MySoft.RESTful.Demo
     /// <summary>
     /// 用户接口
     /// </summary>
-    [PublishKind("user", Description = "用户接口")]
+    [PublishKindAttribute("user", Description = "用户接口")]
     public interface IUserService
     {
         /// <summary>
         /// 获取登录用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethod("getloginuser", Description = "获取登录用户")]
+        [PublishMethodAttribute("getloginuser", Description = "获取登录用户")]
         User GetLoginUser(AuthenticationUser user);
 
         /// <summary>
         /// 获取一个用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethod("getuser", Description = "获取一个用户", Authorized = false)]
+        [PublishMethodAttribute("getuser", Description = "获取一个用户", Authorized = false)]
         User GetUser(int id, string name);
 
         /// <summary>
         /// 获取一组用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethod("getusers", Description = "获取一组用户", Authorized = false)]
+        [PublishMethodAttribute("getusers", Description = "获取一组用户", Authorized = false)]
         IList<User> GetUsers();
 
         /// <summary>
         /// 保存用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethod("saveuser", Description = "保存一个用户", Method = SubmitType.POST)]
+        [PublishMethodAttribute("saveuser", Description = "保存一个用户", Method = SubmitType.POST)]
         void SaveUser(User user);
     }
 
@@ -71,7 +71,7 @@ namespace MySoft.RESTful.Demo
         /// 获取一个用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethod("getuser", Description = "获取一个用户")]
+        [PublishMethodAttribute("getuser", Description = "获取一个用户")]
         public User GetUser(int id, string name)
         {
             return new User { Id = id, Name = name };

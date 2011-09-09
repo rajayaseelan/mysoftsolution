@@ -36,14 +36,12 @@ namespace MySoft.PlatformService.UserService
             userid = userid + 1;
         }
 
-        public UserInfo GetUserInfo(string username, out int userid)
+        public UserInfo GetUserInfo(string name)
         {
-            userid = username.Length;
-
             var user = new UserInfo()
             {
-                Name = username,
-                Description = string.Format("您的用户名为：{0}", username)
+                Name = name,
+                Description = string.Format("您的用户名为：{0}", name)
             };
 
             return user;

@@ -4,16 +4,19 @@ using System.Text;
 using MySoft.Remoting;
 using System.Data;
 using MySoft.IoC;
+using MySoft.RESTful;
 
 namespace MySoft.PlatformService.UserService
 {
-    //[ServiceContract(Timeout = 1000, Format = ResponseFormat.Json, Compress = CompressType.GZip)]
+    [PublishKind("user")]
     [ServiceContract]
     public interface IUserService
     {
+        [PublishMethod("getuserinfo", AuthParameter = "name")]
         [OperationContract(CacheTime = 30000)]
-        UserInfo GetUserInfo(string username, out int userid);
+        UserInfo GetUserInfo(string name);
 
+        [PublishMethod("getusers")]
         IList<UserInfo> GetUsers();
 
         IDictionary<string, UserInfo> GetDictUsers();

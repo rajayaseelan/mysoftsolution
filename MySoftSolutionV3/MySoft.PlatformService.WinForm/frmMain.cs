@@ -55,8 +55,7 @@ namespace MySoft.PlatformService.WinForm
                 Stopwatch watch = Stopwatch.StartNew();
                 try
                 {
-                    int userid;
-                    UserInfo info = service.GetUserInfo("maoyong_" + new Random().Next(10000000), out userid);
+                    UserInfo info = service.GetUserInfo("maoyong_" + new Random().Next(10000000));
 
                     string msg = string.Format("线程：{0} 耗时：{1} ms 数据：{2}", Thread.CurrentThread.Name, watch.ElapsedMilliseconds, info.Description);
                     WriteMessage(msg);

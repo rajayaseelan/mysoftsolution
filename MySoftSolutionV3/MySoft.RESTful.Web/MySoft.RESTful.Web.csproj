@@ -62,6 +62,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <ProjectReference Include="..\MySoft.PlatformService.UserService\MySoft.PlatformService.UserService.csproj">
+      <Project>{4955AB17-A062-4399-8795-3D40F6FDB869}</Project>
+      <Name>MySoft.PlatformService.UserService</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MySoft.RESTful.Demo\MySoft.RESTful.Demo.csproj">
       <Project>{FDF5902E-26CF-450C-BAB0-AD97F5DCE74C}</Project>
       <Name>MySoft.RESTful.Demo</Name>

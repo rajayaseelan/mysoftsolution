@@ -75,12 +75,16 @@ namespace MySoft.RESTful
                     }
 
                     var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
-                    if (property == null)
-                        throw new NullReferenceException(info.Name + " is not found in parameters!");
-
-                    string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
-                    var jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
-                    args.Add(jsonValue);
+                    if (property != null)
+                    {
+                        string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
+                        var jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
+                        args.Add(jsonValue);
+                    }
+                    else
+                    {
+                        args.Add(null);
+                    }
                 }
 
                 return args.ToArray();

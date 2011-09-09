@@ -6,7 +6,7 @@ namespace MySoft.RESTful
     /// 发布REST分类
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
-    public sealed class PublishKind : Attribute
+    public sealed class PublishKindAttribute : Attribute
     {
         /// <summary>
         /// 类别名称
@@ -26,7 +26,7 @@ namespace MySoft.RESTful
         /// <summary>
         /// 实例化PublishKind
         /// </summary>
-        public PublishKind()
+        public PublishKindAttribute()
         {
             this.Enabled = true;
         }
@@ -35,7 +35,7 @@ namespace MySoft.RESTful
         /// 实例化PublishKind
         /// </summary>
         /// <param name="name"></param>
-        public PublishKind(string name)
+        public PublishKindAttribute(string name)
             : this()
         {
             this.Name = name;

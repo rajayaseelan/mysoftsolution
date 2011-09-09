@@ -6,7 +6,7 @@ namespace MySoft.RESTful
     /// 发布的REST方法
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public sealed class PublishMethod : Attribute
+    public sealed class PublishMethodAttribute : Attribute
     {
         /// <summary>
         /// 方法名称
@@ -34,9 +34,14 @@ namespace MySoft.RESTful
         public bool Authorized { get; set; }
 
         /// <summary>
+        /// 认证的参数名
+        /// </summary>
+        public string AuthParameter { get; set; }
+
+        /// <summary>
         /// 实例化PublishMethod
         /// </summary>
-        public PublishMethod()
+        public PublishMethodAttribute()
         {
             this.Enabled = true;
             this.Authorized = true;
@@ -47,7 +52,7 @@ namespace MySoft.RESTful
         /// 实例化PublishMethod
         /// </summary>
         /// <param name="name"></param>
-        public PublishMethod(string name)
+        public PublishMethodAttribute(string name)
             : this()
         {
             this.Name = name;

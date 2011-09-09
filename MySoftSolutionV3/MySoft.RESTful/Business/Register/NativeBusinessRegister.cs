@@ -26,16 +26,28 @@ namespace MySoft.RESTful.Business.Register
                 BusinessMethodModel methodModel = null;
                 object instance = null;
                 var container = CastleFactory.Create().ServiceContainer;
-                foreach (Type serviceType in container.GetInterfaces<PublishKind>())
+                foreach (Type serviceType in container.GetInterfaces<PublishKindAttribute>())
                 {
                     //获取业务对象
                     try { instance = container[serviceType]; }
                     catch { }
 
-                    if (instance == null) continue;
+                    if (instance == null)
+                    {
+                        var iocInstance = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
+                        if (iocInstance != null)
+                        {
+                            var proxy = new ProxyInvocationHandler(serviceType);
+                            instance = ProxyFactory.GetInstance().Create(proxy, serviceType, true);
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
 
                     //获取类特性
-                    var kind = CoreHelper.GetTypeAttribute<PublishKind>(serviceType);
+                    var kind = CoreHelper.GetTypeAttribute<PublishKindAttribute>(serviceType);
                     if (kind != null)
                     {
                         //如果包含了相同的类别，则继续
@@ -51,7 +63,7 @@ namespace MySoft.RESTful.Business.Register
                         //获取方法特性
                         foreach (MethodInfo info in CoreHelper.GetMethodsFromType(serviceType))
                         {
-                            var method = CoreHelper.GetMemberAttribute<PublishMethod>(info);
+                            var method = CoreHelper.GetMemberAttribute<PublishMethodAttribute>(info);
                             if (method != null)
                             {
                                 //如果包含了相同的方法，则继续
@@ -104,7 +116,7 @@ namespace MySoft.RESTful.Business.Register
             StringBuilder sb = new StringBuilder();
             foreach (ParameterInfo p in paramsInfo)
             {
-                if (!(p.ParameterType.IsPrimitive || p.ParameterType == typeof(string) || p.ParameterType == typeof(AuthenticationUser)))
+                if (!(p.ParameterType.IsValueType || p.ParameterType == typeof(string) || p.ParameterType == typeof(AuthenticationUser)))
                 {
                     result = false;
                     break;
