@@ -40,10 +40,13 @@ namespace MySoft.RESTful.Business.Register
                     var index = method.GetParameters().ToList().FindIndex(p => p.Name == attribute.AuthParameter);
                     if (index >= 0)
                     {
-                        if (method.GetParameters()[index].ParameterType == typeof(Int32))
+                        Type pType = method.GetParameters()[index].ParameterType;
+                        if (pType == typeof(int))
                             parameters[index] = AuthenticationContext.Current.User.AuthID;
-                        else
+                        else if (pType == typeof(string))
                             parameters[index] = AuthenticationContext.Current.User.AuthName;
+                        else if (pType == typeof(AuthenticationUser))
+                            parameters[index] = AuthenticationContext.Current.User;
                     }
                 }
             }
