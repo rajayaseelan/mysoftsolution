@@ -77,8 +77,6 @@ namespace MySoft.IoC
                 //异步调用
                 IAsyncResult ar = handler.BeginInvoke(reqMsg, r => { }, handler);
 
-                ResponseMessage resMsg = null;
-
                 // Wait for the WaitHandle to become signaled.
                 if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))
                 {
@@ -92,14 +90,12 @@ namespace MySoft.IoC
                         ExceptionHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                     };
                 }
-                else
-                {
-                    watch.Stop();
 
-                    // Perform additional processing here.
-                    // Call EndInvoke to retrieve the results.
-                    resMsg = handler.EndInvoke(ar);
-                }
+                // Perform additional processing here.
+                // Call EndInvoke to retrieve the results.
+                ResponseMessage resMsg = handler.EndInvoke(ar);
+
+                watch.Stop();
 
                 //如果时间超过预定，则输出日志
                 if (watch.ElapsedMilliseconds > logTimeout * 1000)
@@ -142,6 +138,7 @@ namespace MySoft.IoC
                 {
                     //用完后移除
                     hashtable.Remove(reqMsg.TransactionId);
+
                     return resMsg;
                 }
 
