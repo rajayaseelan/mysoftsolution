@@ -53,7 +53,7 @@ namespace MySoft.Web
         /// <summary>
         /// 结束处理
         /// </summary>
-        event ExcutingEventHandler OnEnd;
+        event ExcutingEventHandler OnComplete;
 
         /// <summary>
         /// 生成时的回调
@@ -121,7 +121,7 @@ namespace MySoft.Web
         /// <summary>
         /// 结束处理
         /// </summary>
-        public event ExcutingEventHandler OnEnd;
+        public event ExcutingEventHandler OnComplete;
 
         /// <summary>
         /// 生成时的回调
@@ -346,9 +346,9 @@ namespace MySoft.Web
                 StaticPageManager.SaveFile(content, staticurl, outEncoding);
 
                 //结束生成
-                if (OnEnd != null)
+                if (OnComplete != null)
                 {
-                    try { OnEnd(createTime, dynamicurl, RemoveRootPath(staticurl)); }
+                    try { OnComplete(createTime, dynamicurl, RemoveRootPath(staticurl)); }
                     catch { };
                 }
 
@@ -490,7 +490,7 @@ namespace MySoft.Web
         /// <summary>
         /// 结束处理
         /// </summary>
-        public event ExcutingEventHandler OnEnd;
+        public event ExcutingEventHandler OnComplete;
 
         /// <summary>
         /// 生成时的回调
@@ -757,11 +757,11 @@ namespace MySoft.Web
                         StaticPageManager.SaveFile(content, staticurl, outEncoding);
 
                         //结束生成
-                        if (OnEnd != null)
+                        if (OnComplete != null)
                         {
                             try
                             {
-                                OnEnd(createTime, dynamicurl, RemoveRootPath(staticurl));
+                                OnComplete(createTime, dynamicurl, RemoveRootPath(staticurl));
                             }
                             catch { };
                         }
