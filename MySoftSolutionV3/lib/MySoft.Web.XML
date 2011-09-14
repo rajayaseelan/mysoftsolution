@@ -2087,7 +2087,7 @@
             开始处理
             </summary>
         </member>
-        <member name="E:MySoft.Web.IStaticPageItem.OnEnd">
+        <member name="E:MySoft.Web.IStaticPageItem.OnComplete">
             <summary>
             结束处理
             </summary>
@@ -2222,7 +2222,7 @@
             回调
             </summary>
         </member>
-        <member name="E:MySoft.Web.SingleStaticPageItem.OnEnd">
+        <member name="E:MySoft.Web.SingleStaticPageItem.OnComplete">
             <summary>
             结束处理
             </summary>
@@ -2363,7 +2363,7 @@
             回调
             </summary>
         </member>
-        <member name="E:MySoft.Web.ParamStaticPageItem.OnEnd">
+        <member name="E:MySoft.Web.ParamStaticPageItem.OnComplete">
             <summary>
             结束处理
             </summary>
