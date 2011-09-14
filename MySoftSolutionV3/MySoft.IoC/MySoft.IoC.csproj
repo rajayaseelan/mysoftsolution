@@ -137,7 +137,7 @@
     <Compile Include="Messages\ResponseMessage.cs" />
     <Compile Include="ServiceNode.cs" />
     <Compile Include="ServiceNodeInfo.cs" />
-    <Compile Include="Services\ProxyService.cs" />
+    <Compile Include="Services\RemoteProxy.cs" />
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
@@ -161,6 +161,7 @@
       <Name>MySoft.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

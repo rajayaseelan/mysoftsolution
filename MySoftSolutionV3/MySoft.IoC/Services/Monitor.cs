@@ -1,14 +1,11 @@
-﻿namespace MySoft.IoC.Services
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Management;
-    using System.Text;
-    using System.Timers;
-    using System.Linq;
-    using MySoft.IoC.Status;
+﻿using System;
+using System.Collections.Generic;
+using System.Management;
+using System.Timers;
+using MySoft.IoC.Status;
 
+namespace MySoft.IoC.Services
+{
     internal class Monitor
     {
         #region Fields
@@ -16,6 +13,7 @@
         private Dictionary<int, TimeSpan> _CPULimitExceeded;
         private Dictionary<int, TimeSpan> _MemoryLimitExceeded;
         private Dictionary<int, ProcessInfo> _ProcessInfoMap;
+
         private ManagementObjectSearcher _Searcher =
                     new ManagementObjectSearcher("root\\CIMV2",
                     "SELECT Name, ProcessId, Caption, ExecutablePath FROM Win32_Process");

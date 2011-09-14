@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Threading;
-using MySoft.IoC.Configuration;
-using MySoft.Logger;
 using MySoft.Cache;
 using MySoft.IoC.Aspect;
+using MySoft.IoC.Configuration;
+using MySoft.Logger;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
@@ -100,7 +98,7 @@ namespace MySoft.IoC
                         if (node.Value.MaxPool < 1) throw new WarningException("Minimum pool size 1£¡");
                         if (node.Value.MaxPool > 500) throw new WarningException("Maximum pool size 500£¡");
 
-                        var proxy = new ProxyService(container, node.Value);
+                        var proxy = new RemoteProxy(node.Value, container);
                         instance.proxies[node.Key.ToLower()] = proxy;
                     }
                 }

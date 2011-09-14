@@ -4,25 +4,24 @@ using System.Diagnostics;
 using System.Threading;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
 using MySoft.Logger;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Services
 {
     /// <summary>
     /// 服务代理
     /// </summary>
-    public class ProxyService : IService, IDisposable
+    public class RemoteProxy : IService, IDisposable
     {
         private ILog logger;
         private RemoteNode node;
         private ServiceRequestPool reqPool;
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
-        public ProxyService(ILog logger, RemoteNode node)
+        public RemoteProxy(RemoteNode node, ILog logger)
         {
-            this.logger = logger;
             this.node = node;
+            this.logger = logger;
             this.reqPool = new ServiceRequestPool(node.MaxPool);
 
             //服务请求池化
@@ -147,7 +146,6 @@ namespace MySoft.IoC
             }
         }
 
-
         #region IService 成员
 
         /// <summary>
@@ -155,7 +153,7 @@ namespace MySoft.IoC
         /// </summary>
         public string ServiceName
         {
-            get { return typeof(ProxyService).FullName; }
+            get { return typeof(RemoteProxy).FullName; }
         }
 
         #endregion
