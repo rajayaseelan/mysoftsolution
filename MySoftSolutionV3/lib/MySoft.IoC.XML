@@ -72,7 +72,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Status.TimeStatusCollection.GetLast">
+        <member name="M:MySoft.IoC.Status.TimeStatusCollection.GetNewest">
             <summary>
             获取最后一条
             </summary>
@@ -869,6 +869,26 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.GetProcessInfos">
+            <summary>
+            获取服务器进程信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.GetProcessInfos(System.Int32[])">
+            <summary>
+            获取服务器进程信息
+            </summary>
+            <param name="ids"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Status.IStatusService.GetProcessInfos(System.String[])">
+            <summary>
+            获取服务器进程信息
+            </summary>
+            <param name="names"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.IoC.ServerMoniter.#ctor(MySoft.IoC.Configuration.CastleServiceConfiguration)">
             <summary>
             实例化ServerMoniter
@@ -916,11 +936,36 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetProcessInfos">
+            <summary>
+            获取服务器进程信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetProcessInfos(System.Int32[])">
+            <summary>
+            获取服务器进程信息
+            </summary>
+            <param name="ids"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetProcessInfos(System.String[])">
+            <summary>
+            获取服务器进程信息
+            </summary>
+            <param name="names"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.IoC.ServerMoniter.GetConnectInfoList">
             <summary>
             获取连接客户信息
             </summary>
             <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.Dispose">
+            <summary>
+            销毁资源
+            </summary>
         </member>
         <member name="E:MySoft.IoC.ServerMoniter.OnLog">
             <summary>
@@ -2206,43 +2251,6 @@
             服务方法
             </summary>
         </member>
-        <member name="T:MySoft.IoC.ProxyService">
-            <summary>
-            服务代理
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.ProxyService.GetMessageKey(MySoft.IoC.Messages.MessageBase)">
-            <summary>
-            获取缓存的Key
-            </summary>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ProxyService.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
-            <summary>
-            调用方法
-            </summary>
-            <param name="reqMsg"></param>
-            <param name="logTimeout"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ProxyService.GetResponse(MySoft.IoC.Messages.RequestMessage)">
-            <summary>
-            获取响应的消息
-            </summary>
-            <param name="reqMsg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ProxyService.Dispose">
-            <summary>
-            清理资源
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.ProxyService.ServiceName">
-            <summary>
-            服务名称
-            </summary>
-        </member>
         <member name="T:MySoft.Communication.Scs.Server.ScsServerFactory">
             <summary>
             This class is used to create SCS servers.
@@ -2422,6 +2430,21 @@
         <member name="P:MySoft.IoC.Status.ServerStatus.Latest">
             <summary>
             最新状态信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Status.ConnectionInfo">
+            <summary>
+            连接信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ConnectionInfo.IP">
+            <summary>
+            连接的IP
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ConnectionInfo.Count">
+            <summary>
+            连接数
             </summary>
         </member>
         <member name="T:MySoft.IoC.ServiceInvocationHandler">
@@ -2650,6 +2673,51 @@
             </summary>
             <param name="info">存储对象序列化和反序列化所需的全部数据</param>
             <param name="context">描述给定的序列化流的源和目标，并提供一个由调用方定义的附加上下文</param>
+        </member>
+        <member name="T:MySoft.IoC.Status.ProcessInfo">
+            <summary>
+            进程信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ProcessInfo.CpuUsage">
+            <summary>
+            cpu使用率
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ProcessInfo.Description">
+            <summary>
+            进程I描述
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ProcessInfo.Id">
+            <summary>
+            进程ID
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ProcessInfo.Name">
+            <summary>
+            进程名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ProcessInfo.Path">
+            <summary>
+            进程路径
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ProcessInfo.Title">
+            <summary>
+            进程标题
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ProcessInfo.WorkingSet">
+            <summary>
+            进程使用内存
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.ProcessInfo.ThreadCount">
+            <summary>
+            线程数
+            </summary>
         </member>
         <member name="T:MySoft.IoC.Configuration.CastleServiceConfiguration">
             <summary>
@@ -2968,13 +3036,6 @@
             <param name="compress"></param>
             <param name="encrypt"></param>
         </member>
-        <member name="T:MySoft.IoC.Messages.ServiceMessageEventHandler">
-            <summary>
-            服务消息委托
-            </summary>
-            <param name="sender"></param>
-            <param name="args"></param>
-        </member>
         <member name="T:MySoft.IoC.Status.HighestStatus">
             <summary>
             最高峰状态
@@ -3056,21 +3117,6 @@
             处理前的方法
             </summary>
             <param name="invocation"></param>
-        </member>
-        <member name="T:MySoft.IoC.Status.ConnectInfo">
-            <summary>
-            连接信息
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.ConnectInfo.IP">
-            <summary>
-            连接的IP
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.ConnectInfo.Count">
-            <summary>
-            连接数
-            </summary>
         </member>
         <member name="T:MySoft.IoC.Status.SummaryStatus">
             <summary>
@@ -3365,6 +3411,11 @@
         <member name="P:MySoft.IoC.ServiceRequest.IsConnected">
             <summary>
             是否连接
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Status.PerfProcess">
+            <summary>
+            性能监控进程项
             </summary>
         </member>
         <member name="T:MySoft.IoC.ServiceNodeInfo">
@@ -3704,6 +3755,36 @@
             Creates a communication channel using ServerIpAddress and ServerPort.
             </summary>
             <returns>Ready communication channel to communicate</returns>
+        </member>
+        <member name="T:MySoft.IoC.Services.RemoteProxy">
+            <summary>
+            服务代理
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Services.RemoteProxy.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
+            <summary>
+            调用方法
+            </summary>
+            <param name="reqMsg"></param>
+            <param name="logTimeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.RemoteProxy.GetResponse(MySoft.IoC.Messages.RequestMessage)">
+            <summary>
+            获取响应的消息
+            </summary>
+            <param name="reqMsg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.RemoteProxy.Dispose">
+            <summary>
+            清理资源
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.RemoteProxy.ServiceName">
+            <summary>
+            服务名称
+            </summary>
         </member>
     </members>
 </doc>

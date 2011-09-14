@@ -619,20 +619,44 @@
             by the <b>PageParser</b> class, which is the same class that the default ASP.NET PageHandlerFactory delegates
             to.</returns>
         </member>
+        <member name="T:MySoft.Web.ResponseFilter">
+            <summary>
+            生成htm静态页面
+            </summary>
+        </member>
+        <member name="T:MySoft.Web.AspNetFilter">
+            <summary>
+            字符串筛选器
+            </summary>
+        </member>
+        <member name="M:MySoft.Web.AspNetFilter.WriteContent(System.String)">
+            <summary>
+            写内容
+            </summary>
+            <param name="content"></param>
+        </member>
+        <member name="M:MySoft.Web.AspNetFilter.WriteComplete">
+            <summary>
+            写内容结束
+            </summary>
+        </member>
+        <member name="M:MySoft.Web.ResponseFilter.WriteFile(System.Object)">
+            <summary>
+            写文件
+            </summary>
+            <param name="state"></param>
+        </member>
+        <member name="M:MySoft.Web.ResponseFilter.RemoveRootPath(System.String)">
+            <summary>
+            去除根目录
+            </summary>
+            <param name="path"></param>
+            <returns></returns>
+        </member>
         <member name="T:MySoft.Web.StaticPageHandler">
             <summary>
             静态页生成Handler
             </summary>
-        </member>
-        <member name="M:MySoft.Web.StaticPageHandler.CreateStaticFile(System.String,System.String,System.String,System.Boolean,System.String)">
-            <summary>
-            创建静态文件
-            </summary>
-            <param name="filePath"></param>
-            <param name="savePath"></param>
-            <param name="validateString"></param>
-            <param name="replace"></param>
-            <param name="extension"></param>
         </member>
         <member name="M:MySoft.Web.StaticPageHandler.SetContentType(System.Web.HttpContext,System.String)">
             <summary>
@@ -1784,22 +1808,6 @@
             <param name="requestedRawUrl">The RawUrl being requested (includes path and querystring).</param>
             <param name="app">The HttpApplication instance.</param>
         </member>
-        <member name="T:MySoft.Web.AspNetFilter">
-            <summary>
-            字符串筛选器
-            </summary>
-        </member>
-        <member name="M:MySoft.Web.AspNetFilter.WriteContent(System.String)">
-            <summary>
-            写内容
-            </summary>
-            <param name="content"></param>
-        </member>
-        <member name="M:MySoft.Web.AspNetFilter.WriteComplete">
-            <summary>
-            写内容结束
-            </summary>
-        </member>
         <member name="T:MySoft.Web.Configuration.CacheControlRuleCollection">
             <summary>
             The RewriterRuleCollection models a set of RewriterRules in the Web.config file.
@@ -2512,7 +2520,7 @@
             <summary>
              保存字符串到路径
             </summary>
-            <param name="result">结果字符串</param>
+            <param name="content">结果字符串</param>
             <param name="savePath">文件保存路径</param>
             <param name="outEncoding">文件保存页面编码</param>
         </member>
@@ -2522,11 +2530,10 @@
             </summary>
             <param name="log"></param>
         </member>
-        <member name="M:MySoft.Web.StaticPageManager.SaveError(System.Exception,System.String)">
+        <member name="M:MySoft.Web.StaticPageManager.SaveError(MySoft.Web.StaticPageException)">
             <summary>
             保存错误
             </summary>
-            <param name="log"></param>
             <param name="ex"></param>
         </member>
         <member name="T:MySoft.Web.EncodingWorkerRequest">

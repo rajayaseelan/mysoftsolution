@@ -12661,45 +12661,50 @@
             <param name="strKey">key</param>
             <returns></returns>
         </member>
-        <member name="T:MySoft.RESTful.PublishMethod">
+        <member name="T:MySoft.RESTful.PublishMethodAttribute">
             <summary>
             发布的REST方法
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.PublishMethod.#ctor">
+        <member name="M:MySoft.RESTful.PublishMethodAttribute.#ctor">
             <summary>
             实例化PublishMethod
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.PublishMethod.#ctor(System.String)">
+        <member name="M:MySoft.RESTful.PublishMethodAttribute.#ctor(System.String)">
             <summary>
             实例化PublishMethod
             </summary>
             <param name="name"></param>
         </member>
-        <member name="P:MySoft.RESTful.PublishMethod.Name">
+        <member name="P:MySoft.RESTful.PublishMethodAttribute.Name">
             <summary>
             方法名称
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.PublishMethod.Description">
+        <member name="P:MySoft.RESTful.PublishMethodAttribute.Description">
             <summary>
             方法描述
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.PublishMethod.Method">
+        <member name="P:MySoft.RESTful.PublishMethodAttribute.Method">
             <summary>
             调用方式
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.PublishMethod.Enabled">
+        <member name="P:MySoft.RESTful.PublishMethodAttribute.Enabled">
             <summary>
             是否启用
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.PublishMethod.Authorized">
+        <member name="P:MySoft.RESTful.PublishMethodAttribute.Authorized">
             <summary>
             是否认证
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.PublishMethodAttribute.AuthParameter">
+            <summary>
+            认证的参数名
             </summary>
         </member>
         <member name="T:MySoft.RESTful.Configuration.RESTfulConfiguration">
@@ -14521,33 +14526,33 @@
             An internal delegate to call when the WorkItem starts or completes
             </summary>
         </member>
-        <member name="T:MySoft.RESTful.PublishKind">
+        <member name="T:MySoft.RESTful.PublishKindAttribute">
             <summary>
             发布REST分类
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.PublishKind.#ctor">
+        <member name="M:MySoft.RESTful.PublishKindAttribute.#ctor">
             <summary>
             实例化PublishKind
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.PublishKind.#ctor(System.String)">
+        <member name="M:MySoft.RESTful.PublishKindAttribute.#ctor(System.String)">
             <summary>
             实例化PublishKind
             </summary>
             <param name="name"></param>
         </member>
-        <member name="P:MySoft.RESTful.PublishKind.Name">
+        <member name="P:MySoft.RESTful.PublishKindAttribute.Name">
             <summary>
             类别名称
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.PublishKind.Description">
+        <member name="P:MySoft.RESTful.PublishKindAttribute.Description">
             <summary>
             类别描述
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.PublishKind.Enabled">
+        <member name="P:MySoft.RESTful.PublishKindAttribute.Enabled">
             <summary>
             是否启用
             </summary>

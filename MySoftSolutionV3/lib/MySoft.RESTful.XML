@@ -751,6 +751,20 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:MySoft.RESTful.Business.Register.ProxyInvocationHandler">
+            <summary>
+            代理委托
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Register.ProxyInvocationHandler.Invoke(System.Object,System.Reflection.MethodInfo,System.Object[])">
+            <summary>
+            委托调用
+            </summary>
+            <param name="proxy"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
         <member name="T:MySoft.RESTful.SerializerFactory">
             <summary>
             系列化工厂

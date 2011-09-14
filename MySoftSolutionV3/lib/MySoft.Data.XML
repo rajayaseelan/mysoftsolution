@@ -314,7 +314,7 @@
             <param name="procName"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbProvider.StartExcuteCommand(System.Data.Common.DbCommand)">
+        <member name="M:MySoft.Data.DbProvider.BeginExcuteCommand(System.Data.Common.DbCommand)">
             <summary>
             Writes the log.
             </summary>
@@ -4325,12 +4325,12 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.Field.Func(System.Int32,System.String,System.String[])">
+        <member name="M:MySoft.Data.Field.Func(System.String,System.Int32,System.String[])">
             <summary>
             函数处理
             </summary>
-            <param name="findex"></param>
             <param name="funName"></param>
+            <param name="findex"></param>
             <param name="args"></param>
             <returns></returns>
         </member>
@@ -5872,7 +5872,7 @@
             执行并输出日志的接口
             </summary>
         </member>
-        <member name="M:MySoft.Data.IExcutingLog.StartExcute(System.String,MySoft.Data.SQLParameter[])">
+        <member name="M:MySoft.Data.IExcutingLog.BeginExcute(System.String,MySoft.Data.SQLParameter[])">
             <summary>
             开始执行命令，返回是否需要执行
             </summary>
