@@ -31,6 +31,6 @@ using System.Runtime.InteropServices;
 // 可以指定所有这些值，也可以使用“修订号”和“内部版本号”的默认值，
 // 方法是按如下所示使用“*”:
 [assembly: AssemblyVersion("3.0.0.0")]
-[assembly: AssemblyFileVersion("3.0.2011.0818")]
+[assembly: AssemblyFileVersion("3.0.2011.0915")]
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("MySoft.Data.UnitTest")]
