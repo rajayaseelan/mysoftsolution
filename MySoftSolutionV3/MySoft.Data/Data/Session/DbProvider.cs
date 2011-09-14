@@ -219,7 +219,7 @@ namespace MySoft.Data
             PrepareCommand(cmd);
 
             //执行命令前的事件
-            if (!StartExcuteCommand(cmd))
+            if (!BeginExcuteCommand(cmd))
             {
                 throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
             }
@@ -260,7 +260,7 @@ namespace MySoft.Data
             PrepareCommand(cmd);
 
             //执行命令前的事件
-            if (!StartExcuteCommand(cmd))
+            if (!BeginExcuteCommand(cmd))
             {
                 throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
             }
@@ -303,7 +303,7 @@ namespace MySoft.Data
             PrepareCommand(cmd);
 
             //执行命令前的事件
-            if (!StartExcuteCommand(cmd))
+            if (!BeginExcuteCommand(cmd))
                 return null;
 
             DataSet retVal = null;
@@ -342,7 +342,7 @@ namespace MySoft.Data
             PrepareCommand(cmd);
 
             //执行命令前的事件
-            if (!StartExcuteCommand(cmd))
+            if (!BeginExcuteCommand(cmd))
             {
                 throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
             }
@@ -383,7 +383,7 @@ namespace MySoft.Data
             PrepareCommand(cmd);
 
             //执行命令前的事件
-            if (!StartExcuteCommand(cmd))
+            if (!BeginExcuteCommand(cmd))
             {
                 throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
             }
@@ -797,7 +797,7 @@ namespace MySoft.Data
         /// Writes the log.
         /// </summary>
         /// <param name="command">The command.</param>
-        private bool StartExcuteCommand(DbCommand command)
+        private bool BeginExcuteCommand(DbCommand command)
         {
             if (logger != null)
             {
@@ -812,7 +812,7 @@ namespace MySoft.Data
                     {
                         parameters.Add(new SQLParameter(p));
                     }
-                    return logger.StartExcute(cmdText, parameters.ToArray());
+                    return logger.BeginExcute(cmdText, parameters.ToArray());
                 }
                 catch { }
             }

@@ -8,8 +8,6 @@ namespace MySoft.Net.FTP
     /// <summary>
     /// 
     /// </summary>
-
-
     [ComVisible(false)]
     public class FtpDataStream : Stream, IDisposable
     {

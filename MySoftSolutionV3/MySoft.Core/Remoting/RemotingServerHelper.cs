@@ -168,13 +168,9 @@ namespace MySoft.Remoting
 
                 //初始化通道并注册
                 if (channelType == RemotingChannelType.Tcp)
-                {
                     serviceChannel = new TcpChannel(props, clientProvider, serverProvider);
-                }
                 else
-                {
                     serviceChannel = new HttpChannel(props, clientProvider, serverProvider);
-                }
 
                 try
                 {

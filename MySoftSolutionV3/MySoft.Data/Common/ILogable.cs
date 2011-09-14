@@ -14,7 +14,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="cmdText"></param>
         /// <param name="parameter"></param>
-        bool StartExcute(string cmdText, SQLParameter[] parameter);
+        bool BeginExcute(string cmdText, SQLParameter[] parameter);
 
         /// <summary>
         /// ½áÊøÖ´ĞĞÃüÁî

@@ -354,7 +354,7 @@ namespace MySoft.Data
         public SourceList<TResult> ToList<TResult>(int startIndex, int endIndex)
             where TResult : class
         {
-            return ToTable(startIndex, endIndex).ConvertTo<TResult>();
+            return ToReader(startIndex, endIndex).ConvertTo<TResult>();
         }
 
         /// <summary>
@@ -365,7 +365,7 @@ namespace MySoft.Data
         public virtual SourceList<TResult> ToList<TResult>()
             where TResult : class
         {
-            return ToTable().ConvertTo<TResult>();
+            return ToReader().ConvertTo<TResult>();
         }
 
         /// <summary>
@@ -376,9 +376,12 @@ namespace MySoft.Data
         public TResult ToSingle<TResult>()
             where TResult : class
         {
-            var table = GetDataTable(this, 1, 0);
-            if (table.RowCount > 0) return table.ConvertTo<TResult>()[0];
-            return default(TResult);
+            var reader = GetDataReader(this, 1, 0);
+            var list = reader.ConvertTo<TResult>();
+            if (list.Count > 0)
+                return list[0];
+            else
+                return default(TResult);
         }
 
         #endregion

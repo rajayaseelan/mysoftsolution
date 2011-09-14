@@ -66,7 +66,7 @@ namespace MySoft.Data
         public SourceList<T> ToList<T>(int pageIndex)
             where T : class
         {
-            return ToTable(pageIndex).ConvertTo<T>();
+            return ToReader(pageIndex).ConvertTo<T>();
         }
 
         /// <summary>

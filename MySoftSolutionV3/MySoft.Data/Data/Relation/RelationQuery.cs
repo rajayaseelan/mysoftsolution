@@ -93,7 +93,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public T ToSingle()
         {
-            return query.GetTop(1).ToTable().ConvertTo<T>()[0];
+            return query.GetTop(1).ToReader().ConvertTo<T>()[0];
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public SourceList<T> ToList()
         {
-            return query.ToTable().ConvertTo<T>();
+            return query.ToReader().ConvertTo<T>();
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public SourceList<T> ToList(int topSize)
         {
-            return ToTable(topSize).ConvertTo<T>();
+            return ToReader(topSize).ConvertTo<T>();
         }
 
         /// <summary>
