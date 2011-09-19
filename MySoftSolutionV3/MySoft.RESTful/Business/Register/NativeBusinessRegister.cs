@@ -6,6 +6,7 @@ using MySoft.RESTful.Business.Pool;
 using MySoft.IoC;
 using MySoft.Logger;
 using System.Text;
+using MySoft.RESTful.Auth;
 
 namespace MySoft.RESTful.Business.Register
 {
@@ -34,16 +35,11 @@ namespace MySoft.RESTful.Business.Register
 
                     if (instance == null)
                     {
-                        var iocInstance = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
-                        if (iocInstance != null)
-                        {
-                            var proxy = new ProxyInvocationHandler(serviceType);
-                            instance = ProxyFactory.GetInstance().Create(proxy, serviceType, true);
-                        }
-                        else
-                        {
-                            continue;
-                        }
+                        var service = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
+                        if (service == null) continue;
+
+                        var proxy = new ProxyInvocationHandler(serviceType);
+                        instance = ProxyFactory.GetInstance().Create(proxy, serviceType, true);
                     }
 
                     //获取类特性
@@ -51,14 +47,19 @@ namespace MySoft.RESTful.Business.Register
                     if (kind != null)
                     {
                         //如果包含了相同的类别，则继续
-                        if (pool.KindMethods.ContainsKey(kind.Name)) continue;
+                        if (pool.KindMethods.ContainsKey(kind.Name))
+                        {
+                            kindModel = pool.KindMethods[kind.Name];
+                        }
+                        else
+                        {
+                            kindModel = new BusinessKindModel();
+                            kindModel.Name = kind.Name;
+                            kindModel.Description = kind.Description;
+                            kindModel.State = kind.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN;
 
-                        kindModel = new BusinessKindModel();
-                        kindModel.Name = kind.Name;
-                        kindModel.Description = kind.Description;
-                        kindModel.State = kind.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN;
-
-                        pool.AddKindModel(kind.Name, kindModel);
+                            pool.AddKindModel(kind.Name, kindModel);
+                        }
 
                         //获取方法特性
                         foreach (MethodInfo info in CoreHelper.GetMethodsFromType(serviceType))
@@ -72,15 +73,16 @@ namespace MySoft.RESTful.Business.Register
                                 methodModel = new BusinessMethodModel();
                                 methodModel.Name = method.Name;
                                 methodModel.Description = method.Description;
-                                methodModel.SubmitType = method.Method;
+                                methodModel.HttpMethod = method.Method;
                                 methodModel.Authorized = method.Authorized;
                                 methodModel.State = method.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN;
                                 methodModel.Method = info;
+                                methodModel.UserParameter = method.UserParameter;
                                 methodModel.Parameters = info.GetParameters();
                                 methodModel.ParametersCount = info.GetParameters().Length;
                                 methodModel.Instance = instance;
 
-                                if (method.Method == SubmitType.GET && !CheckGetSubmitType(info.GetParameters()))
+                                if (method.Method == HttpMethod.GET && !CheckGetSubmitType(info.GetParameters()))
                                 {
                                     methodModel.IsPassCheck = false;
                                     methodModel.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", kindModel.Name + "." + methodModel.Name);
@@ -116,7 +118,7 @@ namespace MySoft.RESTful.Business.Register
             StringBuilder sb = new StringBuilder();
             foreach (ParameterInfo p in paramsInfo)
             {
-                if (!(p.ParameterType.IsValueType || p.ParameterType == typeof(string) || p.ParameterType == typeof(AuthenticationUser)))
+                if (!(p.ParameterType.IsValueType || p.ParameterType == typeof(string)))
                 {
                     result = false;
                     break;

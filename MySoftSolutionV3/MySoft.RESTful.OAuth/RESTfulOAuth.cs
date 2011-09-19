@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MySoft.RESTful.Auth;
 
 namespace MySoft.RESTful.OAuth
 {

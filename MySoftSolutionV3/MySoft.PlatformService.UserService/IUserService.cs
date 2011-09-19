@@ -12,7 +12,7 @@ namespace MySoft.PlatformService.UserService
     [ServiceContract]
     public interface IUserService
     {
-        [PublishMethod("getuserinfo", AuthParameter = "name")]
+        [PublishMethod("getuserinfo", UserParameter = "name")]
         [OperationContract(CacheTime = 30000)]
         UserInfo GetUserInfo(string name);
 

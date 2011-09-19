@@ -9,6 +9,7 @@ using System.Web;
 using MySoft.RESTful.Business.Pool;
 using MySoft.RESTful.Business.Register;
 using Newtonsoft.Json.Linq;
+using MySoft.RESTful.Auth;
 
 namespace MySoft.RESTful.Business
 {
@@ -94,9 +95,9 @@ namespace MySoft.RESTful.Business
 
             try
             {
-                if (metadata.SubmitType != (SubmitType)Enum.Parse(typeof(SubmitType), context.IncomingRequest.Method, true))
+                if (metadata.HttpMethod != (HttpMethod)Enum.Parse(typeof(HttpMethod), context.IncomingRequest.Method, true))
                 {
-                    throw new RESTfulException("Resources can only by the [" + metadata.SubmitType.ToString().ToUpper() + "] way to acquire!") { Code = RESTfulCode.BUSINESS_METHOD_CALL_TYPE_NOT_MATCH };
+                    throw new RESTfulException("Resources can only by the [" + metadata.HttpMethod.ToString().ToUpper() + "] way to acquire!") { Code = RESTfulCode.BUSINESS_METHOD_CALL_TYPE_NOT_MATCH };
                 }
 
                 if (!metadata.IsPassCheck)
@@ -126,7 +127,7 @@ namespace MySoft.RESTful.Business
                 throw new RESTfulException(String.Format("Fault parameters: {0}!", e.Message)) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
             }
 
-            object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj);
+            object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj, metadata.UserParameter);
             return DynamicCalls.GetMethodInvoker(metadata.Method)(metadata.Instance, arguments);
         }
 
@@ -184,7 +185,7 @@ namespace MySoft.RESTful.Business
                     List<string> plist = new List<string>();
                     foreach (var p in model.Parameters)
                     {
-                        if (p.ParameterType == typeof(AuthenticationUser)) continue;
+                        if (!string.IsNullOrEmpty(model.UserParameter) && string.Compare(p.Name, model.UserParameter, true) == 0) continue;
 
                         var s = String.Format("<{0}:{1}>", p.Name, p.ParameterType.FullName);
                         buider.AppendLine(HttpUtility.HtmlEncode(s)).AppendLine("<br/>");
@@ -199,16 +200,16 @@ namespace MySoft.RESTful.Business
                     else
                         template = template.Replace("${parameter}", buider.ToString());
 
-                    template = template.Replace("${type}", model.SubmitType.ToString().ToUpper());
+                    template = template.Replace("${type}", model.HttpMethod.ToString().ToUpper());
 
                     StringBuilder anchor = new StringBuilder();
-                    anchor.AppendLine(CreateAnchorHtml(requestUri, uri, e, model, plist, model.SubmitType, "xml"));
+                    anchor.AppendLine(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "xml"));
                     anchor.AppendLine("<br/>");
-                    anchor.AppendLine(CreateAnchorHtml(requestUri, uri, e, model, plist, model.SubmitType, "json"));
-                    if (model.SubmitType == SubmitType.GET)
+                    anchor.AppendLine(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "json"));
+                    if (model.HttpMethod == HttpMethod.GET)
                     {
                         anchor.AppendLine("<br/>");
-                        anchor.AppendLine(CreateAnchorHtml(requestUri, uri, e, model, plist, model.SubmitType, "jsonp"));
+                        anchor.AppendLine(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "jsonp"));
                     }
 
                     template = template.Replace("${uri}", anchor.ToString());
@@ -223,7 +224,7 @@ namespace MySoft.RESTful.Business
             return html.Replace("${body}", table.ToString());
         }
 
-        private string CreateAnchorHtml(Uri requestUri, string uri, BusinessKindModel e, BusinessMethodModel model, List<string> plist, SubmitType mode, string format)
+        private string CreateAnchorHtml(Uri requestUri, string uri, BusinessKindModel e, BusinessMethodModel model, List<string> plist, HttpMethod mode, string format)
         {
             string url = string.Empty;
             string method = mode.ToString().ToLower();

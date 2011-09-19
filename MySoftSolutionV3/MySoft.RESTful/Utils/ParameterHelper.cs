@@ -7,6 +7,7 @@ using System.Xml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using MySoft.RESTful.Auth;
 
 namespace MySoft.RESTful
 {
@@ -56,34 +57,39 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="paramters"></param>
         /// <param name="obj"></param>
+        /// <param name="userParameter"></param>
         /// <returns></returns>
-        public static object[] Convert(ParameterInfo[] paramters, JObject obj)
+        public static object[] Convert(ParameterInfo[] paramters, JObject obj, string userParameter)
         {
             try
             {
                 List<object> args = new List<object>();
                 foreach (ParameterInfo info in paramters)
                 {
-                    if (info.ParameterType == typeof(AuthenticationUser))
+                    //判断是否为用户参数
+                    if (!string.IsNullOrEmpty(userParameter) && string.Compare(info.Name, userParameter, true) == 0)
                     {
-                        if (AuthenticationContext.Current != null)
-                            args.Add(AuthenticationContext.Current.User);
-                        else
-                            args.Add(null);
+                        object value = null;
+                        if (info.ParameterType == typeof(int))
+                            value = AuthenticationContext.Current.User.AuthID;
+                        else if (info.ParameterType == typeof(string))
+                            value = AuthenticationContext.Current.User.AuthName;
+                        else if (info.ParameterType == typeof(AuthenticationUser))
+                            value = AuthenticationContext.Current.User;
 
-                        continue;
-                    }
-
-                    var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
-                    if (property != null)
-                    {
-                        string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
-                        var jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
-                        args.Add(jsonValue);
+                        args.Add(value);
                     }
                     else
                     {
-                        args.Add(null);
+                        var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
+                        if (property != null)
+                        {
+                            string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
+                            var jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
+                            args.Add(jsonValue);
+                        }
+                        else
+                            throw new NullReferenceException(info.Name + " is not found in parameters");
                     }
                 }
 

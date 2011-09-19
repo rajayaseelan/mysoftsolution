@@ -48,6 +48,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\Authentication.cs" />
+    <Compile Include="Configuration\AuthenticationCollection.cs" />
+    <Compile Include="Configuration\RESTfulConfiguration.cs" />
+    <Compile Include="Configuration\RESTfulConfigurationHandler.cs" />
     <Compile Include="Business\Register\ProxyInvocationHandler.cs" />
     <Compile Include="Utils\AuthenticationManager.cs" />
     <Compile Include="RESTfulException.cs" />

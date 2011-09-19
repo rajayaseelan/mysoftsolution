@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections;
+using MySoft.RESTful.Auth;
 
 namespace MySoft.RESTful.Demo
 {
@@ -26,8 +27,8 @@ namespace MySoft.RESTful.Demo
         /// 获取登录用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethodAttribute("getloginuser", Description = "获取登录用户")]
-        User GetLoginUser(AuthenticationUser user);
+        [PublishMethodAttribute("getloginuser", Description = "获取登录用户", UserParameter = "username")]
+        User GetLoginUser(string username);
 
         /// <summary>
         /// 获取一个用户
@@ -47,7 +48,7 @@ namespace MySoft.RESTful.Demo
         /// 保存用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethodAttribute("saveuser", Description = "保存一个用户", Method = SubmitType.POST)]
+        [PublishMethodAttribute("saveuser", Description = "保存一个用户", Method = HttpMethod.POST)]
         void SaveUser(User user);
     }
 
@@ -62,16 +63,15 @@ namespace MySoft.RESTful.Demo
         /// 获取用户
         /// </summary>
         /// <returns></returns>
-        public User GetLoginUser(AuthenticationUser user)
+        public User GetLoginUser(string username)
         {
-            return new User { Id = user.AuthName.Length, Name = user.AuthName };
+            return new User { Id = username.Length, Name = username };
         }
 
         /// <summary>
         /// 获取一个用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethodAttribute("getuser", Description = "获取一个用户")]
         public User GetUser(int id, string name)
         {
             return new User { Id = id, Name = name };

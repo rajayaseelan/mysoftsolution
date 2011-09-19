@@ -332,12 +332,8 @@
     <Compile Include="RESTful\Auth\AuthenticationException.cs" />
     <Compile Include="RESTful\Auth\AuthenticationToken.cs" />
     <Compile Include="RESTful\Auth\AuthenticationUser.cs" />
-    <Compile Include="RESTful\Configuration\Authentication.cs" />
-    <Compile Include="RESTful\Configuration\AuthenticationCollection.cs" />
-    <Compile Include="RESTful\Configuration\RESTfulConfiguration.cs" />
-    <Compile Include="RESTful\Configuration\RESTfulConfigurationHandler.cs" />
     <Compile Include="RESTful\Auth\IAuthentication.cs" />
-    <Compile Include="RESTful\SubmitType.cs" />
+    <Compile Include="RESTful\HttpMethod.cs" />
     <Compile Include="RESTful\PublishKind.cs" />
     <Compile Include="RESTful\PublishMethod.cs" />
     <Compile Include="Security\MD5.cs" />

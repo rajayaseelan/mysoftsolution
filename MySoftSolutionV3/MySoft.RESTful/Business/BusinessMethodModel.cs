@@ -18,7 +18,7 @@ namespace MySoft.RESTful.Business
         /// <summary>
         /// 方法调用类型
         /// </summary>
-        public SubmitType SubmitType { get; set; }
+        public HttpMethod HttpMethod { get; set; }
         /// <summary>
         /// 业务执行对象
         /// </summary>
@@ -36,6 +36,10 @@ namespace MySoft.RESTful.Business
         /// </summary>
         public int ParametersCount { get; set; }
         /// <summary>
+        /// 用户参数
+        /// </summary>
+        public string UserParameter { get; set; }
+        /// <summary>
         /// 是否通过检查
         /// </summary>
         public bool IsPassCheck { get; set; }
@@ -48,7 +52,7 @@ namespace MySoft.RESTful.Business
         {
             this.Authorized = true;
             this.IsPassCheck = true;
-            this.SubmitType = SubmitType.GET;
+            this.HttpMethod = HttpMethod.GET;
         }
     }
 }

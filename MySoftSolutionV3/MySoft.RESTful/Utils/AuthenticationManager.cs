@@ -7,6 +7,7 @@ using System.Net;
 using System.ServiceModel.Web;
 using System.Web;
 using MySoft.Logger;
+using MySoft.RESTful.Auth;
 
 namespace MySoft.RESTful
 {
@@ -51,11 +52,15 @@ namespace MySoft.RESTful
         /// </summary>
         private static void InitializeContext()
         {
-            var request = WebOperationContext.Current.IncomingRequest;
+            var incomingRequest = WebOperationContext.Current.IncomingRequest;
 
             //初始化AuthenticationContext
-            AuthenticationToken authToken = new AuthenticationToken(request.UriTemplateMatch.RequestUri, request.UriTemplateMatch.QueryParameters, request.Method);
-            AuthenticationContext.Current = new AuthenticationContext(authToken);
+            AuthenticationToken authToken = new AuthenticationToken(incomingRequest.UriTemplateMatch.RequestUri, incomingRequest.UriTemplateMatch.QueryParameters, incomingRequest.Method);
+            AuthenticationContext.Current = new AuthenticationContext(authToken)
+            {
+                //赋值TokenId
+                TokenId = incomingRequest.UriTemplateMatch.QueryParameters["tokenId"]
+            };
 
             if (HttpContext.Current != null)
             {
@@ -63,7 +68,7 @@ namespace MySoft.RESTful
             }
             else
             {
-                string cookie = request.Headers[HttpRequestHeader.Cookie];
+                string cookie = incomingRequest.Headers[HttpRequestHeader.Cookie];
                 SetCookie(cookie);
             }
         }
