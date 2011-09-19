@@ -21,7 +21,7 @@ namespace MySoft.RESTful
         /// <summary>
         /// 调用方式
         /// </summary>
-        public SubmitType Method { get; set; }
+        public HttpMethod Method { get; set; }
 
         /// <summary>
         /// 是否启用
@@ -34,9 +34,9 @@ namespace MySoft.RESTful
         public bool Authorized { get; set; }
 
         /// <summary>
-        /// 认证的参数名
+        /// 用户认证的参数名，如UserParameter = "username"
         /// </summary>
-        public string AuthParameter { get; set; }
+        public string UserParameter { get; set; }
 
         /// <summary>
         /// 实例化PublishMethod
@@ -45,7 +45,7 @@ namespace MySoft.RESTful
         {
             this.Enabled = true;
             this.Authorized = true;
-            this.Method = SubmitType.GET;
+            this.Method = HttpMethod.GET;
         }
 
         /// <summary>

@@ -6,9 +6,9 @@ using System.Text;
 namespace MySoft.RESTful
 {
     /// <summary>
-    /// 方法类型
+    /// 请求方式
     /// </summary>
-    public enum SubmitType
+    public enum HttpMethod
     {
         /// <summary>
         /// Get方式
