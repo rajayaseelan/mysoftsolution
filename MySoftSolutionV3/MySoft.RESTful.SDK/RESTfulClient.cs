@@ -5,16 +5,109 @@ using System.IO;
 using System.Text;
 using OAuth.Net.Components;
 using System.Net;
+using System.Collections.Generic;
 
 namespace MySoft.RESTful.SDK
 {
     /// <summary>
     /// RESTful客户端
     /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    public class RESTfulClient<TResult> : RESTfulClient
+    {
+        /// <summary>
+        /// RESTfulClient实例化
+        /// </summary>
+        public RESTfulClient(string url)
+            : base(url)
+        {
+        }
+
+        /// <summary>
+        /// RESTfulClient实例化
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="format"></param>
+        public RESTfulClient(string url, DataFormat format)
+            : base(url, format)
+        {
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public TResult Invoke<T>(string name, T item)
+            where T : class
+        {
+            return Invoke<T>(name, item, HttpMethod.GET);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public TResult Invoke<T>(string name, T item, HttpMethod method)
+            where T : class
+        {
+            return Invoke<T>(name, item, new Token(), method);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="token"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public TResult Invoke<T>(string name, T item, Token token, HttpMethod method)
+            where T : class
+        {
+            RESTfulParameter parameter = new RESTfulParameter(name, method, format);
+            parameter.Token = token;
+
+            if (method == HttpMethod.GET)
+            {
+                //添加参数
+                parameter.AddParameter(item);
+            }
+            else
+            {
+                var collection = new Dictionary<string, object>();
+
+                //添加参数
+                var plist = typeof(T).GetProperties();
+                for (int index = 0; index < plist.Length; index++)
+                {
+                    collection[plist[index].Name] = plist[index].GetValue(item, null);
+                }
+
+                parameter.DataObject = collection;
+            }
+
+            RESTfulRequest request = new RESTfulRequest(parameter);
+            if (!string.IsNullOrEmpty(url)) request.Url = url;
+
+            return request.GetResponse<TResult>();
+        }
+    }
+
+    /// <summary>
+    /// RESTful客户端
+    /// </summary>
     public class RESTfulClient
     {
-        private string url;
-        private DataFormat format;
+        protected string url = "http://openapi.mysoft.com";
+        protected DataFormat format = DataFormat.JSON;
 
         /// <summary>
         /// RESTfulClient实例化
@@ -22,7 +115,6 @@ namespace MySoft.RESTful.SDK
         public RESTfulClient(string url)
         {
             this.url = url;
-            this.format = DataFormat.JSON;
         }
 
         /// <summary>
@@ -76,7 +168,7 @@ namespace MySoft.RESTful.SDK
         private string Request(Uri uri, Encoding enc, string input)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
-            request.KeepAlive = false;
+            //request.KeepAlive = false;
             request.Timeout = 60 * 1000;
             if (!string.IsNullOrEmpty(input))
             {

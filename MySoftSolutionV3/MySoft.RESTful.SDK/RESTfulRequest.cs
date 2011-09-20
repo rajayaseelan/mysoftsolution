@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Collections;
 
 namespace MySoft.RESTful.SDK
 {
@@ -31,9 +32,9 @@ namespace MySoft.RESTful.SDK
             set { timeout = value; }
         }
 
-        private string url;
+        private string url = "http://openapi.mysoft.com";
         /// <summary>
-        /// 请求的url，例如：http://openapi.mysoft.com
+        /// 请求的url，例如：http://openapi.fund123.cn
         /// </summary>
         public string Url
         {
@@ -107,10 +108,6 @@ namespace MySoft.RESTful.SDK
                         list.Add(string.Format("{0}={1}", p.Name, p.Value));
                     }
                 }
-                else
-                {
-                    list.Add(string.Format("username={0}", parameter.Token.TokenId));
-                }
             }
 
             if (list.Count > 0)
@@ -134,9 +131,8 @@ namespace MySoft.RESTful.SDK
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public T GetResponse<T>()
-            where T : class
         {
-            return GetResponse(typeof(T)) as T;
+            return (T)GetResponse(typeof(T));
         }
 
         /// <summary>
@@ -150,7 +146,7 @@ namespace MySoft.RESTful.SDK
             {
                 string url = GetRequestUrl();
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                request.KeepAlive = false;
+                //request.KeepAlive = false;
                 if (timeout > 0) request.Timeout = timeout * 1000;
 
                 //判断是否为POST方式
@@ -162,19 +158,15 @@ namespace MySoft.RESTful.SDK
                     var stream = request.GetRequestStream();
                     string input = string.Empty;
 
-                    var postObject = parameter.DataObject;
-                    if (parameter.DataObject is ApiParameterCollection)
-                    {
-                        postObject = (parameter.DataObject as ApiParameterCollection).ToDictionary();
-                    }
-
                     //判断数据类型
                     if (parameter.DataFormat == DataFormat.JSON)
                     {
+                        request.ContentType = "application/json";
                         input = SerializationManager.SerializeJson(parameter.DataObject);
                     }
                     else if (parameter.DataFormat == DataFormat.XML)
                     {
+                        request.ContentType = "text/xml";
                         input = SerializationManager.SerializeXml(parameter.DataObject);
                     }
 
@@ -209,7 +201,24 @@ namespace MySoft.RESTful.SDK
             }
             catch (WebException ex)
             {
-                throw new RESTfulException(ex.Message, ex) { Code = (int)(ex.Response as HttpWebResponse).StatusCode };
+                RESTfulResult result = null;
+                try
+                {
+                    var stream = (ex.Response as HttpWebResponse).GetResponseStream();
+                    StreamReader sr = new StreamReader(stream);
+                    string content = sr.ReadToEnd();
+
+                    if (parameter.DataFormat == DataFormat.JSON)
+                        result = SerializationManager.DeserializeJson<RESTfulResult>(content);
+                    else if (parameter.DataFormat == DataFormat.XML)
+                        result = SerializationManager.DeserializeXml<RESTfulResult>(content);
+                }
+                catch { }
+
+                if (result != null)
+                    throw new RESTfulException(result.Message) { Code = result.Code };
+                else
+                    throw new RESTfulException(ex.Message, ex) { Code = (int)(ex.Response as HttpWebResponse).StatusCode };
             }
             catch (Exception ex)
             {

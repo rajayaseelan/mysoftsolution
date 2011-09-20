@@ -34,14 +34,14 @@ namespace MySoft.RESTful.Demo
         /// 获取一个用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethodAttribute("getuser", Description = "获取一个用户", Authorized = false)]
+        [PublishMethodAttribute("getuser", Description = "获取一个用户", IsPublic = false)]
         User GetUser(int id, string name);
 
         /// <summary>
         /// 获取一组用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethodAttribute("getusers", Description = "获取一组用户", Authorized = false)]
+        [PublishMethodAttribute("getusers", Description = "获取一组用户", IsPublic = false)]
         IList<User> GetUsers();
 
         /// <summary>

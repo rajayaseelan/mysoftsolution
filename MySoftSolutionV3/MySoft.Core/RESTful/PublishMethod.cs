@@ -29,9 +29,9 @@ namespace MySoft.RESTful
         public bool Enabled { get; set; }
 
         /// <summary>
-        /// 是否认证
+        /// 是否为公共方法（公共方法不需要认证）
         /// </summary>
-        public bool Authorized { get; set; }
+        public bool IsPublic { get; set; }
 
         /// <summary>
         /// 用户认证的参数名，如UserParameter = "username"
@@ -44,7 +44,7 @@ namespace MySoft.RESTful
         public PublishMethodAttribute()
         {
             this.Enabled = true;
-            this.Authorized = true;
+            this.IsPublic = true;
             this.Method = HttpMethod.GET;
         }
 

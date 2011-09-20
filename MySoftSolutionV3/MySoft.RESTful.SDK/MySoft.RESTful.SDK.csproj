@@ -54,6 +54,7 @@
     <Compile Include="RESTfulInvocationHandler.cs" />
     <Compile Include="RESTfulParameter.cs" />
     <Compile Include="RESTfulRequest.cs" />
+    <Compile Include="RESTfulResult.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="TokenParameter.cs" />
   </ItemGroup>

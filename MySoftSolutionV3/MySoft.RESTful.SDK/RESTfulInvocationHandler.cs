@@ -58,19 +58,21 @@ namespace MySoft.RESTful.SDK
             }
             else
             {
-                var collection = new ApiParameterCollection();
+                var collection = new Dictionary<string, object>();
 
                 //添加参数
                 var plist = method.GetParameters();
                 for (int index = 0; index < parameters.Length; index++)
                 {
-                    collection.Add(plist[index].Name, parameters[index]);
+                    collection[plist[index].Name] = parameters[index];
                 }
 
                 parameter.DataObject = collection;
             }
 
-            RESTfulRequest request = new RESTfulRequest(url, parameter);
+            RESTfulRequest request = new RESTfulRequest(parameter);
+            if (!string.IsNullOrEmpty(url)) request.Url = url;
+
             return request.GetResponse(method.ReturnType);
         }
 
