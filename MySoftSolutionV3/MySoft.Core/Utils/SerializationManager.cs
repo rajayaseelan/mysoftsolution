@@ -72,7 +72,7 @@ namespace MySoft
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static string SerializeJson(object obj)
+        public static string SerializeJson(object obj, params JsonConverter[] converters)
         {
             if (obj == null) return "null";
 
@@ -80,12 +80,11 @@ namespace MySoft
             {
                 return JsonConvert.ToString((Enum)obj);
             }
-            else if (obj is IConvertible)
-            {
-                return JsonConvert.ToString(obj);
-            }
 
-            return JsonConvert.SerializeObject(obj);
+            if (converters != null && converters.Length > 0)
+                return JsonConvert.SerializeObject(obj, converters);
+            else
+                return JsonConvert.SerializeObject(obj);
         }
 
         /// <summary>
@@ -129,7 +128,7 @@ namespace MySoft
         /// <param name="returnType"></param>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static object DeserializeJson(Type returnType, string data)
+        public static object DeserializeJson(Type returnType, string data, params JsonConverter[] converters)
         {
             if (string.IsNullOrEmpty(data)) return null;
 
@@ -150,7 +149,10 @@ namespace MySoft
                 data = "[" + data + "]";
             }
 
-            return JsonConvert.DeserializeObject(data, returnType);
+            if (converters != null && converters.Length > 0)
+                return JsonConvert.DeserializeObject(data, returnType, converters);
+            else
+                return JsonConvert.DeserializeObject(data, returnType);
         }
 
         /// <summary>
@@ -159,9 +161,9 @@ namespace MySoft
         /// <typeparam name="T"></typeparam>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static T DeserializeJson<T>(string data)
+        public static T DeserializeJson<T>(string data, params JsonConverter[] converters)
         {
-            return (T)DeserializeJson(typeof(T), data);
+            return (T)DeserializeJson(typeof(T), data, converters);
         }
 
         /// <summary>
@@ -171,9 +173,9 @@ namespace MySoft
         /// <param name="data"></param>
         /// <param name="anonymousObject"></param>
         /// <returns></returns>
-        public static T DeserializeJson<T>(string data, T anonymousObject)
+        public static T DeserializeJson<T>(string data, T anonymousObject, params JsonConverter[] converters)
         {
-            return DeserializeJson<T>(data);
+            return DeserializeJson<T>(data, converters);
         }
 
         #endregion
