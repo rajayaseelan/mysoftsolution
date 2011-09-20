@@ -187,13 +187,16 @@ namespace MySoft.RESTful.Business
                     {
                         if (!string.IsNullOrEmpty(model.UserParameter) && string.Compare(p.Name, model.UserParameter, true) == 0) continue;
 
-                        var s = String.Format("<{0}:{1}>", p.Name, p.ParameterType.FullName);
+                        var s = String.Format("<{0}:{1}>", p.Name, p.ParameterType.Name);
                         buider.AppendLine(HttpUtility.HtmlEncode(s)).AppendLine("<br/>");
                         if (!(p.ParameterType.IsClass && p.ParameterType != typeof(string)))
                         {
-                            plist.Add(string.Format("{0}=[{0}]", p.Name).Replace('[', '{').Replace(']', '}'));
+                            plist.Add(string.Format("{0}=[{0}]", p.Name.ToLower()).Replace('[', '{').Replace(']', '}'));
                         }
                     }
+
+                    var value = String.Format("<result:{0}>", model.Method.ReturnType.Name);
+                    buider.AppendLine("<font color=\"blue\">").AppendLine(HttpUtility.HtmlEncode(value)).AppendLine("</font><br/>");
 
                     if (string.IsNullOrEmpty(buider.ToString()))
                         template = template.Replace("${parameter}", "&nbsp;");

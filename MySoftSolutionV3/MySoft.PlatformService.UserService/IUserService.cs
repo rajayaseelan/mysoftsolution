@@ -8,11 +8,11 @@ using MySoft.RESTful;
 
 namespace MySoft.PlatformService.UserService
 {
-    [PublishKind("user")]
+    [PublishKind("User")]
     [ServiceContract]
     public interface IUserService
     {
-        [PublishMethod("getuserinfo", UserParameter = "name")]
+        [PublishMethod("GetUserInfo", UserParameter = "Name")]
         [OperationContract(CacheTime = 30000)]
         UserInfo GetUserInfo(string name);
 

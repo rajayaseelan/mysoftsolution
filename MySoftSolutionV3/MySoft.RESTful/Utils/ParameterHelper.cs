@@ -70,12 +70,15 @@ namespace MySoft.RESTful
                     if (!string.IsNullOrEmpty(userParameter) && string.Compare(info.Name, userParameter, true) == 0)
                     {
                         object value = null;
-                        if (info.ParameterType == typeof(int))
-                            value = AuthenticationContext.Current.User.AuthID;
-                        else if (info.ParameterType == typeof(string))
-                            value = AuthenticationContext.Current.User.AuthName;
-                        else if (info.ParameterType == typeof(AuthenticationUser))
-                            value = AuthenticationContext.Current.User;
+                        if (AuthenticationContext.Current.User != null)
+                        {
+                            if (info.ParameterType == typeof(int))
+                                value = AuthenticationContext.Current.User.AuthID;
+                            else if (info.ParameterType == typeof(string))
+                                value = AuthenticationContext.Current.User.AuthName;
+                            else if (info.ParameterType == typeof(AuthenticationUser))
+                                value = AuthenticationContext.Current.User;
+                        }
 
                         args.Add(value);
                     }
@@ -94,6 +97,10 @@ namespace MySoft.RESTful
                 }
 
                 return args.ToArray();
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new RESTfulException(ex.Message) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
             }
             catch
             {

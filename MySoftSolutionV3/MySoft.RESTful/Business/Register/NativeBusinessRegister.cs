@@ -46,6 +46,8 @@ namespace MySoft.RESTful.Business.Register
                     var kind = CoreHelper.GetTypeAttribute<PublishKindAttribute>(serviceType);
                     if (kind != null)
                     {
+                        kind.Name = kind.Name.ToLower();
+
                         //如果包含了相同的类别，则继续
                         if (pool.KindMethods.ContainsKey(kind.Name))
                         {
@@ -67,6 +69,8 @@ namespace MySoft.RESTful.Business.Register
                             var method = CoreHelper.GetMemberAttribute<PublishMethodAttribute>(info);
                             if (method != null)
                             {
+                                method.Name = method.Name.ToLower();
+
                                 //如果包含了相同的方法，则继续
                                 if (kindModel.MethodModels.ContainsKey(method.Name)) continue;
 
