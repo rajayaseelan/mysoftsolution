@@ -153,7 +153,7 @@ namespace MySoft.RESTful.SDK
                 if (parameter.DataObject != null && parameter.HttpMethod != HttpMethod.GET)
                 {
                     request.ContentType = "application/x-www-form-urlencoded";
-                    request.Method = "POST";
+                    request.Method = parameter.HttpMethod.ToString();
 
                     var stream = request.GetRequestStream();
                     string input = string.Empty;
