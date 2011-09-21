@@ -30,6 +30,6 @@ namespace MySoft.RESTful
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        object Invoke(ParameterFormat format, string kind, string method, string parameters);
+        object Invoke(ParameterFormat format, string kind, string method, string parameters, out Type retType);
     }
 }

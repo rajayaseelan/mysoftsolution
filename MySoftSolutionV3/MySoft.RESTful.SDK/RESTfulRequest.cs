@@ -216,9 +216,22 @@ namespace MySoft.RESTful.SDK
                 catch { }
 
                 if (result != null)
+                {
                     throw new RESTfulException(result.Message) { Code = result.Code };
+                }
+                else if (ex.Response != null)
+                {
+                    var res = ex.Response as HttpWebResponse;
+                    throw new RESTfulException(res.StatusDescription) { Code = (int)res.StatusCode };
+                }
                 else
-                    throw new RESTfulException(ex.Message, ex) { Code = (int)(ex.Response as HttpWebResponse).StatusCode };
+                {
+                    throw ex;
+                }
+            }
+            catch (RESTfulException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {

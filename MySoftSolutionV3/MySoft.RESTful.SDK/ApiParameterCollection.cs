@@ -20,5 +20,19 @@ namespace MySoft.RESTful.SDK
             if (!this.Exists(p => p.Name == name))
                 base.Add(new ApiParameter { Name = name, Value = value });
         }
+
+        /// <summary>
+        /// 转换成字典
+        /// </summary>
+        /// <returns></returns>
+        public IDictionary<string, object> ToDictionary()
+        {
+            IDictionary<string, object> dict = new Dictionary<string, object>();
+            foreach (var p in this)
+            {
+                dict[p.Name] = p.Value;
+            }
+            return dict;
+        }
     }
 }

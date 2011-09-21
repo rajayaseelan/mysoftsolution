@@ -11,12 +11,21 @@ namespace MySoft.RESTful
         /// <summary>
         /// 代码
         /// </summary>
-        public string Code;
+        public string Code { get; set; }
 
         /// <summary>
         /// 消息
         /// </summary>
-        public string Message;
+        public string Message { get; set; }
+    }
+
+    /// <summary>
+    /// RESTful响应
+    /// </summary>
+    [Serializable]
+    public class RESTfulResponse
+    {
+        public object Result { get; set; }
     }
 
     /// <summary>

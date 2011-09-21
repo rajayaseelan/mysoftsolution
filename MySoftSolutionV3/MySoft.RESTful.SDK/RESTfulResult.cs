@@ -21,4 +21,17 @@ namespace MySoft.RESTful.SDK
         /// </summary>
         public string Message { get; set; }
     }
+
+    /// <summary>
+    /// RESTful响应结果
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [Serializable]
+    public class RESTfulResponse<T>
+    {
+        /// <summary>
+        /// 响应结果
+        /// </summary>
+        public T Result { get; set; }
+    }
 }

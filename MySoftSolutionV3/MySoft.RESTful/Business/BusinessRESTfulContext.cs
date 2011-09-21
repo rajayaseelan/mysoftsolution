@@ -87,11 +87,14 @@ namespace MySoft.RESTful.Business
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public object Invoke(ParameterFormat format, string kind, string method, string parameters)
+        public object Invoke(ParameterFormat format, string kind, string method, string parameters, out Type retType)
         {
             WebOperationContext context = WebOperationContext.Current;
             JObject obj = new JObject();
             BusinessMethodModel metadata = pool.FindMethod(kind, method);
+
+            //返回类型
+            retType = metadata.Method.ReturnType;
 
             try
             {

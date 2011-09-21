@@ -253,17 +253,17 @@ namespace MySoft.RESTful
             {
                 try
                 {
-                    result = Context.Invoke(format, kind, method, parameters);
-                    if (result == null)
-                    {
-                        if (format == ParameterFormat.Json || format == ParameterFormat.Jsonp)
-                            result = "{}";
-                        else if (format == ParameterFormat.Html)
-                            response.ContentType = "text/html";
-                        else
-                            response.ContentType = "text/plain";
+                    Type retType;
+                    result = Context.Invoke(format, kind, method, parameters, out retType);
 
-                        return result as string;
+                    //如果值为null或值为数据为值类型，以对象方式返回
+                    if (result == null || retType.IsValueType || retType == typeof(string))
+                    {
+                        if (result == null && (format == ParameterFormat.Text || format == ParameterFormat.Html))
+                            return string.Empty;
+
+                        //如果是值类型，则以对象方式返回
+                        result = new RESTfulResponse { Result = result };
                     }
                 }
                 catch (RESTfulException e)
