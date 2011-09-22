@@ -32,9 +32,9 @@ namespace MySoft.RESTful.SDK
             set { timeout = value; }
         }
 
-        private string url = "http://openapi.mysoft.com";
+        private string url;
         /// <summary>
-        /// 请求的url，例如：http://openapi.fund123.cn
+        /// 请求的url，例如：http://openapi.mysoft.com
         /// </summary>
         public string Url
         {
@@ -167,7 +167,15 @@ namespace MySoft.RESTful.SDK
                     else if (parameter.DataFormat == DataFormat.XML)
                     {
                         request.ContentType = "text/xml";
-                        input = SerializationManager.SerializeXml(parameter.DataObject);
+                        StringBuilder sb = new StringBuilder();
+                        foreach (var kv in parameter.DataObject)
+                        {
+                            if (kv.Value != null && (kv.Value.GetType().IsValueType || kv.Value.GetType() == typeof(string)))
+                                sb.AppendFormat("<{0}>{1}</{0}>\r\n", kv.Key, kv.Value);
+                            else
+                                sb.AppendFormat("<{0}>{1}</{0}>\r\n", kv.Key, SerializationManager.SerializeXml(kv.Value));
+                        }
+                        input = sb.ToString();
                     }
 
                     var buffer = encoding.GetBytes(input);
@@ -180,18 +188,30 @@ namespace MySoft.RESTful.SDK
                     StreamReader sr = new StreamReader(response.GetResponseStream(), encoding);
                     string value = sr.ReadToEnd();
 
-                    if (returnType == typeof(string))
+                    if (string.IsNullOrEmpty(value) || returnType == typeof(string))
                     {
-                        return value;
+                        return Convert.ChangeType(value, returnType);
                     }
                     else
                     {
+                        var retType = returnType;
+                        object result = null;
+                        if (returnType.IsValueType)
+                        {
+                            retType = typeof(RESTfulResponse);
+                        }
+
                         if (parameter.DataFormat == DataFormat.JSON)
-                            return SerializationManager.DeserializeJson(returnType, value);
-                        else if (parameter.DataFormat == DataFormat.XML)
-                            return SerializationManager.DeserializeXml(returnType, value);
+                            result = SerializationManager.DeserializeJson(retType, value);
+                        if (parameter.DataFormat == DataFormat.XML)
+                            result = SerializationManager.DeserializeXml(retType, value);
                         else
-                            return value;
+                            result = value;
+
+                        if (retType == typeof(RESTfulResponse))
+                            return Convert.ChangeType((result as RESTfulResponse).Result, returnType);
+                        else
+                            return result;
                     }
                 }
                 else

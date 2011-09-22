@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MySoft.RESTful.SDK
 {
@@ -25,13 +23,9 @@ namespace MySoft.RESTful.SDK
     /// <summary>
     /// RESTful响应结果
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class RESTfulResponse<T>
+    public class RESTfulResponse
     {
-        /// <summary>
-        /// 响应结果
-        /// </summary>
-        public T Result { get; set; }
+        public object Result { get; set; }
     }
 }

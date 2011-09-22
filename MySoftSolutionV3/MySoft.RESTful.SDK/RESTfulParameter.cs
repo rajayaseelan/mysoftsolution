@@ -37,7 +37,7 @@ namespace MySoft.RESTful.SDK
         /// <summary>
         /// 数据对象
         /// </summary>
-        public object DataObject { get; set; }
+        public IDictionary<string, object> DataObject { get; set; }
 
         /// <summary>
         /// RESTfulParameter

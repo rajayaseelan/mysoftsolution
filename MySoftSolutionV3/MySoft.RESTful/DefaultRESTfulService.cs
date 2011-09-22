@@ -256,13 +256,15 @@ namespace MySoft.RESTful
                     Type retType;
                     result = Context.Invoke(format, kind, method, parameters, out retType);
 
-                    //如果值为null或值为数据为值类型，以对象方式返回
-                    if (result == null || retType.IsValueType || retType == typeof(string))
+                    //如果值为null，以对象方式返回
+                    if (result == null || retType == typeof(string))
                     {
-                        if (result == null && (format == ParameterFormat.Text || format == ParameterFormat.Html))
-                            return string.Empty;
+                        return Convert.ToString(result);
+                    }
 
-                        //如果是值类型，则以对象方式返回
+                    //如果是值类型，则以对象方式返回
+                    if (retType.IsValueType)
+                    {
                         result = new RESTfulResponse { Result = result };
                     }
                 }

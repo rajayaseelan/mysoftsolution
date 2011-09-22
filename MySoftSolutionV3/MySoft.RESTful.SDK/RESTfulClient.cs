@@ -106,7 +106,7 @@ namespace MySoft.RESTful.SDK
     /// </summary>
     public class RESTfulClient
     {
-        protected string url = "http://openapi.mysoft.com";
+        protected string url;
         protected DataFormat format = DataFormat.JSON;
 
         /// <summary>
@@ -114,6 +114,11 @@ namespace MySoft.RESTful.SDK
         /// </summary>
         public RESTfulClient(string url)
         {
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentNullException("url不能为空值！");
+            }
+
             this.url = url;
         }
 
@@ -124,6 +129,11 @@ namespace MySoft.RESTful.SDK
         /// <param name="format"></param>
         public RESTfulClient(string url, DataFormat format)
         {
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentNullException("url不能为空值！");
+            }
+
             this.url = url;
             this.format = format;
         }
