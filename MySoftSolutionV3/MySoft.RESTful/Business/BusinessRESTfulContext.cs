@@ -140,7 +140,7 @@ namespace MySoft.RESTful.Business
         /// 生成API文档
         /// </summary>
         /// <returns></returns>
-        public string MakeApiDocument(Uri requestUri)
+        public string MakeApiDocument(Uri requestUri, string kind)
         {
             #region 读取资源
 
@@ -160,7 +160,25 @@ namespace MySoft.RESTful.Business
             html = html.Replace("${uri}", uri);
 
             StringBuilder table = new StringBuilder();
-            foreach (BusinessKindModel e in pool.KindMethods.Values)
+            List<BusinessKindModel> list = new List<BusinessKindModel>();
+            if (string.IsNullOrEmpty(kind))
+            {
+                list.AddRange(pool.KindMethods.Values);
+            }
+            else
+            {
+                var model = pool.GetKindModel(kind);
+                if (model != null)
+                {
+                    list.Add(model);
+                }
+                else
+                {
+                    table.Append("<tr><td colspan=\"5\" style=\"padding: 30px 300px 30px 300px;\">没有匹配到指定类型的服务！</td></tr>");
+                }
+            }
+
+            foreach (BusinessKindModel e in list)
             {
                 StringBuilder items = new StringBuilder();
                 int index = 0;

@@ -11,7 +11,7 @@ namespace MySoft.RESTful
         /// 生成API文档
         /// </summary>
         /// <returns></returns>
-        string MakeApiDocument(Uri requestUri);
+        string MakeApiDocument(Uri requestUri, string kind);
 
         /// <summary>
         /// 是否需要认证
