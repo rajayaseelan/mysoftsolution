@@ -33,6 +33,62 @@ namespace MySoft.RESTful.SDK
         {
         }
 
+        #region 不带参数方式
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public TResult Invoke(string name)
+        {
+            return Invoke(name, HttpMethod.GET);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public TResult Invoke(string name, HttpMethod method)
+        {
+            return Invoke(name, new Token(), method);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public TResult Invoke(string name, Token token)
+        {
+            return Invoke(name, token, HttpMethod.GET);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="token"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public TResult Invoke(string name, Token token, HttpMethod method)
+        {
+            RESTfulParameter parameter = new RESTfulParameter(name, method, format);
+            parameter.Token = token;
+
+            RESTfulRequest request = new RESTfulRequest(parameter);
+            if (!string.IsNullOrEmpty(url)) request.Url = url;
+
+            return request.GetResponse<TResult>();
+        }
+
+        #endregion
+
+        #region 带参数方式
+
         /// <summary>
         /// 响应数据
         /// </summary>
@@ -58,6 +114,20 @@ namespace MySoft.RESTful.SDK
             where T : class
         {
             return Invoke<T>(name, item, new Token(), method);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public TResult Invoke<T>(string name, T item, Token token)
+            where T : class
+        {
+            return Invoke<T>(name, item, token, HttpMethod.GET);
         }
 
         /// <summary>
@@ -99,6 +169,8 @@ namespace MySoft.RESTful.SDK
 
             return request.GetResponse<TResult>();
         }
+
+        #endregion
     }
 
     /// <summary>
