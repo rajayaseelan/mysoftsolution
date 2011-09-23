@@ -22,16 +22,6 @@ namespace MySoft.RESTful.Auth
             set { code = value; }
         }
 
-        private HttpStatusCode statusCode;
-        /// <summary>
-        /// Http状态码
-        /// </summary>
-        public HttpStatusCode StatusCode
-        {
-            get { return statusCode; }
-            set { statusCode = value; }
-        }
-
         /// <summary>
         /// 实例化AuthenticationException
         /// </summary>

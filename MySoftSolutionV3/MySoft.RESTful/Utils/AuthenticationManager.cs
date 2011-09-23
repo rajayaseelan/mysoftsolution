@@ -111,6 +111,7 @@ namespace MySoft.RESTful
             InitializeContext();
 
             var response = WebOperationContext.Current.OutgoingResponse;
+            response.StatusCode = HttpStatusCode.Unauthorized;
 
             //进行认证处理
             var result = new RESTfulResult
@@ -118,7 +119,6 @@ namespace MySoft.RESTful
                 Code = RESTfulCode.AUTH_FAULT.ToString(),
                 Message = "Authentication fault!"
             };
-            response.StatusCode = HttpStatusCode.Unauthorized;
 
             try
             {
@@ -145,7 +145,6 @@ namespace MySoft.RESTful
             {
                 result.Code = ex.Code;
                 result.Message = ex.Message;
-                response.StatusCode = ex.StatusCode;
             }
             catch (Exception ex)
             {
