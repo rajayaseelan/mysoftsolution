@@ -75,6 +75,15 @@ namespace MySoft.Data
             Default = new DbSession(dbProvider);
         }
 
+        /// <summary>
+        /// 设置指定的会话为默认会话
+        /// </summary>
+        /// <param name="dbSession"></param>
+        public static void SetDefault(DbSession dbSession)
+        {
+            Default = dbSession;
+        }
+
         #endregion
 
         #region 实现IDbSession
