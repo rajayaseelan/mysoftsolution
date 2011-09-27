@@ -13,6 +13,7 @@ namespace MySoft.RESTful.SDK
         private DataFormat format;
         private Token token;
         private string url;
+        private int timeout;
         private PublishKindAttribute attribute;
 
         /// <summary>
@@ -21,12 +22,13 @@ namespace MySoft.RESTful.SDK
         /// <param name="attribute"></param>
         /// <param name="token"></param>
         /// <param name="foramt"></param>
-        public RESTfulInvocationHandler(string url, PublishKindAttribute attribute, Token token, DataFormat foramt)
+        public RESTfulInvocationHandler(string url, PublishKindAttribute attribute, Token token, DataFormat foramt, int timeout)
         {
             this.format = foramt;
             this.attribute = attribute;
             this.token = token;
             this.url = url;
+            this.timeout = timeout;
         }
 
         #region IProxyInvocationHandler 成员
@@ -72,6 +74,7 @@ namespace MySoft.RESTful.SDK
 
             RESTfulRequest request = new RESTfulRequest(parameter);
             if (!string.IsNullOrEmpty(url)) request.Url = url;
+            request.Timeout = timeout;
 
             return request.GetResponse(method.ReturnType);
         }

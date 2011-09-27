@@ -180,6 +180,8 @@ namespace MySoft.RESTful.SDK
 
                     var buffer = encoding.GetBytes(input);
                     stream.Write(buffer, 0, buffer.Length);
+                    stream.Flush();
+                    stream.Close();
                 }
 
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
@@ -203,7 +205,7 @@ namespace MySoft.RESTful.SDK
 
                         if (parameter.DataFormat == DataFormat.JSON)
                             result = SerializationManager.DeserializeJson(retType, value);
-                        if (parameter.DataFormat == DataFormat.XML)
+                        else if (parameter.DataFormat == DataFormat.XML)
                             result = SerializationManager.DeserializeXml(retType, value);
                         else
                             result = value;

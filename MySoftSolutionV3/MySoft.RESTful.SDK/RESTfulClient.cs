@@ -180,6 +180,25 @@ namespace MySoft.RESTful.SDK
     {
         protected string url;
         protected DataFormat format = DataFormat.JSON;
+        protected int timeout = 60;
+
+        /// <summary>
+        /// 数据格式
+        /// </summary>
+        public DataFormat Format
+        {
+            get { return format; }
+            set { format = value; }
+        }
+
+        /// <summary>
+        /// 超时时间
+        /// </summary>
+        public int Timeout
+        {
+            get { return timeout; }
+            set { timeout = value; }
+        }
 
         /// <summary>
         /// RESTfulClient实例化
@@ -354,7 +373,7 @@ namespace MySoft.RESTful.SDK
             }
 
             var serviceType = typeof(IServiceInterfaceType);
-            var handler = new RESTfulInvocationHandler(url, kindattr, token, format);
+            var handler = new RESTfulInvocationHandler(url, kindattr, token, format, timeout);
             var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
             return (IServiceInterfaceType)dynamicProxy;
