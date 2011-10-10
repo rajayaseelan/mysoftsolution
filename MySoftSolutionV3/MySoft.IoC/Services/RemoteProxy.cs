@@ -149,6 +149,14 @@ namespace MySoft.IoC.Services
         #region IService 成员
 
         /// <summary>
+        /// 远程节点
+        /// </summary>
+        public RemoteNode Node
+        {
+            get { return node; }
+        }
+
+        /// <summary>
         /// 服务名称
         /// </summary>
         public string ServiceName

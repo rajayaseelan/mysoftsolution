@@ -135,7 +135,6 @@
     <Compile Include="ParameterCollection.cs" />
     <Compile Include="Messages\RequestMessage.cs" />
     <Compile Include="Messages\ResponseMessage.cs" />
-    <Compile Include="ServiceNode.cs" />
     <Compile Include="ServiceNodeInfo.cs" />
     <Compile Include="Services\RemoteProxy.cs" />
     <Compile Include="Services\BaseService.cs" />

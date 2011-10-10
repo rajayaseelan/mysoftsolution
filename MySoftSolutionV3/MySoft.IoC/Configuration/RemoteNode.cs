@@ -9,6 +9,7 @@ namespace MySoft.IoC.Configuration
     /// <summary>
     /// 远程节点
     /// </summary>
+    [Serializable]
     public class RemoteNode
     {
         private string ip;
@@ -76,6 +77,28 @@ namespace MySoft.IoC.Configuration
         {
             get { return maxpool; }
             set { maxpool = value; }
+        }
+
+        /// <summary>
+        /// 返回一个远程节点
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        public static RemoteNode Parse(string ip, int port)
+        {
+            return new RemoteNode { Key = string.Format("{0}:{1}", ip, port), IP = ip, Port = port };
+        }
+
+        /// <summary>
+        /// 返回一个远程节点
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static RemoteNode Parse(string value)
+        {
+            var strs = value.Split(':');
+            return Parse(strs[0], Convert.ToInt32(strs[1]));
         }
     }
 }

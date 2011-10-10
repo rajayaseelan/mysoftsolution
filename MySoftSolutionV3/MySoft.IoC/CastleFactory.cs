@@ -5,6 +5,7 @@ using MySoft.IoC.Aspect;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
 using MySoft.IoC.Services;
+using System.Linq;
 
 namespace MySoft.IoC
 {
@@ -148,12 +149,23 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 获取所有远程节点
+        /// </summary>
+        /// <returns></returns>
+        public RemoteNode[] GetRemoteNodes()
+        {
+            return singleton.proxies.Select(p => p.Value)
+                            .Cast<RemoteProxy>().Select(p => p.Node)
+                            .ToArray();
+        }
+
+        /// <summary>
         /// Gets the service.
         /// </summary>
         /// <returns>The service implemetation instance.</returns>
         public IServiceInterfaceType GetService<IServiceInterfaceType>()
         {
-            return GetService<IServiceInterfaceType>((string)null);
+            return GetService<IServiceInterfaceType>("default");
         }
 
         /// <summary>
@@ -161,7 +173,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node">The node name.</param>
         /// <returns></returns>
-        public IServiceInterfaceType GetService<IServiceInterfaceType>(ServiceNode node)
+        public IServiceInterfaceType GetService<IServiceInterfaceType>(RemoteNode node)
         {
             if (!singleton.config.Nodes.ContainsKey(node.Key))
                 singleton.config.Nodes[node.Key] = node;
@@ -220,7 +232,7 @@ namespace MySoft.IoC
             else
             {
                 Type serviceType = typeof(IServiceInterfaceType);
-                string serviceKey = string.Format("CastleFactory_{0}", serviceType);
+                string serviceKey = string.Format("CastleFactory_{0}_{1}", nodeKey, serviceType);
                 IServiceInterfaceType iocService = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
                 if (iocService == null)
                 {
