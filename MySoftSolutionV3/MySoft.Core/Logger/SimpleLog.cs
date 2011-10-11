@@ -81,10 +81,34 @@ namespace MySoft.Logger
         public void WriteLogForDir(string dir, Exception ex)
         {
             string filePath = Path.Combine(Path.Combine(basedir, "ErrorLogs"), dir);
-            filePath = Path.Combine(filePath, ErrorHelper.GetInnerException(ex).GetType().Name);
+            filePath = Path.Combine(filePath, GetDirPath(ex));
             filePath = Path.Combine(filePath, string.Format("{0}.log", DateTime.Now.ToString("yyyy-MM-dd")));
 
             WriteFileLog(filePath, ex);
+        }
+
+        /// <summary>
+        /// 获取异步的目录
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        private string GetDirPath(Exception ex)
+        {
+            if (ex != null)
+            {
+                string path = ex.GetType().Name;
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                    path = Path.Combine(path, ex.GetType().Name);
+                }
+
+                return path;
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         /// <summary>

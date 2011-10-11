@@ -127,13 +127,6 @@ namespace MySoft.IoC.Services
                 //返回结果数据
                 resMsg.Data = returnValue;
             }
-            catch (BusinessException ex)
-            {
-                if (ex.InnerException == null)
-                    resMsg.Exception = new BusinessException(ex.Code, ex.Message);
-                else
-                    resMsg.Exception = new BusinessException(ex.Code, ex.Message, ex.InnerException);
-            }
             catch (Exception ex)
             {
                 //捕获全局错误
