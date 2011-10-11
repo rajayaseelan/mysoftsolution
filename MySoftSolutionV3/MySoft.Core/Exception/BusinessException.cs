@@ -81,7 +81,7 @@ namespace MySoft
         protected BusinessException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            this.Code = (int)info.GetValue("Code", typeof(int));
+            this.Code = info.GetInt32("Code");
         }
 
         /// <summary>
