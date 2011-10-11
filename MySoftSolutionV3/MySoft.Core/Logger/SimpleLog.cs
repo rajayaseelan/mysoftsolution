@@ -81,34 +81,10 @@ namespace MySoft.Logger
         public void WriteLogForDir(string dir, Exception ex)
         {
             string filePath = Path.Combine(Path.Combine(basedir, "ErrorLogs"), dir);
-            filePath = Path.Combine(filePath, GetDirPath(ex));
-            filePath = Path.Combine(filePath, string.Format("{0}.log", DateTime.Now.ToString("yyyy-MM-dd")));
+            filePath = Path.Combine(filePath, DateTime.Now.ToString("yyyy-MM-dd"));
+            filePath = Path.Combine(filePath, string.Format("{0}.log", ex.GetType().Name));
 
             WriteFileLog(filePath, ex);
-        }
-
-        /// <summary>
-        /// 获取异步的目录
-        /// </summary>
-        /// <param name="ex"></param>
-        /// <returns></returns>
-        private string GetDirPath(Exception ex)
-        {
-            if (ex != null)
-            {
-                string path = ex.GetType().Name;
-                while (ex.InnerException != null)
-                {
-                    ex = ex.InnerException;
-                    path = Path.Combine(path, ex.GetType().Name);
-                }
-
-                return path;
-            }
-            else
-            {
-                return string.Empty;
-            }
         }
 
         /// <summary>
@@ -273,7 +249,7 @@ namespace MySoft.Logger
                 throw new ArgumentException("请传入收件人地址信息参数！");
             }
 
-            string title = string.Format("({2})【{3}】 - 异常邮件由【{0}({1})】发出", DnsHelper.GetHostName(), DnsHelper.GetIPAddress(), ErrorHelper.GetInnerException(ex).GetType().Name, ex.Source);
+            string title = string.Format("({2})【{3}】 - 异常邮件由【{0}({1})】发出", DnsHelper.GetHostName(), DnsHelper.GetIPAddress(), ex.GetType().Name, ex.Source);
             SmtpMail.Instance.SendExceptionAsync(ex, title, to);
         }
 
