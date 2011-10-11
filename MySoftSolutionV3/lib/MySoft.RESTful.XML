@@ -203,6 +203,19 @@
             <param name="businessMethodName">业务方法</param>
             <returns>返回该业务类别下的业务模型实例</returns>
         </member>
+        <member name="T:MySoft.RESTful.Configuration.RESTfulConfigurationHandler">
+            <summary>
+            Deserializes the markup in Web.config into an instance of the <see cref="!:StaticPageConfiguration"/> class.
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Configuration.RESTfulConfigurationHandler.Create(System.Object,System.Object,System.Xml.XmlNode)">
+            <summary>
+            Creates an instance of the <see cref="!:StaticPageConfiguration"/> class.
+            </summary>
+            <remarks>Uses XML Serialization to deserialize the XML in the Web.config file into an
+            <see cref="!:StaticPageConfiguration"/> instance.</remarks>
+            <returns>An instance of the <see cref="!:StaticPageConfiguration"/> class.</returns>
+        </member>
         <member name="T:MySoft.RESTful.Business.Register.IBusinessRegister">
             <summary>
             业务注册器
@@ -211,6 +224,24 @@
         <member name="M:MySoft.RESTful.Business.Register.IBusinessRegister.Register(MySoft.RESTful.Business.Pool.IBusinessPool)">
             <summary>
             注册业务
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.Configuration.RESTfulConfiguration">
+            <summary>
+            Specifies the configuration settings in the Web.config for the Auth.
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Configuration.RESTfulConfiguration.GetConfig">
+            <summary>
+            GetConfig() returns an instance of the <b>StaticPageConfiguration</b> class with the values populated from
+            the Web.config file.  It uses XML deserialization to convert the XML structure in Web.config into
+            a <b>StaticPageConfiguration</b> instance.
+            </summary>
+            <returns>A <see cref="!:StaticPageConfiguration"/> instance.</returns>
+        </member>
+        <member name="P:MySoft.RESTful.Configuration.RESTfulConfiguration.Auths">
+            <summary>
+            A <see cref="T:MySoft.RESTful.Configuration.AuthenticationCollection"/> instance that provides access to a set of <see cref="!:StaticPageRule"/>s.
             </summary>
         </member>
         <member name="T:MySoft.RESTful.XmlSerializer">
@@ -253,7 +284,7 @@
             是否认证
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.SubmitType">
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.HttpMethod">
             <summary>
             方法调用类型
             </summary>
@@ -276,6 +307,11 @@
         <member name="P:MySoft.RESTful.Business.BusinessMethodModel.ParametersCount">
             <summary>
             业务实例方法参数个数
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.UserParameter">
+            <summary>
+            用户参数
             </summary>
         </member>
         <member name="P:MySoft.RESTful.Business.BusinessMethodModel.IsPassCheck">
@@ -308,7 +344,7 @@
             <param name="method"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.IRESTfulContext.Invoke(MySoft.RESTful.ParameterFormat,System.String,System.String,System.String)">
+        <member name="M:MySoft.RESTful.IRESTfulContext.Invoke(MySoft.RESTful.ParameterFormat,System.String,System.String,System.String,System.Type@)">
             <summary>
             方法调用
             </summary>
@@ -505,19 +541,48 @@
             获取业务池对象
             </summary>
         </member>
+        <member name="T:MySoft.RESTful.Configuration.Authentication">
+            <summary>
+            Represents a rewriter rule.  A rewriter rule is composed of a pattern to search for and a string to replace
+            the pattern with (if matched).
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Configuration.Authentication.Name">
+            <summary>
+            Gets or sets the pattern to look for.
+            </summary>
+            <remarks><b>CacheName</b> is a regular expression pattern.  Therefore, you might need to escape
+            characters in the pattern that are reserved characters in regular expression syntax (., ?, ^, $, etc.).
+            <p />
+            The pattern is searched for using the <b>System.Text.RegularExpression.Regex</b> class's <b>IsMatch()</b>
+            method.  The pattern is case insensitive.</remarks>
+        </member>
+        <member name="P:MySoft.RESTful.Configuration.Authentication.Type">
+            <summary>
+            The string to replace the pattern with, if found.
+            </summary>
+            <remarks>The replacement string may use grouping symbols, like $1, $2, etc.  Specifically, the
+            <b>System.Text.RegularExpression.Regex</b> class's <b>Replace()</b> method is used to replace
+            the match in <see cref="!:Timeout"/> with the value in <b>SendTo</b>.</remarks>
+        </member>
         <member name="T:MySoft.RESTful.RESTfulResult">
             <summary>
             RESTful结果
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.RESTfulResult.Code">
+        <member name="P:MySoft.RESTful.RESTfulResult.Code">
             <summary>
             代码
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.RESTfulResult.Message">
+        <member name="P:MySoft.RESTful.RESTfulResult.Message">
             <summary>
             消息
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.RESTfulResponse">
+            <summary>
+            RESTful响应
             </summary>
         </member>
         <member name="T:MySoft.RESTful.RESTfulCode">
@@ -605,12 +670,13 @@
             <param name="format"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.ParameterHelper.Convert(System.Reflection.ParameterInfo[],Newtonsoft.Json.Linq.JObject)">
+        <member name="M:MySoft.RESTful.ParameterHelper.Convert(System.Reflection.ParameterInfo[],Newtonsoft.Json.Linq.JObject,System.String)">
             <summary>
             参数解析
             </summary>
             <param name="paramters"></param>
             <param name="obj"></param>
+            <param name="userParameter"></param>
             <returns></returns>
         </member>
         <member name="T:MySoft.RESTful.Business.Register.NativeBusinessRegister">
@@ -735,7 +801,7 @@
             <param name="method"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.Invoke(MySoft.RESTful.ParameterFormat,System.String,System.String,System.String)">
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.Invoke(MySoft.RESTful.ParameterFormat,System.String,System.String,System.String,System.Type@)">
             <summary>
             方法调用
             </summary>
@@ -764,6 +830,40 @@
             <param name="method"></param>
             <param name="parameters"></param>
             <returns></returns>
+        </member>
+        <member name="T:MySoft.RESTful.Configuration.AuthenticationCollection">
+            <summary>
+            The RewriterRuleCollection models a set of RewriterRules in the Web.config file.
+            </summary>
+            <remarks>
+            The RewriterRuleCollection is expressed in XML as:
+            <code>
+            &lt;RewriterRule&gt;
+              &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
+              &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
+            &lt;RewriterRule&gt;
+            &lt;RewriterRule&gt;
+              &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
+              &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
+            &lt;RewriterRule&gt;
+            ...
+            &lt;RewriterRule&gt;
+              &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
+              &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
+            &lt;RewriterRule&gt;
+            </code>
+            </remarks>
+        </member>
+        <member name="M:MySoft.RESTful.Configuration.AuthenticationCollection.Add(MySoft.RESTful.Configuration.Authentication)">
+            <summary>
+            Adds a new RewriterRule to the collection.
+            </summary>
+            <param name="r">A RewriterRule instance.</param>
+        </member>
+        <member name="P:MySoft.RESTful.Configuration.AuthenticationCollection.Item(System.Int32)">
+            <summary>
+            Gets or sets a RewriterRule at a specified ordinal index.
+            </summary>
         </member>
         <member name="T:MySoft.RESTful.SerializerFactory">
             <summary>

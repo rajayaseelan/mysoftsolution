@@ -6947,30 +6947,6 @@
             是否系统邮件
             </summary>
         </member>
-        <member name="T:MySoft.RESTful.Configuration.Authentication">
-            <summary>
-            Represents a rewriter rule.  A rewriter rule is composed of a pattern to search for and a string to replace
-            the pattern with (if matched).
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.Configuration.Authentication.Name">
-            <summary>
-            Gets or sets the pattern to look for.
-            </summary>
-            <remarks><b>CacheName</b> is a regular expression pattern.  Therefore, you might need to escape
-            characters in the pattern that are reserved characters in regular expression syntax (., ?, ^, $, etc.).
-            <p />
-            The pattern is searched for using the <b>System.Text.RegularExpression.Regex</b> class's <b>IsMatch()</b>
-            method.  The pattern is case insensitive.</remarks>
-        </member>
-        <member name="P:MySoft.RESTful.Configuration.Authentication.Type">
-            <summary>
-            The string to replace the pattern with, if found.
-            </summary>
-            <remarks>The replacement string may use grouping symbols, like $1, $2, etc.  Specifically, the
-            <b>System.Text.RegularExpression.Regex</b> class's <b>Replace()</b> method is used to replace
-            the match in <see cref="!:Timeout"/> with the value in <b>SendTo</b>.</remarks>
-        </member>
         <member name="T:MySoft.Net.Sockets.SocketServer">
             <summary> 
             This class abstracts a socket server 
@@ -8483,6 +8459,31 @@
         <member name="T:MySoft.Security.MD5">
             <summary>
             MD5加密
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.HttpMethod">
+            <summary>
+            请求方式
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.HttpMethod.GET">
+            <summary>
+            Get方式
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.HttpMethod.POST">
+            <summary>
+            Post方式
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.HttpMethod.DELETE">
+            <summary>
+            Delete方式
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.HttpMethod.PUT">
+            <summary>
+            Put方式
             </summary>
         </member>
         <member name="M:Newtonsoft.Json.Utilities.ConvertUtils.Convert``1(System.Object)">
@@ -10110,31 +10111,6 @@
             <exception cref="T:SevenZip.DataErrorException">
             if input stream is not valid
             </exception>
-        </member>
-        <member name="T:MySoft.RESTful.SubmitType">
-            <summary>
-            方法类型
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.SubmitType.GET">
-            <summary>
-            Get方式
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.SubmitType.POST">
-            <summary>
-            Post方式
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.SubmitType.DELETE">
-            <summary>
-            Delete方式
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.SubmitType.PUT">
-            <summary>
-            Put方式
-            </summary>
         </member>
         <member name="T:MySoft.ProxyFactory">
             <summary>
@@ -12697,66 +12673,14 @@
             是否启用
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.PublishMethodAttribute.Authorized">
+        <member name="P:MySoft.RESTful.PublishMethodAttribute.IsPublic">
             <summary>
-            是否认证
+            是否为公共方法（公共方法不需要认证）
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.PublishMethodAttribute.AuthParameter">
+        <member name="P:MySoft.RESTful.PublishMethodAttribute.UserParameter">
             <summary>
-            认证的参数名
-            </summary>
-        </member>
-        <member name="T:MySoft.RESTful.Configuration.RESTfulConfiguration">
-            <summary>
-            Specifies the configuration settings in the Web.config for the Auth.
-            </summary>
-        </member>
-        <member name="M:MySoft.RESTful.Configuration.RESTfulConfiguration.GetConfig">
-            <summary>
-            GetConfig() returns an instance of the <b>StaticPageConfiguration</b> class with the values populated from
-            the Web.config file.  It uses XML deserialization to convert the XML structure in Web.config into
-            a <b>StaticPageConfiguration</b> instance.
-            </summary>
-            <returns>A <see cref="!:StaticPageConfiguration"/> instance.</returns>
-        </member>
-        <member name="P:MySoft.RESTful.Configuration.RESTfulConfiguration.Auths">
-            <summary>
-            A <see cref="T:MySoft.RESTful.Configuration.AuthenticationCollection"/> instance that provides access to a set of <see cref="!:StaticPageRule"/>s.
-            </summary>
-        </member>
-        <member name="T:MySoft.RESTful.Configuration.AuthenticationCollection">
-            <summary>
-            The RewriterRuleCollection models a set of RewriterRules in the Web.config file.
-            </summary>
-            <remarks>
-            The RewriterRuleCollection is expressed in XML as:
-            <code>
-            &lt;RewriterRule&gt;
-              &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
-              &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
-            &lt;RewriterRule&gt;
-            &lt;RewriterRule&gt;
-              &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
-              &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
-            &lt;RewriterRule&gt;
-            ...
-            &lt;RewriterRule&gt;
-              &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
-              &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
-            &lt;RewriterRule&gt;
-            </code>
-            </remarks>
-        </member>
-        <member name="M:MySoft.RESTful.Configuration.AuthenticationCollection.Add(MySoft.RESTful.Configuration.Authentication)">
-            <summary>
-            Adds a new RewriterRule to the collection.
-            </summary>
-            <param name="r">A RewriterRule instance.</param>
-        </member>
-        <member name="P:MySoft.RESTful.Configuration.AuthenticationCollection.Item(System.Int32)">
-            <summary>
-            Gets or sets a RewriterRule at a specified ordinal index.
+            用户认证的参数名，如UserParameter = "username"
             </summary>
         </member>
         <member name="T:MySoft.Net.Sockets.DataPacket">
@@ -13318,25 +13242,25 @@
             </summary>
             <param name="callerThreadContext"></param>
         </member>
-        <member name="T:MySoft.RESTful.AuthenticationToken">
+        <member name="T:MySoft.RESTful.Auth.AuthenticationToken">
             <summary>
             认证Token信息
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.AuthenticationToken.#ctor(System.Uri)">
+        <member name="M:MySoft.RESTful.Auth.AuthenticationToken.#ctor(System.Uri)">
             <summary>
             实例化AuthenticationToken
             </summary>
             <param name="requestUri"></param>
         </member>
-        <member name="M:MySoft.RESTful.AuthenticationToken.#ctor(System.Uri,System.Collections.Specialized.NameValueCollection)">
+        <member name="M:MySoft.RESTful.Auth.AuthenticationToken.#ctor(System.Uri,System.Collections.Specialized.NameValueCollection)">
             <summary>
             实例化AuthenticationToken
             </summary>
             <param name="requestUri"></param>
             <param name="parameters"></param>
         </member>
-        <member name="M:MySoft.RESTful.AuthenticationToken.#ctor(System.Uri,System.Collections.Specialized.NameValueCollection,System.String)">
+        <member name="M:MySoft.RESTful.Auth.AuthenticationToken.#ctor(System.Uri,System.Collections.Specialized.NameValueCollection,System.String)">
             <summary>
             实例化AuthenticationToken
             </summary>
@@ -13344,22 +13268,22 @@
             <param name="parameters"></param>
             <param name="method"></param>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationToken.RequestUri">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationToken.RequestUri">
             <summary>
             请求的uri
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationToken.Parameters">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationToken.Parameters">
             <summary>
             传入的参数
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationToken.Cookies">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationToken.Cookies">
             <summary>
             Cookie信息
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationToken.Method">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationToken.Method">
             <summary>
             提交方法 （Post or Get）
             </summary>
@@ -15551,28 +15475,33 @@
             <param name="buffer"></param>
             <returns></returns>
         </member>
-        <member name="T:MySoft.RESTful.AuthenticationContext">
+        <member name="T:MySoft.RESTful.Auth.AuthenticationContext">
             <summary>
             认证的当前上下文对象
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.AuthenticationContext.#ctor(MySoft.RESTful.AuthenticationToken)">
+        <member name="M:MySoft.RESTful.Auth.AuthenticationContext.#ctor(MySoft.RESTful.Auth.AuthenticationToken)">
             <summary>
             实例化认证上下文
             </summary>
             <param name="token"></param>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationContext.User">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationContext.User">
             <summary>
             认证的用户信息
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationContext.Token">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationContext.TokenId">
+            <summary>
+            Token Id
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.Auth.AuthenticationContext.Token">
             <summary>
             获取认证的Token信息
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationContext.Current">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationContext.Current">
             <summary>
             认证的当前上下文
             </summary>
@@ -17287,12 +17216,12 @@
             Represents an exception in case IWorkItemResult.GetResult has been timed out
             </summary>
         </member>
-        <member name="T:MySoft.RESTful.IAuthentication">
+        <member name="T:MySoft.RESTful.Auth.IAuthentication">
             <summary>
             认证操作封装
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.IAuthentication.Authorize">
+        <member name="M:MySoft.RESTful.Auth.IAuthentication.Authorize">
             <summary>
             授权及认证方法
             </summary>
@@ -17503,7 +17432,7 @@
             <param name="obj"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.SerializationManager.SerializeJson(System.Object)">
+        <member name="M:MySoft.SerializationManager.SerializeJson(System.Object,Newtonsoft.Json.JsonConverter[])">
             <summary>
             将对象系列化成字符串
             </summary>
@@ -17525,7 +17454,7 @@
             <param name="data"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.SerializationManager.DeserializeJson(System.Type,System.String)">
+        <member name="M:MySoft.SerializationManager.DeserializeJson(System.Type,System.String,Newtonsoft.Json.JsonConverter[])">
             <summary>
             将字符串反系列化成对象
             </summary>
@@ -17533,7 +17462,7 @@
             <param name="data"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.SerializationManager.DeserializeJson``1(System.String)">
+        <member name="M:MySoft.SerializationManager.DeserializeJson``1(System.String,Newtonsoft.Json.JsonConverter[])">
             <summary>
             将字符串反系列化成对象
             </summary>
@@ -17541,7 +17470,7 @@
             <param name="data"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.SerializationManager.DeserializeJson``1(System.String,``0)">
+        <member name="M:MySoft.SerializationManager.DeserializeJson``1(System.String,``0,Newtonsoft.Json.JsonConverter[])">
             <summary>
             将字符串反系列化成对象
             </summary>
@@ -19074,27 +19003,27 @@
             The default is false.
             </summary>
         </member>
-        <member name="T:MySoft.RESTful.AuthenticationUser">
+        <member name="T:MySoft.RESTful.Auth.AuthenticationUser">
             <summary>
             认证用户
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationUser.AuthID">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.AuthID">
             <summary>
             认证用户ID
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationUser.AuthName">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.AuthName">
             <summary>
             认证用户名称
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationUser.AuthMobile">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.AuthMobile">
             <summary>
             认证用户的手机
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationUser.AuthEmail">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.AuthEmail">
             <summary>
             认证用户邮箱
             </summary>
@@ -21809,43 +21738,30 @@
             <param name="workItemPriority">The work item priority</param>
             <returns>Returns a work item</returns>
         </member>
-        <member name="T:MySoft.RESTful.Configuration.RESTfulConfigurationHandler">
-            <summary>
-            Deserializes the markup in Web.config into an instance of the <see cref="!:StaticPageConfiguration"/> class.
-            </summary>
-        </member>
-        <member name="M:MySoft.RESTful.Configuration.RESTfulConfigurationHandler.Create(System.Object,System.Object,System.Xml.XmlNode)">
-            <summary>
-            Creates an instance of the <see cref="!:StaticPageConfiguration"/> class.
-            </summary>
-            <remarks>Uses XML Serialization to deserialize the XML in the Web.config file into an
-            <see cref="!:StaticPageConfiguration"/> instance.</remarks>
-            <returns>An instance of the <see cref="!:StaticPageConfiguration"/> class.</returns>
-        </member>
-        <member name="T:MySoft.RESTful.AuthenticationException">
+        <member name="T:MySoft.RESTful.Auth.AuthenticationException">
             <summary>
             认证异常信息
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.AuthenticationException.#ctor(System.String,System.String)">
+        <member name="M:MySoft.RESTful.Auth.AuthenticationException.#ctor(System.String,System.String)">
             <summary>
             实例化AuthenticationException
             </summary>
             <param name="code"></param>
             <param name="message"></param>
         </member>
-        <member name="M:MySoft.RESTful.AuthenticationException.#ctor(System.String)">
+        <member name="M:MySoft.RESTful.Auth.AuthenticationException.#ctor(System.String)">
             <summary>
             实例化AuthenticationException
             </summary>
             <param name="message"></param>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationException.Code">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationException.Code">
             <summary>
             错误Code
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.AuthenticationException.StatusCode">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationException.StatusCode">
             <summary>
             Http状态码
             </summary>

@@ -2447,6 +2447,36 @@
             连接数
             </summary>
         </member>
+        <member name="T:MySoft.IoC.Services.RemoteProxy">
+            <summary>
+            服务代理
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Services.RemoteProxy.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
+            <summary>
+            调用方法
+            </summary>
+            <param name="reqMsg"></param>
+            <param name="logTimeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.RemoteProxy.GetResponse(MySoft.IoC.Messages.RequestMessage)">
+            <summary>
+            获取响应的消息
+            </summary>
+            <param name="reqMsg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.RemoteProxy.Dispose">
+            <summary>
+            清理资源
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.RemoteProxy.ServiceName">
+            <summary>
+            服务名称
+            </summary>
+        </member>
         <member name="T:MySoft.IoC.ServiceInvocationHandler">
             <summary>
             The base impl class of the service interface, this class is used by service factory to emit service interface impl automatically at runtime.
@@ -3755,36 +3785,6 @@
             Creates a communication channel using ServerIpAddress and ServerPort.
             </summary>
             <returns>Ready communication channel to communicate</returns>
-        </member>
-        <member name="T:MySoft.IoC.Services.RemoteProxy">
-            <summary>
-            服务代理
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.RemoteProxy.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
-            <summary>
-            调用方法
-            </summary>
-            <param name="reqMsg"></param>
-            <param name="logTimeout"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.RemoteProxy.GetResponse(MySoft.IoC.Messages.RequestMessage)">
-            <summary>
-            获取响应的消息
-            </summary>
-            <param name="reqMsg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.RemoteProxy.Dispose">
-            <summary>
-            清理资源
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Services.RemoteProxy.ServiceName">
-            <summary>
-            服务名称
-            </summary>
         </member>
     </members>
 </doc>
