@@ -149,6 +149,18 @@ namespace MySoft.RESTful.SDK
                 //request.KeepAlive = false;
                 if (timeout > 0) request.Timeout = timeout * 1000;
 
+                #region 处理Cookies
+
+                //处理Cookies
+                if (parameter.Cookies.Count > 0)
+                {
+                    CookieContainer container = new CookieContainer();
+                    container.Add(request.RequestUri, parameter.Cookies);
+                    request.CookieContainer = container;
+                }
+
+                #endregion
+
                 //判断是否为POST方式
                 if (parameter.DataObject != null && parameter.HttpMethod != HttpMethod.GET)
                 {

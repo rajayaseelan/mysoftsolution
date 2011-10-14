@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Net;
 
 namespace MySoft.RESTful.SDK
 {
@@ -40,11 +41,17 @@ namespace MySoft.RESTful.SDK
         public IDictionary<string, object> DataObject { get; set; }
 
         /// <summary>
+        /// Cookie集合
+        /// </summary>
+        public CookieCollection Cookies { get; set; }
+
+        /// <summary>
         /// RESTfulParameter
         /// </summary>
         public RESTfulParameter()
         {
             this.Parameters = new ApiParameterCollection();
+            this.Cookies = new CookieCollection();
             this.HttpMethod = HttpMethod.GET;
             this.DataFormat = DataFormat.JSON;
         }
@@ -74,6 +81,29 @@ namespace MySoft.RESTful.SDK
             this.MethodName = name;
             this.HttpMethod = method;
             this.DataFormat = format;
+        }
+
+        /// <summary>
+        /// 添加一个Cookie
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void AddCookie(string name, string value)
+        {
+            this.Cookies.Add(new Cookie(name, value));
+        }
+
+        /// <summary>
+        /// 添加一组参数
+        /// </summary>
+        /// <param name="names"></param>
+        /// <param name="values"></param>
+        public void AddCookie(string[] names, string[] values)
+        {
+            for (int index = 0; index < names.Length; index++)
+            {
+                AddCookie(names[index], values[index]);
+            }
         }
 
         /// <summary>

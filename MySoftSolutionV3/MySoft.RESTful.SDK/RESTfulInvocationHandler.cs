@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using System.Web;
 
 namespace MySoft.RESTful.SDK
 {
@@ -60,16 +61,21 @@ namespace MySoft.RESTful.SDK
             }
             else
             {
-                var collection = new Dictionary<string, object>();
-
                 //添加参数
                 var plist = method.GetParameters();
                 for (int index = 0; index < parameters.Length; index++)
                 {
-                    collection[plist[index].Name] = parameters[index];
+                    parameter.DataObject[plist[index].Name] = parameters[index];
                 }
+            }
 
-                parameter.DataObject = collection;
+            //处理Cookies
+            if (HttpContext.Current != null)
+            {
+                foreach (HttpCookie cookie in HttpContext.Current.Request.Cookies)
+                {
+                    parameter.AddCookie(cookie.Name, cookie.Value);
+                }
             }
 
             RESTfulRequest request = new RESTfulRequest(parameter);

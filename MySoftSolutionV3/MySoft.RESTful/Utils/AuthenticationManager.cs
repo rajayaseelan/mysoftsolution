@@ -129,6 +129,9 @@ namespace MySoft.RESTful
                     return result;
                 }
 
+                List<string> errors = new List<string>();
+                bool isAuthentication = false;
+
                 //如果配置了服务
                 foreach (IAuthentication auth in auths)
                 {
@@ -137,8 +140,19 @@ namespace MySoft.RESTful
                         //认证成功
                         result.Code = RESTfulCode.OK.ToString();
                         result.Message = "Authentication success!";
+
+                        isAuthentication = true;
                         break;
                     }
+                    else
+                    {
+                        errors.Add(result.Message.Trim());
+                    }
+                }
+
+                if (!isAuthentication)
+                {
+                    result.Message = string.Join(" | ", errors.ToArray());
                 }
             }
             catch (AuthenticationException ex)
