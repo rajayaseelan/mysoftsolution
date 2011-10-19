@@ -9845,6 +9845,11 @@
             用于业务出错时抛出业务异常信息
             </summary>
         </member>
+        <member name="M:MySoft.BusinessException.#ctor">
+            <summary>
+            实例化BusinessException
+            </summary>
+        </member>
         <member name="M:MySoft.BusinessException.#ctor(System.String)">
             <summary>
             实例化BusinessException
@@ -21759,11 +21764,6 @@
         <member name="P:MySoft.RESTful.Auth.AuthenticationException.Code">
             <summary>
             错误Code
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.Auth.AuthenticationException.StatusCode">
-            <summary>
-            Http状态码
             </summary>
         </member>
         <member name="M:Newtonsoft.Json.Utilities.ReflectionUtils.GetCollectionItemType(System.Type)">

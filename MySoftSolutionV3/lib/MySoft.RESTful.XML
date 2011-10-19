@@ -108,6 +108,11 @@
             发布接口的实时html文档
             </summary>
         </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.GetMethodHtmlFromKind(System.String)">
+            <summary>
+            发布接口的实时html文档
+            </summary>
+        </member>
         <member name="P:MySoft.RESTful.IRESTfulService.Context">
             <summary>
             内容对象
@@ -329,7 +334,7 @@
             默认服务上下文
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.IRESTfulContext.MakeApiDocument(System.Uri)">
+        <member name="M:MySoft.RESTful.IRESTfulContext.MakeApiDocument(System.Uri,System.String)">
             <summary>
             生成API文档
             </summary>
@@ -459,6 +464,12 @@
             <returns></returns>
         </member>
         <member name="M:MySoft.RESTful.DefaultRESTfulService.GetMethodHtml">
+            <summary>
+            获取方法的html文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetMethodHtmlFromKind(System.String)">
             <summary>
             获取方法的html文档
             </summary>
@@ -811,7 +822,7 @@
             <param name="parameters"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.MakeApiDocument(System.Uri)">
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.MakeApiDocument(System.Uri,System.String)">
             <summary>
             生成API文档
             </summary>

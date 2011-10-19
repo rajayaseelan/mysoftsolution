@@ -496,13 +496,19 @@
             </summary>
             <returns>The service implemetation instance.</returns>
         </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetRemoteNodes">
+            <summary>
+            获取所有远程节点
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.IoC.CastleFactory.GetService``1">
             <summary>
             Gets the service.
             </summary>
             <returns>The service implemetation instance.</returns>
         </member>
-        <member name="M:MySoft.IoC.CastleFactory.GetService``1(MySoft.IoC.ServiceNode)">
+        <member name="M:MySoft.IoC.CastleFactory.GetService``1(MySoft.IoC.Configuration.RemoteNode)">
             <summary>
             Gets the service.
             </summary>
@@ -1243,6 +1249,21 @@
             <summary>
             远程节点
             </summary>
+        </member>
+        <member name="M:MySoft.IoC.Configuration.RemoteNode.Parse(System.String,System.Int32)">
+            <summary>
+            返回一个远程节点
+            </summary>
+            <param name="ip"></param>
+            <param name="port"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Configuration.RemoteNode.Parse(System.String)">
+            <summary>
+            返回一个远程节点
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
         </member>
         <member name="P:MySoft.IoC.Configuration.RemoteNode.Key">
             <summary>
@@ -2068,26 +2089,6 @@
             </summary>
             <value>The types of the model.</value>
         </member>
-        <member name="T:MySoft.IoC.ServiceNode">
-            <summary>
-            服务节点
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.ServiceNode.Parse(System.String,System.Int32)">
-            <summary>
-            返回一个远程节点
-            </summary>
-            <param name="ip"></param>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ServiceNode.Parse(System.String)">
-            <summary>
-            返回一个远程节点
-            </summary>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
         <member name="T:MySoft.IoC.ServiceInterpreter">
             <summary>
             服务解析器
@@ -2470,6 +2471,11 @@
         <member name="M:MySoft.IoC.Services.RemoteProxy.Dispose">
             <summary>
             清理资源
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.RemoteProxy.Node">
+            <summary>
+            远程节点
             </summary>
         </member>
         <member name="P:MySoft.IoC.Services.RemoteProxy.ServiceName">
@@ -3071,6 +3077,11 @@
             最高峰状态
             </summary>
         </member>
+        <member name="P:MySoft.IoC.Status.HighestStatus.RequestCount">
+            <summary>
+            请求数
+            </summary>
+        </member>
         <member name="P:MySoft.IoC.Status.HighestStatus.DataFlowCounterTime">
             <summary>
             最高流量发生时间
@@ -3156,6 +3167,11 @@
         <member name="P:MySoft.IoC.Status.SummaryStatus.RunningSeconds">
             <summary>
             运行总时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Status.SummaryStatus.RequestCount">
+            <summary>
+            请求数
             </summary>
         </member>
         <member name="P:MySoft.IoC.Status.SummaryStatus.AverageDataFlow">
