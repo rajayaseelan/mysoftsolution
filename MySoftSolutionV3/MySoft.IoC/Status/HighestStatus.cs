@@ -11,6 +11,25 @@ namespace MySoft.IoC.Status
     [Serializable]
     public class HighestStatus : SecondStatus
     {
+        private int requestCount;
+        /// <summary>
+        /// 请求数
+        /// </summary>
+        public new int RequestCount
+        {
+            get
+            {
+                return requestCount;
+            }
+            set
+            {
+                lock (this)
+                {
+                    requestCount = value;
+                }
+            }
+        }
+
         private DateTime dataFlowCounterTime;
         /// <summary>
         /// 最高流量发生时间

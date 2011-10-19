@@ -255,9 +255,6 @@ namespace MySoft.IoC
                     resMsg.Expiration = reqMsg.Expiration;
                 }
 
-                //请求数累计
-                status.RequestCount++;
-
                 //错误及成功计数
                 if (resMsg.Exception == null)
                     status.SuccessCount++;

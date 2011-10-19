@@ -30,7 +30,6 @@ namespace MySoft.IoC.Status
             }
         }
 
-        private int requestCount;
         /// <summary>
         /// 请求数
         /// </summary>
@@ -38,14 +37,7 @@ namespace MySoft.IoC.Status
         {
             get
             {
-                return requestCount;
-            }
-            set
-            {
-                lock (this)
-                {
-                    requestCount = value;
-                }
+                return successCount + errorCount;
             }
         }
 

@@ -30,6 +30,25 @@ namespace MySoft.IoC.Status
             }
         }
 
+        private int requestCount;
+        /// <summary>
+        /// 请求数
+        /// </summary>
+        public new int RequestCount
+        {
+            get
+            {
+                return requestCount;
+            }
+            set
+            {
+                lock (this)
+                {
+                    requestCount = value;
+                }
+            }
+        }
+
         /// <summary>
         /// 平均数据流量（每秒）
         /// </summary>
@@ -38,7 +57,7 @@ namespace MySoft.IoC.Status
             get
             {
                 if (runningSeconds > 0)
-                    return Math.Round((base.DataFlow * 1.0) / (runningSeconds * 1.0), 4);
+                    return Math.Round((this.DataFlow * 1.0) / (runningSeconds * 1.0), 4);
                 else
                     return 0;
             }
@@ -52,7 +71,7 @@ namespace MySoft.IoC.Status
             get
             {
                 if (runningSeconds > 0)
-                    return Math.Round((base.RequestCount * 1.0) / (runningSeconds * 1.0), 4);
+                    return Math.Round((this.RequestCount * 1.0) / (runningSeconds * 1.0), 4);
                 else
                     return 0;
             }
@@ -66,7 +85,7 @@ namespace MySoft.IoC.Status
             get
             {
                 if (runningSeconds > 0)
-                    return Math.Round((base.SuccessCount * 1.0) / (runningSeconds * 1.0), 4);
+                    return Math.Round((this.SuccessCount * 1.0) / (runningSeconds * 1.0), 4);
                 else
                     return 0;
             }
@@ -80,7 +99,7 @@ namespace MySoft.IoC.Status
             get
             {
                 if (runningSeconds > 0)
-                    return Math.Round((base.ErrorCount * 1.0) / (runningSeconds * 1.0), 4);
+                    return Math.Round((this.ErrorCount * 1.0) / (runningSeconds * 1.0), 4);
                 else
                     return 0;
             }
