@@ -129,7 +129,7 @@ namespace MySoft.Data
         }
 
         /// <summary>
-        /// 执行当前Proc并返回一个列表
+        /// 执行当前Sql并返回一个列表
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <returns></returns>

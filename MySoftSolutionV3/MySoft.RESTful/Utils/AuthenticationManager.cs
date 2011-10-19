@@ -64,7 +64,8 @@ namespace MySoft.RESTful
 
             if (HttpContext.Current != null)
             {
-                AuthenticationContext.Current.Token.Cookies = HttpContext.Current.Request.Cookies;
+                if (HttpContext.Current.Request.Cookies != null)
+                    AuthenticationContext.Current.Token.Cookies = HttpContext.Current.Request.Cookies;
             }
             else
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.Web;
+using System.Net;
 
 namespace MySoft.RESTful.SDK
 {
@@ -72,9 +73,14 @@ namespace MySoft.RESTful.SDK
             //处理Cookies
             if (HttpContext.Current != null)
             {
-                foreach (HttpCookie cookie in HttpContext.Current.Request.Cookies)
+                for (int index = 0; index < HttpContext.Current.Request.Cookies.Count; index++)
                 {
-                    parameter.AddCookie(cookie.Name, cookie.Value);
+                    var cookie = HttpContext.Current.Request.Cookies[index];
+                    parameter.AddCookie(new Cookie
+                    {
+                        Name = cookie.Name,
+                        Value = cookie.Value.Replace(",", "%2C")
+                    });
                 }
             }
 

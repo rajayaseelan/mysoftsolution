@@ -86,23 +86,21 @@ namespace MySoft.RESTful.SDK
         /// <summary>
         /// 添加一个Cookie
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        public void AddCookie(string name, string value)
+        /// <param name="cookie"></param>
+        public void AddCookie(Cookie cookie)
         {
-            this.Cookies.Add(new Cookie(name, value));
+            this.Cookies.Add(cookie);
         }
 
         /// <summary>
-        /// 添加一组参数
+        /// 添加一个Cookie
         /// </summary>
-        /// <param name="names"></param>
-        /// <param name="values"></param>
-        public void AddCookie(string[] names, string[] values)
+        /// <param name="cookie"></param>
+        public void AddCookie(Cookie[] cookies)
         {
-            for (int index = 0; index < names.Length; index++)
+            foreach (var cookie in cookies)
             {
-                AddCookie(names[index], values[index]);
+                this.Cookies.Add(cookie);
             }
         }
 
