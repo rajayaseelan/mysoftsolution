@@ -419,36 +419,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="MongoDB\.svn\" />
-    <Folder Include="MongoDB\Attributes\.svn\" />
-    <Folder Include="MongoDB\Bson\.svn\" />
-    <Folder Include="MongoDB\Commands\.svn\" />
-    <Folder Include="MongoDB\Configuration\.svn\" />
-    <Folder Include="MongoDB\Configuration\Builders\.svn\" />
-    <Folder Include="MongoDB\Configuration\CollectionAdapters\.svn\" />
-    <Folder Include="MongoDB\Configuration\DictionaryAdapters\.svn\" />
-    <Folder Include="MongoDB\Configuration\IdGenerators\.svn\" />
-    <Folder Include="MongoDB\Configuration\Mapping\.svn\" />
-    <Folder Include="MongoDB\Configuration\Mapping\Auto\.svn\" />
-    <Folder Include="MongoDB\Configuration\Mapping\Conventions\.svn\" />
-    <Folder Include="MongoDB\Configuration\Mapping\Model\.svn\" />
-    <Folder Include="MongoDB\Configuration\Mapping\Util\.svn\" />
-    <Folder Include="MongoDB\Configuration\Section\.svn\" />
-    <Folder Include="MongoDB\Connections\.svn\" />
-    <Folder Include="MongoDB\Exceptions\.svn\" />
-    <Folder Include="MongoDB\GridFS\.svn\" />
-    <Folder Include="MongoDB\Linq\.svn\" />
-    <Folder Include="MongoDB\Linq\Expressions\.svn\" />
-    <Folder Include="MongoDB\Linq\Translators\.svn\" />
-    <Folder Include="MongoDB\Obsolete\.svn\" />
-    <Folder Include="MongoDB\Protocol\.svn\" />
-    <Folder Include="MongoDB\Results\.svn\" />
-    <Folder Include="MongoDB\Serialization\.svn\" />
-    <Folder Include="MongoDB\Serialization\Builders\.svn\" />
-    <Folder Include="MongoDB\Serialization\Descriptors\.svn\" />
-    <Folder Include="MongoDB\Util\.svn\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
