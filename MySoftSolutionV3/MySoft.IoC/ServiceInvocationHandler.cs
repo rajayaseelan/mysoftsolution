@@ -179,9 +179,9 @@ namespace MySoft.IoC
                     }
 
                     //如果有异常，向外抛出
-                    if (resMsg.Exception != null)
+                    if (resMsg.Error != null)
                     {
-                        throw resMsg.Exception;
+                        throw resMsg.Error;
                     }
                 }
                 catch (BusinessException ex)

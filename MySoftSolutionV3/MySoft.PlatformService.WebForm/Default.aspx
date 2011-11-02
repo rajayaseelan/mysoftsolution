@@ -133,12 +133,16 @@
             <li><b>客户端连接信息</b></li>
             <%
                    int index = 1;
-                   foreach (MySoft.IoC.Status.ConnectionInfo client in clients)
+                   foreach (MySoft.IoC.Status.ClientInfo client in clients)
                    {%>
-            <li style="width: 200px; float: left;">
-                <% = index %>
-                =>
-                <%= client.IP %>(<font color="red"><%= client.Count %></font>)</li>
+                    <li style="width: 300px; float: left;">
+                        <% = index %>
+                        =>【<%= client.AppName %>】<br />
+                        <% foreach (MySoft.IoC.Status.ConnectionInfo info in client.Connections)
+                           {%>
+                        <%= info.IPAddress%>[<%=info.HostName%>](<font color="red"><%= info.Count%></font>)<br />
+                        <% } %>
+                    </li>
             <%  index++;
                    }
                } %>

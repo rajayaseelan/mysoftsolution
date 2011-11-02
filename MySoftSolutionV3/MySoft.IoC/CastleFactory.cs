@@ -165,7 +165,7 @@ namespace MySoft.IoC
         /// <returns>The service implemetation instance.</returns>
         public IServiceInterfaceType GetService<IServiceInterfaceType>()
         {
-            return GetService<IServiceInterfaceType>("default");
+            return GetService<IServiceInterfaceType>(config.Default);
         }
 
         /// <summary>

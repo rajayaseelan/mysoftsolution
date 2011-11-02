@@ -10,6 +10,7 @@ using MySoft.RESTful.Business.Pool;
 using MySoft.RESTful.Business.Register;
 using Newtonsoft.Json.Linq;
 using MySoft.RESTful.Auth;
+using System.Linq;
 
 namespace MySoft.RESTful.Business
 {
@@ -140,7 +141,7 @@ namespace MySoft.RESTful.Business
         /// 生成API文档
         /// </summary>
         /// <returns></returns>
-        public string MakeApiDocument(Uri requestUri, string kind)
+        public string MakeApiDocument(Uri requestUri, string kind, string method)
         {
             #region 读取资源
 
@@ -170,7 +171,29 @@ namespace MySoft.RESTful.Business
                 var model = pool.GetKindModel(kind);
                 if (model != null)
                 {
-                    list.Add(model);
+                    if (string.IsNullOrEmpty(method))
+                    {
+                        list.Add(model);
+                    }
+                    else
+                    {
+                        var m = model.MethodModels.Values.Where(p => string.Compare(p.Name, method, true) == 0).FirstOrDefault();
+                        if (m != null)
+                        {
+                            var mod = new BusinessKindModel
+                            {
+                                Name = model.Name,
+                                State = model.State,
+                                Description = model.Description
+                            };
+                            mod.MethodModels.Add(m.Name, m);
+                            list.Add(mod);
+                        }
+                        else
+                        {
+                            table.Append("<tr><td colspan=\"5\" style=\"padding: 30px 300px 30px 300px;\">没有匹配到指定方法的服务！</td></tr>");
+                        }
+                    }
                 }
                 else
                 {
@@ -188,14 +211,15 @@ namespace MySoft.RESTful.Business
                     if (index == 0)
                     {
                         template = template.Replace("${count}", e.MethodModels.Count.ToString());
-                        template = template.Replace("${kind}", e.Name + "<br/>" + e.Description);
+                        template = template.Replace("${kind}",
+                            string.Format("<a href='/help/{0}'>{0}</a>", e.Name) + "<br/>" + e.Description);
                     }
                     else
                     {
                         template = item.Substring(item.IndexOf("</td>") + 5);
                     }
 
-                    var tempStr = model.Name + "<br/>" + model.Description;
+                    var tempStr = string.Format("<a href='/help/{0}/{1}'>{1}</a>", e.Name, model.Name) + "<br/>" + model.Description;
                     if (!model.IsPassCheck)
                     {
                         tempStr = string.Format("<font color=\"red\" title=\"{0}\">{1}</font>", model.CheckMessage, tempStr);
@@ -204,20 +228,36 @@ namespace MySoft.RESTful.Business
 
                     StringBuilder buider = new StringBuilder();
                     List<string> plist = new List<string>();
+
+                    int parametersCount = 0;
                     foreach (var p in model.Parameters)
                     {
                         if (!string.IsNullOrEmpty(model.UserParameter) && string.Compare(p.Name, model.UserParameter, true) == 0) continue;
-
-                        var s = String.Format("<{0}:{1}>", p.Name, p.ParameterType.Name);
-                        buider.AppendLine(HttpUtility.HtmlEncode(s)).AppendLine("<br/>");
                         if (!(p.ParameterType.IsClass && p.ParameterType != typeof(string)))
                         {
                             plist.Add(string.Format("{0}=[{0}]", p.Name.ToLower()).Replace('[', '{').Replace(']', '}'));
                         }
+
+                        if (!string.IsNullOrEmpty(kind) && !string.IsNullOrEmpty(method))
+                        {
+                            buider.Append(GetTypeDetail(p.Name, p.ParameterType, 0));
+                        }
+                        else
+                        {
+                            buider.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.ParameterType)) + "<br/>");
+                        }
+                        parametersCount++;
                     }
 
-                    var value = String.Format("<result:{0}>", model.Method.ReturnType.Name);
-                    buider.AppendLine("<font color=\"blue\">").AppendLine(HttpUtility.HtmlEncode(value)).AppendLine("</font><br/>");
+                    if (parametersCount > 0) buider.Append("<hr/>");
+
+                    var value = String.Format("<b>RESULT</b> -> {0}<br/>", GetTypeName(model.Method.ReturnType));
+                    buider.Append("<font color=\"#336699\">").Append(value);
+                    if (!string.IsNullOrEmpty(kind) && !string.IsNullOrEmpty(method))
+                    {
+                        buider.Append(GetTypeDetail(null, model.Method.ReturnType, 0));
+                    }
+                    buider.Append("</font>");
 
                     if (string.IsNullOrEmpty(buider.ToString()))
                         template = template.Replace("${parameter}", "&nbsp;");
@@ -227,32 +267,90 @@ namespace MySoft.RESTful.Business
                     template = template.Replace("${type}", model.HttpMethod.ToString().ToUpper());
 
                     StringBuilder anchor = new StringBuilder();
-                    anchor.AppendLine(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "xml"));
-                    anchor.AppendLine("<br/>");
-                    anchor.AppendLine(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "json"));
+                    anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "xml"));
+                    anchor.Append("<br/>");
+                    anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "json"));
                     if (model.HttpMethod == HttpMethod.GET)
                     {
-                        anchor.AppendLine("<br/>");
-                        anchor.AppendLine(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "jsonp"));
+                        anchor.Append("<br/>");
+                        anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "jsonp"));
                     }
 
                     template = template.Replace("${uri}", anchor.ToString());
-                    items.AppendLine(template);
+                    items.Append(template);
 
                     index++;
                 }
 
-                table.AppendLine(items.ToString());
+                table.Append(items.ToString());
             }
 
             return html.Replace("${body}", table.ToString());
+        }
+
+        private string GetTypeName(Type type)
+        {
+            string typeName = type.Name;
+            if (type.IsGenericType) type = type.GetGenericArguments()[0];
+            if (typeName.Contains("`1"))
+            {
+                typeName = typeName.Replace("`1", "&lt;" + type.Name + "&gt;");
+            }
+            return typeName;
+        }
+
+        private string GetTypeDetail(string name, Type type, int index)
+        {
+            StringBuilder sb = new StringBuilder();
+            if (!string.IsNullOrEmpty(name))
+            {
+                for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", name, GetTypeName(type)) + "<br/>");
+            }
+
+            if (type.IsArray) type = type.GetElementType();
+            if (type.IsGenericType) type = type.GetGenericArguments()[0];
+
+            if (type.IsClass && type != typeof(string))
+            {
+                for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                sb.Append("<b>" + GetTypeName(type) + "</b><br/>");
+
+                foreach (var p in type.GetProperties())
+                {
+                    if (p.PropertyType.IsClass && p.PropertyType != typeof(string))
+                    {
+                        sb.Append(GetTypeDetail(p.Name, p.PropertyType, ++index));
+                    }
+                    else
+                    {
+                        for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                        sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.PropertyType)) + "<br/>");
+                    }
+                }
+
+                foreach (var p in type.GetFields())
+                {
+                    if (p.FieldType.IsClass && p.FieldType != typeof(string))
+                    {
+                        sb.Append(GetTypeDetail(p.Name, p.FieldType, ++index));
+                    }
+                    else
+                    {
+                        for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                        sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.FieldType)) + "<br/>");
+                    }
+                }
+            }
+
+            return sb.ToString();
         }
 
         private string CreateAnchorHtml(Uri requestUri, string uri, BusinessKindModel e, BusinessMethodModel model, List<string> plist, HttpMethod mode, string format)
         {
             string url = string.Empty;
             string method = mode.ToString().ToLower();
-            if (plist.Count > 0)
+            if (mode != HttpMethod.POST && plist.Count > 0)
                 url = string.Format("{0}{1}.{2}/{3}.{4}?{5}", uri, method, format, e.Name, model.Name, string.Join("&", plist.ToArray()));
             else
                 url = string.Format("{0}{1}.{2}/{3}.{4}", uri, method, format, e.Name, model.Name);

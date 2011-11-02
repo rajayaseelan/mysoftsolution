@@ -68,6 +68,16 @@ namespace MySoft.IoC
                 {
                     //连接到服务器
                     client.Connect();
+
+                    //发送客户端信息到服务端
+                    var clientInfo = new AppClient
+                    {
+                        IPAddress = reqMsg.IPAddress,
+                        HostName = reqMsg.HostName,
+                        AppName = reqMsg.AppName
+                    };
+
+                    client.SendMessage(new ScsClientMessage(clientInfo));
                 }
                 catch (Exception e)
                 {
@@ -107,7 +117,7 @@ namespace MySoft.IoC
                         TransactionId = new Guid(e.Message.RepliedMessageId),
                         Expiration = DateTime.Now.AddMinutes(1),
                         ReturnType = ex.GetType(),
-                        Exception = ex
+                        Error = ex
                     };
 
                     //把数据发送到客户端

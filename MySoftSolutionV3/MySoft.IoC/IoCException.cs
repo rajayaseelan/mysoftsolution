@@ -14,8 +14,29 @@ namespace MySoft.IoC
         /// </summary>
         public string ApplicationName
         {
-            get { return base.Source; }
-            set { base.Source = value; }
+            get
+            {
+                if (base.Data.Contains("ApplicationName"))
+                    return base.Data["ApplicationName"].ToString();
+                else
+                    return null;
+            }
+            set { base.Data["ApplicationName"] = value; }
+        }
+
+        /// <summary>
+        /// 服务名称
+        /// </summary>
+        public string ServiceName
+        {
+            get
+            {
+                if (base.Data.Contains("ServiceName"))
+                    return base.Data["ServiceName"].ToString().Replace('.', '_');
+                else
+                    return null;
+            }
+            set { base.Data["ServiceName"] = value; }
         }
 
         /// <summary>

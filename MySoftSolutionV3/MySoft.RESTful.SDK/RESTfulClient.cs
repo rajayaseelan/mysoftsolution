@@ -6,6 +6,7 @@ using System.Text;
 using OAuth.Net.Components;
 using System.Net;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MySoft.RESTful.SDK
 {
@@ -87,13 +88,81 @@ namespace MySoft.RESTful.SDK
 
         #endregion
 
-        #region 带参数方式
+        #region 带参数方式(字典)
 
         /// <summary>
         /// 响应数据
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public TResult Invoke(string name, IDictionary<string, object> item)
+        {
+            return Invoke(name, item, HttpMethod.GET);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public TResult Invoke(string name, IDictionary<string, object> item, HttpMethod method)
+        {
+            return Invoke(name, item, new Token(), method);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public TResult Invoke(string name, IDictionary<string, object> item, Token token)
+        {
+            return Invoke(name, item, token, HttpMethod.GET);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="token"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public TResult Invoke(string name, IDictionary<string, object> item, Token token, HttpMethod method)
+        {
+            RESTfulParameter parameter = new RESTfulParameter(name, method, format);
+            parameter.Token = token;
+
+            if (method == HttpMethod.GET)
+            {
+                //添加参数
+                parameter.AddParameter(item.Keys.ToArray(), item.Values.ToArray());
+            }
+            else
+            {
+                parameter.DataObject = item;
+            }
+
+            RESTfulRequest request = new RESTfulRequest(parameter);
+            if (!string.IsNullOrEmpty(url)) request.Url = url;
+
+            return request.GetResponse<TResult>();
+        }
+
+        #endregion
+
+        #region 带参数方式(对象)
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
         /// <param name="item"></param>
         /// <returns></returns>
         public TResult Invoke<T>(string name, T item)

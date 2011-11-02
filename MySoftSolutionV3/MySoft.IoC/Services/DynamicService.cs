@@ -67,7 +67,7 @@ namespace MySoft.IoC.Services
                         ExceptionHeader = string.Format("Application¡¾{0}¡¿occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                     };
 
-                    resMsg.Exception = exception;
+                    resMsg.Error = exception;
                     return resMsg;
                 }
                 else
@@ -130,7 +130,7 @@ namespace MySoft.IoC.Services
             catch (Exception ex)
             {
                 //²¶»ñÈ«¾Ö´íÎó
-                resMsg.Exception = ex;
+                resMsg.Error = ex;
             }
 
             return resMsg;

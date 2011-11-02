@@ -28,7 +28,7 @@ namespace MySoft.Data.SQLite
         /// </summary>
         protected override string AutoIncrementValue
         {
-            get { return "select last_insert_rowid()"; }
+            get { return "SELECT LAST_INSERT_ROWID()"; }
         }
 
         /// <summary>
@@ -79,8 +79,10 @@ namespace MySoft.Data.SQLite
             //替换系统日期值
             cmd.CommandText = cmd.CommandText.Replace("GETDATE()", "CURRENT_TIMESTAMP");
 
-            foreach (SQLiteParameter p in cmd.Parameters)
+            for (int index = cmd.Parameters.Count - 1; index >= 0; index--)
             {
+                var p = cmd.Parameters[index];
+
                 if (p.Direction == ParameterDirection.Output || p.Direction == ParameterDirection.ReturnValue) continue;
                 if (p.Value == DBNull.Value) continue;
 

@@ -49,6 +49,11 @@ namespace MySoft.Communication.Scs.Server
                 return _communicationChannel.CommunicationState;
             }
         }
+
+        /// <summary>
+        /// Get or Set client state.
+        /// </summary>
+        public object State { get; set; }
         
         /// <summary>
         /// Gets/sets wire protocol that is used while reading and writing messages.

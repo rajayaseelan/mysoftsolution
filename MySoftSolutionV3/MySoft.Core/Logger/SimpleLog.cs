@@ -82,7 +82,12 @@ namespace MySoft.Logger
         {
             string filePath = Path.Combine(Path.Combine(basedir, "ErrorLogs"), dir);
             filePath = Path.Combine(filePath, DateTime.Now.ToString("yyyy-MM-dd"));
-            filePath = Path.Combine(filePath, string.Format("{0}.log", ex.GetType().Name));
+            if (GetApplicationName(ex) != null)
+            {
+                filePath = Path.Combine(filePath, GetApplicationName(ex));
+            }
+            filePath = Path.Combine(filePath, string.Format("{0}.log",
+                (GetServiceName(ex) == null ? ex.GetType().Name : GetServiceName(ex))));
 
             WriteFileLog(filePath, ex);
         }
@@ -249,8 +254,29 @@ namespace MySoft.Logger
                 throw new ArgumentException("请传入收件人地址信息参数！");
             }
 
-            string title = string.Format("({2})【{3}】 - 异常邮件由【{0}({1})】发出", DnsHelper.GetHostName(), DnsHelper.GetIPAddress(), ex.GetType().Name, ex.Source);
+            string title = string.Format("({2})【{3}】 - 异常邮件由【{0}({1})】发出", DnsHelper.GetHostName(), DnsHelper.GetIPAddress(),
+                (GetServiceName(ex) == null ? ex.GetType().Name : GetServiceName(ex)),
+                (GetApplicationName(ex) == null ? "未知应用程序" : GetApplicationName(ex)));
+
             SmtpMail.Instance.SendExceptionAsync(ex, title, to);
+        }
+
+        private string GetApplicationName(Exception ex)
+        {
+            if (ex == null) return null;
+            if (ex.Data.Contains("ApplicationName"))
+                return ex.Data["ApplicationName"].ToString();
+            else
+                return null;
+        }
+
+        private string GetServiceName(Exception ex)
+        {
+            if (ex == null) return null;
+            if (ex.Data.Contains("ServiceName"))
+                return ex.Data["ServiceName"].ToString();
+            else
+                return null;
         }
 
         /// <summary>

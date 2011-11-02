@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Threading;
+using MySoft.Logger;
 
 namespace MySoft.Core.UnitTest
 {
@@ -105,6 +106,15 @@ namespace MySoft.Core.UnitTest
             string to = "maoyong@fund123.cn"; // TODO: 初始化为适当的值
             target.SendExceptionAsync(ex, title, to);
             Thread.Sleep(10000);
+        }
+
+        [TestMethod]
+        public void WriteLogTest()
+        {
+            Exception ex = new Exception("出错了");
+            ex.Data["ApplicationName"] = "我的应用程序";
+
+            SimpleLog.Instance.WriteLog(ex);
         }
     }
 }

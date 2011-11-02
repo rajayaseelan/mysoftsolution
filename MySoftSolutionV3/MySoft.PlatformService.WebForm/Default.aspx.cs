@@ -15,7 +15,7 @@ namespace MySoft.PlatformService.WebForm
     public partial class _Default : System.Web.UI.Page
     {
         protected ServerStatus status;
-        protected IList<ConnectionInfo> clients;
+        protected IList<ClientInfo> clients;
         //protected string perfValue;
 
         protected void Page_Load(object sender, EventArgs e)
@@ -35,7 +35,7 @@ namespace MySoft.PlatformService.WebForm
                     //perfValue = sb.ToString();
 
                     status = CastleFactory.Create().GetService<IStatusService>().GetServerStatus();
-                    clients = CastleFactory.Create().GetService<IStatusService>().GetConnectInfoList();
+                    clients = CastleFactory.Create().GetService<IStatusService>().GetClientInfoList();
                 }
                 catch (Exception ex)
                 {

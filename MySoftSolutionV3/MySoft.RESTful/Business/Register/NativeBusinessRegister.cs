@@ -86,7 +86,7 @@ namespace MySoft.RESTful.Business.Register
                                 methodModel.ParametersCount = info.GetParameters().Length;
                                 methodModel.Instance = instance;
 
-                                if (method.Method == HttpMethod.GET && !CheckGetSubmitType(info.GetParameters()))
+                                if (method.Method != HttpMethod.POST && !CheckGetSubmitType(info.GetParameters()))
                                 {
                                     methodModel.IsPassCheck = false;
                                     methodModel.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", kindModel.Name + "." + methodModel.Name);

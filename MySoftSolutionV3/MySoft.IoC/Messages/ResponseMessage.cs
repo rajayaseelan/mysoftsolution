@@ -27,25 +27,25 @@ namespace MySoft.IoC.Messages
             set
             {
                 data = value;
-                exception = null;
+                error = null;
             }
         }
 
-        private Exception exception;
+        private Exception error;
 
         /// <summary>
         /// Gets or sets the exception.
         /// </summary>
         /// <value>The exception.</value>
-        public Exception Exception
+        public Exception Error
         {
             get
             {
-                return exception;
+                return error;
             }
             set
             {
-                exception = value;
+                error = value;
                 data = null;
             }
         }
@@ -72,9 +72,9 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                if (exception != null)
+                if (error != null)
                 {
-                    return string.Format("Error: {0} (Type:{1}).", ErrorHelper.GetInnerException(exception).Message, base.ReturnType);
+                    return string.Format("Error: {0} (Type:{1}).", ErrorHelper.GetInnerException(error).Message, base.ReturnType);
                 }
                 else
                 {

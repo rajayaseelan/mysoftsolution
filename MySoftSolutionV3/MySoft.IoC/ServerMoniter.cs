@@ -273,7 +273,7 @@ namespace MySoft.IoC
         /// 获取连接客户信息
         /// </summary>
         /// <returns></returns>
-        public abstract IList<ConnectionInfo> GetConnectInfoList();
+        public abstract IList<ClientInfo> GetClientInfoList();
 
         #endregion
 

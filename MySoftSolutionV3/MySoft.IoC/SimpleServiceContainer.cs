@@ -208,6 +208,7 @@ namespace MySoft.IoC
                 throw new WarningException(title)
                 {
                     ApplicationName = reqMsg.AppName,
+                    ServiceName = reqMsg.ServiceName,
                     ExceptionHeader = string.Format("Application¡¾{0}¡¿occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                 };
             }

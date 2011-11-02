@@ -156,5 +156,12 @@ namespace MySoft.RESTful
         [OperationContract]
         [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "help/{kind}")]
         Stream GetMethodHtmlFromKind(string kind);
+
+        /// <summary>
+        /// 发布接口的实时html文档
+        /// </summary>
+        [OperationContract]
+        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "help/{kind}/{method}")]
+        Stream GetMethodHtmlFromKindAndMethod(string kind, string method);
     }
 }

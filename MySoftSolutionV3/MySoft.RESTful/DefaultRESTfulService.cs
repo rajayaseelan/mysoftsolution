@@ -206,8 +206,17 @@ namespace MySoft.RESTful
         /// <returns></returns>
         public Stream GetMethodHtmlFromKind(string kind)
         {
+            return GetMethodHtmlFromKindAndMethod(kind, null);
+        }
+
+        /// <summary>
+        /// 获取方法的html文档
+        /// </summary>
+        /// <returns></returns>
+        public Stream GetMethodHtmlFromKindAndMethod(string kind, string method)
+        {
             var request = WebOperationContext.Current.IncomingRequest;
-            var html = Context.MakeApiDocument(request.UriTemplateMatch.RequestUri, kind);
+            var html = Context.MakeApiDocument(request.UriTemplateMatch.RequestUri, kind, method);
             var response = WebOperationContext.Current.OutgoingResponse;
             response.ContentType = "text/html;charset=utf-8";
             MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(html));

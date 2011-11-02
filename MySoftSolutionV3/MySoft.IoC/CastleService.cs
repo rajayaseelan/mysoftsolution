@@ -20,6 +20,11 @@ namespace MySoft.IoC
     /// </summary>
     public class CastleService : ServerMoniter
     {
+        /// <summary>
+        /// 调用方法委托
+        /// </summary>
+        public event EventHandler<CallEventArgs> OnCalling;
+
         private IScsServer server;
         private string serverUrl;
         /// <summary>
@@ -168,32 +173,64 @@ namespace MySoft.IoC
         void Client_MessageReceived(object sender, MessageEventArgs e)
         {
             //不是指定消息不处理
-            if (e.Message is ScsResultMessage)
+            if (e.Message is ScsClientMessage)
+            {
+                var info = sender as IScsServerClient;
+                if (server.Clients.ContainsKey(info.ClientId))
+                {
+                    var client = server.Clients[info.ClientId];
+                    client.State = (e.Message as ScsClientMessage).Client;
+                }
+            }
+            else if (e.Message is ScsResultMessage)
             {
                 //获取client发送端
                 var client = sender as IScsServerClient;
+
+                CallEventArgs args;
 
                 try
                 {
                     var data = e.Message as ScsResultMessage;
 
                     //发送响应信息
-                    GetSendResponse(client, data.MessageValue as RequestMessage);
+                    GetSendResponse(client, data.MessageValue as RequestMessage, out args);
                 }
                 catch (Exception ex)
                 {
                     container_OnError(ex);
 
+                    var result = e.Message as ScsResultMessage;
+                    var reqMsg = result.MessageValue as RequestMessage;
+
                     var resMsg = new ResponseMessage
                     {
-                        TransactionId = new Guid(e.Message.RepliedMessageId),
+                        TransactionId = new Guid(result.RepliedMessageId),
                         Expiration = DateTime.Now.AddMinutes(1),
                         ReturnType = ex.GetType(),
-                        Exception = ex
+                        Error = ex
                     };
 
                     //发送数据到服务端
                     client.SendMessage(new ScsResultMessage(resMsg, e.Message.RepliedMessageId));
+
+                    //调用参数信息
+                    args = new CallEventArgs();
+                    args.Caller.AppName = reqMsg.AppName;
+                    args.Caller.IPAddress = reqMsg.IPAddress;
+                    args.Caller.HostName = reqMsg.HostName;
+                    args.Caller.ServiceName = reqMsg.ServiceName;
+                    args.Caller.SubServiceName = reqMsg.SubServiceName;
+                    args.CallTime = DateTime.Now;
+                    args.ElapsedTime = -1;
+                    args.Exception = ex;
+                }
+
+                //如果调用句柄不为空，则调用
+                if (args != null && OnCalling != null)
+                {
+                    try { OnCalling(client, args); }
+                    catch { }
                 }
             }
         }
@@ -203,11 +240,13 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="client"></param>
         /// <param name="reqMsg"></param>
-        private void GetSendResponse(IScsServerClient client, RequestMessage reqMsg)
+        private void GetSendResponse(IScsServerClient client, RequestMessage reqMsg, out CallEventArgs args)
         {
             //如果是状态请求，则直接返回数据
             if (!IsServiceCounter(reqMsg))
             {
+                args = null;
+
                 //调用请求方法
                 var resMsg = CallMethod(reqMsg);
 
@@ -216,6 +255,14 @@ namespace MySoft.IoC
             }
             else
             {
+                args = new CallEventArgs();
+                args.Caller.AppName = reqMsg.AppName;
+                args.Caller.IPAddress = reqMsg.IPAddress;
+                args.Caller.HostName = reqMsg.HostName;
+                args.Caller.ServiceName = reqMsg.ServiceName;
+                args.Caller.SubServiceName = reqMsg.SubServiceName;
+                args.CallTime = DateTime.Now;
+
                 //获取或创建一个对象
                 TimeStatus status = statuslist.GetOrCreate(DateTime.Now);
 
@@ -247,6 +294,16 @@ namespace MySoft.IoC
                         else
                             CacheHelper.Insert(cacheKey, resMsg, 1);
                     }
+
+                    //参数信息
+                    args.ElapsedTime = watch.ElapsedMilliseconds;
+
+                    if (resMsg.Error == null)
+                        args.ReturnValue = resMsg.Data;
+                    else
+                        args.Exception = resMsg.Error;
+
+                    args.RowCount = resMsg.RowCount;
                 }
                 else
                 {
@@ -256,7 +313,7 @@ namespace MySoft.IoC
                 }
 
                 //错误及成功计数
-                if (resMsg.Exception == null)
+                if (resMsg.Error == null)
                     status.SuccessCount++;
                 else
                     status.ErrorCount++;
@@ -315,7 +372,7 @@ namespace MySoft.IoC
                 resMsg.Parameters = reqMsg.Parameters;
                 resMsg.Expiration = reqMsg.Expiration;
                 resMsg.ReturnType = reqMsg.ReturnType;
-                resMsg.Exception = ex;
+                resMsg.Error = ex;
             }
 
             return resMsg;
@@ -337,22 +394,63 @@ namespace MySoft.IoC
         /// 获取连接客户信息
         /// </summary>
         /// <returns></returns>
-        public override IList<ConnectionInfo> GetConnectInfoList()
+        public override IList<ClientInfo> GetClientInfoList()
         {
             try
             {
                 var items = server.Clients.GetAllItems();
 
                 //统计客户端数量
-                return items.Select(p => p.RemoteEndPoint as ScsTcpEndPoint).GroupBy(p => p.IpAddress)
-                     .Select(p => new ConnectionInfo { IP = p.Key, Count = p.Count() })
+                var list = items.Where(p => p.State != null)
+                     .Select(p => p.State as AppClient)
+                     .GroupBy(p => new
+                     {
+                         AppName = p.AppName,
+                         IPAddress = p.IPAddress,
+                         HostName = p.HostName
+                     })
+                     .Select(p => new
+                     {
+                         AppName = p.Key.AppName,
+                         IPAddress = p.Key.IPAddress,
+                         HostName = p.Key.HostName,
+                         Count = p.Count()
+                     })
+                     .GroupBy(p => p.AppName)
+                     .Select(p => new ClientInfo
+                     {
+                         AppName = p.Key,
+                         Connections = p.Select(g => new ConnectionInfo
+                         {
+                             IPAddress = g.IPAddress,
+                             HostName = g.HostName,
+                             Count = g.Count
+                         }).ToList()
+                     })
                      .ToList();
+
+                if (items.Any(p => p.State == null))
+                {
+                    var ls = items.Where(p => p.State == null)
+                        .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
+                        .GroupBy(p => p.IpAddress)
+                        .Select(g => new ConnectionInfo
+                        {
+                            IPAddress = g.Key,
+                            HostName = "Unknown",
+                            Count = g.Count()
+                        }).ToList();
+
+                    list.Add(new ClientInfo { AppName = "Unknown", Connections = ls });
+                }
+
+                return list;
             }
             catch (Exception ex)
             {
                 container_OnError(ex);
 
-                return new List<ConnectionInfo>();
+                return new List<ClientInfo>();
             }
         }
 

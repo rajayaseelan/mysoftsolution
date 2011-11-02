@@ -62,9 +62,11 @@
     <Compile Include="Aspect\AspectSwitcherAttribute.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
+    <Compile Include="CallEventArgs.cs" />
     <Compile Include="IoCException.cs" />
     <Compile Include="Messages\CustomWireProtocol.cs" />
     <Compile Include="Messages\CustomWireProtocolFactory.cs" />
+    <Compile Include="Messages\ScsClientMessage.cs" />
     <Compile Include="Mvp\Presenter.cs" />
     <Compile Include="Mvp\PresenterFactory.cs" />
     <Compile Include="Communication\Scs\Client\ClientReConnecter.cs" />

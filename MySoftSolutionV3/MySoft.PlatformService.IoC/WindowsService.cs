@@ -47,6 +47,7 @@ namespace MySoft.PlatformService.IoC
         {
             this.config = CastleServiceConfiguration.GetConfig();
             this.server = new CastleService(config);
+            this.server.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
 
             this.server.OnLog += new LogEventHandler(server_OnLog);
             this.server.OnError += new ErrorLogEventHandler(server_OnError);
@@ -55,6 +56,12 @@ namespace MySoft.PlatformService.IoC
             string address = ConfigurationManager.AppSettings["SendMailAddress"];
             if (!string.IsNullOrEmpty(address)) mailTo = address.Split(',', ';', '|');
         }
+
+        void server_OnCalling(object sender, CallEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
 
         /// <summary>
         /// 设置运行类型

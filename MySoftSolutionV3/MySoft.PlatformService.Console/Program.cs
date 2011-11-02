@@ -6,12 +6,14 @@ using System.Collections;
 using MySoft.Remoting;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
+using MongoDB;
 
 namespace MySoft.PlatformService.Console
 {
     class Program
     {
         private static readonly object syncobj = new object();
+        private static readonly IMongo mongo = new Mongo("mongodb://192.168.1.223");
         static void Main(string[] args)
         {
             System.Console.BackgroundColor = ConsoleColor.DarkBlue;
@@ -20,14 +22,39 @@ namespace MySoft.PlatformService.Console
 
             CastleServiceConfiguration config = CastleServiceConfiguration.GetConfig();
             CastleService server = new CastleService(config);
+            server.OnCalling += new EventHandler<CallEventArgs>(server_OnCaller);
             server.OnLog += new LogEventHandler(Program_OnLog);
             server.OnError += new ErrorLogEventHandler(Program_OnError);
             server.Start();
+
+            mongo.Connect();
 
             System.Console.WriteLine("Server host -> {0}", server.ServerUrl);
             System.Console.WriteLine("Logger status: On  -> Show log time: {0} seconds", config.LogTime);
             System.Console.WriteLine("Press any key to exit and stop service...");
             System.Console.ReadLine();
+        }
+
+        static void server_OnCaller(object sender, CallEventArgs e)
+        {
+            var database = mongo.GetDatabase("ServiceMonitor");
+            var collection = database.GetCollection("ServiceInfo");
+
+            var doc = new Document();
+            doc["AppName"] = e.Caller.AppName;
+            doc["IPAddress"] = e.Caller.IPAddress;
+            doc["HostName"] = e.Caller.HostName;
+            doc["ServiceName"] = e.Caller.ServiceName;
+            doc["SubServiceName"] = e.Caller.SubServiceName;
+            doc["ElapsedTime"] = Convert.ToDouble(e.ElapsedTime);
+            doc["RowCount"] = e.RowCount;
+            doc["Error"] = e.Exception;
+            if (e.Exception != null)
+                doc["IsError"] = true;
+            else
+                doc["IsError"] = false;
+
+            collection.Insert(doc);
         }
 
         static void Program_OnLog(string log, LogType type)

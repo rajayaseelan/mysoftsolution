@@ -5,7 +5,7 @@ namespace MySoft.IoC.Aspect
     /// <summary>
     /// 拦截器属性
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = true)]
     public class AspectProxyAttribute : Attribute
     {
         private Type interceptorType;

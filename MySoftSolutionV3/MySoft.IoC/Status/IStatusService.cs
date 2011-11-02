@@ -57,7 +57,7 @@ namespace MySoft.IoC.Status
         /// 获取所有的客户端信息
         /// </summary>
         /// <returns></returns>
-        IList<ConnectionInfo> GetConnectInfoList();
+        IList<ClientInfo> GetClientInfoList();
 
         /// <summary>
         /// 获取服务器进程信息

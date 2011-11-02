@@ -62,12 +62,16 @@ namespace MySoft.RESTful.SDK
             }
             else
             {
+                var collection = new Dictionary<string, object>();
+
                 //添加参数
                 var plist = method.GetParameters();
                 for (int index = 0; index < parameters.Length; index++)
                 {
-                    parameter.DataObject[plist[index].Name] = parameters[index];
+                    collection[plist[index].Name] = parameters[index];
                 }
+
+                parameter.DataObject = collection;
             }
 
             //处理Cookies

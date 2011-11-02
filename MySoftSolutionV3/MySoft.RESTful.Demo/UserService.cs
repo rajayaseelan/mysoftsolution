@@ -15,6 +15,18 @@ namespace MySoft.RESTful.Demo
     {
         public int Id;
         public string Name;
+        public IList<UserDetail> Details;
+    }
+
+    public class UserDetail
+    {
+        public int Age;
+        public IList<UserInfo> Infos;
+    }
+
+    public class UserInfo
+    {
+        public string Address;
     }
 
     /// <summary>

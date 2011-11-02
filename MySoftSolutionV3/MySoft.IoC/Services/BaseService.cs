@@ -63,14 +63,14 @@ namespace MySoft.IoC.Services
             //运行请求获得结果
             ResponseMessage resMsg = Run(reqMsg);
 
-            if (resMsg != null && resMsg.Exception != null)
+            if (resMsg != null && resMsg.Error != null)
             {
                 watch.Stop();
 
                 //如果是业务异常，则不抛出错误
-                if (!(resMsg.Exception is BusinessException))
+                if (!(resMsg.Error is BusinessException))
                 {
-                    var ex = resMsg.Exception;
+                    var ex = resMsg.Error;
                     string body = string.Format("【{6}】Dynamic ({0}) service ({1},{2}) error. {4}\r\nMessage ==> {5}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters.SerializedData, "Spent time: (" + watch.ElapsedMilliseconds + ") ms.", resMsg.Message, resMsg.TransactionId);
                     var exception = new IoCException(body, ex)
                     {

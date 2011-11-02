@@ -341,11 +341,11 @@ namespace MySoft
                     {
                         try
                         {
-                            return Enum.Parse(type, value.ToString(), true);
+                            return Enum.ToObject(type, value);
                         }
                         catch
                         {
-                            return Enum.ToObject(type, value);
+                            return Enum.Parse(type, value.ToString(), true);
                         }
                     }
                     else

@@ -31,6 +31,11 @@ namespace MySoft.Communication.Scs.Server
         CommunicationStates CommunicationState { get; }
 
         /// <summary>
+        /// Client state info.
+        /// </summary>
+        object State { get; set; }
+
+        /// <summary>
         /// Disconnects from server.
         /// </summary>
         void Disconnect();
