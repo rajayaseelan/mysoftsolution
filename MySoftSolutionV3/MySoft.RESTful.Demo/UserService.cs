@@ -16,17 +16,26 @@ namespace MySoft.RESTful.Demo
         public int Id;
         public string Name;
         public IList<UserDetail> Details;
+        public Sex Sex;
     }
 
     public class UserDetail
     {
         public int Age;
         public IList<UserInfo> Infos;
+        public Sex Sex;
     }
 
     public class UserInfo
     {
         public string Address;
+        public Sex Sex;
+    }
+
+    public enum Sex
+    {
+        男,
+        女
     }
 
     /// <summary>

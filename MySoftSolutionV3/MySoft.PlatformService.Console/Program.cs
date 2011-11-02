@@ -48,8 +48,8 @@ namespace MySoft.PlatformService.Console
             doc["SubServiceName"] = e.Caller.SubServiceName;
             doc["ElapsedTime"] = Convert.ToDouble(e.ElapsedTime);
             doc["RowCount"] = e.RowCount;
-            doc["Error"] = e.Exception;
-            if (e.Exception != null)
+            doc["Error"] = e.CallError;
+            if (e.CallError != null)
                 doc["IsError"] = true;
             else
                 doc["IsError"] = false;

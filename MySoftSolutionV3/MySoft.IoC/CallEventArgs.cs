@@ -40,14 +40,14 @@ namespace MySoft.IoC
         /// <summary>
         /// 异常信息
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception CallError { get; set; }
 
         /// <summary>
         /// 是否错误
         /// </summary>
         public bool IsError
         {
-            get { return this.Exception != null; }
+            get { return this.CallError != null; }
         }
 
         public CallEventArgs()

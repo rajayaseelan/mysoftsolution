@@ -223,7 +223,7 @@ namespace MySoft.IoC
                     args.Caller.SubServiceName = reqMsg.SubServiceName;
                     args.CallTime = DateTime.Now;
                     args.ElapsedTime = -1;
-                    args.Exception = ex;
+                    args.CallError = ex;
                 }
 
                 //如果调用句柄不为空，则调用
@@ -301,7 +301,7 @@ namespace MySoft.IoC
                     if (resMsg.Error == null)
                         args.ReturnValue = resMsg.Data;
                     else
-                        args.Exception = resMsg.Error;
+                        args.CallError = resMsg.Error;
 
                     args.RowCount = resMsg.RowCount;
                 }

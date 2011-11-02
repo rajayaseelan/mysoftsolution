@@ -328,7 +328,7 @@ namespace MySoft.RESTful.Business
                 {
                     if (GetTypeClass(p.PropertyType))
                     {
-                        sb.Append(GetTypeDetail(p.Name, p.PropertyType, ++index));
+                        sb.Append(GetTypeDetail(p.Name, p.PropertyType, index + 1));
                     }
                     else
                     {
@@ -341,7 +341,7 @@ namespace MySoft.RESTful.Business
                 {
                     if (GetTypeClass(p.FieldType))
                     {
-                        sb.Append(GetTypeDetail(p.Name, p.FieldType, ++index));
+                        sb.Append(GetTypeDetail(p.Name, p.FieldType, index + 1));
                     }
                     else
                     {
