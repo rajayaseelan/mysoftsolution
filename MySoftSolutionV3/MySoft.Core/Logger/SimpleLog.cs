@@ -81,11 +81,11 @@ namespace MySoft.Logger
         public void WriteLogForDir(string dir, Exception ex)
         {
             string filePath = Path.Combine(Path.Combine(basedir, "ErrorLogs"), dir);
-            filePath = Path.Combine(filePath, DateTime.Now.ToString("yyyy-MM-dd"));
             if (GetApplicationName(ex) != null)
             {
                 filePath = Path.Combine(filePath, GetApplicationName(ex));
             }
+            filePath = Path.Combine(filePath, DateTime.Now.ToString("yyyy-MM-dd"));
             filePath = Path.Combine(filePath, string.Format("{0}.log",
                 (GetServiceName(ex) == null ? ex.GetType().Name : GetServiceName(ex))));
 

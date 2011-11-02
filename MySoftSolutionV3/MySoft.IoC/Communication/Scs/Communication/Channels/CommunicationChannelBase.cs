@@ -110,7 +110,14 @@ namespace MySoft.Communication.Scs.Communication.Channels
                 throw new ArgumentNullException("message");
             }
 
-            SendMessageInternal(message);
+            try
+            {
+                SendMessageInternal(message);
+            }
+            catch (ObjectDisposedException)
+            {
+
+            }
         }
 
         #endregion

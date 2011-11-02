@@ -135,7 +135,7 @@
                    int index = 1;
                    foreach (MySoft.IoC.Status.ClientInfo client in clients)
                    {%>
-                    <li style="width: 300px; float: left; border: 3px dotted #ccc; margin: 5px; padding:5px; ">
+                    <li style="width: 280px; float: left; border: 3px dotted #ccc; margin: 5px; padding:5px; ">
                         <% = index %>
                         =>【<%= client.AppName %>】<br />
                         <% foreach (MySoft.IoC.Status.ConnectionInfo info in client.Connections)
