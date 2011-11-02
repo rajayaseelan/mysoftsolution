@@ -233,7 +233,7 @@ namespace MySoft.RESTful.Business
                     foreach (var p in model.Parameters)
                     {
                         if (!string.IsNullOrEmpty(model.UserParameter) && string.Compare(p.Name, model.UserParameter, true) == 0) continue;
-                        if (!(p.ParameterType.IsClass && p.ParameterType != typeof(string)))
+                        if (!GetTypeClass(p.ParameterType))
                         {
                             plist.Add(string.Format("{0}=[{0}]", p.Name.ToLower()).Replace('[', '{').Replace(']', '}'));
                         }
@@ -288,6 +288,14 @@ namespace MySoft.RESTful.Business
             return html.Replace("${body}", table.ToString());
         }
 
+        private bool GetTypeClass(Type type)
+        {
+            if (type.IsGenericType)
+                return GetTypeClass(type.GetGenericArguments()[0]);
+            else
+                return type.IsClass && type != typeof(string);
+        }
+
         private string GetTypeName(Type type)
         {
             string typeName = type.Name;
@@ -311,14 +319,14 @@ namespace MySoft.RESTful.Business
             if (type.IsArray) type = type.GetElementType();
             if (type.IsGenericType) type = type.GetGenericArguments()[0];
 
-            if (type.IsClass && type != typeof(string))
+            if (GetTypeClass(type))
             {
                 for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
                 sb.Append("<b>" + GetTypeName(type) + "</b><br/>");
 
                 foreach (var p in type.GetProperties())
                 {
-                    if (p.PropertyType.IsClass && p.PropertyType != typeof(string))
+                    if (GetTypeClass(p.PropertyType))
                     {
                         sb.Append(GetTypeDetail(p.Name, p.PropertyType, ++index));
                     }
@@ -331,7 +339,7 @@ namespace MySoft.RESTful.Business
 
                 foreach (var p in type.GetFields())
                 {
-                    if (p.FieldType.IsClass && p.FieldType != typeof(string))
+                    if (GetTypeClass(p.FieldType))
                     {
                         sb.Append(GetTypeDetail(p.Name, p.FieldType, ++index));
                     }

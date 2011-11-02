@@ -32,7 +32,7 @@ namespace MySoft.IoC
             get
             {
                 if (base.Data.Contains("ServiceName"))
-                    return base.Data["ServiceName"].ToString().Replace('.', '_');
+                    return base.Data["ServiceName"].ToString();
                 else
                     return null;
             }
