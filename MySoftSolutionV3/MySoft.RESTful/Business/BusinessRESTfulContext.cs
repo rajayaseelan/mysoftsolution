@@ -293,7 +293,7 @@ namespace MySoft.RESTful.Business
             if (type.IsGenericType)
                 return GetTypeClass(type.GetGenericArguments()[0]);
             else
-                return type.IsClass && type != typeof(string);
+                return (type.IsClass && type != typeof(string)) || type.IsEnum;
         }
 
         private string GetTypeName(Type type)
@@ -321,32 +321,45 @@ namespace MySoft.RESTful.Business
 
             if (GetTypeClass(type))
             {
-                for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                sb.Append("<b>" + GetTypeName(type) + "</b><br/>");
-
-                foreach (var p in type.GetProperties())
+                if (type.IsEnum)
                 {
-                    if (GetTypeClass(p.PropertyType))
-                    {
-                        sb.Append(GetTypeDetail(p.Name, p.PropertyType, index + 1));
-                    }
-                    else
+                    var names = Enum.GetNames(type);
+                    var values = Enum.GetValues(type);
+                    for (int n = 0; n < names.Length; n++)
                     {
                         for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                        sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.PropertyType)) + "<br/>");
+                        sb.AppendFormat(string.Format("&lt;{0} : {1}|{2}&gt;", GetTypeName(type), names[n], Convert.ToInt32(values.GetValue(n))) + "<br/>");
                     }
                 }
-
-                foreach (var p in type.GetFields())
+                else
                 {
-                    if (GetTypeClass(p.FieldType))
+                    for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                    sb.Append("<b>" + GetTypeName(type) + "</b><br/>");
+
+                    foreach (var p in type.GetProperties())
                     {
-                        sb.Append(GetTypeDetail(p.Name, p.FieldType, index + 1));
+                        if (GetTypeClass(p.PropertyType))
+                        {
+                            sb.Append(GetTypeDetail(p.Name, p.PropertyType, index + 1));
+                        }
+                        else
+                        {
+                            for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                            sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.PropertyType)) + "<br/>");
+                        }
                     }
-                    else
+
+                    foreach (var p in type.GetFields())
                     {
-                        for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                        sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.FieldType)) + "<br/>");
+                        if (GetTypeClass(p.FieldType))
+                        {
+                            sb.Append(GetTypeDetail(p.Name, p.FieldType, index + 1));
+                        }
+                        else
+                        {
+                            for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                            sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.FieldType)) + "<br/>");
+                        }
                     }
                 }
             }
