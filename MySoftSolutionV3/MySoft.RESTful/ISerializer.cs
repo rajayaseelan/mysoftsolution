@@ -6,6 +6,6 @@ namespace MySoft.RESTful
     /// </summary>
     public interface ISerializer
     {
-        string Serialize(object data);
+        string Serialize(object data, bool jsonp);
     }
 }

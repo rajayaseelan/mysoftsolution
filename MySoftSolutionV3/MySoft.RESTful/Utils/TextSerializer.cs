@@ -12,7 +12,7 @@ namespace MySoft.RESTful
     /// </summary>
     public class TextSerializer : ISerializer
     {
-        public string Serialize(object data)
+        public string Serialize(object data, bool jsonp)
         {
             if (data is string)
                 return data.ToString();

@@ -319,14 +319,14 @@ namespace MySoft.RESTful
             ISerializer serializer = SerializerFactory.Create(format);
             try
             {
-                result = serializer.Serialize(result);
+                result = serializer.Serialize(result, format == ParameterFormat.Jsonp);
                 return result.ToString();
             }
             catch (Exception ex)
             {
                 //如果系列化失败
                 result = new RESTfulResult { Code = RESTfulCode.BUSINESS_ERROR.ToString(), Message = ex.Message };
-                result = serializer.Serialize(result);
+                result = serializer.Serialize(result, format == ParameterFormat.Jsonp);
                 return result.ToString();
             }
         }

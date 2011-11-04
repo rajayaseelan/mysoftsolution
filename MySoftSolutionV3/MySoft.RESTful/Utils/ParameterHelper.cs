@@ -41,6 +41,7 @@ namespace MySoft.RESTful
         {
             switch (format)
             {
+                case ParameterFormat.Jsonp:
                 case ParameterFormat.Json:
                     return JObject.Parse(parameters);
                 case ParameterFormat.Xml:

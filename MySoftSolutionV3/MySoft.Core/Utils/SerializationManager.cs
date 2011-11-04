@@ -81,10 +81,10 @@ namespace MySoft
                 return JsonConvert.ToString((Enum)obj);
             }
 
-            if (converters != null && converters.Length > 0)
-                return JsonConvert.SerializeObject(obj, converters);
+            if (converters == null || converters.Length == 0)
+                return JsonConvert.SerializeObject(obj, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
             else
-                return JsonConvert.SerializeObject(obj);
+                return JsonConvert.SerializeObject(obj, converters);
         }
 
         /// <summary>
@@ -149,10 +149,10 @@ namespace MySoft
                 data = "[" + data + "]";
             }
 
-            if (converters != null && converters.Length > 0)
-                return JsonConvert.DeserializeObject(data, returnType, converters);
+            if (converters == null || converters.Length == 0)
+                return JsonConvert.DeserializeObject(data, returnType, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
             else
-                return JsonConvert.DeserializeObject(data, returnType);
+                return JsonConvert.DeserializeObject(data, returnType, converters);
         }
 
         /// <summary>

@@ -161,6 +161,32 @@ namespace MySoft.Data
         }
 
         /// <summary>
+        /// 对当前列表进行排序
+        /// </summary>
+        /// <param name="sort"></param>
+        /// <returns></returns>
+        public SourceList<T> Sort(SortComparer<T> sort)
+        {
+            var list = new List<T>(this);
+            list.Sort(sort);
+            return new SourceList<T>(list);
+        }
+
+        /// <summary>
+        /// 对当前列表进行排序
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <param name="sort"></param>
+        /// <returns></returns>
+        public SourceList<T> Sort(int index, int count, SortComparer<T> sort)
+        {
+            var list = new List<T>(this);
+            list.Sort(index, count, sort);
+            return new SourceList<T>(list);
+        }
+
+        /// <summary>
         /// 返回指定数据条数
         /// </summary>
         /// <param name="index"></param>

@@ -8,7 +8,7 @@ namespace MySoft.RESTful
     /// </summary>
     public class XmlSerializer : ISerializer
     {
-        public string Serialize(object data)
+        public string Serialize(object data, bool jsonp)
         {
             return SerializationManager.SerializeXml(data, Encoding.UTF8);
         }

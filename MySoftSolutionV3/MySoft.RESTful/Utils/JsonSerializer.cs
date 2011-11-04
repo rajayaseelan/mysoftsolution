@@ -10,9 +10,12 @@ namespace MySoft.RESTful
     /// </summary>
     public class JsonSerializer : ISerializer
     {
-        public string Serialize(object data)
+        public string Serialize(object data, bool jsonp)
         {
-            return SerializationManager.SerializeJson(data);
+            if (jsonp)
+                return SerializationManager.SerializeJson(data, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+            else
+                return SerializationManager.SerializeJson(data);
         }
     }
 }

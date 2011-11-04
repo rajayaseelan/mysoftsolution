@@ -147,7 +147,7 @@ namespace MySoft.RESTful
                     }
                     else
                     {
-                        errors.Add(result.Message.Trim());
+                        errors.Add(result.Message);
                     }
                 }
 
