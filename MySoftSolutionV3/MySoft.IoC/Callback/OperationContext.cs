@@ -44,7 +44,7 @@ namespace MySoft.IoC
         /// <summary>
         /// 远程节点
         /// </summary>
-        public EndPoint RemoteEndpoint
+        public EndPoint RemoteEndPoint
         {
             get
             {

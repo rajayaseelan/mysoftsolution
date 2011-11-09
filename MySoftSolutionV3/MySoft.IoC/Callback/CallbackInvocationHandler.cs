@@ -39,7 +39,7 @@ namespace MySoft.IoC
             }
             else
             {
-                throw new SocketException((int)SocketError.NotConnected);
+                throw new SocketException((int)SocketError.ConnectionAborted);
             }
         }
 

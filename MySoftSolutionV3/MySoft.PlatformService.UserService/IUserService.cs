@@ -27,7 +27,7 @@ namespace MySoft.PlatformService.UserService
         public void Subscribe()
         {
             IMessageListener callback = OperationContext.Current.GetCallbackChannel<IMessageListener>();
-            var endPoint = OperationContext.Current.RemoteEndpoint as IPEndPoint;
+            var endPoint = OperationContext.Current.RemoteEndPoint as IPEndPoint;
             MessageCenter.Instance.AddListener(new MessageListener(endPoint.Address.ToString(), endPoint.Port, callback));
 
             Console.WriteLine("订阅服务IMessageListener成功! {0}:{1}", endPoint.Address, endPoint.Port);
@@ -36,7 +36,7 @@ namespace MySoft.PlatformService.UserService
         public void Unsubscribe()
         {
             IMessageListener callback = OperationContext.Current.GetCallbackChannel<IMessageListener>();
-            var endPoint = OperationContext.Current.RemoteEndpoint as IPEndPoint;
+            var endPoint = OperationContext.Current.RemoteEndPoint as IPEndPoint;
             MessageCenter.Instance.RemoveListener(new MessageListener(endPoint.Address.ToString(), endPoint.Port, callback));
 
             Console.WriteLine("退订服务IMessageListener成功! {0}:{1}", endPoint.Address, endPoint.Port);
