@@ -251,12 +251,15 @@ namespace MySoft.IoC
             }
             else
             {
+                bool isCacheService = true;
                 Type serviceType = typeof(IServiceInterfaceType);
                 string serviceKey = string.Format("CastleFactory_{0}_{1}", nodeKey, serviceType);
                 if (proxy != null)
                 {
-                    serviceKey = string.Format("{0}_{1}", serviceKey, proxy.ServiceName);
+                    serviceKey += Guid.NewGuid().ToString();
+                    isCacheService = false;
                 }
+
                 IServiceInterfaceType iocService = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
                 if (iocService == null)
                 {
@@ -283,7 +286,9 @@ namespace MySoft.IoC
                         var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                         iocService = (IServiceInterfaceType)dynamicProxy;
-                        CacheHelper.Permanent(serviceKey, iocService);
+
+                        if (isCacheService)
+                            CacheHelper.Permanent(serviceKey, iocService);
 
                         handler = null;
                         dynamicProxy = null;

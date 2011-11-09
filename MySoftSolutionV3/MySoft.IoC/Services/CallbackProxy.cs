@@ -34,6 +34,7 @@ namespace MySoft.IoC.Services
             reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
             reqService.OnDisconnected += new EventHandler(reqService_OnDisconnected);
 
+            this.reqPool = new ServiceRequestPool(1);
             this.reqPool.Push(reqService);
         }
 
