@@ -36,7 +36,7 @@ namespace MySoft.Net.FTP
             }
         }
 
-        public void Dispose()
+        public new void Dispose()
         {
             if (!IsClosed)
             {

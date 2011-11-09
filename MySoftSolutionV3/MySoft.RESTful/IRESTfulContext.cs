@@ -1,4 +1,5 @@
 ﻿using System;
+using MySoft.RESTful.Utils;
 
 namespace MySoft.RESTful
 {

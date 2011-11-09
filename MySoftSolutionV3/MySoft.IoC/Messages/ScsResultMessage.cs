@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using MySoft.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Messages
 {
-/// <summary>
+    /// <summary>
     /// This message is used to send/receive a raw byte array as message data.
     /// </summary>
     [Serializable]

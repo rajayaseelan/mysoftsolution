@@ -53,7 +53,7 @@
     <Compile Include="Configuration\RESTfulConfiguration.cs" />
     <Compile Include="Configuration\RESTfulConfigurationHandler.cs" />
     <Compile Include="Business\Register\ProxyInvocationHandler.cs" />
-    <Compile Include="Utils\AuthenticationManager.cs" />
+    <Compile Include="Utils\AuthManager.cs" />
     <Compile Include="RESTfulException.cs" />
     <Compile Include="Business\BusinessKindModel.cs" />
     <Compile Include="Business\BusinessMethodModel.cs" />
@@ -74,6 +74,7 @@
     <Compile Include="Utils\JsonSerializer.cs" />
     <Compile Include="Utils\ParameterFormat.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
+    <Compile Include="Utils\RESTfulHelper.cs" />
     <Compile Include="Utils\XmlSerializer.cs" />
     <Compile Include="Utils\TextSerializer.cs" />
   </ItemGroup>

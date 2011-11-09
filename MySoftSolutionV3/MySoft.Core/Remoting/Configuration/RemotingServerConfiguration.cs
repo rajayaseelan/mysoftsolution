@@ -22,8 +22,7 @@ namespace MySoft.Remoting.Configuration
     ///     <mysoft.framework>
     /// 	    <remotingServer>
     ///             <server channelType="tcp" serverAddress="127.0.0.1" port="8888" compress="true"/>
-    /// 		    <remoteObject name="基金净值" assemblyName="Shumi.BLL" className="SB.NetValue" mode="singleton" />
-    /// 		    <remoteObject name="基金净值" assemblyName="Shumi.BLL" className="SB.NetValue" mode="singlecall" />
+    /// 		    <remoteObject name="数据同步" assemblyName="Simple" className="Simple.SyncData" mode="singleton" />
     /// 	    </remotingServer>
     ///     </mysoft.framework>
     /// </configuration>

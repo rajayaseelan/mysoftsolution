@@ -13,9 +13,9 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class RemoteProxy : IService, IDisposable
     {
-        private ILog logger;
-        private RemoteNode node;
-        private ServiceRequestPool reqPool;
+        protected ILog logger;
+        protected RemoteNode node;
+        protected ServiceRequestPool reqPool;
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
         public RemoteProxy(RemoteNode node, ILog logger)
@@ -24,6 +24,11 @@ namespace MySoft.IoC.Services
             this.logger = logger;
             this.reqPool = new ServiceRequestPool(node.MaxPool);
 
+            InitRequest();
+        }
+
+        protected virtual void InitRequest()
+        {
             //服务请求池化
             for (int i = 0; i < node.MaxPool; i++)
             {
@@ -34,12 +39,24 @@ namespace MySoft.IoC.Services
             }
         }
 
-        void reqService_OnCallback(object sender, ServiceMessageEventArgs args)
+        /// <summary>
+        /// 添加消息到队列
+        /// </summary>
+        /// <param name="resMsg"></param>
+        protected void QueueMessage(ResponseMessage resMsg)
         {
-            var resMsg = args.Result;
             if (resMsg.Expiration > DateTime.Now)
             {
                 hashtable[resMsg.TransactionId] = resMsg;
+            }
+        }
+
+        void reqService_OnCallback(object sender, ServiceMessageEventArgs args)
+        {
+            if (args.Result is ResponseMessage)
+            {
+                var resMsg = args.Result as ResponseMessage;
+                QueueMessage(resMsg);
             }
 
             args = null;
@@ -74,7 +91,7 @@ namespace MySoft.IoC.Services
                 AsyncMethodCaller handler = new AsyncMethodCaller(GetResponse);
 
                 //异步调用
-                IAsyncResult ar = handler.BeginInvoke(reqMsg, r => { }, handler);
+                IAsyncResult ar = handler.BeginInvoke(OperationContext.Current, reqMsg, r => { }, handler);
 
                 // Wait for the WaitHandle to become signaled.
                 if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))
@@ -127,7 +144,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(RequestMessage reqMsg)
+        private ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
         {
             //启动线程来
             while (true)

@@ -3,9 +3,8 @@ using System.Configuration;
 using System.IO;
 using System.Reflection;
 using Castle.Core.Resource;
-using Castle.MicroKernel;
-using Castle.Windsor.Configuration.Interpreters;
 using Castle.MicroKernel.SubSystems.Configuration;
+using Castle.Windsor.Configuration.Interpreters;
 
 namespace MySoft.IoC
 {

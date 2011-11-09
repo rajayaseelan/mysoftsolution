@@ -8,6 +8,16 @@ namespace MySoft.IoC
     [AttributeUsage(AttributeTargets.Interface, AllowMultiple = false)]
     public class ServiceContractAttribute : ContractAttribute
     {
+        private Type callbackType;
+        /// <summary>
+        /// 回调类型
+        /// </summary>
+        public Type CallbackType
+        {
+            get { return callbackType; }
+            set { callbackType = value; }
+        }
+
         /// <summary>
         /// 实例化ServiceContractAttribute
         /// </summary>

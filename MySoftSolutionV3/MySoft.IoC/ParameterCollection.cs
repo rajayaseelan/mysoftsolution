@@ -1,11 +1,7 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Serialization;
-using Newtonsoft.Json.Linq;
-using System.Reflection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MySoft.IoC
 {

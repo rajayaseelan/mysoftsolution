@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MySoft.RESTful
+namespace MySoft.RESTful.Utils
 {
     /// <summary>
     /// Json系列化

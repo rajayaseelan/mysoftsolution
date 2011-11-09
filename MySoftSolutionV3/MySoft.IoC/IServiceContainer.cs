@@ -1,13 +1,8 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using Castle.Core;
 using Castle.MicroKernel;
-using MySoft.Logger;
 using MySoft.Cache;
-using System.Reflection;
-using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.IoC
 {

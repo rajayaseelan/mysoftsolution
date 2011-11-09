@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.IO;
-using System.Net;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using System.Text;
 using MySoft.Logger;
 using MySoft.RESTful.Business;
+using MySoft.RESTful.Utils;
+using System.Net;
 
 namespace MySoft.RESTful
 {
@@ -152,7 +153,7 @@ namespace MySoft.RESTful
 
             if (string.IsNullOrEmpty(callback))
             {
-                var ret = new RESTfulResult { Code = RESTfulCode.OK.ToString(), Message = "Not found [callback] parameter!" };
+                var ret = new RESTfulResult { Code = (int)RESTfulCode.OK, Message = "Not found [callback] parameter!" };
                 //throw new WebFaultException<RESTfulResult>(ret, HttpStatusCode.Forbidden);
                 response.StatusCode = HttpStatusCode.Forbidden;
                 response.ContentType = "application/json;charset=utf-8";
@@ -258,16 +259,16 @@ namespace MySoft.RESTful
             object result = null;
 
             //进行认证处理
-            RESTfulResult authResult = new RESTfulResult { Code = RESTfulCode.OK.ToString() };
+            RESTfulResult authResult = new RESTfulResult { Code = (int)RESTfulCode.OK };
 
             //进行认证处理
             if (Context != null && Context.IsAuthorized(format, kind, method))
             {
-                authResult = AuthenticationManager.Authorize();
+                authResult = AuthManager.Authorize();
             }
 
             //认证成功
-            if (authResult.Code == RESTfulCode.OK.ToString())
+            if (authResult.Code == (int)RESTfulCode.OK)
             {
                 try
                 {
@@ -288,7 +289,7 @@ namespace MySoft.RESTful
                 }
                 catch (RESTfulException e)
                 {
-                    result = new RESTfulResult { Code = e.Code.ToString(), Message = e.Message };
+                    result = new RESTfulResult { Code = (int)e.Code, Message = RESTfulHelper.GetErrorMessage(e) };
                     //result = new WebFaultException<RESTfulResult>(ret, HttpStatusCode.BadRequest);
                     response.StatusCode = HttpStatusCode.BadRequest;
 
@@ -300,7 +301,7 @@ namespace MySoft.RESTful
                 }
                 catch (Exception e)
                 {
-                    result = new RESTfulResult { Code = RESTfulCode.BUSINESS_ERROR.ToString(), Message = e.Message };
+                    result = new RESTfulResult { Code = (int)RESTfulCode.BUSINESS_ERROR, Message = RESTfulHelper.GetErrorMessage(e) };
                     //result = new WebFaultException<RESTfulResult>(ret, HttpStatusCode.ExpectationFailed);
                     response.StatusCode = HttpStatusCode.ExpectationFailed;
 
@@ -319,15 +320,23 @@ namespace MySoft.RESTful
             ISerializer serializer = SerializerFactory.Create(format);
             try
             {
-                result = serializer.Serialize(result, format == ParameterFormat.Jsonp);
-                return result.ToString();
+                if (result is RESTfulResult)
+                {
+                    var ret = result as RESTfulResult;
+                    ret.Code = Convert.ToInt32(string.Format("{0}{1}", response.StatusCode, ret.Code.ToString("00")));
+                }
+
+                return serializer.Serialize(result, format == ParameterFormat.Jsonp);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
+                response.StatusCode = HttpStatusCode.BadRequest;
+
                 //如果系列化失败
-                result = new RESTfulResult { Code = RESTfulCode.BUSINESS_ERROR.ToString(), Message = ex.Message };
-                result = serializer.Serialize(result, format == ParameterFormat.Jsonp);
-                return result.ToString();
+                var ret = new RESTfulResult { Code = (int)RESTfulCode.BUSINESS_ERROR, Message = RESTfulHelper.GetErrorMessage(e) };
+                ret.Code = Convert.ToInt32(string.Format("{0}{1}", response.StatusCode, ret.Code.ToString("00")));
+
+                return serializer.Serialize(ret, format == ParameterFormat.Jsonp);
             }
         }
     }

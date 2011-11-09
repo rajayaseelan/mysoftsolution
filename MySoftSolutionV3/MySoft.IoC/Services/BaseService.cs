@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
-using MySoft.Logger;
 using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.IoC.Services
 {

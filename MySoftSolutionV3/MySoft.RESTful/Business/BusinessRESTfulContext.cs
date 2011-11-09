@@ -11,6 +11,7 @@ using MySoft.RESTful.Business.Register;
 using Newtonsoft.Json.Linq;
 using MySoft.RESTful.Auth;
 using System.Linq;
+using MySoft.RESTful.Utils;
 
 namespace MySoft.RESTful.Business
 {
@@ -128,7 +129,7 @@ namespace MySoft.RESTful.Business
             }
             catch (Exception e)
             {
-                throw new RESTfulException(String.Format("Fault parameters: {0}!", e.Message)) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
+                throw new RESTfulException(String.Format("Fault parameters: {0}!", RESTfulHelper.GetErrorMessage(e))) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
             }
 
             object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj, metadata.UserParameter);

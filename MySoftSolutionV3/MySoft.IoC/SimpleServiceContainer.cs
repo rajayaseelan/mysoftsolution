@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using Castle.Core;
 using Castle.Core.Internal;
 using Castle.Facilities.Startable;
@@ -12,7 +13,6 @@ using MySoft.Cache;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using System.Linq;
 
 namespace MySoft.IoC
 {

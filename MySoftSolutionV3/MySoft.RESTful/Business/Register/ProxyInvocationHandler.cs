@@ -30,7 +30,7 @@ namespace MySoft.RESTful.Business.Register
         public object Invoke(object proxy, MethodInfo method, object[] parameters)
         {
             var instance = CastleFactory.Create();
-            var service = instance.GetType().GetMethod("GetService", Type.EmptyTypes)
+            var service = instance.GetType().GetMethod("CreateChannel", Type.EmptyTypes)
                 .MakeGenericMethod(serviceType).Invoke(instance, null);
 
             return DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);

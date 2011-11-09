@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Server;
@@ -27,6 +26,7 @@ namespace MySoft.IoC
 
         private IScsServer server;
         private string serverUrl;
+        private IDictionary<string, Type> callbackTypes;
         /// <summary>
         /// 服务容器
         /// </summary>
@@ -57,6 +57,22 @@ namespace MySoft.IoC
             this.server.ClientConnected += new EventHandler<ServerClientEventArgs>(server_ClientConnected);
             this.server.ClientDisconnected += new EventHandler<ServerClientEventArgs>(server_ClientDisconnected);
             this.server.WireProtocolFactory = new CustomWireProtocolFactory(config.Compress, config.Encrypt);
+
+            InitCallbackTypes();
+        }
+
+        private void InitCallbackTypes()
+        {
+            callbackTypes = new Dictionary<string, Type>();
+            var types = container.GetInterfaces<ServiceContractAttribute>();
+            foreach (var type in types)
+            {
+                var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(type);
+                if (contract != null && contract.CallbackType != null)
+                {
+                    callbackTypes[type.FullName] = contract.CallbackType;
+                }
+            }
         }
 
         #region 启动停止服务
@@ -187,25 +203,30 @@ namespace MySoft.IoC
                 //获取client发送端
                 var client = sender as IScsServerClient;
 
-                CallEventArgs args;
+                var data = e.Message as ScsResultMessage;
+                var reqMsg = data.MessageValue as RequestMessage;
+
+                //实例化当前上下文
+                if (callbackTypes.ContainsKey(reqMsg.ServiceName))
+                    OperationContext.Current = new OperationContext(client, callbackTypes[reqMsg.ServiceName]);
+                else
+                    OperationContext.Current = new OperationContext(client);
+
+                //调用事件
+                CallEventArgs args = null;
 
                 try
                 {
-                    var data = e.Message as ScsResultMessage;
-
                     //发送响应信息
-                    GetSendResponse(client, data.MessageValue as RequestMessage, out args);
+                    GetSendResponse(client, reqMsg, out args);
                 }
                 catch (Exception ex)
                 {
                     container_OnError(ex);
 
-                    var result = e.Message as ScsResultMessage;
-                    var reqMsg = result.MessageValue as RequestMessage;
-
                     var resMsg = new ResponseMessage
                     {
-                        TransactionId = new Guid(result.RepliedMessageId),
+                        TransactionId = new Guid(data.RepliedMessageId),
                         Expiration = DateTime.Now.AddMinutes(1),
                         ReturnType = ex.GetType(),
                         Error = ex
@@ -342,13 +363,14 @@ namespace MySoft.IoC
             try
             {
                 //生成一个异步调用委托
-                AsyncMethodCaller handler = new AsyncMethodCaller(p =>
+                AsyncMethodCaller handler = new AsyncMethodCaller((c, p) =>
                 {
+                    OperationContext.Current = c;
                     return container.CallService(p, config.LogTime);
                 });
 
                 //开始异步调用
-                IAsyncResult ar = handler.BeginInvoke(reqMsg, r => { }, handler);
+                IAsyncResult ar = handler.BeginInvoke(OperationContext.Current, reqMsg, r => { }, handler);
 
                 //等待信号，等待5分钟
                 if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))

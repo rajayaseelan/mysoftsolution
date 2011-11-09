@@ -82,13 +82,13 @@ namespace MySoft.PlatformService.Client
             //CastleFactory.Create().OnLog += new LogEventHandler(mq_OnLog);
             //Console.ReadKey();
 
-            int count = 1;
+            //int count = 1;
 
-            var castle = CastleFactory.Create();
-            //castle.RegisterCacheDependent(DefaultCacheDependent.Create());
-            castle.OnLog += new LogEventHandler(castle_OnLog);
-            castle.OnError += new ErrorLogEventHandler(castle_OnError);
-            IUserService service = castle.GetService<IUserService>();
+            //var castle = CastleFactory.Create();
+            ////castle.RegisterCacheDependent(DefaultCacheDependent.Create());
+            //castle.OnLog += new LogEventHandler(castle_OnLog);
+            //castle.OnError += new ErrorLogEventHandler(castle_OnError);
+            //IUserService service = castle.GetService<IUserService>();
 
             //IList<ServiceInfo> list = castle.GetService<IStatusService>().GetServiceInfoList();
             //var str = service.GetUserID();
@@ -112,23 +112,79 @@ namespace MySoft.PlatformService.Client
             //    Console.WriteLine(ex.Message);
             //}
 
-            for (int i = 0; i < count; i++)
+            //for (int i = 0; i < count; i++)
+            //{
+            //    try
+            //    {
+            //        Thread thread = new Thread(DoWork);
+            //        thread.Name = string.Format("Thread-->{0}", i);
+            //        thread.IsBackground = true;
+            //        thread.Start(service);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        //WriteMessage(msg);
+            //        castle_OnError(ex);
+            //    }
+            //}
+
+            DoWork();
+            Console.ReadKey();
+        }
+
+        static void DoWork()
+        {
+            try
             {
-                try
-                {
-                    Thread thread = new Thread(DoWork);
-                    thread.Name = string.Format("Thread-->{0}", i);
-                    thread.IsBackground = true;
-                    thread.Start(service);
-                }
-                catch (Exception ex)
-                {
-                    //WriteMessage(msg);
-                    castle_OnError(ex);
-                }
+                CastleFactory.Create().OnError += new ErrorLogEventHandler(Program_OnError);
+                var sub = CastleFactory.Create().CreateChannel<IMessagePublishService>(new MessageListener());
+                sub.Subscribe();
+                //sub.Subscribe();
+
+                //for (int i = 0; i < 10; i++)
+                //{
+                //    sub.Compute(100, i);
+                //    Thread.Sleep(1000);
+                //}
+
+                Console.WriteLine("订阅服务IMessagePublishService成功！");
+                Console.ReadLine();
+
+                sub.Unsubscribe();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        static void Program_OnError(Exception exception)
+        {
+            Console.WriteLine(exception.Message);
+        }
+
+        public class MessageListener : IMessageListener
+        {
+            #region IMessageListener 成员
+
+            public void Publish(string message)
+            {
+                Console.Write(DateTime.Now.ToString() + " --> ");
+                Console.WriteLine(message);
             }
 
-            Console.ReadKey();
+            #endregion
+
+            #region IMessageListener 成员
+
+
+            public void ShowData(int x, int y, int value)
+            {
+                Console.Write(DateTime.Now.ToString() + " --> ");
+                Console.WriteLine("{0} + {1} = {2}", x, y, value);
+            }
+
+            #endregion
         }
 
         static void castle_OnError(Exception exception)

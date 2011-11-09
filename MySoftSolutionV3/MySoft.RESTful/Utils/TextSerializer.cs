@@ -5,7 +5,7 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
-namespace MySoft.RESTful
+namespace MySoft.RESTful.Utils
 {
     /// <summary>
     /// Text系列化

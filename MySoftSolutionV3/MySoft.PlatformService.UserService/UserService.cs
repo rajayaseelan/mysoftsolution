@@ -93,5 +93,10 @@ namespace MySoft.PlatformService.UserService
         }
 
         #endregion
+
+        public void SendMessage(string message)
+        {
+            MessageCenter.Instance.NotifyMessage(message);
+        }
     }
 }

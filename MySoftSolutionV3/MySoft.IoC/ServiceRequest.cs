@@ -4,8 +4,8 @@ using MySoft.Communication.Scs.Communication;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Configuration;
-using MySoft.Logger;
 using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.IoC
 {
@@ -18,6 +18,16 @@ namespace MySoft.IoC
         /// 数据回调
         /// </summary>
         public event EventHandler<ServiceMessageEventArgs> OnCallback;
+
+        /// <summary>
+        /// 连接上事件
+        /// </summary>
+        public event EventHandler OnConnected;
+
+        /// <summary>
+        /// 断开连接事件
+        /// </summary>
+        public event EventHandler OnDisconnected;
 
         private IScsClient client;
         private ILog logger;
@@ -98,7 +108,15 @@ namespace MySoft.IoC
         void client_MessageReceived(object sender, MessageEventArgs e)
         {
             //不是指定消息不处理
-            if (e.Message is ScsResultMessage)
+            if (e.Message is ScsCallbackMessage)
+            {
+                //消息类型转换
+                var data = e.Message as ScsCallbackMessage;
+
+                //把数据发送到客户端
+                if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs { Client = client, Result = data.MessageValue });
+            }
+            else if (e.Message is ScsResultMessage)
             {
                 try
                 {
@@ -128,12 +146,12 @@ namespace MySoft.IoC
 
         void client_Disconnected(object sender, EventArgs e)
         {
-            //暂不处理 
+            if (OnDisconnected != null) OnDisconnected(sender, e);
         }
 
         void client_Connected(object sender, EventArgs e)
         {
-            //暂不处理 
+            if (OnConnected != null) OnConnected(sender, e);
         }
 
         #endregion

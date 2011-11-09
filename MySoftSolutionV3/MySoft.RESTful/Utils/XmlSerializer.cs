@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 
-namespace MySoft.RESTful
+namespace MySoft.RESTful.Utils
 {
     /// <summary>
     /// xml系列化

@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using MySoft.IoC.Messages;
-using MySoft.Security;
-using MySoft.Logger;
 using MySoft.IoC.Aspect;
+using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.IoC.Services
 {
@@ -14,7 +11,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     /// <param name="reqMsg"></param>
     /// <returns></returns>
-    public delegate ResponseMessage AsyncMethodCaller(RequestMessage reqMsg);
+    public delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
 
     /// <summary>
     /// The dynamic service.

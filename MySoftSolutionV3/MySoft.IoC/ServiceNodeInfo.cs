@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MySoft.IoC
 {
@@ -11,45 +9,45 @@ namespace MySoft.IoC
     public class ServiceNodeInfo
     {
         private string key;
-		private string service;
-		private string impl;
+        private string service;
+        private string impl;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceNodeInfo"/> class.
         /// </summary>
         public ServiceNodeInfo()
-		{
-		}
+        {
+        }
 
         /// <summary>
         /// Gets or sets the DEFAULT_KEY.
         /// </summary>
         /// <value>The DEFAULT_KEY.</value>
-		public string Key
+        public string Key
         {
-			get { return key; }
-			set { key = value; }
-		}
+            get { return key; }
+            set { key = value; }
+        }
 
         /// <summary>
         /// Gets or sets the sevice.
         /// </summary>
         /// <value>The sevice.</value>
-		public string Sevice
+        public string Sevice
         {
-			get { return service; }
-			set { service = value; }
-		}
+            get { return service; }
+            set { service = value; }
+        }
 
         /// <summary>
         /// Gets or sets the implementation.
         /// </summary>
         /// <value>The implementation.</value>
-		public string Implementation
+        public string Implementation
         {
-			get { return impl; }
-			set { impl = value; }
-		}
+            get { return impl; }
+            set { impl = value; }
+        }
 
         /// <summary>
         /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
@@ -57,9 +55,9 @@ namespace MySoft.IoC
         /// <returns>
         /// A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
         /// </returns>
-		public override string ToString() 
+        public override string ToString()
         {
-			return key + "/[" + service + "]" + impl;
-		}
+            return key + "/[" + service + "]" + impl;
+        }
     }
 }

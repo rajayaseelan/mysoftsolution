@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MySoft.Communication.Scs.Communication.Protocols;
+﻿using MySoft.Communication.Scs.Communication.Protocols;
 
 namespace MySoft.IoC.Messages
 {

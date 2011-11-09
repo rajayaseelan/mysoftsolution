@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using MySoft.RESTful.Auth;
 
-namespace MySoft.RESTful
+namespace MySoft.RESTful.Utils
 {
     /// <summary>
     /// 参数处理

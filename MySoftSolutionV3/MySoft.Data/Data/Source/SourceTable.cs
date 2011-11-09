@@ -79,7 +79,7 @@ namespace MySoft.Data
         /// </summary>
         public SourceTable(string tableName)
         {
-            base.TableName = tableName;
+            this.TableName = tableName;
         }
 
         /// <summary>

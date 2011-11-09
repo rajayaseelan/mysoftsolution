@@ -1,8 +1,6 @@
 ﻿namespace MySoft.IoC.Status
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
 
     /// <summary>
     /// 进程信息

@@ -64,8 +64,10 @@
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
     <Compile Include="CallEventArgs.cs" />
     <Compile Include="IoCException.cs" />
+    <Compile Include="Messages\CallbackMessage.cs" />
     <Compile Include="Messages\CustomWireProtocol.cs" />
     <Compile Include="Messages\CustomWireProtocolFactory.cs" />
+    <Compile Include="Messages\ScsCallbackMessage.cs" />
     <Compile Include="Messages\ScsClientMessage.cs" />
     <Compile Include="Mvp\Presenter.cs" />
     <Compile Include="Mvp\PresenterFactory.cs" />
@@ -116,6 +118,8 @@
     </Compile>
     <Compile Include="Messages\ScsResultMessage.cs" />
     <Compile Include="Messages\ServiceMessageEventArgs.cs" />
+    <Compile Include="Callback\CallbackInvocationHandler.cs" />
+    <Compile Include="Callback\OperationContext.cs" />
     <Compile Include="ServiceRequestPool.cs" />
     <Compile Include="ServerMoniter.cs" />
     <Compile Include="ServiceInterpreter.cs" />
@@ -138,6 +142,7 @@
     <Compile Include="Messages\RequestMessage.cs" />
     <Compile Include="Messages\ResponseMessage.cs" />
     <Compile Include="ServiceNodeInfo.cs" />
+    <Compile Include="Services\CallbackProxy.cs" />
     <Compile Include="Services\RemoteProxy.cs" />
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
@@ -162,7 +167,6 @@
       <Name>MySoft.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

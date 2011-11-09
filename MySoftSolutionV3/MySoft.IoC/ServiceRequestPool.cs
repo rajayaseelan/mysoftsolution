@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// 服务消息池
     /// </summary>
-    internal sealed class ServiceRequestPool
+    public sealed class ServiceRequestPool
     {
         /// <summary>
         /// ServiceRequest栈

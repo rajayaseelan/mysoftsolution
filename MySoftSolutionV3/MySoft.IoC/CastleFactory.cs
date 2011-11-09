@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MySoft.Cache;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Configuration;
-using MySoft.Logger;
 using MySoft.IoC.Services;
-using System.Linq;
+using MySoft.Logger;
 
 namespace MySoft.IoC
 {
@@ -160,33 +160,53 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Gets the service.
+        /// Create service channel.
         /// </summary>
         /// <returns>The service implemetation instance.</returns>
-        public IServiceInterfaceType GetService<IServiceInterfaceType>()
+        public IServiceInterfaceType CreateChannel<IServiceInterfaceType>()
         {
-            return GetService<IServiceInterfaceType>(config.Default);
+            return CreateChannel<IServiceInterfaceType>(config.Default);
         }
 
         /// <summary>
-        /// Gets the service.
+        /// Create service channel.
+        /// </summary>
+        /// <param name="nodeKey">The node key.</param>
+        /// <returns></returns>
+        public IServiceInterfaceType CreateChannel<IServiceInterfaceType>(string nodeKey)
+        {
+            return CreateChannel<IServiceInterfaceType>(nodeKey, null);
+        }
+
+        /// <summary>
+        /// Create service channel.
         /// </summary>
         /// <param name="node">The node name.</param>
         /// <returns></returns>
-        public IServiceInterfaceType GetService<IServiceInterfaceType>(RemoteNode node)
+        public IServiceInterfaceType CreateChannel<IServiceInterfaceType>(RemoteNode node)
+        {
+            return CreateChannel<IServiceInterfaceType>(node, null);
+        }
+
+        /// <summary>
+        /// Create service channel.
+        /// </summary>
+        /// <param name="node">The node name.</param>
+        /// <returns></returns>
+        private IServiceInterfaceType CreateChannel<IServiceInterfaceType>(RemoteNode node, RemoteProxy proxy)
         {
             if (!singleton.config.Nodes.ContainsKey(node.Key))
                 singleton.config.Nodes[node.Key] = node;
 
-            return GetService<IServiceInterfaceType>(node.Key);
+            return CreateChannel<IServiceInterfaceType>(node.Key, proxy);
         }
 
         /// <summary>
-        /// Gets the service.
+        /// Create service channel.
         /// </summary>
         /// <param name="nodeKey">The node key.</param>
         /// <returns></returns>
-        public IServiceInterfaceType GetService<IServiceInterfaceType>(string nodeKey)
+        private IServiceInterfaceType CreateChannel<IServiceInterfaceType>(string nodeKey, RemoteProxy proxy)
         {
             Exception ex = new ArgumentException("Generic parameter type - 【" + typeof(IServiceInterfaceType).FullName
                 + "】 must be an interface marked with ServiceContractAttribute.");
@@ -244,30 +264,14 @@ namespace MySoft.IoC
                         catch { }
                         if (!container.Kernel.HasComponent(serviceType) || instance == null)
                         {
-                            if (singleton.proxies.Count == 0)
+                            if (proxy == null)
                             {
-                                throw new WarningException("Not find any service node！");
-                            }
-
-                            if (string.IsNullOrEmpty(nodeKey)) nodeKey = config.Default;
-                            string oldNodeKey = nodeKey;
-
-                            //如果不存在当前配置节，则使用默认配置节
-                            if (!singleton.proxies.ContainsKey(nodeKey.ToLower()))
-                            {
-                                nodeKey = "default";
-                            }
-
-                            if (singleton.proxies.ContainsKey(nodeKey.ToLower()))
-                            {
+                                nodeKey = GetNodeKey(nodeKey);
                                 service = singleton.proxies[nodeKey.ToLower()];
                             }
                             else
                             {
-                                if (oldNodeKey == nodeKey)
-                                    throw new WarningException("Not find the service node [" + nodeKey + "]！");
-                                else
-                                    throw new WarningException("Not find the service node [" + oldNodeKey + "] or [" + nodeKey + "]！");
+                                service = proxy;
                             }
                         }
 
@@ -284,6 +288,37 @@ namespace MySoft.IoC
 
                 return iocService;
             }
+        }
+
+        /// <summary>
+        /// 获取节点名称
+        /// </summary>
+        /// <param name="nodeKey"></param>
+        /// <returns></returns>
+        private string GetNodeKey(string nodeKey)
+        {
+            if (singleton.proxies.Count == 0)
+            {
+                throw new WarningException("Not find any service node！");
+            }
+
+            if (string.IsNullOrEmpty(nodeKey)) nodeKey = config.Default;
+            string oldNodeKey = nodeKey;
+
+            //如果不存在当前配置节，则使用默认配置节
+            if (!singleton.proxies.ContainsKey(nodeKey.ToLower()))
+            {
+                nodeKey = "default";
+            }
+
+            if (!singleton.proxies.ContainsKey(nodeKey.ToLower()))
+            {
+                if (oldNodeKey == nodeKey)
+                    throw new WarningException("Not find the service node [" + nodeKey + "]！");
+                else
+                    throw new WarningException("Not find the service node [" + oldNodeKey + "] or [" + nodeKey + "]！");
+            }
+            return nodeKey;
         }
 
         #endregion
@@ -303,6 +338,68 @@ namespace MySoft.IoC
         /// OnError event.
         /// </summary>
         public event ErrorLogEventHandler OnError;
+
+        #endregion
+
+        #region 回调订阅
+
+        /// <summary>
+        /// 获取回调发布服务
+        /// </summary>
+        /// <typeparam name="IPublishService"></typeparam>
+        /// <param name="callback"></param>
+        /// <param name="nodeKey"></param>
+        /// <returns></returns>
+        public IPublishService CreateChannel<IPublishService>(object callback)
+        {
+            return CreateChannel<IPublishService>(callback, config.Default);
+        }
+
+        /// <summary>
+        /// 获取回调发布服务
+        /// </summary>
+        /// <typeparam name="IPublishService"></typeparam>
+        /// <param name="callback"></param>
+        /// <param name="nodeKey"></param>
+        /// <returns></returns>
+        public IPublishService CreateChannel<IPublishService>(object callback, string nodeKey)
+        {
+            nodeKey = GetNodeKey(nodeKey);
+            var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            return CreateChannel<IPublishService>(callback, node);
+        }
+
+        /// <summary>
+        /// 获取回调发布服务
+        /// </summary>
+        /// <typeparam name="IPublishService"></typeparam>
+        /// <param name="callback"></param>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public IPublishService CreateChannel<IPublishService>(object callback, RemoteNode node)
+        {
+            if (callback == null) throw new IoCException("Callback cannot be the null!");
+            var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(typeof(IPublishService));
+            if (contract != null && contract.CallbackType != null)
+            {
+                if (!contract.CallbackType.IsAssignableFrom(callback.GetType()))
+                {
+                    throw new IoCException("Callback must assignable from " + callback.GetType().FullName + "!");
+                }
+            }
+            else
+                throw new IoCException("Callback type cannot be the null!");
+
+            CallbackProxy proxy = new CallbackProxy(callback, node, this.ServiceContainer);
+            proxy.OnError += new ErrorLogEventHandler(proxy_OnError);
+            return CreateChannel<IPublishService>(node, proxy);
+        }
+
+        void proxy_OnError(Exception exception)
+        {
+            if (singleton.OnError != null)
+                singleton.OnError(exception);
+        }
 
         #endregion
     }

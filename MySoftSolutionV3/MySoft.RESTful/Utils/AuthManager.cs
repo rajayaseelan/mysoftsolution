@@ -9,19 +9,19 @@ using System.Web;
 using MySoft.Logger;
 using MySoft.RESTful.Auth;
 
-namespace MySoft.RESTful
+namespace MySoft.RESTful.Utils
 {
     /// <summary>
     /// 认证工厂
     /// </summary>
-    public static class AuthenticationManager
+    public static class AuthManager
     {
         /// <summary>
         /// RESTful配置文件
         /// </summary>
         private static IList<IAuthentication> auths = new List<IAuthentication>();
 
-        static AuthenticationManager()
+        static AuthManager()
         {
             //读取配置文件
             var config = RESTfulConfiguration.GetConfig();
@@ -117,7 +117,7 @@ namespace MySoft.RESTful
             //进行认证处理
             var result = new RESTfulResult
             {
-                Code = RESTfulCode.AUTH_FAULT.ToString(),
+                Code = (int)RESTfulCode.AUTH_FAULT,
                 Message = "Authentication fault!"
             };
 
@@ -125,7 +125,7 @@ namespace MySoft.RESTful
             {
                 if (auths.Count == 0)
                 {
-                    result.Code = RESTfulCode.AUTH_ERROR.ToString();
+                    result.Code = (int)RESTfulCode.AUTH_ERROR;
                     result.Message = "No any authentication!";
                     return result;
                 }
@@ -139,7 +139,7 @@ namespace MySoft.RESTful
                     if (auth.Authorize())
                     {
                         //认证成功
-                        result.Code = RESTfulCode.OK.ToString();
+                        result.Code = (int)RESTfulCode.OK;
                         result.Message = "Authentication success!";
 
                         isAuthentication = true;
@@ -153,18 +153,19 @@ namespace MySoft.RESTful
 
                 if (!isAuthentication)
                 {
+                    if (result.Code == 0) result.Code = (int)RESTfulCode.AUTH_ERROR;
                     result.Message = string.Join(" | ", errors.ToArray());
                 }
             }
             catch (AuthenticationException ex)
             {
                 result.Code = ex.Code;
-                result.Message = ex.Message;
+                result.Message = RESTfulHelper.GetErrorMessage(ex);
             }
             catch (Exception ex)
             {
-                result.Code = RESTfulCode.AUTH_ERROR.ToString();
-                result.Message = ErrorHelper.GetInnerException(ex).Message;
+                result.Code = (int)RESTfulCode.AUTH_ERROR;
+                result.Message = RESTfulHelper.GetErrorMessage(ex);
             }
 
             return result;
