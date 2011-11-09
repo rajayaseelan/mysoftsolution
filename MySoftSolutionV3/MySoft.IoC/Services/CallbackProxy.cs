@@ -73,5 +73,13 @@ namespace MySoft.IoC.Services
 
             args = null;
         }
+
+        public override string ServiceName
+        {
+            get
+            {
+                return typeof(CallbackProxy).FullName;
+            }
+        }
     }
 }

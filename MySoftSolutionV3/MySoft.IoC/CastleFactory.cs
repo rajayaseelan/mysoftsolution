@@ -253,6 +253,10 @@ namespace MySoft.IoC
             {
                 Type serviceType = typeof(IServiceInterfaceType);
                 string serviceKey = string.Format("CastleFactory_{0}_{1}", nodeKey, serviceType);
+                if (proxy != null)
+                {
+                    serviceKey = string.Format("{0}_{1}", serviceKey, proxy.ServiceName);
+                }
                 IServiceInterfaceType iocService = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
                 if (iocService == null)
                 {

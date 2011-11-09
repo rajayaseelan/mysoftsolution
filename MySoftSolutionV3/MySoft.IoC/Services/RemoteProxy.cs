@@ -178,9 +178,12 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// ·þÎñÃû³Æ
         /// </summary>
-        public string ServiceName
+        public virtual string ServiceName
         {
-            get { return typeof(RemoteProxy).FullName; }
+            get
+            {
+                return typeof(RemoteProxy).FullName;
+            }
         }
 
         #endregion
