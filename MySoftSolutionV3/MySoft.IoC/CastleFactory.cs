@@ -163,9 +163,9 @@ namespace MySoft.IoC
         /// Create service channel.
         /// </summary>
         /// <returns>The service implemetation instance.</returns>
-        public IServiceInterfaceType CreateChannel<IServiceInterfaceType>()
+        public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
-            return CreateChannel<IServiceInterfaceType>(config.Default);
+            return GetChannel<IServiceInterfaceType>(config.Default);
         }
 
         /// <summary>
@@ -173,9 +173,9 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="nodeKey">The node key.</param>
         /// <returns></returns>
-        public IServiceInterfaceType CreateChannel<IServiceInterfaceType>(string nodeKey)
+        public IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey)
         {
-            return CreateChannel<IServiceInterfaceType>(nodeKey, null);
+            return GetChannel<IServiceInterfaceType>(nodeKey, null);
         }
 
         /// <summary>
@@ -183,9 +183,9 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node">The node name.</param>
         /// <returns></returns>
-        public IServiceInterfaceType CreateChannel<IServiceInterfaceType>(RemoteNode node)
+        public IServiceInterfaceType GetChannel<IServiceInterfaceType>(RemoteNode node)
         {
-            return CreateChannel<IServiceInterfaceType>(node, null);
+            return GetChannel<IServiceInterfaceType>(node, null);
         }
 
         /// <summary>
@@ -193,12 +193,12 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node">The node name.</param>
         /// <returns></returns>
-        private IServiceInterfaceType CreateChannel<IServiceInterfaceType>(RemoteNode node, RemoteProxy proxy)
+        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(RemoteNode node, RemoteProxy proxy)
         {
             if (!singleton.config.Nodes.ContainsKey(node.Key))
                 singleton.config.Nodes[node.Key] = node;
 
-            return CreateChannel<IServiceInterfaceType>(node.Key, proxy);
+            return GetChannel<IServiceInterfaceType>(node.Key, proxy);
         }
 
         /// <summary>
@@ -206,7 +206,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="nodeKey">The node key.</param>
         /// <returns></returns>
-        private IServiceInterfaceType CreateChannel<IServiceInterfaceType>(string nodeKey, RemoteProxy proxy)
+        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey, RemoteProxy proxy)
         {
             Exception ex = new ArgumentException("Generic parameter type - ¡¾" + typeof(IServiceInterfaceType).FullName
                 + "¡¿ must be an interface marked with ServiceContractAttribute.");
@@ -350,9 +350,9 @@ namespace MySoft.IoC
         /// <param name="callback"></param>
         /// <param name="nodeKey"></param>
         /// <returns></returns>
-        public IPublishService CreateChannel<IPublishService>(object callback)
+        public IPublishService GetChannel<IPublishService>(object callback)
         {
-            return CreateChannel<IPublishService>(callback, config.Default);
+            return GetChannel<IPublishService>(callback, config.Default);
         }
 
         /// <summary>
@@ -362,11 +362,11 @@ namespace MySoft.IoC
         /// <param name="callback"></param>
         /// <param name="nodeKey"></param>
         /// <returns></returns>
-        public IPublishService CreateChannel<IPublishService>(object callback, string nodeKey)
+        public IPublishService GetChannel<IPublishService>(object callback, string nodeKey)
         {
             nodeKey = GetNodeKey(nodeKey);
             var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
-            return CreateChannel<IPublishService>(callback, node);
+            return GetChannel<IPublishService>(callback, node);
         }
 
         /// <summary>
@@ -376,7 +376,7 @@ namespace MySoft.IoC
         /// <param name="callback"></param>
         /// <param name="node"></param>
         /// <returns></returns>
-        public IPublishService CreateChannel<IPublishService>(object callback, RemoteNode node)
+        public IPublishService GetChannel<IPublishService>(object callback, RemoteNode node)
         {
             if (callback == null) throw new IoCException("Callback cannot be the null!");
             var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(typeof(IPublishService));
@@ -392,7 +392,7 @@ namespace MySoft.IoC
 
             CallbackProxy proxy = new CallbackProxy(callback, node, this.ServiceContainer);
             proxy.OnError += new ErrorLogEventHandler(proxy_OnError);
-            return CreateChannel<IPublishService>(node, proxy);
+            return GetChannel<IPublishService>(node, proxy);
         }
 
         void proxy_OnError(Exception exception)

@@ -24,7 +24,7 @@ namespace MySoft.PlatformService.WebForm
             {
                 try
                 {
-                    //var p = CastleFactory.Create().CreateChannel<IStatusService>("bbb").GetProcessInfos(2532);
+                    //var p = CastleFactory.Create().GetChannel<IStatusService>("bbb").GetProcessInfos(2532);
                     //StringBuilder sb = new StringBuilder();
                     //foreach (var a in p)
                     //{
@@ -34,8 +34,8 @@ namespace MySoft.PlatformService.WebForm
 
                     //perfValue = sb.ToString();
 
-                    status = CastleFactory.Create().CreateChannel<IStatusService>().GetServerStatus();
-                    clients = CastleFactory.Create().CreateChannel<IStatusService>().GetClientInfoList();
+                    status = CastleFactory.Create().GetChannel<IStatusService>().GetServerStatus();
+                    clients = CastleFactory.Create().GetChannel<IStatusService>().GetClientInfoList();
                 }
                 catch (Exception ex)
                 {
@@ -46,7 +46,7 @@ namespace MySoft.PlatformService.WebForm
 
         protected void btnClear_Click(object sender, EventArgs e)
         {
-            CastleFactory.Create().CreateChannel<IStatusService>().ClearStatus();
+            CastleFactory.Create().GetChannel<IStatusService>().ClearStatus();
         }
     }
 }

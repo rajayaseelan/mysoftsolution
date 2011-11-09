@@ -402,9 +402,9 @@ namespace MySoft.RESTful.SDK
         /// </summary>
         /// <typeparam name="IServiceInterfaceType"></typeparam>
         /// <returns></returns>
-        public IServiceInterfaceType CreateChannel<IServiceInterfaceType>()
+        public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
-            return CreateChannel<IServiceInterfaceType>(new Token());
+            return GetChannel<IServiceInterfaceType>(new Token());
         }
 
         /// <summary>
@@ -412,7 +412,7 @@ namespace MySoft.RESTful.SDK
         /// </summary>
         /// <typeparam name="IServiceInterfaceType"></typeparam>
         /// <returns></returns>
-        public IServiceInterfaceType CreateChannel<IServiceInterfaceType>(Token token)
+        public IServiceInterfaceType GetChannel<IServiceInterfaceType>(Token token)
         {
             Exception ex = new ArgumentException("Generic parameter type - 【" + typeof(IServiceInterfaceType).FullName
                 + "】 must be an interface marked with PublishKindAttribute.");

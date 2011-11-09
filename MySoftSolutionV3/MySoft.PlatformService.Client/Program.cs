@@ -137,7 +137,7 @@ namespace MySoft.PlatformService.Client
             try
             {
                 CastleFactory.Create().OnError += new ErrorLogEventHandler(Program_OnError);
-                var sub = CastleFactory.Create().CreateChannel<IMessagePublishService>(new MessageListener());
+                var sub = CastleFactory.Create().GetChannel<IMessagePublishService>(new MessageListener());
                 sub.Subscribe();
                 //sub.Subscribe();
 

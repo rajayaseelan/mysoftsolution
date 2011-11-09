@@ -35,7 +35,7 @@ namespace MySoft.PlatformService.WinForm
                     return;
                 }
 
-                var service = CastleFactory.Create().CreateChannel<IUserService>();
+                var service = CastleFactory.Create().GetChannel<IUserService>();
                 service.SendMessage(textBox1.Text);
 
                 richTextBox1.AppendText(textBox1.Text + "\r\n");
