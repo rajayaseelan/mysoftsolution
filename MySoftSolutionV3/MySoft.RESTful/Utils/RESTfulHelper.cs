@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MySoft.RESTful.Auth;
 
 namespace MySoft.RESTful.Utils
 {
@@ -19,10 +20,16 @@ namespace MySoft.RESTful.Utils
         public static string GetErrorMessage(Exception ex, string parameter)
         {
             ex = ErrorHelper.GetInnerException(ex);
+            string errorMessage = string.Empty;
             if (!string.IsNullOrEmpty(parameter))
-                return string.Format("{0}, {1}, request params: {2}", ex.Message, ex.TargetSite, parameter);
+                errorMessage = string.Format("{0}, {1}, request params: {2}", ex.Message, ex.TargetSite, parameter);
             else
-                return string.Format("{0}, {1}", ex.Message, ex.TargetSite);
+                errorMessage = string.Format("{0}, {1}", ex.Message, ex.TargetSite);
+
+            if (AuthenticationContext.Current != null && AuthenticationContext.Current.User != null)
+                errorMessage += " user: " + AuthenticationContext.Current.User.AuthName;
+
+            return errorMessage;
         }
     }
 }
