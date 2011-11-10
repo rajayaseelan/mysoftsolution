@@ -129,7 +129,7 @@ namespace MySoft.RESTful.Business
             }
             catch (Exception e)
             {
-                throw new RESTfulException(String.Format("Fault parameters: {0}!", RESTfulHelper.GetErrorMessage(e))) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
+                throw new RESTfulException(String.Format("Fault parameters: {0}!", parameters)) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
             }
 
             object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj, metadata.UserParameter);

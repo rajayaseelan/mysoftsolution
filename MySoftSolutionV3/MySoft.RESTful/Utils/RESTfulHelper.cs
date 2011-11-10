@@ -14,11 +14,15 @@ namespace MySoft.RESTful.Utils
         /// 获取异常详细信息
         /// </summary>
         /// <param name="ex"></param>
+        /// <param name="parameter"></param>
         /// <returns></returns>
-        public static string GetErrorMessage(Exception ex)
+        public static string GetErrorMessage(Exception ex, string parameter)
         {
             ex = ErrorHelper.GetInnerException(ex);
-            return string.Format("Error:{0}\r\nSource:{1}\r\nTargetSite:{2}", ex.Message, ex.Source, ex.TargetSite);
+            if (!string.IsNullOrEmpty(parameter))
+                return string.Format("{0}, {1}, request params: {2}", ex.Message, ex.TargetSite, parameter);
+            else
+                return string.Format("{0}, {1}", ex.Message, ex.TargetSite);
         }
     }
 }

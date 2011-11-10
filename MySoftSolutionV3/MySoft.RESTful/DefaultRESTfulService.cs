@@ -47,11 +47,11 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameters"></param>
+        /// <param name="parameter"></param>
         /// <returns></returns>
-        public Stream PostJsonEntry(string kind, string method, Stream parameters)
+        public Stream PostJsonEntry(string kind, string method, Stream parameter)
         {
-            return GetResponseStream(ParameterFormat.Json, kind, method, parameters);
+            return GetResponseStream(ParameterFormat.Json, kind, method, parameter);
         }
 
         /// <summary>
@@ -59,11 +59,11 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameters"></param>
+        /// <param name="parameter"></param>
         /// <returns></returns>
-        public Stream DeleteJsonEntry(string kind, string method, Stream parameters)
+        public Stream DeleteJsonEntry(string kind, string method, Stream parameter)
         {
-            return PostJsonEntry(kind, method, parameters);
+            return PostJsonEntry(kind, method, parameter);
         }
 
         /// <summary>
@@ -71,11 +71,11 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameters"></param>
+        /// <param name="parameter"></param>
         /// <returns></returns>
-        public Stream PutJsonEntry(string kind, string method, Stream parameters)
+        public Stream PutJsonEntry(string kind, string method, Stream parameter)
         {
-            return PostJsonEntry(kind, method, parameters);
+            return PostJsonEntry(kind, method, parameter);
         }
 
         /// <summary>
@@ -94,11 +94,11 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameters"></param>
+        /// <param name="parameter"></param>
         /// <returns></returns>
-        public Stream PostXmlEntry(string kind, string method, Stream parameters)
+        public Stream PostXmlEntry(string kind, string method, Stream parameter)
         {
-            return GetResponseStream(ParameterFormat.Xml, kind, method, parameters);
+            return GetResponseStream(ParameterFormat.Xml, kind, method, parameter);
         }
 
         /// <summary>
@@ -106,11 +106,11 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameters"></param>
+        /// <param name="parameter"></param>
         /// <returns></returns>
-        public Stream DeleteXmlEntry(string kind, string method, Stream parameters)
+        public Stream DeleteXmlEntry(string kind, string method, Stream parameter)
         {
-            return PostXmlEntry(kind, method, parameters);
+            return PostXmlEntry(kind, method, parameter);
         }
 
         /// <summary>
@@ -118,11 +118,11 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameters"></param>
+        /// <param name="parameter"></param>
         /// <returns></returns>
-        public Stream PutXmlEntry(string kind, string method, Stream parameters)
+        public Stream PutXmlEntry(string kind, string method, Stream parameter)
         {
-            return PostXmlEntry(kind, method, parameters);
+            return PostXmlEntry(kind, method, parameter);
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace MySoft.RESTful
             return ms;
         }
 
-        private string GetResponseString(ParameterFormat format, string kind, string method, string parameters)
+        private string GetResponseString(ParameterFormat format, string kind, string method, string parameter)
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
@@ -273,7 +273,7 @@ namespace MySoft.RESTful
                 try
                 {
                     Type retType;
-                    result = Context.Invoke(format, kind, method, parameters, out retType);
+                    result = Context.Invoke(format, kind, method, parameter, out retType);
 
                     //如果值为null，以对象方式返回
                     if (result == null || retType == typeof(string))
@@ -289,7 +289,7 @@ namespace MySoft.RESTful
                 }
                 catch (RESTfulException e)
                 {
-                    result = new RESTfulResult { Code = (int)e.Code, Message = RESTfulHelper.GetErrorMessage(e) };
+                    result = new RESTfulResult { Code = (int)e.Code, Message = RESTfulHelper.GetErrorMessage(e, parameter) };
                     //result = new WebFaultException<RESTfulResult>(ret, HttpStatusCode.BadRequest);
                     response.StatusCode = HttpStatusCode.BadRequest;
 
@@ -301,7 +301,7 @@ namespace MySoft.RESTful
                 }
                 catch (Exception e)
                 {
-                    result = new RESTfulResult { Code = (int)RESTfulCode.BUSINESS_ERROR, Message = RESTfulHelper.GetErrorMessage(e) };
+                    result = new RESTfulResult { Code = (int)RESTfulCode.BUSINESS_ERROR, Message = RESTfulHelper.GetErrorMessage(e, parameter) };
                     //result = new WebFaultException<RESTfulResult>(ret, HttpStatusCode.ExpectationFailed);
                     response.StatusCode = HttpStatusCode.ExpectationFailed;
 
@@ -333,7 +333,7 @@ namespace MySoft.RESTful
                 response.StatusCode = HttpStatusCode.BadRequest;
 
                 //如果系列化失败
-                var ret = new RESTfulResult { Code = (int)RESTfulCode.BUSINESS_ERROR, Message = RESTfulHelper.GetErrorMessage(e) };
+                var ret = new RESTfulResult { Code = (int)RESTfulCode.BUSINESS_ERROR, Message = RESTfulHelper.GetErrorMessage(e, parameter) };
                 ret.Code = Convert.ToInt32(string.Format("{0}{1}", response.StatusCode, ret.Code.ToString("00")));
 
                 return serializer.Serialize(ret, format == ParameterFormat.Jsonp);
