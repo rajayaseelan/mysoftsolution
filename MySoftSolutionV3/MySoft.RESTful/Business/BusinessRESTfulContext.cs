@@ -112,7 +112,7 @@ namespace MySoft.RESTful.Business
 
                 if (!string.IsNullOrEmpty(parameters))
                 {
-                    obj = ParameterHelper.Resolve(parameters, format);
+                    obj = JObject.Parse(parameters);
                 }
 
                 //解析QueryString

@@ -21,14 +21,22 @@ namespace MySoft.RESTful.OAuth
         public bool Authorize()
         {
             AuthenticationToken token = AuthenticationContext.Current.Token;
-            if (!string.IsNullOrEmpty(token.Parameters["username"]))
+            if (!string.IsNullOrEmpty(token.Parameters["uid"]))
             {
                 AuthenticationContext.Current.User = new AuthenticationUser
                 {
-                    AuthName = token.Parameters["username"]
+                    AuthName = token.Parameters["uid"]
                 };
             }
             return true;
+        }
+
+        /// <summary>
+        /// 认证类型
+        /// </summary>
+        public AuthType AuthType
+        {
+            get { return AuthType.UidPwd; }
         }
 
         #endregion

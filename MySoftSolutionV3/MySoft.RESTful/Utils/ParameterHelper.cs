@@ -32,28 +32,6 @@ namespace MySoft.RESTful.Utils
         }
 
         /// <summary>
-        /// 解析参数
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// <param name="format"></param>
-        /// <returns></returns>
-        public static JObject Resolve(string parameters, ParameterFormat format)
-        {
-            switch (format)
-            {
-                case ParameterFormat.Jsonp:
-                case ParameterFormat.Json:
-                    return JObject.Parse(parameters);
-                case ParameterFormat.Xml:
-                    XmlDocument doc = new XmlDocument();
-                    doc.LoadXml(parameters);
-                    return JObject.Parse(JsonConvert.SerializeXmlNode(doc));
-                default:
-                    return new JObject();
-            }
-        }
-
-        /// <summary>
         /// 参数解析
         /// </summary>
         /// <param name="paramters"></param>

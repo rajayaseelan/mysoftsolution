@@ -14,18 +14,6 @@ namespace MySoft.IoC
         private Hashtable parmValues = new Hashtable();
 
         /// <summary>
-        /// Gets or sets the serialized data.
-        /// </summary>
-        /// <value>The serialized data.</value>
-        public string SerializedData
-        {
-            get
-            {
-                return GetJsonString(Formatting.Indented);
-            }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ParameterCollection"/> class.
         /// </summary>
         public ParameterCollection() { }
@@ -79,16 +67,6 @@ namespace MySoft.IoC
         /// </returns>
         public override string ToString()
         {
-            return GetJsonString(Formatting.None);
-        }
-
-        /// <summary>
-        /// »ñÈ¡json×Ö·û´®
-        /// </summary>
-        /// <param name="format"></param>
-        /// <returns></returns>
-        private string GetJsonString(Formatting format)
-        {
             if (parmValues.Keys.Count == 0)
             {
                 return "{}";
@@ -113,7 +91,7 @@ namespace MySoft.IoC
                     json.Add(key, JToken.Parse(jsonString));
                 }
 
-                return json.ToString(format);
+                return json.ToString(Formatting.Indented);
             }
         }
     }

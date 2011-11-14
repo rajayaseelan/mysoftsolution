@@ -64,7 +64,7 @@ namespace MySoft.IoC
             {
                 //参数不正确直接返回异常
                 string title = string.Format("Invalid parameters ({0},{1}).", reqMsg.ServiceName, reqMsg.SubServiceName);
-                string body = string.Format("{0}\r\nParameters ==> {1}", title, reqMsg.Parameters.SerializedData);
+                string body = string.Format("{0}\r\nParameters ==> {1}", title, reqMsg.Parameters);
                 throw new WarningException(body)
                 {
                     ApplicationName = reqMsg.AppName,

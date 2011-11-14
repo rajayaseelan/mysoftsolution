@@ -167,30 +167,11 @@ namespace MySoft.RESTful.SDK
                     request.ContentType = "application/x-www-form-urlencoded";
                     request.Method = parameter.HttpMethod.ToString();
 
-                    var stream = request.GetRequestStream();
-                    string input = string.Empty;
-
-                    //判断数据类型
-                    if (parameter.DataFormat == DataFormat.JSON)
-                    {
-                        request.ContentType = "application/json";
-                        input = SerializationManager.SerializeJson(parameter.DataObject);
-                    }
-                    else if (parameter.DataFormat == DataFormat.XML)
-                    {
-                        request.ContentType = "text/xml";
-                        StringBuilder sb = new StringBuilder();
-                        foreach (var kv in parameter.DataObject)
-                        {
-                            if (kv.Value != null && (kv.Value.GetType().IsValueType || kv.Value.GetType() == typeof(string)))
-                                sb.AppendFormat("<{0}>{1}</{0}>\r\n", kv.Key, kv.Value);
-                            else
-                                sb.AppendFormat("<{0}>{1}</{0}>\r\n", kv.Key, SerializationManager.SerializeXml(kv.Value));
-                        }
-                        input = sb.ToString();
-                    }
-
+                    request.ContentType = "application/json";
+                    string input = SerializationManager.SerializeJson(parameter.DataObject);
                     var buffer = encoding.GetBytes(input);
+
+                    var stream = request.GetRequestStream();
                     stream.Write(buffer, 0, buffer.Length);
                     stream.Flush();
                     stream.Close();

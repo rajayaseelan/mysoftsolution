@@ -82,9 +82,9 @@ namespace MySoft
             }
 
             if (converters == null || converters.Length == 0)
-                return JsonConvert.SerializeObject(obj, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
+                return JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
             else
-                return JsonConvert.SerializeObject(obj, converters);
+                return JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented, converters);
         }
 
         /// <summary>

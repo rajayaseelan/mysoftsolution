@@ -247,7 +247,7 @@ namespace MySoft.RESTful
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
 
-            if (format == ParameterFormat.Json || format == ParameterFormat.Jsonp)
+            if (format == ParameterFormat.Json)
                 response.ContentType = "application/json;charset=utf-8";
             else if (format == ParameterFormat.Xml)
                 response.ContentType = "text/xml;charset=utf-8";

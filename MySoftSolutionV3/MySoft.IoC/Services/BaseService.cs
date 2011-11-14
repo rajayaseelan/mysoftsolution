@@ -69,7 +69,7 @@ namespace MySoft.IoC.Services
                 if (!(resMsg.Error is BusinessException))
                 {
                     var ex = resMsg.Error;
-                    string body = string.Format("【{6}】Dynamic ({0}) service ({1},{2}) error. {4}\r\nMessage ==> {5}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters.SerializedData, "Spent time: (" + watch.ElapsedMilliseconds + ") ms.", resMsg.Message, resMsg.TransactionId);
+                    string body = string.Format("【{6}】Dynamic ({0}) service ({1},{2}) error. {4}\r\nMessage ==> {5}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters, "Spent time: (" + watch.ElapsedMilliseconds + ") ms.", resMsg.Message, resMsg.TransactionId);
                     var exception = new IoCException(body, ex)
                     {
                         ApplicationName = reqMsg.AppName,
@@ -85,7 +85,7 @@ namespace MySoft.IoC.Services
                 //如果时间超过预定，则输出日志
                 if (watch.ElapsedMilliseconds > logTimeout * 1000)
                 {
-                    string log = string.Format("【{6}】Dynamic ({0}) service ({1},{2}). {4}\r\nMessage ==> {5}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters.SerializedData, "Spent time: (" + watch.ElapsedMilliseconds + ") ms.", resMsg.Message, resMsg.TransactionId);
+                    string log = string.Format("【{6}】Dynamic ({0}) service ({1},{2}). {4}\r\nMessage ==> {5}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters, "Spent time: (" + watch.ElapsedMilliseconds + ") ms.", resMsg.Message, resMsg.TransactionId);
                     string title = string.Format("Elapsed time ({0}) ms more than ({1}) ms.", watch.ElapsedMilliseconds, logTimeout * 1000);
                     string body = string.Format("{0} {1}", title, log);
                     var exception = new WarningException(body)
