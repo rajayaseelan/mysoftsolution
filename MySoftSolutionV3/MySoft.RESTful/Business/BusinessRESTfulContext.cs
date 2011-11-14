@@ -132,7 +132,7 @@ namespace MySoft.RESTful.Business
                 throw new RESTfulException(String.Format("Fault parameters: {0}!", parameters)) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
             }
 
-            object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj, metadata.UserParameter);
+            object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj);
             return DynamicCalls.GetMethodInvoker(metadata.Method)(metadata.Instance, arguments);
         }
 
@@ -233,7 +233,6 @@ namespace MySoft.RESTful.Business
                     int parametersCount = 0;
                     foreach (var p in model.Parameters)
                     {
-                        if (!string.IsNullOrEmpty(model.UserParameter) && string.Compare(p.Name, model.UserParameter, true) == 0) continue;
                         if (!GetTypeClass(p.ParameterType))
                         {
                             plist.Add(string.Format("{0}=[{0}]", p.Name.ToLower()).Replace('[', '{').Replace(']', '}'));

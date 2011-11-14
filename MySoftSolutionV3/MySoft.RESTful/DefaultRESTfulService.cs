@@ -25,19 +25,12 @@ namespace MySoft.RESTful
         public IRESTfulContext Context { get; set; }
 
         /// <summary>
-        /// 是否记录错误日志
-        /// </summary>
-        public bool IsRecordErrorLog { get; set; }
-
-        /// <summary>
         /// 实例化DefaultRESTfulService
         /// </summary>
         public DefaultRESTfulService()
         {
             //创建上下文
             this.Context = new BusinessRESTfulContext();
-
-            this.IsRecordErrorLog = true;
         }
 
         #region IRESTfulService 成员
@@ -294,10 +287,7 @@ namespace MySoft.RESTful
                     response.StatusCode = HttpStatusCode.BadRequest;
 
                     //记录错误日志
-                    if (IsRecordErrorLog)
-                    {
-                        SimpleLog.Instance.WriteLogForDir("RESTfulError", e);
-                    }
+                    SimpleLog.Instance.WriteLogForDir("RESTfulError", e);
                 }
                 catch (Exception e)
                 {
@@ -306,7 +296,7 @@ namespace MySoft.RESTful
                     response.StatusCode = HttpStatusCode.ExpectationFailed;
 
                     //记录错误日志
-                    if (IsRecordErrorLog && !(e is BusinessException))
+                    if (!(e is BusinessException))
                     {
                         SimpleLog.Instance.WriteLogForDir("RESTfulError", e);
                     }

@@ -25,22 +25,11 @@ namespace MySoft.RESTful.Business.Register
             {
                 BusinessKindModel kindModel = null;
                 BusinessMethodModel methodModel = null;
-                object instance = null;
                 var container = CastleFactory.Create().ServiceContainer;
                 foreach (Type serviceType in container.GetInterfaces<PublishKindAttribute>())
                 {
                     //获取业务对象
-                    try { instance = container[serviceType]; }
-                    catch { }
-
-                    if (instance == null)
-                    {
-                        var service = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
-                        if (service == null) continue;
-
-                        var proxy = new ProxyInvocationHandler(serviceType);
-                        instance = ProxyFactory.GetInstance().Create(proxy, serviceType, true);
-                    }
+                    object instance = container[serviceType];
 
                     //获取类特性
                     var kind = CoreHelper.GetTypeAttribute<PublishKindAttribute>(serviceType);
@@ -81,9 +70,8 @@ namespace MySoft.RESTful.Business.Register
                                 methodModel.Authorized = !method.IsPublic;
                                 methodModel.State = method.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN;
                                 methodModel.Method = info;
-                                methodModel.UserParameter = method.UserParameter;
                                 methodModel.Parameters = info.GetParameters();
-                                methodModel.ParametersCount = info.GetParameters().Length;
+                                methodModel.ParametersCount = methodModel.Parameters.Count();
                                 methodModel.Instance = instance;
 
                                 if (method.Method != HttpMethod.POST && !CheckGetSubmitType(info.GetParameters()))

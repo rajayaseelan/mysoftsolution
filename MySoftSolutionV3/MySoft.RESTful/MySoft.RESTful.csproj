@@ -52,7 +52,6 @@
     <Compile Include="Configuration\AuthenticationCollection.cs" />
     <Compile Include="Configuration\RESTfulConfiguration.cs" />
     <Compile Include="Configuration\RESTfulConfigurationHandler.cs" />
-    <Compile Include="Business\Register\ProxyInvocationHandler.cs" />
     <Compile Include="Utils\AuthManager.cs" />
     <Compile Include="RESTfulException.cs" />
     <Compile Include="Business\BusinessKindModel.cs" />

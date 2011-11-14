@@ -36,10 +36,6 @@ namespace MySoft.RESTful.Business
         /// </summary>
         public int ParametersCount { get; set; }
         /// <summary>
-        /// 用户参数
-        /// </summary>
-        public string UserParameter { get; set; }
-        /// <summary>
         /// 是否通过检查
         /// </summary>
         public bool IsPassCheck { get; set; }
