@@ -41,35 +41,35 @@ namespace MySoft.RESTful.Demo
     /// <summary>
     /// 用户接口
     /// </summary>
-    [PublishKindAttribute("user", Description = "用户接口")]
+    [PublishKind("user", Description = "用户接口")]
     public interface IUserService
     {
         /// <summary>
         /// 获取登录用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethodAttribute("getloginuser", Description = "获取登录用户")]
+        [PublishMethod("getloginuser", Description = "获取登录用户")]
         User GetLoginUser();
 
         /// <summary>
         /// 获取一个用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethodAttribute("getuser", Description = "获取一个用户", IsPublic = false)]
+        [PublishMethod("getuser", Description = "获取一个用户", IsPublic = false)]
         User GetUser(int id, string name);
 
         /// <summary>
         /// 获取一组用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethodAttribute("getusers", Description = "获取一组用户", IsPublic = false)]
+        [PublishMethod("getusers", Description = "获取一组用户", IsPublic = false)]
         IList<User> GetUsers();
 
         /// <summary>
         /// 保存用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethodAttribute("saveuser", Description = "保存一个用户", Method = HttpMethod.POST)]
+        [PublishMethod("saveuser", Description = "保存一个用户", Method = HttpMethod.POST)]
         void SaveUser(User user);
     }
 
@@ -84,9 +84,10 @@ namespace MySoft.RESTful.Demo
         /// 获取用户
         /// </summary>
         /// <returns></returns>
-        public User GetLoginUser(string username)
+        public User GetLoginUser()
         {
-            return new User { Id = username.Length, Name = username };
+            var user = AuthenticationContext.Current.User;
+            return new User { Id = user.ID, Name = user.Name };
         }
 
         /// <summary>
