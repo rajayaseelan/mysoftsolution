@@ -25,7 +25,7 @@ namespace MySoft.RESTful.OAuth
             {
                 AuthenticationContext.Current.User = new AuthenticationUser
                 {
-                    AuthName = token.Parameters["uid"]
+                    Name = token.Parameters["uid"]
                 };
             }
             return true;

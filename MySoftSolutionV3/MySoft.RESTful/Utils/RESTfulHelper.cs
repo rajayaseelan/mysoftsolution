@@ -27,7 +27,7 @@ namespace MySoft.RESTful.Utils
                 errorMessage = string.Format("{0}, {1}", ex.Message, ex.TargetSite);
 
             if (AuthenticationContext.Current != null && AuthenticationContext.Current.User != null)
-                errorMessage += " user: " + AuthenticationContext.Current.User.AuthName;
+                errorMessage += " user: " + AuthenticationContext.Current.User.Name;
 
             return errorMessage;
         }
