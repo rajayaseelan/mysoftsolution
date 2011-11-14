@@ -230,7 +230,6 @@ namespace MySoft.RESTful.Business
                     StringBuilder buider = new StringBuilder();
                     List<string> plist = new List<string>();
 
-                    int parametersCount = 0;
                     foreach (var p in model.Parameters)
                     {
                         if (!GetTypeClass(p.ParameterType))
@@ -246,10 +245,9 @@ namespace MySoft.RESTful.Business
                         {
                             buider.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.ParameterType)) + "<br/>");
                         }
-                        parametersCount++;
                     }
 
-                    if (parametersCount > 0) buider.Append("<hr/>");
+                    if (model.ParametersCount > 0) buider.Append("<hr/>");
 
                     var value = String.Format("<b>RESULT</b> -> {0}<br/>", GetTypeName(model.Method.ReturnType));
                     buider.Append("<font color=\"#336699\">").Append(value);

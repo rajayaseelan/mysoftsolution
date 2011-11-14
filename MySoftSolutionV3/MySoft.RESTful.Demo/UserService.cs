@@ -48,8 +48,8 @@ namespace MySoft.RESTful.Demo
         /// 获取登录用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethodAttribute("getloginuser", Description = "获取登录用户", UserParameter = "username")]
-        User GetLoginUser(string username);
+        [PublishMethodAttribute("getloginuser", Description = "获取登录用户")]
+        User GetLoginUser();
 
         /// <summary>
         /// 获取一个用户
