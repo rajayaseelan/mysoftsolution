@@ -334,7 +334,7 @@ namespace MySoft.RESTful.Business
                 else
                 {
                     for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                    sb.Append("<b>" + GetTypeName(type) + "</b><br/>");
+                    sb.Append("<b>[" + GetTypeName(type) + "]</b><br/>");
 
                     foreach (var p in type.GetProperties())
                     {
