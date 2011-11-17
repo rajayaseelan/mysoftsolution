@@ -9,6 +9,7 @@ using MySoft.Logger;
 using MySoft.RESTful.Business;
 using MySoft.RESTful.Utils;
 using System.Net;
+using MySoft.Security;
 
 namespace MySoft.RESTful
 {
@@ -154,7 +155,7 @@ namespace MySoft.RESTful
             }
             else
             {
-                result = GetResponseString(ParameterFormat.Jsonp, kind, method, null) as string;
+                result = GetResponseString(ParameterFormat.Jsonp, kind, method, null);
                 response.ContentType = "application/javascript;charset=utf-8";
                 result = string.Format("{0}({1});", callback, result ?? "{}");
             }
@@ -229,10 +230,33 @@ namespace MySoft.RESTful
                 sr.Close();
             }
 
-            string result = GetResponseString(format, kind, method, data) as string;
+            string result = GetResponseString(format, kind, method, data);
             if (string.IsNullOrEmpty(result)) return new MemoryStream();
-            MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(result)); ;
-            return ms;
+
+            //处理ETag功能
+            var request = WebOperationContext.Current.IncomingRequest;
+            var response = WebOperationContext.Current.OutgoingResponse;
+            var buffer = Encoding.UTF8.GetBytes(result);
+
+            if (request.Method.ToUpper() == "GET")
+            {
+                string etagToken = MD5.HexHash(buffer);
+                response.ETag = etagToken;
+
+                string token = request.Headers["If-None-Match"];
+                if (token != null && token == etagToken)
+                {
+                    response.StatusCode = HttpStatusCode.NotModified;
+                    response.LastModified = request.IfModifiedSince.HasValue ? request.IfModifiedSince.Value : DateTime.Now;
+                    return new MemoryStream();
+                }
+                else
+                {
+                    response.LastModified = DateTime.Now;
+                }
+            }
+
+            return new MemoryStream(buffer); ;
         }
 
         private string GetResponseString(ParameterFormat format, string kind, string method, string parameter)
