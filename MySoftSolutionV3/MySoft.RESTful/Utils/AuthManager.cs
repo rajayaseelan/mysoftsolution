@@ -118,7 +118,7 @@ namespace MySoft.RESTful.Utils
             var result = new RESTfulResult
             {
                 Code = (int)RESTfulCode.AUTH_FAULT,
-                Message = "Authentication fault!"
+                Message = "All authentication fault!"
             };
 
             try
