@@ -202,11 +202,13 @@ namespace MySoft.RESTful.Business
                 }
             }
 
-            foreach (BusinessKindModel e in list)
+            var kinds = list.OrderBy(p => p.Name).ToList();
+            foreach (BusinessKindModel e in kinds)
             {
                 StringBuilder items = new StringBuilder();
                 int index = 0;
-                foreach (BusinessMethodModel model in e.MethodModels.Values)
+                var methods = e.MethodModels.Values.OrderBy(p => p.Name).ToList();
+                foreach (BusinessMethodModel model in methods)
                 {
                     string template = item;
                     if (index == 0)
