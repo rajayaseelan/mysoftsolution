@@ -158,7 +158,7 @@ namespace MySoft.RESTful.Utils
                     {
                         //认证成功
                         result.Code = (int)RESTfulCode.OK;
-                        result.Message = "Authentication success!";
+                        result.Message = authType + " authentication success!";
 
                         isAuthentication = true;
                         break;
@@ -172,6 +172,7 @@ namespace MySoft.RESTful.Utils
                 if (!isAuthentication)
                 {
                     if (result.Code == 0) result.Code = (int)RESTfulCode.AUTH_ERROR;
+                    if (errors.Count == 0) errors.Add("No any " + authType + " authentication!");
                     result.Message = string.Join(" | ", errors.ToArray());
                 }
             }
