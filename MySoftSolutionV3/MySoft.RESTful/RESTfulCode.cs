@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace MySoft.RESTful
 {
@@ -6,16 +8,21 @@ namespace MySoft.RESTful
     /// RESTful结果
     /// </summary>
     [Serializable]
+    [XmlRoot("result")]
     public class RESTfulResult
     {
         /// <summary>
         /// 代码
         /// </summary>
+        [XmlElement("code")]
+        [JsonProperty("code")]
         public int Code { get; set; }
 
         /// <summary>
         /// 消息
         /// </summary>
+        [XmlElement("msg")]
+        [JsonProperty("msg")]
         public string Message { get; set; }
     }
 
@@ -23,9 +30,12 @@ namespace MySoft.RESTful
     /// RESTful响应
     /// </summary>
     [Serializable]
+    [XmlRoot("result")]
     public class RESTfulResponse
     {
-        public object Result { get; set; }
+        [XmlElement("val")]
+        [JsonProperty("val")]
+        public object Value { get; set; }
     }
 
     /// <summary>

@@ -27,8 +27,13 @@ namespace MySoft.RESTful.OAuth
                 {
                     Name = token.Parameters["uid"]
                 };
+
+                return true;
             }
-            return true;
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>

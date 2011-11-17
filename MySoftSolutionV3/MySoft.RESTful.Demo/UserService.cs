@@ -19,6 +19,7 @@ namespace MySoft.RESTful.Demo
         public Sex Sex;
     }
 
+    [Serializable]
     public class UserDetail
     {
         public int Age;
@@ -26,6 +27,7 @@ namespace MySoft.RESTful.Demo
         public Sex Sex;
     }
 
+    [Serializable]
     public class UserInfo
     {
         public string Address;

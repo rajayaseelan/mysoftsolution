@@ -20,16 +20,22 @@ namespace MySoft.RESTful.Utils
         public static string GetErrorMessage(Exception ex, string parameter)
         {
             ex = ErrorHelper.GetInnerException(ex);
-            string errorMessage = string.Empty;
-            if (!string.IsNullOrEmpty(parameter))
-                errorMessage = string.Format("{0}, {1}, request params: {2}", ex.Message, ex.TargetSite, parameter);
-            else
-                errorMessage = string.Format("{0}, {1}", ex.Message, ex.TargetSite);
-
+            var errors = new Dictionary<string, string>();
+            errors["error"] = ex.Message;
+            if (!string.IsNullOrEmpty(parameter)) errors["params"] = parameter;
+            if (!string.IsNullOrEmpty(ex.Source)) errors["source"] = ex.Source;
+            if (ex.TargetSite != null) errors["target"] = ex.TargetSite.ToString();
             if (AuthenticationContext.Current != null && AuthenticationContext.Current.User != null)
-                errorMessage += " user: " + AuthenticationContext.Current.User.Name;
+                errors["user"] = AuthenticationContext.Current.User.Name;
 
-            return errorMessage;
+            StringBuilder sbMsg = new StringBuilder();
+            foreach (var kv in errors)
+            {
+                sbMsg.AppendFormat("【{0}】: {1}", kv.Key, kv.Value);
+                sbMsg.AppendLine();
+            }
+
+            return sbMsg.ToString();
         }
     }
 }

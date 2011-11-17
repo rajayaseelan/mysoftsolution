@@ -204,7 +204,7 @@ namespace MySoft.RESTful.SDK
                             result = value;
 
                         if (retType == typeof(RESTfulResponse))
-                            return Convert.ChangeType((result as RESTfulResponse).Result, returnType);
+                            return Convert.ChangeType((result as RESTfulResponse).Value, returnType);
                         else
                             return result;
                     }

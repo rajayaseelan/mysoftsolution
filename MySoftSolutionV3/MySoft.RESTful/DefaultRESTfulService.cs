@@ -238,16 +238,18 @@ namespace MySoft.RESTful
             var response = WebOperationContext.Current.OutgoingResponse;
             var buffer = Encoding.UTF8.GetBytes(result);
 
-            if (request.Method.ToUpper() == "GET")
+            if (request.Method.ToUpper() == "GET" && response.StatusCode == HttpStatusCode.OK)
             {
                 string etagToken = MD5.HexHash(buffer);
                 response.ETag = etagToken;
 
-                string token = request.Headers["If-None-Match"];
-                if (token != null && token == etagToken)
+                var IfNoneMatch = request.Headers["If-None-Match"];
+                if (IfNoneMatch != null && IfNoneMatch == etagToken)
                 {
                     response.StatusCode = HttpStatusCode.NotModified;
-                    response.LastModified = request.IfModifiedSince.HasValue ? request.IfModifiedSince.Value : DateTime.Now;
+                    //request.IfModifiedSince.HasValue ? request.IfModifiedSince.Value : 
+                    var IfModifiedSince = request.Headers["If-Modified-Since"];
+                    response.LastModified = IfModifiedSince == null ? DateTime.Now : Convert.ToDateTime(IfModifiedSince);
                     return new MemoryStream();
                 }
                 else
@@ -301,8 +303,11 @@ namespace MySoft.RESTful
                     //如果是值类型，则以对象方式返回
                     if (retType.IsValueType)
                     {
-                        result = new RESTfulResponse { Result = result };
+                        result = new RESTfulResponse { Value = result };
                     }
+
+                    //设置返回成功
+                    response.StatusCode = HttpStatusCode.OK;
                 }
                 catch (RESTfulException e)
                 {
@@ -337,7 +342,7 @@ namespace MySoft.RESTful
                 if (result is RESTfulResult)
                 {
                     var ret = result as RESTfulResult;
-                    ret.Code = Convert.ToInt32(string.Format("{0}{1}", response.StatusCode, ret.Code.ToString("00")));
+                    ret.Code = Convert.ToInt32(string.Format("{0}{1}", (int)response.StatusCode, ret.Code.ToString("00")));
                 }
 
                 return serializer.Serialize(result, format == ParameterFormat.Jsonp);
@@ -348,7 +353,7 @@ namespace MySoft.RESTful
 
                 //如果系列化失败
                 var ret = new RESTfulResult { Code = (int)RESTfulCode.BUSINESS_ERROR, Message = RESTfulHelper.GetErrorMessage(e, parameter) };
-                ret.Code = Convert.ToInt32(string.Format("{0}{1}", response.StatusCode, ret.Code.ToString("00")));
+                ret.Code = Convert.ToInt32(string.Format("{0}{1}", (int)response.StatusCode, ret.Code.ToString("00")));
 
                 return serializer.Serialize(ret, format == ParameterFormat.Jsonp);
             }
