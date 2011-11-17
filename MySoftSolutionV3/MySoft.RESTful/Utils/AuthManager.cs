@@ -114,11 +114,27 @@ namespace MySoft.RESTful.Utils
             var response = WebOperationContext.Current.OutgoingResponse;
             response.StatusCode = HttpStatusCode.Unauthorized;
 
+            AuthType authType = AuthType.OAuth;
+
+            //判断认证类型
+            if (AuthenticationContext.Current != null)
+            {
+                var context = AuthenticationContext.Current;
+                if (context.Token.Parameters["uid"] != null && context.Token.Parameters["pwd"] != null)
+                {
+                    authType = AuthType.UidPwd;
+                }
+                else if (context.Token.Cookies["user"] != null)
+                {
+                    authType = AuthType.Cookie;
+                }
+            }
+
             //进行认证处理
             var result = new RESTfulResult
             {
                 Code = (int)RESTfulCode.AUTH_FAULT,
-                Message = "All authentication fault!"
+                Message = "All authentication fail!"
             };
 
             try
@@ -130,11 +146,13 @@ namespace MySoft.RESTful.Utils
                     return result;
                 }
 
+                //获取指定的认证;
+                var authlist = auths.Where(p => p.AuthType == authType).ToList();
                 List<string> errors = new List<string>();
                 bool isAuthentication = false;
 
                 //如果配置了服务
-                foreach (IAuthentication auth in auths)
+                foreach (IAuthentication auth in authlist)
                 {
                     if (auth.Authorize())
                     {
