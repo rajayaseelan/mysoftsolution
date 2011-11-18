@@ -325,10 +325,13 @@ namespace MySoft.RESTful.Business
                 {
                     var names = Enum.GetNames(type);
                     var values = Enum.GetValues(type);
+
+                    for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                    sb.Append("<b>[" + GetTypeName(type) + "]</b><br/>");
                     for (int n = 0; n < names.Length; n++)
                     {
                         for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                        sb.AppendFormat(string.Format("&lt;{0} : {1}|{2}&gt;", GetTypeName(type), names[n], Convert.ToInt32(values.GetValue(n))) + "<br/>");
+                        sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", names[n], Convert.ToInt32(values.GetValue(n))) + "<br/>");
                     }
                 }
                 else
