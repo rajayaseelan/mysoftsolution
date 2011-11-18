@@ -312,7 +312,7 @@ namespace MySoft.RESTful.Business
             StringBuilder sb = new StringBuilder();
             if (!string.IsNullOrEmpty(name))
             {
-                for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                for (int i = 0; i < index; i++) sb.Append("<span>├</span>");
                 sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", name, GetTypeName(type)) + "<br/>");
             }
 
@@ -327,13 +327,13 @@ namespace MySoft.RESTful.Business
                     var values = Enum.GetValues(type);
                     for (int n = 0; n < names.Length; n++)
                     {
-                        for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                        for (int i = 0; i <= index; i++) sb.Append("<span>├</span>");
                         sb.AppendFormat(string.Format("&lt;{0} : {1}|{2}&gt;", GetTypeName(type), names[n], Convert.ToInt32(values.GetValue(n))) + "<br/>");
                     }
                 }
                 else
                 {
-                    for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                    for (int i = 0; i < index; i++) sb.Append("<span>├</span>");
                     sb.Append("<b>[" + GetTypeName(type) + "]</b><br/>");
 
                     foreach (var p in type.GetProperties())
@@ -344,7 +344,7 @@ namespace MySoft.RESTful.Business
                         }
                         else
                         {
-                            for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                            for (int i = 0; i <= index; i++) sb.Append("<span>├</span>");
                             sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.PropertyType)) + "<br/>");
                         }
                     }
@@ -357,7 +357,7 @@ namespace MySoft.RESTful.Business
                         }
                         else
                         {
-                            for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                            for (int i = 0; i <= index; i++) sb.Append("<span>├</span>");
                             sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.FieldType)) + "<br/>");
                         }
                     }

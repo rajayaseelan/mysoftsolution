@@ -114,7 +114,7 @@ namespace MySoft.RESTful.Utils
             var response = WebOperationContext.Current.OutgoingResponse;
             response.StatusCode = HttpStatusCode.Unauthorized;
 
-            AuthType authType = AuthType.OAuth;
+            AuthType authType = AuthType.Cookie;
 
             //判断认证类型
             if (AuthenticationContext.Current != null)
@@ -124,9 +124,9 @@ namespace MySoft.RESTful.Utils
                 {
                     authType = AuthType.UidPwd;
                 }
-                else if (context.Token.Cookies["user"] != null)
+                else if (context.Token.Parameters["oauth_token"] != null)
                 {
-                    authType = AuthType.Cookie;
+                    authType = AuthType.OAuth;
                 }
             }
 
