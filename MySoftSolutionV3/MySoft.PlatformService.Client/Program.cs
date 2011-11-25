@@ -231,7 +231,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + new Random().Next(10000000), out userid);
                     //UserInfo info = service.GetUserInfo("maoyong", out userid);
 
-                    var users = service.GetUsers();
+                    var users = service.GetUsers("maoyong");
 
                     if (users == null)
                     {
