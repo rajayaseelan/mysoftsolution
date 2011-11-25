@@ -68,9 +68,13 @@ namespace MySoft.RESTful.Business.Register
 
                     if (instance == null)
                     {
-                        //使用代理实现IoC服务的调用
-                        var proxy = new ProxyInvocationHandler(serviceType);
-                        instance = ProxyFactory.GetInstance().Create(proxy, serviceType, true);
+                        var contract = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
+                        if (contract != null) //表明是Castle服务
+                        {
+                            //使用代理实现IoC服务的调用
+                            var proxy = new ProxyInvocationHandler(serviceType);
+                            instance = ProxyFactory.GetInstance().Create(proxy, serviceType, true);
+                        }
                     }
 
                     //获取类特性
