@@ -1,6 +1,9 @@
 using System;
 using System.Reflection;
 using MySoft.IoC;
+using Castle.Windsor;
+using System.Configuration;
+using Castle.Core.Resource;
 
 namespace MySoft.IoC.Mvp
 {
@@ -9,10 +12,13 @@ namespace MySoft.IoC.Mvp
     /// </summary>
     public sealed class PresenterFactory
     {
-        private IServiceContainer container;
+        private IWindsorContainer container;
         private PresenterFactory()
         {
-            container = CastleFactory.Create().ServiceContainer;
+            if (ConfigurationManager.GetSection("mysoft.framework/mvp") != null)
+                this.container = new WindsorContainer(new ServiceInterpreter(new ConfigResource("mysoft.framework/mvp")));
+            else
+                this.container = new WindsorContainer();
         }
 
         private static PresenterFactory singleton = null;
@@ -36,25 +42,23 @@ namespace MySoft.IoC.Mvp
         /// <param name="view">The view.</param>
         /// <returns></returns>
         public IPresenterType GetPresenter<IPresenterType>(object view)
+            where IPresenterType : IPresenter
         {
             if (container.Kernel.HasComponent(typeof(IPresenterType)))
             {
-                IPresenterType _presenter = (IPresenterType)container[typeof(IPresenterType)];
-                if (typeof(IPresenter).IsAssignableFrom(_presenter.GetType()))
+                IPresenterType _presenter = container.Resolve<IPresenterType>();
+                IPresenter presenter = (IPresenter)_presenter;
+                object[] models = new object[presenter.TypeOfModels.Length];
+                for (int i = 0; i < models.Length; i++)
                 {
-                    IPresenter presenter = (IPresenter)_presenter;
-                    object[] models = new object[presenter.TypeOfModels.Length];
-                    for (int i = 0; i < models.Length; i++)
-                    {
-                        if (container.Kernel.HasComponent(presenter.TypeOfModels[i]))
-                            models[i] = container[presenter.TypeOfModels[i]];
-                        else
-                            models[i] = null;
-                    }
-                    presenter.BindView(view);
-                    presenter.BindModels(models);
-                    return _presenter;
+                    if (container.Kernel.HasComponent(presenter.TypeOfModels[i]))
+                        models[i] = container.Resolve(presenter.TypeOfModels[i]);
+                    else
+                        models[i] = null;
                 }
+                presenter.BindView(view);
+                presenter.BindModels(models);
+                return _presenter;
             }
 
             return default(IPresenterType);

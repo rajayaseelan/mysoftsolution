@@ -36,10 +36,11 @@ namespace MySoft.RESTful.Utils
             {
                 try
                 {
-                    var obj = container.Resolve((node as ComponentModel).Service);
-                    if (obj is IAuthentication)
+                    var serviceType = (node as ComponentModel).Service;
+                    var instance = container.Resolve(serviceType);
+                    if (instance != null && instance is IAuthentication)
                     {
-                        auths.Add((IAuthentication)obj);
+                        auths.Add((IAuthentication)instance);
                     }
                 }
                 catch (Exception ex)
