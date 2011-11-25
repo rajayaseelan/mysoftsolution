@@ -14,6 +14,21 @@ namespace MySoft.IoC
     public class ServiceInterpreter : XmlInterpreter
     {
         /// <summary>
+        /// 实例化ServiceInterpreter
+        /// </summary>
+        public ServiceInterpreter()
+            : base()
+        { }
+
+        /// <summary>
+        /// 实例化ServiceInterpreter
+        /// </summary>
+        /// <param name="source"></param>
+        public ServiceInterpreter(IResource source)
+            : base(source)
+        { }
+
+        /// <summary>
         /// 处理资源
         /// </summary>
         /// <param name="source"></param>

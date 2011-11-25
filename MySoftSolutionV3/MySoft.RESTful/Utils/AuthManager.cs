@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MySoft.RESTful.Configuration;
 using System.Net;
 using System.ServiceModel.Web;
 using System.Web;
 using MySoft.Logger;
 using MySoft.RESTful.Auth;
+using Castle.Core.Resource;
+using Castle.Windsor.Configuration.Interpreters;
+using Castle.Windsor;
+using System.Configuration;
+using Castle.Core;
 
 namespace MySoft.RESTful.Utils
 {
@@ -24,25 +28,23 @@ namespace MySoft.RESTful.Utils
         static AuthManager()
         {
             //读取配置文件
-            var config = RESTfulConfiguration.GetConfig();
-            if (config != null && config.Auths != null)
+            var container = new WindsorContainer();
+            if (ConfigurationManager.GetSection("mysoft.framework/auth") != null)
+                container = new WindsorContainer(new XmlInterpreter(new ConfigResource("mysoft.framework/auth")));
+
+            foreach (var node in container.Kernel.GraphNodes)
             {
-                foreach (Authentication auth in config.Auths)
+                try
                 {
-                    try
+                    var obj = container.Resolve((node as ComponentModel).Service);
+                    if (obj is IAuthentication)
                     {
-                        var type = Type.GetType(auth.Type);
-                        if (type == null) continue;
-                        var obj = Activator.CreateInstance(type);
-                        if (obj is IAuthentication)
-                        {
-                            auths.Add((IAuthentication)obj);
-                        }
+                        auths.Add((IAuthentication)obj);
                     }
-                    catch (Exception ex)
-                    {
-                        SimpleLog.Instance.WriteLog(ex);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    SimpleLog.Instance.WriteLog(ex);
                 }
             }
         }

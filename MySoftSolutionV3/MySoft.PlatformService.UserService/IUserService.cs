@@ -58,13 +58,15 @@ namespace MySoft.PlatformService.UserService
         void ShowData(int x, int y, int value);
     }
 
+    [PublishKind("user", Description = "用户管理")]
     [ServiceContract]
     public interface IUserService
     {
         [OperationContract(CacheTime = 30000)]
         UserInfo GetUserInfo(string name);
 
-        IList<UserInfo> GetUsers();
+        [PublishMethod("getusers", Description = "获取用户信息", UserParameter = "name")]
+        IList<UserInfo> GetUsers(string name);
 
         IDictionary<string, UserInfo> GetDictUsers();
 

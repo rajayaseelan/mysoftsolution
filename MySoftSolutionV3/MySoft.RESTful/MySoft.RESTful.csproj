@@ -39,6 +39,12 @@
     <DocumentationFile>bin\Release\MySoft.RESTful.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Castle.Core, Version=2.5.1.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <HintPath>..\lib\Castle\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Castle.Windsor, Version=2.5.1.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <HintPath>..\lib\Castle\Castle.Windsor.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -48,10 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\Authentication.cs" />
-    <Compile Include="Configuration\AuthenticationCollection.cs" />
-    <Compile Include="Configuration\RESTfulConfiguration.cs" />
-    <Compile Include="Configuration\RESTfulConfigurationHandler.cs" />
+    <Compile Include="Business\Register\ProxyInvocationHandler.cs" />
     <Compile Include="Utils\AuthManager.cs" />
     <Compile Include="RESTfulException.cs" />
     <Compile Include="Business\BusinessKindModel.cs" />

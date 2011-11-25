@@ -11,7 +11,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     /// <param name="reqMsg"></param>
     /// <returns></returns>
-    public delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
+    public delegate ResponseMessage AsyncMethodCaller(RequestMessage reqMsg);
 
     /// <summary>
     /// The dynamic service.

@@ -206,12 +206,6 @@ namespace MySoft.IoC
                 var data = e.Message as ScsResultMessage;
                 var reqMsg = data.MessageValue as RequestMessage;
 
-                //实例化当前上下文
-                if (callbackTypes.ContainsKey(reqMsg.ServiceName))
-                    OperationContext.Current = new OperationContext(client, callbackTypes[reqMsg.ServiceName]);
-                else
-                    OperationContext.Current = new OperationContext(client);
-
                 //调用事件
                 CallEventArgs args = null;
 
@@ -269,7 +263,7 @@ namespace MySoft.IoC
                 args = null;
 
                 //调用请求方法
-                var resMsg = CallMethod(reqMsg);
+                var resMsg = CallMethod(client, reqMsg);
 
                 //发送数据到服务端
                 client.SendMessage(new ScsResultMessage(resMsg, reqMsg.TransactionId.ToString()));
@@ -297,7 +291,7 @@ namespace MySoft.IoC
                     Stopwatch watch = Stopwatch.StartNew();
 
                     //调用请求方法
-                    resMsg = CallMethod(reqMsg);
+                    resMsg = CallMethod(client, reqMsg);
 
                     watch.Stop();
 
@@ -355,7 +349,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage CallMethod(RequestMessage reqMsg)
+        private ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg)
         {
             //获取返回的消息
             ResponseMessage resMsg = null;
@@ -363,14 +357,22 @@ namespace MySoft.IoC
             try
             {
                 //生成一个异步调用委托
-                AsyncMethodCaller handler = new AsyncMethodCaller((c, p) =>
+                AsyncMethodCaller handler = new AsyncMethodCaller(p =>
                 {
-                    OperationContext.Current = c;
-                    return container.CallService(p, config.LogTime);
+                    //实例化当前上下文
+                    if (callbackTypes.ContainsKey(reqMsg.ServiceName))
+                        OperationContext.Current = new OperationContext(client, callbackTypes[reqMsg.ServiceName]);
+                    else
+                        OperationContext.Current = new OperationContext(client);
+
+                    var responseMessage = container.CallService(p, config.LogTime);
+                    OperationContext.Current = null;
+
+                    return responseMessage;
                 });
 
                 //开始异步调用
-                IAsyncResult ar = handler.BeginInvoke(OperationContext.Current, reqMsg, r => { }, handler);
+                IAsyncResult ar = handler.BeginInvoke(reqMsg, r => { }, handler);
 
                 //等待信号，等待5分钟
                 if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))

@@ -132,7 +132,7 @@ namespace MySoft.RESTful.Business
                 throw new RESTfulException(String.Format("Fault parameters: {0}!", parameters)) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
             }
 
-            object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj);
+            object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj, metadata.UserParameter);
             return DynamicCalls.GetMethodInvoker(metadata.Method)(metadata.Instance, arguments);
         }
 
@@ -232,8 +232,15 @@ namespace MySoft.RESTful.Business
                     StringBuilder buider = new StringBuilder();
                     List<string> plist = new List<string>();
 
+                    var parametersCount = model.ParametersCount;
                     foreach (var p in model.Parameters)
                     {
+                        if (string.Compare(p.Name, model.UserParameter, true) == 0)
+                        {
+                            parametersCount--;
+                            continue;
+                        }
+
                         if (!GetTypeClass(p.ParameterType))
                         {
                             plist.Add(string.Format("{0}=[{0}]", p.Name.ToLower()).Replace('[', '{').Replace(']', '}'));
@@ -249,7 +256,7 @@ namespace MySoft.RESTful.Business
                         }
                     }
 
-                    if (model.ParametersCount > 0) buider.Append("<hr/>");
+                    if (parametersCount > 0) buider.Append("<hr/>");
 
                     var value = String.Format("<b>RESULT</b> -> {0}<br/>", GetTypeName(model.Method.ReturnType));
                     buider.Append("<font color=\"#336699\">").Append(value);

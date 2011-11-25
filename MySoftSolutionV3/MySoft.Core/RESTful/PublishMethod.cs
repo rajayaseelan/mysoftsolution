@@ -34,6 +34,11 @@ namespace MySoft.RESTful
         public bool IsPublic { get; set; }
 
         /// <summary>
+        /// 用户认证的参数名，如UserParameter = "username" 或 “userid"
+        /// </summary>
+        public string UserParameter { get; set; }
+
+        /// <summary>
         /// 实例化PublishMethod
         /// </summary>
         public PublishMethodAttribute()

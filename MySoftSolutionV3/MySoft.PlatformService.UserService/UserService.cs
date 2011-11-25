@@ -72,16 +72,16 @@ namespace MySoft.PlatformService.UserService
 
         #region IUserService 成员
 
-        public IList<UserInfo> GetUsers()
+        public IList<UserInfo> GetUsers(string name)
         {
-            Thread.Sleep(5000);
+            //Thread.Sleep(5000);
             //throw new Exception("sdfsad");
 
             var list = new List<UserInfo>();
 
-            for (int i = 0; i < 10000; i++)
+            for (int i = 0; i < 10; i++)
             {
-                list.Add(new UserInfo { Name = "test" + i, Description = "testtest" + i });
+                list.Add(new UserInfo { Name = name + "_test" + i, Description = "testtest" + i });
             }
 
             return list;

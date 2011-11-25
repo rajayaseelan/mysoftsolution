@@ -91,7 +91,7 @@ namespace MySoft.IoC.Services
                 AsyncMethodCaller handler = new AsyncMethodCaller(GetResponse);
 
                 //异步调用
-                IAsyncResult ar = handler.BeginInvoke(OperationContext.Current, reqMsg, r => { }, handler);
+                IAsyncResult ar = handler.BeginInvoke(reqMsg, r => { }, handler);
 
                 // Wait for the WaitHandle to become signaled.
                 if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))
@@ -144,7 +144,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
+        private ResponseMessage GetResponse(RequestMessage reqMsg)
         {
             //启动线程来
             while (true)

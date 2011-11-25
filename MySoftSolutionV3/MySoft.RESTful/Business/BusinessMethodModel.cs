@@ -32,6 +32,10 @@ namespace MySoft.RESTful.Business
         /// </summary>
         public ParameterInfo[] Parameters { get; set; }
         /// <summary>
+        /// 用户认证的参数名，如UserParameter = "username" 或 “userid"
+        /// </summary>
+        public string UserParameter { get; set; }
+        /// <summary>
         /// 业务实例方法参数个数
         /// </summary>
         public int ParametersCount { get; set; }

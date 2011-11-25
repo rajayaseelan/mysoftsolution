@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Reflection;
-using MySoft.RESTful.Business.Pool;
+using System.Text;
+using Castle.Core;
+using Castle.Core.Internal;
+using Castle.Core.Resource;
+using Castle.Windsor;
 using MySoft.IoC;
 using MySoft.Logger;
-using System.Text;
-using MySoft.RESTful.Auth;
+using MySoft.RESTful.Business.Pool;
 
 namespace MySoft.RESTful.Business.Register
 {
@@ -17,6 +21,32 @@ namespace MySoft.RESTful.Business.Register
     {
         private IBusinessPool pool;
 
+        /// <summary>
+        /// 获取约束的接口
+        /// </summary>
+        /// <returns></returns>
+        private Type[] GetInterfaces<ContractType>(IWindsorContainer container)
+        {
+            List<Type> typelist = new List<Type>();
+            GraphNode[] nodes = container.Kernel.GraphNodes;
+            nodes.Cast<ComponentModel>().ForEach(model =>
+            {
+                bool markedWithServiceContract = false;
+                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Service);
+                if (attr != null)
+                {
+                    markedWithServiceContract = true;
+                }
+
+                if (markedWithServiceContract)
+                {
+                    typelist.Add(model.Service);
+                }
+            });
+
+            return typelist.ToArray();
+        }
+
         public void Register(IBusinessPool businessPool)
         {
             pool = businessPool;
@@ -25,11 +55,23 @@ namespace MySoft.RESTful.Business.Register
             {
                 BusinessKindModel kindModel = null;
                 BusinessMethodModel methodModel = null;
-                var container = CastleFactory.Create().ServiceContainer;
-                foreach (Type serviceType in container.GetInterfaces<PublishKindAttribute>())
+                var container = new WindsorContainer();
+                if (ConfigurationManager.GetSection("mysoft.framework/restful") != null)
+                    container = new WindsorContainer(new ServiceInterpreter(new ConfigResource("mysoft.framework/restful")));
+
+                foreach (Type serviceType in GetInterfaces<PublishKindAttribute>(container))
                 {
                     //获取业务对象
-                    object instance = container[serviceType];
+                    object instance = null;
+                    try { container.Resolve(serviceType); }
+                    catch { }
+
+                    if (instance == null)
+                    {
+                        //使用代理实现IoC服务的调用
+                        var proxy = new ProxyInvocationHandler(serviceType);
+                        instance = ProxyFactory.GetInstance().Create(proxy, serviceType, true);
+                    }
 
                     //获取类特性
                     var kind = CoreHelper.GetTypeAttribute<PublishKindAttribute>(serviceType);
@@ -71,6 +113,7 @@ namespace MySoft.RESTful.Business.Register
                                 methodModel.State = method.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN;
                                 methodModel.Method = info;
                                 methodModel.Parameters = info.GetParameters();
+                                methodModel.UserParameter = method.UserParameter;
                                 methodModel.ParametersCount = methodModel.Parameters.Count();
                                 methodModel.Instance = instance;
 

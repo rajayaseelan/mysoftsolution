@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Linq;
 using Castle.Core;
 using Castle.Core.Internal;
+using Castle.Core.Resource;
 using Castle.Facilities.Startable;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Registration;
@@ -29,10 +30,10 @@ namespace MySoft.IoC
         private void Init(CastleFactoryType type, IDictionary serviceKeyTypes)
         {
             //如果不是远程模式，则加载配置节
-            if (type == CastleFactoryType.Remote || ConfigurationManager.GetSection("castle") == null)
+            if (type == CastleFactoryType.Remote || ConfigurationManager.GetSection("mysoft.framework/castle") == null)
                 container = new WindsorContainer();
             else
-                container = new WindsorContainer(new ServiceInterpreter());
+                container = new WindsorContainer(new ServiceInterpreter(new ConfigResource("mysoft.framework/castle")));
 
             //加载自启动注入
             container.AddFacility("startable", new StartableFacility());
