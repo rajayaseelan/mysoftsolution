@@ -22,7 +22,7 @@ namespace MySoft.RESTful.SDK
             set { encoding = value; }
         }
 
-        private int timeout = 60;
+        private int timeout = 5 * 60;
         /// <summary>
         /// 超时时间
         /// </summary>
