@@ -30,7 +30,7 @@ namespace MySoft.IoC.Services
 
         protected override void InitRequest()
         {
-            ServiceRequest reqService = new ServiceRequest(node, logger);
+            ServiceRequest reqService = new ServiceRequest(node, logger, false);
             reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
             reqService.OnDisconnected += new EventHandler(reqService_OnDisconnected);
 

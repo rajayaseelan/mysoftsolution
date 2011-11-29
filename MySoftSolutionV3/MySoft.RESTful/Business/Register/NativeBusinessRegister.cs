@@ -113,7 +113,7 @@ namespace MySoft.RESTful.Business.Register
                                 methodModel.Name = method.Name;
                                 methodModel.Description = method.Description;
                                 methodModel.HttpMethod = method.Method;
-                                methodModel.Authorized = !method.IsPublic;
+                                methodModel.Authorized = !string.IsNullOrEmpty(method.UserParameter);
                                 methodModel.State = method.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN;
                                 methodModel.Method = info;
                                 methodModel.Parameters = info.GetParameters();

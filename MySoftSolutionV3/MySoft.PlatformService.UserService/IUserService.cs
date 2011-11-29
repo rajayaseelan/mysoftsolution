@@ -62,6 +62,12 @@ namespace MySoft.PlatformService.UserService
     [ServiceContract]
     public interface IUserService
     {
+        //[PublishMethod("getuser", Description = "获取用户信息", UserParameter = "name")]
+        //UserInfo GetUser(string name);
+
+        //[PublishMethod("getusers", Description = "获取用户信息")]
+        //IList<UserInfo> GetUsers();
+
         [OperationContract(CacheTime = 30000)]
         UserInfo GetUserInfo(string name);
 

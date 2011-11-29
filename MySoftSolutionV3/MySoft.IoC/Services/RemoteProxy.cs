@@ -32,7 +32,7 @@ namespace MySoft.IoC.Services
             //服务请求池化
             for (int i = 0; i < node.MaxPool; i++)
             {
-                ServiceRequest reqService = new ServiceRequest(node, logger);
+                ServiceRequest reqService = new ServiceRequest(node, logger, true);
                 reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
 
                 this.reqPool.Push(reqService);

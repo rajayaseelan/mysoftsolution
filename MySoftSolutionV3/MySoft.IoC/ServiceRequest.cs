@@ -40,7 +40,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node"></param>
         /// <param name="logger"></param>
-        public ServiceRequest(RemoteNode node, ILog logger)
+        public ServiceRequest(RemoteNode node, ILog logger, bool autoDisconnect)
         {
             this.logger = logger;
             this.node = node.Key;
@@ -48,6 +48,7 @@ namespace MySoft.IoC
             this.port = node.Port;
 
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
+            this.client.AutoDisconnect = autoDisconnect;
             this.client.Connected += new EventHandler(client_Connected);
             this.client.Disconnected += new EventHandler(client_Disconnected);
             this.client.MessageReceived += new EventHandler<MessageEventArgs>(client_MessageReceived);

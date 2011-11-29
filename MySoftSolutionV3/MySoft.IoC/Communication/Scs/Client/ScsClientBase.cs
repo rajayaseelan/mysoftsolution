@@ -40,6 +40,11 @@ namespace MySoft.Communication.Scs.Client
         #region Public properties
 
         /// <summary>
+        /// Auto disconnected
+        /// </summary>
+        public bool AutoDisconnect { get; set; }
+
+        /// <summary>
         /// Timeout for connecting to a server (as milliseconds).
         /// Default value: 15 seconds (15000 ms).
         /// </summary>
@@ -122,7 +127,7 @@ namespace MySoft.Communication.Scs.Client
         private readonly Timer _pingTimer;
 
         #endregion
-        
+
         #region Constructor
 
         /// <summary>
@@ -263,7 +268,18 @@ namespace MySoft.Communication.Scs.Client
                     return;
                 }
 
-                _communicationChannel.SendMessage(new ScsPingMessage());
+                if (!AutoDisconnect)
+                    _communicationChannel.SendMessage(new ScsPingMessage());
+                else
+                {
+                    if (_communicationChannel.LastReceivedMessageTime < lastMinute && _communicationChannel.LastSentMessageTime < lastMinute)
+                    {
+                        //如果超过1分钟没响应，则断开链接
+                        this.Disconnect();
+
+                        return;
+                    }
+                }
             }
             catch
             {

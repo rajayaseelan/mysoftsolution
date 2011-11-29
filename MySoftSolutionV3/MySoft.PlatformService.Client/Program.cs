@@ -136,21 +136,23 @@ namespace MySoft.PlatformService.Client
         {
             try
             {
-                CastleFactory.Create().OnError += new ErrorLogEventHandler(Program_OnError);
-                var sub = CastleFactory.Create().GetChannel<IMessagePublishService>(new MessageListener());
-                sub.Subscribe();
+                //CastleFactory.Create().OnError += new ErrorLogEventHandler(Program_OnError);
+                //var sub = CastleFactory.Create().GetChannel<IMessagePublishService>(new MessageListener());
                 //sub.Subscribe();
+                ////sub.Subscribe();
 
-                //for (int i = 0; i < 10; i++)
-                //{
-                //    sub.Compute(100, i);
-                //    Thread.Sleep(1000);
-                //}
+                ////for (int i = 0; i < 10; i++)
+                ////{
+                ////    sub.Compute(100, i);
+                ////    Thread.Sleep(1000);
+                ////}
 
-                Console.WriteLine("订阅服务IMessagePublishService成功！");
-                Console.ReadLine();
+                //Console.WriteLine("订阅服务IMessagePublishService成功！");
+                //Console.ReadLine();
 
-                sub.Unsubscribe();
+                //sub.Unsubscribe();
+
+                var users = CastleFactory.Create().GetChannel<IUserService>().GetUsers("aaa");
             }
             catch (Exception ex)
             {
