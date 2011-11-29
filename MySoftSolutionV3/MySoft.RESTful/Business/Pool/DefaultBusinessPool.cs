@@ -93,8 +93,6 @@ namespace MySoft.RESTful.Business.Pool
         /// <returns></returns>
         public bool CheckAuthorized(ParameterFormat parameterFormat, string businessKindName, string businessMethodName)
         {
-            if (parameterFormat != ParameterFormat.Jsonp) return true;
-
             BusinessKindModel kind = businessPool.Where(e => e.Key.Equals(businessKindName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
             if (kind != null)
             {

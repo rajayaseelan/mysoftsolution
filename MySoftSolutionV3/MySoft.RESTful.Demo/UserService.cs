@@ -15,29 +15,6 @@ namespace MySoft.RESTful.Demo
     {
         public int Id;
         public string Name;
-        public IList<UserDetail> Details;
-        public Sex Sex;
-    }
-
-    [Serializable]
-    public class UserDetail
-    {
-        public int Age;
-        public IList<UserInfo> Infos;
-        public Sex Sex;
-    }
-
-    [Serializable]
-    public class UserInfo
-    {
-        public string Address;
-        public Sex Sex;
-    }
-
-    public enum Sex
-    {
-        男,
-        女
     }
 
     /// <summary>
@@ -47,32 +24,18 @@ namespace MySoft.RESTful.Demo
     public interface IUserService
     {
         /// <summary>
-        /// 获取登录用户
-        /// </summary>
-        /// <returns></returns>
-        [PublishMethod("getloginuser", Description = "获取登录用户")]
-        User GetLoginUser();
-
-        /// <summary>
         /// 获取一个用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethod("getuser", Description = "获取一个用户", IsPublic = false)]
-        User GetUser(int id, string name);
+        [PublishMethod("getuser", Description = "获取一个用户", UserParameter = "name")]
+        User GetUser(string name);
 
         /// <summary>
         /// 获取一组用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethod("getusers", Description = "获取一组用户", IsPublic = false)]
+        [PublishMethod("getusers", Description = "获取一组用户")]
         IList<User> GetUsers();
-
-        /// <summary>
-        /// 保存用户
-        /// </summary>
-        /// <returns></returns>
-        [PublishMethod("saveuser", Description = "保存一个用户", Method = HttpMethod.POST)]
-        void SaveUser(User user);
     }
 
     /// <summary>
@@ -83,22 +46,12 @@ namespace MySoft.RESTful.Demo
         #region IUserService 成员
 
         /// <summary>
-        /// 获取用户
-        /// </summary>
-        /// <returns></returns>
-        public User GetLoginUser()
-        {
-            var user = AuthenticationContext.Current.User;
-            return new User { Id = user.ID, Name = user.Name };
-        }
-
-        /// <summary>
         /// 获取一个用户
         /// </summary>
         /// <returns></returns>
-        public User GetUser(int id, string name)
+        public User GetUser(string name)
         {
-            return new User { Id = id, Name = name };
+            return new User { Id = name.Length, Name = name };
         }
 
         /// <summary>
@@ -107,16 +60,11 @@ namespace MySoft.RESTful.Demo
         /// <returns></returns>
         public IList<User> GetUsers()
         {
-            return new List<User> { new User { Id = 1, Name = "test1" }, new User { Id = 2, Name = "test2" } };
-        }
-
-        /// <summary>
-        /// 保存用户
-        /// </summary>
-        /// <returns></returns>
-        public void SaveUser(User user)
-        {
-            //未实现
+            return new List<User> {
+                new User { Id = 1, Name = "test1" },
+                new User { Id = 2, Name = "test2" }            , 
+                new User { Id = 3, Name = "test3" }
+            };
         }
 
         #endregion
