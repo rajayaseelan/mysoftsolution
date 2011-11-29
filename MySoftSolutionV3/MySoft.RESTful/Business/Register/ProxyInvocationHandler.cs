@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using MySoft.IoC;
-using MySoft.RESTful.Auth;
-using System.Collections.Generic;
 
 namespace MySoft.RESTful.Business.Register
 {

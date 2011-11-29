@@ -6,7 +6,6 @@ using System.Collections;
 using MySoft.Remoting;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
-using MongoDB;
 
 namespace MySoft.PlatformService.Console
 {

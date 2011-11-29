@@ -32,17 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OAuth.Net.Common">
-      <HintPath>..\lib\OAuth.Net.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="OAuth.Net.Components">
-      <HintPath>..\lib\OAuth.Net.Components.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -58,7 +51,6 @@
     <Compile Include="RESTfulRequest.cs" />
     <Compile Include="RESTfulResult.cs" />
     <Compile Include="Token.cs" />
-    <Compile Include="TokenParameter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MySoft.Core\MySoft.Core.csproj">

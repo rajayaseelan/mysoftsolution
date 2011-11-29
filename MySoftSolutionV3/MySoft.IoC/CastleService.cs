@@ -302,7 +302,7 @@ namespace MySoft.IoC
                     int times = (int)watch.ElapsedMilliseconds / 1000;
 
                     //数据不为null，并且记录数大于0
-                    if (resMsg != null && resMsg.Data != null && resMsg.RowCount > 0)
+                    if (resMsg != null && resMsg.Data != null && resMsg.Count > 0)
                     {
                         if (times > 0)
                             CacheHelper.Insert(cacheKey, resMsg, times);
@@ -318,7 +318,7 @@ namespace MySoft.IoC
                     else
                         args.CallError = resMsg.Error;
 
-                    args.RowCount = resMsg.RowCount;
+                    args.ValueCount = resMsg.Count;
                 }
                 else
                 {

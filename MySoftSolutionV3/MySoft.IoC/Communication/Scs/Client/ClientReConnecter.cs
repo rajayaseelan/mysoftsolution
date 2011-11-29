@@ -1,6 +1,5 @@
 ﻿using System;
 using MySoft.Communication.Scs.Communication;
-using MySoft.Threading;
 using MySoft.Communication.Threading;
 
 namespace MySoft.Communication.Scs.Client

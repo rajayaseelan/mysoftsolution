@@ -51,7 +51,7 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// ¼ÇÂ¼Êý
         /// </summary>
-        public int RowCount
+        public int Count
         {
             get
             {
@@ -76,7 +76,7 @@ namespace MySoft.IoC.Messages
                 }
                 else
                 {
-                    return string.Format("RowCount: {0} (Type:{1}).", this.RowCount, base.ReturnType);
+                    return string.Format("RowCount: {0} (Type:{1}).", this.Count, base.ReturnType);
                 }
             }
         }

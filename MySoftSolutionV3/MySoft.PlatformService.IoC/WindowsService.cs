@@ -59,7 +59,7 @@ namespace MySoft.PlatformService.IoC
 
         void server_OnCalling(object sender, CallEventArgs e)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
 

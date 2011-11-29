@@ -3,7 +3,6 @@ using MySoft.Communication.Scs.Communication;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Communication.Channels;
 using MySoft.Communication.Scs.Communication.Protocols;
-using MySoft.Threading;
 using MySoft.Communication.Threading;
 
 namespace MySoft.Communication.Scs.Client

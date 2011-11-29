@@ -11,22 +11,6 @@ namespace MySoft.IoC
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, AllowMultiple = false)]
     public abstract class ContractAttribute : Attribute
     {
-        private string description;
-        /// <summary>
-        /// 描述信息
-        /// </summary>
-        public string Description
-        {
-            get
-            {
-                return description;
-            }
-            set
-            {
-                description = value;
-            }
-        }
-
         protected bool allowCache;
         /// <summary>
         /// 是否允许缓存

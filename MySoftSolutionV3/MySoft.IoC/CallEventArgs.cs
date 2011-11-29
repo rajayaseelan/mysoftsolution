@@ -25,16 +25,6 @@ namespace MySoft.IoC
         public long ElapsedTime { get; set; }
 
         /// <summary>
-        /// 返回值
-        /// </summary>
-        public object ReturnValue { get; set; }
-
-        /// <summary>
-        /// 记录数
-        /// </summary>
-        public int RowCount { get; set; }
-
-        /// <summary>
         /// 异常信息
         /// </summary>
         public Exception CallError { get; set; }
@@ -46,6 +36,16 @@ namespace MySoft.IoC
         {
             get { return this.CallError != null; }
         }
+
+        /// <summary>
+        /// 返回值
+        /// </summary>
+        public object ReturnValue { get; set; }
+
+        /// <summary>
+        /// 数据数
+        /// </summary>
+        public int ValueCount { get; set; }
 
         public CallEventArgs()
         {
