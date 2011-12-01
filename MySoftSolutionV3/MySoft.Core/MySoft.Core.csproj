@@ -75,6 +75,8 @@
     <Compile Include="Aop\AopSwitcherAttribute.cs" />
     <Compile Include="Aop\IAopOperator.cs" />
     <Compile Include="Aop\IAopProxyFactory.cs" />
+    <Compile Include="Threading\Stopwatch.cs" />
+    <Compile Include="Utils\CancellableTask.cs" />
     <Compile Include="Common\FtpClient.cs" />
     <Compile Include="Exception\BusinessException.cs" />
     <Compile Include="Compression\SharpZip\BZip2\BZip2.cs" />

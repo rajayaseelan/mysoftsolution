@@ -272,6 +272,7 @@ namespace MySoft.RESTful.Business
                         template = template.Replace("${parameter}", buider.ToString());
 
                     template = template.Replace("${type}", model.HttpMethod.ToString().ToUpper());
+                    template = template.Replace("${auth}", model.Authorized ? "<font color='red'>是</font>" : "&nbsp;");
 
                     StringBuilder anchor = new StringBuilder();
                     anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "xml"));

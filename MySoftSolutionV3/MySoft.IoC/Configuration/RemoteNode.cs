@@ -17,7 +17,8 @@ namespace MySoft.IoC.Configuration
         private string key;
         private bool encrypt = false;
         private bool compress = false;
-        private int maxpool = ServiceConfig.DEFAULT_CLIENTPOOL_NUMBER;
+        private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
+        private int maxpool = ServiceConfig.DEFAULT_CLIENTPOOL_MAXNUMBER;
 
         /// <summary>
         /// Gets or sets the key.
@@ -67,6 +68,16 @@ namespace MySoft.IoC.Configuration
         {
             get { return compress; }
             set { compress = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the timeout.
+        /// </summary>
+        /// <value>The minpool.</value>
+        public int Timeout
+        {
+            get { return timeout; }
+            set { timeout = value; }
         }
 
         /// <summary>

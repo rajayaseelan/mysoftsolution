@@ -318,15 +318,25 @@ namespace MySoft.Web
                 //开始生成
                 if (OnStart != null)
                 {
-                    try { OnStart(createTime, dynamicurl, RemoveRootPath(staticurl)); }
-                    catch { };
+                    try
+                    {
+                        OnStart(createTime, dynamicurl, RemoveRootPath(staticurl));
+                    }
+                    catch (Exception ex)
+                    {
+                    };
                 }
 
                 //生成时回调
                 if (Callback != null)
                 {
-                    try { content = Callback(content); }
-                    catch { };
+                    try
+                    {
+                        content = Callback(content);
+                    }
+                    catch (Exception ex)
+                    {
+                    };
                 }
 
                 string extension = Path.GetExtension(staticurl);
@@ -348,8 +358,13 @@ namespace MySoft.Web
                 //结束生成
                 if (OnComplete != null)
                 {
-                    try { OnComplete(createTime, dynamicurl, RemoveRootPath(staticurl)); }
-                    catch { };
+                    try
+                    {
+                        OnComplete(createTime, dynamicurl, RemoveRootPath(staticurl));
+                    }
+                    catch (Exception ex)
+                    {
+                    };
                 }
 
                 //全部生成成功才设置最后更新时间

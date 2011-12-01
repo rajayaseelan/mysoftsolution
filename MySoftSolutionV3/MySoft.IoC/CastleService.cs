@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
 using MySoft.IoC.Status;
 using MySoft.Logger;
 
@@ -103,17 +103,17 @@ namespace MySoft.IoC
         /// </summary>
         private void Publish()
         {
-            var list = this.GetServiceInfoList();
+            var list = this.GetServiceList();
 
-            string log = string.Format("此次发布的服务有{0}个，共有{1}个方法，详细信息如下：\r\n\r\n", list.Count, list.Sum(p => p.Methods.Count()));
+            string log = string.Format("此次发布的服务有{0}个，共有{1}个方法，详细信息如下：\r\n\r\n", list.Count, list.Sum(p => CoreHelper.GetMethodsFromType(p).Count()));
             StringBuilder sb = new StringBuilder(log);
 
             int index = 0;
-            foreach (var info in list)
+            foreach (var type in list)
             {
-                sb.AppendFormat("{0}, {1}\r\n", info.Name, info.Assembly);
+                sb.AppendFormat("{0}, {1}\r\n", type.Name, type.Assembly.FullName);
                 sb.AppendLine("------------------------------------------------------------------------------------------------------------------------");
-                foreach (var method in info.Methods)
+                foreach (var method in CoreHelper.GetMethodsFromType(type))
                 {
                     sb.AppendLine(method.ToString());
                 }
@@ -152,13 +152,12 @@ namespace MySoft.IoC
         /// </summary>
         public override void Dispose()
         {
-            base.Dispose();
-
             server.Stop();
             server.Clients.ClearAll();
 
             server = null;
             statuslist = null;
+            base.Dispose();
 
             GC.SuppressFinalize(this);
         }
@@ -244,8 +243,13 @@ namespace MySoft.IoC
                 //如果调用句柄不为空，则调用
                 if (args != null && OnCalling != null)
                 {
-                    try { OnCalling(client, args); }
-                    catch { }
+                    try
+                    {
+                        OnCalling(client, args);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
                 }
             }
         }
@@ -257,13 +261,15 @@ namespace MySoft.IoC
         /// <param name="reqMsg"></param>
         private void GetSendResponse(IScsServerClient client, RequestMessage reqMsg, out CallEventArgs args)
         {
+            long elapsedTimeout;
+
             //如果是状态请求，则直接返回数据
             if (!IsServiceCounter(reqMsg))
             {
                 args = null;
 
                 //调用请求方法
-                var resMsg = CallMethod(client, reqMsg);
+                var resMsg = CallMethod(client, reqMsg, out elapsedTimeout);
 
                 //发送数据到服务端
                 client.SendMessage(new ScsResultMessage(resMsg, reqMsg.TransactionId.ToString()));
@@ -287,19 +293,14 @@ namespace MySoft.IoC
                 var resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
                 if (resMsg == null)
                 {
-                    //开始计时
-                    Stopwatch watch = Stopwatch.StartNew();
-
                     //调用请求方法
-                    resMsg = CallMethod(client, reqMsg);
-
-                    watch.Stop();
+                    resMsg = CallMethod(client, reqMsg, out elapsedTimeout);
 
                     //处理时间
-                    status.ElapsedTime += watch.ElapsedMilliseconds;
+                    status.ElapsedTime += elapsedTimeout;
 
                     //计算缓存时间
-                    int times = (int)watch.ElapsedMilliseconds / 1000;
+                    int times = (int)elapsedTimeout / 1000;
 
                     //数据不为null，并且记录数大于0
                     if (resMsg != null && resMsg.Data != null && resMsg.Count > 0)
@@ -311,7 +312,7 @@ namespace MySoft.IoC
                     }
 
                     //参数信息
-                    args.ElapsedTime = watch.ElapsedMilliseconds;
+                    args.ElapsedTime = elapsedTimeout;
 
                     if (resMsg.Error == null)
                         args.ReturnValue = resMsg.Data;
@@ -349,43 +350,73 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg)
+        private ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg, out long elapsedTimeout)
         {
             //获取返回的消息
             ResponseMessage resMsg = null;
 
             try
             {
+                Thread thread = null;
+
                 //生成一个异步调用委托
-                AsyncMethodCaller handler = new AsyncMethodCaller(p =>
+                var caller = new AsyncMethodCaller<ResponseMessage, RequestMessage>(state =>
                 {
+                    thread = Thread.CurrentThread;
+
                     //实例化当前上下文
-                    if (callbackTypes.ContainsKey(reqMsg.ServiceName))
-                        OperationContext.Current = new OperationContext(client, callbackTypes[reqMsg.ServiceName]);
+                    if (callbackTypes.ContainsKey(state.ServiceName))
+                        OperationContext.Current = new OperationContext(client, callbackTypes[state.ServiceName]);
                     else
                         OperationContext.Current = new OperationContext(client);
 
-                    var responseMessage = container.CallService(p, config.LogTime);
-                    OperationContext.Current = null;
-
-                    return responseMessage;
+                    return container.CallService(state, config.LogTime); ;
                 });
 
-                //开始异步调用
-                IAsyncResult ar = handler.BeginInvoke(reqMsg, r => { }, handler);
+                //开始调用
+                IAsyncResult ar = caller.BeginInvoke(reqMsg, iar => { }, caller);
+
+                //开始计时
+                Stopwatch watch = Stopwatch.StartNew();
 
                 //等待信号，等待5分钟
-                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))
+                bool timeout = !ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout));
+
+                watch.Stop();
+                elapsedTimeout = watch.ElapsedMilliseconds;
+
+                if (timeout)
                 {
-                    throw new WarningException(string.Format("Call service ({0},{1}) timeout " + (long)TimeSpan.FromSeconds(reqMsg.Timeout).TotalMilliseconds + " ms！", reqMsg.ServiceName, reqMsg.SubServiceName));
+                    try
+                    {
+                        if (!ar.IsCompleted && thread != null)
+                            thread.Abort();
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+
+                    string title = string.Format("Call service ({0},{1}) timeout.", reqMsg.ServiceName, reqMsg.SubServiceName);
+                    string body = string.Format("【{3}】Call service ({0},{1}) timeout ({2} ms)！", reqMsg.ServiceName, reqMsg.SubServiceName, watch.ElapsedMilliseconds, reqMsg.TransactionId);
+                    throw new WarningException(body)
+                    {
+                        ApplicationName = reqMsg.AppName,
+                        ServiceName = reqMsg.ServiceName,
+                        ExceptionHeader = string.Format("Application【{0}】call service timeout. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                    };
                 }
-                else
-                {
-                    resMsg = handler.EndInvoke(ar);
-                }
+
+                //获取返回结果
+                resMsg = caller.EndInvoke(ar);
+
+                //关闭句柄
+                ar.AsyncWaitHandle.Close();
             }
             catch (Exception ex)
             {
+                //耗时时间
+                elapsedTimeout = (long)TimeSpan.FromSeconds(reqMsg.Timeout).TotalMilliseconds;
+
                 //抛出错误信息
                 container_OnError(ex);
 

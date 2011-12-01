@@ -16,17 +16,6 @@ namespace MySoft.Data
         #region 数据转换
 
         /// <summary>
-        /// 克隆对象
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public static T CloneObject<T>(T obj)
-        {
-            return ConvertType<T, T>(obj);
-        }
-
-        /// <summary>
         /// 从对象obj中获取值传给当前实体,TOutput必须为class或接口
         /// TInput可以为class、NameValueCollection、IDictionary、IRowReader、DataRow
         /// </summary>

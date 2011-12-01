@@ -17,9 +17,7 @@ namespace MySoft.IoC
         protected IServiceContainer container;
         protected CastleServiceConfiguration config;
         protected TimeStatusCollection statuslist;
-        private IList<ProcessInfo> processes;
         private DateTime startTime;
-        private Monitor monitor;
 
         /// <summary>
         /// 实例化ServerMoniter
@@ -38,16 +36,6 @@ namespace MySoft.IoC
             this.container.OnLog += new LogEventHandler(container_OnLog);
             this.statuslist = new TimeStatusCollection(config.Records);
             this.startTime = DateTime.Now;
-
-            this.processes = new List<ProcessInfo>();
-            this.monitor = new Monitor();
-            this.monitor.Changed += new Monitor.ProcessUpdate(monitor_Changed);
-            this.monitor.Start();
-        }
-
-        void monitor_Changed(List<ProcessInfo> processes)
-        {
-            this.processes = processes;
         }
 
         #region ILogable Members
@@ -92,21 +80,12 @@ namespace MySoft.IoC
         /// 获取服务信息列表
         /// </summary>
         /// <returns></returns>
-        public IList<ServiceInfo> GetServiceInfoList()
+        public IList<Type> GetServiceList()
         {
-            var list = new List<ServiceInfo>();
-            foreach (Type type in container.GetInterfaces<ServiceContractAttribute>())
-            {
-                var service = new ServiceInfo
-                {
-                    Assembly = type.Assembly.FullName,
-                    Name = type.FullName,
-                    Methods = CoreHelper.GetMethodsFromType(type)
-                };
+            //获取拥有ServiceContract约束的服务
+            var types = container.GetInterfaces<ServiceContractAttribute>();
 
-                list.Add(service);
-            }
-            return list.ToArray();
+            return types.ToList();
         }
 
         /// <summary>
@@ -225,51 +204,6 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 获取服务器进程信息
-        /// </summary>
-        /// <returns></returns>
-        public IList<ProcessInfo> GetProcessInfos()
-        {
-            return processes.OrderBy(p => p.Title).ToList();
-        }
-
-        /// <summary>
-        /// 获取服务器进程信息
-        /// </summary>
-        /// <param name="ids"></param>
-        /// <returns></returns>
-        public IList<ProcessInfo> GetProcessInfos(params int[] ids)
-        {
-            if (ids != null && ids.Length > 0)
-            {
-                return processes.Where(p => ids.Contains(p.Id)).ToList();
-            }
-            else
-            {
-                return new List<ProcessInfo>();
-            }
-        }
-
-        /// <summary>
-        /// 获取服务器进程信息
-        /// </summary>
-        /// <param name="names"></param>
-        /// <returns></returns>
-        public IList<ProcessInfo> GetProcessInfos(params string[] names)
-        {
-            if (names != null && names.Length > 0)
-            {
-                var list = names.Select(p => p.ToLower()).ToList();
-                return processes.Where(p => list.Contains(p.Name.ToLower()) ||
-                    list.Contains(p.Title.ToLower())).ToList();
-            }
-            else
-            {
-                return new List<ProcessInfo>();
-            }
-        }
-
-        /// <summary>
         /// 获取连接客户信息
         /// </summary>
         /// <returns></returns>
@@ -284,8 +218,7 @@ namespace MySoft.IoC
         /// </summary>
         public virtual void Dispose()
         {
-            this.monitor.Stop();
-            this.monitor = null;
+            container.Dispose();
         }
 
         #endregion

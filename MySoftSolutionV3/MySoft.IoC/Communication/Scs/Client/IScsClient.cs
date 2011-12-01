@@ -10,8 +10,8 @@ namespace MySoft.Communication.Scs.Client
     {
         //Does not define any additional member
         /// <summary>
-        /// 是否自动断开
+        /// 连接断开时间
         /// </summary>
-        bool AutoDisconnect { get; set; }
+        int DisconnectTimeout { get; set; }
     }
 }

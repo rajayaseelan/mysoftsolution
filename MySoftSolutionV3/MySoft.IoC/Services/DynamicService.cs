@@ -7,13 +7,6 @@ using MySoft.Logger;
 namespace MySoft.IoC.Services
 {
     /// <summary>
-    /// 异步调用委托
-    /// </summary>
-    /// <param name="reqMsg"></param>
-    /// <returns></returns>
-    public delegate ResponseMessage AsyncMethodCaller(RequestMessage reqMsg);
-
-    /// <summary>
     /// The dynamic service.
     /// </summary>
     public class DynamicService : BaseService

@@ -243,7 +243,7 @@ namespace MySoft
         {
             Hashtable methodToMB = new Hashtable();
 
-            foreach (MethodInfo method in type.GetMethods(BindingFlags.Instance | BindingFlags.Public))
+            foreach (MethodInfo method in CoreHelper.GetMethodsFromType(type))
             {
                 MethodBuilder mdb = MakeMethod(typeBuilder, method, createPublic);
                 methodToMB.Add(method, mdb);

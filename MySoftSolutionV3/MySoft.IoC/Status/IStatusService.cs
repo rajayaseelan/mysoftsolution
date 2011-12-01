@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MySoft.IoC.Status
 {
@@ -12,7 +13,7 @@ namespace MySoft.IoC.Status
         /// 获取服务信息列表
         /// </summary>
         /// <returns></returns>
-        IList<ServiceInfo> GetServiceInfoList();
+        IList<Type> GetServiceList();
 
         /// <summary>
         /// 清除服务器状态
@@ -54,25 +55,5 @@ namespace MySoft.IoC.Status
         /// </summary>
         /// <returns></returns>
         IList<ClientInfo> GetClientInfoList();
-
-        /// <summary>
-        /// 获取服务器进程信息
-        /// </summary>
-        /// <returns></returns>
-        IList<ProcessInfo> GetProcessInfos();
-
-        /// <summary>
-        /// 获取服务器进程信息
-        /// </summary>
-        /// <param name="ids"></param>
-        /// <returns></returns>
-        IList<ProcessInfo> GetProcessInfos(params int[] ids);
-
-        /// <summary>
-        /// 获取服务器进程信息
-        /// </summary>
-        /// <param name="names"></param>
-        /// <returns></returns>
-        IList<ProcessInfo> GetProcessInfos(params string[] names);
     }
 }

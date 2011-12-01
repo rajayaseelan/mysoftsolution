@@ -74,12 +74,13 @@ namespace MySoft.PlatformService.UserService
 
         public IList<UserInfo> GetUsers(string name)
         {
-            //Thread.Sleep(5000);
+            Thread.Sleep(15000);
             //throw new Exception("sdfsad");
 
             var list = new List<UserInfo>();
 
-            for (int i = 0; i < 10; i++)
+            var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
+            for (int i = 0; i < count; i++)
             {
                 list.Add(new UserInfo { Name = name + "_test" + i, Description = "testtest" + i });
             }

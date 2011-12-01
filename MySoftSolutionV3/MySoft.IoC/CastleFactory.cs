@@ -267,8 +267,13 @@ namespace MySoft.IoC
                     {
                         IService service = container;
                         object instance = null;
-                        try { instance = container[serviceType]; }
-                        catch { }
+                        try
+                        {
+                            instance = container[serviceType];
+                        }
+                        catch (Exception e)
+                        {
+                        }
                         if (!container.Kernel.HasComponent(serviceType) || instance == null)
                         {
                             if (proxy == null)

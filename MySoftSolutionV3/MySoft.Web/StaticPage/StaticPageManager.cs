@@ -392,8 +392,13 @@ namespace MySoft.Web
         {
             if (OnError != null)
             {
-                try { OnError(ex); }
-                catch { }
+                try
+                {
+                    OnError(ex);
+                }
+                catch (Exception e)
+                {
+                }
             }
         }
 

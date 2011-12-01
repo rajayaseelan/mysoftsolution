@@ -82,6 +82,10 @@ namespace MySoft.IoC.Configuration
                     remoteNode.IP = childnode["ip"].Value;
                     remoteNode.Port = Convert.ToInt32(childnode["port"].Value);
 
+                    //超时时间，默认为5分钟
+                    if (childnode["timeout"] != null && childnode["timeout"].Value.Trim() != string.Empty)
+                        remoteNode.Timeout = Convert.ToInt32(childnode["timeout"].Value);
+
                     //最大连接池
                     if (childnode["maxpool"] != null && childnode["maxpool"].Value.Trim() != string.Empty)
                         remoteNode.MaxPool = Convert.ToInt32(childnode["maxpool"].Value);

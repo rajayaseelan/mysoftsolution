@@ -128,35 +128,45 @@ namespace MySoft.PlatformService.Client
             //    }
             //}
 
-            DoWork();
+            for (int i = 0; i < 10; i++)
+            {
+                Thread thread = new Thread(DoWork1);
+                thread.Start();
+            }
             Console.ReadKey();
         }
 
-        static void DoWork()
+        static void DoWork1()
         {
-            try
+            while (true)
             {
-                //CastleFactory.Create().OnError += new ErrorLogEventHandler(Program_OnError);
-                //var sub = CastleFactory.Create().GetChannel<IMessagePublishService>(new MessageListener());
-                //sub.Subscribe();
-                ////sub.Subscribe();
+                try
+                {
+                    //CastleFactory.Create().OnError += new ErrorLogEventHandler(Program_OnError);
+                    //var sub = CastleFactory.Create().GetChannel<IMessagePublishService>(new MessageListener());
+                    //sub.Subscribe();
+                    ////sub.Subscribe();
 
-                ////for (int i = 0; i < 10; i++)
-                ////{
-                ////    sub.Compute(100, i);
-                ////    Thread.Sleep(1000);
-                ////}
+                    ////for (int i = 0; i < 10; i++)
+                    ////{
+                    ////    sub.Compute(100, i);
+                    ////    Thread.Sleep(1000);
+                    ////}
 
-                //Console.WriteLine("订阅服务IMessagePublishService成功！");
-                //Console.ReadLine();
+                    //Console.WriteLine("订阅服务IMessagePublishService成功！");
+                    //Console.ReadLine();
 
-                //sub.Unsubscribe();
+                    //sub.Unsubscribe();
 
-                var users = CastleFactory.Create().GetChannel<IUserService>().GetUsers("aaa");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+                    var users = CastleFactory.Create().GetChannel<IUserService>().GetUsers("aaa");
+                    Console.WriteLine(users.Count);
+
+                    Thread.Sleep(100);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
         }
 

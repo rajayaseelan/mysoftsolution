@@ -53,7 +53,7 @@ namespace MySoft.IoC
             reqMsg.ReturnType = methodInfo.ReturnType;                      //返回类型
             reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
             reqMsg.Timeout = config.Timeout;                                //设置超时时间
-            reqMsg.Expiration = DateTime.Now.AddSeconds(config.Timeout);    //设置过期时间
+            //reqMsg.Expiration = DateTime.Now.AddSeconds(config.Timeout);    //设置过期时间
 
             #endregion
 

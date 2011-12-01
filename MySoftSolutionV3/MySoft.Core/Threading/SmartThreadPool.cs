@@ -84,7 +84,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-
+using T = MySoft.Threading.Internal;
 using MySoft.Threading.Internal;
 
 namespace MySoft.Threading
@@ -901,7 +901,7 @@ namespace MySoft.Threading
             }
 
             int millisecondsLeft = millisecondsTimeout;
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            T.Stopwatch stopwatch = T.Stopwatch.StartNew();
             //DateTime start = DateTime.UtcNow;
             bool waitInfinitely = (Timeout.Infinite == millisecondsTimeout);
             bool timeout = false;

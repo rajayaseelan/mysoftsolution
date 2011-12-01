@@ -37,6 +37,23 @@ namespace MySoft.RESTful.SDK
         }
 
         /// <summary>
+        /// 解析一个参数
+        /// </summary>
+        /// <param name="urlParameter"></param>
+        public static Token Parse(string urlParameter)
+        {
+            Token token = new Token();
+            var items = urlParameter.Split('&');
+            foreach (var item in items)
+            {
+                var vitem = item.Split('=');
+                token.AddParameter(vitem[0], vitem[1]);
+            }
+
+            return token;
+        }
+
+        /// <summary>
         /// 查找指定名称的对象
         /// </summary>
         /// <param name="name"></param>
@@ -44,20 +61,6 @@ namespace MySoft.RESTful.SDK
         public ApiParameter Find(string name)
         {
             return this.Parameters.Find(p => p.Name == name);
-        }
-
-        /// <summary>
-        /// 添加一个参数
-        /// </summary>
-        /// <param name="urlParameter"></param>
-        public void AddParameter(string urlParameter)
-        {
-            var items = urlParameter.Split('&');
-            foreach (var item in items)
-            {
-                var vitem = item.Split('=');
-                AddParameter(vitem[0], vitem[1]);
-            }
         }
 
         /// <summary>

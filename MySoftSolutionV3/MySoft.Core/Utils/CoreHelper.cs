@@ -399,23 +399,7 @@ namespace MySoft
         /// <returns></returns>
         public static MethodInfo GetMethodFromType(Type type, string methodName)
         {
-            MethodInfo method = type.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-            .Where(p => p.ToString() == methodName)
-            .FirstOrDefault();
-
-            if (method == null)
-            {
-                foreach (Type inheritedInterface in type.GetInterfaces())
-                {
-                    method = inheritedInterface.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                            .Where(p => p.ToString() == methodName)
-                            .FirstOrDefault();
-
-                    if (method != null) break;
-                }
-            }
-
-            return method;
+            return GetMethodsFromType(type).Where(p => p.ToString() == methodName).FirstOrDefault();
         }
 
         /// <summary>

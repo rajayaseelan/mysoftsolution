@@ -63,8 +63,13 @@ namespace MySoft.RESTful.Business.Register
                 {
                     //获取业务对象
                     object instance = null;
-                    try { instance = container.Resolve(serviceType); }
-                    catch { }
+                    try
+                    {
+                        instance = container.Resolve(serviceType);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
 
                     if (instance == null)
                     {

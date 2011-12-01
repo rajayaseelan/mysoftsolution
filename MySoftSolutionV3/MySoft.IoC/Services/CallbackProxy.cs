@@ -28,6 +28,9 @@ namespace MySoft.IoC.Services
             this.callback = callback;
         }
 
+        /// <summary>
+        /// 初始化请求
+        /// </summary>
         protected override void InitRequest()
         {
             ServiceRequest reqService = new ServiceRequest(node, logger, false);
@@ -63,8 +66,7 @@ namespace MySoft.IoC.Services
                     var callbackType = callback.GetType();
                     if (resMsg.ServiceType.IsAssignableFrom(callbackType))
                     {
-                        var method = callbackType.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                            .FirstOrDefault(p => p.ToString() == resMsg.MethodName);
+                        var method = CoreHelper.GetMethodFromType(callbackType, resMsg.MethodName);
 
                         //执行委托
                         DynamicCalls.GetMethodInvoker(method).Invoke(callback, resMsg.Parameters);

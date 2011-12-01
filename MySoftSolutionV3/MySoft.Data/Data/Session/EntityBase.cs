@@ -154,18 +154,6 @@ namespace MySoft.Data
             return isUpdate ? EntityState.Update : EntityState.Insert;
         }
 
-        /// <summary>
-        /// 克隆一个对象
-        /// </summary>
-        /// <returns></returns>
-        EntityBase IEntityBase.CloneObject()
-        {
-            lock (this)
-            {
-                return DataHelper.CloneObject(this);
-            }
-        }
-
         #region 字段信息
 
         /// <summary>

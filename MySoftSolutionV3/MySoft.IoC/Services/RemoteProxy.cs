@@ -22,17 +22,21 @@ namespace MySoft.IoC.Services
         {
             this.node = node;
             this.logger = logger;
-            this.reqPool = new ServiceRequestPool(node.MaxPool);
 
             InitRequest();
         }
 
+        /// <summary>
+        /// 初始化请求
+        /// </summary>
         protected virtual void InitRequest()
         {
+            this.reqPool = new ServiceRequestPool(node.MaxPool);
+
             //服务请求池化
             for (int i = 0; i < node.MaxPool; i++)
             {
-                ServiceRequest reqService = new ServiceRequest(node, logger, true);
+                var reqService = new ServiceRequest(node, logger, true);
                 reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
 
                 this.reqPool.Push(reqService);
@@ -70,33 +74,70 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage CallService(RequestMessage reqMsg, double logTimeout)
         {
-            //如果池为空
+            //如果池为空，则判断是否达到最大池
             if (reqPool.Count == 0)
             {
                 throw new Exception("Service request pool is empty！");
             }
 
-            //从池中弹出一个可用请求
+            //获取一个服务请求
             var reqService = reqPool.Pop();
 
             try
             {
+                //设置过期时间
+                reqMsg.Expiration = DateTime.Now.AddSeconds(node.Timeout);
+
                 //发送消息
                 reqService.SendMessage(reqMsg);
+
+                Thread thread = null;
+
+                //获取消息
+                var caller = new AsyncMethodCaller<ResponseMessage, RequestMessage>(state =>
+                {
+                    thread = Thread.CurrentThread;
+
+                    //启动线程来
+                    while (true)
+                    {
+                        var retMsg = hashtable[state.TransactionId] as ResponseMessage;
+
+                        //如果有数据返回，则响应
+                        if (retMsg != null)
+                        {
+                            //用完后移除
+                            hashtable.Remove(state.TransactionId);
+
+                            return retMsg;
+                        }
+
+                        //防止cpu使用率过高
+                        Thread.Sleep(1);
+                    }
+                });
+
+                //开始调用
+                IAsyncResult ar = caller.BeginInvoke(reqMsg, iar => { }, caller);
 
                 //开始计时
                 Stopwatch watch = Stopwatch.StartNew();
 
-                //获取消息
-                AsyncMethodCaller handler = new AsyncMethodCaller(GetResponse);
+                //等待信号，客户端等待5分钟
+                bool timeout = !ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(node.Timeout));
 
-                //异步调用
-                IAsyncResult ar = handler.BeginInvoke(reqMsg, r => { }, handler);
+                watch.Stop();
 
-                // Wait for the WaitHandle to become signaled.
-                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout)))
+                if (timeout)
                 {
-                    watch.Stop();
+                    try
+                    {
+                        if (!ar.IsCompleted && thread != null)
+                            thread.Abort();
+                    }
+                    catch (Exception ex)
+                    {
+                    }
 
                     string title = string.Format("Call ({0}:{1}) remote service ({2},{3}) timeout.", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName);
                     string body = string.Format("【{5}】Call ({0}:{1}) remote service ({2},{3}) timeout ({4} ms)！", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName, watch.ElapsedMilliseconds, reqMsg.TransactionId);
@@ -104,15 +145,15 @@ namespace MySoft.IoC.Services
                     {
                         ApplicationName = reqMsg.AppName,
                         ServiceName = reqMsg.ServiceName,
-                        ExceptionHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                        ExceptionHeader = string.Format("Application【{0}】call service timeout. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                     };
                 }
 
-                // Perform additional processing here.
-                // Call EndInvoke to retrieve the results.
-                ResponseMessage resMsg = handler.EndInvoke(ar);
+                //获取返回结果
+                var resMsg = caller.EndInvoke(ar);
 
-                watch.Stop();
+                //关闭句柄
+                ar.AsyncWaitHandle.Close();
 
                 //如果时间超过预定，则输出日志
                 if (watch.ElapsedMilliseconds > logTimeout * 1000)
@@ -136,32 +177,6 @@ namespace MySoft.IoC.Services
             finally
             {
                 this.reqPool.Push(reqService);
-            }
-        }
-
-        /// <summary>
-        /// 获取响应的消息
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponse(RequestMessage reqMsg)
-        {
-            //启动线程来
-            while (true)
-            {
-                var resMsg = hashtable[reqMsg.TransactionId] as ResponseMessage;
-
-                //如果有数据返回，则响应
-                if (resMsg != null)
-                {
-                    //用完后移除
-                    hashtable.Remove(reqMsg.TransactionId);
-
-                    return resMsg;
-                }
-
-                //防止cpu使用率过高
-                Thread.Sleep(1);
             }
         }
 

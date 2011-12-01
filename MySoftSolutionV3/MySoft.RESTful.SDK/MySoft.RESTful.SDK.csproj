@@ -44,7 +44,7 @@
     <Compile Include="ApiParameter.cs" />
     <Compile Include="ApiParameterCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RESTfulClient.cs" />
+    <Compile Include="RESTfulFactory.cs" />
     <Compile Include="RESTfulException.cs" />
     <Compile Include="RESTfulInvocationHandler.cs" />
     <Compile Include="RESTfulParameter.cs" />

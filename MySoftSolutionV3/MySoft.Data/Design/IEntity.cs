@@ -67,12 +67,6 @@ namespace MySoft.Data
         IDictionary<string, object> ToDictionary();
 
         /// <summary>
-        /// 克隆一个对象
-        /// </summary>
-        /// <returns></returns>
-        EntityBase CloneObject();
-
-        /// <summary>
         /// 获取对象状态
         /// </summary>
         EntityState GetObjectState();

@@ -33,10 +33,10 @@ namespace MySoft.Web.UI
             }
         }
 
-        private static Dictionary<string, AsyncMethodInfo> InternalGetAjaxMethods(Type t)
+        private static Dictionary<string, AsyncMethodInfo> InternalGetAjaxMethods(Type type)
         {
             Dictionary<string, AsyncMethodInfo> ret = new Dictionary<string, AsyncMethodInfo>();
-            MethodInfo[] mis = (MethodInfo[])t.GetMethods(BindingFlags.Instance | BindingFlags.Public);
+            MethodInfo[] mis = CoreHelper.GetMethodsFromType(type);
             foreach (MethodInfo mi in mis)
             {
                 string methodName = mi.Name;

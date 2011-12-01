@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MySoft.IoC
 {
     /// <summary>
@@ -29,9 +30,14 @@ namespace MySoft.IoC
         public const int DEFAULT_RECORD_NUMBER = 3600; //3600次
 
         /// <summary>
-        /// The default maxpool number.
+        /// 默认为5分钟
         /// </summary>
-        public const int DEFAULT_CLIENTPOOL_NUMBER = 50;
+        public const int DEFAULT_CLIENT_TIMEOUT = 5 * 60;
+
+        /// <summary>
+        /// The default pool number.
+        /// </summary>
+        public const int DEFAULT_CLIENTPOOL_MAXNUMBER = 25;
 
         #endregion
     }

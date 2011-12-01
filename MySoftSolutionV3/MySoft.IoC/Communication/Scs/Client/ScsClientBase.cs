@@ -42,7 +42,7 @@ namespace MySoft.Communication.Scs.Client
         /// <summary>
         /// Auto disconnected
         /// </summary>
-        public bool AutoDisconnect { get; set; }
+        public int DisconnectTimeout { get; set; }
 
         /// <summary>
         /// Timeout for connecting to a server (as milliseconds).
@@ -115,6 +115,7 @@ namespace MySoft.Communication.Scs.Client
         /// Default timeout value for connecting a server.
         /// </summary>
         private const int DefaultConnectionAttemptTimeout = 15000; //15 seconds.
+        private const int DefaultDisconnectionAttemptTimeout = 5 * 60 * 1000; //5 minutes.
 
         /// <summary>
         /// The communication channel that is used by client to send and receive messages.
@@ -138,6 +139,7 @@ namespace MySoft.Communication.Scs.Client
             _pingTimer = new Timer(30000);
             _pingTimer.Elapsed += PingTimer_Elapsed;
             ConnectTimeout = DefaultConnectionAttemptTimeout;
+            DisconnectTimeout = DefaultDisconnectionAttemptTimeout;
             WireProtocol = WireProtocolManager.GetDefaultWireProtocol();
         }
 
@@ -268,10 +270,12 @@ namespace MySoft.Communication.Scs.Client
                     return;
                 }
 
-                if (!AutoDisconnect)
+                if (DisconnectTimeout <= 0)
                     _communicationChannel.SendMessage(new ScsPingMessage());
                 else
                 {
+                    lastMinute = DateTime.Now.Add(-TimeSpan.FromMilliseconds(DisconnectTimeout));
+
                     if (_communicationChannel.LastReceivedMessageTime < lastMinute && _communicationChannel.LastSentMessageTime < lastMinute)
                     {
                         //如果超过1分钟没响应，则断开链接
