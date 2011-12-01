@@ -7,11 +7,21 @@ namespace MySoft.IoC
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>
+    public delegate object AsyncMethodCaller(object state);
+
+    /// <summary>
+    /// 异步调用委托
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <param name="state"></param>
+    /// <returns></returns>
     public delegate TResult AsyncMethodCaller<TResult>(object state);
 
     /// <summary>
     /// 异步调用委托
     /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="T"></typeparam>
     /// <param name="state"></param>
     /// <returns></returns>
     public delegate TResult AsyncMethodCaller<TResult, T>(T state);
