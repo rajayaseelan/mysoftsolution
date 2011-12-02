@@ -128,7 +128,7 @@ namespace MySoft.PlatformService.Client
             //    }
             //}
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 2; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start();
@@ -158,10 +158,10 @@ namespace MySoft.PlatformService.Client
 
                     //sub.Unsubscribe();
 
-                    var users = CastleFactory.Create().GetChannel<IUserService>().GetUsers("aaa");
-                    Console.WriteLine(users.Count);
+                    var users = CastleFactory.Create().GetChannel<IUserService>().GetUsers();
+                    Console.WriteLine(users[0].Description);
 
-                    Thread.Sleep(100);
+                    Thread.Sleep(1000);
                 }
                 catch (Exception ex)
                 {
@@ -243,7 +243,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + new Random().Next(10000000), out userid);
                     //UserInfo info = service.GetUserInfo("maoyong", out userid);
 
-                    var users = service.GetUsers("maoyong");
+                    var users = service.GetUsers();
 
                     if (users == null)
                     {

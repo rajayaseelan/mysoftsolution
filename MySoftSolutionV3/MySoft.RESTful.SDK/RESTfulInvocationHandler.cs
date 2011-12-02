@@ -51,7 +51,7 @@ namespace MySoft.RESTful.SDK
             RESTfulParameter parameter = new RESTfulParameter(name, attr.Method, format);
             parameter.Token = token;
 
-            if (attr.Method == HttpMethod.GET)
+            if (attr.Method != HttpMethod.POST)
             {
                 //添加参数
                 var plist = method.GetParameters();

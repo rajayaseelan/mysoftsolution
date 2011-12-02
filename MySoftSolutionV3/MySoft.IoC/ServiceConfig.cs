@@ -37,7 +37,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default pool number.
         /// </summary>
-        public const int DEFAULT_CLIENTPOOL_MAXNUMBER = 25;
+        public const int DEFAULT_CLIENTPOOL_MAXNUMBER = 10;
 
         #endregion
     }

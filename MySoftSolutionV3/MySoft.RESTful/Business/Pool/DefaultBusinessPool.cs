@@ -99,14 +99,11 @@ namespace MySoft.RESTful.Business.Pool
                 BusinessMethodModel method = kind.MethodModels.Where(e => e.Key.Equals(businessMethodName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
                 if (method != null)
                 {
-                    if (method.HttpMethod == HttpMethod.GET)
-                        return method.Authorized;
-                    else
-                        return true;
+                    return method.Authorized;
                 }
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>

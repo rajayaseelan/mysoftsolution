@@ -30,9 +30,9 @@ namespace MySoft.RESTful.SDK
             return new RESTfulFactory(url, format);
         }
 
-        protected string url;
-        protected DataFormat format = DataFormat.JSON;
-        protected int timeout = 60;
+        private string url;
+        private DataFormat format = DataFormat.JSON;
+        private int timeout = 5 * 60;
 
         /// <summary>
         /// 数据格式
@@ -55,7 +55,7 @@ namespace MySoft.RESTful.SDK
         /// <summary>
         /// RESTfulClient实例化
         /// </summary>
-        public RESTfulFactory(string url)
+        protected RESTfulFactory(string url)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -70,7 +70,7 @@ namespace MySoft.RESTful.SDK
         /// </summary>
         /// <param name="url"></param>
         /// <param name="format"></param>
-        public RESTfulFactory(string url, DataFormat format)
+        protected RESTfulFactory(string url, DataFormat format)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -242,7 +242,7 @@ namespace MySoft.RESTful.SDK
             RESTfulParameter parameter = new RESTfulParameter(name, method, format);
             parameter.Token = token;
 
-            if (method == HttpMethod.GET)
+            if (method != HttpMethod.POST)
             {
                 //添加参数
                 parameter.AddParameter(item.Keys.ToArray(), item.Values.ToArray());
@@ -314,7 +314,7 @@ namespace MySoft.RESTful.SDK
             RESTfulParameter parameter = new RESTfulParameter(name, method, format);
             parameter.Token = token;
 
-            if (method == HttpMethod.GET)
+            if (method != HttpMethod.POST)
             {
                 //添加参数
                 parameter.AddParameter(item);

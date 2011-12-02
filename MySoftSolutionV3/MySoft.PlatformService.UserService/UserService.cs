@@ -72,18 +72,14 @@ namespace MySoft.PlatformService.UserService
 
         #region IUserService 成员
 
-        public IList<UserInfo> GetUsers(string name)
+        public IList<UserInfo> GetUsers()
         {
-            Thread.Sleep(15000);
+            //Thread.Sleep(15000);
             //throw new Exception("sdfsad");
-
             var list = new List<UserInfo>();
 
             var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
-            for (int i = 0; i < count; i++)
-            {
-                list.Add(new UserInfo { Name = name + "_test" + i, Description = "testtest" + i });
-            }
+            list.Add(new UserInfo { Name = "test_" + count, Description = "test_" + count + "_" + Thread.CurrentThread.ManagedThreadId });
 
             return list;
         }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
+using System.Runtime.Remoting.Messaging;
 
 namespace MySoft.WinForm.Test
 {
@@ -28,7 +29,7 @@ namespace MySoft.WinForm.Test
                 System.Threading.Thread.Sleep(10000);
                 return a + b;
             });
-            var ar = add.BeginInvoke(1, 2, null, null);
+            var ar = add.BeginInvoke(1, 2, iar => { }, add);
 
             if (!ar.AsyncWaitHandle.WaitOne(1000, true))
             {

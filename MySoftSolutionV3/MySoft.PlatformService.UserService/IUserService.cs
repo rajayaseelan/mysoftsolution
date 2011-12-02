@@ -71,8 +71,8 @@ namespace MySoft.PlatformService.UserService
         [OperationContract(CacheTime = 30000)]
         UserInfo GetUserInfo(string name);
 
-        [PublishMethod("getusers", Description = "获取用户信息", UserParameter = "name")]
-        IList<UserInfo> GetUsers(string name);
+        [PublishMethod("getusers", Description = "获取用户信息")]
+        IList<UserInfo> GetUsers();
 
         IDictionary<string, UserInfo> GetDictUsers();
 
