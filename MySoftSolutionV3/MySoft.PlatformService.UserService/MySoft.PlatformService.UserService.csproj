@@ -68,10 +68,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IUserService.cs" />
-    <Compile Include="MessageCenter.cs" />
-    <Compile Include="MessageListener.cs" />
-    <Compile Include="MessageListenerEventArgs.cs" />
-    <Compile Include="MessageNotifyErrorEventArgs.cs" />
     <Compile Include="UserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -79,10 +75,6 @@
     <ProjectReference Include="..\MySoft.Core\MySoft.Core.csproj">
       <Project>{1DF7ED40-1747-4114-A8E4-6B3B85034883}</Project>
       <Name>MySoft.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MySoft.Data\MySoft.Data.csproj">
-      <Project>{7B603EE2-B9F0-445E-817F-F058F43E5F48}</Project>
-      <Name>MySoft.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\MySoft.IoC\MySoft.IoC.csproj">
       <Project>{075BD20E-ABD5-4754-8C40-58E3EC025E42}</Project>

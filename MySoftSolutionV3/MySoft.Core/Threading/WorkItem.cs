@@ -369,7 +369,7 @@ namespace MySoft.Threading.Internal
             }
 #endif
 
-            Exception exception = null;
+            Exception error = null;
             object result = null;
 
             try
@@ -381,7 +381,7 @@ namespace MySoft.Threading.Internal
                 catch (Exception e)
                 {
                     // Save the exception so we can rethrow it later
-                    exception = e;
+                    error = e;
                 }
 
                 // Remove the value of the execution thread, so it will be impossible to cancel the work item,
@@ -420,7 +420,7 @@ namespace MySoft.Threading.Internal
 
             if (!SmartThreadPool.IsWorkItemCanceled)
             {
-                SetResult(result, exception);
+                SetResult(result, error);
             }
         }
 
@@ -448,10 +448,10 @@ namespace MySoft.Threading.Internal
 		/// <param name="result">The result of the work item</param>
 		/// <param name="exception">The exception that was throw while the workitem executed, null
         /// if there was no exception.</param>
-		internal void SetResult(object result, Exception exception)
+		internal void SetResult(object result, Exception error)
 		{
 			_result = result;
-            _exception = exception;
+            _exception = error;
 			SignalComplete(false);
 		}
 

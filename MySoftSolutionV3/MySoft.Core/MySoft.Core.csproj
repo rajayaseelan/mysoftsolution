@@ -163,7 +163,6 @@
     <Compile Include="Common\ResponseFormat.cs" />
     <Compile Include="Installer\Configuration\InstallerConfiguration.cs" />
     <Compile Include="Installer\Configuration\InstallerConfigurationHandler.cs" />
-    <Compile Include="IoC\ContractAttribute.cs" />
     <Compile Include="IoC\OperationContract.cs" />
     <Compile Include="IoC\ServiceContract.cs" />
     <Compile Include="Json\Newtonsoft.Json\Bson\BsonBinaryType.cs" />

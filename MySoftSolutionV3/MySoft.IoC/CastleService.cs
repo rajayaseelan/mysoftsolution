@@ -77,10 +77,10 @@ namespace MySoft.IoC
         /// <summary>
         /// 处理异常信息
         /// </summary>
-        /// <param name="exception"></param>
-        void Instance_OnError(Exception exception)
+        /// <param name="error"></param>
+        void Instance_OnError(Exception error)
         {
-            container_OnError(exception);
+            container_OnError(error);
         }
 
         private IDictionary<string, Type> GetCallbackTypes()
@@ -198,10 +198,16 @@ namespace MySoft.IoC
             container_OnLog(string.Format("User connection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Information);
             e.Client.MessageReceived += new EventHandler<MessageEventArgs>(Client_MessageReceived);
             e.Client.MessageSent += new EventHandler<MessageEventArgs>(Client_MessageSent);
+            e.Client.ErrorReceived += new EventHandler<ErrorEventArgs>(Client_ErrorReceived);
 
             //处理登入事件
             var point = new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort);
             MessageCenter.Instance.Notify(point, true);
+        }
+
+        void Client_ErrorReceived(object sender, ErrorEventArgs e)
+        {
+            container_OnError(e.Error);
         }
 
         void Client_MessageSent(object sender, MessageEventArgs e)
@@ -271,11 +277,10 @@ namespace MySoft.IoC
                     args.Caller.AppName = reqMsg.AppName;
                     args.Caller.IPAddress = reqMsg.IPAddress;
                     args.Caller.HostName = reqMsg.HostName;
-                    args.Caller.AssemblyName = typeof(CastleService).Assembly.FullName;
                     args.Caller.ServiceName = reqMsg.ServiceName;
                     args.Caller.SubServiceName = reqMsg.SubServiceName;
                     args.Caller.Parameters = reqMsg.Parameters.ToString();
-                    args.InvokeTime = DateTime.Now;
+                    args.CallTime = DateTime.Now;
                     args.Error = ex;
                 }
 
@@ -317,7 +322,7 @@ namespace MySoft.IoC
                 args.Caller.AppName = reqMsg.AppName;
                 args.Caller.IPAddress = reqMsg.IPAddress;
                 args.Caller.HostName = reqMsg.HostName;
-                args.InvokeTime = DateTime.Now;
+                args.CallTime = DateTime.Now;
 
                 //开始计时
                 Stopwatch watch = Stopwatch.StartNew();
@@ -334,19 +339,19 @@ namespace MySoft.IoC
                 status.ElapsedTime += watch.ElapsedMilliseconds;
 
                 //错误及成功计数
-                if (resMsg.Error == null)
-                {
-                    status.SuccessCount++;
-
-                    args.Count = resMsg.Count;
-                    args.Value = resMsg.Data;
-                    args.ElapsedTime = watch.ElapsedMilliseconds;
-                }
-                else
+                if (resMsg.IsError)
                 {
                     status.ErrorCount++;
 
                     args.Error = resMsg.Error;
+                }
+                else
+                {
+                    status.SuccessCount++;
+
+                    args.Count = resMsg.Count;
+                    args.Value = resMsg.Value;
+                    args.ElapsedTime = watch.ElapsedMilliseconds;
                 }
 
                 //实例化Message对象来进行发送
@@ -359,12 +364,9 @@ namespace MySoft.IoC
                 status.DataFlow += sendMessage.DataLength;
 
                 //服务参数信息
-                args.Caller.AssemblyName = resMsg.AssemblyName;
                 args.Caller.ServiceName = resMsg.ServiceName;
                 args.Caller.SubServiceName = resMsg.SubServiceName;
-
-                //计算流量
-                args.Length = sendMessage.DataLength;
+                args.Caller.Parameters = resMsg.Parameters.ToString();
             }
         }
 

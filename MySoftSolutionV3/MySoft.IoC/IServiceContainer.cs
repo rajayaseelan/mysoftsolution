@@ -60,9 +60,5 @@ namespace MySoft.IoC
         /// <param name="serviceName"></param>
         /// <returns></returns>
         bool Contains<ContractType>(string serviceName);
-        /// <summary>
-        /// ª∫¥Ê“¿¿µ
-        /// </summary>
-        ICacheDependent Cache { get; set; }
     }
 }

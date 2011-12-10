@@ -10,9 +10,25 @@ using MySoft.IoC.Status;
 namespace MySoft.IoC
 {
     /// <summary>
+    /// 连接上服务器接口
+    /// </summary>
+    public interface IServerConnection
+    {
+        /// <summary>
+        /// 连接上事件
+        /// </summary>
+        event EventHandler OnConnected;
+
+        /// <summary>
+        /// 断开连接事件
+        /// </summary>
+        event EventHandler OnDisconnected;
+    }
+
+    /// <summary>
     /// 服务请求类
     /// </summary>
-    public class ServiceRequest : IDisposable
+    public class ServiceRequest : IServerConnection, IDisposable
     {
         /// <summary>
         /// 数据回调
@@ -50,11 +66,18 @@ namespace MySoft.IoC
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
             this.client.ConnectTimeout = 5000;
             this.client.DisconnectTimeout = isAutoDisconnect ? node.Timeout * 1000 : -1;
-            this.client.Connected += new EventHandler(client_Connected);
-            this.client.Disconnected += new EventHandler(client_Disconnected);
+            this.client.Connected += OnConnected;
+            this.client.Disconnected += OnDisconnected;
             this.client.MessageReceived += new EventHandler<MessageEventArgs>(client_MessageReceived);
             this.client.MessageSent += new EventHandler<MessageEventArgs>(client_MessageSent);
+            this.client.ErrorReceived += new EventHandler<ErrorEventArgs>(client_ErrorReceived);
             this.client.WireProtocol = new CustomWireProtocol(node.Compress, node.Encrypt);
+        }
+
+        void client_ErrorReceived(object sender, ErrorEventArgs e)
+        {
+            //输出错误信息
+            this.logger.WriteError(e.Error);
         }
 
         /// <summary>
@@ -143,16 +166,6 @@ namespace MySoft.IoC
                     if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs { Client = client, Result = resMsg });
                 }
             }
-        }
-
-        void client_Disconnected(object sender, EventArgs e)
-        {
-            if (OnDisconnected != null) OnDisconnected(sender, e);
-        }
-
-        void client_Connected(object sender, EventArgs e)
-        {
-            if (OnConnected != null) OnConnected(sender, e);
         }
 
         #endregion

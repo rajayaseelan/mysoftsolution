@@ -25,12 +25,12 @@ namespace MySoft.IoC.Status
         /// <summary>
         /// 调用时间
         /// </summary>
-        public DateTime InvokeTime { get; set; }
+        public DateTime CallTime { get; set; }
 
         /// <summary>
         /// 是否业务异常
         /// </summary>
-        public bool IsBusiness { get; set; }
+        public bool IsBusinessError { get; set; }
 
         public CallError()
         {
@@ -50,14 +50,14 @@ namespace MySoft.IoC.Status
         public AppCaller Caller { get; set; }
 
         /// <summary>
+        /// 调用时间
+        /// </summary>
+        public DateTime CallTime { get; set; }
+
+        /// <summary>
         /// 数据数
         /// </summary>
         public int Count { get; set; }
-
-        /// <summary>
-        /// 数据大小
-        /// </summary>
-        public int Length { get; set; }
 
         /// <summary>
         /// 总耗时

@@ -86,8 +86,8 @@ namespace SharpZip.Zip
 		/// </summary>
 		/// <param name="message">A message describing the error.</param>
 		/// <param name="exception">The exception that is the cause of the current exception.</param>
-		public ZipException(string message, Exception exception)
-			: base(message, exception)
+		public ZipException(string message, Exception error)
+            : base(message, error)
 		{
 		}
 	}

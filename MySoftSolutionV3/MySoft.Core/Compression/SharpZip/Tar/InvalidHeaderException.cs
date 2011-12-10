@@ -85,8 +85,8 @@ namespace SharpZip.Tar {
 		/// </summary>
 		/// <param name="message">Message describing the problem.</param>
 		/// <param name="exception">The exception that is the cause of the current exception.</param>
-		public InvalidHeaderException(string message, Exception exception)
-			: base(message, exception)
+		public InvalidHeaderException(string message, Exception error)
+            : base(message, error)
 		{
 		}
 	}

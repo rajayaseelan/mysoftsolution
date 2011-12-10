@@ -53,14 +53,15 @@ namespace MySoft.IoC
             reqMsg.ReturnType = methodInfo.ReturnType;                      //返回类型
             reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
             reqMsg.Timeout = config.Timeout;                                //设置超时时间
-            //reqMsg.Expiration = DateTime.Now.AddSeconds(config.Timeout);    //设置过期时间
+            reqMsg.CacheTime = -1;                                          //设置缓存时间
+            //reqMsg.Expiration = DateTime.Now.AddSeconds(config.Timeout)                   //设置过期时间
 
             #endregion
 
             #region 处理参数
 
-            ParameterInfo[] pis = methodInfo.GetParameters();
-            if ((pis.Length == 0 && paramValues != null && paramValues.Length > 0) || (paramValues != null && pis.Length != paramValues.Length))
+            var pis = methodInfo.GetParameters();
+            if (paramValues != null && pis.Length != paramValues.Length)
             {
                 //参数不正确直接返回异常
                 string title = string.Format("Invalid parameters ({0},{1}).", reqMsg.ServiceName, reqMsg.SubServiceName);
@@ -99,133 +100,55 @@ namespace MySoft.IoC
 
             #endregion
 
-            #region 处理缓存
-
-            //处理cacheKey信息
-            string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.SubServiceName, reqMsg.Parameters);
-
-            bool isAllowCache = false;
-            int cacheTime = config.CacheTime; //默认缓存时间与系统设置的时间一致
-
-            #region 读取约束信息
-
             //获取约束信息
-            var serviceContract = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
-
-            //获取约束信息
-            var operationContract = CoreHelper.GetMemberAttribute<OperationContractAttribute>(methodInfo);
-
-            //判断约束
-            if (serviceContract != null)
+            var opContract = CoreHelper.GetMemberAttribute<OperationContractAttribute>(methodInfo);
+            if (opContract != null)
             {
-                isAllowCache = serviceContract.AllowCache;
-                if (serviceContract.CacheTime > 0) cacheTime = serviceContract.CacheTime;
-                if (serviceContract.Timeout > 0) reqMsg.Timeout = serviceContract.Timeout;
+                if (opContract.Timeout > 0) reqMsg.Timeout = opContract.Timeout;
+                if (opContract.CacheTime > 0) reqMsg.CacheTime = opContract.CacheTime;
             }
 
-            //判断约束
-            if (operationContract != null)
+            try
             {
-                if (isAllowCache) isAllowCache = operationContract.AllowCache;
-                if (operationContract.CacheTime > 0) cacheTime = operationContract.CacheTime;
-                if (operationContract.Timeout > 0) reqMsg.Timeout = operationContract.Timeout;
-            }
-            else
-            {
-                //默认方法不进行缓存
-                isAllowCache = false;
-            }
+                //调用服务
+                var resMsg = service.CallService(reqMsg);
 
-            serviceContract = null;
-            operationContract = null;
-
-            //设置过期时间
-            reqMsg.Expiration = DateTime.Now.AddSeconds(reqMsg.Timeout);
-
-            #endregion
-
-            //定义返回的值
-            object returnValue = null;
-            ParameterCollection parameters = null;
-
-            //缓存对象
-            ServiceCache cacheValue = null;
-
-            //缓存的处理
-            if (isAllowCache && container.Cache != null)
-            {
-                //从缓存获取数据
-                cacheValue = container.Cache.GetCache(serviceType, cacheKey) as ServiceCache;
-            }
-
-            //如果缓存不为null;
-            if (cacheValue != null)
-            {
-                parameters = cacheValue.Parameters;
-                returnValue = cacheValue.CacheObject;
-            }
-            else
-            {
-                ResponseMessage resMsg = null;
-                try
+                //如果数据为null,则返回null
+                if (resMsg == null)
                 {
-                    //调用服务
-                    resMsg = service.CallService(reqMsg);
-
-                    //如果数据为null,则返回null
-                    if (resMsg == null)
-                    {
-                        return CoreHelper.GetTypeDefaultValue(methodInfo.ReturnType);
-                    }
-
-                    //如果有异常，向外抛出
-                    if (resMsg.IsError) throw resMsg.Error;
+                    return CoreHelper.GetTypeDefaultValue(methodInfo.ReturnType);
                 }
-                catch (BusinessException ex)
+
+                //如果有异常，向外抛出
+                if (resMsg.IsError) throw resMsg.Error;
+
+                //给引用的参数赋值
+                for (int i = 0; i < pis.Length; i++)
                 {
+                    if (pis[i].ParameterType.IsByRef)
+                    {
+                        //给参数赋值
+                        paramValues[i] = resMsg.Parameters[pis[i].Name];
+                    }
+                }
+
+                //返回数据
+                return resMsg.Value;
+            }
+            catch (BusinessException ex)
+            {
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                if (config.ThrowError)
                     throw ex;
-                }
-                catch (Exception ex)
-                {
-                    if (config.ThrowError)
-                        throw ex;
-                    else
-                        container.WriteError(ex);
-                }
-
-                //从返回结果中取值
-                returnValue = resMsg.Data;
-
-                //参数
-                parameters = resMsg.Parameters;
-
-                if (returnValue != null)
-                {
-                    //缓存的处理
-                    if (isAllowCache && container.Cache != null)
-                    {
-                        cacheValue = new ServiceCache { CacheObject = returnValue, Parameters = parameters };
-
-                        //把值添加到缓存中
-                        container.Cache.AddCache(serviceType, cacheKey, cacheValue, cacheTime);
-                    }
-                }
+                else
+                    container.WriteError(ex);
             }
 
-            #endregion
-
-            //给引用的参数赋值
-            for (int i = 0; i < pis.Length; i++)
-            {
-                if (pis[i].ParameterType.IsByRef)
-                {
-                    //给参数赋值
-                    paramValues[i] = parameters[pis[i].Name];
-                }
-            }
-
-            //返回数据
-            return returnValue;
+            //返回默认值
+            return CoreHelper.GetTypeDefaultValue(methodInfo.ReturnType);
         }
 
         #region IInvocationHandler 成员

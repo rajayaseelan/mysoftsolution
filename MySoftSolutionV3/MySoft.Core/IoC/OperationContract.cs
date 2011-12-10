@@ -9,34 +9,43 @@ namespace MySoft.IoC
     /// Attribute used to mark service interfaces.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class OperationContractAttribute : ContractAttribute
+    public class OperationContractAttribute : Attribute
     {
+        protected int timeout = -1;
         /// <summary>
-        /// 实例化OperationContractAttribute
+        /// Gets or sets the timeout.
         /// </summary>
-        public OperationContractAttribute()
+        public int Timeout
         {
-            this.allowCache = false;
+            get
+            {
+                return timeout;
+            }
+            set
+            {
+                timeout = value;
+            }
+        }
+
+        protected int cacheTime = -1;
+        /// <summary>
+        /// 缓存时间（单位：秒）
+        /// </summary>
+        public int CacheTime
+        {
+            get
+            {
+                return cacheTime;
+            }
+            set
+            {
+                cacheTime = value;
+            }
         }
 
         /// <summary>
         /// 实例化OperationContractAttribute
         /// </summary>
-        /// <param name="allowCache"></param>
-        public OperationContractAttribute(bool allowCache)
-        {
-            this.allowCache = allowCache;
-        }
-
-        /// <summary>
-        /// 实例化OperationContractAttribute
-        /// </summary>
-        /// <param name="cacheTime"></param>
-        public OperationContractAttribute(int cacheTime)
-            : this(true)
-        {
-            this.cacheTime = cacheTime;
-        }
+        public OperationContractAttribute() { }
     }
-
 }

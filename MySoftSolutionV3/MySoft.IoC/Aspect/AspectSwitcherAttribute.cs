@@ -11,17 +11,6 @@ namespace MySoft.IoC.Aspect
         private bool useAspect = false;
         private Type[] interceptorTypes;
 
-        public AspectSwitcherAttribute(params Type[] interceptorTypes)
-        {
-            this.useAspect = true;
-            this.interceptorTypes = interceptorTypes;
-        }
-
-        public AspectSwitcherAttribute(bool useAop)
-        {
-            this.useAspect = useAop;
-        }
-
         /// <summary>
         /// 使用拦截器的类型
         /// </summary>
@@ -30,6 +19,10 @@ namespace MySoft.IoC.Aspect
             get
             {
                 return interceptorTypes;
+            }
+            set
+            {
+                interceptorTypes = value;
             }
         }
 
@@ -42,6 +35,17 @@ namespace MySoft.IoC.Aspect
             {
                 return this.useAspect;
             }
+        }
+
+        public AspectSwitcherAttribute(params Type[] interceptorTypes)
+        {
+            this.useAspect = true;
+            this.interceptorTypes = interceptorTypes;
+        }
+
+        public AspectSwitcherAttribute(bool useAop)
+        {
+            this.useAspect = useAop;
         }
     }
 }

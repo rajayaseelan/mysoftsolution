@@ -26,6 +26,11 @@ namespace MySoft.Communication.Scs.Server
         public event EventHandler<MessageEventArgs> MessageSent;
 
         /// <summary>
+        /// Receive error message.
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> ErrorReceived;
+
+        /// <summary>
         /// This event is raised when client is disconnected from server.
         /// </summary>
         public event EventHandler Disconnected;
@@ -54,7 +59,7 @@ namespace MySoft.Communication.Scs.Server
         /// Get or Set client state.
         /// </summary>
         public object State { get; set; }
-        
+
         /// <summary>
         /// Gets/sets wire protocol that is used while reading and writing messages.
         /// </summary>
@@ -116,7 +121,13 @@ namespace MySoft.Communication.Scs.Server
             _communicationChannel = communicationChannel;
             _communicationChannel.MessageReceived += CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent += CommunicationChannel_MessageSent;
+            _communicationChannel.ErrorReceived += CommunicationChannel_ErrorReceived;
             _communicationChannel.Disconnected += CommunicationChannel_Disconnected;
+        }
+
+        void CommunicationChannel_ErrorReceived(object sender, ErrorEventArgs e)
+        {
+            OnErrorReceived(e.Error);
         }
 
         #endregion
@@ -143,7 +154,7 @@ namespace MySoft.Communication.Scs.Server
         #endregion
 
         #region Private methods
-        
+
         /// <summary>
         /// Handles Disconnected event of _communicationChannel object.
         /// </summary>
@@ -220,6 +231,19 @@ namespace MySoft.Communication.Scs.Server
             if (handler != null)
             {
                 handler(this, new MessageEventArgs(message));
+            }
+        }
+
+        /// <summary>
+        /// Raises MessageReceived event.
+        /// </summary>
+        /// <param name="error"></param>
+        protected virtual void OnErrorReceived(Exception error)
+        {
+            var handler = ErrorReceived;
+            if (handler != null)
+            {
+                handler(this, new ErrorEventArgs(error));
             }
         }
 

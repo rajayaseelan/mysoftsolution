@@ -18,28 +18,24 @@ namespace MySoft.PlatformService.WinForm
         {
             try
             {
-                //if (string.IsNullOrEmpty(textBox1.Text))
-                //{
-                //    textBox1.Focus();
-                //    return;
-                //}
-
-                //var service = CastleFactory.Create().GetChannel<IUserService>();
-                //service.SendMessage(textBox1.Text);
-
-                //richTextBox1.AppendText(textBox1.Text + "\r\n");
-                //textBox1.Text = string.Empty;
-
-                //textBox1.Focus();
-
                 if (button1.Tag == null)
                 {
-                    var listener = new StatusListener(listBox1);
+                    var listener = new StatusListener(tabControl1, listBox1, listBox2, listBox3);
                     service = CastleFactory.Create().GetChannel<IStatusService>(listener);
-                    service.Subscibe(Convert.ToDouble(numericUpDown1.Value));
+
+                    var options = new SubscibeOptions
+                    {
+                        PushCallError = checkBox1.Checked,
+                        PushCallTimeout = checkBox2.Checked,
+                        CallTimeout = Convert.ToDouble(numericUpDown1.Value) / 1000
+                    };
+                    service.Subscibe(options);
                     button1.Text = "停止监控";
                     button1.Tag = label1.Text;
                     label1.Text = "正在进行监控...";
+
+                    checkBox1.Enabled = false;
+                    checkBox2.Enabled = false;
                     //button1.Enabled = false;
                 }
                 else
@@ -49,6 +45,14 @@ namespace MySoft.PlatformService.WinForm
                     button1.Text = "开始监控";
                     button1.Tag = null;
                     listBox1.Items.Clear();
+                    listBox2.Items.Clear();
+                    listBox3.Items.Clear();
+
+                    tabControl1.TabPages[1].Text = "异常信息";
+                    tabControl1.TabPages[2].Text = "超时信息";
+
+                    checkBox1.Enabled = true;
+                    checkBox2.Enabled = true;
                     //button1.Enabled = true;
                 }
             }
@@ -61,22 +65,27 @@ namespace MySoft.PlatformService.WinForm
 
     public class StatusListener : IStatusListener
     {
-        private ListBox box;
-        public StatusListener(ListBox box)
+        private TabControl control;
+        private ListBox box1;
+        private ListBox box2;
+        private ListBox box3;
+        public StatusListener(TabControl control, ListBox box1, ListBox box2, ListBox box3)
         {
-            this.box = box;
+            this.control = control;
+            this.box1 = box1;
+            this.box2 = box2;
+            this.box3 = box3;
         }
-
 
         #region IStatusListener 成员
 
         public void Push(EndPoint endPoint, bool connected)
         {
-            box.BeginInvoke(new Action(() =>
+            box1.BeginInvoke(new Action(() =>
             {
                 var ip = endPoint as IPEndPoint;
-                box.Items.Add(string.Format("{0}:{1} => {2}", ip.Address, ip.Port, connected ? "连接" : "断开"));
-                box.SelectedIndex = box.Items.Count - 1;
+                box1.Items.Add(string.Format("{0}:{1} => {2}", ip.Address, ip.Port, connected ? "连接" : "断开"));
+                box1.SelectedIndex = box1.Items.Count - 1;
             }));
         }
 
@@ -94,10 +103,14 @@ namespace MySoft.PlatformService.WinForm
         {
             //throw new NotImplementedException();
 
-            box.BeginInvoke(new Action(() =>
+            box2.BeginInvoke(new Action(() =>
             {
-                box.Items.Add(string.Format("Error => {0}", callError.Message));
-                box.SelectedIndex = box.Items.Count - 1;
+                box2.Items.Add(string.Format("{0} => {1},{2}", callError.CallTime, callError.Caller.ServiceName, callError.Caller.SubServiceName));
+                box2.Items.Add(string.Format("      Parameters: {0}", callError.Caller.Parameters));
+                box2.Items.Add(string.Format("      Error：{0}", callError.Message));
+                box2.SelectedIndex = box2.Items.Count - 1;
+
+                control.TabPages[1].Text = "异常信息(" + box2.Items.Count / 3 + ")";
             }));
         }
 
@@ -105,10 +118,14 @@ namespace MySoft.PlatformService.WinForm
         {
             //throw new NotImplementedException();
 
-            box.BeginInvoke(new Action(() =>
+            box3.BeginInvoke(new Action(() =>
             {
-                box.Items.Add(string.Format("Timeout => {0} ms.", callTimeout.ElapsedTime));
-                box.SelectedIndex = box.Items.Count - 1;
+                box3.Items.Add(string.Format("{0} => {1},{2}", callTimeout.CallTime, callTimeout.Caller.ServiceName, callTimeout.Caller.SubServiceName));
+                box3.Items.Add(string.Format("      Parameters: {0}", callTimeout.Caller.Parameters));
+                box3.Items.Add(string.Format("      Timeout：{0} ms.", callTimeout.ElapsedTime));
+                box3.SelectedIndex = box3.Items.Count - 1;
+
+                control.TabPages[2].Text = "超时信息(" + box3.Items.Count / 3 + ")";
             }));
         }
 

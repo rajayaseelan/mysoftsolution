@@ -1,6 +1,7 @@
 ﻿using MySoft.IoC.Status;
 using System.Net;
 using System.Collections.Generic;
+using System;
 
 namespace MySoft.IoC
 {
@@ -10,6 +11,14 @@ namespace MySoft.IoC
     class MessageListener
     {
         private EndPoint _endPoint;
+        /// <summary>
+        /// 远程节点
+        /// </summary>
+        public EndPoint RemoteEndPoint
+        {
+            get { return _endPoint; }
+        }
+
         private SubscibeOptions _options;
         /// <summary>
         /// 订阅选项
@@ -19,13 +28,21 @@ namespace MySoft.IoC
             get { return _options; }
         }
 
+        private Type[] _subscibeTypes;
+        /// <summary>
+        /// 订阅的类型
+        /// </summary>
+        public Type[] SubscibeTypes
+        {
+            get { return _subscibeTypes; }
+        }
+
         private IStatusListener _innerListener;
 
         /// <summary>
         /// 初始化消息监听器
         /// </summary>
         /// <param name="endPoint"></param>
-        /// <param name="innerListener"></param>
         public MessageListener(EndPoint endPoint, IStatusListener innerListener)
         {
             _endPoint = endPoint;
@@ -38,10 +55,15 @@ namespace MySoft.IoC
         /// <param name="endPoint"></param>
         /// <param name="innerListener"></param>
         /// <param name="options"></param>
-        public MessageListener(EndPoint endPoint, IStatusListener innerListener, SubscibeOptions options)
+        public MessageListener(EndPoint endPoint, IStatusListener innerListener, SubscibeOptions options, Type[] subscibeTypes)
             : this(endPoint, innerListener)
         {
             _options = options;
+
+            if (subscibeTypes == null)
+                _subscibeTypes = new Type[0];
+            else
+                _subscibeTypes = subscibeTypes;
         }
 
         /// <summary>
@@ -88,6 +110,11 @@ namespace MySoft.IoC
         public void Notify(CallTimeout callTimeout)
         {
             _innerListener.Push(callTimeout);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         public override bool Equals(object obj)

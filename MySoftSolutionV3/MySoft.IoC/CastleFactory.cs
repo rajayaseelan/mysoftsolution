@@ -12,7 +12,7 @@ namespace MySoft.IoC
     /// <summary>
     /// The service factory.
     /// </summary>
-    public class CastleFactory : ILogable, IErrorLogable
+    public class CastleFactory : ILogable, IErrorLogable, IServerConnection
     {
         private static object lockObject = new object();
         private static CastleFactory singleton = null;
@@ -123,19 +123,6 @@ namespace MySoft.IoC
 
         #endregion
 
-        #region ×¢Èë»º´æ
-
-        /// <summary>
-        /// ×¢²á»º´æÒÀÀµ
-        /// </summary>
-        /// <param name="cache"></param>
-        public void RegisterCacheDependent(ICacheDependent cache)
-        {
-            this.container.Cache = cache;
-        }
-
-        #endregion
-
         #region Get Service
 
         /// <summary>
@@ -161,7 +148,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <typeparam name="IServiceInterfaceType"></typeparam>
         /// <returns></returns>
-        public IServiceInterfaceType GetDiscoverChannel<IServiceInterfaceType>()
+        public IServiceInterfaceType DiscoverChannel<IServiceInterfaceType>()
         {
             var proxy = new DiscoverProxy(singleton, container);
             return GetChannel<IServiceInterfaceType>(proxy, true);
@@ -326,6 +313,16 @@ namespace MySoft.IoC
 
         #endregion
 
+        /// <summary>
+        /// This event is raised when client connected to server.
+        /// </summary>
+        public event EventHandler OnConnected;
+
+        /// <summary>
+        /// This event is raised when client disconnected from server.
+        /// </summary>
+        public event EventHandler OnDisconnected;
+
         #region »Øµ÷¶©ÔÄ
 
         /// <summary>
@@ -380,14 +377,9 @@ namespace MySoft.IoC
                 throw new IoCException("Callback type cannot be the null!");
 
             CallbackProxy proxy = new CallbackProxy(callback, node, this.ServiceContainer);
-            proxy.OnError += new ErrorLogEventHandler(proxy_OnError);
+            proxy.OnConnected += OnConnected;
+            proxy.OnDisconnected += OnDisconnected;
             return GetChannel<IPublishService>(proxy, false);
-        }
-
-        void proxy_OnError(Exception exception)
-        {
-            if (singleton.OnError != null)
-                singleton.OnError(exception);
         }
 
         #endregion

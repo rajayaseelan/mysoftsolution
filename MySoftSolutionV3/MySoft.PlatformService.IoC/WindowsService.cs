@@ -137,21 +137,21 @@ namespace MySoft.PlatformService.IoC
             }
         }
 
-        void server_OnError(Exception exception)
+        void server_OnError(Exception error)
         {
             if (startMode == StartMode.Console)
             {
-                string message = string.Format("[{0}] => {1}", DateTime.Now, exception.Message);
-                if (exception.InnerException != null)
+                string message = string.Format("[{0}] => {1}", DateTime.Now, error.Message);
+                if (error.InnerException != null)
                 {
-                    message += string.Format("\r\n错误信息 => {0}", ErrorHelper.GetInnerException(exception.InnerException));
+                    message += string.Format("\r\n错误信息 => {0}", ErrorHelper.GetInnerException(error.InnerException));
                 }
                 lock (syncobj)
                 {
                     //保存当前颜色
                     var color = Console.ForegroundColor;
 
-                    if (exception is WarningException)
+                    if (error is WarningException)
                         Console.ForegroundColor = ConsoleColor.Yellow;
                     else
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -163,7 +163,7 @@ namespace MySoft.PlatformService.IoC
             }
             else
             {
-                SimpleLog.Instance.WriteLogWithSendMail(exception, mailTo);
+                SimpleLog.Instance.WriteLogWithSendMail(error, mailTo);
             }
         }
     }

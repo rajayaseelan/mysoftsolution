@@ -10,38 +10,21 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public class ResponseMessage : MessageBase
     {
-        private string assemblyName;
-        /// <summary>
-        /// Gets or sets the name of the service.
-        /// </summary>
-        /// <value>The name of the service.</value>
-        public string AssemblyName
-        {
-            get
-            {
-                return assemblyName;
-            }
-            set
-            {
-                assemblyName = value;
-            }
-        }
-
-        private object data;
+        private object _value;
 
         /// <summary>
         /// Gets or sets the data.
         /// </summary>
         /// <value>The data.</value>
-        public object Data
+        public object Value
         {
             get
             {
-                return data;
+                return _value;
             }
             set
             {
-                data = value;
+                _value = value;
                 error = null;
             }
         }
@@ -61,7 +44,7 @@ namespace MySoft.IoC.Messages
             set
             {
                 error = value;
-                data = null;
+                _value = null;
             }
         }
 
@@ -94,10 +77,10 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                if (data == null)
+                if (_value == null)
                     return 0;
                 else
-                    return GetCount(data);
+                    return GetCount(_value);
             }
         }
 

@@ -19,6 +19,6 @@ namespace MySoft.Logger
         /// Writes the exception.
         /// </summary>
         /// <param name="exception">The exception info.</param>
-        void WriteError(Exception exception);
+        void WriteError(Exception error);
     }
 }

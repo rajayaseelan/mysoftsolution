@@ -144,24 +144,11 @@ namespace MySoft.PlatformService.Client
             {
                 try
                 {
-                    //CastleFactory.Create().OnError += new ErrorLogEventHandler(Program_OnError);
-                    //var sub = CastleFactory.Create().GetChannel<IMessagePublishService>(new MessageListener());
-                    //sub.Subscribe();
-                    ////sub.Subscribe();
+                    //var users = CastleFactory.Create().DiscoverChannel<IUserService>().GetUsers();
+                    //Console.WriteLine(users[0].Description);
 
-                    ////for (int i = 0; i < 10; i++)
-                    ////{
-                    ////    sub.Compute(100, i);
-                    ////    Thread.Sleep(1000);
-                    ////}
-
-                    //Console.WriteLine("订阅服务IMessagePublishService成功！");
-                    //Console.ReadLine();
-
-                    //sub.Unsubscribe();
-
-                    var users = CastleFactory.Create().GetChannel<IUserService>(true).GetUsers();
-                    Console.WriteLine(users[0].Description);
+                    var user = CastleFactory.Create().DiscoverChannel<IUserService>().GetUserInfo("maoyong");
+                    Console.WriteLine(user.Description);
                 }
                 catch (Exception ex)
                 {
@@ -172,45 +159,21 @@ namespace MySoft.PlatformService.Client
             }
         }
 
-        static void Program_OnError(Exception exception)
+        static void Program_OnError(Exception error)
         {
-            Console.WriteLine(exception.Message);
+            Console.WriteLine(error.Message);
         }
 
-        public class MessageListener : IMessageListener
+        static void castle_OnError(Exception error)
         {
-            #region IMessageListener 成员
-
-            public void Publish(string message)
+            string message = "[" + DateTime.Now.ToString() + "] " + error.Message;
+            if (error.InnerException != null)
             {
-                Console.Write(DateTime.Now.ToString() + " --> ");
-                Console.WriteLine(message);
-            }
-
-            #endregion
-
-            #region IMessageListener 成员
-
-
-            public void ShowData(int x, int y, int value)
-            {
-                Console.Write(DateTime.Now.ToString() + " --> ");
-                Console.WriteLine("{0} + {1} = {2}", x, y, value);
-            }
-
-            #endregion
-        }
-
-        static void castle_OnError(Exception exception)
-        {
-            string message = "[" + DateTime.Now.ToString() + "] " + exception.Message;
-            if (exception.InnerException != null)
-            {
-                message += "\r\n错误信息 => " + exception.InnerException.Message;
+                message += "\r\n错误信息 => " + error.InnerException.Message;
             }
             lock (syncobj)
             {
-                if (exception is WarningException)
+                if (error is WarningException)
                     System.Console.ForegroundColor = ConsoleColor.Yellow;
                 else
                     System.Console.ForegroundColor = ConsoleColor.Red;

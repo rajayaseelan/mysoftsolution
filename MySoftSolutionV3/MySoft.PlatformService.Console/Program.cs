@@ -71,23 +71,23 @@ namespace MySoft.PlatformService.Console
             }
         }
 
-        static void Program_OnError(Exception exception)
+        static void Program_OnError(Exception error)
         {
-            string message = "[" + DateTime.Now.ToString() + "] => " + exception.Message;
-            if (exception.InnerException != null)
+            string message = "[" + DateTime.Now.ToString() + "] => " + error.Message;
+            if (error.InnerException != null)
             {
-                message += "\r\n错误信息 => " + ErrorHelper.GetInnerException(exception).Message;
+                message += "\r\n错误信息 => " + ErrorHelper.GetInnerException(error).Message;
             }
 
             lock (syncobj)
             {
-                if (exception is WarningException)
+                if (error is WarningException)
                     System.Console.ForegroundColor = ConsoleColor.Yellow;
                 else
                     System.Console.ForegroundColor = ConsoleColor.Red;
                 System.Console.WriteLine(message);
 
-                //SimpleLog.Instance.WriteLogWithSendMail(exception, "maoyong@fund123.cn");
+                //SimpleLog.Instance.WriteLogWithSendMail(error, "maoyong@fund123.cn");
 
                 //SimpleLog.Instance.WriteLog(message);
             }

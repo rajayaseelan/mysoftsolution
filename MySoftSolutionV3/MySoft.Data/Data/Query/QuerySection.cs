@@ -1162,7 +1162,7 @@ namespace MySoft.Data
             string key = string.Concat(prefix, "_", cacheKey);
             if (dbProvider.Cache != null)
             {
-                return dbProvider.Cache.GetCache(typeof(CacheType), key);
+                return dbProvider.Cache.GetCache<CacheType>(key);
             }
             return null;
         }
@@ -1185,7 +1185,7 @@ namespace MySoft.Data
             if (dbProvider.Cache != null)
             {
                 int timeout = EntityConfig.Instance.GetTableTimeout<CacheType>();
-                dbProvider.Cache.AddCache(typeof(CacheType), key, obj, timeout);
+                dbProvider.Cache.AddCache<CacheType>(key, obj, timeout);
             }
         }
 

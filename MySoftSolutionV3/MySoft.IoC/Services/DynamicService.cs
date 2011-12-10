@@ -66,11 +66,7 @@ namespace MySoft.IoC.Services
                 }
             }
 
-            //设置服务及方法名称
-            resMsg.ServiceName = instance.GetType().FullName;
-            resMsg.SubServiceName = method.ToString();
-
-            ParameterInfo[] pis = method.GetParameters();
+            var pis = method.GetParameters();
             object[] paramValues = new object[pis.Length];
 
             for (int i = 0; i < pis.Length; i++)
@@ -92,9 +88,6 @@ namespace MySoft.IoC.Services
             #endregion
 
             //获取服务及方法名称
-            resMsg.AssemblyName = instance.GetType().Assembly.FullName;
-            resMsg.ServiceName = instance.GetType().FullName;
-            resMsg.SubServiceName = method.ToString();
             resMsg.ReturnType = method.ReturnType;
 
             //返回拦截服务
@@ -116,7 +109,7 @@ namespace MySoft.IoC.Services
                 }
 
                 //返回结果数据
-                resMsg.Data = returnValue;
+                resMsg.Value = returnValue;
             }
             catch (Exception ex)
             {

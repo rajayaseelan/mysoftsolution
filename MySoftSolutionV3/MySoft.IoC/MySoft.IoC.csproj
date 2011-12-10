@@ -130,7 +130,6 @@
     <Compile Include="Services\BigInteger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceConfig.cs" />
-    <Compile Include="ServiceCache.cs" />
     <Compile Include="ServiceInvocationHandler.cs" />
     <Compile Include="CastleFactory.cs" />
     <Compile Include="CastleService.cs" />

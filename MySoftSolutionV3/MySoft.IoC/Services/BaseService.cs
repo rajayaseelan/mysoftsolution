@@ -56,20 +56,42 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            //运行请求获得结果
-            ResponseMessage resMsg = Run(reqMsg);
+            //处理cacheKey信息
+            string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.SubServiceName, reqMsg.Parameters);
 
-            //如果是业务异常，则不抛出错误
-            if (resMsg.IsError && !resMsg.IsBusinessError)
+            //运行请求获得结果
+            ResponseMessage resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
+
+            //如果未获取值
+            if (resMsg == null)
             {
-                var ex = resMsg.Error;
-                string body = string.Format("【{5}】Dynamic ({0}) service ({1},{2}) error. \r\nMessage ==> {4}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters, resMsg.Message, resMsg.TransactionId);
-                var exception = new IoCException(body, ex)
+                resMsg = Run(reqMsg);
+
+                if (resMsg.IsError)
                 {
-                    ApplicationName = reqMsg.AppName,
-                    ExceptionHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                };
-                logger.WriteError(exception);
+                    //如果是业务异常，则不抛出错误
+                    if (!resMsg.IsBusinessError)
+                    {
+                        var ex = resMsg.Error;
+                        string body = string.Format("【{5}】Dynamic ({0}) service ({1},{2}) error. \r\nMessage ==> {4}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters, resMsg.Message, resMsg.TransactionId);
+                        var exception = new IoCException(body, ex)
+                        {
+                            ApplicationName = reqMsg.AppName,
+                            ExceptionHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                        };
+                        logger.WriteError(exception);
+                    }
+                }
+                else if (reqMsg.CacheTime > 0) //判断是否需要缓存
+                {
+                    //加入缓存
+                    CacheHelper.Insert(cacheKey, resMsg, reqMsg.CacheTime);
+                }
+            }
+            else
+            {
+                resMsg.TransactionId = reqMsg.TransactionId;
+                resMsg.Expiration = reqMsg.Expiration;
             }
 
             return resMsg;

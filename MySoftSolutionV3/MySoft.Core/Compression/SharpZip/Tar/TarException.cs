@@ -83,8 +83,8 @@ namespace SharpZip.Tar {
 		/// </summary>
 		/// <param name="message">A message describing the error.</param>
 		/// <param name="exception">The exception that is the cause of the current exception.</param>
-		public TarException(string message, Exception exception)
-			: base(message, exception)
+		public TarException(string message, Exception error)
+            : base(message, error)
 		{
 		}
 	}

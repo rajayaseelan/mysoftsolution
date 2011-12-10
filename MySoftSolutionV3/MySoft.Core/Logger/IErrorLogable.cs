@@ -6,7 +6,7 @@ namespace MySoft.Logger
     /// A delegate used for exception.
     /// </summary>
     /// <param name="exception"></param>
-    public delegate void ErrorLogEventHandler(Exception exception);
+    public delegate void ErrorLogEventHandler(Exception error);
 
     /// <summary>
     /// Mark a implementing class as loggable.

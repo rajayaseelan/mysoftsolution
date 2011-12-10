@@ -12,11 +12,6 @@ namespace MySoft.IoC.Status
     public class AppCaller : AppClient
     {
         /// <summary>
-        /// 程序集名称
-        /// </summary>
-        public string AssemblyName { get; set; }
-
-        /// <summary>
         /// 服务名称
         /// </summary>
         public string ServiceName { get; set; }

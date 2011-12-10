@@ -39,28 +39,11 @@ namespace MySoft.Web.UI
             }
         }
 
-        public AjaxMethodAttribute()
-        {
-            this.name = null;
-            this.async = false;
-        }
+        public AjaxMethodAttribute() { }
 
         public AjaxMethodAttribute(string name)
         {
             this.name = name;
-            this.async = false;
-        }
-
-        public AjaxMethodAttribute(bool async)
-        {
-            this.name = null;
-            this.async = async;
-        }
-
-        public AjaxMethodAttribute(string name, bool async)
-        {
-            this.name = name;
-            this.async = async;
         }
     }
 

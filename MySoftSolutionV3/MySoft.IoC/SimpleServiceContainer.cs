@@ -325,12 +325,12 @@ namespace MySoft.IoC
         /// <summary>
         /// Êä³ö´íÎó
         /// </summary>
-        /// <param name="exception"></param>
-        public void WriteError(Exception exception)
+        /// <param name="error"></param>
+        public void WriteError(Exception error)
         {
             try
             {
-                if (OnError != null) OnError(exception);
+                if (OnError != null) OnError(error);
             }
             catch (Exception)
             {

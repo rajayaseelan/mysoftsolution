@@ -45,6 +45,12 @@ namespace MySoft.IoC.Services
         {
             RemoteProxy proxy = null;
 
+            //判断是否为StatusService服务
+            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
+            {
+                throw new WarningException("State services can't use discover service way!");
+            }
+
             //如果能找到服务
             if (this.services.ContainsKey(reqMsg.ServiceName))
             {
@@ -68,10 +74,11 @@ namespace MySoft.IoC.Services
                                 Encrypt = p.Node.Encrypt,
                                 Key = Guid.NewGuid().ToString(),
                                 MaxPool = 1,
-                                Timeout = 10
+                                Timeout = 30
                             };
 
                             var service = factory.GetChannel<IStatusService>(node);
+
                             //检测是否存在服务
                             if (service.ContainsService(reqMsg.ServiceName))
                             {
@@ -88,7 +95,7 @@ namespace MySoft.IoC.Services
             //如果代理服务不存在
             if (proxy == null)
             {
-                throw new NullReferenceException(string.Format("Did not find the discover agent service {0}!", reqMsg.ServiceName));
+                throw new WarningException(string.Format("Did not find the discover agent service {0}!", reqMsg.ServiceName));
             }
 
             return proxy.CallService(reqMsg);

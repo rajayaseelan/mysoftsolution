@@ -33,16 +33,16 @@ namespace MySoft.Cache
         /// <summary>
         /// 添加缓存
         /// </summary>
-        /// <param name="serviceType"></param>
+        /// <typeparam name="T"></typeparam>
         /// <param name="cacheKey"></param>
         /// <param name="cacheValue"></param>
         /// <param name="cacheTime"></param>
-        public virtual void AddCache(Type serviceType, string cacheKey, object cacheValue, double cacheTime)
+        public virtual void AddCache<T>(string cacheKey, object cacheValue, double cacheTime)
         {
             lock (strategy)
             {
                 //组合CacheKey
-                cacheKey = string.Format("{0}_{1}", serviceType.FullName, cacheKey);
+                cacheKey = string.Format("{0}_{1}", typeof(T).FullName, cacheKey);
 
                 if (cacheTime > 0)
                 {
@@ -54,31 +54,31 @@ namespace MySoft.Cache
         /// <summary>
         /// 移除缓存
         /// </summary>
-        /// <param name="serviceType"></param>
+        /// <typeparam name="T"></typeparam>
         /// <param name="cacheKey"></param>
-        public virtual void RemoveCache(Type serviceType, string cacheKey)
+        public virtual void RemoveCache<T>(string cacheKey)
         {
             lock (strategy)
             {
                 //组合CacheKey
-                cacheKey = string.Format("{0}_{1}", serviceType.FullName, cacheKey);
+                cacheKey = string.Format("{0}_{1}", typeof(T).FullName, cacheKey);
 
                 strategy.RemoveObject(cacheKey);
             }
         }
-
         /// <summary>
         /// 获取缓存
         /// </summary>
-        /// <param name="serviceType"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="?"></param>
         /// <param name="cacheKey"></param>
         /// <returns></returns>
-        public virtual object GetCache(Type serviceType, string cacheKey)
+        public virtual object GetCache<T>(string cacheKey)
         {
             lock (strategy)
             {
                 //组合CacheKey
-                cacheKey = string.Format("{0}_{1}", serviceType.FullName, cacheKey);
+                cacheKey = string.Format("{0}_{1}", typeof(T).FullName, cacheKey);
 
                 return strategy.GetObject(cacheKey);
             }
@@ -91,25 +91,25 @@ namespace MySoft.Cache
         /// <summary>
         /// 移除缓存
         /// </summary>
-        /// <param name="serviceType"></param>
-        public virtual void RemoveCache(Type serviceType)
+        /// <typeparam name="T"></typeparam>
+        public virtual void RemoveCache<T>()
         {
             lock (strategy)
             {
-                strategy.RemoveMatchObjects(serviceType.FullName);
+                strategy.RemoveMatchObjects(typeof(T).FullName);
             }
         }
 
         /// <summary>
         /// 获取缓存
         /// </summary>
-        /// <param name="serviceType"></param>
+        /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public virtual IList<object> GetCache(Type serviceType)
+        public virtual IList<object> GetCache<T>()
         {
             lock (strategy)
             {
-                return strategy.GetMatchObjects(serviceType.FullName).Values.ToList();
+                return strategy.GetMatchObjects(typeof(T).FullName).Values.ToList();
             }
         }
 

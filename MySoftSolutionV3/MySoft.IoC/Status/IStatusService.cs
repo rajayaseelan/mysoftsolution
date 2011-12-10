@@ -25,11 +25,6 @@ namespace MySoft.IoC.Status
         public bool PushCallError { get; set; }
 
         /// <summary>
-        /// 服务状态间隔推送时间：单位（秒）
-        /// </summary>
-        public int ServerStatusTimer { get; set; }
-
-        /// <summary>
         /// 推送服务状态信息
         /// </summary>
         public bool PushServerStatus { get; set; }
@@ -40,11 +35,6 @@ namespace MySoft.IoC.Status
         public bool PushClientConnect { get; set; }
 
         /// <summary>
-        /// 推送调用信息
-        /// </summary>
-        public bool PushCallInfo { get; set; }
-
-        /// <summary>
         /// 实例化SubscibeOptions
         /// </summary>
         public SubscibeOptions()
@@ -52,10 +42,8 @@ namespace MySoft.IoC.Status
             this.CallTimeout = 5; //调用超时为5秒
             this.PushCallTimeout = true;
             this.PushCallError = true;
-            this.ServerStatusTimer = 5; //5秒钟推送一次
-            this.PushServerStatus = true;
+            this.PushServerStatus = false;
             this.PushClientConnect = true;
-            this.PushCallInfo = true;
         }
     }
 
@@ -68,26 +56,19 @@ namespace MySoft.IoC.Status
         /// <summary>
         /// 订阅服务
         /// </summary>
-        void Subscibe();
+        void Subscibe(params Type[] subscibeTypes);
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="callTimeout">调用超时时间</param>
-        void Subscibe(double callTimeout);
-
-        /// <summary>
-        /// 订阅服务
-        /// </summary>
-        /// <param name="callTimeout">调用超时时间</param>
-        /// <param name="statusTimer">推送状态间隔</param>
-        void Subscibe(double callTimeout, int statusTimer);
+        void Subscibe(double callTimeout, params Type[] subscibeTypes);
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="options">订阅选项</param>
-        void Subscibe(SubscibeOptions options);
+        void Subscibe(SubscibeOptions options, params Type[] subscibeTypes);
 
         /// <summary>
         /// 退订服务
@@ -99,6 +80,7 @@ namespace MySoft.IoC.Status
         /// </summary>
         /// <param name="serviceName"></param>
         /// <returns></returns>
+        [OperationContract(CacheTime = 30)]
         bool ContainsService(string serviceName);
 
         /// <summary>

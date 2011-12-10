@@ -15,8 +15,7 @@ namespace MySoft.IoC.Configuration
         private string defaultKey;              //默认服务
         private string appName;                 //host名称
         private bool throwerror = true;         //抛出异常
-        private int timeout = ServiceConfig.DEFAULT_TIMEOUT_NUMBER;       //默认超时时间        30秒
-        private int cachetime = ServiceConfig.DEFAULT_CACHETIME_NUMBER;   //默认缓存时间        60秒
+        private int timeout = ServiceConfig.DEFAULT_TIMEOUT_NUMBER;       //默认超时时间        60秒
 
         /// <summary>
         /// 获取远程对象配置
@@ -51,9 +50,6 @@ namespace MySoft.IoC.Configuration
 
             if (xmlnode["timeout"] != null && xmlnode["timeout"].Value.Trim() != string.Empty)
                 timeout = Convert.ToInt32(xmlnode["timeout"].Value);
-
-            if (xmlnode["cachetime"] != null && xmlnode["cachetime"].Value.Trim() != string.Empty)
-                cachetime = Convert.ToInt32(xmlnode["cachetime"].Value);
 
             if (xmlnode["throwerror"] != null && xmlnode["throwerror"].Value.Trim() != string.Empty)
                 throwerror = Convert.ToBoolean(xmlnode["throwerror"].Value);
@@ -150,16 +146,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return timeout; }
             set { timeout = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the cachetime
-        /// </summary>
-        /// <value>The cachetime.</value>
-        public int CacheTime
-        {
-            get { return cachetime; }
-            set { cachetime = value; }
         }
 
         /// <summary>

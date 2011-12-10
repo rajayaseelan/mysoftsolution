@@ -16,7 +16,7 @@ namespace MySoft.IoC.Status
         /// <summary>
         /// 调用时间
         /// </summary>
-        public DateTime InvokeTime { get; set; }
+        public DateTime CallTime { get; set; }
 
         /// <summary>
         /// 耗时时间
@@ -37,11 +37,6 @@ namespace MySoft.IoC.Status
         /// 返回值
         /// </summary>
         public object Value { get; set; }
-
-        /// <summary>
-        /// 数据大小
-        /// </summary>
-        public int Length { get; set; }
 
         /// <summary>
         /// 是否错误

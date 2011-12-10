@@ -96,6 +96,8 @@ namespace MySoft.IoC
         /// <param name="status"></param>
         public void Notify(ServerStatus status)
         {
+            if (_listeners.Count == 0) return;
+
             MessageListener[] listeners = _listeners.ToArray();
             foreach (MessageListener lstn in listeners)
             {
@@ -126,34 +128,40 @@ namespace MySoft.IoC
         /// <param name="callArgs"></param>
         public void Notify(CallEventArgs callArgs)
         {
+            if (_listeners.Count == 0) return;
+
             MessageListener[] listeners = _listeners.ToArray();
             foreach (MessageListener lstn in listeners)
             {
                 try
                 {
-                    var options = lstn.Options;
-                    if (options.PushCallError && callArgs.IsError)
+                    if (lstn.SubscibeTypes.Count() == 0
+                        || lstn.SubscibeTypes.Any(p => p.FullName == callArgs.Caller.ServiceName))
                     {
-                        var error = ErrorHelper.GetInnerException(callArgs.Error);
-                        var callError = new CallError
+                        var options = lstn.Options;
+                        if (options.PushCallError && callArgs.IsError)
                         {
-                            InvokeTime = callArgs.InvokeTime,
-                            Caller = callArgs.Caller,
-                            Message = error.Message,
-                            IsBusiness = callArgs.IsBusinessError
-                        };
-                        lstn.Notify(callError);
-                    }
-                    else if (options.PushCallTimeout && callArgs.ElapsedTime > options.CallTimeout * 1000)
-                    {
-                        var callTimeout = new CallTimeout
+                            var error = ErrorHelper.GetInnerException(callArgs.Error);
+                            var callError = new CallError
+                            {
+                                Caller = callArgs.Caller,
+                                CallTime = callArgs.CallTime,
+                                Message = error.Message,
+                                IsBusinessError = callArgs.IsBusinessError
+                            };
+                            lstn.Notify(callError);
+                        }
+                        else if (options.PushCallTimeout && callArgs.ElapsedTime > options.CallTimeout * 1000)
                         {
-                            Caller = callArgs.Caller,
-                            Count = callArgs.Count,
-                            Length = callArgs.Length,
-                            ElapsedTime = callArgs.ElapsedTime
-                        };
-                        lstn.Notify(callTimeout);
+                            var callTimeout = new CallTimeout
+                            {
+                                Caller = callArgs.Caller,
+                                CallTime = callArgs.CallTime,
+                                Count = callArgs.Count,
+                                ElapsedTime = callArgs.ElapsedTime
+                            };
+                            lstn.Notify(callTimeout);
+                        }
                     }
                 }
                 catch (SocketException ex)
@@ -175,6 +183,8 @@ namespace MySoft.IoC
         /// <param name="connected"></param>
         public void Notify(EndPoint endPoint, bool connected)
         {
+            if (_listeners.Count == 0) return;
+
             MessageListener[] listeners = _listeners.ToArray();
             foreach (MessageListener lstn in listeners)
             {
@@ -205,6 +215,8 @@ namespace MySoft.IoC
         /// <param name="appClient"></param>
         public void Notify(EndPoint endPoint, AppClient appClient)
         {
+            if (_listeners.Count == 0) return;
+
             MessageListener[] listeners = _listeners.ToArray();
             foreach (MessageListener lstn in listeners)
             {

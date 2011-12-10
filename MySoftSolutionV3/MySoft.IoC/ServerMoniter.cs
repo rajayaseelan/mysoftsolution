@@ -69,11 +69,11 @@ namespace MySoft.IoC
             }
         }
 
-        protected void container_OnError(Exception exception)
+        protected void container_OnError(Exception error)
         {
             try
             {
-                if (OnError != null) OnError(exception);
+                if (OnError != null) OnError(error);
             }
             catch (Exception)
             {
@@ -259,46 +259,32 @@ namespace MySoft.IoC
         /// <summary>
         /// 订阅服务
         /// </summary>
-        public void Subscibe()
+        public void Subscibe(params Type[] subscibeTypes)
         {
-            Subscibe(new SubscibeOptions());
+            Subscibe(new SubscibeOptions(), subscibeTypes);
         }
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="callTimeout">调用超时时间</param>
-        public void Subscibe(double callTimeout)
+        public void Subscibe(double callTimeout, params Type[] subscibeTypes)
         {
             Subscibe(new SubscibeOptions
             {
                 CallTimeout = callTimeout
-            });
-        }
-
-        /// <summary>
-        /// 订阅服务
-        /// </summary>
-        /// <param name="callTimeout">调用超时时间</param>
-        /// <param name="statusTimer">推送状态间隔</param>
-        public void Subscibe(double callTimeout, int statusTimer)
-        {
-            Subscibe(new SubscibeOptions
-            {
-                CallTimeout = callTimeout,
-                ServerStatusTimer = statusTimer
-            });
+            }, subscibeTypes);
         }
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="options">订阅选项</param>
-        public void Subscibe(SubscibeOptions options)
+        public void Subscibe(SubscibeOptions options, params Type[] subscibeTypes)
         {
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
             var endPoint = OperationContext.Current.RemoteEndPoint;
-            MessageCenter.Instance.AddListener(new MessageListener(endPoint, callback, options));
+            MessageCenter.Instance.AddListener(new MessageListener(endPoint, callback, options, subscibeTypes));
         }
 
         /// <summary>

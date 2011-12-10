@@ -201,11 +201,13 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
                     _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), null);
                 }
             }
+            catch (SocketException ex)
+            {
+                Disconnect();
+            }
             catch (Exception ex)
             {
-                //Console.WriteLine(ex.Message);
-
-                Disconnect();
+                OnErrorReceived(ex);
             }
         }
 

@@ -21,4 +21,24 @@ namespace MySoft.Communication.Scs.Communication.Messages
             Message = message;
         }
     }
+
+    /// <summary>
+    /// Error message args.
+    /// </summary>
+    public class ErrorEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Message error.
+        /// </summary>
+        public Exception Error { get; private set; }
+
+        /// <summary>
+        /// Creates a new MessageEventArgs object.
+        /// </summary>
+        /// <param name="message">Message object that is associated with this event</param>
+        public ErrorEventArgs(Exception error)
+        {
+            Error = error;
+        }
+    }
 }

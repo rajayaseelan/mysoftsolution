@@ -21,6 +21,11 @@ namespace MySoft.Communication.Scs.Communication.Messengers
         event EventHandler<MessageEventArgs> MessageSent;
 
         /// <summary>
+        /// Receive error message.
+        /// </summary>
+        event EventHandler<ErrorEventArgs> ErrorReceived;
+
+        /// <summary>
         /// Gets/sets wire protocol that is used while reading and writing messages.
         /// </summary>
         IScsWireProtocol WireProtocol { get; set; }

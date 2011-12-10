@@ -82,8 +82,8 @@ namespace SharpZip.BZip2
 		/// </summary>
 		/// <param name="message">A message describing the error.</param>
 		/// <param name="exception">The exception that is the cause of the current exception.</param>
-		public BZip2Exception(string message, Exception exception)
-			: base(message, exception)
+		public BZip2Exception(string message, Exception error)
+            : base(message, error)
 		{
 		}
 	}

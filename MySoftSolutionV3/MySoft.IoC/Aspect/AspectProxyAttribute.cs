@@ -40,11 +40,5 @@ namespace MySoft.IoC.Aspect
         {
             this.interceptorType = interceptorType;
         }
-
-        public AspectProxyAttribute(Type interceptorType, object arguments)
-        {
-            this.interceptorType = interceptorType;
-            this.arguments = arguments;
-        }
     }
 }

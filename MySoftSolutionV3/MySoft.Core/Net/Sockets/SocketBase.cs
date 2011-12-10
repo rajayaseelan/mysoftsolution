@@ -20,7 +20,7 @@ namespace MySoft.Net.Sockets
     /// <summary>
     ///  Called when a socket error occurs 
     ///  </summary>
-    public delegate void ErrorEventHandler(SocketBase socket, Exception exception);
+    public delegate void ErrorEventHandler(SocketBase socket, Exception error);
 
     /// <summary>
     /// Abstract class that defines base implementations
