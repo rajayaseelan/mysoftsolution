@@ -1,5 +1,4 @@
-﻿using Castle.Core.Interceptor;
-using Castle.DynamicProxy;
+﻿using Castle.DynamicProxy;
 
 namespace MySoft.IoC.Aspect
 {

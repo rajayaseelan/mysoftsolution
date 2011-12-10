@@ -25,82 +25,88 @@ namespace MySoft.PlatformService
             }
 
             Console.Title = "PlatformService Installer";
+            Console.BackgroundColor = ConsoleColor.Black;
 
             var color = Console.BackgroundColor;
             Console.BackgroundColor = ConsoleColor.DarkBlue;
 
-            if (!string.IsNullOrEmpty(optionalArgs))
+            try
             {
-                switch (optionalArgs.ToLower())
+                if (!string.IsNullOrEmpty(optionalArgs))
                 {
-                    case "/?":
-                    case "/help":
-                        PrintHelp();
-                        break;
-                    case "/l":
-                    case "/list":
-                        {
-                            string contains = null;
-                            string status = null;
-                            if (args.Length >= 2) contains = args[1].Trim();
-                            if (args.Length >= 3) status = args[2].Trim();
-                            server.ListService(contains, status);
-                        }
-                        break;
-                    case "/c":
-                    case "/console":
-                        {
-                            if (server.StartConsole())
+                    switch (optionalArgs.ToLower())
+                    {
+                        case "/?":
+                        case "/help":
+                            PrintHelp();
+                            break;
+                        case "/l":
+                        case "/list":
                             {
-                                Console.ReadLine();
-                                server.StopConsole();
+                                string contains = null;
+                                string status = null;
+                                if (args.Length >= 2) contains = args[1].Trim();
+                                if (args.Length >= 3) status = args[2].Trim();
+                                server.ListService(contains, status);
                             }
-                            else
+                            break;
+                        case "/c":
+                        case "/console":
                             {
-                                Console.ReadLine();
+                                if (server.StartConsole())
+                                {
+                                    Console.ReadLine();
+                                    server.StopConsole();
+                                }
+                                else
+                                {
+                                    Console.ReadLine();
+                                }
                             }
-                        }
-                        break;
-                    case "/s":
-                    case "/start":
-                        {
-                            string service = null;
-                            if (args.Length == 2) service = args[1].Trim();
-                            server.StartService(service);
-                        }
-                        break;
-                    case "/p":
-                    case "/stop":
-                        {
-                            string service = null;
-                            if (args.Length == 2) service = args[1].Trim();
-                            server.StopService(service);
-                        }
-                        break;
-                    case "/r":
-                    case "/restart":
-                        {
-                            string service = null;
-                            if (args.Length == 2) service = args[1].Trim();
-                            server.StopService(service);
-                            server.StartService(service);
-                        }
-                        break;
-                    case "/i":
-                    case "/install":
-                        server.InstallService();
-                        break;
-                    case "/u":
-                    case "/uninstall":
-                        server.UninstallService();
-                        break;
-                    default:
-                        Console.WriteLine("输入的命令无效，输入/?显示帮助！");
-                        break;
+                            break;
+                        case "/s":
+                        case "/start":
+                            {
+                                string service = null;
+                                if (args.Length == 2) service = args[1].Trim();
+                                server.StartService(service);
+                            }
+                            break;
+                        case "/p":
+                        case "/stop":
+                            {
+                                string service = null;
+                                if (args.Length == 2) service = args[1].Trim();
+                                server.StopService(service);
+                            }
+                            break;
+                        case "/r":
+                        case "/restart":
+                            {
+                                string service = null;
+                                if (args.Length == 2) service = args[1].Trim();
+                                server.StopService(service);
+                                server.StartService(service);
+                            }
+                            break;
+                        case "/i":
+                        case "/install":
+                            server.InstallService();
+                            break;
+                        case "/u":
+                        case "/uninstall":
+                            server.UninstallService();
+                            break;
+                        default:
+                            Console.WriteLine("输入的命令无效，输入/?显示帮助！");
+                            break;
+                    }
                 }
             }
-
-            Console.BackgroundColor = color;
+            finally
+            {
+                Console.BackgroundColor = color;
+            }
         }
 
         static void PrintHelp()

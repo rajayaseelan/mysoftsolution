@@ -699,56 +699,33 @@ namespace MySoft.Data
         /// <summary>
         /// 函数处理
         /// </summary>
-        /// <param name="funName"></param>
-        /// <param name="args"></param>
+        /// <param name="func"></param>
         /// <returns></returns>
-        public Field Func(string funName, params string[] args)
+        public Field Func(string func)
         {
-            return Func(funName, 0, args);
+            return new Field(string.Format(func, this.Name));
         }
 
         /// <summary>
         /// 函数处理
         /// </summary>
-        /// <param name="funName"></param>
-        /// <param name="findex"></param>
-        /// <param name="args"></param>
+        /// <param name="func"></param>
+        /// <param name="fields"></param>
         /// <returns></returns>
-        public Field Func(string funName, int findex, params string[] args)
+        public static Field Func(string func, params Field[] fields)
         {
-            if (string.IsNullOrEmpty(funName))
+            if (fields != null && fields.Length > 0)
             {
-                throw new DataException("函数名不能为空！");
-            }
-
-            if (args != null && args.Length >= 0)
-            {
-                if (findex < 0) findex = 0;
-                if (findex > args.Length + 1) findex = args.Length + 1;
-
-                StringBuilder sb = new StringBuilder(funName);
-                sb.Append("(");
-
-                int currIndex = 0;
-                for (int i = 0; i <= args.Length; i++)
+                List<string> list = new List<string>();
+                foreach (var field in fields)
                 {
-                    if (i == findex)
-                        sb.AppendFormat("{0}", this.Name);
-                    else
-                    {
-                        sb.Append("{" + currIndex + "}");
-                        currIndex++;
-                    }
-
-                    if (i < args.Length) sb.Append(", ");
+                    list.Add(field.Name);
                 }
-                sb.Append(")");
 
-                string fieldName = string.Format(sb.ToString(), args);
-                return new Field(fieldName);
+                return new Field(string.Format(func, list.ToArray()));
             }
-
-            return this;
+            else
+                return new Field(func);
         }
 
         #endregion

@@ -6,6 +6,7 @@ using System.Collections;
 using MySoft.Remoting;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
+using MySoft.IoC.Status;
 
 namespace MySoft.PlatformService.Console
 {
@@ -29,7 +30,6 @@ namespace MySoft.PlatformService.Console
             //mongo.Connect();
 
             System.Console.WriteLine("Server host -> {0}", server.ServerUrl);
-            System.Console.WriteLine("Logger status: On  -> Show log time: {0} seconds", config.LogTime);
             System.Console.WriteLine("Press any key to exit and stop service...");
             System.Console.ReadLine();
         }
@@ -58,7 +58,7 @@ namespace MySoft.PlatformService.Console
 
         static void Program_OnLog(string log, LogType type)
         {
-            string message = "[" + DateTime.Now.ToString() + "] " + log;
+            string message = "[" + DateTime.Now.ToString() + "] " + "=> <" + type + "> " + log;
             lock (syncobj)
             {
                 if (type == LogType.Error)
@@ -66,14 +66,14 @@ namespace MySoft.PlatformService.Console
                 else if (type == LogType.Warning)
                     System.Console.ForegroundColor = ConsoleColor.Yellow;
                 else
-                    System.Console.ForegroundColor = ConsoleColor.White;
+                    System.Console.ForegroundColor = ConsoleColor.Green;
                 System.Console.WriteLine(message);
             }
         }
 
         static void Program_OnError(Exception exception)
         {
-            string message = "[" + DateTime.Now.ToString() + "] " + exception.Message;
+            string message = "[" + DateTime.Now.ToString() + "] => " + exception.Message;
             if (exception.InnerException != null)
             {
                 message += "\r\n´íÎóÐÅÏ¢ => " + ErrorHelper.GetInnerException(exception).Message;

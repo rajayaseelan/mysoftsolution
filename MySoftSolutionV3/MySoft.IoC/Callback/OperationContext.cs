@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Runtime.Remoting.Messaging;
-using MySoft.Communication.Scs.Communication.EndPoints;
-using MySoft.Communication.Scs.Server;
-using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using System.Net;
+using System.Runtime.Remoting.Messaging;
+using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
+using MySoft.Communication.Scs.Server;
 
 namespace MySoft.IoC
 {
@@ -33,13 +32,6 @@ namespace MySoft.IoC
         /// </summary>
         private Type callbackType;
         private IScsServerClient client;
-        /// <summary>
-        /// 客户端节点
-        /// </summary>
-        public IScsServerClient ServerClient
-        {
-            get { return client; }
-        }
 
         /// <summary>
         /// 远程节点
@@ -53,14 +45,9 @@ namespace MySoft.IoC
             }
         }
 
-        internal OperationContext(IScsServerClient client)
+        internal OperationContext(IScsServerClient client, Type callbackType)
         {
             this.client = client;
-        }
-
-        internal OperationContext(IScsServerClient client, Type callbackType)
-            : this(client)
-        {
             this.callbackType = callbackType;
         }
 
@@ -86,7 +73,7 @@ namespace MySoft.IoC
             }
             else
             {
-                var callback = new CallbackInvocationHandler(callbackType, client);
+                var callback = new CallbackInvocationHandler(callbackType, client, 60);
                 var instance = ProxyFactory.GetInstance().Create(callback, typeof(ICallbackService), true);
                 return (ICallbackService)instance;
             }

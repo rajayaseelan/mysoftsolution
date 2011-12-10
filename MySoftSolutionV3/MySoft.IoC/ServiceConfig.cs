@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace MySoft.IoC
 {
     /// <summary>
@@ -12,17 +11,12 @@ namespace MySoft.IoC
         /// <summary>
         /// The default timeout number. 
         /// </summary>
-        public const double DEFAULT_TIMEOUT_NUMBER = 300; //300秒
+        public const int DEFAULT_TIMEOUT_NUMBER = 30; //30秒
 
         /// <summary>
         /// The default cachetime number.
         /// </summary>
-        public const double DEFAULT_CACHETIME_NUMBER = 60; //60秒
-
-        /// <summary>
-        /// The default logtime number.
-        /// </summary>
-        public const double DEFAULT_LOGTIME_NUMBER = 5; //5秒
+        public const int DEFAULT_CACHETIME_NUMBER = 60; //60秒
 
         /// <summary>
         /// The default record number.
@@ -30,9 +24,9 @@ namespace MySoft.IoC
         public const int DEFAULT_RECORD_NUMBER = 3600; //3600次
 
         /// <summary>
-        /// 默认为5分钟
+        /// 默认为1分钟
         /// </summary>
-        public const int DEFAULT_CLIENT_TIMEOUT = 5 * 60;
+        public const int DEFAULT_CLIENT_TIMEOUT = 60;
 
         /// <summary>
         /// The default pool number.

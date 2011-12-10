@@ -14,9 +14,9 @@ namespace MySoft.PlatformService.WebForm
 {
     public partial class _Default : System.Web.UI.Page
     {
-        protected ServerStatus status;
-        protected IList<ClientInfo> clients;
-        //protected string perfValue;
+        protected static IList<ClientInfo> clients;
+        protected static ServerStatus status;
+        private static IStatusService service;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -24,17 +24,12 @@ namespace MySoft.PlatformService.WebForm
             {
                 try
                 {
-                    //var p = CastleFactory.Create().GetChannel<IStatusService>("bbb").GetProcessInfos(2532);
-                    //StringBuilder sb = new StringBuilder();
-                    //foreach (var a in p)
-                    //{
-                    //    sb.AppendFormat("{0} - {1} - {2} - {3} - {4} - {5}", a.Name, a.Id, a.Title, a.Path, a.WorkingSet, a.CpuUsage);
-                    //    sb.Append("<br/>");
-                    //}
+                    if (service == null)
+                    {
+                        var listener = new StatusListener(ref status);
+                        service = CastleFactory.Create().GetChannel<IStatusService>(listener);
+                    }
 
-                    //perfValue = sb.ToString();
-
-                    status = CastleFactory.Create().GetChannel<IStatusService>().GetServerStatus();
                     clients = CastleFactory.Create().GetChannel<IStatusService>().GetClientInfoList();
                 }
                 catch (Exception ex)
@@ -44,9 +39,48 @@ namespace MySoft.PlatformService.WebForm
             }
         }
 
+        public class StatusListener : IStatusListener
+        {
+            private ServerStatus status;
+            public StatusListener(ref ServerStatus status)
+            {
+                this.status = status;
+            }
+
+            #region IStatusListener 成员
+
+            public void Push(EndPoint endPoint, bool connected)
+            {
+                //throw new NotImplementedException();
+            }
+
+            public void Push(EndPoint endPoint, AppClient appClient)
+            {
+                //throw new NotImplementedException();
+            }
+
+            public void Push(CallError callError)
+            {
+                //throw new NotImplementedException();
+            }
+
+            public void Push(CallTimeout callTimeout)
+            {
+                //throw new NotImplementedException();
+            }
+
+            public void Push(ServerStatus serverStatus)
+            {
+                //throw new NotImplementedException();
+                this.status = serverStatus;
+            }
+
+            #endregion
+        }
+
         protected void btnClear_Click(object sender, EventArgs e)
         {
-            CastleFactory.Create().GetChannel<IStatusService>().ClearStatus();
+            CastleFactory.Create().GetChannel<IStatusService>().ClearServerStatus();
         }
     }
 }

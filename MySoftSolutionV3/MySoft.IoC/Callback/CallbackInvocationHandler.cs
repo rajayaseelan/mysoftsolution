@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Net.Sockets;
 using System.Reflection;
+using MySoft.Communication.Scs.Communication;
 using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using MySoft.Communication.Scs.Communication;
-using System.Net.Sockets;
+using System.Collections;
+using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -14,10 +16,12 @@ namespace MySoft.IoC
     {
         private Type callType;
         private IScsServerClient client;
-        public CallbackInvocationHandler(Type callType, IScsServerClient client)
+        private int timeout = 60;
+        public CallbackInvocationHandler(Type callType, IScsServerClient client, int timeout)
         {
             this.callType = callType;
             this.client = client;
+            this.timeout = timeout;
         }
 
         #region IProxyInvocationHandler 成员
@@ -33,8 +37,28 @@ namespace MySoft.IoC
         {
             if (client.CommunicationState == CommunicationStates.Connected)
             {
-                var value = new CallbackMessage { ServiceType = callType, MethodName = method.ToString(), Parameters = parameters };
-                client.SendMessage(new ScsCallbackMessage(value));
+                var message = new CallbackMessage { ServiceType = callType, MethodName = method.ToString(), Parameters = parameters };
+
+                Thread thread = null;
+                var caller = new AsyncMethodCaller(state =>
+                {
+                    thread = Thread.CurrentThread;
+                    client.SendMessage(new ScsCallbackMessage(message));
+                });
+
+                var ar = caller.BeginInvoke(null, iar => { }, caller);
+                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(timeout)))
+                {
+                    if (!ar.IsCompleted && thread != null)
+                        thread.Abort();
+
+                    throw new SocketException((int)SocketError.ConnectionAborted);
+                }
+
+                caller.EndInvoke(ar);
+                ar.AsyncWaitHandle.Close();
+
+                //返回null
                 return null;
             }
             else

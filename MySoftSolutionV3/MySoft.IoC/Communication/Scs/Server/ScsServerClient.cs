@@ -1,8 +1,8 @@
 ﻿using System;
 using MySoft.Communication.Scs.Communication;
+using MySoft.Communication.Scs.Communication.Channels;
 using MySoft.Communication.Scs.Communication.EndPoints;
 using MySoft.Communication.Scs.Communication.Messages;
-using MySoft.Communication.Scs.Communication.Channels;
 using MySoft.Communication.Scs.Communication.Protocols;
 
 namespace MySoft.Communication.Scs.Server

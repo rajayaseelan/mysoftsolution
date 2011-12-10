@@ -7,7 +7,7 @@ namespace MySoft.IoC
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>
-    public delegate object AsyncMethodCaller(object state);
+    public delegate void AsyncMethodCaller(object state);
 
     /// <summary>
     /// 异步调用委托
@@ -41,6 +41,6 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="reqMsg">The MSG.</param>
         /// <returns>The result.</returns>
-        ResponseMessage CallService(RequestMessage reqMsg, double logTimeout);
+        ResponseMessage CallService(RequestMessage reqMsg);
     }
 }

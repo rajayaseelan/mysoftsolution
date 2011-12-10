@@ -105,7 +105,7 @@ namespace MySoft.IoC
             string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.SubServiceName, reqMsg.Parameters);
 
             bool isAllowCache = false;
-            double cacheTime = config.CacheTime; //默认缓存时间与系统设置的时间一致
+            int cacheTime = config.CacheTime; //默认缓存时间与系统设置的时间一致
 
             #region 读取约束信息
 
@@ -170,7 +170,7 @@ namespace MySoft.IoC
                 try
                 {
                     //调用服务
-                    resMsg = service.CallService(reqMsg, config.LogTime);
+                    resMsg = service.CallService(reqMsg);
 
                     //如果数据为null,则返回null
                     if (resMsg == null)
@@ -179,10 +179,7 @@ namespace MySoft.IoC
                     }
 
                     //如果有异常，向外抛出
-                    if (resMsg.Error != null)
-                    {
-                        throw resMsg.Error;
-                    }
+                    if (resMsg.IsError) throw resMsg.Error;
                 }
                 catch (BusinessException ex)
                 {

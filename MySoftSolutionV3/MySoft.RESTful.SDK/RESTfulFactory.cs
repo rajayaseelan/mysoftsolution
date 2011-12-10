@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace MySoft.RESTful.SDK
 {
@@ -132,6 +133,7 @@ namespace MySoft.RESTful.SDK
             return (IServiceInterfaceType)dynamicProxy;
         }
 
+        #region 指定返回类型
 
         #region 不带参数方式
 
@@ -338,6 +340,164 @@ namespace MySoft.RESTful.SDK
 
             return request.GetResponse<TResult>();
         }
+
+        #endregion
+
+        #endregion
+
+        #region 不指定返回类型
+
+        #region 不带参数方式
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name)
+        {
+            return Invoke<JToken>(name);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, HttpMethod method)
+        {
+            return Invoke<JToken>(name, method);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, Token token)
+        {
+            return Invoke<JToken>(name, token);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="token"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, Token token, HttpMethod method)
+        {
+            return Invoke<JToken>(name, token, method);
+        }
+
+        #endregion
+
+        #region 带参数方式(字典)
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, IDictionary<string, object> item)
+        {
+            return Invoke<JToken>(name, item);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, IDictionary<string, object> item, HttpMethod method)
+        {
+            return Invoke<JToken>(name, item, method);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, IDictionary<string, object> item, Token token)
+        {
+            return Invoke<JToken>(name, item, token);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="token"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, IDictionary<string, object> item, Token token, HttpMethod method)
+        {
+            return Invoke<JToken>(name, item, token, method);
+        }
+
+        #endregion
+
+        #region 带参数方式(对象)
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, object item)
+        {
+            return Invoke<JToken>(name, item);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, object item, HttpMethod method)
+        {
+            return Invoke<JToken>(name, item, method);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, object item, Token token)
+        {
+            return Invoke<JToken>(name, item, token);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="item"></param>
+        /// <param name="token"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public JToken Invoke(string name, object item, Token token, HttpMethod method)
+        {
+            return Invoke<JToken>(name, item, token, method);
+        }
+
+        #endregion
 
         #endregion
     }

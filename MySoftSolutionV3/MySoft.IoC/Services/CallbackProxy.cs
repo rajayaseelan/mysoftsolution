@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
-using MySoft.IoC.Configuration;
+using System.Net.Sockets;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
-using System.Threading;
-using MySoft.Communication.Scs.Communication;
-using System.Net.Sockets;
-using MySoft.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Services
 {
@@ -81,7 +75,7 @@ namespace MySoft.IoC.Services
         {
             get
             {
-                return typeof(CallbackProxy).FullName;
+                return string.Format("{0}_{1}", typeof(CallbackProxy).FullName, Guid.NewGuid());
             }
         }
     }

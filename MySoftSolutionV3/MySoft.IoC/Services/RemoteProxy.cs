@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Threading;
-using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 
@@ -70,9 +69,8 @@ namespace MySoft.IoC.Services
         /// 调用方法
         /// </summary>
         /// <param name="reqMsg"></param>
-        /// <param name="logTimeout"></param>
         /// <returns></returns>
-        public ResponseMessage CallService(RequestMessage reqMsg, double logTimeout)
+        public ResponseMessage CallService(RequestMessage reqMsg)
         {
             //如果池为空，则判断是否达到最大池
             if (reqPool.Count == 0)
@@ -120,13 +118,10 @@ namespace MySoft.IoC.Services
                 //开始调用
                 IAsyncResult ar = caller.BeginInvoke(reqMsg, iar => { }, caller);
 
-                //开始计时
-                Stopwatch watch = Stopwatch.StartNew();
+                var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
 
                 //等待信号，客户端等待5分钟
-                bool timeout = !ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(node.Timeout));
-
-                watch.Stop();
+                bool timeout = !ar.AsyncWaitHandle.WaitOne(elapsedTime);
 
                 if (timeout)
                 {
@@ -140,7 +135,7 @@ namespace MySoft.IoC.Services
                     }
 
                     string title = string.Format("Call ({0}:{1}) remote service ({2},{3}) timeout.", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName);
-                    string body = string.Format("【{5}】Call ({0}:{1}) remote service ({2},{3}) timeout ({4} ms)！", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName, watch.ElapsedMilliseconds, reqMsg.TransactionId);
+                    string body = string.Format("【{5}】Call ({0}:{1}) remote service ({2},{3}) timeout ({4} ms)！", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName, elapsedTime.TotalMilliseconds, reqMsg.TransactionId);
                     throw new WarningException(body)
                     {
                         ApplicationName = reqMsg.AppName,
@@ -154,23 +149,6 @@ namespace MySoft.IoC.Services
 
                 //关闭句柄
                 ar.AsyncWaitHandle.Close();
-
-                //如果时间超过预定，则输出日志
-                if (watch.ElapsedMilliseconds > logTimeout * 1000)
-                {
-                    //SerializationManager.Serialize(retMsg)
-                    string log = string.Format("【{7}】Call ({0}:{1}) remote service ({2},{3}). {5}\r\nMessage ==> {6}\r\nParameters ==> {4}", node.IP, node.Port, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters, "Spent time: (" + watch.ElapsedMilliseconds + ") ms.", resMsg.Message, resMsg.TransactionId);
-                    string title = string.Format("Elapsed time ({0}) ms more than ({1}) ms.", watch.ElapsedMilliseconds, logTimeout * 1000);
-                    string body = string.Format("{0} {1}", title, log);
-                    var exception = new WarningException(body)
-                    {
-                        ApplicationName = reqMsg.AppName,
-                        ServiceName = reqMsg.ServiceName,
-                        ExceptionHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                    };
-
-                    logger.WriteError(exception);
-                }
 
                 return resMsg;
             }
@@ -197,7 +175,7 @@ namespace MySoft.IoC.Services
         {
             get
             {
-                return typeof(RemoteProxy).FullName;
+                return string.Format("{0}_{1}", typeof(RemoteProxy).FullName, node.Key);
             }
         }
 

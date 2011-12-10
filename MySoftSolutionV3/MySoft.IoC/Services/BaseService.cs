@@ -54,47 +54,22 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg">The MSG.</param>
         /// <returns>The msg.</returns>
-        public ResponseMessage CallService(RequestMessage reqMsg, double logTimeout)
+        public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            Stopwatch watch = Stopwatch.StartNew();
-
             //运行请求获得结果
             ResponseMessage resMsg = Run(reqMsg);
 
-            if (resMsg != null && resMsg.Error != null)
+            //如果是业务异常，则不抛出错误
+            if (resMsg.IsError && !resMsg.IsBusinessError)
             {
-                watch.Stop();
-
-                //如果是业务异常，则不抛出错误
-                if (!(resMsg.Error is BusinessException))
+                var ex = resMsg.Error;
+                string body = string.Format("【{5}】Dynamic ({0}) service ({1},{2}) error. \r\nMessage ==> {4}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters, resMsg.Message, resMsg.TransactionId);
+                var exception = new IoCException(body, ex)
                 {
-                    var ex = resMsg.Error;
-                    string body = string.Format("【{6}】Dynamic ({0}) service ({1},{2}) error. {4}\r\nMessage ==> {5}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters, "Spent time: (" + watch.ElapsedMilliseconds + ") ms.", resMsg.Message, resMsg.TransactionId);
-                    var exception = new IoCException(body, ex)
-                    {
-                        ApplicationName = reqMsg.AppName,
-                        ExceptionHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                    };
-                    logger.WriteError(exception);
-                }
-            }
-            else
-            {
-                watch.Stop();
-
-                //如果时间超过预定，则输出日志
-                if (watch.ElapsedMilliseconds > logTimeout * 1000)
-                {
-                    string log = string.Format("【{6}】Dynamic ({0}) service ({1},{2}). {4}\r\nMessage ==> {5}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters, "Spent time: (" + watch.ElapsedMilliseconds + ") ms.", resMsg.Message, resMsg.TransactionId);
-                    string title = string.Format("Elapsed time ({0}) ms more than ({1}) ms.", watch.ElapsedMilliseconds, logTimeout * 1000);
-                    string body = string.Format("{0} {1}", title, log);
-                    var exception = new WarningException(body)
-                    {
-                        ApplicationName = reqMsg.AppName,
-                        ExceptionHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                    };
-                    logger.WriteError(exception);
-                }
+                    ApplicationName = reqMsg.AppName,
+                    ExceptionHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                };
+                logger.WriteError(exception);
             }
 
             return resMsg;

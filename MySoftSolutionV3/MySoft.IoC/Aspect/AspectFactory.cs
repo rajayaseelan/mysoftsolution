@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Castle.DynamicProxy;
 
 namespace MySoft.IoC.Aspect

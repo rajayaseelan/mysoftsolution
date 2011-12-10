@@ -60,7 +60,13 @@
     <Compile Include="Aspect\AspectSwitcherAttribute.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
-    <Compile Include="CallEventArgs.cs" />
+    <Compile Include="Callback\MessageCenter.cs" />
+    <Compile Include="Callback\MessageListener.cs" />
+    <Compile Include="ServiceCaller.cs" />
+    <Compile Include="Services\DiscoverProxy.cs" />
+    <Compile Include="Status\AppCaller.cs" />
+    <Compile Include="Status\AppClient.cs" />
+    <Compile Include="Status\CallEventArgs.cs" />
     <Compile Include="IoCException.cs" />
     <Compile Include="Messages\CallbackMessage.cs" />
     <Compile Include="Messages\CustomWireProtocol.cs" />
@@ -133,7 +139,7 @@
     <Compile Include="CastleFactoryType.cs" />
     <Compile Include="Configuration\CastleServiceConfiguration.cs" />
     <Compile Include="Configuration\CastleServiceConfigurationHandler.cs" />
-    <Compile Include="Configuration\RemoteNode.cs" />
+    <Compile Include="RemoteNode.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="IServiceContainer.cs" />
     <Compile Include="ParameterCollection.cs" />
@@ -145,6 +151,8 @@
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
+    <Compile Include="Status\CallInfo.cs" />
+    <Compile Include="Status\IStatusListener.cs" />
     <Compile Include="Status\SummaryStatus.cs" />
     <Compile Include="Status\ConnectionInfo.cs" />
     <Compile Include="Status\IStatusService.cs" />

@@ -1,6 +1,6 @@
 ﻿using System;
-using MySoft.Communication.Threading;
 using MySoft.Communication.Scs.Communication.Protocols;
+using MySoft.Communication.Threading;
 
 namespace MySoft.Communication.Scs.Server
 {

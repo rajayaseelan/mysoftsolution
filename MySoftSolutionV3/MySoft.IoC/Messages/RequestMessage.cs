@@ -128,7 +128,7 @@ namespace MySoft.IoC.Messages
         private string appName;
         private string hostName;
         private string requestAddress;
-        private double timeout = -1;
+        private int timeout = -1;
 
         #endregion
 
@@ -167,7 +167,7 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// Gets or sets the timeout of the service.
         /// </summary>
-        public double Timeout
+        public int Timeout
         {
             get
             {

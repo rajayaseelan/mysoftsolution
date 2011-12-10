@@ -59,6 +59,7 @@ namespace MySoft.IoC
             parmValues.Clear();
         }
 
+        private string paramString = string.Empty;
         /// <summary>
         /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
         /// </summary>
@@ -67,9 +68,14 @@ namespace MySoft.IoC
         /// </returns>
         public override string ToString()
         {
+            if (!string.IsNullOrEmpty(paramString))
+            {
+                return paramString;
+            }
+
             if (parmValues.Keys.Count == 0)
             {
-                return "{}";
+                paramString = "{}";
             }
             else
             {
@@ -91,8 +97,10 @@ namespace MySoft.IoC
                     json.Add(key, JToken.Parse(jsonString));
                 }
 
-                return json.ToString(Formatting.Indented);
+                paramString = json.ToString(Formatting.Indented);
             }
+
+            return paramString;
         }
     }
 }

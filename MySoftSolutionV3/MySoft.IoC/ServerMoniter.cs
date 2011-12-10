@@ -2,10 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using MySoft.IoC.Configuration;
-using MySoft.IoC.Services;
 using MySoft.IoC.Status;
 using MySoft.Logger;
+using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -36,6 +37,23 @@ namespace MySoft.IoC
             this.container.OnLog += new LogEventHandler(container_OnLog);
             this.statuslist = new TimeStatusCollection(config.Records);
             this.startTime = DateTime.Now;
+
+            this.statuslist.OnTimer += new TimerEventHandler(statuslist_OnTimer);
+        }
+
+        void statuslist_OnTimer(TimeStatus lastStatus)
+        {
+            ServerStatus status = new ServerStatus
+            {
+                StartDate = startTime,
+                TotalSeconds = (int)DateTime.Now.Subtract(startTime).TotalSeconds,
+                Highest = GetHighestStatus(),
+                Latest = lastStatus,
+                Summary = GetSummaryStatus()
+            };
+
+            //响应定时信息
+            MessageCenter.Instance.Notify(status);
         }
 
         #region ILogable Members
@@ -77,6 +95,16 @@ namespace MySoft.IoC
         #region IStatusService 成员
 
         /// <summary>
+        /// 是否存在服务
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        public bool ContainsService(string serviceName)
+        {
+            return container.Contains<ServiceContractAttribute>(serviceName);
+        }
+
+        /// <summary>
         /// 获取服务信息列表
         /// </summary>
         /// <returns></returns>
@@ -84,19 +112,7 @@ namespace MySoft.IoC
         {
             //获取拥有ServiceContract约束的服务
             var types = container.GetInterfaces<ServiceContractAttribute>();
-
             return types.ToList();
-        }
-
-        /// <summary>
-        /// 清除所有服务器状态
-        /// </summary>
-        public void ClearStatus()
-        {
-            lock (statuslist)
-            {
-                statuslist.Clear();
-            }
         }
 
         /// <summary>
@@ -118,6 +134,19 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 清除所有服务器状态
+        /// </summary>
+        public void ClearServerStatus()
+        {
+            lock (statuslist)
+            {
+                statuslist.Clear();
+            }
+        }
+
+        #region 服务器状态信息
+
+        /// <summary>
         /// 获取最后一次服务状态
         /// </summary>
         /// <returns></returns>
@@ -130,7 +159,7 @@ namespace MySoft.IoC
         /// 获取最高状态信息
         /// </summary>
         /// <returns></returns>
-        public HighestStatus GetHighestStatus()
+        private HighestStatus GetHighestStatus()
         {
             var highest = new HighestStatus();
             var list = statuslist.ToList();
@@ -175,7 +204,7 @@ namespace MySoft.IoC
         /// 汇总状态信息
         /// </summary>
         /// <returns></returns>
-        public SummaryStatus GetSummaryStatus()
+        private SummaryStatus GetSummaryStatus()
         {
             //获取状态列表
             var list = GetTimeStatusList();
@@ -193,6 +222,8 @@ namespace MySoft.IoC
 
             return status;
         }
+
+        #endregion
 
         /// <summary>
         /// 获取服务状态列表
@@ -219,6 +250,65 @@ namespace MySoft.IoC
         public virtual void Dispose()
         {
             container.Dispose();
+        }
+
+        #endregion
+
+        #region IStatusService 成员
+
+        /// <summary>
+        /// 订阅服务
+        /// </summary>
+        public void Subscibe()
+        {
+            Subscibe(new SubscibeOptions());
+        }
+
+        /// <summary>
+        /// 订阅服务
+        /// </summary>
+        /// <param name="callTimeout">调用超时时间</param>
+        public void Subscibe(double callTimeout)
+        {
+            Subscibe(new SubscibeOptions
+            {
+                CallTimeout = callTimeout
+            });
+        }
+
+        /// <summary>
+        /// 订阅服务
+        /// </summary>
+        /// <param name="callTimeout">调用超时时间</param>
+        /// <param name="statusTimer">推送状态间隔</param>
+        public void Subscibe(double callTimeout, int statusTimer)
+        {
+            Subscibe(new SubscibeOptions
+            {
+                CallTimeout = callTimeout,
+                ServerStatusTimer = statusTimer
+            });
+        }
+
+        /// <summary>
+        /// 订阅服务
+        /// </summary>
+        /// <param name="options">订阅选项</param>
+        public void Subscibe(SubscibeOptions options)
+        {
+            var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
+            var endPoint = OperationContext.Current.RemoteEndPoint;
+            MessageCenter.Instance.AddListener(new MessageListener(endPoint, callback, options));
+        }
+
+        /// <summary>
+        /// 退订
+        /// </summary>
+        public void Unsubscibe()
+        {
+            var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
+            var endPoint = OperationContext.Current.RemoteEndPoint;
+            MessageCenter.Instance.RemoveListener(new MessageListener(endPoint, callback));
         }
 
         #endregion

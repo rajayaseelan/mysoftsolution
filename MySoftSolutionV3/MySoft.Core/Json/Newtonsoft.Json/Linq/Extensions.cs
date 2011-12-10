@@ -182,7 +182,7 @@ namespace Newtonsoft.Json.Linq
           {
             foreach (JToken t in token.Children())
             {
-              yield return t.Convert<JToken, U>(); ;
+              yield return t.Convert<JToken, U>();
             }
           }
         }

@@ -55,6 +55,12 @@ namespace MySoft.IoC
         /// <returns></returns>
         Type[] GetInterfaces<ContractType>();
         /// <summary>
+        /// 是否包含服务
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        bool Contains<ContractType>(string serviceName);
+        /// <summary>
         /// 缓存依赖
         /// </summary>
         ICacheDependent Cache { get; set; }

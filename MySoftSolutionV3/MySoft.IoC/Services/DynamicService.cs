@@ -92,6 +92,7 @@ namespace MySoft.IoC.Services
             #endregion
 
             //获取服务及方法名称
+            resMsg.AssemblyName = instance.GetType().Assembly.FullName;
             resMsg.ServiceName = instance.GetType().FullName;
             resMsg.SubServiceName = method.ToString();
             resMsg.ReturnType = method.ReturnType;

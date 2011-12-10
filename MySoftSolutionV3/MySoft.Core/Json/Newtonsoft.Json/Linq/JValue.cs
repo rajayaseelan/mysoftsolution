@@ -487,7 +487,7 @@ namespace Newtonsoft.Json.Linq
             writer.WriteValue((DateTimeOffset)_value);
           else
 #endif
-            writer.WriteValue(Convert.ToDateTime(_value, CultureInfo.InvariantCulture)); ;
+            writer.WriteValue(Convert.ToDateTime(_value, CultureInfo.InvariantCulture));
           return;
         case JTokenType.Bytes:
           writer.WriteValue((byte[])_value);

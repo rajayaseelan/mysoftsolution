@@ -5,6 +5,7 @@ using MySoft.Installer;
 using MySoft.IoC;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
+using MySoft.IoC.Status;
 
 namespace MySoft.PlatformService.IoC
 {
@@ -14,7 +15,6 @@ namespace MySoft.PlatformService.IoC
     public class WindowsService : IServiceRun
     {
         private readonly object syncobj = new object();
-        private CastleServiceConfiguration config;
         private StartMode startMode = StartMode.Service;
         private CastleService server;
         private string[] mailTo;
@@ -45,7 +45,7 @@ namespace MySoft.PlatformService.IoC
         /// </summary>
         public void Init()
         {
-            this.config = CastleServiceConfiguration.GetConfig();
+            var config = CastleServiceConfiguration.GetConfig();
             this.server = new CastleService(config);
             this.server.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
 
@@ -59,7 +59,10 @@ namespace MySoft.PlatformService.IoC
 
         void server_OnCalling(object sender, CallEventArgs e)
         {
-            //throw new NotImplementedException();
+            if (e.IsError)
+            {
+                //处理异常信息
+            }
         }
 
 
@@ -87,7 +90,6 @@ namespace MySoft.PlatformService.IoC
                 server.Start();
 
                 Console.WriteLine("[{0}] => Server host: {1}", DateTime.Now, server.ServerUrl);
-                Console.WriteLine("[{0}] => Logger status: On  -> Log time: {1} seconds", DateTime.Now, config.LogTime);
                 Console.WriteLine("[{0}] => Press enter to exit and stop service...", DateTime.Now);
             }
             else

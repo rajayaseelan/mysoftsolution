@@ -27,11 +27,11 @@ namespace MySoft.IoC
             }
         }
 
-        protected double timeout = -1;
+        protected int timeout = -1;
         /// <summary>
         /// 超时时间（单位：秒）
         /// </summary>
-        public double Timeout
+        public int Timeout
         {
             get
             {
@@ -43,11 +43,11 @@ namespace MySoft.IoC
             }
         }
 
-        protected double cacheTime = -1;
+        protected int cacheTime = -1;
         /// <summary>
         /// 缓存时间（单位：秒）
         /// </summary>
-        public double CacheTime
+        public int CacheTime
         {
             get
             {

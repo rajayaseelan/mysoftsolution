@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Configuration;
 using System.Xml;
-using MySoft.IoC;
 
 namespace MySoft.IoC.Configuration
 {
@@ -17,9 +15,8 @@ namespace MySoft.IoC.Configuration
         private string defaultKey;              //默认服务
         private string appName;                 //host名称
         private bool throwerror = true;         //抛出异常
-        private double logtime = ServiceConfig.DEFAULT_LOGTIME_NUMBER;       //超时多长输出日志，默认为1秒
-        private double timeout = ServiceConfig.DEFAULT_TIMEOUT_NUMBER;       //默认超时时间        30秒
-        private double cachetime = ServiceConfig.DEFAULT_CACHETIME_NUMBER;   //默认缓存时间        60秒
+        private int timeout = ServiceConfig.DEFAULT_TIMEOUT_NUMBER;       //默认超时时间        30秒
+        private int cachetime = ServiceConfig.DEFAULT_CACHETIME_NUMBER;   //默认缓存时间        60秒
 
         /// <summary>
         /// 获取远程对象配置
@@ -53,13 +50,10 @@ namespace MySoft.IoC.Configuration
                 type = (CastleFactoryType)Enum.Parse(typeof(CastleFactoryType), xmlnode["type"].Value, true);
 
             if (xmlnode["timeout"] != null && xmlnode["timeout"].Value.Trim() != string.Empty)
-                timeout = Convert.ToDouble(xmlnode["timeout"].Value);
+                timeout = Convert.ToInt32(xmlnode["timeout"].Value);
 
             if (xmlnode["cachetime"] != null && xmlnode["cachetime"].Value.Trim() != string.Empty)
-                cachetime = Convert.ToDouble(xmlnode["cachetime"].Value);
-
-            if (xmlnode["logtime"] != null && xmlnode["logtime"].Value.Trim() != string.Empty)
-                logtime = Convert.ToDouble(xmlnode["logtime"].Value);
+                cachetime = Convert.ToInt32(xmlnode["cachetime"].Value);
 
             if (xmlnode["throwerror"] != null && xmlnode["throwerror"].Value.Trim() != string.Empty)
                 throwerror = Convert.ToBoolean(xmlnode["throwerror"].Value);
@@ -82,7 +76,7 @@ namespace MySoft.IoC.Configuration
                     remoteNode.IP = childnode["ip"].Value;
                     remoteNode.Port = Convert.ToInt32(childnode["port"].Value);
 
-                    //超时时间，默认为5分钟
+                    //超时时间，默认为1分钟
                     if (childnode["timeout"] != null && childnode["timeout"].Value.Trim() != string.Empty)
                         remoteNode.Timeout = Convert.ToInt32(childnode["timeout"].Value);
 
@@ -151,8 +145,8 @@ namespace MySoft.IoC.Configuration
         /// <summary>
         /// Gets or sets the timeout
         /// </summary>
-        /// <value>The timeout.</value>
-        public double Timeout
+        /// <value>The timeout. ：单位（秒）</value>
+        public int Timeout
         {
             get { return timeout; }
             set { timeout = value; }
@@ -162,20 +156,10 @@ namespace MySoft.IoC.Configuration
         /// Gets or sets the cachetime
         /// </summary>
         /// <value>The cachetime.</value>
-        public double CacheTime
+        public int CacheTime
         {
             get { return cachetime; }
             set { cachetime = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the logtime
-        /// </summary>
-        /// <value>The logtime.</value>
-        public double LogTime
-        {
-            get { return logtime; }
-            set { logtime = value; }
         }
 
         /// <summary>

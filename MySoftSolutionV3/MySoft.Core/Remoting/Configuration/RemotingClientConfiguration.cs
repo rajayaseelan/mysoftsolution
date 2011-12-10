@@ -91,8 +91,7 @@ namespace MySoft.Remoting.Configuration
         /// <returns></returns>
         public string GetRemoteObjectUrl(string serverUrl, string remoteObjectUri)
         {
-            string url = string.Format("{0}/{1}", serverUrl, remoteObjectUri);
-            return url;
+            return string.Format("{0}/{1}", serverUrl, remoteObjectUri);
         }
 
         /// <summary>

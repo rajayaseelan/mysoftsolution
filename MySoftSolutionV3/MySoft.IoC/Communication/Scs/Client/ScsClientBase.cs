@@ -1,7 +1,7 @@
 ﻿using System;
 using MySoft.Communication.Scs.Communication;
-using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Communication.Channels;
+using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Communication.Protocols;
 using MySoft.Communication.Threading;
 
@@ -274,6 +274,7 @@ namespace MySoft.Communication.Scs.Client
                     _communicationChannel.SendMessage(new ScsPingMessage());
                 else
                 {
+                    //判断超时时间
                     lastMinute = DateTime.Now.Add(-TimeSpan.FromMilliseconds(DisconnectTimeout));
 
                     if (_communicationChannel.LastReceivedMessageTime < lastMinute && _communicationChannel.LastSentMessageTime < lastMinute)

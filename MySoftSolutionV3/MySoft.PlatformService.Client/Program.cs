@@ -128,11 +128,13 @@ namespace MySoft.PlatformService.Client
             //    }
             //}
 
-            for (int i = 0; i < 2; i++)
-            {
-                Thread thread = new Thread(DoWork1);
-                thread.Start();
-            }
+            //for (int i = 0; i < 2; i++)
+            //{
+            //    Thread thread = new Thread(DoWork1);
+            //    thread.Start();
+            //}
+
+            DoWork1();
             Console.ReadKey();
         }
 
@@ -158,15 +160,15 @@ namespace MySoft.PlatformService.Client
 
                     //sub.Unsubscribe();
 
-                    var users = CastleFactory.Create().GetChannel<IUserService>().GetUsers();
+                    var users = CastleFactory.Create().GetChannel<IUserService>(true).GetUsers();
                     Console.WriteLine(users[0].Description);
-
-                    Thread.Sleep(1000);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
+
+                Thread.Sleep(1000);
             }
         }
 

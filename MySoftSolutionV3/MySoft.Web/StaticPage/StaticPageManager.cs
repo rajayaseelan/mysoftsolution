@@ -17,7 +17,7 @@ namespace MySoft.Web
     /// </summary>
     public abstract class StaticPageManager
     {
-        private const double INTERVAL = 60;
+        private const int INTERVAL = 60;
 
         public static event LogEventHandler OnLog;
 
@@ -47,8 +47,8 @@ namespace MySoft.Web
         /// <summary>
         /// 启动静态管理类
         /// </summary>
-        /// <param name="interval">检测间隔时间(默认为一分钟) 单位：秒</param>
-        public static void Start(double interval)
+        /// <param name="interval">检测间隔时间(默认为一分钟) ：单位（秒）</param>
+        public static void Start(int interval)
         {
             Start(interval, false);
         }
@@ -56,8 +56,8 @@ namespace MySoft.Web
         /// <summary>
         /// 启动静态管理类
         /// </summary>
-        /// <param name="interval">检测间隔时间 单位：秒</param>
-        public static void Start(double interval, bool isStartUpdate)
+        /// <param name="interval">检测间隔时间：单位（秒）</param>
+        public static void Start(int interval, bool isStartUpdate)
         {
             if (isStartUpdate)
             {

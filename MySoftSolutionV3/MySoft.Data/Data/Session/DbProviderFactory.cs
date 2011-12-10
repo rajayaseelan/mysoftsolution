@@ -130,7 +130,7 @@ namespace MySoft.Data
             else
                 ass = System.Reflection.Assembly.Load(assemblyName);
 
-            return ass.CreateInstance(className, false, System.Reflection.BindingFlags.Default, null, new object[] { connectionString }, null, null) as DbProvider; ;
+            return ass.CreateInstance(className, false, System.Reflection.BindingFlags.Default, null, new object[] { connectionString }, null, null) as DbProvider;
         }
 
         /// <summary>

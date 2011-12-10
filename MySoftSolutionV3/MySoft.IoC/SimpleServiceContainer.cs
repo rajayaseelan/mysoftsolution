@@ -196,9 +196,8 @@ namespace MySoft.IoC
         /// Calls the service.
         /// </summary>
         /// <param name="reqMsg"></param>
-        /// <param name="logTimeout"></param>
         /// <returns></returns>
-        public ResponseMessage CallService(RequestMessage reqMsg, double logTimeout)
+        public ResponseMessage CallService(RequestMessage reqMsg)
         {
             IService service = container.ResolveAll<IService>()
                 .SingleOrDefault(model => model.ServiceName == reqMsg.ServiceName);
@@ -214,7 +213,29 @@ namespace MySoft.IoC
                 };
             }
 
-            return service.CallService(reqMsg, logTimeout);
+            return service.CallService(reqMsg);
+        }
+
+        /// <summary>
+        /// 是否包含服务
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        public bool Contains<ContractType>(string serviceName)
+        {
+            GraphNode[] nodes = this.Kernel.GraphNodes;
+            return nodes.Cast<ComponentModel>().Any(model =>
+              {
+                  bool markedWithServiceContract = false;
+                  var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Service);
+                  if (attr != null)
+                  {
+                      markedWithServiceContract = true;
+                  }
+
+                  return markedWithServiceContract
+                      && model.Service.FullName == serviceName;
+              });
         }
 
         /// <summary>

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
-using System.Threading;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Server;
@@ -26,7 +26,8 @@ namespace MySoft.IoC
 
         private IScsServer server;
         private string serverUrl;
-        private IDictionary<string, Type> callbackTypes;
+        private ServiceCaller caller;
+
         /// <summary>
         /// 服务容器
         /// </summary>
@@ -46,7 +47,7 @@ namespace MySoft.IoC
             ScsTcpEndPoint endPoint = null;
             if (string.Compare(config.Host, "any", true) == 0)
             {
-                config.Host = "127.0.0.1";
+                config.Host = IPAddress.Loopback.ToString();
                 endPoint = new ScsTcpEndPoint(config.Port);
             }
             else
@@ -57,13 +58,36 @@ namespace MySoft.IoC
             this.server.ClientConnected += new EventHandler<ServerClientEventArgs>(server_ClientConnected);
             this.server.ClientDisconnected += new EventHandler<ServerClientEventArgs>(server_ClientDisconnected);
             this.server.WireProtocolFactory = new CustomWireProtocolFactory(config.Compress, config.Encrypt);
+            this.OnCalling += new EventHandler<CallEventArgs>(CastleService_OnCalling);
 
-            InitCallbackTypes();
+            //实例化调用者
+            var callbackTypes = GetCallbackTypes();
+            this.caller = new ServiceCaller(container, callbackTypes);
+
+            //绑定事件
+            MessageCenter.Instance.OnError += new ErrorLogEventHandler(Instance_OnError);
         }
 
-        private void InitCallbackTypes()
+        void CastleService_OnCalling(object sender, CallEventArgs e)
         {
-            callbackTypes = new Dictionary<string, Type>();
+            //响应错误信息
+            MessageCenter.Instance.Notify(e);
+        }
+
+        /// <summary>
+        /// 处理异常信息
+        /// </summary>
+        /// <param name="exception"></param>
+        void Instance_OnError(Exception exception)
+        {
+            container_OnError(exception);
+        }
+
+        private IDictionary<string, Type> GetCallbackTypes()
+        {
+            var callbackTypes = new Dictionary<string, Type>();
+            callbackTypes[typeof(IStatusService).FullName] = typeof(IStatusListener);
+
             var types = container.GetInterfaces<ServiceContractAttribute>();
             foreach (var type in types)
             {
@@ -73,6 +97,8 @@ namespace MySoft.IoC
                     callbackTypes[type.FullName] = contract.CallbackType;
                 }
             }
+
+            return callbackTypes;
         }
 
         #region 启动停止服务
@@ -128,7 +154,7 @@ namespace MySoft.IoC
                 index++;
             }
 
-            SimpleLog.Instance.WriteLog(sb.ToString());
+            SimpleLog.Instance.WriteLogForDir("Publish", sb.ToString());
         }
 
         /// <summary>
@@ -172,6 +198,10 @@ namespace MySoft.IoC
             container_OnLog(string.Format("User connection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Information);
             e.Client.MessageReceived += new EventHandler<MessageEventArgs>(Client_MessageReceived);
             e.Client.MessageSent += new EventHandler<MessageEventArgs>(Client_MessageSent);
+
+            //处理登入事件
+            var point = new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort);
+            MessageCenter.Instance.Notify(point, true);
         }
 
         void Client_MessageSent(object sender, MessageEventArgs e)
@@ -183,6 +213,10 @@ namespace MySoft.IoC
         {
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
             container_OnLog(string.Format("User Disconnection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Error);
+
+            //处理登出事件
+            var point = new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort);
+            MessageCenter.Instance.Notify(point, false);
         }
 
         void Client_MessageReceived(object sender, MessageEventArgs e)
@@ -195,13 +229,17 @@ namespace MySoft.IoC
                 {
                     var client = server.Clients[info.ClientId];
                     client.State = (e.Message as ScsClientMessage).Client;
+
+                    //响应客户端详细信息
+                    var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
+                    var point = new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort);
+                    MessageCenter.Instance.Notify(point, (e.Message as ScsClientMessage).Client);
                 }
             }
             else if (e.Message is ScsResultMessage)
             {
                 //获取client发送端
                 var client = sender as IScsServerClient;
-
                 var data = e.Message as ScsResultMessage;
                 var reqMsg = data.MessageValue as RequestMessage;
 
@@ -233,11 +271,12 @@ namespace MySoft.IoC
                     args.Caller.AppName = reqMsg.AppName;
                     args.Caller.IPAddress = reqMsg.IPAddress;
                     args.Caller.HostName = reqMsg.HostName;
+                    args.Caller.AssemblyName = typeof(CastleService).Assembly.FullName;
                     args.Caller.ServiceName = reqMsg.ServiceName;
                     args.Caller.SubServiceName = reqMsg.SubServiceName;
-                    args.CallTime = DateTime.Now;
-                    args.ElapsedTime = -1;
-                    args.CallError = ex;
+                    args.Caller.Parameters = reqMsg.Parameters.ToString();
+                    args.InvokeTime = DateTime.Now;
+                    args.Error = ex;
                 }
 
                 //如果调用句柄不为空，则调用
@@ -261,15 +300,13 @@ namespace MySoft.IoC
         /// <param name="reqMsg"></param>
         private void GetSendResponse(IScsServerClient client, RequestMessage reqMsg, out CallEventArgs args)
         {
-            long elapsedTimeout;
-
             //如果是状态请求，则直接返回数据
             if (!IsServiceCounter(reqMsg))
             {
                 args = null;
 
                 //调用请求方法
-                var resMsg = CallMethod(client, reqMsg, out elapsedTimeout);
+                var resMsg = caller.CallMethod(client, reqMsg);
 
                 //发送数据到服务端
                 client.SendMessage(new ScsResultMessage(resMsg, reqMsg.TransactionId.ToString()));
@@ -280,59 +317,37 @@ namespace MySoft.IoC
                 args.Caller.AppName = reqMsg.AppName;
                 args.Caller.IPAddress = reqMsg.IPAddress;
                 args.Caller.HostName = reqMsg.HostName;
-                args.Caller.ServiceName = reqMsg.ServiceName;
-                args.Caller.SubServiceName = reqMsg.SubServiceName;
-                args.CallTime = DateTime.Now;
+                args.InvokeTime = DateTime.Now;
+
+                //开始计时
+                Stopwatch watch = Stopwatch.StartNew();
 
                 //获取或创建一个对象
                 TimeStatus status = statuslist.GetOrCreate(DateTime.Now);
 
-                //处理cacheKey信息
-                string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.SubServiceName, reqMsg.Parameters);
+                //调用请求方法
+                var resMsg = caller.CallMethod(client, reqMsg);
 
-                var resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
-                if (resMsg == null)
-                {
-                    //调用请求方法
-                    resMsg = CallMethod(client, reqMsg, out elapsedTimeout);
+                watch.Stop();
 
-                    //处理时间
-                    status.ElapsedTime += elapsedTimeout;
-
-                    //计算缓存时间
-                    int times = (int)elapsedTimeout / 1000;
-
-                    //数据不为null，并且记录数大于0
-                    if (resMsg != null && resMsg.Data != null && resMsg.Count > 0)
-                    {
-                        if (times > 0)
-                            CacheHelper.Insert(cacheKey, resMsg, times);
-                        else
-                            CacheHelper.Insert(cacheKey, resMsg, 1);
-                    }
-
-                    //参数信息
-                    args.ElapsedTime = elapsedTimeout;
-
-                    if (resMsg.Error == null)
-                        args.ReturnValue = resMsg.Data;
-                    else
-                        args.CallError = resMsg.Error;
-
-                    args.ValueCount = resMsg.Count;
-                }
-                else
-                {
-                    //从缓存读取的数据需要修改TransactionId
-                    resMsg.TransactionId = reqMsg.TransactionId;
-                    resMsg.Expiration = reqMsg.Expiration;
-                }
+                //处理时间
+                status.ElapsedTime += watch.ElapsedMilliseconds;
 
                 //错误及成功计数
                 if (resMsg.Error == null)
+                {
                     status.SuccessCount++;
+
+                    args.Count = resMsg.Count;
+                    args.Value = resMsg.Data;
+                    args.ElapsedTime = watch.ElapsedMilliseconds;
+                }
                 else
+                {
                     status.ErrorCount++;
+
+                    args.Error = resMsg.Error;
+                }
 
                 //实例化Message对象来进行发送
                 var sendMessage = new ScsResultMessage(resMsg, reqMsg.TransactionId.ToString());
@@ -342,95 +357,15 @@ namespace MySoft.IoC
 
                 //计算流量
                 status.DataFlow += sendMessage.DataLength;
+
+                //服务参数信息
+                args.Caller.AssemblyName = resMsg.AssemblyName;
+                args.Caller.ServiceName = resMsg.ServiceName;
+                args.Caller.SubServiceName = resMsg.SubServiceName;
+
+                //计算流量
+                args.Length = sendMessage.DataLength;
             }
-        }
-
-        /// <summary>
-        /// 调用 方法
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg, out long elapsedTimeout)
-        {
-            //获取返回的消息
-            ResponseMessage resMsg = null;
-
-            try
-            {
-                Thread thread = null;
-
-                //生成一个异步调用委托
-                var caller = new AsyncMethodCaller<ResponseMessage, RequestMessage>(state =>
-                {
-                    thread = Thread.CurrentThread;
-
-                    //实例化当前上下文
-                    if (callbackTypes.ContainsKey(state.ServiceName))
-                        OperationContext.Current = new OperationContext(client, callbackTypes[state.ServiceName]);
-                    else
-                        OperationContext.Current = new OperationContext(client);
-
-                    return container.CallService(state, config.LogTime); ;
-                });
-
-                //开始调用
-                IAsyncResult ar = caller.BeginInvoke(reqMsg, iar => { }, caller);
-
-                //开始计时
-                Stopwatch watch = Stopwatch.StartNew();
-
-                //等待信号，等待5分钟
-                bool timeout = !ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(reqMsg.Timeout));
-
-                watch.Stop();
-                elapsedTimeout = watch.ElapsedMilliseconds;
-
-                if (timeout)
-                {
-                    try
-                    {
-                        if (!ar.IsCompleted && thread != null)
-                            thread.Abort();
-                    }
-                    catch (Exception ex)
-                    {
-                    }
-
-                    string title = string.Format("Call service ({0},{1}) timeout.", reqMsg.ServiceName, reqMsg.SubServiceName);
-                    string body = string.Format("【{3}】Call service ({0},{1}) timeout ({2} ms)！", reqMsg.ServiceName, reqMsg.SubServiceName, watch.ElapsedMilliseconds, reqMsg.TransactionId);
-                    throw new WarningException(body)
-                    {
-                        ApplicationName = reqMsg.AppName,
-                        ServiceName = reqMsg.ServiceName,
-                        ExceptionHeader = string.Format("Application【{0}】call service timeout. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                    };
-                }
-
-                //获取返回结果
-                resMsg = caller.EndInvoke(ar);
-
-                //关闭句柄
-                ar.AsyncWaitHandle.Close();
-            }
-            catch (Exception ex)
-            {
-                //耗时时间
-                elapsedTimeout = (long)TimeSpan.FromSeconds(reqMsg.Timeout).TotalMilliseconds;
-
-                //抛出错误信息
-                container_OnError(ex);
-
-                resMsg = new ResponseMessage();
-                resMsg.TransactionId = reqMsg.TransactionId;
-                resMsg.ServiceName = reqMsg.ServiceName;
-                resMsg.SubServiceName = reqMsg.SubServiceName;
-                resMsg.Parameters = reqMsg.Parameters;
-                resMsg.Expiration = reqMsg.Expiration;
-                resMsg.ReturnType = reqMsg.ReturnType;
-                resMsg.Error = ex;
-            }
-
-            return resMsg;
         }
 
         /// <summary>

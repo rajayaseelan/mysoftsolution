@@ -24,7 +24,7 @@ namespace MySoft.RESTful.SDK
 
         private int timeout = 5 * 60;
         /// <summary>
-        /// 超时时间
+        /// 超时时间：单位（秒）
         /// </summary>
         public int Timeout
         {

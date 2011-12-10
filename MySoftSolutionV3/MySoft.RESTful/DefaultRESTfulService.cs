@@ -258,7 +258,7 @@ namespace MySoft.RESTful
                 }
             }
 
-            return new MemoryStream(buffer); ;
+            return new MemoryStream(buffer);
         }
 
         private string GetResponseString(ParameterFormat format, string kind, string method, string parameter)
@@ -325,10 +325,7 @@ namespace MySoft.RESTful
                     response.StatusCode = HttpStatusCode.ExpectationFailed;
 
                     //记录错误日志
-                    if (!(e is BusinessException))
-                    {
-                        SimpleLog.Instance.WriteLogForDir("RESTfulError", e);
-                    }
+                    SimpleLog.Instance.WriteLogForDir("RESTfulError", e);
                 }
             }
             else

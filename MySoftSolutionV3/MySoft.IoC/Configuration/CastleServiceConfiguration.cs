@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Configuration;
 using System.Xml;
-using MySoft.IoC;
 
 namespace MySoft.IoC.Configuration
 {
@@ -16,7 +13,6 @@ namespace MySoft.IoC.Configuration
         private int port = 8888;
         private bool encrypt = false;
         private bool compress = false;
-        private double logtime = ServiceConfig.DEFAULT_LOGTIME_NUMBER;             //超时多长输出日志，默认为1秒
         private int records = ServiceConfig.DEFAULT_RECORD_NUMBER;                 //默认记录3600次   //记录条数，默认为3600条，1小时记录
 
         /// <summary>
@@ -58,9 +54,6 @@ namespace MySoft.IoC.Configuration
 
             if (xmlnode["compress"] != null && xmlnode["compress"].Value.Trim() != string.Empty)
                 compress = Convert.ToBoolean(xmlnode["compress"].Value);
-
-            if (xmlnode["logtime"] != null && xmlnode["logtime"].Value.Trim() != string.Empty)
-                logtime = Convert.ToDouble(xmlnode["logtime"].Value);
 
             if (xmlnode["records"] != null && xmlnode["records"].Value.Trim() != string.Empty)
                 records = Convert.ToInt32(xmlnode["records"].Value);
@@ -104,16 +97,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return compress; }
             set { compress = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the logtime
-        /// </summary>
-        /// <value>The logtime.</value>
-        public double LogTime
-        {
-            get { return logtime; }
-            set { logtime = value; }
         }
 
         /// <summary>

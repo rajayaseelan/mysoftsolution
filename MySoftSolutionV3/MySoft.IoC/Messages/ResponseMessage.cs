@@ -10,6 +10,23 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public class ResponseMessage : MessageBase
     {
+        private string assemblyName;
+        /// <summary>
+        /// Gets or sets the name of the service.
+        /// </summary>
+        /// <value>The name of the service.</value>
+        public string AssemblyName
+        {
+            get
+            {
+                return assemblyName;
+            }
+            set
+            {
+                assemblyName = value;
+            }
+        }
+
         private object data;
 
         /// <summary>
@@ -45,6 +62,28 @@ namespace MySoft.IoC.Messages
             {
                 error = value;
                 data = null;
+            }
+        }
+
+        /// <summary>
+        /// 是否有异常
+        /// </summary>
+        public bool IsError
+        {
+            get
+            {
+                return this.error != null;
+            }
+        }
+
+        /// <summary>
+        /// 是否是业务异常
+        /// </summary>
+        public bool IsBusinessError
+        {
+            get
+            {
+                return this.error is BusinessException;
             }
         }
 

@@ -24,6 +24,17 @@ namespace MySoft.IoC
         private IDictionary<string, IService> proxies = new Dictionary<string, IService>();
 
         /// <summary>
+        /// 所有代理信息
+        /// </summary>
+        internal IList<RemoteProxy> Proxies
+        {
+            get
+            {
+                return proxies.Values.Cast<RemoteProxy>().ToList();
+            }
+        }
+
+        /// <summary>
         /// Gets the service container.
         /// </summary>
         /// <value>The service container.</value>
@@ -86,11 +97,11 @@ namespace MySoft.IoC
             }
             else
             {
-                IServiceContainer container = new SimpleServiceContainer(config.Type);
-                container.OnLog += (log, type) => { if (instance.OnLog != null) instance.OnLog(log, type); };
-                container.OnError += (exception) => { if (instance.OnError != null) instance.OnError(exception); };
+                var sContainer = new SimpleServiceContainer(config.Type);
+                sContainer.OnLog += (log, type) => { if (instance.OnLog != null) instance.OnLog(log, type); };
+                sContainer.OnError += (exception) => { if (instance.OnError != null) instance.OnError(exception); };
 
-                instance = new CastleFactory(config, container);
+                instance = new CastleFactory(config, sContainer);
 
                 if (config.Nodes.Count > 0)
                 {
@@ -99,7 +110,7 @@ namespace MySoft.IoC
                         if (node.Value.MaxPool < 1) throw new WarningException("Minimum pool size 1！");
                         if (node.Value.MaxPool > 500) throw new WarningException("Maximum pool size 500！");
 
-                        var proxy = new RemoteProxy(node.Value, container);
+                        var proxy = new RemoteProxy(node.Value, sContainer);
                         instance.proxies[node.Key.ToLower()] = proxy;
                     }
                 }
@@ -128,35 +139,12 @@ namespace MySoft.IoC
         #region Get Service
 
         /// <summary>
-        /// Gets local the service.
-        /// </summary>
-        /// <returns>The service implemetation instance.</returns>
-        public IServiceInterfaceType ResolveService<IServiceInterfaceType>()
-        {
-            //本地服务
-            if (container.Kernel.HasComponent(typeof(IServiceInterfaceType)))
-            {
-                lock (lockObject)
-                {
-                    var service = container[typeof(IServiceInterfaceType)];
-
-                    //返回拦截服务
-                    return AspectManager.GetService<IServiceInterfaceType>(service);
-                }
-            }
-
-            return default(IServiceInterfaceType);
-        }
-
-        /// <summary>
         /// 获取所有远程节点
         /// </summary>
         /// <returns></returns>
-        public RemoteNode[] GetRemoteNodes()
+        public IList<RemoteNode> GetRemoteNodes()
         {
-            return singleton.proxies.Select(p => p.Value)
-                            .Cast<RemoteProxy>().Select(p => p.Node)
-                            .ToArray();
+            return this.Proxies.Select(p => p.Node).ToList();
         }
 
         /// <summary>
@@ -169,13 +157,31 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// Create discover service channel.
+        /// </summary>
+        /// <typeparam name="IServiceInterfaceType"></typeparam>
+        /// <returns></returns>
+        public IServiceInterfaceType GetDiscoverChannel<IServiceInterfaceType>()
+        {
+            var proxy = new DiscoverProxy(singleton, container);
+            return GetChannel<IServiceInterfaceType>(proxy, true);
+        }
+
+        /// <summary>
         /// Create service channel.
         /// </summary>
         /// <param name="nodeKey">The node key.</param>
         /// <returns></returns>
-        public IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey)
+        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey)
         {
-            return GetChannel<IServiceInterfaceType>(nodeKey, null);
+            nodeKey = GetNodeKey(nodeKey);
+            var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            if (node == null)
+            {
+                throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
+            }
+
+            return GetChannel<IServiceInterfaceType>(node);
         }
 
         /// <summary>
@@ -185,7 +191,17 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(RemoteNode node)
         {
-            return GetChannel<IServiceInterfaceType>(node, null);
+            IService proxy = null;
+            var isCacheService = true;
+            if (singleton.proxies.ContainsKey(node.Key.ToLower()))
+                proxy = singleton.proxies[node.Key.ToLower()];
+            else
+            {
+                proxy = new RemoteProxy(node, container);
+                isCacheService = false;
+            }
+
+            return GetChannel<IServiceInterfaceType>(proxy, isCacheService);
         }
 
         /// <summary>
@@ -193,38 +209,26 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node">The node name.</param>
         /// <returns></returns>
-        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(RemoteNode node, RemoteProxy proxy)
+        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService proxy, bool isCacheService)
         {
-            if (!singleton.config.Nodes.ContainsKey(node.Key))
-                singleton.config.Nodes[node.Key] = node;
+            Type serviceType = typeof(IServiceInterfaceType);
 
-            return GetChannel<IServiceInterfaceType>(node.Key, proxy);
-        }
+            //定义异常
+            Exception ex = new ArgumentException("Generic parameter type - 【" + serviceType.FullName
+                   + "】 must be an interface marked with ServiceContractAttribute.");
 
-        /// <summary>
-        /// Create service channel.
-        /// </summary>
-        /// <param name="nodeKey">The node key.</param>
-        /// <returns></returns>
-        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey, RemoteProxy proxy)
-        {
-            Exception ex = new ArgumentException("Generic parameter type - 【" + typeof(IServiceInterfaceType).FullName
-                + "】 must be an interface marked with ServiceContractAttribute.");
-
-            if (!typeof(IServiceInterfaceType).IsInterface)
+            if (!serviceType.IsInterface)
             {
                 throw ex;
             }
             else
             {
                 bool markedWithServiceContract = false;
-                var attr = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(typeof(IServiceInterfaceType));
+                var attr = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
                 if (attr != null)
                 {
                     markedWithServiceContract = true;
                 }
-
-                attr = null;
 
                 if (!markedWithServiceContract)
                 {
@@ -233,75 +237,42 @@ namespace MySoft.IoC
             }
 
             //如果是本地配置，则抛出异常
-            if (config.Type == CastleFactoryType.Local)
+            if (config.Type == CastleFactoryType.Local || config.Type == CastleFactoryType.LocalRemote)
             {
                 //本地服务
-                if (container.Kernel.HasComponent(typeof(IServiceInterfaceType)))
+                if (container.Kernel.HasComponent(serviceType))
                 {
                     lock (lockObject)
                     {
-                        var service = container[typeof(IServiceInterfaceType)];
+                        var service = container[serviceType];
 
                         //返回拦截服务
                         return AspectManager.GetService<IServiceInterfaceType>(service);
                     }
                 }
 
-                throw new WarningException(string.Format("Local not find service ({0}).", typeof(IServiceInterfaceType).FullName));
+                if (config.Type == CastleFactoryType.Local)
+                    throw new WarningException(string.Format("Local not find service ({0}).", serviceType.FullName));
             }
-            else
+
+            string serviceKey = string.Format("CastleFactory_{0}_{1}", proxy.ServiceName, serviceType.FullName);
+            IServiceInterfaceType iocService = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
+            if (iocService == null)
             {
-                bool isCacheService = true;
-                Type serviceType = typeof(IServiceInterfaceType);
-                string serviceKey = string.Format("CastleFactory_{0}_{1}", nodeKey, serviceType);
-                if (proxy != null)
+                lock (lockObject)
                 {
-                    serviceKey += Guid.NewGuid().ToString();
-                    isCacheService = false;
+                    var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType);
+                    var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
+
+                    iocService = (IServiceInterfaceType)dynamicProxy;
+                    if (isCacheService) CacheHelper.Permanent(serviceKey, iocService);
+
+                    handler = null;
+                    dynamicProxy = null;
                 }
-
-                IServiceInterfaceType iocService = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
-                if (iocService == null)
-                {
-                    lock (lockObject)
-                    {
-                        IService service = container;
-                        object instance = null;
-                        try
-                        {
-                            instance = container[serviceType];
-                        }
-                        catch (Exception e)
-                        {
-                        }
-                        if (!container.Kernel.HasComponent(serviceType) || instance == null)
-                        {
-                            if (proxy == null)
-                            {
-                                nodeKey = GetNodeKey(nodeKey);
-                                service = singleton.proxies[nodeKey.ToLower()];
-                            }
-                            else
-                            {
-                                service = proxy;
-                            }
-                        }
-
-                        var handler = new ServiceInvocationHandler(this.config, this.container, service, serviceType);
-                        var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
-
-                        iocService = (IServiceInterfaceType)dynamicProxy;
-
-                        if (isCacheService)
-                            CacheHelper.Permanent(serviceKey, iocService);
-
-                        handler = null;
-                        dynamicProxy = null;
-                    }
-                }
-
-                return iocService;
             }
+
+            return iocService;
         }
 
         /// <summary>
@@ -380,6 +351,10 @@ namespace MySoft.IoC
         {
             nodeKey = GetNodeKey(nodeKey);
             var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            if (node == null)
+            {
+                throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
+            }
             return GetChannel<IPublishService>(callback, node);
         }
 
@@ -406,7 +381,7 @@ namespace MySoft.IoC
 
             CallbackProxy proxy = new CallbackProxy(callback, node, this.ServiceContainer);
             proxy.OnError += new ErrorLogEventHandler(proxy_OnError);
-            return GetChannel<IPublishService>(node, proxy);
+            return GetChannel<IPublishService>(proxy, false);
         }
 
         void proxy_OnError(Exception exception)

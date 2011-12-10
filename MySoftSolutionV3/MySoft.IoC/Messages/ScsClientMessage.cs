@@ -1,30 +1,9 @@
 ﻿using System;
 using MySoft.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Status;
 
 namespace MySoft.IoC.Messages
 {
-    /// <summary>
-    /// 客户端信息
-    /// </summary>
-    [Serializable]
-    public class AppClient
-    {
-        /// <summary>
-        /// IP地址
-        /// </summary>
-        public string IPAddress { get; set; }
-
-        /// <summary>
-        /// 客户端名称
-        /// </summary>
-        public string HostName { get; set; }
-
-        /// <summary>
-        /// 应用名称
-        /// </summary>
-        public string AppName { get; set; }
-    }
-
     /// <summary>
     /// 客户端信息
     /// </summary>

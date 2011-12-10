@@ -1,5 +1,4 @@
-﻿using MySoft.Communication.Scs.Communication;
-using MySoft.Communication.Scs.Communication.Messengers;
+﻿using MySoft.Communication.Scs.Communication.Messengers;
 
 namespace MySoft.Communication.Scs.Client
 {
