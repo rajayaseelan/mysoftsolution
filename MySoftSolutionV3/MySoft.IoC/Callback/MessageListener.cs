@@ -8,8 +8,17 @@ namespace MySoft.IoC
     /// <summary>
     /// 消息监听
     /// </summary>
-    class MessageListener
+    internal class MessageListener
     {
+        private DateTime _pushTime;
+        /// <summary>
+        /// 推送时间
+        /// </summary>
+        public DateTime PushTime
+        {
+            get { return _pushTime; }
+        }
+
         private EndPoint _endPoint;
         /// <summary>
         /// 远程节点
@@ -47,6 +56,7 @@ namespace MySoft.IoC
         {
             _endPoint = endPoint;
             _innerListener = innerListener;
+            _pushTime = DateTime.Now;
         }
 
         /// <summary>
@@ -67,22 +77,31 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 通知消息
+        /// 推送客户端连接信息（只有第一次订阅的时候推送）
         /// </summary>
-        /// <param name="endPoint"></param>
-        /// <param name="connected"></param>
-        public void Notify(EndPoint endPoint, bool connected)
+        /// <param name="clientInfos"></param>
+        public void Notify(IList<ClientInfo> clientInfos)
         {
-            _innerListener.Push(endPoint, connected);
+            _innerListener.Push(clientInfos);
         }
 
         /// <summary>
         /// 通知消息
         /// </summary>
-        /// <param name="endPoint"></param>
-        public void Notify(EndPoint endPoint, AppClient appClient)
+        /// <param name="connectInfo"></param>
+        public void Notify(ConnectInfo connectInfo)
         {
-            _innerListener.Push(endPoint, appClient);
+            _innerListener.Push(connectInfo);
+        }
+
+        /// <summary>
+        /// 通知消息
+        /// </summary>
+        /// <param name="ipAddress"></param>
+        /// <param name="appClient"></param>
+        public void Notify(string ipAddress, AppClient appClient)
+        {
+            _innerListener.Push(ipAddress, appClient);
         }
 
         /// <summary>
@@ -91,6 +110,7 @@ namespace MySoft.IoC
         /// <param name="status"></param>
         public void Notify(ServerStatus status)
         {
+            _pushTime = DateTime.Now;
             _innerListener.Push(status);
         }
 

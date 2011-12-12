@@ -152,8 +152,9 @@
     <Compile Include="SimpleServiceContainer.cs" />
     <Compile Include="Status\CallInfo.cs" />
     <Compile Include="Status\IStatusListener.cs" />
+    <Compile Include="Status\ServiceInfo.cs" />
     <Compile Include="Status\SummaryStatus.cs" />
-    <Compile Include="Status\ConnectionInfo.cs" />
+    <Compile Include="Status\ClientInfo.cs" />
     <Compile Include="Status\IStatusService.cs" />
     <Compile Include="Status\ServerStatus.cs" />
     <Compile Include="ServiceRequest.cs" />

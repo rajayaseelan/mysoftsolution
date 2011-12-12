@@ -9,7 +9,7 @@ namespace MySoft.IoC.Messages
     public abstract class MessageBase
     {
         private string serviceName;
-        private string subServiceName;
+        private string methodName;
         private Guid transactionId;
         private ParameterCollection parameters = new ParameterCollection();
         private DateTime expiration;
@@ -64,18 +64,18 @@ namespace MySoft.IoC.Messages
         }
 
         /// <summary>
-        /// Gets or sets the name of the sub service.
+        /// Gets or sets the name of the method.
         /// </summary>
         /// <value>The name of the sub service.</value>
-        public string SubServiceName
+        public string MethodName
         {
             get
             {
-                return subServiceName;
+                return methodName;
             }
             set
             {
-                subServiceName = value;
+                methodName = value;
             }
         }
 

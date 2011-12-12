@@ -3,6 +3,10 @@ using System.Net;
 using System.Windows.Forms;
 using MySoft.IoC;
 using MySoft.IoC.Status;
+using ListControls;
+using System.Drawing;
+using System.Collections.Generic;
+using MySoft.Logger;
 
 namespace MySoft.PlatformService.WinForm
 {
@@ -11,6 +15,12 @@ namespace MySoft.PlatformService.WinForm
         public frmMain()
         {
             InitializeComponent();
+            CastleFactory.Create().OnError += new Logger.ErrorLogEventHandler(frmMain_OnError);
+        }
+
+        void frmMain_OnError(Exception error)
+        {
+            //发生错误SocketException为网络断开
         }
 
         private IStatusService service;
@@ -20,14 +30,19 @@ namespace MySoft.PlatformService.WinForm
             {
                 if (button1.Tag == null)
                 {
-                    var listener = new StatusListener(tabControl1, listBox1, listBox2, listBox3);
+                    var listener = new StatusListener(tabControl1, listBox1, listBox2, listBox3,
+                        Convert.ToInt32(numericUpDown3.Value), checkBox4.Checked);
                     service = CastleFactory.Create().GetChannel<IStatusService>(listener);
+
+                    //var services = service.GetServiceList();
 
                     var options = new SubscibeOptions
                     {
                         PushCallError = checkBox1.Checked,
                         PushCallTimeout = checkBox2.Checked,
-                        CallTimeout = Convert.ToDouble(numericUpDown1.Value) / 1000
+                        PushServerStatus = checkBox3.Checked,
+                        CallTimeout = Convert.ToDouble(numericUpDown1.Value) / 1000,
+                        StatusTimer = Convert.ToInt32(numericUpDown2.Value)
                     };
                     service.Subscibe(options);
                     button1.Text = "停止监控";
@@ -36,6 +51,12 @@ namespace MySoft.PlatformService.WinForm
 
                     checkBox1.Enabled = false;
                     checkBox2.Enabled = false;
+
+                    numericUpDown1.Enabled = checkBox2.Enabled && checkBox2.Checked;
+                    numericUpDown2.Enabled = checkBox3.Enabled && checkBox3.Checked;
+
+                    checkBox4.Enabled = false;
+                    numericUpDown3.Enabled = false;
                     //button1.Enabled = false;
                 }
                 else
@@ -48,11 +69,16 @@ namespace MySoft.PlatformService.WinForm
                     listBox2.Items.Clear();
                     listBox3.Items.Clear();
 
-                    tabControl1.TabPages[1].Text = "异常信息";
-                    tabControl1.TabPages[2].Text = "超时信息";
+                    tabControl1.TabPages[2].Text = "异常信息";
+                    tabControl1.TabPages[1].Text = "超时信息";
 
                     checkBox1.Enabled = true;
                     checkBox2.Enabled = true;
+                    numericUpDown1.Enabled = checkBox2.Enabled && checkBox2.Checked;
+                    numericUpDown2.Enabled = checkBox3.Enabled && checkBox3.Checked;
+
+                    checkBox4.Enabled = true;
+                    numericUpDown3.Enabled = true;
                     //button1.Enabled = true;
                 }
             }
@@ -61,35 +87,127 @@ namespace MySoft.PlatformService.WinForm
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            numericUpDown2.Enabled = checkBox3.Checked;
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            numericUpDown1.Enabled = checkBox2.Checked;
+        }
+
+        private void listBox3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBox3.SelectedIndex < 0) richTextBox1.Text = string.Empty;
+
+            var args = listBox3.SelectedItem as ParseMessageEventArgs;
+            var source = args.Source as CallTimeout;
+            AppendText(richTextBox1, source.Caller);
+        }
+
+        private void listBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBox2.SelectedIndex < 0) webBrowser1.Text = string.Empty;
+
+            var args = listBox2.SelectedItem as ParseMessageEventArgs;
+            var source = args.Source as CallError;
+            webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+            webBrowser1.Document.Write(source.Description);
+
+            AppendText(richTextBox2, source.Caller);
+        }
+
+        private void AppendText(RichTextBox rich, AppCaller caller)
+        {
+            rich.Clear();
+            rich.SelectionIndent = 0;
+            rich.SelectionColor = Color.Blue;
+            rich.AppendText("ServiceName:\r\n");
+            rich.SelectionColor = Color.Black;
+            rich.SelectionIndent = 20;
+            rich.AppendText(caller.ServiceName);
+            rich.AppendText("\r\n\r\n");
+            rich.SelectionIndent = 0;
+            rich.SelectionColor = Color.Blue;
+            rich.AppendText("MethodName:\r\n");
+            rich.SelectionColor = Color.Black;
+            rich.SelectionIndent = 20;
+            rich.AppendText(caller.MethodName);
+            rich.AppendText("\r\n\r\n");
+            rich.SelectionIndent = 0;
+            rich.SelectionColor = Color.Blue;
+            rich.AppendText("Parameters:\r\n");
+            rich.SelectionColor = Color.Black;
+            rich.SelectionIndent = 20;
+            rich.AppendText(caller.Parameters);
+        }
+
+        private void frmMain_Load(object sender, EventArgs e)
+        {
+            InitBrowser();
+        }
+
+        /// <summary>
+        /// 初始化浏览器
+        /// </summary>
+        void InitBrowser()
+        {
+            webBrowser1.Url = new Uri("about:blank");
+            webBrowser1.AllowNavigation = false;
+            webBrowser1.IsWebBrowserContextMenuEnabled = false;
+        }
     }
 
     public class StatusListener : IStatusListener
     {
         private TabControl control;
-        private ListBox box1;
-        private ListBox box2;
-        private ListBox box3;
-        public StatusListener(TabControl control, ListBox box1, ListBox box2, ListBox box3)
+        private MessageListBox box1;
+        private MessageListBox box2;
+        private MessageListBox box3;
+        private int rowCount;
+        private bool sendMail;
+        public StatusListener(TabControl control, MessageListBox box1, MessageListBox box2, MessageListBox box3, int rowCount, bool sendMail)
         {
             this.control = control;
             this.box1 = box1;
             this.box2 = box2;
             this.box3 = box3;
+            this.rowCount = rowCount;
+            this.sendMail = sendMail;
         }
 
         #region IStatusListener 成员
 
-        public void Push(EndPoint endPoint, bool connected)
+        public void Push(IList<ClientInfo> clientInfos)
+        {
+            //throw new NotImplementedException();
+        }
+
+        public void Push(ConnectInfo connectInfo)
         {
             box1.BeginInvoke(new Action(() =>
             {
-                var ip = endPoint as IPEndPoint;
-                box1.Items.Add(string.Format("{0}:{1} => {2}", ip.Address, ip.Port, connected ? "连接" : "断开"));
+                if (box1.Items.Count >= rowCount)
+                {
+                    box1.Items.RemoveAt(box1.Items.Count - 1);
+                }
+
+                var ip = connectInfo.LocalEndPoint as IPEndPoint;
+                box1.Items.Insert(0,
+                    new ParseMessageEventArgs
+                    {
+                        MessageType = ParseMessageType.Info,
+                        LineHeader = string.Format("【{0}】\t{1}:{2} => {3}", connectInfo.ConnectTime, ip.Address, ip.Port, connectInfo.Connected ? "连接" : "断开"),
+                        Source = connectInfo
+                    });
                 box1.SelectedIndex = box1.Items.Count - 1;
+                box1.Invalidate();
             }));
         }
 
-        public void Push(EndPoint endPoint, AppClient appClient)
+        public void Push(string ipAddress, AppClient appClient)
         {
             //throw new NotImplementedException();
         }
@@ -105,12 +223,26 @@ namespace MySoft.PlatformService.WinForm
 
             box2.BeginInvoke(new Action(() =>
             {
-                box2.Items.Add(string.Format("{0} => {1},{2}", callError.CallTime, callError.Caller.ServiceName, callError.Caller.SubServiceName));
-                box2.Items.Add(string.Format("      Parameters: {0}", callError.Caller.Parameters));
-                box2.Items.Add(string.Format("      Error：{0}", callError.Message));
-                box2.SelectedIndex = box2.Items.Count - 1;
+                if (box2.Items.Count >= rowCount)
+                {
+                    var item = box2.Items[box2.Items.Count - 1];
+                    var message = string.Format("{0}\r\n{1}\r\n{2}\r\n{3}", item.LineHeader, item.MessageText,
+                        (item.Source as CallError).Caller.Parameters, (item.Source as CallError).Description);
+                    SimpleLog.Instance.WriteLogForDir("CallError", message);
+                    box2.Items.RemoveAt(box2.Items.Count - 1);
+                }
 
-                control.TabPages[1].Text = "异常信息(" + box2.Items.Count / 3 + ")";
+                box2.Items.Insert(0,
+                    new ParseMessageEventArgs
+                    {
+                        MessageType = ParseMessageType.Error,
+                        LineHeader = string.Format("【{0}】\tError => {1}", callError.CallTime, callError.Message),
+                        MessageText = string.Format("{0},{1}", callError.Caller.ServiceName, callError.Caller.MethodName),
+                        //+ "\r\n" + callError.Caller.Parameters
+                        Source = callError
+                    });
+                control.TabPages[2].Text = "异常信息(" + box2.Items.Count + ")";
+                box2.Invalidate();
             }));
         }
 
@@ -120,12 +252,26 @@ namespace MySoft.PlatformService.WinForm
 
             box3.BeginInvoke(new Action(() =>
             {
-                box3.Items.Add(string.Format("{0} => {1},{2}", callTimeout.CallTime, callTimeout.Caller.ServiceName, callTimeout.Caller.SubServiceName));
-                box3.Items.Add(string.Format("      Parameters: {0}", callTimeout.Caller.Parameters));
-                box3.Items.Add(string.Format("      Timeout：{0} ms.", callTimeout.ElapsedTime));
-                box3.SelectedIndex = box3.Items.Count - 1;
+                if (box3.Items.Count >= rowCount)
+                {
+                    var item = box3.Items[box3.Items.Count - 1];
+                    var message = string.Format("{0}\r\n{1}\r\n{2}", item.LineHeader, item.MessageText,
+                        (item.Source as CallTimeout).Caller.Parameters);
+                    SimpleLog.Instance.WriteLogForDir("CallTimeout", message);
+                    box3.Items.RemoveAt(box3.Items.Count - 1);
+                }
 
-                control.TabPages[2].Text = "超时信息(" + box3.Items.Count / 3 + ")";
+                box3.Items.Insert(0,
+                    new ParseMessageEventArgs
+                    {
+                        MessageType = ParseMessageType.Warning,
+                        LineHeader = string.Format("【{0}】\tTimeout => ({1} rows)：{2} ms.", callTimeout.CallTime, callTimeout.Count, callTimeout.ElapsedTime),
+                        MessageText = string.Format("{0},{1}", callTimeout.Caller.ServiceName, callTimeout.Caller.MethodName),
+                        // + "\r\n" + callTimeout.Caller.Parameters
+                        Source = callTimeout
+                    });
+                control.TabPages[1].Text = "超时信息(" + box3.Items.Count + ")";
+                box3.Invalidate();
             }));
         }
 

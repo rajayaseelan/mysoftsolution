@@ -38,22 +38,24 @@ namespace MySoft.IoC
             this.statuslist = new TimeStatusCollection(config.Records);
             this.startTime = DateTime.Now;
 
-            this.statuslist.OnTimer += new TimerEventHandler(statuslist_OnTimer);
+            //启动定义推送线程
+            ThreadPool.QueueUserWorkItem(DoPushWork);
         }
 
-        void statuslist_OnTimer(TimeStatus lastStatus)
+        void DoPushWork(object state)
         {
-            ServerStatus status = new ServerStatus
+            while (true)
             {
-                StartDate = startTime,
-                TotalSeconds = (int)DateTime.Now.Subtract(startTime).TotalSeconds,
-                Highest = GetHighestStatus(),
-                Latest = lastStatus,
-                Summary = GetSummaryStatus()
-            };
+                //响应定时信息
+                if (statuslist.Count > 0)
+                {
+                    var status = GetServerStatus();
+                    MessageCenter.Instance.Notify(status);
+                }
 
-            //响应定时信息
-            MessageCenter.Instance.Notify(status);
+                //每秒推送一次
+                Thread.Sleep(1000);
+            }
         }
 
         #region ILogable Members
@@ -108,11 +110,46 @@ namespace MySoft.IoC
         /// 获取服务信息列表
         /// </summary>
         /// <returns></returns>
-        public IList<Type> GetServiceList()
+        public IList<ServiceInfo> GetServiceList()
         {
             //获取拥有ServiceContract约束的服务
             var types = container.GetInterfaces<ServiceContractAttribute>();
-            return types.ToList();
+
+            var services = new List<ServiceInfo>();
+            foreach (var type in types)
+            {
+                var s = new ServiceInfo
+                {
+                    Assembly = type.Assembly.FullName,
+                    Name = type.FullName
+                };
+
+                //读取方法
+                foreach (var method in CoreHelper.GetMethodsFromType(type))
+                {
+                    var m = new MethodInfo
+                    {
+                        Name = method.ToString()
+                    };
+
+                    //读取参数
+                    foreach (var parameter in method.GetParameters())
+                    {
+                        var p = new ParameterInfo
+                        {
+                            Name = parameter.Name,
+                            Type = parameter.ParameterType.FullName
+                        };
+                        m.Parameters.Add(p);
+                    }
+
+                    s.Methods.Add(m);
+                }
+
+                services.Add(s);
+            }
+
+            return services;
         }
 
         /// <summary>
@@ -238,7 +275,7 @@ namespace MySoft.IoC
         /// 获取连接客户信息
         /// </summary>
         /// <returns></returns>
-        public abstract IList<ClientInfo> GetClientInfoList();
+        public abstract IList<ClientInfo> GetClientList();
 
         #endregion
 
@@ -279,12 +316,41 @@ namespace MySoft.IoC
         /// <summary>
         /// 订阅服务
         /// </summary>
+        /// <param name="statusTimer">定时推送时间</param>
+        public void Subscibe(int statusTimer, params Type[] subscibeTypes)
+        {
+            Subscibe(new SubscibeOptions
+            {
+                StatusTimer = statusTimer
+            }, subscibeTypes);
+        }
+
+        /// <summary>
+        /// 订阅服务
+        /// </summary>
+        /// <param name="callTimeout">调用超时时间</param>
+        /// <param name="statusTimer">定时推送时间</param>
+        public void Subscibe(double callTimeout, int statusTimer, params Type[] subscibeTypes)
+        {
+            Subscibe(new SubscibeOptions
+            {
+                CallTimeout = callTimeout,
+                StatusTimer = statusTimer
+            }, subscibeTypes);
+        }
+
+        /// <summary>
+        /// 订阅服务
+        /// </summary>
         /// <param name="options">订阅选项</param>
         public void Subscibe(SubscibeOptions options, params Type[] subscibeTypes)
         {
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
             var endPoint = OperationContext.Current.RemoteEndPoint;
             MessageCenter.Instance.AddListener(new MessageListener(endPoint, callback, options, subscibeTypes));
+
+            //推送客户端连接信息
+            MessageCenter.Instance.Push(GetClientList());
         }
 
         /// <summary>

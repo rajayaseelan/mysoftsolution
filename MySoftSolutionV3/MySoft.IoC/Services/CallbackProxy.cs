@@ -8,18 +8,8 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 回调代理
     /// </summary>
-    public class CallbackProxy : RemoteProxy, IServerConnection
+    public class CallbackProxy : RemoteProxy
     {
-        /// <summary>
-        /// This event is raised when client connected to server.
-        /// </summary>
-        public event EventHandler OnConnected;
-
-        /// <summary>
-        /// This event is raised when client disconnected from server.
-        /// </summary>
-        public event EventHandler OnDisconnected;
-
         private object callback;
         public CallbackProxy(object callback, RemoteNode node, ILog logger)
             : base(node, logger)
@@ -34,8 +24,6 @@ namespace MySoft.IoC.Services
         {
             ServiceRequest reqService = new ServiceRequest(node, logger, false);
             reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
-            reqService.OnConnected += OnConnected;
-            reqService.OnDisconnected += OnDisconnected;
 
             this.reqPool = new ServiceRequestPool(1);
             this.reqPool.Push(reqService);

@@ -103,9 +103,14 @@ namespace MySoft.IoC
             {
                 try
                 {
-                    //这里要判断时间
                     var options = lstn.Options;
-                    if (options.PushServerStatus)
+
+                    //如果设定的时间不正确，不进行推送
+                    if (options.StatusTimer <= 0) continue;
+
+                    //如果推送时间大于设定的时间，则进行推送
+                    if (options.PushServerStatus
+                        && DateTime.Now.Subtract(lstn.PushTime).TotalSeconds >= options.StatusTimer)
                     {
                         lstn.Notify(status);
                     }
@@ -141,26 +146,38 @@ namespace MySoft.IoC
                         var options = lstn.Options;
                         if (options.PushCallError && callArgs.IsError)
                         {
-                            var error = ErrorHelper.GetInnerException(callArgs.Error);
-                            var callError = new CallError
+                            //业务异常不进行推送
+                            if (!callArgs.IsBusinessError)
                             {
-                                Caller = callArgs.Caller,
-                                CallTime = callArgs.CallTime,
-                                Message = error.Message,
-                                IsBusinessError = callArgs.IsBusinessError
-                            };
-                            lstn.Notify(callError);
+                                var error = ErrorHelper.GetInnerException(callArgs.Error);
+                                var callError = new CallError
+                                {
+                                    Caller = callArgs.Caller,
+                                    CallTime = callArgs.CallTime,
+                                    Type = error.GetType().FullName,
+                                    Message = error.Message,
+                                    Description = ErrorHelper.GetHtmlError(callArgs.Error)
+                                };
+                                lstn.Notify(callError);
+                            }
                         }
-                        else if (options.PushCallTimeout && callArgs.ElapsedTime > options.CallTimeout * 1000)
+
+                        if (options.PushCallTimeout && !callArgs.IsError)
                         {
-                            var callTimeout = new CallTimeout
+                            //如果设定的时间不正确，不进行推送
+                            if (options.CallTimeout <= 0) continue;
+
+                            if (callArgs.ElapsedTime > options.CallTimeout * 1000)
                             {
-                                Caller = callArgs.Caller,
-                                CallTime = callArgs.CallTime,
-                                Count = callArgs.Count,
-                                ElapsedTime = callArgs.ElapsedTime
-                            };
-                            lstn.Notify(callTimeout);
+                                var callTimeout = new CallTimeout
+                                {
+                                    Caller = callArgs.Caller,
+                                    CallTime = callArgs.CallTime,
+                                    Count = callArgs.Count,
+                                    ElapsedTime = callArgs.ElapsedTime
+                                };
+                                lstn.Notify(callTimeout);
+                            }
                         }
                     }
                 }
@@ -179,9 +196,8 @@ namespace MySoft.IoC
         /// <summary>
         /// 通知消息
         /// </summary>
-        /// <param name="endPoint"></param>
-        /// <param name="connected"></param>
-        public void Notify(EndPoint endPoint, bool connected)
+        /// <param name="connectInfo"></param>
+        public void Notify(ConnectInfo connectInfo)
         {
             if (_listeners.Count == 0) return;
 
@@ -193,7 +209,7 @@ namespace MySoft.IoC
                     var options = lstn.Options;
                     if (options.PushClientConnect)
                     {
-                        lstn.Notify(endPoint, connected);
+                        lstn.Notify(connectInfo);
                     }
                 }
                 catch (SocketException ex)
@@ -211,9 +227,9 @@ namespace MySoft.IoC
         /// <summary>
         /// 改变客户端信息
         /// </summary>
-        /// <param name="endPoint"></param>
+        /// <param name="ipAddress"></param>
         /// <param name="appClient"></param>
-        public void Notify(EndPoint endPoint, AppClient appClient)
+        public void Notify(string ipAddress, AppClient appClient)
         {
             if (_listeners.Count == 0) return;
 
@@ -225,7 +241,38 @@ namespace MySoft.IoC
                     var options = lstn.Options;
                     if (options.PushClientConnect)
                     {
-                        lstn.Notify(endPoint, appClient);
+                        lstn.Notify(ipAddress, appClient);
+                    }
+                }
+                catch (SocketException ex)
+                {
+                    _listeners.Remove(lstn);
+                }
+                catch (Exception ex)
+                {
+                    //Console.WriteLine(ex.Message);
+                    if (OnError != null) OnError(ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 推送客户端连接信息（只有第一次订阅的时候推送）
+        /// </summary>
+        /// <param name="clientInfos"></param>
+        public void Push(IList<ClientInfo> clientInfos)
+        {
+            if (_listeners.Count == 0) return;
+
+            MessageListener[] listeners = _listeners.ToArray();
+            foreach (MessageListener lstn in listeners)
+            {
+                try
+                {
+                    var options = lstn.Options;
+                    if (options.PushClientConnect)
+                    {
+                        lstn.Notify(clientInfos);
                     }
                 }
                 catch (SocketException ex)

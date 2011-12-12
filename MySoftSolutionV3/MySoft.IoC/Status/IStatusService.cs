@@ -30,6 +30,11 @@ namespace MySoft.IoC.Status
         public bool PushServerStatus { get; set; }
 
         /// <summary>
+        /// 定时推送状态定时：单位（秒）
+        /// </summary>
+        public int StatusTimer { get; set; }
+
+        /// <summary>
         /// 推送客户端连接信息
         /// </summary>
         public bool PushClientConnect { get; set; }
@@ -42,7 +47,8 @@ namespace MySoft.IoC.Status
             this.CallTimeout = 5; //调用超时为5秒
             this.PushCallTimeout = true;
             this.PushCallError = true;
-            this.PushServerStatus = false;
+            this.StatusTimer = 5; //默认间隔为5秒
+            this.PushServerStatus = true;
             this.PushClientConnect = true;
         }
     }
@@ -67,6 +73,19 @@ namespace MySoft.IoC.Status
         /// <summary>
         /// 订阅服务
         /// </summary>
+        /// <param name="statusTimer">定时推送时间</param>
+        void Subscibe(int statusTimer, params Type[] subscibeTypes);
+
+        /// <summary>
+        /// 订阅服务
+        /// </summary>
+        /// <param name="callTimeout">调用超时时间</param>
+        /// <param name="statusTimer">定时推送时间</param>
+        void Subscibe(double callTimeout, int statusTimer, params Type[] subscibeTypes);
+
+        /// <summary>
+        /// 订阅服务
+        /// </summary>
         /// <param name="options">订阅选项</param>
         void Subscibe(SubscibeOptions options, params Type[] subscibeTypes);
 
@@ -87,7 +106,7 @@ namespace MySoft.IoC.Status
         /// 获取服务信息列表
         /// </summary>
         /// <returns></returns>
-        IList<Type> GetServiceList();
+        IList<ServiceInfo> GetServiceList();
 
         /// <summary>
         /// 获取服务状态信息（包括SummaryStatus，HighestStatus，TimeStatus）
@@ -110,6 +129,6 @@ namespace MySoft.IoC.Status
         /// 获取所有的客户端信息
         /// </summary>
         /// <returns></returns>
-        IList<ClientInfo> GetClientInfoList();
+        IList<ClientInfo> GetClientList();
     }
 }

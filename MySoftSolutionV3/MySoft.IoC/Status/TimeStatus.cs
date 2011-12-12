@@ -28,22 +28,11 @@ namespace MySoft.IoC.Status
     }
 
     /// <summary>
-    /// 定时触发事件
-    /// </summary>
-    /// <param name="status"></param>
-    public delegate void TimerEventHandler(TimeStatus status);
-
-    /// <summary>
     /// 时间状态集合
     /// </summary>
     [Serializable]
     public class TimeStatusCollection
     {
-        /// <summary>
-        /// 触发事件
-        /// </summary>
-        public event TimerEventHandler OnTimer;
-
         private int maxCount;
         private IDictionary<string, TimeStatus> dictStatus;
         public TimeStatusCollection(int maxCount)
@@ -71,18 +60,19 @@ namespace MySoft.IoC.Status
                         if (firstKey != null) dictStatus.Remove(firstKey);
                     }
 
-                    //定时触发事件
-                    if (OnTimer != null)
-                    {
-                        var status = GetNewest();
-                        if (status != null) OnTimer(status);
-                    }
-
                     dictStatus[key] = new TimeStatus { CounterTime = value };
                 }
 
                 return dictStatus[key];
             }
+        }
+
+        /// <summary>
+        /// 记录数
+        /// </summary>
+        public int Count
+        {
+            get { return dictStatus.Count; }
         }
 
         /// <summary>
@@ -111,7 +101,7 @@ namespace MySoft.IoC.Status
                     return dictStatus.FirstOrDefault(p => p.Key == key).Value;
                 }
 
-                return null;
+                return new TimeStatus { CounterTime = DateTime.Now };
             }
         }
 

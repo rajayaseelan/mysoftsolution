@@ -31,7 +31,7 @@
             </li>
         </ul>
     </div>
-    <div style="float: left; width: 250px; border: 3px dotted #ccc; margin: 5px; padding:5px;">
+    <div style="float: left; width: 250px; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
         <ul>
             <li><b>汇总状态信息</b></li>
             <li>运行总时间：
@@ -72,7 +72,7 @@
                 KB</li>
         </ul>
     </div>
-    <div style="float: left; width: 250px; border: 3px dotted #ccc; margin: 5px; padding:5px;">
+    <div style="float: left; width: 250px; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
         <ul>
             <li><b>当前状态信息</b></li>
             <li>时间:
@@ -100,7 +100,7 @@
                 KB</li>
         </ul>
     </div>
-    <div style="float: left; width:350px; border: 3px dotted #ccc; margin: 5px; padding:5px;">
+    <div style="float: left; width: 350px; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
         <ul>
             <li><b>最高状态信息</b></li>
             <li>最大请求数:
@@ -133,17 +133,24 @@
             <li><b>客户端连接信息</b></li>
             <%
                    int index = 1;
+                   string appName = string.Empty;
                    foreach (MySoft.IoC.Status.ClientInfo client in clients)
-                   {%>
-                    <li style="width: 280px; float: left; border: 3px dotted #ccc; margin: 5px; padding:5px; ">
-                        <% = index %>
-                        =>【<%= client.AppName %>】<br />
-                        <% foreach (MySoft.IoC.Status.ConnectionInfo info in client.Connections)
-                           {%>
-                        <%= info.IPAddress%>[<%=info.HostName%>](<font color="red"><%= info.Count%></font>)<br />
-                        <% } %>
-                    </li>
-            <%  index++;
+                   {
+                       if (client.AppName != appName)
+                       {
+                            %>
+                            <li style="width: 280px; float: left; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
+                                <% = index%>
+                                =>【<%= client.AppName%>】<br />
+                                <%   index++;
+                                       } %>
+                                <%= client.IPAddress%>[<%=client.HostName%>](<font color="red"><%= client.Count%></font>)<br />
+                                <% if (client.AppName != appName)
+                                   {  %>
+                            </li>
+                            <% 
+                            appName = client.AppName;
+                        }
                    }
                } %>
         </ul>

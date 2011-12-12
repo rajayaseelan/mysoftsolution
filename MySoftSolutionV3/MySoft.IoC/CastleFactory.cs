@@ -12,7 +12,7 @@ namespace MySoft.IoC
     /// <summary>
     /// The service factory.
     /// </summary>
-    public class CastleFactory : ILogable, IErrorLogable, IServerConnection
+    public class CastleFactory : ILogable, IErrorLogable
     {
         private static object lockObject = new object();
         private static CastleFactory singleton = null;
@@ -135,15 +135,6 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Create service channel.
-        /// </summary>
-        /// <returns>The service implemetation instance.</returns>
-        public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
-        {
-            return GetChannel<IServiceInterfaceType>(config.Default);
-        }
-
-        /// <summary>
         /// Create discover service channel.
         /// </summary>
         /// <typeparam name="IServiceInterfaceType"></typeparam>
@@ -157,9 +148,18 @@ namespace MySoft.IoC
         /// <summary>
         /// Create service channel.
         /// </summary>
+        /// <returns>The service implemetation instance.</returns>
+        public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
+        {
+            return GetChannel<IServiceInterfaceType>(config.Default);
+        }
+
+        /// <summary>
+        /// Create service channel.
+        /// </summary>
         /// <param name="nodeKey">The node key.</param>
         /// <returns></returns>
-        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey)
+        public IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey)
         {
             nodeKey = GetNodeKey(nodeKey);
             var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
@@ -178,17 +178,19 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(RemoteNode node)
         {
-            IService proxy = null;
+            IService service = null;
             var isCacheService = true;
             if (singleton.proxies.ContainsKey(node.Key.ToLower()))
-                proxy = singleton.proxies[node.Key.ToLower()];
+                service = singleton.proxies[node.Key.ToLower()];
             else
             {
-                proxy = new RemoteProxy(node, container);
+                RemoteProxy proxy = new RemoteProxy(node, container);
                 isCacheService = false;
+
+                service = proxy;
             }
 
-            return GetChannel<IServiceInterfaceType>(proxy, isCacheService);
+            return GetChannel<IServiceInterfaceType>(service, isCacheService);
         }
 
         /// <summary>
@@ -196,7 +198,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node">The node name.</param>
         /// <returns></returns>
-        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService proxy, bool isCacheService)
+        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService service, bool isCacheService)
         {
             Type serviceType = typeof(IServiceInterfaceType);
 
@@ -231,10 +233,10 @@ namespace MySoft.IoC
                 {
                     lock (lockObject)
                     {
-                        var service = container[serviceType];
+                        var aspect = container[serviceType];
 
                         //返回拦截服务
-                        return AspectManager.GetService<IServiceInterfaceType>(service);
+                        return AspectManager.GetService<IServiceInterfaceType>(aspect);
                     }
                 }
 
@@ -242,13 +244,13 @@ namespace MySoft.IoC
                     throw new WarningException(string.Format("Local not find service ({0}).", serviceType.FullName));
             }
 
-            string serviceKey = string.Format("CastleFactory_{0}_{1}", proxy.ServiceName, serviceType.FullName);
+            string serviceKey = string.Format("CastleFactory_{0}_{1}", service.ServiceName, serviceType.FullName);
             IServiceInterfaceType iocService = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
             if (iocService == null)
             {
                 lock (lockObject)
                 {
-                    var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType);
+                    var handler = new ServiceInvocationHandler(this.config, this.container, service, serviceType);
                     var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                     iocService = (IServiceInterfaceType)dynamicProxy;
@@ -278,7 +280,7 @@ namespace MySoft.IoC
             string oldNodeKey = nodeKey;
 
             //如果不存在当前配置节，则使用默认配置节
-            if (!singleton.proxies.ContainsKey(nodeKey.ToLower()))
+            if (string.IsNullOrEmpty(nodeKey) || !singleton.proxies.ContainsKey(nodeKey.ToLower()))
             {
                 nodeKey = "default";
             }
@@ -313,29 +315,7 @@ namespace MySoft.IoC
 
         #endregion
 
-        /// <summary>
-        /// This event is raised when client connected to server.
-        /// </summary>
-        public event EventHandler OnConnected;
-
-        /// <summary>
-        /// This event is raised when client disconnected from server.
-        /// </summary>
-        public event EventHandler OnDisconnected;
-
         #region 回调订阅
-
-        /// <summary>
-        /// 获取回调发布服务
-        /// </summary>
-        /// <typeparam name="IPublishService"></typeparam>
-        /// <param name="callback"></param>
-        /// <param name="nodeKey"></param>
-        /// <returns></returns>
-        public IPublishService GetChannel<IPublishService>(object callback)
-        {
-            return GetChannel<IPublishService>(callback, config.Default);
-        }
 
         /// <summary>
         /// 获取回调发布服务
@@ -360,6 +340,17 @@ namespace MySoft.IoC
         /// </summary>
         /// <typeparam name="IPublishService"></typeparam>
         /// <param name="callback"></param>
+        /// <returns></returns>
+        public IPublishService GetChannel<IPublishService>(object callback)
+        {
+            return GetChannel<IPublishService>(callback, config.Default);
+        }
+
+        /// <summary>
+        /// 获取回调发布服务
+        /// </summary>
+        /// <typeparam name="IPublishService"></typeparam>
+        /// <param name="callback"></param>
         /// <param name="node"></param>
         /// <returns></returns>
         public IPublishService GetChannel<IPublishService>(object callback, RemoteNode node)
@@ -377,8 +368,6 @@ namespace MySoft.IoC
                 throw new IoCException("Callback type cannot be the null!");
 
             CallbackProxy proxy = new CallbackProxy(callback, node, this.ServiceContainer);
-            proxy.OnConnected += OnConnected;
-            proxy.OnDisconnected += OnDisconnected;
             return GetChannel<IPublishService>(proxy, false);
         }
 

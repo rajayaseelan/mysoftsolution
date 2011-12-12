@@ -37,20 +37,20 @@ namespace MySoft.IoC.Services
             ResponseMessage resMsg = new ResponseMessage();
             resMsg.TransactionId = reqMsg.TransactionId;
             resMsg.ServiceName = reqMsg.ServiceName;
-            resMsg.SubServiceName = reqMsg.SubServiceName;
+            resMsg.MethodName = reqMsg.MethodName;
             resMsg.Parameters = reqMsg.Parameters;
             resMsg.Expiration = reqMsg.Expiration;
 
             #region 获取相应的方法
 
-            string methodKey = string.Format("Method_{0}_{1}", reqMsg.ServiceName, reqMsg.SubServiceName);
+            string methodKey = string.Format("Method_{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
             MethodInfo method = CacheHelper.Get<MethodInfo>(methodKey);
             if (method == null)
             {
-                method = CoreHelper.GetMethodFromType(classType, reqMsg.SubServiceName);
+                method = CoreHelper.GetMethodFromType(classType, reqMsg.MethodName);
                 if (method == null)
                 {
-                    string title = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.SubServiceName);
+                    string title = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
                     var exception = new WarningException(title)
                     {
                         ApplicationName = reqMsg.AppName,

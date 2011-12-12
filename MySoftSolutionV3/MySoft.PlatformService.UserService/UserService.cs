@@ -11,6 +11,16 @@ namespace MySoft.PlatformService.UserService
     {
         public UserInfo GetUserInfo(string name)
         {
+            var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
+            if (count % 5 == 0)
+            {
+                throw new UserException("Count: " + count);
+            }
+            else if (count % 6 == 0)
+            {
+                Thread.Sleep(new Random().Next(1, 10) * 1000);
+            }
+
             var user = new UserInfo()
             {
                 Name = name,

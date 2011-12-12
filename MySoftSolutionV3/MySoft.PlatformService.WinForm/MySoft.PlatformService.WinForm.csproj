@@ -73,10 +73,25 @@
     <Compile Include="frmMain.Designer.cs">
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="ListBox\ItemInfo.cs" />
+    <Compile Include="ListBox\ListBoxList.cs" />
+    <Compile Include="ListBox\MessageListBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ListBox\ParseMessageEventArgs.cs" />
+    <Compile Include="ListBox\ResizableListBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ListBox\MessageListBox.resx">
+      <DependentUpon>MessageListBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ListBox\ResizableListBox.resx">
+      <DependentUpon>ResizableListBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

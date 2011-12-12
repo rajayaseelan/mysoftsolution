@@ -6,44 +6,19 @@ using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 using MySoft.IoC.Status;
+using System.Net.Sockets;
 
 namespace MySoft.IoC
 {
     /// <summary>
-    /// 连接上服务器接口
-    /// </summary>
-    public interface IServerConnection
-    {
-        /// <summary>
-        /// 连接上事件
-        /// </summary>
-        event EventHandler OnConnected;
-
-        /// <summary>
-        /// 断开连接事件
-        /// </summary>
-        event EventHandler OnDisconnected;
-    }
-
-    /// <summary>
     /// 服务请求类
     /// </summary>
-    public class ServiceRequest : IServerConnection, IDisposable
+    public class ServiceRequest : IDisposable
     {
         /// <summary>
         /// 数据回调
         /// </summary>
         public event EventHandler<ServiceMessageEventArgs> OnCallback;
-
-        /// <summary>
-        /// 连接上事件
-        /// </summary>
-        public event EventHandler OnConnected;
-
-        /// <summary>
-        /// 断开连接事件
-        /// </summary>
-        public event EventHandler OnDisconnected;
 
         private IScsClient client;
         private ILog logger;
@@ -66,12 +41,17 @@ namespace MySoft.IoC
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
             this.client.ConnectTimeout = 5000;
             this.client.DisconnectTimeout = isAutoDisconnect ? node.Timeout * 1000 : -1;
-            this.client.Connected += OnConnected;
-            this.client.Disconnected += OnDisconnected;
+            this.client.Disconnected += new EventHandler(client_Disconnected);
             this.client.MessageReceived += new EventHandler<MessageEventArgs>(client_MessageReceived);
             this.client.MessageSent += new EventHandler<MessageEventArgs>(client_MessageSent);
             this.client.ErrorReceived += new EventHandler<ErrorEventArgs>(client_ErrorReceived);
             this.client.WireProtocol = new CustomWireProtocol(node.Compress, node.Encrypt);
+        }
+
+        void client_Disconnected(object sender, EventArgs e)
+        {
+            //输出错误信息
+            this.logger.WriteError(new SocketException((int)SocketError.ConnectionReset));
         }
 
         void client_ErrorReceived(object sender, ErrorEventArgs e)

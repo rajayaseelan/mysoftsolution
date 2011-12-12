@@ -57,7 +57,7 @@ namespace MySoft.IoC.Services
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
             //处理cacheKey信息
-            string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.SubServiceName, reqMsg.Parameters);
+            string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
 
             //运行请求获得结果
             ResponseMessage resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
@@ -73,7 +73,7 @@ namespace MySoft.IoC.Services
                     if (!resMsg.IsBusinessError)
                     {
                         var ex = resMsg.Error;
-                        string body = string.Format("【{5}】Dynamic ({0}) service ({1},{2}) error. \r\nMessage ==> {4}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.SubServiceName, resMsg.Parameters, resMsg.Message, resMsg.TransactionId);
+                        string body = string.Format("【{5}】Dynamic ({0}) service ({1},{2}) error. \r\nMessage ==> {4}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.MethodName, resMsg.Parameters, resMsg.Message, resMsg.TransactionId);
                         var exception = new IoCException(body, ex)
                         {
                             ApplicationName = reqMsg.AppName,

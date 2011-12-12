@@ -19,7 +19,7 @@ namespace MySoft.IoC.Status
         /// <summary>
         /// 方法名称
         /// </summary>
-        public string SubServiceName { get; set; }
+        public string MethodName { get; set; }
 
         /// <summary>
         /// 参数信息

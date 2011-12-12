@@ -134,8 +134,8 @@ namespace MySoft.IoC.Services
                     {
                     }
 
-                    string title = string.Format("Call ({0}:{1}) remote service ({2},{3}) timeout.", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName);
-                    string body = string.Format("¡¾{5}¡¿Call ({0}:{1}) remote service ({2},{3}) timeout ({4} ms)£¡", node.IP, node.Port, reqMsg.ServiceName, reqMsg.SubServiceName, elapsedTime.TotalMilliseconds, reqMsg.TransactionId);
+                    string title = string.Format("Call ({0}:{1}) remote service ({2},{3}) timeout.", node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName);
+                    string body = string.Format("¡¾{5}¡¿Call ({0}:{1}) remote service ({2},{3}) timeout ({4} ms)£¡", node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, elapsedTime.TotalMilliseconds, reqMsg.TransactionId);
                     throw new WarningException(body)
                     {
                         ApplicationName = reqMsg.AppName,

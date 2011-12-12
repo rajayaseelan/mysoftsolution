@@ -11,16 +11,15 @@ namespace MySoft.IoC.Status
         /// <summary>
         /// 推送客户端连接信息
         /// </summary>
-        /// <param name="endPoint"></param>
-        /// <param name="connected"></param>
-        void Push(EndPoint endPoint, bool connected);
+        /// <param name="connectInfo"></param>
+        void Push(ConnectInfo connectInfo);
 
         /// <summary>
         /// 推送改变客户端信息
         /// </summary>
-        /// <param name="endPoint"></param>
+        /// <param name="ipAddress"></param>
         /// <param name="appClient"></param>
-        void Push(EndPoint endPoint, AppClient appClient);
+        void Push(string ipAddress, AppClient appClient);
 
         /// <summary>
         /// 推送实时错误信息
@@ -39,5 +38,11 @@ namespace MySoft.IoC.Status
         /// </summary>
         /// <returns></returns>
         void Push(ServerStatus serverStatus);
+
+        /// <summary>
+        /// 推送客户端连接信息
+        /// </summary>
+        /// <param name="clientInfos"></param>
+        void Push(IList<ClientInfo> clientInfos);
     }
 }

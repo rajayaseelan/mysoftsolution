@@ -131,17 +131,17 @@ namespace MySoft.IoC
         {
             var list = this.GetServiceList();
 
-            string log = string.Format("此次发布的服务有{0}个，共有{1}个方法，详细信息如下：\r\n\r\n", list.Count, list.Sum(p => CoreHelper.GetMethodsFromType(p).Count()));
+            string log = string.Format("此次发布的服务有{0}个，共有{1}个方法，详细信息如下：\r\n\r\n", list.Count, list.Sum(p => p.Methods.Count));
             StringBuilder sb = new StringBuilder(log);
 
             int index = 0;
             foreach (var type in list)
             {
-                sb.AppendFormat("{0}, {1}\r\n", type.Name, type.Assembly.FullName);
+                sb.AppendFormat("{0}, {1}\r\n", type.Name, type.Assembly);
                 sb.AppendLine("------------------------------------------------------------------------------------------------------------------------");
-                foreach (var method in CoreHelper.GetMethodsFromType(type))
+                foreach (var method in type.Methods)
                 {
-                    sb.AppendLine(method.ToString());
+                    sb.AppendLine(method.Name);
                 }
 
                 if (index < list.Count - 1)
@@ -202,7 +202,13 @@ namespace MySoft.IoC
 
             //处理登入事件
             var point = new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort);
-            MessageCenter.Instance.Notify(point, true);
+            var connect = new ConnectInfo
+            {
+                ConnectTime = DateTime.Now,
+                LocalEndPoint = point,
+                Connected = true
+            };
+            MessageCenter.Instance.Notify(connect);
         }
 
         void Client_ErrorReceived(object sender, ErrorEventArgs e)
@@ -222,7 +228,13 @@ namespace MySoft.IoC
 
             //处理登出事件
             var point = new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort);
-            MessageCenter.Instance.Notify(point, false);
+            var connect = new ConnectInfo
+            {
+                ConnectTime = DateTime.Now,
+                LocalEndPoint = point,
+                Connected = false
+            };
+            MessageCenter.Instance.Notify(connect);
         }
 
         void Client_MessageReceived(object sender, MessageEventArgs e)
@@ -238,8 +250,7 @@ namespace MySoft.IoC
 
                     //响应客户端详细信息
                     var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
-                    var point = new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort);
-                    MessageCenter.Instance.Notify(point, (e.Message as ScsClientMessage).Client);
+                    MessageCenter.Instance.Notify(endPoint.IpAddress, (e.Message as ScsClientMessage).Client);
                 }
             }
             else if (e.Message is ScsResultMessage)
@@ -278,7 +289,7 @@ namespace MySoft.IoC
                     args.Caller.IPAddress = reqMsg.IPAddress;
                     args.Caller.HostName = reqMsg.HostName;
                     args.Caller.ServiceName = reqMsg.ServiceName;
-                    args.Caller.SubServiceName = reqMsg.SubServiceName;
+                    args.Caller.MethodName = reqMsg.MethodName;
                     args.Caller.Parameters = reqMsg.Parameters.ToString();
                     args.CallTime = DateTime.Now;
                     args.Error = ex;
@@ -365,7 +376,7 @@ namespace MySoft.IoC
 
                 //服务参数信息
                 args.Caller.ServiceName = resMsg.ServiceName;
-                args.Caller.SubServiceName = resMsg.SubServiceName;
+                args.Caller.MethodName = resMsg.MethodName;
                 args.Caller.Parameters = resMsg.Parameters.ToString();
             }
         }
@@ -386,7 +397,7 @@ namespace MySoft.IoC
         /// 获取连接客户信息
         /// </summary>
         /// <returns></returns>
-        public override IList<ClientInfo> GetClientInfoList()
+        public override IList<ClientInfo> GetClientList()
         {
             try
             {
@@ -400,40 +411,28 @@ namespace MySoft.IoC
                          AppName = p.AppName,
                          IPAddress = p.IPAddress,
                          HostName = p.HostName
-                     })
-                     .Select(p => new
+                     }).Select(p => new ClientInfo
                      {
                          AppName = p.Key.AppName,
                          IPAddress = p.Key.IPAddress,
                          HostName = p.Key.HostName,
                          Count = p.Count()
-                     })
-                     .GroupBy(p => p.AppName)
-                     .Select(p => new ClientInfo
-                     {
-                         AppName = p.Key,
-                         Connections = p.Select(g => new ConnectionInfo
-                         {
-                             IPAddress = g.IPAddress,
-                             HostName = g.HostName,
-                             Count = g.Count
-                         }).ToList()
-                     })
-                     .ToList();
+                     }).ToList();
 
                 if (items.Any(p => p.State == null))
                 {
                     var ls = items.Where(p => p.State == null)
                         .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
                         .GroupBy(p => p.IpAddress)
-                        .Select(g => new ConnectionInfo
+                        .Select(g => new ClientInfo
                         {
+                            AppName = "Unknown",
                             IPAddress = g.Key,
                             HostName = "Unknown",
                             Count = g.Count()
                         }).ToList();
 
-                    list.Add(new ClientInfo { AppName = "Unknown", Connections = ls });
+                    list.AddRange(ls);
                 }
 
                 return list;

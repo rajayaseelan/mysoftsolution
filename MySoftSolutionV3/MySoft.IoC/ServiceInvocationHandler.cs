@@ -49,7 +49,7 @@ namespace MySoft.IoC
             reqMsg.HostName = hostName;                                     //客户端名称
             reqMsg.IPAddress = ipAddress;                                   //客户端IP地址
             reqMsg.ServiceName = serviceType.FullName;                      //服务名称
-            reqMsg.SubServiceName = methodInfo.ToString();                  //方法名称
+            reqMsg.MethodName = methodInfo.ToString();                  //方法名称
             reqMsg.ReturnType = methodInfo.ReturnType;                      //返回类型
             reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
             reqMsg.Timeout = config.Timeout;                                //设置超时时间
@@ -64,7 +64,7 @@ namespace MySoft.IoC
             if (paramValues != null && pis.Length != paramValues.Length)
             {
                 //参数不正确直接返回异常
-                string title = string.Format("Invalid parameters ({0},{1}).", reqMsg.ServiceName, reqMsg.SubServiceName);
+                string title = string.Format("Invalid parameters ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
                 string body = string.Format("{0}\r\nParameters ==> {1}", title, reqMsg.Parameters);
                 throw new WarningException(body)
                 {

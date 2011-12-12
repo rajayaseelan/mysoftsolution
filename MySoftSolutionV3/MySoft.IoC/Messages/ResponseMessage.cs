@@ -131,7 +131,7 @@ namespace MySoft.IoC.Messages
                 }
             }
 
-            return 0;
+            return 1;
         }
     }
 }
