@@ -28,22 +28,22 @@ namespace MySoft.IoC
             get { return _endPoint; }
         }
 
-        private SubscibeOptions _options;
+        private SubscribeOptions _options;
         /// <summary>
         /// 订阅选项
         /// </summary>
-        public SubscibeOptions Options
+        public SubscribeOptions Options
         {
             get { return _options; }
         }
 
-        private string[] _subscibeTypes;
+        private string[] _subscribeTypes;
         /// <summary>
         /// 订阅的类型
         /// </summary>
-        public string[] SubscibeTypes
+        public string[] SubscribeTypes
         {
-            get { return _subscibeTypes; }
+            get { return _subscribeTypes; }
         }
 
         private IStatusListener _innerListener;
@@ -65,15 +65,15 @@ namespace MySoft.IoC
         /// <param name="endPoint"></param>
         /// <param name="innerListener"></param>
         /// <param name="options"></param>
-        public MessageListener(EndPoint endPoint, IStatusListener innerListener, SubscibeOptions options, string[] subscibeTypes)
+        public MessageListener(EndPoint endPoint, IStatusListener innerListener, SubscribeOptions options, string[] subscribeTypes)
             : this(endPoint, innerListener)
         {
             _options = options;
 
-            if (subscibeTypes == null)
-                _subscibeTypes = new string[0];
+            if (subscribeTypes == null)
+                _subscribeTypes = new string[0];
             else
-                _subscibeTypes = subscibeTypes;
+                _subscribeTypes = subscribeTypes;
         }
 
         /// <summary>

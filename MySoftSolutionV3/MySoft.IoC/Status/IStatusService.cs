@@ -7,7 +7,7 @@ namespace MySoft.IoC.Status
     /// 订阅选项（默认全部启用）
     /// </summary>
     [Serializable]
-    public class SubscibeOptions
+    public class SubscribeOptions
     {
         /// <summary>
         /// 超时时间，用于监控超时服务调用
@@ -40,9 +40,9 @@ namespace MySoft.IoC.Status
         public bool PushClientConnect { get; set; }
 
         /// <summary>
-        /// 实例化SubscibeOptions
+        /// 实例化SubscribeOptions
         /// </summary>
-        public SubscibeOptions()
+        public SubscribeOptions()
         {
             this.CallTimeout = 5; //调用超时为5秒
             this.PushCallTimeout = true;
@@ -62,37 +62,37 @@ namespace MySoft.IoC.Status
         /// <summary>
         /// 订阅服务
         /// </summary>
-        void Subscibe(params string[] subscibeTypes);
+        void Subscribe(params string[] subscribeTypes);
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="callTimeout">调用超时时间</param>
-        void Subscibe(double callTimeout, params string[] subscibeTypes);
+        void Subscribe(double callTimeout, params string[] subscribeTypes);
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="statusTimer">定时推送时间</param>
-        void Subscibe(int statusTimer, params string[] subscibeTypes);
+        void Subscribe(int statusTimer, params string[] subscribeTypes);
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="callTimeout">调用超时时间</param>
         /// <param name="statusTimer">定时推送时间</param>
-        void Subscibe(double callTimeout, int statusTimer, params string[] subscibeTypes);
+        void Subscribe(double callTimeout, int statusTimer, params string[] subscribeTypes);
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="options">订阅选项</param>
-        void Subscibe(SubscibeOptions options, params string[] subscibeTypes);
+        void Subscribe(SubscribeOptions options, params string[] subscribeTypes);
 
         /// <summary>
         /// 退订服务
         /// </summary>
-        void Unsubscibe();
+        void Unsubscribe();
 
         /// <summary>
         /// 是否存在服务

@@ -420,7 +420,7 @@
             this.checkBox4.Name = "checkBox4";
             this.checkBox4.Size = new System.Drawing.Size(96, 16);
             this.checkBox4.TabIndex = 12;
-            this.checkBox4.Text = "超出写入日志";
+            this.checkBox4.Text = "写入日志文件";
             this.checkBox4.UseVisualStyleBackColor = true;
             // 
             // frmMain

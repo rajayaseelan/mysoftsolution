@@ -296,33 +296,33 @@ namespace MySoft.IoC
         /// <summary>
         /// 订阅服务
         /// </summary>
-        public void Subscibe(params string[] subscibeTypes)
+        public void Subscribe(params string[] subscribeTypes)
         {
-            Subscibe(new SubscibeOptions(), subscibeTypes);
+            Subscribe(new SubscribeOptions(), subscribeTypes);
         }
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="callTimeout">调用超时时间</param>
-        public void Subscibe(double callTimeout, params string[] subscibeTypes)
+        public void Subscribe(double callTimeout, params string[] subscribeTypes)
         {
-            Subscibe(new SubscibeOptions
+            Subscribe(new SubscribeOptions
             {
                 CallTimeout = callTimeout
-            }, subscibeTypes);
+            }, subscribeTypes);
         }
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="statusTimer">定时推送时间</param>
-        public void Subscibe(int statusTimer, params string[] subscibeTypes)
+        public void Subscribe(int statusTimer, params string[] subscribeTypes)
         {
-            Subscibe(new SubscibeOptions
+            Subscribe(new SubscribeOptions
             {
                 StatusTimer = statusTimer
-            }, subscibeTypes);
+            }, subscribeTypes);
         }
 
         /// <summary>
@@ -330,24 +330,24 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="callTimeout">调用超时时间</param>
         /// <param name="statusTimer">定时推送时间</param>
-        public void Subscibe(double callTimeout, int statusTimer, params string[] subscibeTypes)
+        public void Subscribe(double callTimeout, int statusTimer, params string[] subscribeTypes)
         {
-            Subscibe(new SubscibeOptions
+            Subscribe(new SubscribeOptions
             {
                 CallTimeout = callTimeout,
                 StatusTimer = statusTimer
-            }, subscibeTypes);
+            }, subscribeTypes);
         }
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="options">订阅选项</param>
-        public void Subscibe(SubscibeOptions options, params string[] subscibeTypes)
+        public void Subscribe(SubscribeOptions options, params string[] subscribeTypes)
         {
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
             var endPoint = OperationContext.Current.RemoteEndPoint;
-            MessageCenter.Instance.AddListener(new MessageListener(endPoint, callback, options, subscibeTypes));
+            MessageCenter.Instance.AddListener(new MessageListener(endPoint, callback, options, subscribeTypes));
 
             //推送客户端连接信息
             MessageCenter.Instance.Push(GetClientList());
@@ -356,7 +356,7 @@ namespace MySoft.IoC
         /// <summary>
         /// 退订
         /// </summary>
-        public void Unsubscibe()
+        public void Unsubscribe()
         {
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
             var endPoint = OperationContext.Current.RemoteEndPoint;

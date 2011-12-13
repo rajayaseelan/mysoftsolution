@@ -11,17 +11,12 @@ namespace MySoft.IoC.Status
     /// 连接信息
     /// </summary>
     [Serializable]
-    public class ConnectInfo
+    public class ConnectInfo : AppClient
     {
         /// <summary>
         /// 调用时间
         /// </summary>
         public DateTime ConnectTime { get; set; }
-
-        /// <summary>
-        /// IP地址
-        /// </summary>
-        public string IPAddress { get; set; }
 
         /// <summary>
         /// Port
