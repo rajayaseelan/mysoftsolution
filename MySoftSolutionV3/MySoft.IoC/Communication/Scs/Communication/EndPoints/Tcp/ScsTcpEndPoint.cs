@@ -40,7 +40,7 @@ namespace MySoft.Communication.Scs.Communication.EndPoints.Tcp
             IpAddress = ipAddress;
             TcpPort = port;
         }
-        
+
         /// <summary>
         /// Creates a new ScsTcpEndPoint from a string address.
         /// Address format must be like IPAddress:Port (For example: 127.0.0.1:10085).
@@ -78,7 +78,7 @@ namespace MySoft.Communication.Scs.Communication.EndPoints.Tcp
         /// <returns>String representation of this end point object</returns>
         public override string ToString()
         {
-            return string.IsNullOrEmpty(IpAddress) ? ("tcp://127.0.0.1:" + TcpPort) : ("tcp://" + IpAddress + ":" + TcpPort);
+            return "tcp://" + (IpAddress ?? DnsHelper.GetIPAddress()) + ":" + TcpPort;
         }
     }
 }

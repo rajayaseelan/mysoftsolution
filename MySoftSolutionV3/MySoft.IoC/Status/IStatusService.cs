@@ -62,32 +62,32 @@ namespace MySoft.IoC.Status
         /// <summary>
         /// 订阅服务
         /// </summary>
-        void Subscibe(params Type[] subscibeTypes);
+        void Subscibe(params string[] subscibeTypes);
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="callTimeout">调用超时时间</param>
-        void Subscibe(double callTimeout, params Type[] subscibeTypes);
+        void Subscibe(double callTimeout, params string[] subscibeTypes);
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="statusTimer">定时推送时间</param>
-        void Subscibe(int statusTimer, params Type[] subscibeTypes);
+        void Subscibe(int statusTimer, params string[] subscibeTypes);
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="callTimeout">调用超时时间</param>
         /// <param name="statusTimer">定时推送时间</param>
-        void Subscibe(double callTimeout, int statusTimer, params Type[] subscibeTypes);
+        void Subscibe(double callTimeout, int statusTimer, params string[] subscibeTypes);
 
         /// <summary>
         /// 订阅服务
         /// </summary>
         /// <param name="options">订阅选项</param>
-        void Subscibe(SubscibeOptions options, params Type[] subscibeTypes);
+        void Subscibe(SubscibeOptions options, params string[] subscibeTypes);
 
         /// <summary>
         /// 退订服务

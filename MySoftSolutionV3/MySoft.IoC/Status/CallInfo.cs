@@ -19,14 +19,24 @@ namespace MySoft.IoC.Status
         public DateTime ConnectTime { get; set; }
 
         /// <summary>
-        /// 本地终结点
+        /// IP地址
         /// </summary>
-        public EndPoint LocalEndPoint { get; set; }
+        public string IPAddress { get; set; }
 
         /// <summary>
-        /// 远程终结点
+        /// Port
         /// </summary>
-        public EndPoint RemoteEndPoint { get; set; }
+        public int Port { get; set; }
+
+        /// <summary>
+        /// 服务端IP
+        /// </summary>
+        public string ServerIPAddress { get; set; }
+
+        /// <summary>
+        /// 服务端Port
+        /// </summary>
+        public int ServerPort { get; set; }
 
         /// <summary>
         /// 连接状态

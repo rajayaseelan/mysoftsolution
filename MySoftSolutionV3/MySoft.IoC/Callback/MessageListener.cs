@@ -37,11 +37,11 @@ namespace MySoft.IoC
             get { return _options; }
         }
 
-        private Type[] _subscibeTypes;
+        private string[] _subscibeTypes;
         /// <summary>
         /// 订阅的类型
         /// </summary>
-        public Type[] SubscibeTypes
+        public string[] SubscibeTypes
         {
             get { return _subscibeTypes; }
         }
@@ -65,13 +65,13 @@ namespace MySoft.IoC
         /// <param name="endPoint"></param>
         /// <param name="innerListener"></param>
         /// <param name="options"></param>
-        public MessageListener(EndPoint endPoint, IStatusListener innerListener, SubscibeOptions options, Type[] subscibeTypes)
+        public MessageListener(EndPoint endPoint, IStatusListener innerListener, SubscibeOptions options, string[] subscibeTypes)
             : this(endPoint, innerListener)
         {
             _options = options;
 
             if (subscibeTypes == null)
-                _subscibeTypes = new Type[0];
+                _subscibeTypes = new string[0];
             else
                 _subscibeTypes = subscibeTypes;
         }

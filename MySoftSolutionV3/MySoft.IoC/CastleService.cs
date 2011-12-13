@@ -25,7 +25,8 @@ namespace MySoft.IoC
         public event EventHandler<CallEventArgs> OnCalling;
 
         private IScsServer server;
-        private string serverUrl;
+        //实例化Socket服务
+        private ScsTcpEndPoint epServer;
         private ServiceCaller caller;
 
         /// <summary>
@@ -43,18 +44,15 @@ namespace MySoft.IoC
         public CastleService(CastleServiceConfiguration config)
             : base(config)
         {
-            //实例化Socket服务
-            ScsTcpEndPoint endPoint = null;
             if (string.Compare(config.Host, "any", true) == 0)
             {
                 config.Host = IPAddress.Loopback.ToString();
-                endPoint = new ScsTcpEndPoint(config.Port);
+                epServer = new ScsTcpEndPoint(config.Port);
             }
             else
-                endPoint = new ScsTcpEndPoint(config.Host, config.Port);
+                epServer = new ScsTcpEndPoint(config.Host, config.Port);
 
-            this.serverUrl = endPoint.ToString();
-            this.server = ScsServerFactory.CreateServer(endPoint);
+            this.server = ScsServerFactory.CreateServer(epServer);
             this.server.ClientConnected += new EventHandler<ServerClientEventArgs>(server_ClientConnected);
             this.server.ClientDisconnected += new EventHandler<ServerClientEventArgs>(server_ClientDisconnected);
             this.server.WireProtocolFactory = new CustomWireProtocolFactory(config.Compress, config.Encrypt);
@@ -162,7 +160,7 @@ namespace MySoft.IoC
         /// </summary>
         public string ServerUrl
         {
-            get { return serverUrl.ToLower(); }
+            get { return epServer.ToString().ToLower(); }
         }
 
         /// <summary>
@@ -201,11 +199,13 @@ namespace MySoft.IoC
             e.Client.ErrorReceived += new EventHandler<ErrorEventArgs>(Client_ErrorReceived);
 
             //处理登入事件
-            var point = new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort);
             var connect = new ConnectInfo
             {
                 ConnectTime = DateTime.Now,
-                LocalEndPoint = point,
+                IPAddress = endPoint.IpAddress,
+                Port = endPoint.TcpPort,
+                ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                ServerPort = epServer.TcpPort,
                 Connected = true
             };
             MessageCenter.Instance.Notify(connect);
@@ -227,11 +227,13 @@ namespace MySoft.IoC
             container_OnLog(string.Format("User Disconnection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Error);
 
             //处理登出事件
-            var point = new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort);
             var connect = new ConnectInfo
             {
                 ConnectTime = DateTime.Now,
-                LocalEndPoint = point,
+                IPAddress = endPoint.IpAddress,
+                Port = endPoint.TcpPort,
+                ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                ServerPort = epServer.TcpPort,
                 Connected = false
             };
             MessageCenter.Instance.Notify(connect);
@@ -416,6 +418,8 @@ namespace MySoft.IoC
                          AppName = p.Key.AppName,
                          IPAddress = p.Key.IPAddress,
                          HostName = p.Key.HostName,
+                         ServerIPAddress = epServer.IpAddress,
+                         ServerPort = epServer.TcpPort,
                          Count = p.Count()
                      }).ToList();
 
@@ -428,6 +432,8 @@ namespace MySoft.IoC
                         {
                             AppName = "Unknown",
                             IPAddress = g.Key,
+                            ServerIPAddress = epServer.IpAddress,
+                            ServerPort = epServer.TcpPort,
                             HostName = "Unknown",
                             Count = g.Count()
                         }).ToList();

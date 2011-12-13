@@ -15,6 +15,11 @@ namespace MySoft.IoC.Status
         public string ServerIPAddress { get; set; }
 
         /// <summary>
+        /// 服务端Port
+        /// </summary>
+        public int ServerPort { get; set; }
+
+        /// <summary>
         /// 连接数
         /// </summary>
         public int Count { get; set; }

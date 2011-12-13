@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Net;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
+using ListControls;
 using MySoft.IoC;
 using MySoft.IoC.Status;
-using ListControls;
-using System.Drawing;
-using System.Collections.Generic;
 using MySoft.Logger;
 
 namespace MySoft.PlatformService.WinForm
@@ -194,12 +193,12 @@ namespace MySoft.PlatformService.WinForm
                     box1.Items.RemoveAt(box1.Items.Count - 1);
                 }
 
-                var ip = connectInfo.LocalEndPoint as IPEndPoint;
                 box1.Items.Insert(0,
                     new ParseMessageEventArgs
                     {
                         MessageType = ParseMessageType.Info,
-                        LineHeader = string.Format("【{0}】\t{1}:{2} => {3}", connectInfo.ConnectTime, ip.Address, ip.Port, connectInfo.Connected ? "连接" : "断开"),
+                        LineHeader = string.Format("【{0}】\t{1}:{2} => {3}:{4} ({5})",
+                        connectInfo.ConnectTime, connectInfo.IPAddress, connectInfo.Port, connectInfo.ServerIPAddress, connectInfo.ServerPort, connectInfo.Connected ? "连接" : "断开"),
                         Source = connectInfo
                     });
                 box1.SelectedIndex = box1.Items.Count - 1;
