@@ -6,7 +6,7 @@ namespace MySoft.IoC
     /// Attribute used to mark service interfaces.
     /// </summary>
     [AttributeUsage(AttributeTargets.Interface, AllowMultiple = false)]
-    public class ServiceContractAttribute : Attribute
+    public class ServiceContractAttribute : ContractAttribute
     {
         private Type callbackType;
         /// <summary>

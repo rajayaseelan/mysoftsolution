@@ -28,22 +28,31 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage0 = new System.Windows.Forms.TabPage();
+            this.splitContainer4 = new System.Windows.Forms.SplitContainer();
+            this.listService = new ListControls.MessageListBox();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.刷新服务信息ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.splitContainer5 = new System.Windows.Forms.SplitContainer();
+            this.listMethod = new ListControls.MessageListBox();
+            this.richTextBox3 = new System.Windows.Forms.RichTextBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.listBox1 = new ListControls.MessageListBox();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
-            this.listBox3 = new ListControls.MessageListBox();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.listConnect = new ListControls.MessageListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.listTimeout = new ListControls.MessageListBox();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.listBox2 = new ListControls.MessageListBox();
+            this.listError = new ListControls.MessageListBox();
             this.webBrowser1 = new System.Windows.Forms.WebBrowser();
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
@@ -58,14 +67,25 @@
             this.numericUpDown4 = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.添加此服务到监控AToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.从监控中移除此服务OToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tabControl1.SuspendLayout();
+            this.tabPage0.SuspendLayout();
+            this.splitContainer4.Panel1.SuspendLayout();
+            this.splitContainer4.Panel2.SuspendLayout();
+            this.splitContainer4.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
+            this.splitContainer5.Panel1.SuspendLayout();
+            this.splitContainer5.Panel2.SuspendLayout();
+            this.splitContainer5.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            this.tabPage3.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
-            this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -143,18 +163,120 @@
             this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabControl1.Controls.Add(this.tabPage0);
             this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Location = new System.Drawing.Point(14, 39);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(728, 398);
             this.tabControl1.TabIndex = 11;
             // 
+            // tabPage0
+            // 
+            this.tabPage0.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage0.Controls.Add(this.splitContainer4);
+            this.tabPage0.Location = new System.Drawing.Point(4, 22);
+            this.tabPage0.Name = "tabPage0";
+            this.tabPage0.Size = new System.Drawing.Size(720, 372);
+            this.tabPage0.TabIndex = 3;
+            this.tabPage0.Text = "服务信息";
+            // 
+            // splitContainer4
+            // 
+            this.splitContainer4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer4.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer4.Name = "splitContainer4";
+            // 
+            // splitContainer4.Panel1
+            // 
+            this.splitContainer4.Panel1.Controls.Add(this.listService);
+            // 
+            // splitContainer4.Panel2
+            // 
+            this.splitContainer4.Panel2.Controls.Add(this.splitContainer5);
+            this.splitContainer4.Size = new System.Drawing.Size(720, 372);
+            this.splitContainer4.SplitterDistance = 250;
+            this.splitContainer4.TabIndex = 0;
+            // 
+            // listService
+            // 
+            this.listService.AutoScroll = true;
+            this.listService.AutoScrollMinSize = new System.Drawing.Size(220, 0);
+            this.listService.BackColor = System.Drawing.Color.White;
+            this.listService.ContextMenuStrip = this.contextMenuStrip1;
+            this.listService.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listService.Location = new System.Drawing.Point(0, 0);
+            this.listService.Name = "listService";
+            this.listService.SelectedIndex = -1;
+            this.listService.SelectedItem = null;
+            this.listService.Size = new System.Drawing.Size(250, 372);
+            this.listService.TabIndex = 12;
+            // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.刷新服务信息ToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.添加此服务到监控AToolStripMenuItem,
+            this.从监控中移除此服务OToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(203, 98);
+            // 
+            // 刷新服务信息ToolStripMenuItem
+            // 
+            this.刷新服务信息ToolStripMenuItem.Name = "刷新服务信息ToolStripMenuItem";
+            this.刷新服务信息ToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.刷新服务信息ToolStripMenuItem.Text = "刷新服务信息(&R)";
+            this.刷新服务信息ToolStripMenuItem.Click += new System.EventHandler(this.刷新服务信息ToolStripMenuItem_Click);
+            // 
+            // splitContainer5
+            // 
+            this.splitContainer5.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer5.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer5.Name = "splitContainer5";
+            this.splitContainer5.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer5.Panel1
+            // 
+            this.splitContainer5.Panel1.Controls.Add(this.listMethod);
+            // 
+            // splitContainer5.Panel2
+            // 
+            this.splitContainer5.Panel2.Controls.Add(this.richTextBox3);
+            this.splitContainer5.Size = new System.Drawing.Size(466, 372);
+            this.splitContainer5.SplitterDistance = 240;
+            this.splitContainer5.TabIndex = 0;
+            // 
+            // listMethod
+            // 
+            this.listMethod.AutoScroll = true;
+            this.listMethod.AutoScrollMinSize = new System.Drawing.Size(436, 0);
+            this.listMethod.BackColor = System.Drawing.Color.White;
+            this.listMethod.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listMethod.Location = new System.Drawing.Point(0, 0);
+            this.listMethod.Name = "listMethod";
+            this.listMethod.SelectedIndex = -1;
+            this.listMethod.SelectedItem = null;
+            this.listMethod.Size = new System.Drawing.Size(466, 240);
+            this.listMethod.TabIndex = 12;
+            // 
+            // richTextBox3
+            // 
+            this.richTextBox3.BackColor = System.Drawing.SystemColors.Window;
+            this.richTextBox3.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBox3.Location = new System.Drawing.Point(0, 0);
+            this.richTextBox3.Name = "richTextBox3";
+            this.richTextBox3.ReadOnly = true;
+            this.richTextBox3.Size = new System.Drawing.Size(466, 128);
+            this.richTextBox3.TabIndex = 15;
+            this.richTextBox3.Text = "";
+            // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.listBox1);
+            this.tabPage1.Controls.Add(this.listConnect);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Size = new System.Drawing.Size(720, 372);
@@ -162,28 +284,28 @@
             this.tabPage1.Text = "连接信息";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // listBox1
+            // listConnect
             // 
-            this.listBox1.AutoScroll = true;
-            this.listBox1.AutoScrollMinSize = new System.Drawing.Size(690, 0);
-            this.listBox1.BackColor = System.Drawing.Color.White;
-            this.listBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBox1.Location = new System.Drawing.Point(0, 0);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.SelectedIndex = -1;
-            this.listBox1.SelectedItem = null;
-            this.listBox1.Size = new System.Drawing.Size(720, 372);
-            this.listBox1.TabIndex = 10;
+            this.listConnect.AutoScroll = true;
+            this.listConnect.AutoScrollMinSize = new System.Drawing.Size(690, 0);
+            this.listConnect.BackColor = System.Drawing.Color.White;
+            this.listConnect.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listConnect.Location = new System.Drawing.Point(0, 0);
+            this.listConnect.Name = "listConnect";
+            this.listConnect.SelectedIndex = -1;
+            this.listConnect.SelectedItem = null;
+            this.listConnect.Size = new System.Drawing.Size(720, 372);
+            this.listConnect.TabIndex = 10;
             // 
-            // tabPage3
+            // tabPage2
             // 
-            this.tabPage3.BackColor = System.Drawing.SystemColors.Control;
-            this.tabPage3.Controls.Add(this.splitContainer3);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(652, 370);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "超时信息";
+            this.tabPage2.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage2.Controls.Add(this.splitContainer3);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Size = new System.Drawing.Size(720, 372);
+            this.tabPage2.TabIndex = 2;
+            this.tabPage2.Text = "超时信息";
             // 
             // splitContainer3
             // 
@@ -194,28 +316,28 @@
             // 
             // splitContainer3.Panel1
             // 
-            this.splitContainer3.Panel1.Controls.Add(this.listBox3);
+            this.splitContainer3.Panel1.Controls.Add(this.listTimeout);
             // 
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.richTextBox1);
-            this.splitContainer3.Size = new System.Drawing.Size(652, 370);
-            this.splitContainer3.SplitterDistance = 450;
+            this.splitContainer3.Size = new System.Drawing.Size(720, 372);
+            this.splitContainer3.SplitterDistance = 496;
             this.splitContainer3.TabIndex = 15;
             // 
-            // listBox3
+            // listTimeout
             // 
-            this.listBox3.AutoScroll = true;
-            this.listBox3.AutoScrollMinSize = new System.Drawing.Size(416, 0);
-            this.listBox3.BackColor = System.Drawing.Color.White;
-            this.listBox3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBox3.Location = new System.Drawing.Point(0, 0);
-            this.listBox3.Name = "listBox3";
-            this.listBox3.SelectedIndex = -1;
-            this.listBox3.SelectedItem = null;
-            this.listBox3.Size = new System.Drawing.Size(446, 366);
-            this.listBox3.TabIndex = 12;
-            this.listBox3.SelectedIndexChanged += new System.EventHandler(this.listBox3_SelectedIndexChanged);
+            this.listTimeout.AutoScroll = true;
+            this.listTimeout.AutoScrollMinSize = new System.Drawing.Size(462, 0);
+            this.listTimeout.BackColor = System.Drawing.Color.White;
+            this.listTimeout.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listTimeout.Location = new System.Drawing.Point(0, 0);
+            this.listTimeout.Name = "listTimeout";
+            this.listTimeout.SelectedIndex = -1;
+            this.listTimeout.SelectedItem = null;
+            this.listTimeout.Size = new System.Drawing.Size(492, 368);
+            this.listTimeout.TabIndex = 12;
+            this.listTimeout.SelectedIndexChanged += new System.EventHandler(this.listBox3_SelectedIndexChanged);
             // 
             // richTextBox1
             // 
@@ -225,19 +347,19 @@
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(194, 366);
+            this.richTextBox1.Size = new System.Drawing.Size(216, 368);
             this.richTextBox1.TabIndex = 14;
             this.richTextBox1.Text = "";
             // 
-            // tabPage2
+            // tabPage3
             // 
-            this.tabPage2.BackColor = System.Drawing.SystemColors.Control;
-            this.tabPage2.Controls.Add(this.splitContainer1);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Size = new System.Drawing.Size(652, 370);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "异常信息";
+            this.tabPage3.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage3.Controls.Add(this.splitContainer1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(720, 372);
+            this.tabPage3.TabIndex = 1;
+            this.tabPage3.Text = "异常信息";
             // 
             // splitContainer1
             // 
@@ -252,8 +374,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.richTextBox2);
-            this.splitContainer1.Size = new System.Drawing.Size(652, 370);
-            this.splitContainer1.SplitterDistance = 450;
+            this.splitContainer1.Size = new System.Drawing.Size(720, 372);
+            this.splitContainer1.SplitterDistance = 496;
             this.splitContainer1.TabIndex = 14;
             // 
             // splitContainer2
@@ -266,28 +388,28 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.listBox2);
+            this.splitContainer2.Panel1.Controls.Add(this.listError);
             // 
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.webBrowser1);
-            this.splitContainer2.Size = new System.Drawing.Size(450, 370);
-            this.splitContainer2.SplitterDistance = 240;
+            this.splitContainer2.Size = new System.Drawing.Size(496, 372);
+            this.splitContainer2.SplitterDistance = 241;
             this.splitContainer2.TabIndex = 12;
             // 
-            // listBox2
+            // listError
             // 
-            this.listBox2.AutoScroll = true;
-            this.listBox2.AutoScrollMinSize = new System.Drawing.Size(416, 0);
-            this.listBox2.BackColor = System.Drawing.Color.White;
-            this.listBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBox2.Location = new System.Drawing.Point(0, 0);
-            this.listBox2.Name = "listBox2";
-            this.listBox2.SelectedIndex = -1;
-            this.listBox2.SelectedItem = null;
-            this.listBox2.Size = new System.Drawing.Size(446, 236);
-            this.listBox2.TabIndex = 11;
-            this.listBox2.SelectedIndexChanged += new System.EventHandler(this.listBox2_SelectedIndexChanged);
+            this.listError.AutoScroll = true;
+            this.listError.AutoScrollMinSize = new System.Drawing.Size(462, 0);
+            this.listError.BackColor = System.Drawing.Color.White;
+            this.listError.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listError.Location = new System.Drawing.Point(0, 0);
+            this.listError.Name = "listError";
+            this.listError.SelectedIndex = -1;
+            this.listError.SelectedItem = null;
+            this.listError.Size = new System.Drawing.Size(492, 237);
+            this.listError.TabIndex = 11;
+            this.listError.SelectedIndexChanged += new System.EventHandler(this.listBox2_SelectedIndexChanged);
             // 
             // webBrowser1
             // 
@@ -295,7 +417,7 @@
             this.webBrowser1.Location = new System.Drawing.Point(0, 0);
             this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
             this.webBrowser1.Name = "webBrowser1";
-            this.webBrowser1.Size = new System.Drawing.Size(446, 122);
+            this.webBrowser1.Size = new System.Drawing.Size(492, 123);
             this.webBrowser1.TabIndex = 13;
             // 
             // richTextBox2
@@ -305,7 +427,7 @@
             this.richTextBox2.Location = new System.Drawing.Point(0, 0);
             this.richTextBox2.Name = "richTextBox2";
             this.richTextBox2.ReadOnly = true;
-            this.richTextBox2.Size = new System.Drawing.Size(198, 370);
+            this.richTextBox2.Size = new System.Drawing.Size(220, 372);
             this.richTextBox2.TabIndex = 15;
             this.richTextBox2.Text = "";
             // 
@@ -467,6 +589,25 @@
             this.label8.TabIndex = 6;
             this.label8.Text = "报警：";
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(199, 6);
+            // 
+            // 添加此服务到监控AToolStripMenuItem
+            // 
+            this.添加此服务到监控AToolStripMenuItem.Name = "添加此服务到监控AToolStripMenuItem";
+            this.添加此服务到监控AToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.添加此服务到监控AToolStripMenuItem.Text = "添加此服务到监控(&A)";
+            this.添加此服务到监控AToolStripMenuItem.Click += new System.EventHandler(this.添加此服务到监控AToolStripMenuItem_Click);
+            // 
+            // 从监控中移除此服务OToolStripMenuItem
+            // 
+            this.从监控中移除此服务OToolStripMenuItem.Name = "从监控中移除此服务OToolStripMenuItem";
+            this.从监控中移除此服务OToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.从监控中移除此服务OToolStripMenuItem.Text = "从监控中移除此服务(&O)";
+            this.从监控中移除此服务OToolStripMenuItem.Click += new System.EventHandler(this.从监控中移除此服务OToolStripMenuItem_Click);
+            // 
             // frmMain
             // 
             this.AcceptButton = this.button1;
@@ -497,12 +638,20 @@
             this.Load += new System.EventHandler(this.frmMain_Load);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.tabControl1.ResumeLayout(false);
+            this.tabPage0.ResumeLayout(false);
+            this.splitContainer4.Panel1.ResumeLayout(false);
+            this.splitContainer4.Panel2.ResumeLayout(false);
+            this.splitContainer4.ResumeLayout(false);
+            this.contextMenuStrip1.ResumeLayout(false);
+            this.splitContainer5.Panel1.ResumeLayout(false);
+            this.splitContainer5.Panel2.ResumeLayout(false);
+            this.splitContainer5.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            this.tabPage3.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel2.ResumeLayout(false);
             this.splitContainer3.ResumeLayout(false);
-            this.tabPage2.ResumeLayout(false);
+            this.tabPage3.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.ResumeLayout(false);
@@ -524,12 +673,12 @@
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private ListControls.MessageListBox listBox1;
+        private ListControls.MessageListBox listConnect;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
-        private ListControls.MessageListBox listBox2;
         private System.Windows.Forms.TabPage tabPage3;
+        private ListControls.MessageListBox listError;
+        private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox checkBox2;
         private System.Windows.Forms.Label label4;
@@ -541,7 +690,7 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox checkBox4;
         private System.Windows.Forms.SplitContainer splitContainer3;
-        private ListControls.MessageListBox listBox3;
+        private ListControls.MessageListBox listTimeout;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
@@ -549,5 +698,16 @@
         private System.Windows.Forms.NumericUpDown numericUpDown4;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TabPage tabPage0;
+        private System.Windows.Forms.SplitContainer splitContainer4;
+        private ListControls.MessageListBox listService;
+        private System.Windows.Forms.SplitContainer splitContainer5;
+        private ListControls.MessageListBox listMethod;
+        private System.Windows.Forms.RichTextBox richTextBox3;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem 刷新服务信息ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem 添加此服务到监控AToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 从监控中移除此服务OToolStripMenuItem;
     }
 }

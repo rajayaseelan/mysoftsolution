@@ -118,18 +118,28 @@ namespace MySoft.IoC
             var services = new List<ServiceInfo>();
             foreach (var type in types)
             {
+                string description1 = null;
+                var contract1 = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(type);
+                if (contract1 != null) description1 = contract1.Description;
                 var s = new ServiceInfo
                 {
                     Assembly = type.Assembly.FullName,
-                    Name = type.FullName
+                    Name = type.Name,
+                    FullName = type.FullName,
+                    Description = description1
                 };
 
                 //读取方法
                 foreach (var method in CoreHelper.GetMethodsFromType(type))
                 {
+                    string description2 = null;
+                    var contract2 = CoreHelper.GetMemberAttribute<OperationContractAttribute>(type);
+                    if (contract2 != null) description2 = contract2.Description;
                     var m = new MethodInfo
                     {
-                        Name = method.ToString()
+                        Name = method.Name,
+                        FullName = method.ToString(),
+                        Description = description2
                     };
 
                     //读取参数
@@ -138,7 +148,8 @@ namespace MySoft.IoC
                         var p = new ParameterInfo
                         {
                             Name = parameter.Name,
-                            Type = parameter.ParameterType.FullName
+                            TypeName = parameter.ParameterType.Name,
+                            TypeFullName = parameter.ParameterType.FullName
                         };
                         m.Parameters.Add(p);
                     }
@@ -351,6 +362,57 @@ namespace MySoft.IoC
 
             //推送客户端连接信息
             MessageCenter.Instance.Push(GetClientList());
+        }
+
+        /// <summary>
+        /// 获取订阅的类型
+        /// </summary>
+        /// <returns></returns>
+        public IList<string> GetSubscribeTypes()
+        {
+            var endPoint = OperationContext.Current.RemoteEndPoint;
+            var listener = MessageCenter.Instance.GetListener(endPoint);
+            if (listener == null) return new List<string>();
+
+            return listener.SubscribeTypes;
+        }
+
+        /// <summary>
+        /// 添加发布类型
+        /// </summary>
+        /// <param name="subscribeType"></param>
+        public void AddSubscribeType(string subscribeType)
+        {
+            var endPoint = OperationContext.Current.RemoteEndPoint;
+            var listener = MessageCenter.Instance.GetListener(endPoint);
+            if (listener == null) return;
+
+            if (subscribeType != null)
+            {
+                if (!listener.SubscribeTypes.Contains(subscribeType))
+                    listener.SubscribeTypes.Add(subscribeType);
+                else
+                    throw new WarningException("Already exists subscribe type " + subscribeType);
+            }
+        }
+
+        /// <summary>
+        /// 添加发布类型
+        /// </summary>
+        /// <param name="subscribeType"></param>
+        public void RemoveSubscribeType(string subscribeType)
+        {
+            var endPoint = OperationContext.Current.RemoteEndPoint;
+            var listener = MessageCenter.Instance.GetListener(endPoint);
+            if (listener == null) return;
+
+            if (subscribeType != null)
+            {
+                if (listener.SubscribeTypes.Contains(subscribeType))
+                    listener.SubscribeTypes.Remove(subscribeType);
+                else
+                    throw new WarningException("Don't exist subscribe type " + subscribeType);
+            }
         }
 
         /// <summary>

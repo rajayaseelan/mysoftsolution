@@ -75,6 +75,7 @@
     <Compile Include="Aop\AopSwitcherAttribute.cs" />
     <Compile Include="Aop\IAopOperator.cs" />
     <Compile Include="Aop\IAopProxyFactory.cs" />
+    <Compile Include="IoC\ContractAttribute.cs" />
     <Compile Include="Threading\Stopwatch.cs" />
     <Compile Include="Utils\CancellableTask.cs" />
     <Compile Include="Common\FtpClient.cs" />

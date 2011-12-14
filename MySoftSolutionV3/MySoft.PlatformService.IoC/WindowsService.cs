@@ -94,7 +94,7 @@ namespace MySoft.PlatformService.IoC
             }
             else
             {
-                server.Start(true);
+                server.Start();
             }
         }
 

@@ -53,6 +53,29 @@ namespace MySoft.IoC
         #endregion
 
         /// <summary>
+        /// 获取监控器
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <returns></returns>
+        public MessageListener GetListener(EndPoint endPoint)
+        {
+            if (_listeners.Count == 0) return null;
+
+            MessageListener[] listeners = _listeners.ToArray();
+            foreach (MessageListener lstn in listeners)
+            {
+                var ep = lstn.RemoteEndPoint as IPEndPoint;
+                var ed = endPoint as IPEndPoint;
+                if (ep.Address.Equals(ed.Address) && ep.Port == ed.Port)
+                {
+                    return lstn;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// 添加监听器
         /// </summary>
         /// <param name="listener"></param>

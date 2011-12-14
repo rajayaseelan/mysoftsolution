@@ -106,53 +106,8 @@ namespace MySoft.IoC
         /// </summary>
         public void Start()
         {
-            Start(false);
-        }
-
-        /// <summary>
-        /// 启用服务
-        /// </summary>
-        /// <param name="isWriteLog"></param>
-        public void Start(bool isWriteLog)
-        {
-            //写发布服务信息
-            if (isWriteLog) Publish();
-
             //启动服务
             server.Start();
-        }
-
-        /// <summary>
-        /// 发布服务
-        /// </summary>
-        private void Publish()
-        {
-            var list = this.GetServiceList();
-
-            string log = string.Format("此次发布的服务有{0}个，共有{1}个方法，详细信息如下：\r\n\r\n", list.Count, list.Sum(p => p.Methods.Count));
-            StringBuilder sb = new StringBuilder(log);
-
-            int index = 0;
-            foreach (var type in list)
-            {
-                sb.AppendFormat("{0}, {1}\r\n", type.Name, type.Assembly);
-                sb.AppendLine("------------------------------------------------------------------------------------------------------------------------");
-                foreach (var method in type.Methods)
-                {
-                    sb.AppendLine(method.Name);
-                }
-
-                if (index < list.Count - 1)
-                {
-                    sb.AppendLine();
-                    sb.AppendLine("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-                    sb.AppendLine();
-                }
-
-                index++;
-            }
-
-            SimpleLog.Instance.WriteLogForDir("Publish", sb.ToString());
         }
 
         /// <summary>

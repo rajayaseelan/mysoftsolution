@@ -9,9 +9,9 @@ namespace MySoft.IoC
     /// Attribute used to mark service interfaces.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class OperationContractAttribute : Attribute
+    public class OperationContractAttribute : ContractAttribute
     {
-        protected int timeout = -1;
+        private int timeout = -1;
         /// <summary>
         /// Gets or sets the timeout.
         /// </summary>
@@ -27,7 +27,7 @@ namespace MySoft.IoC
             }
         }
 
-        protected int cacheTime = -1;
+        private int cacheTime = -1;
         /// <summary>
         /// 缓存时间（单位：秒）
         /// </summary>

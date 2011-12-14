@@ -22,6 +22,16 @@ namespace MySoft.IoC.Status
         public string Name { get; set; }
 
         /// <summary>
+        /// 服务全称
+        /// </summary>
+        public string FullName { get; set; }
+
+        /// <summary>
+        /// 描述信息
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
         /// 方法信息
         /// </summary>
         public IList<MethodInfo> Methods { get; set; }
@@ -42,6 +52,16 @@ namespace MySoft.IoC.Status
         /// 方法名称
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// 服务全称
+        /// </summary>
+        public string FullName { get; set; }
+
+        /// <summary>
+        /// 描述信息
+        /// </summary>
+        public string Description { get; set; }
 
         /// <summary>
         /// 参数信息
@@ -68,6 +88,11 @@ namespace MySoft.IoC.Status
         /// <summary>
         /// 参数类型
         /// </summary>
-        public string Type { get; set; }
+        public string TypeName { get; set; }
+
+        /// <summary>
+        /// 参数类型
+        /// </summary>
+        public string TypeFullName { get; set; }
     }
 }

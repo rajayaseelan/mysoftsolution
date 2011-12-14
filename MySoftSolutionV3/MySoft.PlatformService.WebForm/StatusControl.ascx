@@ -117,7 +117,7 @@
         int index = 0;
         var appclients = clients.GroupBy(p => p.AppName)
             .Select(p => new { AppName = p.Key ,Clients = p.ToList()})
-            .OrderByDescending(p => p.Clients.Count)
+            .OrderBy(p => p.Clients.Count)
             .ToList();
         foreach (var app in appclients)
         {

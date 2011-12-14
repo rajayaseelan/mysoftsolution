@@ -7,6 +7,7 @@ using MySoft.IoC;
 using MySoft.IoC.Status;
 using MySoft.Logger;
 using System.Net.Sockets;
+using System.Linq;
 
 namespace MySoft.PlatformService.WinForm
 {
@@ -24,6 +25,15 @@ namespace MySoft.PlatformService.WinForm
             if (error is SocketException)
             {
                 button1_Click(null, EventArgs.Empty);
+                listConnect.Items.Insert(0,
+                    new ParseMessageEventArgs
+                    {
+                        MessageType = ParseMessageType.Error,
+                        LineHeader = string.Format("【{0}】 当前网络已经从服务器断开...", DateTime.Now),
+                        MessageText = string.Format("({0}){1}", (error as SocketException).ErrorCode, (error as SocketException).Message)
+                    });
+
+                listConnect.Invalidate();
             }
         }
 
@@ -34,7 +44,7 @@ namespace MySoft.PlatformService.WinForm
             {
                 if (button1.Tag == null)
                 {
-                    var listener = new StatusListener(tabControl1, listBox1, listBox2, listBox3,
+                    var listener = new StatusListener(tabControl1, listConnect, listTimeout, listError,
                         Convert.ToInt32(numericUpDown3.Value), Convert.ToInt32(numericUpDown4.Value), checkBox4.Checked);
                     service = CastleFactory.Create().GetChannel<IStatusService>(listener);
 
@@ -71,17 +81,17 @@ namespace MySoft.PlatformService.WinForm
                     label1.Text = button1.Tag.ToString();
                     button1.Text = "开始监控";
                     button1.Tag = null;
-                    listBox1.Items.Clear();
-                    listBox2.Items.Clear();
-                    listBox3.Items.Clear();
+                    listConnect.Items.Clear();
+                    listError.Items.Clear();
+                    listTimeout.Items.Clear();
 
-                    listBox1.Invalidate();
-                    listBox2.Invalidate();
-                    listBox3.Invalidate();
+                    listConnect.Invalidate();
+                    listError.Invalidate();
+                    listTimeout.Invalidate();
 
-                    tabControl1.TabPages[0].Text = "连接信息";
-                    tabControl1.TabPages[2].Text = "异常信息";
-                    tabControl1.TabPages[1].Text = "超时信息";
+                    tabPage1.Text = "连接信息";
+                    tabPage2.Text = "超时信息";
+                    tabPage3.Text = "异常信息";
 
                     checkBox1.Enabled = true;
                     checkBox2.Enabled = true;
@@ -119,23 +129,22 @@ namespace MySoft.PlatformService.WinForm
 
         private void listBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBox3.SelectedIndex < 0) richTextBox1.Text = string.Empty;
+            if (listTimeout.SelectedIndex < 0) richTextBox1.Text = string.Empty;
 
-            var args = listBox3.SelectedItem as ParseMessageEventArgs;
+            var args = listTimeout.SelectedItem as ParseMessageEventArgs;
             var source = args.Source as CallTimeout;
             AppendText(richTextBox1, source.Caller);
         }
 
         private void listBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBox2.SelectedIndex < 0) webBrowser1.Text = string.Empty;
+            if (listError.SelectedIndex < 0) webBrowser1.Text = string.Empty;
 
-            var args = listBox2.SelectedItem as ParseMessageEventArgs;
+            var args = listError.SelectedItem as ParseMessageEventArgs;
             var source = args.Source as CallError;
             try { webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty; }
             catch { }
             webBrowser1.Document.Write(source.HtmlError);
-
             AppendText(richTextBox2, source.Caller);
         }
 
@@ -166,7 +175,11 @@ namespace MySoft.PlatformService.WinForm
 
         private void frmMain_Load(object sender, EventArgs e)
         {
+            listService.SelectedIndexChanged += new EventHandler(messageListBox1_SelectedIndexChanged);
+            listMethod.SelectedIndexChanged += new EventHandler(messageListBox2_SelectedIndexChanged);
+
             InitBrowser();
+            InitService();
         }
 
         /// <summary>
@@ -177,6 +190,156 @@ namespace MySoft.PlatformService.WinForm
             webBrowser1.Url = new Uri("about:blank");
             webBrowser1.AllowNavigation = false;
             webBrowser1.IsWebBrowserContextMenuEnabled = false;
+        }
+
+        private void InitService()
+        {
+            tabPage0.Text = "服务信息";
+            IList<ServiceInfo> services;
+            try
+            {
+                services = CastleFactory.Create().GetChannel<IStatusService>()
+                    .GetServiceList().OrderBy(p => p.Name).ToList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            tabPage0.Text = "服务信息(" + services.Count + ")";
+            listService.Items.Clear();
+            foreach (var service in services)
+            {
+                listService.Items.Add(
+                    new ParseMessageEventArgs
+                    {
+                        MessageType = ParseMessageType.Info,
+                        LineHeader = string.Format("{0} => ({1}) methods", service.Name, service.Methods.Count),
+                        MessageText = string.Format("{0}", service.FullName),
+                        Source = service
+                    });
+            }
+
+            listService.Invalidate();
+        }
+
+        void messageListBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            listMethod.Items.Clear();
+            if (listService.SelectedIndex < 0)
+            {
+                listMethod.Invalidate();
+                return;
+            }
+
+            var item = listService.Items[listService.SelectedIndex];
+            var methods = (item.Source as ServiceInfo).Methods.OrderBy(p => p.Name).ToList();
+            foreach (var method in methods)
+            {
+                listMethod.Items.Add(
+                    new ParseMessageEventArgs
+                    {
+                        MessageType = ParseMessageType.Info,
+                        LineHeader = string.Format("{0} => ({1}) parameters", method.Name, method.Parameters.Count),
+                        MessageText = string.Format("{0}", method.FullName),
+                        Source = method
+                    });
+            }
+
+            listMethod.Invalidate();
+        }
+
+        void messageListBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            richTextBox3.Clear();
+            if (listMethod.SelectedIndex < 0)
+            {
+                return;
+            }
+
+            var item = listMethod.Items[listMethod.SelectedIndex];
+            var parameters = (item.Source as MethodInfo).Parameters;
+
+            if (parameters.Count > 0)
+            {
+                richTextBox3.SelectionIndent = 0;
+                richTextBox3.SelectionColor = Color.Blue;
+                richTextBox3.AppendText("Parameters:");
+                richTextBox3.AppendText("\r\n");
+                foreach (var parameter in parameters)
+                {
+                    richTextBox3.SelectionColor = Color.Black;
+                    richTextBox3.SelectionIndent = 20;
+                    richTextBox3.AppendText("【" + parameter.Name + "】");
+                    richTextBox3.AppendText(" => ");
+                    richTextBox3.AppendText(parameter.TypeFullName);
+                    richTextBox3.AppendText("\r\n");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 刷新服务信息
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 刷新服务信息ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            listService.Items.Clear();
+            listMethod.Items.Clear();
+            richTextBox3.Clear();
+
+            listService.Invalidate();
+            listMethod.Invalidate();
+
+            InitService();
+        }
+
+        private void 添加此服务到监控AToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (checkBox1.Enabled)
+            {
+                MessageBox.Show("请先启动监控！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (listService.SelectedIndex < 0) return;
+
+            try
+            {
+                var item = listService.Items[listService.SelectedIndex];
+                service.AddSubscribeType((item.Source as ServiceInfo).FullName);
+
+                MessageBox.Show("添加成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void 从监控中移除此服务OToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (checkBox1.Enabled)
+            {
+                MessageBox.Show("请先启动监控！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (listService.SelectedIndex < 0) return;
+
+            try
+            {
+                var item = listService.Items[listService.SelectedIndex];
+                service.RemoveSubscribeType((item.Source as ServiceInfo).FullName);
+
+                MessageBox.Show("移除成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 
@@ -204,7 +367,13 @@ namespace MySoft.PlatformService.WinForm
 
         public void Push(IList<ClientInfo> clientInfos)
         {
-            //throw new NotImplementedException();
+            //客户端连接信息
+        }
+
+
+        public void Push(ServerStatus serverStatus)
+        {
+            //服务端定时状态信息
         }
 
         public void Push(ConnectInfo connectInfo)
@@ -232,7 +401,7 @@ namespace MySoft.PlatformService.WinForm
                     });
 
                 box1.Invalidate();
-                control.TabPages[0].Text = "连接信息(" + box1.Items.Count + ")";
+                control.TabPages[1].Text = "连接信息(" + box1.Items.Count + ")";
 
                 if (writeLog)
                 {
@@ -266,12 +435,7 @@ namespace MySoft.PlatformService.WinForm
             }));
         }
 
-        public void Push(ServerStatus serverStatus)
-        {
-            //服务端定时状态信息
-        }
-
-        public void Push(CallError callError)
+        public void Push(CallTimeout callTimeout)
         {
             box2.BeginInvoke(new Action(() =>
             {
@@ -280,47 +444,13 @@ namespace MySoft.PlatformService.WinForm
                     box2.Items.RemoveAt(box2.Items.Count - 1);
                 }
 
-                box2.Items.Insert(0,
-                    new ParseMessageEventArgs
-                    {
-                        MessageType = ParseMessageType.Error,
-                        LineHeader = string.Format("【{0}】 [{2}] Error => {1}", callError.CallTime, callError.Message, callError.Caller.AppName),
-                        MessageText = string.Format("{0},{1}", callError.Caller.ServiceName, callError.Caller.MethodName),
-                        //+ "\r\n" + callError.Caller.Parameters
-                        Source = callError
-                    });
-
-                box2.Invalidate();
-                control.TabPages[2].Text = "异常信息(" + box2.Items.Count + ")";
-
-                if (writeLog)
-                {
-                    var item = box2.Items[0];
-                    var message = string.Format("{0}\r\n{1}\r\n{2}\r\n{3}", item.LineHeader, item.MessageText,
-                        (item.Source as CallError).Caller.Parameters, (item.Source as CallError).Error);
-                    SimpleLog.Instance.WriteLogForDir("CallError", message);
-                }
-            }));
-        }
-
-        public void Push(CallTimeout callTimeout)
-        {
-            //throw new NotImplementedException();
-
-            box3.BeginInvoke(new Action(() =>
-            {
-                if (box3.Items.Count >= rowCount)
-                {
-                    box3.Items.RemoveAt(box3.Items.Count - 1);
-                }
-
                 var msgType = ParseMessageType.Warning;
                 if (callTimeout.ElapsedTime >= timeout)
                 {
                     msgType = ParseMessageType.Error;
                 }
 
-                box3.Items.Insert(0,
+                box2.Items.Insert(0,
                     new ParseMessageEventArgs
                     {
                         MessageType = msgType,
@@ -330,15 +460,47 @@ namespace MySoft.PlatformService.WinForm
                         Source = callTimeout
                     });
 
-                box3.Invalidate();
-                control.TabPages[1].Text = "超时信息(" + box3.Items.Count + ")";
+                box2.Invalidate();
+                control.TabPages[2].Text = "超时信息(" + box2.Items.Count + ")";
 
                 if (writeLog && msgType == ParseMessageType.Error)
                 {
-                    var item = box3.Items[0];
+                    var item = box2.Items[0];
                     var message = string.Format("{0}\r\n{1}\r\n{2}", item.LineHeader, item.MessageText,
                         (item.Source as CallTimeout).Caller.Parameters);
                     SimpleLog.Instance.WriteLogForDir("CallTimeout", message);
+                }
+            }));
+        }
+
+        public void Push(CallError callError)
+        {
+            box3.BeginInvoke(new Action(() =>
+            {
+                if (box3.Items.Count >= rowCount)
+                {
+                    box3.Items.RemoveAt(box3.Items.Count - 1);
+                }
+
+                box3.Items.Insert(0,
+                    new ParseMessageEventArgs
+                    {
+                        MessageType = ParseMessageType.Error,
+                        LineHeader = string.Format("【{0}】 [{2}] Error => {1}", callError.CallTime, callError.Message, callError.Caller.AppName),
+                        MessageText = string.Format("{0},{1}", callError.Caller.ServiceName, callError.Caller.MethodName),
+                        //+ "\r\n" + callError.Caller.Parameters
+                        Source = callError
+                    });
+
+                box3.Invalidate();
+                control.TabPages[3].Text = "异常信息(" + box3.Items.Count + ")";
+
+                if (writeLog)
+                {
+                    var item = box3.Items[0];
+                    var message = string.Format("{0}\r\n{1}\r\n{2}\r\n{3}", item.LineHeader, item.MessageText,
+                        (item.Source as CallError).Caller.Parameters, (item.Source as CallError).Error);
+                    SimpleLog.Instance.WriteLogForDir("CallError", message);
                 }
             }));
         }

@@ -37,11 +37,11 @@ namespace MySoft.IoC
             get { return _options; }
         }
 
-        private string[] _subscribeTypes;
+        private IList<string> _subscribeTypes;
         /// <summary>
         /// 订阅的类型
         /// </summary>
-        public string[] SubscribeTypes
+        public IList<string> SubscribeTypes
         {
             get { return _subscribeTypes; }
         }
@@ -71,9 +71,9 @@ namespace MySoft.IoC
             _options = options;
 
             if (subscribeTypes == null)
-                _subscribeTypes = new string[0];
+                _subscribeTypes = new List<string>();
             else
-                _subscribeTypes = subscribeTypes;
+                _subscribeTypes = new List<string>(subscribeTypes);
         }
 
         /// <summary>
