@@ -55,6 +55,9 @@
             this.numericUpDown3 = new System.Windows.Forms.NumericUpDown();
             this.label6 = new System.Windows.Forms.Label();
             this.checkBox4 = new System.Windows.Forms.CheckBox();
+            this.numericUpDown4 = new System.Windows.Forms.NumericUpDown();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -71,12 +74,13 @@
             this.splitContainer2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(592, 442);
+            this.button1.Location = new System.Drawing.Point(660, 444);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 1;
@@ -88,7 +92,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 446);
+            this.label1.Location = new System.Drawing.Point(16, 448);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(143, 12);
             this.label1.TabIndex = 3;
@@ -145,7 +149,7 @@
             this.tabControl1.Location = new System.Drawing.Point(14, 39);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(660, 396);
+            this.tabControl1.Size = new System.Drawing.Size(728, 398);
             this.tabControl1.TabIndex = 11;
             // 
             // tabPage1
@@ -153,7 +157,7 @@
             this.tabPage1.Controls.Add(this.listBox1);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Size = new System.Drawing.Size(652, 370);
+            this.tabPage1.Size = new System.Drawing.Size(720, 372);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "连接信息";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -161,14 +165,14 @@
             // listBox1
             // 
             this.listBox1.AutoScroll = true;
-            this.listBox1.AutoScrollMinSize = new System.Drawing.Size(622, 0);
+            this.listBox1.AutoScrollMinSize = new System.Drawing.Size(690, 0);
             this.listBox1.BackColor = System.Drawing.Color.White;
             this.listBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listBox1.Location = new System.Drawing.Point(0, 0);
             this.listBox1.Name = "listBox1";
             this.listBox1.SelectedIndex = -1;
             this.listBox1.SelectedItem = null;
-            this.listBox1.Size = new System.Drawing.Size(652, 370);
+            this.listBox1.Size = new System.Drawing.Size(720, 372);
             this.listBox1.TabIndex = 10;
             // 
             // tabPage3
@@ -310,7 +314,7 @@
             this.checkBox1.AutoSize = true;
             this.checkBox1.Checked = true;
             this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox1.Location = new System.Drawing.Point(498, 12);
+            this.checkBox1.Location = new System.Drawing.Point(666, 12);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(72, 16);
             this.checkBox1.TabIndex = 12;
@@ -380,7 +384,7 @@
             // numericUpDown3
             // 
             this.numericUpDown3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.numericUpDown3.Location = new System.Drawing.Point(510, 444);
+            this.numericUpDown3.Location = new System.Drawing.Point(578, 446);
             this.numericUpDown3.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -404,7 +408,7 @@
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(449, 449);
+            this.label6.Location = new System.Drawing.Point(517, 451);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(65, 12);
             this.label6.TabIndex = 6;
@@ -416,33 +420,76 @@
             this.checkBox4.AutoSize = true;
             this.checkBox4.Checked = true;
             this.checkBox4.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox4.Location = new System.Drawing.Point(341, 448);
+            this.checkBox4.Location = new System.Drawing.Point(409, 450);
             this.checkBox4.Name = "checkBox4";
             this.checkBox4.Size = new System.Drawing.Size(96, 16);
             this.checkBox4.TabIndex = 12;
             this.checkBox4.Text = "写入日志文件";
             this.checkBox4.UseVisualStyleBackColor = true;
             // 
+            // numericUpDown4
+            // 
+            this.numericUpDown4.Location = new System.Drawing.Point(514, 7);
+            this.numericUpDown4.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+            this.numericUpDown4.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDown4.Name = "numericUpDown4";
+            this.numericUpDown4.Size = new System.Drawing.Size(60, 21);
+            this.numericUpDown4.TabIndex = 5;
+            this.numericUpDown4.Value = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(580, 12);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(17, 12);
+            this.label7.TabIndex = 7;
+            this.label7.Text = "ms";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(477, 12);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(41, 12);
+            this.label8.TabIndex = 6;
+            this.label8.Text = "报警：";
+            // 
             // frmMain
             // 
             this.AcceptButton = this.button1;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(686, 473);
+            this.ClientSize = new System.Drawing.Size(754, 475);
             this.Controls.Add(this.checkBox3);
             this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.checkBox4);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.label5);
+            this.Controls.Add(this.label7);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.numericUpDown2);
             this.Controls.Add(this.numericUpDown3);
+            this.Controls.Add(this.numericUpDown4);
             this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label6);
+            this.Controls.Add(this.label8);
             this.Controls.Add(this.label2);
             this.Name = "frmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -464,6 +511,7 @@
             this.splitContainer2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -498,5 +546,8 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.RichTextBox richTextBox2;
+        private System.Windows.Forms.NumericUpDown numericUpDown4;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
     }
 }

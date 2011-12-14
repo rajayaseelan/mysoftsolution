@@ -156,7 +156,8 @@ namespace MySoft.IoC
                                     CallTime = callArgs.CallTime,
                                     Type = error.GetType().FullName,
                                     Message = error.Message,
-                                    Description = ErrorHelper.GetHtmlError(callArgs.Error)
+                                    Error = ErrorHelper.GetErrorWithoutHtml(callArgs.Error),
+                                    HtmlError = ErrorHelper.GetHtmlError(callArgs.Error)
                                 };
                                 lstn.Notify(callError);
                             }

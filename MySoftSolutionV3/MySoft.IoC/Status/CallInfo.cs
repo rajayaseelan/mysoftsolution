@@ -61,9 +61,14 @@ namespace MySoft.IoC.Status
         public string Message { get; set; }
 
         /// <summary>
-        /// 错误描述
+        /// 错误信息
         /// </summary>
-        public string Description { get; set; }
+        public string Error { get; set; }
+
+        /// <summary>
+        /// html错误信息
+        /// </summary>
+        public string HtmlError { get; set; }
 
         /// <summary>
         /// 调用时间

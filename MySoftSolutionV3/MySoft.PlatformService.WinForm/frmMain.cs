@@ -35,7 +35,7 @@ namespace MySoft.PlatformService.WinForm
                 if (button1.Tag == null)
                 {
                     var listener = new StatusListener(tabControl1, listBox1, listBox2, listBox3,
-                        Convert.ToInt32(numericUpDown3.Value), checkBox4.Checked);
+                        Convert.ToInt32(numericUpDown3.Value), Convert.ToInt32(numericUpDown4.Value), checkBox4.Checked);
                     service = CastleFactory.Create().GetChannel<IStatusService>(listener);
 
                     //var services = service.GetServiceList();
@@ -62,6 +62,7 @@ namespace MySoft.PlatformService.WinForm
 
                     checkBox4.Enabled = false;
                     numericUpDown3.Enabled = false;
+                    numericUpDown4.Enabled = false;
                     //button1.Enabled = false;
                 }
                 else
@@ -96,6 +97,7 @@ namespace MySoft.PlatformService.WinForm
 
                     checkBox4.Enabled = true;
                     numericUpDown3.Enabled = true;
+                    numericUpDown4.Enabled = true;
                     //button1.Enabled = true;
                 }
             }
@@ -132,7 +134,7 @@ namespace MySoft.PlatformService.WinForm
             var source = args.Source as CallError;
             try { webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty; }
             catch { }
-            webBrowser1.Document.Write(source.Description);
+            webBrowser1.Document.Write(source.HtmlError);
 
             AppendText(richTextBox2, source.Caller);
         }
@@ -185,14 +187,16 @@ namespace MySoft.PlatformService.WinForm
         private MessageListBox box2;
         private MessageListBox box3;
         private int rowCount;
+        private int timeout;
         private bool writeLog;
-        public StatusListener(TabControl control, MessageListBox box1, MessageListBox box2, MessageListBox box3, int rowCount, bool writeLog)
+        public StatusListener(TabControl control, MessageListBox box1, MessageListBox box2, MessageListBox box3, int rowCount, int timeout, bool writeLog)
         {
             this.control = control;
             this.box1 = box1;
             this.box2 = box2;
             this.box3 = box3;
             this.rowCount = rowCount;
+            this.timeout = timeout;
             this.writeLog = writeLog;
         }
 
@@ -284,7 +288,7 @@ namespace MySoft.PlatformService.WinForm
                 {
                     var item = box2.Items[0];
                     var message = string.Format("{0}\r\n{1}\r\n{2}\r\n{3}", item.LineHeader, item.MessageText,
-                        (item.Source as CallError).Caller.Parameters, (item.Source as CallError).Description);
+                        (item.Source as CallError).Caller.Parameters, (item.Source as CallError).Error);
                     SimpleLog.Instance.WriteLogForDir("CallError", message);
                 }
             }));
@@ -301,10 +305,16 @@ namespace MySoft.PlatformService.WinForm
                     box3.Items.RemoveAt(box3.Items.Count - 1);
                 }
 
+                var msgType = ParseMessageType.Warning;
+                if (callTimeout.ElapsedTime >= timeout)
+                {
+                    msgType = ParseMessageType.Error;
+                }
+
                 box3.Items.Insert(0,
                     new ParseMessageEventArgs
                     {
-                        MessageType = ParseMessageType.Warning,
+                        MessageType = msgType,
                         LineHeader = string.Format("【{0}】 [{3}] Timeout => ({1} rows)：{2} ms.", callTimeout.CallTime, callTimeout.Count, callTimeout.ElapsedTime, callTimeout.Caller.AppName),
                         MessageText = string.Format("{0},{1}", callTimeout.Caller.ServiceName, callTimeout.Caller.MethodName),
                         // + "\r\n" + callTimeout.Caller.Parameters
@@ -314,7 +324,7 @@ namespace MySoft.PlatformService.WinForm
                 box3.Invalidate();
                 control.TabPages[1].Text = "超时信息(" + box3.Items.Count + ")";
 
-                if (writeLog)
+                if (writeLog && msgType == ParseMessageType.Error)
                 {
                     var item = box3.Items[0];
                     var message = string.Format("{0}\r\n{1}\r\n{2}", item.LineHeader, item.MessageText,

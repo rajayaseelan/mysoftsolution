@@ -90,6 +90,10 @@
       <Project>{4955AB17-A062-4399-8795-3D40F6FDB869}</Project>
       <Name>MySoft.PlatformService.UserService</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MySoft.Web\MySoft.Web.csproj">
+      <Project>{D2610145-763C-4C1E-8853-06ACA8FF4C3E}</Project>
+      <Name>MySoft.Web</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
