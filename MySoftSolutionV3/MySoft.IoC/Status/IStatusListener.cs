@@ -18,8 +18,9 @@ namespace MySoft.IoC.Status
         /// 推送改变客户端信息
         /// </summary>
         /// <param name="ipAddress"></param>
+        /// <param name="port"></param>
         /// <param name="appClient"></param>
-        void Push(string ipAddress, AppClient appClient);
+        void Change(string ipAddress, int port, AppClient appClient);
 
         /// <summary>
         /// 推送实时错误信息

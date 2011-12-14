@@ -98,10 +98,11 @@ namespace MySoft.IoC
         /// 通知消息
         /// </summary>
         /// <param name="ipAddress"></param>
+        /// <param name="port"></param>
         /// <param name="appClient"></param>
-        public void Notify(string ipAddress, AppClient appClient)
+        public void Notify(string ipAddress, int port, AppClient appClient)
         {
-            _innerListener.Push(ipAddress, appClient);
+            _innerListener.Change(ipAddress, port, appClient);
         }
 
         /// <summary>

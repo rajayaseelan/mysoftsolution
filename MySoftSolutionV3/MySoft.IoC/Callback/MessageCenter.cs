@@ -229,8 +229,9 @@ namespace MySoft.IoC
         /// 改变客户端信息
         /// </summary>
         /// <param name="ipAddress"></param>
+        /// <param name="port"></param>
         /// <param name="appClient"></param>
-        public void Notify(string ipAddress, AppClient appClient)
+        public void Notify(string ipAddress, int port, AppClient appClient)
         {
             if (_listeners.Count == 0) return;
 
@@ -242,7 +243,7 @@ namespace MySoft.IoC
                     var options = lstn.Options;
                     if (options.PushClientConnect)
                     {
-                        lstn.Notify(ipAddress, appClient);
+                        lstn.Notify(ipAddress, port, appClient);
                     }
                 }
                 catch (SocketException ex)

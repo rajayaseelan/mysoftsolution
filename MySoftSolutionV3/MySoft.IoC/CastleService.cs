@@ -252,7 +252,7 @@ namespace MySoft.IoC
 
                     //响应客户端详细信息
                     var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
-                    MessageCenter.Instance.Notify(endPoint.IpAddress, (e.Message as ScsClientMessage).Client);
+                    MessageCenter.Instance.Notify(endPoint.IpAddress, endPoint.TcpPort, (e.Message as ScsClientMessage).Client);
                 }
             }
             else if (e.Message is ScsResultMessage)

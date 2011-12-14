@@ -216,10 +216,16 @@ namespace MySoft.PlatformService.WinForm
                     box1.Items.RemoveAt(box1.Items.Count - 1);
                 }
 
+                var msgType = ParseMessageType.Info;
+                if (!connectInfo.Connected)
+                {
+                    msgType = ParseMessageType.Error;
+                }
+
                 box1.Items.Insert(0,
                     new ParseMessageEventArgs
                     {
-                        MessageType = ParseMessageType.Info,
+                        MessageType = msgType,
                         LineHeader = string.Format("【{0}】 {1}:{2} {3}", connectInfo.ConnectTime, connectInfo.IPAddress, connectInfo.Port, connectInfo.Connected ? "连接" : "断开"),
                         MessageText = string.Format("{0}:{1} {4} {2}:{3}", connectInfo.IPAddress, connectInfo.Port, connectInfo.ServerIPAddress, connectInfo.ServerPort, connectInfo.Connected ? "Connect to" : "Disconnect from"),
                         Source = connectInfo
@@ -237,7 +243,7 @@ namespace MySoft.PlatformService.WinForm
             }));
         }
 
-        public void Push(string ipAddress, AppClient appClient)
+        public void Change(string ipAddress, int port, AppClient appClient)
         {
             box1.BeginInvoke(new Action(() =>
             {
@@ -245,11 +251,14 @@ namespace MySoft.PlatformService.WinForm
                 {
                     var args = box1.Items[i];
                     var connect = args.Source as ConnectInfo;
-                    if (connect.AppName == null)
+                    if (connect.AppName == null && connect.IPAddress == ipAddress && connect.Port == port)
                     {
+                        connect.IPAddress = appClient.IPAddress;
                         connect.AppName = appClient.AppName;
                         connect.HostName = appClient.HostName;
+
                         args.MessageText = string.Format("[{0}] ", appClient.AppName) + args.MessageText;
+                        break;
                     }
                 }
 

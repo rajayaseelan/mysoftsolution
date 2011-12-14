@@ -12,30 +12,40 @@ using System.Text;
 
 namespace MySoft.PlatformService.WebForm
 {
-    public partial class _Default : System.Web.UI.Page
+    public partial class Server : MySoft.Web.UI.AjaxPage
     {
-        protected static IList<ClientInfo> clients;
-        protected static ServerStatus status;
-
+        protected IList<RemoteNode> nodelist = new List<RemoteNode>();
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                try
-                {
-                    status = CastleFactory.Create().GetChannel<IStatusService>().GetServerStatus();
-                    clients = CastleFactory.Create().GetChannel<IStatusService>().GetClientList();
-                }
-                catch (Exception ex)
-                {
-                    Response.Write(ex.Message);
-                }
+                nodelist = CastleFactory.Create().GetRemoteNodes();
             }
         }
 
-        protected void btnClear_Click(object sender, EventArgs e)
+        [MySoft.Web.UI.AjaxMethod]
+        public void ClearServerStatus()
         {
-            CastleFactory.Create().GetChannel<IStatusService>().ClearServerStatus();
+            try
+            {
+                nodelist = CastleFactory.Create().GetRemoteNodes();
+                foreach (var node in nodelist)
+                {
+                    CastleFactory.Create().GetChannel<IStatusService>(node).ClearServerStatus();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        protected override bool EnableAjaxCallback
+        {
+            get
+            {
+                return true;
+            }
         }
     }
 }
