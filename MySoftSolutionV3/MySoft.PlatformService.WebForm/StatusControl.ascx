@@ -115,7 +115,10 @@
                 <% =node.Key %>【<% = node.IP + ":" + node.Port %>】</b></li>
             <%
         int index = 0;
-        var appclients = clients.GroupBy(p => p.AppName).Select(p => new { AppName = p.Key ,Clients = p.ToList()}).ToList();
+        var appclients = clients.GroupBy(p => p.AppName)
+            .Select(p => new { AppName = p.Key ,Clients = p.ToList()})
+            .OrderByDescending(p => p.Clients.Count)
+            .ToList();
         foreach (var app in appclients)
         {
             index ++;
