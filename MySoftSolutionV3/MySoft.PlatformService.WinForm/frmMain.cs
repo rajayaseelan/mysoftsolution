@@ -23,17 +23,21 @@ namespace MySoft.PlatformService.WinForm
         {
             //发生错误SocketException为网络断开
             if (error is SocketException)
-            {
-                button1_Click(null, EventArgs.Empty);
-                listConnect.Items.Insert(0,
-                    new ParseMessageEventArgs
-                    {
-                        MessageType = ParseMessageType.Error,
-                        LineHeader = string.Format("【{0}】 当前网络已经从服务器断开...", DateTime.Now),
-                        MessageText = string.Format("({0}){1}", (error as SocketException).ErrorCode, (error as SocketException).Message)
-                    });
+            { //未连接状态，自动断开为SocketError.ConnectionReset
+                if ((error as SocketException).SocketErrorCode == SocketError.NotConnected)
+                {
+                    button1_Click(null, EventArgs.Empty);
 
-                listConnect.Invalidate();
+                    listConnect.Items.Insert(0,
+                        new ParseMessageEventArgs
+                        {
+                            MessageType = ParseMessageType.Error,
+                            LineHeader = string.Format("【{0}】 当前网络已经从服务器断开...", DateTime.Now),
+                            MessageText = string.Format("({0}){1}", (error as SocketException).ErrorCode, (error as SocketException).Message)
+                        });
+
+                    listConnect.Invalidate();
+                }
             }
         }
 
@@ -227,6 +231,8 @@ namespace MySoft.PlatformService.WinForm
         void messageListBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             listMethod.Items.Clear();
+            richTextBox3.Clear();
+
             if (listService.SelectedIndex < 0)
             {
                 listMethod.Invalidate();

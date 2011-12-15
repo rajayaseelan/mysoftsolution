@@ -20,6 +20,11 @@ namespace MySoft.IoC
         /// </summary>
         public event EventHandler<ServiceMessageEventArgs> OnCallback;
 
+        /// <summary>
+        /// This event is raised when client disconnected from server.
+        /// </summary>
+        public event EventHandler Disconnected;
+
         private IScsClient client;
         private ILog logger;
         private string node;
@@ -31,7 +36,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node"></param>
         /// <param name="logger"></param>
-        public ServiceRequest(RemoteNode node, ILog logger, bool isAutoDisconnect)
+        public ServiceRequest(RemoteNode node, ILog logger, bool autoDisconnect)
         {
             this.logger = logger;
             this.node = node.Key;
@@ -40,7 +45,7 @@ namespace MySoft.IoC
 
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
             this.client.ConnectTimeout = 5000;
-            this.client.DisconnectTimeout = isAutoDisconnect ? node.Timeout * 1000 : -1;
+            this.client.DisconnectTimeout = autoDisconnect ? node.Timeout * 1000 : -1;
             this.client.Disconnected += new EventHandler(client_Disconnected);
             this.client.MessageReceived += new EventHandler<MessageEventArgs>(client_MessageReceived);
             this.client.MessageSent += new EventHandler<MessageEventArgs>(client_MessageSent);
@@ -51,7 +56,10 @@ namespace MySoft.IoC
         void client_Disconnected(object sender, EventArgs e)
         {
             //输出错误信息
-            this.logger.WriteError(new SocketException((int)SocketError.ConnectionReset));
+            if (Disconnected != null)
+                Disconnected(sender, e);
+            else
+                this.logger.WriteError(new SocketException((int)SocketError.ConnectionReset));
         }
 
         void client_ErrorReceived(object sender, ErrorEventArgs e)

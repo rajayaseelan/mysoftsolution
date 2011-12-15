@@ -24,9 +24,15 @@ namespace MySoft.IoC.Services
         {
             ServiceRequest reqService = new ServiceRequest(node, logger, false);
             reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
+            reqService.Disconnected += new EventHandler(reqService_Disconnected);
 
             this.reqPool = new ServiceRequestPool(1);
             this.reqPool.Push(reqService);
+        }
+
+        void reqService_Disconnected(object sender, EventArgs e)
+        {
+            this.logger.WriteError(new SocketException((int)SocketError.NotConnected));
         }
 
         /// <summary>
