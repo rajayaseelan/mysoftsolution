@@ -49,7 +49,11 @@ namespace MySoft.RESTful.Utils
                     if (property != null)
                     {
                         string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
-                        var jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
+                        object jsonValue = null;
+                        if (value.Contains("new Date"))
+                            jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+                        else
+                            jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
                         args.Add(jsonValue);
                     }
                     else if (string.Compare(info.Name, userParameter, true) == 0)

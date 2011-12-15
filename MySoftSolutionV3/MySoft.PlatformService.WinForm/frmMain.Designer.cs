@@ -37,9 +37,14 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage0 = new System.Windows.Forms.TabPage();
             this.splitContainer4 = new System.Windows.Forms.SplitContainer();
+            this.splitContainer6 = new System.Windows.Forms.SplitContainer();
+            this.listAssembly = new ListControls.MessageListBox();
             this.listService = new ListControls.MessageListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.刷新服务信息ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.添加此服务到监控AToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.从监控中移除此服务OToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer5 = new System.Windows.Forms.SplitContainer();
             this.listMethod = new ListControls.MessageListBox();
             this.richTextBox3 = new System.Windows.Forms.RichTextBox();
@@ -55,6 +60,8 @@
             this.listError = new ListControls.MessageListBox();
             this.webBrowser1 = new System.Windows.Forms.WebBrowser();
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.webBrowser2 = new System.Windows.Forms.WebBrowser();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -67,15 +74,15 @@
             this.numericUpDown4 = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.添加此服务到监控AToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.从监控中移除此服务OToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage0.SuspendLayout();
             this.splitContainer4.Panel1.SuspendLayout();
             this.splitContainer4.Panel2.SuspendLayout();
             this.splitContainer4.SuspendLayout();
+            this.splitContainer6.Panel1.SuspendLayout();
+            this.splitContainer6.Panel2.SuspendLayout();
+            this.splitContainer6.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.splitContainer5.Panel1.SuspendLayout();
             this.splitContainer5.Panel2.SuspendLayout();
@@ -92,6 +99,7 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
@@ -160,13 +168,14 @@
             // 
             // tabControl1
             // 
-            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage0);
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Location = new System.Drawing.Point(14, 39);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -191,7 +200,7 @@
             // 
             // splitContainer4.Panel1
             // 
-            this.splitContainer4.Panel1.Controls.Add(this.listService);
+            this.splitContainer4.Panel1.Controls.Add(this.splitContainer6);
             // 
             // splitContainer4.Panel2
             // 
@@ -199,6 +208,37 @@
             this.splitContainer4.Size = new System.Drawing.Size(720, 372);
             this.splitContainer4.SplitterDistance = 250;
             this.splitContainer4.TabIndex = 0;
+            // 
+            // splitContainer6
+            // 
+            this.splitContainer6.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer6.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer6.Name = "splitContainer6";
+            this.splitContainer6.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer6.Panel1
+            // 
+            this.splitContainer6.Panel1.Controls.Add(this.listAssembly);
+            // 
+            // splitContainer6.Panel2
+            // 
+            this.splitContainer6.Panel2.Controls.Add(this.listService);
+            this.splitContainer6.Size = new System.Drawing.Size(250, 372);
+            this.splitContainer6.SplitterDistance = 120;
+            this.splitContainer6.TabIndex = 0;
+            // 
+            // listAssembly
+            // 
+            this.listAssembly.AutoScroll = true;
+            this.listAssembly.AutoScrollMinSize = new System.Drawing.Size(220, 0);
+            this.listAssembly.BackColor = System.Drawing.Color.White;
+            this.listAssembly.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listAssembly.Location = new System.Drawing.Point(0, 0);
+            this.listAssembly.Name = "listAssembly";
+            this.listAssembly.SelectedIndex = -1;
+            this.listAssembly.SelectedItem = null;
+            this.listAssembly.Size = new System.Drawing.Size(250, 120);
+            this.listAssembly.TabIndex = 12;
             // 
             // listService
             // 
@@ -211,7 +251,7 @@
             this.listService.Name = "listService";
             this.listService.SelectedIndex = -1;
             this.listService.SelectedItem = null;
-            this.listService.Size = new System.Drawing.Size(250, 372);
+            this.listService.Size = new System.Drawing.Size(250, 248);
             this.listService.TabIndex = 12;
             // 
             // contextMenuStrip1
@@ -222,7 +262,7 @@
             this.添加此服务到监控AToolStripMenuItem,
             this.从监控中移除此服务OToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(203, 98);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(203, 76);
             // 
             // 刷新服务信息ToolStripMenuItem
             // 
@@ -230,6 +270,25 @@
             this.刷新服务信息ToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.刷新服务信息ToolStripMenuItem.Text = "刷新服务信息(&R)";
             this.刷新服务信息ToolStripMenuItem.Click += new System.EventHandler(this.刷新服务信息ToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(199, 6);
+            // 
+            // 添加此服务到监控AToolStripMenuItem
+            // 
+            this.添加此服务到监控AToolStripMenuItem.Name = "添加此服务到监控AToolStripMenuItem";
+            this.添加此服务到监控AToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.添加此服务到监控AToolStripMenuItem.Text = "添加此服务到监控(&A)";
+            this.添加此服务到监控AToolStripMenuItem.Click += new System.EventHandler(this.添加此服务到监控AToolStripMenuItem_Click);
+            // 
+            // 从监控中移除此服务OToolStripMenuItem
+            // 
+            this.从监控中移除此服务OToolStripMenuItem.Name = "从监控中移除此服务OToolStripMenuItem";
+            this.从监控中移除此服务OToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.从监控中移除此服务OToolStripMenuItem.Text = "从监控中移除此服务(&O)";
+            this.从监控中移除此服务OToolStripMenuItem.Click += new System.EventHandler(this.从监控中移除此服务OToolStripMenuItem_Click);
             // 
             // splitContainer5
             // 
@@ -276,13 +335,13 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.BackColor = System.Drawing.SystemColors.Control;
             this.tabPage1.Controls.Add(this.listConnect);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Size = new System.Drawing.Size(720, 372);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "连接信息";
-            this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // listConnect
             // 
@@ -430,6 +489,25 @@
             this.richTextBox2.Size = new System.Drawing.Size(220, 372);
             this.richTextBox2.TabIndex = 15;
             this.richTextBox2.Text = "";
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.webBrowser2);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Size = new System.Drawing.Size(720, 372);
+            this.tabPage4.TabIndex = 4;
+            this.tabPage4.Text = "状态信息";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // webBrowser2
+            // 
+            this.webBrowser2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.webBrowser2.Location = new System.Drawing.Point(0, 0);
+            this.webBrowser2.MinimumSize = new System.Drawing.Size(20, 20);
+            this.webBrowser2.Name = "webBrowser2";
+            this.webBrowser2.Size = new System.Drawing.Size(720, 372);
+            this.webBrowser2.TabIndex = 0;
             // 
             // checkBox1
             // 
@@ -589,25 +667,6 @@
             this.label8.TabIndex = 6;
             this.label8.Text = "报警：";
             // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(199, 6);
-            // 
-            // 添加此服务到监控AToolStripMenuItem
-            // 
-            this.添加此服务到监控AToolStripMenuItem.Name = "添加此服务到监控AToolStripMenuItem";
-            this.添加此服务到监控AToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
-            this.添加此服务到监控AToolStripMenuItem.Text = "添加此服务到监控(&A)";
-            this.添加此服务到监控AToolStripMenuItem.Click += new System.EventHandler(this.添加此服务到监控AToolStripMenuItem_Click);
-            // 
-            // 从监控中移除此服务OToolStripMenuItem
-            // 
-            this.从监控中移除此服务OToolStripMenuItem.Name = "从监控中移除此服务OToolStripMenuItem";
-            this.从监控中移除此服务OToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
-            this.从监控中移除此服务OToolStripMenuItem.Text = "从监控中移除此服务(&O)";
-            this.从监控中移除此服务OToolStripMenuItem.Click += new System.EventHandler(this.从监控中移除此服务OToolStripMenuItem_Click);
-            // 
             // frmMain
             // 
             this.AcceptButton = this.button1;
@@ -642,6 +701,9 @@
             this.splitContainer4.Panel1.ResumeLayout(false);
             this.splitContainer4.Panel2.ResumeLayout(false);
             this.splitContainer4.ResumeLayout(false);
+            this.splitContainer6.Panel1.ResumeLayout(false);
+            this.splitContainer6.Panel2.ResumeLayout(false);
+            this.splitContainer6.ResumeLayout(false);
             this.contextMenuStrip1.ResumeLayout(false);
             this.splitContainer5.Panel1.ResumeLayout(false);
             this.splitContainer5.Panel2.ResumeLayout(false);
@@ -658,6 +720,7 @@
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.ResumeLayout(false);
+            this.tabPage4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).EndInit();
@@ -709,5 +772,9 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem 添加此服务到监控AToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 从监控中移除此服务OToolStripMenuItem;
+        private System.Windows.Forms.SplitContainer splitContainer6;
+        private ListControls.MessageListBox listAssembly;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.WebBrowser webBrowser2;
     }
 }

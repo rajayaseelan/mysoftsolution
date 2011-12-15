@@ -8,6 +8,8 @@ using MySoft.IoC.Status;
 using MySoft.Logger;
 using System.Net.Sockets;
 using System.Linq;
+using System.Threading;
+using System.Configuration;
 
 namespace MySoft.PlatformService.WinForm
 {
@@ -23,7 +25,8 @@ namespace MySoft.PlatformService.WinForm
         {
             //发生错误SocketException为网络断开
             if (error is SocketException)
-            { //未连接状态，自动断开为SocketError.ConnectionReset
+            {
+                //未连接状态，自动断开为SocketError.ConnectionReset
                 if ((error as SocketException).SocketErrorCode == SocketError.NotConnected)
                 {
                     button1_Click(null, EventArgs.Empty);
@@ -179,6 +182,7 @@ namespace MySoft.PlatformService.WinForm
 
         private void frmMain_Load(object sender, EventArgs e)
         {
+            listAssembly.SelectedIndexChanged += new EventHandler(listAssembly_SelectedIndexChanged);
             listService.SelectedIndexChanged += new EventHandler(messageListBox1_SelectedIndexChanged);
             listMethod.SelectedIndexChanged += new EventHandler(messageListBox2_SelectedIndexChanged);
 
@@ -194,15 +198,36 @@ namespace MySoft.PlatformService.WinForm
             webBrowser1.Url = new Uri("about:blank");
             webBrowser1.AllowNavigation = false;
             webBrowser1.IsWebBrowserContextMenuEnabled = false;
+
+            var url = ConfigurationManager.AppSettings["ServerMonitorUrl"];
+            if (!string.IsNullOrEmpty(url))
+                webBrowser2.Url = new Uri(url);
+            else
+                webBrowser2.Url = new Uri("about:blank");
+            webBrowser2.AllowNavigation = false;
+            webBrowser2.IsWebBrowserContextMenuEnabled = false;
         }
 
         private void InitService()
         {
+            listAssembly.Items.Clear();
+            listService.Items.Clear();
+            listMethod.Items.Clear();
+            richTextBox3.Clear();
+
+            listAssembly.SelectedIndex = -1;
+            listService.SelectedIndex = -1;
+            listMethod.SelectedIndex = -1;
+
+            listAssembly.Invalidate();
+            listService.Invalidate();
+            listMethod.Invalidate();
+
             tabPage0.Text = "服务信息";
             IList<ServiceInfo> services;
             try
             {
-                services = CastleFactory.Create().GetChannel<IStatusService>()
+                services = CastleFactory.Create().GetService<IStatusService>()
                     .GetServiceList().OrderBy(p => p.Name).ToList();
             }
             catch (Exception ex)
@@ -211,8 +236,43 @@ namespace MySoft.PlatformService.WinForm
                 return;
             }
 
-            tabPage0.Text = "服务信息(" + services.Count + ")";
+            var assemblies = services.GroupBy(prop => prop.Assembly)
+                .Select(p => new { Name = p.Key.Split(',')[0], FullName = p.Key, Services = p.ToList() })
+                .OrderBy(p => p.Name).ToList();
+            tabPage0.Text = "服务信息(" + assemblies.Count + ")";
+            listAssembly.Items.Clear();
+            foreach (var assembly in assemblies)
+            {
+                listAssembly.Items.Add(
+                    new ParseMessageEventArgs
+                    {
+                        MessageType = ParseMessageType.Info,
+                        LineHeader = string.Format("{0} => ({1}) services", assembly.Name, assembly.Services.Count),
+                        MessageText = string.Format("{0}", assembly.FullName),
+                        Source = assembly.Services
+                    });
+            }
+
+            listAssembly.Invalidate();
+        }
+
+        void listAssembly_SelectedIndexChanged(object sender, EventArgs e)
+        {
             listService.Items.Clear();
+            listMethod.Items.Clear();
+            listService.SelectedIndex = -1;
+            listMethod.SelectedIndex = -1;
+            richTextBox3.Clear();
+
+            if (listAssembly.SelectedIndex < 0)
+            {
+                listService.Invalidate();
+                listMethod.Invalidate();
+                return;
+            }
+
+            var item = listAssembly.Items[listAssembly.SelectedIndex];
+            var services = (item.Source as IList<ServiceInfo>).OrderBy(p => p.Name).ToList();
             foreach (var service in services)
             {
                 listService.Items.Add(
@@ -231,6 +291,7 @@ namespace MySoft.PlatformService.WinForm
         void messageListBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             listMethod.Items.Clear();
+            listMethod.SelectedIndex = -1;
             richTextBox3.Clear();
 
             if (listService.SelectedIndex < 0)
@@ -292,13 +353,6 @@ namespace MySoft.PlatformService.WinForm
         /// <param name="e"></param>
         private void 刷新服务信息ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            listService.Items.Clear();
-            listMethod.Items.Clear();
-            richTextBox3.Clear();
-
-            listService.Invalidate();
-            listMethod.Invalidate();
-
             InitService();
         }
 

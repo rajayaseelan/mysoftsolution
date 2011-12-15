@@ -6,6 +6,23 @@
 <head id="Head1" runat="server">
     <title>服务统计信息</title>
     <style type="text/css">
+        body
+        {
+            line-height: 22px;
+            font-style: normal;
+            font-size: 14px;
+            font-family: "时尚中黑简体";
+            margin-top: 5px;
+            font-weight: normal;
+        }
+        
+        hr
+        {
+            height: 1px;
+            border: none;
+            border-top: 2px dashed #ccc;
+        }
+        
         li
         {
             list-style-type: none;
