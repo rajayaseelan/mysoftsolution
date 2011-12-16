@@ -285,7 +285,7 @@ namespace MySoft.IoC
         /// 推送客户端连接信息（只有第一次订阅的时候推送）
         /// </summary>
         /// <param name="clientInfos"></param>
-        public void Push(IList<ClientInfo> clientInfos)
+        public void Notify(IList<ClientInfo> clientInfos)
         {
             if (_listeners.Count == 0) return;
 

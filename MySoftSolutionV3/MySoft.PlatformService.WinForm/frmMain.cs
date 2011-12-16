@@ -227,7 +227,7 @@ namespace MySoft.PlatformService.WinForm
             IList<ServiceInfo> services;
             try
             {
-                services = CastleFactory.Create().GetService<IStatusService>()
+                services = CastleFactory.Create().GetChannel<IStatusService>()
                     .GetServiceList().OrderBy(p => p.Name).ToList();
             }
             catch (Exception ex)
@@ -486,7 +486,7 @@ namespace MySoft.PlatformService.WinForm
                         connect.AppName = appClient.AppName;
                         connect.HostName = appClient.HostName;
 
-                        args.MessageText = string.Format("[{0}] ", appClient.AppName) + args.MessageText;
+                        args.LineHeader += string.Format("  【{0} <=> {1}】", appClient.AppName, appClient.HostName);
                         break;
                     }
                 }

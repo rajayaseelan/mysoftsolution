@@ -361,7 +361,7 @@ namespace MySoft.IoC
             MessageCenter.Instance.AddListener(new MessageListener(endPoint, callback, options, subscribeTypes));
 
             //推送客户端连接信息
-            MessageCenter.Instance.Push(GetClientList());
+            MessageCenter.Instance.Notify(GetClientList());
         }
 
         /// <summary>
