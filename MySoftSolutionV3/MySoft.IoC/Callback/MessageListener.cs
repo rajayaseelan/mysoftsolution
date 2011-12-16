@@ -8,7 +8,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 消息监听
     /// </summary>
-    internal class MessageListener
+    class MessageListener
     {
         private DateTime _pushTime;
         /// <summary>
