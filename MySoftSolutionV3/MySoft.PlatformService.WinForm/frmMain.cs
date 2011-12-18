@@ -185,9 +185,34 @@ namespace MySoft.PlatformService.WinForm
             listAssembly.SelectedIndexChanged += new EventHandler(listAssembly_SelectedIndexChanged);
             listService.SelectedIndexChanged += new EventHandler(messageListBox1_SelectedIndexChanged);
             listMethod.SelectedIndexChanged += new EventHandler(messageListBox2_SelectedIndexChanged);
+            listMethod.MouseDoubleClick += new MouseEventHandler(listMethod_MouseDoubleClick);
 
             InitBrowser();
             InitService();
+        }
+
+        private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!checkBox1.Enabled)
+            {
+                MessageBox.Show("请先停止监控", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                e.Cancel = true;
+            }
+        }
+
+        void listMethod_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (listService.SelectedIndex < 0) return;
+            if (listMethod.SelectedIndex < 0) return;
+            if (e.Button == MouseButtons.Left)
+            {
+                var item1 = listService.Items[listService.SelectedIndex];
+                var item2 = listMethod.Items[listMethod.SelectedIndex];
+                var service = item1.Source as ServiceInfo;
+                var method = item2.Source as MethodInfo;
+                frmInvoke frm = new frmInvoke(service.FullName, method.FullName, method.Parameters);
+                frm.Show();
+            }
         }
 
         /// <summary>
@@ -369,7 +394,7 @@ namespace MySoft.PlatformService.WinForm
             try
             {
                 var item = listService.Items[listService.SelectedIndex];
-                service.AddSubscribeType((item.Source as ServiceInfo).FullName);
+                service.SubscribeType((item.Source as ServiceInfo).FullName);
 
                 MessageBox.Show("添加成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -392,7 +417,7 @@ namespace MySoft.PlatformService.WinForm
             try
             {
                 var item = listService.Items[listService.SelectedIndex];
-                service.RemoveSubscribeType((item.Source as ServiceInfo).FullName);
+                service.UnsubscribeType((item.Source as ServiceInfo).FullName);
 
                 MessageBox.Show("移除成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }

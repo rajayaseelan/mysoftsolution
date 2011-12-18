@@ -126,7 +126,11 @@ namespace MySoft.IoC
                 var data = e.Message as ScsCallbackMessage;
 
                 //把数据发送到客户端
-                if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs { Client = client, Result = data.MessageValue });
+                if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs
+                {
+                    Client = client,
+                    Result = data.MessageValue
+                });
             }
             else if (e.Message is ScsResultMessage)
             {
@@ -136,7 +140,11 @@ namespace MySoft.IoC
                     var data = e.Message as ScsResultMessage;
 
                     //把数据发送到客户端
-                    if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs { Client = client, Result = data.MessageValue as ResponseMessage });
+                    if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs
+                    {
+                        Client = client,
+                        Result = data.MessageValue as ResponseMessage
+                    });
                 }
                 catch (Exception ex)
                 {

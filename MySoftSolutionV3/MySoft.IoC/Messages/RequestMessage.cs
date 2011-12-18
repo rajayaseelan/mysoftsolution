@@ -129,6 +129,7 @@ namespace MySoft.IoC.Messages
         private string hostName;
         private string requestAddress;
         private int timeout = -1;
+        private bool invokeMethod;
 
         #endregion
 
@@ -207,6 +208,21 @@ namespace MySoft.IoC.Messages
             set
             {
                 requestAddress = value;
+            }
+        }
+
+        /// <summary>
+        /// invoke method
+        /// </summary>
+        public bool InvokeMethod
+        {
+            get
+            {
+                return invokeMethod;
+            }
+            set
+            {
+                invokeMethod = value;
             }
         }
 

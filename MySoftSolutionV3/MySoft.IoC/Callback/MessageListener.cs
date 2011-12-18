@@ -41,7 +41,7 @@ namespace MySoft.IoC
         /// <summary>
         /// 订阅的类型
         /// </summary>
-        public IList<string> SubscribeTypes
+        public IList<string> Types
         {
             get { return _subscribeTypes; }
         }

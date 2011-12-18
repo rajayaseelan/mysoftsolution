@@ -99,13 +99,13 @@ namespace MySoft.IoC.Status
         /// 添加发布类型
         /// </summary>
         /// <param name="subscribeType"></param>
-        void AddSubscribeType(string subscribeType);
+        void SubscribeType(string subscribeType);
 
         /// <summary>
         /// 添加发布类型
         /// </summary>
         /// <param name="subscribeType"></param>
-        void RemoveSubscribeType(string subscribeType);
+        void UnsubscribeType(string subscribeType);
 
         /// <summary>
         /// 退订服务

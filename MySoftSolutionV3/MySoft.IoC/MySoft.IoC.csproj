@@ -62,6 +62,8 @@
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
     <Compile Include="Callback\MessageCenter.cs" />
     <Compile Include="Callback\MessageListener.cs" />
+    <Compile Include="InvokeCaller.cs" />
+    <Compile Include="Messages\InvokeMessage.cs" />
     <Compile Include="ServiceCaller.cs" />
     <Compile Include="Services\DiscoverProxy.cs" />
     <Compile Include="Status\AppCaller.cs" />

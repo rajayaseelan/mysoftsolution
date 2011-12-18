@@ -147,7 +147,8 @@ namespace MySoft.PlatformService.Client
                     //var users = CastleFactory.Create().DiscoverChannel<IUserService>().GetUsers();
                     //Console.WriteLine(users[0].Description);
 
-                    var user = CastleFactory.Create().DiscoverChannel<IUserService>().GetUserInfo("maoyong");
+                    int length;
+                    var user = CastleFactory.Create().DiscoverChannel<IUserService>().GetUserInfo("maoyong", out length);
                     Console.WriteLine(user.Description);
                 }
                 catch (Exception ex)

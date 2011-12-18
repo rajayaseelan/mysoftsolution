@@ -163,8 +163,8 @@ namespace MySoft.IoC
             {
                 try
                 {
-                    if (lstn.SubscribeTypes.Count() == 0
-                        || lstn.SubscribeTypes.Any(p => string.Compare(p, callArgs.Caller.ServiceName, true) == 0))
+                    if (lstn.Types.Count() == 0
+                        || lstn.Types.Any(p => string.Compare(p, callArgs.Caller.ServiceName, true) == 0))
                     {
                         var options = lstn.Options;
                         if (options.PushCallError && callArgs.IsError)

@@ -94,5 +94,15 @@ namespace MySoft.IoC.Status
         /// 参数类型
         /// </summary>
         public string TypeFullName { get; set; }
+
+        /// <summary>
+        /// 是否引用类型
+        /// </summary>
+        public bool IsByRef { get; set; }
+
+        /// <summary>
+        /// 是否简单类型
+        /// </summary>
+        public bool IsPrimitive { get; set; }
     }
 }

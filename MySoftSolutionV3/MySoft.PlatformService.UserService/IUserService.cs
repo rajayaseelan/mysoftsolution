@@ -41,7 +41,7 @@ namespace MySoft.PlatformService.UserService
     [ServiceContract]
     public interface IUserService
     {
-        UserInfo GetUserInfo(string name);
+        UserInfo GetUserInfo(string name, out int length);
 
         [OperationContract(CacheTime = 10)]
         IList<UserInfo> GetUsers();

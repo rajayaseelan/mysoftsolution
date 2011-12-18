@@ -3,6 +3,9 @@ using System.Reflection;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using Newtonsoft.Json.Linq;
+using System.Linq;
+using System.Collections;
 
 namespace MySoft.IoC.Services
 {
@@ -38,7 +41,6 @@ namespace MySoft.IoC.Services
             resMsg.TransactionId = reqMsg.TransactionId;
             resMsg.ServiceName = reqMsg.ServiceName;
             resMsg.MethodName = reqMsg.MethodName;
-            resMsg.Parameters = reqMsg.Parameters;
             resMsg.Expiration = reqMsg.Expiration;
 
             #region 获取相应的方法
@@ -67,8 +69,44 @@ namespace MySoft.IoC.Services
             }
 
             var pis = method.GetParameters();
-            object[] paramValues = new object[pis.Length];
+            if (reqMsg.InvokeMethod)
+            {
+                //解析参数
+                var objValue = reqMsg.Parameters["InvokeParameter"];
+                if (!(objValue == null || string.IsNullOrEmpty(objValue.ToString())))
+                {
+                    JObject obj = JObject.Parse(objValue.ToString());
+                    if (obj.Count > 0)
+                    {
+                        foreach (var info in pis)
+                        {
+                            var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
+                            if (property != null)
+                            {
+                                string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
+                                object jsonValue = null;
+                                if (value.Contains("new Date"))
+                                    jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+                                else
+                                    jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
 
+                                //处理参数
+                                if (jsonValue == null)
+                                    resMsg.Parameters[info.Name] = CoreHelper.GetTypeDefaultValue(info.ParameterType);
+                                else
+                                    resMsg.Parameters[info.Name] = jsonValue;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                resMsg.Parameters = reqMsg.Parameters;
+            }
+
+            //参数赋值
+            object[] paramValues = new object[pis.Length];
             for (int i = 0; i < pis.Length; i++)
             {
                 if (!pis[i].ParameterType.IsByRef)
@@ -88,7 +126,10 @@ namespace MySoft.IoC.Services
             #endregion
 
             //获取服务及方法名称
-            resMsg.ReturnType = method.ReturnType;
+            if (reqMsg.InvokeMethod)
+                resMsg.ReturnType = reqMsg.ReturnType;
+            else
+                resMsg.ReturnType = method.ReturnType;
 
             //返回拦截服务
             var service = AspectManager.GetService(instance);
@@ -99,22 +140,51 @@ namespace MySoft.IoC.Services
                 object returnValue = DynamicCalls.GetMethodInvoker(method).Invoke(service, paramValues);
 
                 //把返回值传递回去
+                var returnParameter = new Hashtable();
                 for (int i = 0; i < pis.Length; i++)
                 {
                     if (pis[i].ParameterType.IsByRef)
                     {
                         //给参数赋值
                         resMsg.Parameters[pis[i].Name] = paramValues[i];
+
+                        //invoke回调
+                        if (reqMsg.InvokeMethod)
+                        {
+                            returnParameter[pis[i].Name] = paramValues[i];
+                        }
                     }
                 }
 
                 //返回结果数据
+                if (reqMsg.InvokeMethod)
+                {
+                    string json1 = null;
+                    string json2 = null;
+
+                    if (returnValue != null)
+                    {
+                        if (returnValue is string)
+                            json1 = returnValue.ToString();
+                        else
+                            json1 = SerializationManager.SerializeJson(returnValue);
+                    }
+
+                    if (returnParameter.Count > 0)
+                        json2 = SerializationManager.SerializeJson(returnParameter);
+
+                    returnValue = new InvokeData { Value = json1, Parameter = json2 };
+                }
+
                 resMsg.Value = returnValue;
             }
             catch (Exception ex)
             {
                 //捕获全局错误
-                resMsg.Error = ex;
+                if (reqMsg.InvokeMethod)
+                    resMsg.Error = ErrorHelper.GetInnerException(ex);
+                else
+                    resMsg.Error = ex;
             }
 
             return resMsg;

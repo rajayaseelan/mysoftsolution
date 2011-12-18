@@ -59,6 +59,17 @@ namespace MySoft.IoC
             parmValues.Clear();
         }
 
+        /// <summary>
+        /// Get param count.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                return parmValues.Count;
+            }
+        }
+
         private string paramString = string.Empty;
         /// <summary>
         /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.

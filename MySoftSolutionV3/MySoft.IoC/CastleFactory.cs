@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MySoft.Cache;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Configuration;
+using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
 
@@ -184,10 +184,8 @@ namespace MySoft.IoC
                 service = singleton.proxies[node.Key.ToLower()];
             else
             {
-                RemoteProxy proxy = new RemoteProxy(node, container);
+                service = new RemoteProxy(node, container);
                 isCacheService = false;
-
-                service = proxy;
             }
 
             return GetChannel<IServiceInterfaceType>(service, isCacheService);
@@ -369,6 +367,74 @@ namespace MySoft.IoC
 
             CallbackProxy proxy = new CallbackProxy(callback, node, this.ServiceContainer);
             return GetChannel<IPublishService>(proxy, false);
+        }
+
+        #endregion
+
+        #region Invoke 方式调用
+
+        /// <summary>
+        /// 调用分布式服务
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public InvokeData InvokeMethod(InvokeMessage message)
+        {
+            return InvokeMethod(config.Default, message);
+        }
+
+        /// <summary>
+        /// 调用分布式服务
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public InvokeData InvokeMethod(string nodeKey, InvokeMessage message)
+        {
+            nodeKey = GetNodeKey(nodeKey);
+            var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            if (node == null)
+            {
+                throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
+            }
+
+            return InvokeMethod(node, message);
+        }
+
+        public InvokeData InvokeMethod(RemoteNode node, InvokeMessage message)
+        {
+            IService service = null;
+            string serviceKey = "Service_" + message.ServiceName;
+            if (config.Type == CastleFactoryType.Local || config.Type == CastleFactoryType.LocalRemote)
+            {
+                if (container.Kernel.HasComponent(serviceKey))
+                {
+                    service = container[serviceKey] as IService;
+                }
+
+                if (service == null && config.Type == CastleFactoryType.Local)
+                    throw new WarningException(string.Format("Local not find service ({0}).", message.ServiceName));
+            }
+
+            if (service == null)
+            {
+                if (singleton.proxies.ContainsKey(node.Key.ToLower()))
+                    service = singleton.proxies[node.Key.ToLower()];
+                else
+                {
+                    service = new RemoteProxy(node, container);
+                }
+            }
+
+            //调用分布式服务
+            var caller = new InvokeCaller(config, container, service);
+            var value = caller.CallMethod(message);
+
+            //返回值
+            if (value is InvokeData)
+                return value as InvokeData;
+            else
+                return null;
         }
 
         #endregion

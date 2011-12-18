@@ -149,7 +149,12 @@ namespace MySoft.IoC
                         {
                             Name = parameter.Name,
                             TypeName = parameter.ParameterType.Name,
-                            TypeFullName = parameter.ParameterType.FullName
+                            TypeFullName = parameter.ParameterType.FullName,
+                            IsByRef = parameter.ParameterType.IsByRef,
+                            IsPrimitive = parameter.ParameterType.IsPrimitive
+                                        || parameter.ParameterType.IsEnum
+                                        || parameter.ParameterType == typeof(string)
+                                        || parameter.ParameterType == typeof(DateTime)
                         };
                         m.Parameters.Add(p);
                     }
@@ -374,14 +379,14 @@ namespace MySoft.IoC
             var listener = MessageCenter.Instance.GetListener(endPoint);
             if (listener == null) return new List<string>();
 
-            return listener.SubscribeTypes;
+            return listener.Types;
         }
 
         /// <summary>
         /// 添加发布类型
         /// </summary>
         /// <param name="subscribeType"></param>
-        public void AddSubscribeType(string subscribeType)
+        public void SubscribeType(string subscribeType)
         {
             var endPoint = OperationContext.Current.RemoteEndPoint;
             var listener = MessageCenter.Instance.GetListener(endPoint);
@@ -389,8 +394,8 @@ namespace MySoft.IoC
 
             if (subscribeType != null)
             {
-                if (!listener.SubscribeTypes.Contains(subscribeType))
-                    listener.SubscribeTypes.Add(subscribeType);
+                if (!listener.Types.Contains(subscribeType))
+                    listener.Types.Add(subscribeType);
                 else
                     throw new WarningException("Already exists subscribe type " + subscribeType);
             }
@@ -400,7 +405,7 @@ namespace MySoft.IoC
         /// 添加发布类型
         /// </summary>
         /// <param name="subscribeType"></param>
-        public void RemoveSubscribeType(string subscribeType)
+        public void UnsubscribeType(string subscribeType)
         {
             var endPoint = OperationContext.Current.RemoteEndPoint;
             var listener = MessageCenter.Instance.GetListener(endPoint);
@@ -408,8 +413,8 @@ namespace MySoft.IoC
 
             if (subscribeType != null)
             {
-                if (listener.SubscribeTypes.Contains(subscribeType))
-                    listener.SubscribeTypes.Remove(subscribeType);
+                if (listener.Types.Contains(subscribeType))
+                    listener.Types.Remove(subscribeType);
                 else
                     throw new WarningException("Don't exist subscribe type " + subscribeType);
             }
