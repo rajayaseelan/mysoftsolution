@@ -68,61 +68,6 @@ namespace MySoft.IoC.Services
                 }
             }
 
-            var pis = method.GetParameters();
-            if (reqMsg.InvokeMethod)
-            {
-                //解析参数
-                var objValue = reqMsg.Parameters["InvokeParameter"];
-                if (!(objValue == null || string.IsNullOrEmpty(objValue.ToString())))
-                {
-                    JObject obj = JObject.Parse(objValue.ToString());
-                    if (obj.Count > 0)
-                    {
-                        foreach (var info in pis)
-                        {
-                            var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
-                            if (property != null)
-                            {
-                                string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
-                                object jsonValue = null;
-                                if (value.Contains("new Date"))
-                                    jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
-                                else
-                                    jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
-
-                                //处理参数
-                                if (jsonValue == null)
-                                    resMsg.Parameters[info.Name] = CoreHelper.GetTypeDefaultValue(info.ParameterType);
-                                else
-                                    resMsg.Parameters[info.Name] = jsonValue;
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                resMsg.Parameters = reqMsg.Parameters;
-            }
-
-            //参数赋值
-            object[] paramValues = new object[pis.Length];
-            for (int i = 0; i < pis.Length; i++)
-            {
-                if (!pis[i].ParameterType.IsByRef)
-                {
-                    paramValues[i] = resMsg.Parameters[pis[i].Name];
-                }
-                else if (!pis[i].IsOut)
-                {
-                    paramValues[i] = resMsg.Parameters[pis[i].Name];
-                }
-                else
-                {
-                    paramValues[i] = CoreHelper.GetTypeDefaultValue(pis[i].ParameterType);
-                }
-            }
-
             #endregion
 
             //获取服务及方法名称
@@ -136,6 +81,61 @@ namespace MySoft.IoC.Services
 
             try
             {
+                var pis = method.GetParameters();
+                if (reqMsg.InvokeMethod)
+                {
+                    //解析参数
+                    var objValue = reqMsg.Parameters["InvokeParameter"];
+                    if (!(objValue == null || string.IsNullOrEmpty(objValue.ToString())))
+                    {
+                        JObject obj = JObject.Parse(objValue.ToString());
+                        if (obj.Count > 0)
+                        {
+                            foreach (var info in pis)
+                            {
+                                var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
+                                if (property != null)
+                                {
+                                    string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
+                                    object jsonValue = null;
+                                    if (value.Contains("new Date"))
+                                        jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+                                    else
+                                        jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
+
+                                    //处理参数
+                                    if (jsonValue == null)
+                                        resMsg.Parameters[info.Name] = CoreHelper.GetTypeDefaultValue(info.ParameterType);
+                                    else
+                                        resMsg.Parameters[info.Name] = jsonValue;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    resMsg.Parameters = reqMsg.Parameters;
+                }
+
+                //参数赋值
+                object[] paramValues = new object[pis.Length];
+                for (int i = 0; i < pis.Length; i++)
+                {
+                    if (!pis[i].ParameterType.IsByRef)
+                    {
+                        paramValues[i] = resMsg.Parameters[pis[i].Name];
+                    }
+                    else if (!pis[i].IsOut)
+                    {
+                        paramValues[i] = resMsg.Parameters[pis[i].Name];
+                    }
+                    else
+                    {
+                        paramValues[i] = CoreHelper.GetTypeDefaultValue(pis[i].ParameterType);
+                    }
+                }
+
                 //调用对应的服务
                 object returnValue = DynamicCalls.GetMethodInvoker(method).Invoke(service, paramValues);
 
@@ -182,7 +182,10 @@ namespace MySoft.IoC.Services
             {
                 //捕获全局错误
                 if (reqMsg.InvokeMethod)
-                    resMsg.Error = ErrorHelper.GetInnerException(ex);
+                {
+                    var e = ErrorHelper.GetInnerException(ex);
+                    resMsg.Error = new Exception(e.Message);
+                }
                 else
                     resMsg.Error = ex;
             }

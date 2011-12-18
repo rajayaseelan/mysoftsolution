@@ -32,6 +32,11 @@ namespace MySoft.PlatformService.UserService
             return user;
         }
 
+        public string GetDateTime(Guid guid)
+        {
+            return string.Format("{0} => {1}", guid, DateTime.Now);
+        }
+
         public IList<UserInfo> GetUsers()
         {
             //Thread.Sleep(15000);

@@ -43,6 +43,8 @@ namespace MySoft.PlatformService.UserService
     {
         UserInfo GetUserInfo(string name, out int length);
 
+        string GetDateTime(Guid guid);
+
         [OperationContract(CacheTime = 10)]
         IList<UserInfo> GetUsers();
     }
