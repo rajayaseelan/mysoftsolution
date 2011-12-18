@@ -98,7 +98,7 @@ namespace MySoft.PlatformService.WinForm
                 //提交的参数信息
                 string parameter = SerializationManager.SerializeJson(txtValues);
 
-                var data = CastleFactory.Create().InvokeMethod(new InvokeMessage
+                var data = CastleFactory.Create().Invoke(new InvokeMessage
                 {
                     ServiceName = serviceName,
                     MethodName = methodName,

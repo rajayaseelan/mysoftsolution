@@ -378,9 +378,9 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public InvokeData InvokeMethod(InvokeMessage message)
+        public InvokeData Invoke(InvokeMessage message)
         {
-            return InvokeMethod(config.Default, message);
+            return Invoke(config.Default, message);
         }
 
         /// <summary>
@@ -389,7 +389,7 @@ namespace MySoft.IoC
         /// <param name="message"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public InvokeData InvokeMethod(string nodeKey, InvokeMessage message)
+        public InvokeData Invoke(string nodeKey, InvokeMessage message)
         {
             nodeKey = GetNodeKey(nodeKey);
             var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
@@ -398,10 +398,10 @@ namespace MySoft.IoC
                 throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
             }
 
-            return InvokeMethod(node, message);
+            return Invoke(node, message);
         }
 
-        public InvokeData InvokeMethod(RemoteNode node, InvokeMessage message)
+        public InvokeData Invoke(RemoteNode node, InvokeMessage message)
         {
             IService service = null;
             string serviceKey = "Service_" + message.ServiceName;
