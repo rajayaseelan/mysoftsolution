@@ -50,10 +50,18 @@ namespace MySoft.RESTful.Utils
                     {
                         string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
                         object jsonValue = null;
-                        if (value.Contains("new Date"))
-                            jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
-                        else
-                            jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
+
+                        if (!(string.IsNullOrEmpty(value) || value == "{}"))
+                        {
+                            if (value.Contains("new Date"))
+                                jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+                            else
+                                jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value);
+                        }
+
+                        if (jsonValue == null)
+                            jsonValue = CoreHelper.GetTypeDefaultValue(GetPrimitiveType(info.ParameterType));
+
                         args.Add(jsonValue);
                     }
                     else if (string.Compare(info.Name, userParameter, true) == 0)
@@ -80,6 +88,12 @@ namespace MySoft.RESTful.Utils
             {
                 throw new RESTfulException("Parameter type did not match!") { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
             }
+        }
+
+        private static Type GetPrimitiveType(Type type)
+        {
+            if (type.IsByRef) type = type.GetElementType();
+            return type;
         }
     }
 }
