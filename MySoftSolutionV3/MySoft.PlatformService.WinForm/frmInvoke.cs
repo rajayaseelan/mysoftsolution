@@ -10,6 +10,7 @@ using MySoft.IoC;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Status;
 using System.Diagnostics;
+using Newtonsoft.Json.Linq;
 
 namespace MySoft.PlatformService.WinForm
 {
@@ -35,6 +36,8 @@ namespace MySoft.PlatformService.WinForm
             lblServiceName.Text = serviceName;
             lblMethodName.Text = methodName;
 
+            CastleFactory.Create().OnError += new Logger.ErrorLogEventHandler(frmInvoke_OnError);
+
             if (parameters.Count > 0)
             {
                 int index = 0;
@@ -58,7 +61,13 @@ namespace MySoft.PlatformService.WinForm
                     l.TextAlign = ContentAlignment.MiddleLeft;
                     p.Controls.Add(l);
 
-                    toolTip1.SetToolTip(l, "parameter type: " + parameter.TypeFullName);
+                    var text = "Parameter【" + parameter.Name + "】type: " + parameter.TypeFullName;
+                    text += GetParameterText(parameter, 0);
+                    toolTip1.SetToolTip(l, text);
+                    l.Click += new EventHandler((s, ee) =>
+                    {
+                        richTextBox1.Text = text;
+                    });
 
                     TextBox t = new TextBox();
                     t.Dock = DockStyle.Fill;
@@ -83,6 +92,54 @@ namespace MySoft.PlatformService.WinForm
             }
         }
 
+        void frmInvoke_OnError(Exception error)
+        {
+            richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", error.Message);
+        }
+
+        private string GetParameterText(ParameterInfo parameter, int index)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine();
+            sb.AppendLine("【" + parameter.Name + "】 => " + parameter.TypeName);
+
+            if (parameter.IsEnum)
+            {
+                for (var i = 0; i < (index + 1) * 4; i++) sb.Append(" ");
+                sb.AppendLine("{");
+                foreach (var p in parameter.EnumValue)
+                {
+                    for (var i = 0; i < (index + 2) * 4; i++)
+                        sb.Append(" ");
+
+                    sb.AppendLine("【" + p.Name + "】 => " + p.Value);
+                }
+                for (var i = 0; i < (index + 1) * 4; i++) sb.Append(" ");
+                sb.AppendLine("}");
+            }
+            else if (parameter.SubParameters.Count > 0)
+            {
+                for (var i = 0; i < (index + 1) * 4; i++) sb.Append(" ");
+                sb.AppendLine("{");
+                {
+                    foreach (var p in parameter.SubParameters)
+                    {
+                        for (var i = 0; i < (index + 2) * 4; i++)
+                            sb.Append(" ");
+
+                        sb.AppendLine("【" + p.Name + "】 => " + p.TypeName);
+
+                        if (p.SubParameters.Count > 0)
+                            sb.Append(GetParameterText(p, index + 1));
+                    }
+                }
+                for (var i = 0; i < (index + 1) * 4; i++) sb.Append(" ");
+                sb.AppendLine("}");
+            }
+
+            return sb.ToString();
+        }
+
         protected override void OnShown(EventArgs e)
         {
             if (txtParameters.Count > 0)
@@ -94,15 +151,22 @@ namespace MySoft.PlatformService.WinForm
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
-                var txtValues = new Dictionary<string, string>();
+                var jValue = new JObject();
                 foreach (var p in txtParameters)
                 {
-                    txtValues[p.Key] = p.Value.Text.Trim();
+                    var text = p.Value.Text.Trim();
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        var pInfo = parameters.First(pi => pi.Name == p.Key);
+                        if (pInfo.IsPrimitive)
+                            jValue[p.Key] = text;
+                        else
+                            jValue[p.Key] = JToken.Parse(text);
+                    }
                 }
 
                 //提交的参数信息
-                string parameter = SerializationManager.SerializeJson(txtValues);
-
+                string parameter = jValue.ToString(Newtonsoft.Json.Formatting.None);
                 var data = CastleFactory.Create().Invoke(new InvokeMessage
                 {
                     ServiceName = serviceName,
@@ -123,7 +187,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 watch.Stop();
-                richTextBox1.Text = ex.Message;
+                richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", ex.Message);
             }
             finally
             {

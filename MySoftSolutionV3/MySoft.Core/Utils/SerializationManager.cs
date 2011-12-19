@@ -76,11 +76,6 @@ namespace MySoft
         {
             if (obj == null) return "null";
 
-            if (obj is Enum)
-            {
-                return JsonConvert.ToString((Enum)obj);
-            }
-
             if (converters == null || converters.Length == 0)
                 return JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
             else
@@ -131,18 +126,6 @@ namespace MySoft
         public static object DeserializeJson(Type returnType, string data, params JsonConverter[] converters)
         {
             if (string.IsNullOrEmpty(data)) return null;
-
-            if (returnType.IsEnum)
-            {
-                try
-                {
-                    return Enum.Parse(returnType, data, true);
-                }
-                catch
-                {
-                    return Enum.ToObject(returnType, data);
-                }
-            }
 
             if (returnType.IsArray && data != null && !data.StartsWith("["))
             {

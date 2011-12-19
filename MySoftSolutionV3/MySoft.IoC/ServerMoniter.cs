@@ -7,6 +7,7 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Status;
 using MySoft.Logger;
 using System.Threading;
+using System.Text;
 
 namespace MySoft.IoC
 {
@@ -148,12 +149,20 @@ namespace MySoft.IoC
                         var p = new ParameterInfo
                         {
                             Name = parameter.Name,
-                            TypeName = parameter.ParameterType.Name,
+                            TypeName = GetTypeName(parameter.ParameterType),
                             TypeFullName = parameter.ParameterType.FullName,
                             IsByRef = parameter.ParameterType.IsByRef,
                             IsOut = parameter.IsOut,
-                            IsPrimitive = CheckPrimitive(parameter.ParameterType)
+                            IsEnum = parameter.ParameterType.IsEnum,
+                            IsPrimitive = CheckPrimitive(parameter.ParameterType),
+                            SubParameters = GetSubParameters(parameter.ParameterType)
                         };
+
+                        if (p.IsEnum)
+                        {
+                            p.EnumValue = GetEnumValue(parameter.ParameterType);
+                        }
+
                         m.Parameters.Add(p);
                     }
 
@@ -170,6 +179,84 @@ namespace MySoft.IoC
         {
             if (type.IsByRef) type = type.GetElementType();
             return type.IsValueType || type == typeof(string);
+        }
+
+        private IList<ParameterInfo> GetSubParameters(Type type)
+        {
+            if (type.IsByRef) type = type.GetElementType();
+            if (type.IsArray) type = type.GetElementType();
+            if (type.IsGenericType) type = type.GetGenericArguments()[0];
+
+            if (GetTypeClass(type))
+            {
+                var plist = new List<ParameterInfo>();
+                foreach (var p in type.GetProperties())
+                {
+                    var pi = new ParameterInfo
+                    {
+                        Name = p.Name,
+                        TypeName = GetTypeName(p.PropertyType),
+                        TypeFullName = p.PropertyType.FullName,
+                        IsByRef = p.PropertyType.IsByRef,
+                        IsOut = false,
+                        IsEnum = p.PropertyType.IsEnum,
+                        IsPrimitive = CheckPrimitive(p.PropertyType)
+                    };
+
+                    if (p.PropertyType != type)
+                        pi.SubParameters = GetSubParameters(p.PropertyType);
+
+                    if (pi.IsEnum)
+                    {
+                        pi.EnumValue = GetEnumValue(p.PropertyType);
+                    }
+
+                    plist.Add(pi);
+                }
+
+                return plist;
+            }
+            else
+            {
+                return new List<ParameterInfo>();
+            }
+        }
+
+        private IList<EnumInfo> GetEnumValue(Type type)
+        {
+            var names = Enum.GetNames(type);
+            var values = Enum.GetValues(type);
+
+            IList<EnumInfo> list = new List<EnumInfo>();
+            for (int i = 0; i < names.Length; i++)
+            {
+                list.Add(new EnumInfo
+                {
+                    Name = names[i],
+                    Value = Convert.ToInt32(values.GetValue(i))
+                });
+            }
+
+            return list;
+        }
+
+        private bool GetTypeClass(Type type)
+        {
+            if (type.IsGenericType)
+                return GetTypeClass(type.GetGenericArguments()[0]);
+            else
+                return type.IsClass && type != typeof(string);
+        }
+
+        private string GetTypeName(Type type)
+        {
+            string typeName = type.Name;
+            if (type.IsGenericType) type = type.GetGenericArguments()[0];
+            if (typeName.Contains("`1"))
+            {
+                typeName = typeName.Replace("`1", "<" + type.Name + ">");
+            }
+            return typeName;
         }
 
         /// <summary>

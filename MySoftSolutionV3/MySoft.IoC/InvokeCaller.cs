@@ -73,6 +73,10 @@ namespace MySoft.IoC
             reqMsg.CacheTime = -1;                                          //设置缓存时间
             //reqMsg.Expiration = DateTime.Now.AddSeconds(config.Timeout)                   //设置过期时间
 
+            //设置缓存时间
+            if (message.Timeout > 0) reqMsg.Timeout = message.Timeout;
+            if (message.CacheTime > 0) reqMsg.CacheTime = message.CacheTime;
+
             #endregion
 
             //给参数赋值

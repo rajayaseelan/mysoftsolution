@@ -100,7 +100,7 @@ namespace MySoft.IoC.Services
                                     object jsonValue = null;
 
                                     //处理反系列化数据
-                                    if (!string.IsNullOrEmpty(value))
+                                    if (!(string.IsNullOrEmpty(value) || value == "{}"))
                                     {
                                         if (value.Contains("new Date"))
                                             jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
@@ -145,19 +145,13 @@ namespace MySoft.IoC.Services
                 object returnValue = DynamicCalls.GetMethodInvoker(method).Invoke(service, paramValues);
 
                 //把返回值传递回去
-                var returnParameter = new Hashtable();
+                if (reqMsg.InvokeMethod) resMsg.Parameters.Clear();
+
                 for (int i = 0; i < pis.Length; i++)
                 {
                     if (pis[i].ParameterType.IsByRef)
                     {
-                        //给参数赋值
                         resMsg.Parameters[pis[i].Name] = paramValues[i];
-
-                        //invoke回调
-                        if (reqMsg.InvokeMethod)
-                        {
-                            returnParameter[pis[i].Name] = paramValues[i];
-                        }
                     }
                 }
 
@@ -175,8 +169,8 @@ namespace MySoft.IoC.Services
                             json1 = SerializationManager.SerializeJson(returnValue);
                     }
 
-                    if (returnParameter.Count > 0)
-                        json2 = SerializationManager.SerializeJson(returnParameter);
+                    if (resMsg.Parameters.Count > 0)
+                        json2 = resMsg.Parameters.ToString();
 
                     returnValue = new InvokeData { Value = json1, Parameter = json2 };
                 }

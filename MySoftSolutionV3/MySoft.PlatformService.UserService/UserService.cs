@@ -9,6 +9,16 @@ namespace MySoft.PlatformService.UserService
 {
     public class UserService : IUserService
     {
+        public string GetUser(UserInfo user)
+        {
+            return user.Name;
+        }
+
+        public int GetSex(Sex value)
+        {
+            return Convert.ToInt32(value);
+        }
+
         public UserInfo GetUserInfo(string name, ref int length)
         {
             //var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);

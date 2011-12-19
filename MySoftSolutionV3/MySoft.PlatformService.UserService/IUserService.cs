@@ -43,6 +43,10 @@ namespace MySoft.PlatformService.UserService
     {
         UserInfo GetUserInfo(string name, ref int length);
 
+        string GetUser(UserInfo user);
+
+        int GetSex(Sex value);
+
         string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
 
         [OperationContract(CacheTime = 10)]

@@ -324,6 +324,7 @@ namespace MySoft.RESTful.Business
                 sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", name, GetTypeName(type)) + "<br/>");
             }
 
+            if (type.IsByRef) type = type.GetElementType();
             if (type.IsArray) type = type.GetElementType();
             if (type.IsGenericType) type = type.GetGenericArguments()[0];
 
@@ -349,7 +350,7 @@ namespace MySoft.RESTful.Business
 
                     foreach (var p in type.GetProperties())
                     {
-                        if (GetTypeClass(p.PropertyType))
+                        if (GetTypeClass(p.PropertyType) && type != p.PropertyType)
                         {
                             sb.Append(GetTypeDetail(p.Name, p.PropertyType, index + 1));
                         }

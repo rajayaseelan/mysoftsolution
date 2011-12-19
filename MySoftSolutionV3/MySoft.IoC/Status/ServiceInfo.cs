@@ -106,8 +106,46 @@ namespace MySoft.IoC.Status
         public bool IsOut { get; set; }
 
         /// <summary>
+        /// 是否枚举
+        /// </summary>
+        public bool IsEnum { get; set; }
+
+        /// <summary>
         /// 是否简单类型
         /// </summary>
         public bool IsPrimitive { get; set; }
+
+        /// <summary>
+        /// 枚举值
+        /// </summary>
+        public IList<EnumInfo> EnumValue { get; set; }
+
+        /// <summary>
+        /// 子参数信息
+        /// </summary>
+        public IList<ParameterInfo> SubParameters { get; set; }
+
+        public ParameterInfo()
+        {
+            this.SubParameters = new List<ParameterInfo>();
+            this.EnumValue = new List<EnumInfo>();
+        }
+    }
+
+    /// <summary>
+    /// 枚举信息
+    /// </summary>
+    [Serializable]
+    public class EnumInfo
+    {
+        /// <summary>
+        /// 枚举名称
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// 枚举值
+        /// </summary>
+        public int Value { get; set; }
     }
 }
