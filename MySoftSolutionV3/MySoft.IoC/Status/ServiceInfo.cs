@@ -101,6 +101,11 @@ namespace MySoft.IoC.Status
         public bool IsByRef { get; set; }
 
         /// <summary>
+        /// 是否输出类型
+        /// </summary>
+        public bool IsOut { get; set; }
+
+        /// <summary>
         /// 是否简单类型
         /// </summary>
         public bool IsPrimitive { get; set; }

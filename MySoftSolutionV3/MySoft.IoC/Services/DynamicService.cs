@@ -98,14 +98,19 @@ namespace MySoft.IoC.Services
                                 {
                                     string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
                                     object jsonValue = null;
-                                    if (value.Contains("new Date"))
-                                        jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
-                                    else
-                                        jsonValue = SerializationManager.DeserializeJson(info.ParameterType, value);
+
+                                    //处理反系列化数据
+                                    if (!string.IsNullOrEmpty(value))
+                                    {
+                                        if (value.Contains("new Date"))
+                                            jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+                                        else
+                                            jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value);
+                                    }
 
                                     //处理参数
                                     if (jsonValue == null)
-                                        resMsg.Parameters[info.Name] = CoreHelper.GetTypeDefaultValue(info.ParameterType);
+                                        resMsg.Parameters[info.Name] = CoreHelper.GetTypeDefaultValue(GetPrimitiveType(info.ParameterType));
                                     else
                                         resMsg.Parameters[info.Name] = jsonValue;
                                 }
@@ -191,6 +196,12 @@ namespace MySoft.IoC.Services
             }
 
             return resMsg;
+        }
+
+        private Type GetPrimitiveType(Type type)
+        {
+            if (type.IsByRef) type = type.GetElementType();
+            return type;
         }
     }
 }

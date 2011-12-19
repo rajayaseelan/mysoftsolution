@@ -151,10 +151,8 @@ namespace MySoft.IoC
                             TypeName = parameter.ParameterType.Name,
                             TypeFullName = parameter.ParameterType.FullName,
                             IsByRef = parameter.ParameterType.IsByRef,
-                            IsPrimitive = parameter.ParameterType.IsPrimitive
-                                        || parameter.ParameterType.IsEnum
-                                        || parameter.ParameterType == typeof(string)
-                                        || parameter.ParameterType == typeof(DateTime)
+                            IsOut = parameter.IsOut,
+                            IsPrimitive = CheckPrimitive(parameter.ParameterType)
                         };
                         m.Parameters.Add(p);
                     }
@@ -166,6 +164,12 @@ namespace MySoft.IoC
             }
 
             return services;
+        }
+
+        private bool CheckPrimitive(Type type)
+        {
+            if (type.IsByRef) type = type.GetElementType();
+            return type.IsValueType || type == typeof(string);
         }
 
         /// <summary>

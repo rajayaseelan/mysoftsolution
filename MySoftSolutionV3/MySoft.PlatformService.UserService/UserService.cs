@@ -9,7 +9,7 @@ namespace MySoft.PlatformService.UserService
 {
     public class UserService : IUserService
     {
-        public UserInfo GetUserInfo(string name, out int length)
+        public UserInfo GetUserInfo(string name, ref int length)
         {
             //var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
             //if (count % 5 == 0)
@@ -20,6 +20,8 @@ namespace MySoft.PlatformService.UserService
             //{
             //    Thread.Sleep(new Random().Next(1, 10) * 1000);
             //}
+
+            //var a = SerializationManager.DeserializeJson(typeof(Sex), "1");
 
             var user = new UserInfo()
             {
@@ -32,7 +34,7 @@ namespace MySoft.PlatformService.UserService
             return user;
         }
 
-        public string GetDateTime(Guid guid)
+        public string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex)
         {
             return string.Format("{0} => {1}", guid, DateTime.Now);
         }

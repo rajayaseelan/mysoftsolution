@@ -35,46 +35,51 @@ namespace MySoft.PlatformService.WinForm
             lblServiceName.Text = serviceName;
             lblMethodName.Text = methodName;
 
-            int index = 0;
-            int countHeight = 0;
-            foreach (var parameter in parameters)
+            if (parameters.Count > 0)
             {
-                if (parameter.IsByRef) continue;
-
-                Panel p = new Panel();
-                p.Top = (index++) * 25 + countHeight;
-                p.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
-                p.Width = plParameters.Width;
-                p.Height = 22;
-                //p.BorderStyle = BorderStyle.Fixed3D;
-
-                Label l = new Label();
-                l.Text = "【" + parameter.Name + "】:";
-                l.Dock = DockStyle.Left;
-                l.AutoSize = false;
-                l.Width = 120;
-                //l.BorderStyle = BorderStyle.Fixed3D;
-                l.TextAlign = ContentAlignment.MiddleLeft;
-                p.Controls.Add(l);
-
-                toolTip1.SetToolTip(l, "parameter type: " + parameter.TypeFullName);
-
-                TextBox t = new TextBox();
-                t.Dock = DockStyle.Fill;
-                p.Controls.Add(t);
-                l.SendToBack();
-
-                if (!parameter.IsPrimitive)
+                int index = 0;
+                int countHeight = 0;
+                foreach (var parameter in parameters)
                 {
+                    if (parameter.IsByRef && parameter.IsOut) continue;
+
+                    Panel p = new Panel();
+                    p.Top = (index++) * 48 + countHeight;
+                    p.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
+                    p.Width = plParameters.Width;
+                    p.Height = 45;
+                    //p.BorderStyle = BorderStyle.Fixed3D;
+
+                    Label l = new Label();
+                    l.Text = "【" + parameter.Name + "】 => " + parameter.TypeName;
                     l.Dock = DockStyle.Top;
-                    t.Multiline = true;
-                    p.Height += 50;
+                    l.AutoSize = false;
+                    //l.BorderStyle = BorderStyle.Fixed3D;
+                    l.TextAlign = ContentAlignment.MiddleLeft;
+                    p.Controls.Add(l);
 
-                    countHeight += 50;
+                    toolTip1.SetToolTip(l, "parameter type: " + parameter.TypeFullName);
+
+                    TextBox t = new TextBox();
+                    t.Dock = DockStyle.Fill;
+                    p.Controls.Add(t);
+                    l.SendToBack();
+
+                    if (!parameter.IsPrimitive)
+                    {
+                        t.Multiline = true;
+                        p.Height += 30;
+
+                        countHeight += 30;
+                    }
+
+                    plParameters.Controls.Add(p);
+                    txtParameters[parameter.Name] = t;
                 }
-
-                plParameters.Controls.Add(p);
-                txtParameters[parameter.Name] = t;
+            }
+            else
+            {
+                label3.Visible = false;
             }
         }
 

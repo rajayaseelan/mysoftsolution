@@ -41,9 +41,9 @@ namespace MySoft.PlatformService.UserService
     [ServiceContract]
     public interface IUserService
     {
-        UserInfo GetUserInfo(string name, out int length);
+        UserInfo GetUserInfo(string name, ref int length);
 
-        string GetDateTime(Guid guid);
+        string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
 
         [OperationContract(CacheTime = 10)]
         IList<UserInfo> GetUsers();
@@ -57,5 +57,11 @@ namespace MySoft.PlatformService.UserService
     {
         public string Name { get; set; }
         public string Description { get; set; }
+    }
+
+    public enum Sex
+    {
+        男,
+        女
     }
 }
