@@ -98,5 +98,19 @@ namespace MySoft.Data.UnitTest
 
             //DbSession.Default.InsertOrUpdate()
         }
+
+        [TestMethod]
+        public void QueryCreatorTest()
+        {
+            var qc = QueryCreator.NewCreator().From("document")
+                .Join("document_attr", "document.did = document_attr.did")
+                .Join("document_content", "document.did = document_content.did")
+                .AddField("document", "*")
+                .AddField("document_attr", "*")
+                .AddField("document_attr", "*")
+                .AddWhere("document.did = 1");
+
+            var value = DbSession.Default.From(qc).ToTable();
+        }
     }
 }

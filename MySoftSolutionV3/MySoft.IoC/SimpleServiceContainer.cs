@@ -209,7 +209,7 @@ namespace MySoft.IoC
                 {
                     ApplicationName = reqMsg.AppName,
                     ServiceName = reqMsg.ServiceName,
-                    ExceptionHeader = string.Format("Application¡¾{0}¡¿occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                    ErrorHeader = string.Format("Application¡¾{0}¡¿occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                 };
             }
 

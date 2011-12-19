@@ -8,23 +8,6 @@ using MySoft.IoC.Configuration;
 namespace MySoft.IoC
 {
     /// <summary>
-    /// Invoke 值
-    /// </summary>
-    [Serializable]
-    public class InvokeData
-    {
-        /// <summary>
-        /// 值
-        /// </summary>
-        public string Value { get; set; }
-
-        /// <summary>
-        /// 参数
-        /// </summary>
-        public string Parameter { get; set; }
-    }
-
-    /// <summary>
     /// 调用者
     /// </summary>
     public class InvokeCaller
@@ -80,7 +63,7 @@ namespace MySoft.IoC
             #endregion
 
             //给参数赋值
-            reqMsg.Parameters["InvokeParameter"] = message.Parameter;
+            reqMsg.Parameters["InvokeParameter"] = message.Parameters;
 
             //调用服务
             var resMsg = service.CallService(reqMsg);

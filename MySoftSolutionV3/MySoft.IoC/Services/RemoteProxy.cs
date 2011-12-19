@@ -140,7 +140,7 @@ namespace MySoft.IoC.Services
                     {
                         ApplicationName = reqMsg.AppName,
                         ServiceName = reqMsg.ServiceName,
-                        ExceptionHeader = string.Format("Application¡¾{0}¡¿call service timeout. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                        ErrorHeader = string.Format("Application¡¾{0}¡¿call service timeout. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                     };
                 }
 

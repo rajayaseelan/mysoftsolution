@@ -41,7 +41,17 @@ namespace MySoft.IoC
         /// <summary>
         /// 错误头
         /// </summary>
-        public string ExceptionHeader { get; set; }
+        public string ErrorHeader
+        {
+            get
+            {
+                if (base.Data.Contains("ErrorHeader"))
+                    return base.Data["ErrorHeader"].ToString();
+                else
+                    return null;
+            }
+            set { base.Data["ErrorHeader"] = value; }
+        }
 
         /// <summary>
         /// 普通异常的构造方法
@@ -65,28 +75,11 @@ namespace MySoft.IoC
         /// <param name="context">描述给定的序列化流的源和目标，并提供一个由调用方定义的附加上下文</param>
         protected IoCException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
             : base(info, context)
-        {
-            this.ExceptionHeader = (string)info.GetValue("ExceptionHeader", typeof(string));
-        }
+        { }
 
         public override void GetObjectData(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
         {
-            info.AddValue("ExceptionHeader", this.ExceptionHeader);
             base.GetObjectData(info, context);
-        }
-
-        /// <summary>
-        /// 返回消息
-        /// </summary>
-        public override string Message
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(this.ExceptionHeader))
-                    return string.Format("{0}\r\n\r\n{1}", this.ExceptionHeader, base.Message);
-                else
-                    return base.Message;
-            }
         }
     }
 }

@@ -173,17 +173,19 @@ namespace MySoft.PlatformService.WinForm
                 {
                     ServiceName = serviceName,
                     MethodName = methodName,
-                    Parameter = parameter
+                    Parameters = parameter
                 });
 
                 watch.Stop();
 
                 if (data != null)
                 {
-                    if (string.IsNullOrEmpty(data.Parameter))
-                        richTextBox1.Text = string.Format("【InvokeValue】 =>\r\n{0}", data.Value);
+                    if (string.IsNullOrEmpty(data.OutParameters))
+                        richTextBox1.Text = string.Format("【InvokeValue】 =>\r\n{0}\r\n\r\n【RowCount】 => {1} row(s).",
+                            data.Value, data.Count);
                     else
-                        richTextBox1.Text = string.Format("【InvokeValue】 =>\r\n{0}\r\n\r\n【OutParameter(s)】 =>\r\n{1}", data.Value, data.Parameter);
+                        richTextBox1.Text = string.Format("【InvokeValue】 =>\r\n{0}\r\n\r\n【RowCount】 => {1} row(s).\r\n\r\n【OutParameter(s)】 =>\r\n{2}",
+                            data.Value, data.Count, data.OutParameters);
                 }
             }
             catch (Exception ex)

@@ -24,6 +24,15 @@ namespace MySoft
                 return ex;
         }
 
+        private static string GetErrorMessage(Exception ex)
+        {
+            if (ex == null) return null;
+            if (ex.Data.Contains("ErrorHeader"))
+                return string.Format("{0}\r\n\r\n{1}", ex.Data["ErrorHeader"], ex.Message);
+            else
+                return ex.Message;
+        }
+
         /// <summary>
         /// 获取异常日志
         /// </summary>
@@ -34,7 +43,7 @@ namespace MySoft
             {
                 StringBuilder sbLog = new StringBuilder();
                 sbLog.Append("\r\nType:" + ex.GetType().FullName);
-                sbLog.Append("\r\nMessage:" + ex.Message);
+                sbLog.Append("\r\nMessage:" + GetErrorMessage(ex));
                 sbLog.Append("\r\nSource:" + ex.Source);
                 sbLog.Append("\r\nTargetSite:" + (ex.TargetSite == null ? null : ex.TargetSite.ToString()));
                 sbLog.Append("\r\nStackTrace:" + ex.StackTrace);
@@ -65,12 +74,12 @@ namespace MySoft
             const string heading = "<TABLE BORDER=\"0\" WIDTH=\"100%\" CELLPADDING=\"1\" CELLSPACING=\"0\"><TR><TD bgcolor=\"black\" COLSPAN=\"2\"><FONT face=\"Arial\" color=\"white\"><B>&nbsp;<!--HEADER--></B></FONT></TD></TR></TABLE>";
 
             // Error Message Header
-            string html = "<FONT face=\"Arial\" size=\"5\" color=\"red\">Error - " + ReplaceNewline(ex.Message) + "</FONT><BR><BR>";
+            string html = "<FONT face=\"Arial\" size=\"5\" color=\"red\">Error - " + ReplaceNewline(GetErrorMessage(ex)) + "</FONT><BR><BR>";
 
             // Populate Error Information Collection
             NameValueCollection error_info = new NameValueCollection();
             error_info.Add("Type", ex.GetType().FullName);
-            error_info.Add("Message", ReplaceNewline(ex.Message));
+            error_info.Add("Message", ReplaceNewline(GetErrorMessage(ex)));
             error_info.Add("Source", ReplaceNewline(ex.Source));
             error_info.Add("TargetSite", ReplaceNewline(ex.TargetSite == null ? null : ex.TargetSite.ToString()));
             error_info.Add("StackTrace", ReplaceNewline(ex.StackTrace));

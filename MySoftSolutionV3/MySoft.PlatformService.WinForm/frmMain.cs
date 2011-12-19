@@ -158,6 +158,23 @@ namespace MySoft.PlatformService.WinForm
         private void AppendText(RichTextBox rich, AppCaller caller)
         {
             rich.Clear();
+
+            rich.SelectionIndent = 0;
+            rich.SelectionColor = Color.Blue;
+            rich.AppendText("ApplicationName:\r\n");
+            rich.SelectionColor = Color.Black;
+            rich.SelectionIndent = 20;
+            rich.AppendText(caller.AppName);
+            rich.AppendText("\r\n\r\n");
+
+            rich.SelectionIndent = 0;
+            rich.SelectionColor = Color.Blue;
+            rich.AppendText("ServerName:\r\n");
+            rich.SelectionColor = Color.Black;
+            rich.SelectionIndent = 20;
+            rich.AppendText(caller.IPAddress + "[" + caller.HostName + "]");
+            rich.AppendText("\r\n\r\n");
+
             rich.SelectionIndent = 0;
             rich.SelectionColor = Color.Blue;
             rich.AppendText("ServiceName:\r\n");
@@ -165,6 +182,7 @@ namespace MySoft.PlatformService.WinForm
             rich.SelectionIndent = 20;
             rich.AppendText(caller.ServiceName);
             rich.AppendText("\r\n\r\n");
+
             rich.SelectionIndent = 0;
             rich.SelectionColor = Color.Blue;
             rich.AppendText("MethodName:\r\n");
@@ -172,6 +190,7 @@ namespace MySoft.PlatformService.WinForm
             rich.SelectionIndent = 20;
             rich.AppendText(caller.MethodName);
             rich.AppendText("\r\n\r\n");
+
             rich.SelectionIndent = 0;
             rich.SelectionColor = Color.Blue;
             rich.AppendText("Parameters:\r\n");
@@ -195,7 +214,7 @@ namespace MySoft.PlatformService.WinForm
         {
             if (!checkBox1.Enabled)
             {
-                MessageBox.Show("请先停止监控", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("请先停止监控！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 e.Cancel = true;
             }
         }
@@ -575,7 +594,7 @@ namespace MySoft.PlatformService.WinForm
                     new ParseMessageEventArgs
                     {
                         MessageType = ParseMessageType.Error,
-                        LineHeader = string.Format("【{0}】 [{2}] Error => {1}", callError.CallTime, callError.Message, callError.Caller.AppName),
+                        LineHeader = string.Format("【{0}】 [{2}] {1}", callError.CallTime, callError.Message, callError.Caller.AppName),
                         MessageText = string.Format("{0},{1}", callError.Caller.ServiceName, callError.Caller.MethodName),
                         //+ "\r\n" + callError.Caller.Parameters
                         Source = callError

@@ -177,7 +177,6 @@ namespace MySoft.IoC
                                 {
                                     Caller = callArgs.Caller,
                                     CallTime = callArgs.CallTime,
-                                    Type = error.GetType().FullName,
                                     Message = error.Message,
                                     Error = ErrorHelper.GetErrorWithoutHtml(callArgs.Error),
                                     HtmlError = ErrorHelper.GetHtmlError(callArgs.Error)

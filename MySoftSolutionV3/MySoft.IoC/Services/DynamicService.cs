@@ -56,7 +56,8 @@ namespace MySoft.IoC.Services
                     var exception = new WarningException(title)
                     {
                         ApplicationName = reqMsg.AppName,
-                        ExceptionHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                        ServiceName = reqMsg.ServiceName,
+                        ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                     };
 
                     resMsg.Error = exception;
@@ -158,6 +159,8 @@ namespace MySoft.IoC.Services
                 //返回结果数据
                 if (reqMsg.InvokeMethod)
                 {
+                    resMsg.Value = returnValue;
+
                     string json1 = null;
                     string json2 = null;
 
@@ -172,7 +175,12 @@ namespace MySoft.IoC.Services
                     if (resMsg.Parameters.Count > 0)
                         json2 = resMsg.Parameters.ToString();
 
-                    returnValue = new InvokeData { Value = json1, Parameter = json2 };
+                    returnValue = new InvokeData
+                    {
+                        Value = json1,
+                        Count = resMsg.Count,
+                        OutParameters = json2
+                    };
                 }
 
                 resMsg.Value = returnValue;

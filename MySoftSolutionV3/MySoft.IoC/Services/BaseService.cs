@@ -77,7 +77,8 @@ namespace MySoft.IoC.Services
                         var exception = new IoCException(body, ex)
                         {
                             ApplicationName = reqMsg.AppName,
-                            ExceptionHeader = string.Format("Application¡¾{0}¡¿occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                            ServiceName = reqMsg.ServiceName,
+                            ErrorHeader = string.Format("Application¡¾{0}¡¿occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                         };
                         logger.WriteError(exception);
                     }

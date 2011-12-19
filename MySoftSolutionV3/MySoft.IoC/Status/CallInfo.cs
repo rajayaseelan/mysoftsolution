@@ -51,11 +51,6 @@ namespace MySoft.IoC.Status
         public AppCaller Caller { get; set; }
 
         /// <summary>
-        /// 异常类型
-        /// </summary>
-        public string Type { get; set; }
-
-        /// <summary>
         /// 错误信息
         /// </summary>
         public string Message { get; set; }

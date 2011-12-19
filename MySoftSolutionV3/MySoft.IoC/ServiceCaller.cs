@@ -73,7 +73,7 @@ namespace MySoft.IoC
                 {
                     ApplicationName = reqMsg.AppName,
                     ServiceName = reqMsg.ServiceName,
-                    ExceptionHeader = string.Format("Application【{0}】call service timeout. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                    ErrorHeader = string.Format("Application【{0}】call service timeout. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                 };
             }
 
