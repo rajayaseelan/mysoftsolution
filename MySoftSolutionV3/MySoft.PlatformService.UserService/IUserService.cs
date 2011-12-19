@@ -61,6 +61,8 @@ namespace MySoft.PlatformService.UserService
     {
         public string Name { get; set; }
         public string Description { get; set; }
+
+        public Sex Sex { get; set; }
     }
 
     public enum Sex

@@ -332,9 +332,9 @@ namespace MySoft.IoC
                 status.DataFlow += sendMessage.DataLength;
 
                 //服务参数信息
-                args.Caller.ServiceName = resMsg.ServiceName;
-                args.Caller.MethodName = resMsg.MethodName;
-                args.Caller.Parameters = resMsg.Parameters.ToString();
+                args.Caller.ServiceName = reqMsg.ServiceName;
+                args.Caller.MethodName = reqMsg.MethodName;
+                args.Caller.Parameters = reqMsg.Parameters.ToString();
             }
         }
 

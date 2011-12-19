@@ -73,7 +73,7 @@ namespace MySoft.IoC.Services
                     if (!resMsg.IsBusinessError)
                     {
                         var ex = resMsg.Error;
-                        string body = string.Format("¡¾{5}¡¿Dynamic ({0}) service ({1},{2}) error. \r\nMessage ==> {4}\r\nParameters ==> {3}", reqMsg.Message, resMsg.ServiceName, resMsg.MethodName, resMsg.Parameters, resMsg.Message, resMsg.TransactionId);
+                        string body = string.Format("¡¾{5}¡¿Dynamic ({0}) service ({1},{2}) error. \r\nMessage ==> {4}\r\nParameters ==> {3}", reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters, resMsg.Message, resMsg.TransactionId);
                         var exception = new IoCException(body, ex)
                         {
                             ApplicationName = reqMsg.AppName,

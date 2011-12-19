@@ -130,7 +130,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblMethodName.Location = new System.Drawing.Point(23, 96);
             this.lblMethodName.Name = "lblMethodName";
-            this.lblMethodName.Size = new System.Drawing.Size(308, 30);
+            this.lblMethodName.Size = new System.Drawing.Size(308, 42);
             this.lblMethodName.TabIndex = 0;
             this.lblMethodName.Text = "label1";
             // 
@@ -140,7 +140,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblServiceName.Location = new System.Drawing.Point(23, 36);
             this.lblServiceName.Name = "lblServiceName";
-            this.lblServiceName.Size = new System.Drawing.Size(308, 30);
+            this.lblServiceName.Size = new System.Drawing.Size(308, 41);
             this.lblServiceName.TabIndex = 0;
             this.lblServiceName.Text = "label1";
             // 

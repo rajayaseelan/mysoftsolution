@@ -210,8 +210,12 @@ namespace MySoft.PlatformService.WinForm
                 var item2 = listMethod.Items[listMethod.SelectedIndex];
                 var service = item1.Source as ServiceInfo;
                 var method = item2.Source as MethodInfo;
-                frmInvoke frm = new frmInvoke(service.FullName, method.FullName, method.Parameters);
-                frm.Show();
+
+                SingletonMul.Show(string.Format("FORM_{0}_{1}", service.FullName, method.FullName), () =>
+                {
+                    frmInvoke frm = new frmInvoke(service.FullName, method.FullName, method.Parameters);
+                    return frm;
+                });
             }
         }
 

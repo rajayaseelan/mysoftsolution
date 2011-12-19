@@ -62,7 +62,11 @@ namespace MySoft.PlatformService.WinForm
                     p.Controls.Add(l);
 
                     var text = "Parameter【" + parameter.Name + "】type: " + parameter.TypeFullName;
-                    text += GetParameterText(parameter, 0);
+                    if (parameter.IsEnum || parameter.SubParameters.Count > 0)
+                    {
+                        text += "\r\n\r\n";
+                        text += GetParameterText(parameter, 0);
+                    }
                     toolTip1.SetToolTip(l, text);
                     l.Click += new EventHandler((s, ee) =>
                     {
@@ -100,40 +104,38 @@ namespace MySoft.PlatformService.WinForm
         private string GetParameterText(ParameterInfo parameter, int index)
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine();
+            for (var i = 0; i < index * 4; i++) sb.Append(" ");
             sb.AppendLine("【" + parameter.Name + "】 => " + parameter.TypeName);
 
             if (parameter.IsEnum)
             {
-                for (var i = 0; i < (index + 1) * 4; i++) sb.Append(" ");
+                for (var i = 0; i < index * 4 + 1; i++) sb.Append(" ");
                 sb.AppendLine("{");
                 foreach (var p in parameter.EnumValue)
                 {
-                    for (var i = 0; i < (index + 2) * 4; i++)
-                        sb.Append(" ");
-
+                    for (var i = 0; i < (index + 1) * 4; i++) sb.Append(" ");
                     sb.AppendLine("【" + p.Name + "】 => " + p.Value);
                 }
-                for (var i = 0; i < (index + 1) * 4; i++) sb.Append(" ");
+                for (var i = 0; i < index * 4 + 1; i++) sb.Append(" ");
                 sb.AppendLine("}");
             }
             else if (parameter.SubParameters.Count > 0)
             {
-                for (var i = 0; i < (index + 1) * 4; i++) sb.Append(" ");
+                for (var i = 0; i < index * 4 + 1; i++) sb.Append(" ");
                 sb.AppendLine("{");
                 {
                     foreach (var p in parameter.SubParameters)
                     {
-                        for (var i = 0; i < (index + 2) * 4; i++)
-                            sb.Append(" ");
-
-                        sb.AppendLine("【" + p.Name + "】 => " + p.TypeName);
-
-                        if (p.SubParameters.Count > 0)
+                        if (p.IsEnum || p.SubParameters.Count > 0)
                             sb.Append(GetParameterText(p, index + 1));
+                        else
+                        {
+                            for (var i = 0; i < (index + 1) * 4; i++) sb.Append(" ");
+                            sb.AppendLine("【" + p.Name + "】 => " + p.TypeName);
+                        }
                     }
                 }
-                for (var i = 0; i < (index + 1) * 4; i++) sb.Append(" ");
+                for (var i = 0; i < index * 4 + 1; i++) sb.Append(" ");
                 sb.AppendLine("}");
             }
 

@@ -91,6 +91,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Singleton.cs" />
     <EmbeddedResource Include="frmInvoke.resx">
       <DependentUpon>frmInvoke.cs</DependentUpon>
     </EmbeddedResource>
