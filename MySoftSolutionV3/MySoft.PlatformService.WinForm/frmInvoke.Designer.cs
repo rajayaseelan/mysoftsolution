@@ -54,9 +54,9 @@
             this.panel1.Controls.Add(this.label4);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 401);
+            this.panel1.Location = new System.Drawing.Point(0, 392);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(760, 48);
+            this.panel1.Size = new System.Drawing.Size(732, 48);
             this.panel1.TabIndex = 0;
             // 
             // label5
@@ -81,7 +81,7 @@
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(661, 13);
+            this.button1.Location = new System.Drawing.Point(633, 13);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 0;
@@ -109,38 +109,38 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.richTextBox1);
-            this.splitContainer1.Size = new System.Drawing.Size(760, 401);
-            this.splitContainer1.SplitterDistance = 355;
+            this.splitContainer1.Size = new System.Drawing.Size(732, 392);
+            this.splitContainer1.SplitterDistance = 342;
             this.splitContainer1.TabIndex = 1;
             // 
             // plParameters
             // 
-            this.plParameters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.plParameters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.plParameters.AutoScroll = true;
             this.plParameters.Location = new System.Drawing.Point(25, 159);
             this.plParameters.Name = "plParameters";
-            this.plParameters.Size = new System.Drawing.Size(306, 218);
+            this.plParameters.Size = new System.Drawing.Size(293, 209);
             this.plParameters.TabIndex = 1;
             // 
             // lblMethodName
             // 
-            this.lblMethodName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.lblMethodName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblMethodName.Location = new System.Drawing.Point(23, 96);
             this.lblMethodName.Name = "lblMethodName";
-            this.lblMethodName.Size = new System.Drawing.Size(308, 42);
+            this.lblMethodName.Size = new System.Drawing.Size(295, 42);
             this.lblMethodName.TabIndex = 0;
             this.lblMethodName.Text = "label1";
             // 
             // lblServiceName
             // 
-            this.lblServiceName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.lblServiceName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblServiceName.Location = new System.Drawing.Point(23, 36);
             this.lblServiceName.Name = "lblServiceName";
-            this.lblServiceName.Size = new System.Drawing.Size(308, 41);
+            this.lblServiceName.Size = new System.Drawing.Size(295, 41);
             this.lblServiceName.TabIndex = 0;
             this.lblServiceName.Text = "label1";
             // 
@@ -181,7 +181,7 @@
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(401, 401);
+            this.richTextBox1.Size = new System.Drawing.Size(386, 392);
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = "";
             // 
@@ -190,7 +190,7 @@
             this.AcceptButton = this.button1;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(760, 449);
+            this.ClientSize = new System.Drawing.Size(732, 440);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.panel1);
             this.Name = "frmInvoke";

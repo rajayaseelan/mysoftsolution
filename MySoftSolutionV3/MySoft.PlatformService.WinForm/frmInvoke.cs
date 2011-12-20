@@ -20,6 +20,7 @@ namespace MySoft.PlatformService.WinForm
         private string methodName;
         private IList<ParameterInfo> parameters;
         private IDictionary<string, TextBox> txtParameters;
+        private string paramValue;
 
         public frmInvoke(string serviceName, string methodName, IList<ParameterInfo> parameters)
         {
@@ -31,12 +32,22 @@ namespace MySoft.PlatformService.WinForm
             this.txtParameters = new Dictionary<string, TextBox>();
         }
 
+        public frmInvoke(string serviceName, string methodName, IList<ParameterInfo> parameters, string paramValue)
+            : this(serviceName, methodName, parameters)
+        {
+            this.paramValue = paramValue;
+        }
+
         private void frmInvoke_Load(object sender, EventArgs e)
         {
             lblServiceName.Text = serviceName;
             lblMethodName.Text = methodName;
 
-            CastleFactory.Create().OnError += new Logger.ErrorLogEventHandler(frmInvoke_OnError);
+            JObject obj = new JObject();
+            if (!string.IsNullOrEmpty(paramValue))
+            {
+                obj = JObject.Parse(paramValue);
+            }
 
             if (parameters.Count > 0)
             {
@@ -79,15 +90,25 @@ namespace MySoft.PlatformService.WinForm
 
                     TextBox t = new TextBox();
                     t.Dock = DockStyle.Fill;
+
+                    //给参数赋值
+                    if (obj.Count > 0)
+                    {
+                        if (obj[parameter.Name] != null)
+                        {
+                            t.Text = obj[parameter.Name].ToString(Newtonsoft.Json.Formatting.None);
+                        }
+                    }
+
                     p.Controls.Add(t);
                     l.SendToBack();
 
                     if (!parameter.IsPrimitive)
                     {
                         t.Multiline = true;
-                        p.Height += 30;
+                        p.Height += 50;
 
-                        countHeight += 30;
+                        countHeight += 50;
                     }
 
                     plParameters.Controls.Add(p);
@@ -98,11 +119,6 @@ namespace MySoft.PlatformService.WinForm
             {
                 label3.Visible = false;
             }
-        }
-
-        void frmInvoke_OnError(Exception error)
-        {
-            richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", error.Message);
         }
 
         private string GetParameterText(ParameterInfo parameter, int index)
@@ -157,6 +173,8 @@ namespace MySoft.PlatformService.WinForm
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
+                label5.Text = "正在调用服务，请稍候...";
+
                 var jValue = new JObject();
                 foreach (var p in txtParameters)
                 {

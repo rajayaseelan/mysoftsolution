@@ -90,27 +90,45 @@ namespace MySoft.IoC.Status
         void Subscribe(SubscribeOptions options, params string[] subscribeTypes);
 
         /// <summary>
+        /// 退订服务
+        /// </summary>
+        void Unsubscribe();
+
+        /// <summary>
         /// 获取订阅的类型
         /// </summary>
         /// <returns></returns>
         IList<string> GetSubscribeTypes();
 
         /// <summary>
-        /// 添加发布类型
+        /// 订阅发布类型
         /// </summary>
         /// <param name="subscribeType"></param>
         void SubscribeType(string subscribeType);
 
         /// <summary>
-        /// 添加发布类型
+        /// 退订发布类型
         /// </summary>
         /// <param name="subscribeType"></param>
         void UnsubscribeType(string subscribeType);
 
         /// <summary>
-        /// 退订服务
+        /// 获取订阅的应用
         /// </summary>
-        void Unsubscribe();
+        /// <returns></returns>
+        IList<string> GetSubscribeApps();
+
+        /// <summary>
+        /// 订阅发布应用
+        /// </summary>
+        /// <param name="appName"></param>
+        void SubscribeApp(string appName);
+
+        /// <summary>
+        /// 退订发布应用
+        /// </summary>
+        /// <param name="appName"></param>
+        void UnsubscribeApp(string appName);
 
         /// <summary>
         /// 是否存在服务

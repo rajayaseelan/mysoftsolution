@@ -39,11 +39,12 @@
             this.splitContainer4 = new System.Windows.Forms.SplitContainer();
             this.splitContainer6 = new System.Windows.Forms.SplitContainer();
             this.listAssembly = new ListControls.MessageListBox();
+            this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.刷新服务信息RToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listService = new ListControls.MessageListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.刷新服务信息ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.添加此服务到监控AToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.从监控中移除此服务OToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer5 = new System.Windows.Forms.SplitContainer();
             this.listMethod = new ListControls.MessageListBox();
@@ -53,11 +54,15 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.listTimeout = new ListControls.MessageListBox();
+            this.contextMenuStrip3 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.调用此服务CToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.listError = new ListControls.MessageListBox();
+            this.contextMenuStrip4 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.调用此服务CToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.webBrowser1 = new System.Windows.Forms.WebBrowser();
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
             this.tabPage4 = new System.Windows.Forms.TabPage();
@@ -77,6 +82,12 @@
             this.label9 = new System.Windows.Forms.Label();
             this.numericUpDown5 = new System.Windows.Forms.NumericUpDown();
             this.button2 = new System.Windows.Forms.Button();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.订阅此应用SToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.退订此应用UToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.订阅此应用SToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.退订此应用UToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage0.SuspendLayout();
@@ -86,6 +97,7 @@
             this.splitContainer6.Panel1.SuspendLayout();
             this.splitContainer6.Panel2.SuspendLayout();
             this.splitContainer6.SuspendLayout();
+            this.contextMenuStrip2.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.splitContainer5.Panel1.SuspendLayout();
             this.splitContainer5.Panel2.SuspendLayout();
@@ -95,6 +107,7 @@
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
+            this.contextMenuStrip3.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -102,6 +115,7 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
+            this.contextMenuStrip4.SuspendLayout();
             this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
@@ -236,6 +250,7 @@
             this.listAssembly.AutoScroll = true;
             this.listAssembly.AutoScrollMinSize = new System.Drawing.Size(252, 0);
             this.listAssembly.BackColor = System.Drawing.Color.White;
+            this.listAssembly.ContextMenuStrip = this.contextMenuStrip2;
             this.listAssembly.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listAssembly.Location = new System.Drawing.Point(0, 0);
             this.listAssembly.Name = "listAssembly";
@@ -243,6 +258,20 @@
             this.listAssembly.SelectedItem = null;
             this.listAssembly.Size = new System.Drawing.Size(282, 148);
             this.listAssembly.TabIndex = 12;
+            // 
+            // contextMenuStrip2
+            // 
+            this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.刷新服务信息RToolStripMenuItem});
+            this.contextMenuStrip2.Name = "contextMenuStrip2";
+            this.contextMenuStrip2.Size = new System.Drawing.Size(165, 26);
+            // 
+            // 刷新服务信息RToolStripMenuItem
+            // 
+            this.刷新服务信息RToolStripMenuItem.Name = "刷新服务信息RToolStripMenuItem";
+            this.刷新服务信息RToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.刷新服务信息RToolStripMenuItem.Text = "刷新服务信息(&R)";
+            this.刷新服务信息RToolStripMenuItem.Click += new System.EventHandler(this.刷新服务信息RToolStripMenuItem_Click);
             // 
             // listService
             // 
@@ -261,24 +290,11 @@
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.刷新服务信息ToolStripMenuItem,
-            this.toolStripSeparator1,
             this.添加此服务到监控AToolStripMenuItem,
+            this.toolStripSeparator1,
             this.从监控中移除此服务OToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(203, 76);
-            // 
-            // 刷新服务信息ToolStripMenuItem
-            // 
-            this.刷新服务信息ToolStripMenuItem.Name = "刷新服务信息ToolStripMenuItem";
-            this.刷新服务信息ToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
-            this.刷新服务信息ToolStripMenuItem.Text = "刷新服务信息(&R)";
-            this.刷新服务信息ToolStripMenuItem.Click += new System.EventHandler(this.刷新服务信息ToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(199, 6);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(203, 54);
             // 
             // 添加此服务到监控AToolStripMenuItem
             // 
@@ -286,6 +302,11 @@
             this.添加此服务到监控AToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.添加此服务到监控AToolStripMenuItem.Text = "添加此服务到监控(&A)";
             this.添加此服务到监控AToolStripMenuItem.Click += new System.EventHandler(this.添加此服务到监控AToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(199, 6);
             // 
             // 从监控中移除此服务OToolStripMenuItem
             // 
@@ -393,6 +414,7 @@
             this.listTimeout.AutoScroll = true;
             this.listTimeout.AutoScrollMinSize = new System.Drawing.Size(527, 0);
             this.listTimeout.BackColor = System.Drawing.Color.White;
+            this.listTimeout.ContextMenuStrip = this.contextMenuStrip3;
             this.listTimeout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listTimeout.Location = new System.Drawing.Point(0, 0);
             this.listTimeout.Name = "listTimeout";
@@ -401,6 +423,23 @@
             this.listTimeout.Size = new System.Drawing.Size(557, 455);
             this.listTimeout.TabIndex = 12;
             this.listTimeout.SelectedIndexChanged += new System.EventHandler(this.listBox3_SelectedIndexChanged);
+            // 
+            // contextMenuStrip3
+            // 
+            this.contextMenuStrip3.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.调用此服务CToolStripMenuItem,
+            this.toolStripSeparator2,
+            this.订阅此应用SToolStripMenuItem,
+            this.退订此应用UToolStripMenuItem});
+            this.contextMenuStrip3.Name = "contextMenuStrip3";
+            this.contextMenuStrip3.Size = new System.Drawing.Size(154, 98);
+            // 
+            // 调用此服务CToolStripMenuItem
+            // 
+            this.调用此服务CToolStripMenuItem.Name = "调用此服务CToolStripMenuItem";
+            this.调用此服务CToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.调用此服务CToolStripMenuItem.Text = "调用此服务(&C)";
+            this.调用此服务CToolStripMenuItem.Click += new System.EventHandler(this.调用此服务CToolStripMenuItem_Click);
             // 
             // richTextBox1
             // 
@@ -465,6 +504,7 @@
             this.listError.AutoScroll = true;
             this.listError.AutoScrollMinSize = new System.Drawing.Size(527, 0);
             this.listError.BackColor = System.Drawing.Color.White;
+            this.listError.ContextMenuStrip = this.contextMenuStrip4;
             this.listError.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listError.Location = new System.Drawing.Point(0, 0);
             this.listError.Name = "listError";
@@ -473,6 +513,23 @@
             this.listError.Size = new System.Drawing.Size(557, 293);
             this.listError.TabIndex = 11;
             this.listError.SelectedIndexChanged += new System.EventHandler(this.listBox2_SelectedIndexChanged);
+            // 
+            // contextMenuStrip4
+            // 
+            this.contextMenuStrip4.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.调用此服务CToolStripMenuItem1,
+            this.toolStripSeparator3,
+            this.订阅此应用SToolStripMenuItem1,
+            this.退订此应用UToolStripMenuItem1});
+            this.contextMenuStrip4.Name = "contextMenuStrip4";
+            this.contextMenuStrip4.Size = new System.Drawing.Size(154, 76);
+            // 
+            // 调用此服务CToolStripMenuItem1
+            // 
+            this.调用此服务CToolStripMenuItem1.Name = "调用此服务CToolStripMenuItem1";
+            this.调用此服务CToolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
+            this.调用此服务CToolStripMenuItem1.Text = "调用此服务(&C)";
+            this.调用此服务CToolStripMenuItem1.Click += new System.EventHandler(this.调用此服务CToolStripMenuItem1_Click);
             // 
             // webBrowser1
             // 
@@ -714,6 +771,44 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(150, 6);
+            // 
+            // 订阅此应用SToolStripMenuItem
+            // 
+            this.订阅此应用SToolStripMenuItem.Name = "订阅此应用SToolStripMenuItem";
+            this.订阅此应用SToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.订阅此应用SToolStripMenuItem.Text = "订阅此应用(&S)";
+            this.订阅此应用SToolStripMenuItem.Click += new System.EventHandler(this.订阅此应用SToolStripMenuItem_Click);
+            // 
+            // 退订此应用UToolStripMenuItem
+            // 
+            this.退订此应用UToolStripMenuItem.Name = "退订此应用UToolStripMenuItem";
+            this.退订此应用UToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.退订此应用UToolStripMenuItem.Text = "退订此应用(&U)";
+            this.退订此应用UToolStripMenuItem.Click += new System.EventHandler(this.退订此应用UToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(150, 6);
+            // 
+            // 订阅此应用SToolStripMenuItem1
+            // 
+            this.订阅此应用SToolStripMenuItem1.Name = "订阅此应用SToolStripMenuItem1";
+            this.订阅此应用SToolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
+            this.订阅此应用SToolStripMenuItem1.Text = "订阅此应用(&S)";
+            this.订阅此应用SToolStripMenuItem1.Click += new System.EventHandler(this.订阅此应用SToolStripMenuItem1_Click);
+            // 
+            // 退订此应用UToolStripMenuItem1
+            // 
+            this.退订此应用UToolStripMenuItem1.Name = "退订此应用UToolStripMenuItem1";
+            this.退订此应用UToolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
+            this.退订此应用UToolStripMenuItem1.Text = "退订此应用(&U)";
+            this.退订此应用UToolStripMenuItem1.Click += new System.EventHandler(this.退订此应用UToolStripMenuItem1_Click);
+            // 
             // frmMain
             // 
             this.AcceptButton = this.button1;
@@ -755,6 +850,7 @@
             this.splitContainer6.Panel1.ResumeLayout(false);
             this.splitContainer6.Panel2.ResumeLayout(false);
             this.splitContainer6.ResumeLayout(false);
+            this.contextMenuStrip2.ResumeLayout(false);
             this.contextMenuStrip1.ResumeLayout(false);
             this.splitContainer5.Panel1.ResumeLayout(false);
             this.splitContainer5.Panel2.ResumeLayout(false);
@@ -764,6 +860,7 @@
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel2.ResumeLayout(false);
             this.splitContainer3.ResumeLayout(false);
+            this.contextMenuStrip3.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
@@ -771,6 +868,7 @@
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.ResumeLayout(false);
+            this.contextMenuStrip4.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).EndInit();
@@ -820,7 +918,6 @@
         private ListControls.MessageListBox listMethod;
         private System.Windows.Forms.RichTextBox richTextBox3;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem 刷新服务信息ToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem 添加此服务到监控AToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 从监控中移除此服务OToolStripMenuItem;
@@ -831,5 +928,17 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.NumericUpDown numericUpDown5;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip3;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip4;
+        private System.Windows.Forms.ToolStripMenuItem 刷新服务信息RToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 调用此服务CToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 调用此服务CToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem 订阅此应用SToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 退订此应用UToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem 订阅此应用SToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem 退订此应用UToolStripMenuItem1;
     }
 }

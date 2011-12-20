@@ -465,6 +465,16 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 退订
+        /// </summary>
+        public void Unsubscribe()
+        {
+            var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
+            var endPoint = OperationContext.Current.RemoteEndPoint;
+            MessageCenter.Instance.RemoveListener(new MessageListener(endPoint, callback));
+        }
+
+        /// <summary>
         /// 获取订阅的类型
         /// </summary>
         /// <returns></returns>
@@ -478,7 +488,7 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 添加发布类型
+        /// 订阅发布类型
         /// </summary>
         /// <param name="subscribeType"></param>
         public void SubscribeType(string subscribeType)
@@ -497,7 +507,7 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 添加发布类型
+        /// 退订发布类型
         /// </summary>
         /// <param name="subscribeType"></param>
         public void UnsubscribeType(string subscribeType)
@@ -516,13 +526,54 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 退订
+        /// 获取订阅的应用
         /// </summary>
-        public void Unsubscribe()
+        /// <returns></returns>
+        public IList<string> GetSubscribeApps()
         {
-            var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
             var endPoint = OperationContext.Current.RemoteEndPoint;
-            MessageCenter.Instance.RemoveListener(new MessageListener(endPoint, callback));
+            var listener = MessageCenter.Instance.GetListener(endPoint);
+            if (listener == null) return new List<string>();
+
+            return listener.Apps;
+        }
+
+        /// <summary>
+        /// 订阅发布应用
+        /// </summary>
+        /// <param name="appName"></param>
+        public void SubscribeApp(string appName)
+        {
+            var endPoint = OperationContext.Current.RemoteEndPoint;
+            var listener = MessageCenter.Instance.GetListener(endPoint);
+            if (listener == null) return;
+
+            if (appName != null)
+            {
+                if (!listener.Apps.Contains(appName))
+                    listener.Apps.Add(appName);
+                else
+                    throw new WarningException("Already exists subscribe app " + appName);
+            }
+        }
+
+        /// <summary>
+        /// 退订发布应用
+        /// </summary>
+        /// <param name="appName"></param>
+        public void UnsubscribeApp(string appName)
+        {
+            var endPoint = OperationContext.Current.RemoteEndPoint;
+            var listener = MessageCenter.Instance.GetListener(endPoint);
+            if (listener == null) return;
+
+            if (appName != null)
+            {
+                if (listener.Apps.Contains(appName))
+                    listener.Apps.Remove(appName);
+                else
+                    throw new WarningException("Don't exist subscribe app " + appName);
+            }
         }
 
         #endregion

@@ -199,8 +199,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            IService service = container.ResolveAll<IService>()
-                .SingleOrDefault(model => model.ServiceName == reqMsg.ServiceName);
+            string serviceKey = "Service_" + reqMsg.ServiceName;
+            IService service = container.Resolve<IService>(serviceKey);
 
             if (service == null)
             {

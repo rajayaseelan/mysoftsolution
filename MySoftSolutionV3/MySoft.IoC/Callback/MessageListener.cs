@@ -46,6 +46,15 @@ namespace MySoft.IoC
             get { return _subscribeTypes; }
         }
 
+        private IList<string> _appNames;
+        /// <summary>
+        /// 订阅的应用
+        /// </summary>
+        public IList<string> Apps
+        {
+            get { return _appNames; }
+        }
+
         private IStatusListener _innerListener;
 
         /// <summary>
@@ -57,6 +66,8 @@ namespace MySoft.IoC
             _endPoint = endPoint;
             _innerListener = innerListener;
             _pushTime = DateTime.Now;
+            _appNames = new List<string>();
+            _appNames = new List<string>();
         }
 
         /// <summary>

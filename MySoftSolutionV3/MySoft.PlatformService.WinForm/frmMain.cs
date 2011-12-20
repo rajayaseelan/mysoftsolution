@@ -52,8 +52,8 @@ namespace MySoft.PlatformService.WinForm
                 if (button1.Tag == null)
                 {
                     var listener = new StatusListener(tabControl1, listConnect, listTimeout, listError,
-                       Convert.ToInt32(numericUpDown3.Value), Convert.ToInt32(numericUpDown5.Value),
-                       Convert.ToInt32(numericUpDown4.Value), checkBox4.Checked);
+                        Convert.ToInt32(numericUpDown3.Value), Convert.ToInt32(numericUpDown5.Value),
+                        Convert.ToInt32(numericUpDown4.Value), checkBox4.Checked);
 
                     service = CastleFactory.Create().GetChannel<IStatusService>(listener);
 
@@ -67,6 +67,7 @@ namespace MySoft.PlatformService.WinForm
                         CallTimeout = Convert.ToDouble(numericUpDown1.Value) / 1000,
                         StatusTimer = Convert.ToInt32(numericUpDown2.Value)
                     };
+
                     service.Subscribe(options);
                     button1.Text = "停止监控";
                     button1.Tag = label1.Text;
@@ -82,6 +83,7 @@ namespace MySoft.PlatformService.WinForm
                     checkBox4.Enabled = false;
                     numericUpDown3.Enabled = false;
                     numericUpDown4.Enabled = false;
+                    numericUpDown5.Enabled = false;
                     //button1.Enabled = false;
                 }
                 else
@@ -90,13 +92,14 @@ namespace MySoft.PlatformService.WinForm
                     label1.Text = button1.Tag.ToString();
                     button1.Text = "开始监控";
                     button1.Tag = null;
-                    listConnect.Items.Clear();
-                    listError.Items.Clear();
-                    listTimeout.Items.Clear();
 
-                    listConnect.Invalidate();
-                    listError.Invalidate();
-                    listTimeout.Invalidate();
+                    //listConnect.Items.Clear();
+                    //listError.Items.Clear();
+                    //listTimeout.Items.Clear();
+
+                    //listConnect.Invalidate();
+                    //listError.Invalidate();
+                    //listTimeout.Invalidate();
 
                     tabPage1.Text = "连接信息";
                     tabPage2.Text = "超时信息";
@@ -117,22 +120,13 @@ namespace MySoft.PlatformService.WinForm
                     checkBox4.Enabled = true;
                     numericUpDown3.Enabled = true;
                     numericUpDown4.Enabled = true;
+                    numericUpDown5.Enabled = true;
                     //button1.Enabled = true;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            if (MessageBox.Show("确定清除所有日志？", "系统提示", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
-            {
-                listConnect.Items.Clear();
-                listTimeout.Items.Clear();
-                listError.Items.Clear();
             }
         }
 
@@ -176,7 +170,7 @@ namespace MySoft.PlatformService.WinForm
             rich.AppendText("ApplicationName:\r\n");
             rich.SelectionColor = Color.Black;
             rich.SelectionIndent = 20;
-            rich.AppendText(caller.AppName);
+            rich.AppendText("【" + caller.AppName + "】");
             rich.AppendText("\r\n\r\n");
 
             rich.SelectionIndent = 0;
@@ -218,8 +212,68 @@ namespace MySoft.PlatformService.WinForm
             listMethod.SelectedIndexChanged += new EventHandler(messageListBox2_SelectedIndexChanged);
             listMethod.MouseDoubleClick += new MouseEventHandler(listMethod_MouseDoubleClick);
 
+            listTimeout.MouseDoubleClick += new MouseEventHandler(listTimeout_MouseDoubleClick);
+            listError.MouseDoubleClick += new MouseEventHandler(listError_MouseDoubleClick);
+
             InitBrowser();
             InitService();
+        }
+
+        void listError_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (listError.SelectedIndex < 0) return;
+            var item = listError.Items[listError.SelectedIndex];
+            PositionService((item.Source as CallError).Caller);
+        }
+
+        void listTimeout_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (listTimeout.SelectedIndex < 0) return;
+            var item = listTimeout.Items[listTimeout.SelectedIndex];
+            PositionService((item.Source as CallTimeout).Caller);
+        }
+
+        void PositionService(AppCaller caller)
+        {
+            listAssembly.SelectedIndex = -1;
+            listService.SelectedIndex = -1;
+            listMethod.SelectedIndex = -1;
+
+            for (int index = 0; index < listAssembly.Items.Count; index++)
+            {
+                var item = listAssembly.Items[index];
+                var services = item.Source as IList<ServiceInfo>;
+                if (services.Any(p => p.FullName == caller.ServiceName))
+                {
+                    listAssembly.SelectedIndex = index;
+                    break;
+                }
+            }
+
+            for (int index = 0; index < listService.Items.Count; index++)
+            {
+                var item = listService.Items[index];
+                var service = item.Source as ServiceInfo;
+                if (service.FullName == caller.ServiceName)
+                {
+                    listService.SelectedIndex = index;
+                    break;
+                }
+            }
+
+            for (int index = 0; index < listMethod.Items.Count; index++)
+            {
+                var item = listMethod.Items[index];
+                var method = item.Source as MethodInfo;
+                if (method.FullName == caller.MethodName)
+                {
+                    listMethod.SelectedIndex = index;
+                    break;
+                }
+            }
+
+            //选中服务页
+            tabControl1.SelectedIndex = 0;
         }
 
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -268,6 +322,10 @@ namespace MySoft.PlatformService.WinForm
             webBrowser2.IsWebBrowserContextMenuEnabled = false;
         }
 
+        /// <summary>
+        /// 服务信息
+        /// </summary>
+        private IList<ServiceInfo> services = new List<ServiceInfo>();
         private void InitService()
         {
             listAssembly.Items.Clear();
@@ -284,7 +342,7 @@ namespace MySoft.PlatformService.WinForm
             listMethod.Invalidate();
 
             tabPage0.Text = "服务信息";
-            IList<ServiceInfo> services;
+
             try
             {
                 services = CastleFactory.Create().GetChannel<IStatusService>()
@@ -406,16 +464,6 @@ namespace MySoft.PlatformService.WinForm
             }
         }
 
-        /// <summary>
-        /// 刷新服务信息
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void 刷新服务信息ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            InitService();
-        }
-
         private void 添加此服务到监控AToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (checkBox1.Enabled)
@@ -460,6 +508,95 @@ namespace MySoft.PlatformService.WinForm
             {
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("确定清除所有日志？", "系统提示", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+            {
+                listConnect.Items.Clear();
+                listTimeout.Items.Clear();
+                listError.Items.Clear();
+            }
+        }
+
+        private void 刷新服务信息RToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            InitService();
+        }
+
+        private void 调用此服务CToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (listTimeout.SelectedIndex < 0) return;
+            var item = listTimeout.Items[listTimeout.SelectedIndex];
+            var caller = (item.Source as CallTimeout).Caller;
+            ShowDialog(caller);
+        }
+
+        private void 调用此服务CToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (listError.SelectedIndex < 0) return;
+            var item = listError.Items[listError.SelectedIndex];
+            var caller = (item.Source as CallError).Caller;
+            ShowDialog(caller);
+        }
+
+        private void ShowDialog(AppCaller caller)
+        {
+            var service = services.First(p => p.FullName == caller.ServiceName);
+            var method = service.Methods.First(p => p.FullName == caller.MethodName);
+
+            SingletonMul.Show(string.Format("FORM_{0}_{1}", service.FullName, method.FullName), () =>
+            {
+                frmInvoke frm = new frmInvoke(service.FullName, method.FullName, method.Parameters, caller.Parameters);
+                return frm;
+            });
+        }
+
+        private void 订阅此应用SToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (listError.SelectedIndex < 0) return;
+            var item = listError.Items[listError.SelectedIndex];
+            var caller = (item.Source as CallError).Caller;
+            PubSub(caller, true);
+        }
+
+        private void 退订此应用UToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (listError.SelectedIndex < 0) return;
+            var item = listError.Items[listError.SelectedIndex];
+            var caller = (item.Source as CallError).Caller;
+            PubSub(caller, false);
+        }
+
+        private void 订阅此应用SToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (listTimeout.SelectedIndex < 0) return;
+            var item = listTimeout.Items[listTimeout.SelectedIndex];
+            var caller = (item.Source as CallTimeout).Caller;
+            PubSub(caller, true);
+        }
+
+        private void 退订此应用UToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (listTimeout.SelectedIndex < 0) return;
+            var item = listTimeout.Items[listTimeout.SelectedIndex];
+            var caller = (item.Source as CallTimeout).Caller;
+            PubSub(caller, false);
+        }
+
+        private void PubSub(AppCaller caller, bool isSub)
+        {
+            if (checkBox1.Enabled)
+            {
+                MessageBox.Show("请先启动监控！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (isSub)
+                service.SubscribeApp(caller.AppName);
+            else
+                service.UnsubscribeApp(caller.AppName);
         }
     }
 
@@ -570,6 +707,10 @@ namespace MySoft.PlatformService.WinForm
                 if (callTimeout.ElapsedTime >= timeout)
                 {
                     msgType = ParseMessageType.Error;
+                }
+                else if (callTimeout.Count >= outCount)
+                {
+                    msgType = ParseMessageType.Question;
                 }
 
                 box2.Items.Insert(0,
