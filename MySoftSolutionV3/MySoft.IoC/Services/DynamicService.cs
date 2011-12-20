@@ -184,6 +184,7 @@ namespace MySoft.IoC.Services
                 //²¶»ñÈ«¾Ö´íÎó
                 if (reqMsg.InvokeMethod)
                 {
+                    resMsg.Parameters.Clear();
                     var e = ErrorHelper.GetInnerException(ex);
                     resMsg.Error = new WarningException(e.Message);
                 }

@@ -479,7 +479,7 @@ namespace MySoft.PlatformService.WinForm
                 var item = listService.Items[listService.SelectedIndex];
                 service.SubscribeType((item.Source as ServiceInfo).FullName);
 
-                MessageBox.Show("添加成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("订阅成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -517,6 +517,14 @@ namespace MySoft.PlatformService.WinForm
                 listConnect.Items.Clear();
                 listTimeout.Items.Clear();
                 listError.Items.Clear();
+
+                listConnect.Invalidate();
+                listTimeout.Invalidate();
+                listError.Invalidate();
+
+                tabPage1.Text = "连接信息";
+                tabPage2.Text = "超时信息";
+                tabPage3.Text = "异常信息";
             }
         }
 
@@ -593,10 +601,23 @@ namespace MySoft.PlatformService.WinForm
                 return;
             }
 
-            if (isSub)
-                service.SubscribeApp(caller.AppName);
-            else
-                service.UnsubscribeApp(caller.AppName);
+            try
+            {
+                if (isSub)
+                {
+                    service.SubscribeApp(caller.AppName);
+                    MessageBox.Show("订阅成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    service.UnsubscribeApp(caller.AppName);
+                    MessageBox.Show("退订成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 

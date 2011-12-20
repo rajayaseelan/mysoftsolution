@@ -21,10 +21,15 @@ namespace MySoft.IoC
         public event EventHandler<ServiceMessageEventArgs> OnCallback;
 
         /// <summary>
+        /// 错误回调
+        /// </summary>
+        public event EventHandler<ErrorMessageEventArgs> OnError;
+
+        /// <summary>
         /// This event is raised when client disconnected from server.
         /// </summary>
         public event EventHandler Disconnected;
-
+        private RequestMessage request;
         private IScsClient client;
         private ILog logger;
         private string node;
@@ -65,7 +70,8 @@ namespace MySoft.IoC
         void client_ErrorReceived(object sender, ErrorEventArgs e)
         {
             //输出错误信息
-            this.logger.WriteError(e.Error);
+            if (OnError != null)
+                OnError(sender, new ErrorMessageEventArgs { Request = request, Error = e.Error });
         }
 
         /// <summary>
@@ -83,6 +89,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public void SendMessage(RequestMessage reqMsg)
         {
+            this.request = reqMsg;
+
             //如果连接断开，直接抛出异常
             if (!IsConnected)
             {

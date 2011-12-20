@@ -67,7 +67,6 @@ namespace MySoft.IoC
                 {
                 }
 
-                string title = string.Format("Call local service ({0},{1}) timeout.", reqMsg.ServiceName, reqMsg.MethodName);
                 string body = string.Format("【{3}】Call service ({0},{1}) timeout ({2} ms)！", reqMsg.ServiceName, reqMsg.MethodName, elapsedTime.TotalMilliseconds, reqMsg.TransactionId);
                 throw new WarningException(body)
                 {

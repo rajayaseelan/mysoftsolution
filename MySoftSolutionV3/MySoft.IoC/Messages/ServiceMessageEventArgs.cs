@@ -18,4 +18,20 @@ namespace MySoft.IoC.Messages
         /// </summary>
         public IScsClient Client { get; set; }
     }
+
+    /// <summary>
+    /// 错误消息事件参数
+    /// </summary>
+    public class ErrorMessageEventArgs : EventArgs
+    {
+        /// <summary>
+        /// 请求信息
+        /// </summary>
+        public RequestMessage Request { get; set; }
+
+        /// <summary>
+        /// 错误信息
+        /// </summary>
+        public Exception Error { get; set; }
+    }
 }

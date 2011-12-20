@@ -24,10 +24,16 @@ namespace MySoft.IoC.Services
         {
             ServiceRequest reqService = new ServiceRequest(node, logger, false);
             reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
+            reqService.OnError += new EventHandler<ErrorMessageEventArgs>(reqService_OnError);
             reqService.Disconnected += new EventHandler(reqService_Disconnected);
 
             this.reqPool = new ServiceRequestPool(1);
             this.reqPool.Push(reqService);
+        }
+
+        void reqService_OnError(object sender, ErrorMessageEventArgs e)
+        {
+            base.QueueError(e.Request, e.Error);
         }
 
         void reqService_Disconnected(object sender, EventArgs e)

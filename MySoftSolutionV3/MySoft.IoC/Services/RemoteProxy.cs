@@ -37,8 +37,32 @@ namespace MySoft.IoC.Services
             {
                 var reqService = new ServiceRequest(node, logger, true);
                 reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
+                reqService.OnError += new EventHandler<ErrorMessageEventArgs>(reqService_OnError);
 
                 this.reqPool.Push(reqService);
+            }
+        }
+
+        void reqService_OnError(object sender, ErrorMessageEventArgs e)
+        {
+            QueueError(e.Request, e.Error);
+        }
+
+        protected void QueueError(RequestMessage request, Exception error)
+        {
+            if (request != null)
+            {
+                var resMsg = new ResponseMessage
+                {
+                    TransactionId = request.TransactionId,
+                    ServiceName = request.ServiceName,
+                    MethodName = request.Message,
+                    Expiration = request.Expiration,
+                    ReturnType = request.ReturnType,
+                    Error = error
+                };
+
+                QueueMessage(resMsg);
             }
         }
 
@@ -134,7 +158,6 @@ namespace MySoft.IoC.Services
                     {
                     }
 
-                    string title = string.Format("Call ({0}:{1}) remote service ({2},{3}) timeout.", node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName);
                     string body = string.Format("¡¾{5}¡¿Call ({0}:{1}) remote service ({2},{3}) timeout ({4} ms)£¡", node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, elapsedTime.TotalMilliseconds, reqMsg.TransactionId);
                     throw new WarningException(body)
                     {

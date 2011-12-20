@@ -199,13 +199,13 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            string serviceKey = "Service_" + reqMsg.ServiceName;
-            IService service = container.Resolve<IService>(serviceKey);
+            IService service = container.ResolveAll<IService>()
+              .SingleOrDefault(model => model.ServiceName == reqMsg.ServiceName);
 
             if (service == null)
             {
-                string title = string.Format("The server not find matching service ({0}).", reqMsg.ServiceName);
-                throw new WarningException(title)
+                string body = string.Format("The server not find matching service ({0}).", reqMsg.ServiceName);
+                throw new WarningException(body)
                 {
                     ApplicationName = reqMsg.AppName,
                     ServiceName = reqMsg.ServiceName,
