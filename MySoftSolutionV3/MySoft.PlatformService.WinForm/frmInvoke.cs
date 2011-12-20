@@ -61,17 +61,21 @@ namespace MySoft.PlatformService.WinForm
                     l.TextAlign = ContentAlignment.MiddleLeft;
                     p.Controls.Add(l);
 
-                    var text = "Parameter【" + parameter.Name + "】type: " + parameter.TypeFullName;
-                    if (parameter.IsEnum || parameter.SubParameters.Count > 0)
+                    if (!parameter.IsPrimitive || parameter.IsEnum)
                     {
-                        text += "\r\n\r\n";
-                        text += GetParameterText(parameter, 0);
+                        var text = "Parameter【" + parameter.Name + "】type: " + parameter.TypeFullName;
+                        if (parameter.IsEnum || parameter.SubParameters.Count > 0)
+                        {
+                            text += "\r\n\r\n";
+                            text += GetParameterText(parameter, 0);
+                        }
+                        toolTip1.SetToolTip(l, text);
+                        l.ForeColor = Color.Red;
+                        l.Click += new EventHandler((s, ee) =>
+                        {
+                            richTextBox1.Text = text;
+                        });
                     }
-                    toolTip1.SetToolTip(l, text);
-                    l.Click += new EventHandler((s, ee) =>
-                    {
-                        richTextBox1.Text = text;
-                    });
 
                     TextBox t = new TextBox();
                     t.Dock = DockStyle.Fill;
@@ -181,11 +185,11 @@ namespace MySoft.PlatformService.WinForm
                 if (data != null)
                 {
                     if (string.IsNullOrEmpty(data.OutParameters))
-                        richTextBox1.Text = string.Format("【InvokeValue】 =>\r\n{0}\r\n\r\n【RowCount】 => {1} row(s).",
-                            data.Value, data.Count);
+                        richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}",
+                            data.Count, data.Value);
                     else
-                        richTextBox1.Text = string.Format("【InvokeValue】 =>\r\n{0}\r\n\r\n【RowCount】 => {1} row(s).\r\n\r\n【OutParameter(s)】 =>\r\n{2}",
-                            data.Value, data.Count, data.OutParameters);
+                        richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
+                            data.Count, data.Value, data.OutParameters);
                 }
             }
             catch (Exception ex)

@@ -52,7 +52,9 @@ namespace MySoft.PlatformService.WinForm
                 if (button1.Tag == null)
                 {
                     var listener = new StatusListener(tabControl1, listConnect, listTimeout, listError,
-                        Convert.ToInt32(numericUpDown3.Value), Convert.ToInt32(numericUpDown4.Value), checkBox4.Checked);
+                       Convert.ToInt32(numericUpDown3.Value), Convert.ToInt32(numericUpDown5.Value),
+                       Convert.ToInt32(numericUpDown4.Value), checkBox4.Checked);
+
                     service = CastleFactory.Create().GetChannel<IStatusService>(listener);
 
                     //var services = service.GetServiceList();
@@ -121,6 +123,16 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("确定清除所有日志？", "系统提示", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+            {
+                listConnect.Items.Clear();
+                listTimeout.Items.Clear();
+                listError.Items.Clear();
             }
         }
 
@@ -458,15 +470,17 @@ namespace MySoft.PlatformService.WinForm
         private MessageListBox box2;
         private MessageListBox box3;
         private int rowCount;
+        private int outCount;
         private int timeout;
         private bool writeLog;
-        public StatusListener(TabControl control, MessageListBox box1, MessageListBox box2, MessageListBox box3, int rowCount, int timeout, bool writeLog)
+        public StatusListener(TabControl control, MessageListBox box1, MessageListBox box2, MessageListBox box3, int rowCount, int outCount, int timeout, bool writeLog)
         {
             this.control = control;
             this.box1 = box1;
             this.box2 = box2;
             this.box3 = box3;
             this.rowCount = rowCount;
+            this.outCount = outCount;
             this.timeout = timeout;
             this.writeLog = writeLog;
         }
@@ -571,12 +585,17 @@ namespace MySoft.PlatformService.WinForm
                 box2.Invalidate();
                 control.TabPages[2].Text = "超时信息(" + box2.Items.Count + ")";
 
-                if (writeLog && msgType == ParseMessageType.Error)
+                if (writeLog && (msgType == ParseMessageType.Error || callTimeout.Count >= outCount))
                 {
                     var item = box2.Items[0];
                     var message = string.Format("{0}\r\n{1}\r\n{2}", item.LineHeader, item.MessageText,
                         (item.Source as CallTimeout).Caller.Parameters);
-                    SimpleLog.Instance.WriteLogForDir("CallTimeout", message);
+
+                    if (callTimeout.Count >= outCount)
+                        SimpleLog.Instance.WriteLogForDir("CallCount", message);
+
+                    if (msgType == ParseMessageType.Error)
+                        SimpleLog.Instance.WriteLogForDir("CallTimeout", message);
                 }
             }));
         }
@@ -594,7 +613,7 @@ namespace MySoft.PlatformService.WinForm
                     new ParseMessageEventArgs
                     {
                         MessageType = ParseMessageType.Error,
-                        LineHeader = string.Format("【{0}】 [{2}] {1}", callError.CallTime, callError.Message, callError.Caller.AppName),
+                        LineHeader = string.Format("【{0}】 [{2}] Error => {1}", callError.CallTime, callError.Message, callError.Caller.AppName),
                         MessageText = string.Format("{0},{1}", callError.Caller.ServiceName, callError.Caller.MethodName),
                         //+ "\r\n" + callError.Caller.Parameters
                         Source = callError

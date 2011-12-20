@@ -152,7 +152,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(83, 12);
             this.label3.TabIndex = 0;
-            this.label3.Text = "Parameter(s):";
+            this.label3.Text = "Parameters:";
             // 
             // label2
             // 

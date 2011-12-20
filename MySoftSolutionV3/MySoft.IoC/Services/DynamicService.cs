@@ -52,15 +52,9 @@ namespace MySoft.IoC.Services
                 method = CoreHelper.GetMethodFromType(classType, reqMsg.MethodName);
                 if (method == null)
                 {
-                    string title = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
-                    var exception = new WarningException(title)
-                    {
-                        ApplicationName = reqMsg.AppName,
-                        ServiceName = reqMsg.ServiceName,
-                        ErrorHeader = string.Format("Application¡¾{0}¡¿occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                    };
+                    string message = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
+                    resMsg.Error = new WarningException(message);
 
-                    resMsg.Error = exception;
                     return resMsg;
                 }
                 else
@@ -191,7 +185,7 @@ namespace MySoft.IoC.Services
                 if (reqMsg.InvokeMethod)
                 {
                     var e = ErrorHelper.GetInnerException(ex);
-                    resMsg.Error = new Exception(e.Message);
+                    resMsg.Error = new WarningException(e.Message);
                 }
                 else
                     resMsg.Error = ex;

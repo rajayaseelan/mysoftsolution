@@ -107,69 +107,73 @@ namespace MySoft.IoC
             return container.Contains<ServiceContractAttribute>(serviceName);
         }
 
+        private IList<ServiceInfo> services;
         /// <summary>
         /// 获取服务信息列表
         /// </summary>
         /// <returns></returns>
         public IList<ServiceInfo> GetServiceList()
         {
-            //获取拥有ServiceContract约束的服务
-            var types = container.GetInterfaces<ServiceContractAttribute>();
-
-            var services = new List<ServiceInfo>();
-            foreach (var type in types)
+            if (services == null)
             {
-                string description1 = null;
-                var contract1 = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(type);
-                if (contract1 != null) description1 = contract1.Description;
-                var s = new ServiceInfo
-                {
-                    Assembly = type.Assembly.FullName,
-                    Name = type.Name,
-                    FullName = type.FullName,
-                    Description = description1
-                };
+                //获取拥有ServiceContract约束的服务
+                var types = container.GetInterfaces<ServiceContractAttribute>();
 
-                //读取方法
-                foreach (var method in CoreHelper.GetMethodsFromType(type))
+                services = new List<ServiceInfo>();
+                foreach (var type in types)
                 {
-                    string description2 = null;
-                    var contract2 = CoreHelper.GetMemberAttribute<OperationContractAttribute>(type);
-                    if (contract2 != null) description2 = contract2.Description;
-                    var m = new MethodInfo
+                    string description1 = null;
+                    var contract1 = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(type);
+                    if (contract1 != null) description1 = contract1.Description;
+                    var s = new ServiceInfo
                     {
-                        Name = method.Name,
-                        FullName = method.ToString(),
-                        Description = description2
+                        Assembly = type.Assembly.FullName,
+                        Name = type.Name,
+                        FullName = type.FullName,
+                        Description = description1
                     };
 
-                    //读取参数
-                    foreach (var parameter in method.GetParameters())
+                    //读取方法
+                    foreach (var method in CoreHelper.GetMethodsFromType(type))
                     {
-                        var p = new ParameterInfo
+                        string description2 = null;
+                        var contract2 = CoreHelper.GetMemberAttribute<OperationContractAttribute>(type);
+                        if (contract2 != null) description2 = contract2.Description;
+                        var m = new MethodInfo
                         {
-                            Name = parameter.Name,
-                            TypeName = GetTypeName(parameter.ParameterType),
-                            TypeFullName = parameter.ParameterType.FullName,
-                            IsByRef = parameter.ParameterType.IsByRef,
-                            IsOut = parameter.IsOut,
-                            IsEnum = parameter.ParameterType.IsEnum,
-                            IsPrimitive = CheckPrimitive(parameter.ParameterType),
-                            SubParameters = GetSubParameters(parameter.ParameterType)
+                            Name = method.Name,
+                            FullName = method.ToString(),
+                            Description = description2
                         };
 
-                        if (p.IsEnum)
+                        //读取参数
+                        foreach (var parameter in method.GetParameters())
                         {
-                            p.EnumValue = GetEnumValue(parameter.ParameterType);
+                            var p = new ParameterInfo
+                            {
+                                Name = parameter.Name,
+                                TypeName = GetTypeName(parameter.ParameterType),
+                                TypeFullName = parameter.ParameterType.FullName,
+                                IsByRef = parameter.ParameterType.IsByRef,
+                                IsOut = parameter.IsOut,
+                                IsEnum = parameter.ParameterType.IsEnum,
+                                IsPrimitive = CheckPrimitive(parameter.ParameterType),
+                                SubParameters = GetSubParameters(parameter.ParameterType)
+                            };
+
+                            if (p.IsEnum)
+                            {
+                                p.EnumValue = GetEnumValue(parameter.ParameterType);
+                            }
+
+                            m.Parameters.Add(p);
                         }
 
-                        m.Parameters.Add(p);
+                        s.Methods.Add(m);
                     }
 
-                    s.Methods.Add(m);
+                    services.Add(s);
                 }
-
-                services.Add(s);
             }
 
             return services;
