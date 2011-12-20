@@ -139,20 +139,20 @@ namespace MySoft.IoC.Services
                 //调用对应的服务
                 object returnValue = DynamicCalls.GetMethodInvoker(method).Invoke(service, paramValues);
 
-                //把返回值传递回去
-                if (reqMsg.InvokeMethod) resMsg.Parameters.Clear();
-
+                var outValues = new Hashtable();
                 for (int i = 0; i < pis.Length; i++)
                 {
                     if (pis[i].ParameterType.IsByRef)
                     {
                         resMsg.Parameters[pis[i].Name] = paramValues[i];
+                        outValues[pis[i].Name] = paramValues[i];
                     }
                 }
 
                 //返回结果数据
                 if (reqMsg.InvokeMethod)
                 {
+                    resMsg.Parameters.Clear();
                     resMsg.Value = returnValue;
 
                     string json1 = null;
@@ -166,8 +166,8 @@ namespace MySoft.IoC.Services
                             json1 = SerializationManager.SerializeJson(returnValue);
                     }
 
-                    if (resMsg.Parameters.Count > 0)
-                        json2 = resMsg.Parameters.ToString();
+                    if (outValues.Count > 0)
+                        json2 = SerializationManager.SerializeJson(outValues);
 
                     returnValue = new InvokeData
                     {
