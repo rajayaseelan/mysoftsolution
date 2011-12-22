@@ -33,14 +33,15 @@ namespace MySoft.PlatformService.WinForm
 
             try
             {
-                foreach (var app in service.GetAppClients())
+                var appClients = service.GetAppClients().OrderBy(p => p.AppName).ToList();
+                foreach (var app in appClients)
                 {
                     //存在应用则跳过
                     if (apps.Contains(app.AppName)) continue;
 
                     checkedListBox1.Items.Add(new CheckedListBoxItem
                     {
-                        Text = string.Format("{0}[{1}]", app.AppName, app.IPAddress),
+                        Text = string.Format("【{0}】 => {1}[{2}]", app.AppName, app.IPAddress, app.HostName),
                         Value = app
                     });
                 }
