@@ -98,6 +98,9 @@ namespace MySoft.PlatformService.WinForm
                 }
                 else
                 {
+                    if (MessageBox.Show("确定停止监控吗？", "系统提示",
+                        MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel) return;
+
                     if (sender != null) service.Unsubscribe();
                     label1.Text = button1.Tag.ToString();
                     button1.Text = "开始监控";
@@ -263,11 +266,11 @@ namespace MySoft.PlatformService.WinForm
                 }
 
                 var groups = timeOuts.GroupBy(p => new { p.Caller.AppName, p.Caller.ServiceName, p.Caller.MethodName })
-                                    .Select(p => new
+                                    .Select(p => new TotalInfo
                                     {
-                                        p.Key.AppName,
-                                        p.Key.ServiceName,
-                                        p.Key.MethodName,
+                                        AppName = p.Key.AppName,
+                                        ServiceName = p.Key.ServiceName,
+                                        MethodName = p.Key.MethodName,
                                         ElapsedTime = p.Sum(c => c.ElapsedTime),
                                         Count = p.Sum(c => c.Count),
                                         Times = p.Count()
@@ -275,18 +278,28 @@ namespace MySoft.PlatformService.WinForm
 
                 lblTimeout.Text = groups.Sum(p => p.ElapsedTime) + " ms.";
                 listTotal.Items.Clear();
-
-                foreach (var item in groups)
+                var items = groups.OrderByDescending(p => new OrderTotalInfo
                 {
-                    ParseMessageType msgType = ParseMessageType.Info;
-                    if (item.ElapsedTime > 5000)
+                    ElapsedTime = p.ElapsedTime,
+                    Times = p.Times,
+                    Count = p.Count
+                });
+
+                var timeout = Convert.ToInt32(numericUpDown4.Value);
+                var count = Convert.ToInt32(numericUpDown5.Value);
+                //var total = Convert.ToInt32(numericUpDown6.Value);
+
+                foreach (var item in items)
+                {
+                    ParseMessageType msgType = ParseMessageType.None;
+                    if (item.ElapsedTime > timeout)
                         msgType = ParseMessageType.Error;
                     else if (item.Times > 5)
                         msgType = ParseMessageType.Warning;
-                    else if (item.Count > 1000)
+                    else if (item.Count > count)
                         msgType = ParseMessageType.Question;
 
-                    listTotal.Items.Insert(0,
+                    listTotal.Items.Add(
                         new ParseMessageEventArgs
                         {
                             MessageType = msgType,

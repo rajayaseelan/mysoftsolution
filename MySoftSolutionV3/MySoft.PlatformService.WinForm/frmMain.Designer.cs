@@ -39,15 +39,19 @@
             this.tabPage0 = new System.Windows.Forms.TabPage();
             this.splitContainer4 = new System.Windows.Forms.SplitContainer();
             this.splitContainer6 = new System.Windows.Forms.SplitContainer();
+            this.listAssembly = new ListControls.MessageListBox();
             this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.刷新服务RToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.listService = new ListControls.MessageListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.订阅此服务SToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.退订此服务UToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer5 = new System.Windows.Forms.SplitContainer();
+            this.listMethod = new ListControls.MessageListBox();
             this.richTextBox3 = new System.Windows.Forms.RichTextBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.splitContainer7 = new System.Windows.Forms.SplitContainer();
+            this.listConnect = new ListControls.MessageListBox();
             this.splitContainer8 = new System.Windows.Forms.SplitContainer();
             this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
             this.contextMenuStrip5 = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -63,6 +67,7 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.splitContainer9 = new System.Windows.Forms.SplitContainer();
+            this.listTimeout = new ListControls.MessageListBox();
             this.contextMenuStrip3 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.调用此服务CToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
@@ -71,6 +76,7 @@
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.订阅此服务SToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.退订此服务UToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.listTotal = new ListControls.MessageListBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.lblTimeout = new System.Windows.Forms.Label();
@@ -78,6 +84,7 @@
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.listError = new ListControls.MessageListBox();
             this.contextMenuStrip4 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.调用此服务CToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
@@ -88,6 +95,9 @@
             this.退订此服务UToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.webBrowser1 = new System.Windows.Forms.WebBrowser();
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.lblError = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.webBrowser2 = new System.Windows.Forms.WebBrowser();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
@@ -109,16 +119,6 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label12 = new System.Windows.Forms.Label();
             this.numericUpDown6 = new System.Windows.Forms.NumericUpDown();
-            this.listAssembly = new ListControls.MessageListBox();
-            this.listService = new ListControls.MessageListBox();
-            this.listMethod = new ListControls.MessageListBox();
-            this.listConnect = new ListControls.MessageListBox();
-            this.listTimeout = new ListControls.MessageListBox();
-            this.listTotal = new ListControls.MessageListBox();
-            this.listError = new ListControls.MessageListBox();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.lblError = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage0.SuspendLayout();
@@ -159,13 +159,13 @@
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             this.contextMenuStrip4.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown5)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown6)).BeginInit();
-            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -290,6 +290,20 @@
             this.splitContainer6.SplitterDistance = 157;
             this.splitContainer6.TabIndex = 0;
             // 
+            // listAssembly
+            // 
+            this.listAssembly.AutoScroll = true;
+            this.listAssembly.AutoScrollMinSize = new System.Drawing.Size(276, 0);
+            this.listAssembly.BackColor = System.Drawing.Color.White;
+            this.listAssembly.ContextMenuStrip = this.contextMenuStrip2;
+            this.listAssembly.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listAssembly.Location = new System.Drawing.Point(0, 0);
+            this.listAssembly.Name = "listAssembly";
+            this.listAssembly.SelectedIndex = -1;
+            this.listAssembly.SelectedItem = null;
+            this.listAssembly.Size = new System.Drawing.Size(306, 157);
+            this.listAssembly.TabIndex = 12;
+            // 
             // contextMenuStrip2
             // 
             this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -303,6 +317,20 @@
             this.刷新服务RToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.刷新服务RToolStripMenuItem.Text = "刷新服务(&R)";
             this.刷新服务RToolStripMenuItem.Click += new System.EventHandler(this.刷新服务RToolStripMenuItem_Click);
+            // 
+            // listService
+            // 
+            this.listService.AutoScroll = true;
+            this.listService.AutoScrollMinSize = new System.Drawing.Size(276, 0);
+            this.listService.BackColor = System.Drawing.Color.White;
+            this.listService.ContextMenuStrip = this.contextMenuStrip1;
+            this.listService.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listService.Location = new System.Drawing.Point(0, 0);
+            this.listService.Name = "listService";
+            this.listService.SelectedIndex = -1;
+            this.listService.SelectedItem = null;
+            this.listService.Size = new System.Drawing.Size(306, 328);
+            this.listService.TabIndex = 12;
             // 
             // contextMenuStrip1
             // 
@@ -344,6 +372,19 @@
             this.splitContainer5.SplitterDistance = 315;
             this.splitContainer5.TabIndex = 0;
             // 
+            // listMethod
+            // 
+            this.listMethod.AutoScroll = true;
+            this.listMethod.AutoScrollMinSize = new System.Drawing.Size(547, 0);
+            this.listMethod.BackColor = System.Drawing.Color.White;
+            this.listMethod.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listMethod.Location = new System.Drawing.Point(0, 0);
+            this.listMethod.Name = "listMethod";
+            this.listMethod.SelectedIndex = -1;
+            this.listMethod.SelectedItem = null;
+            this.listMethod.Size = new System.Drawing.Size(577, 315);
+            this.listMethod.TabIndex = 12;
+            // 
             // richTextBox3
             // 
             this.richTextBox3.BackColor = System.Drawing.SystemColors.Window;
@@ -383,6 +424,19 @@
             this.splitContainer7.Size = new System.Drawing.Size(887, 489);
             this.splitContainer7.SplitterDistance = 572;
             this.splitContainer7.TabIndex = 11;
+            // 
+            // listConnect
+            // 
+            this.listConnect.AutoScroll = true;
+            this.listConnect.AutoScrollMinSize = new System.Drawing.Size(542, 0);
+            this.listConnect.BackColor = System.Drawing.Color.White;
+            this.listConnect.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listConnect.Location = new System.Drawing.Point(0, 0);
+            this.listConnect.Name = "listConnect";
+            this.listConnect.SelectedIndex = -1;
+            this.listConnect.SelectedItem = null;
+            this.listConnect.Size = new System.Drawing.Size(572, 489);
+            this.listConnect.TabIndex = 10;
             // 
             // splitContainer8
             // 
@@ -539,6 +593,21 @@
             this.splitContainer9.SplitterDistance = 350;
             this.splitContainer9.TabIndex = 13;
             // 
+            // listTimeout
+            // 
+            this.listTimeout.AutoScroll = true;
+            this.listTimeout.AutoScrollMinSize = new System.Drawing.Size(576, 0);
+            this.listTimeout.BackColor = System.Drawing.Color.White;
+            this.listTimeout.ContextMenuStrip = this.contextMenuStrip3;
+            this.listTimeout.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listTimeout.Location = new System.Drawing.Point(0, 0);
+            this.listTimeout.Name = "listTimeout";
+            this.listTimeout.SelectedIndex = -1;
+            this.listTimeout.SelectedItem = null;
+            this.listTimeout.Size = new System.Drawing.Size(606, 350);
+            this.listTimeout.TabIndex = 12;
+            this.listTimeout.SelectedIndexChanged += new System.EventHandler(this.listBox3_SelectedIndexChanged);
+            // 
             // contextMenuStrip3
             // 
             this.contextMenuStrip3.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -596,6 +665,19 @@
             this.退订此服务UToolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
             this.退订此服务UToolStripMenuItem1.Text = "退订此服务(&U)";
             this.退订此服务UToolStripMenuItem1.Click += new System.EventHandler(this.退订此服务UToolStripMenuItem1_Click);
+            // 
+            // listTotal
+            // 
+            this.listTotal.AutoScroll = true;
+            this.listTotal.AutoScrollMinSize = new System.Drawing.Size(576, 0);
+            this.listTotal.BackColor = System.Drawing.Color.White;
+            this.listTotal.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listTotal.Location = new System.Drawing.Point(0, 0);
+            this.listTotal.Name = "listTotal";
+            this.listTotal.SelectedIndex = -1;
+            this.listTotal.SelectedItem = null;
+            this.listTotal.Size = new System.Drawing.Size(606, 131);
+            this.listTotal.TabIndex = 13;
             // 
             // richTextBox1
             // 
@@ -661,8 +743,8 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.panel2);
             this.splitContainer1.Panel2.Controls.Add(this.richTextBox2);
+            this.splitContainer1.Panel2.Controls.Add(this.panel2);
             this.splitContainer1.Size = new System.Drawing.Size(887, 489);
             this.splitContainer1.SplitterDistance = 610;
             this.splitContainer1.TabIndex = 14;
@@ -685,6 +767,21 @@
             this.splitContainer2.Size = new System.Drawing.Size(610, 489);
             this.splitContainer2.SplitterDistance = 350;
             this.splitContainer2.TabIndex = 12;
+            // 
+            // listError
+            // 
+            this.listError.AutoScroll = true;
+            this.listError.AutoScrollMinSize = new System.Drawing.Size(576, 0);
+            this.listError.BackColor = System.Drawing.Color.White;
+            this.listError.ContextMenuStrip = this.contextMenuStrip4;
+            this.listError.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listError.Location = new System.Drawing.Point(0, 0);
+            this.listError.Name = "listError";
+            this.listError.SelectedIndex = -1;
+            this.listError.SelectedItem = null;
+            this.listError.Size = new System.Drawing.Size(606, 346);
+            this.listError.TabIndex = 11;
+            this.listError.SelectedIndexChanged += new System.EventHandler(this.listBox2_SelectedIndexChanged);
             // 
             // contextMenuStrip4
             // 
@@ -757,12 +854,42 @@
             // 
             this.richTextBox2.BackColor = System.Drawing.SystemColors.Window;
             this.richTextBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBox2.Location = new System.Drawing.Point(0, 0);
+            this.richTextBox2.Location = new System.Drawing.Point(0, 25);
             this.richTextBox2.Name = "richTextBox2";
             this.richTextBox2.ReadOnly = true;
-            this.richTextBox2.Size = new System.Drawing.Size(273, 489);
+            this.richTextBox2.Size = new System.Drawing.Size(273, 464);
             this.richTextBox2.TabIndex = 15;
             this.richTextBox2.Text = "";
+            // 
+            // panel2
+            // 
+            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.lblError);
+            this.panel2.Controls.Add(this.label15);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel2.Location = new System.Drawing.Point(0, 0);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(273, 25);
+            this.panel2.TabIndex = 16;
+            // 
+            // lblError
+            // 
+            this.lblError.AutoSize = true;
+            this.lblError.ForeColor = System.Drawing.Color.Blue;
+            this.lblError.Location = new System.Drawing.Point(58, 6);
+            this.lblError.Name = "lblError";
+            this.lblError.Size = new System.Drawing.Size(53, 12);
+            this.lblError.TabIndex = 1;
+            this.lblError.Text = "0 times.";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(7, 6);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(47, 12);
+            this.label15.TabIndex = 0;
+            this.label15.Text = "异常数:";
             // 
             // tabPage4
             // 
@@ -1019,7 +1146,7 @@
             this.numericUpDown6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.numericUpDown6.Location = new System.Drawing.Point(418, 563);
             this.numericUpDown6.Maximum = new decimal(new int[] {
-            1000,
+            2000,
             0,
             0,
             0});
@@ -1032,137 +1159,10 @@
             this.numericUpDown6.Size = new System.Drawing.Size(60, 21);
             this.numericUpDown6.TabIndex = 5;
             this.numericUpDown6.Value = new decimal(new int[] {
-            100,
+            500,
             0,
             0,
             0});
-            // 
-            // listAssembly
-            // 
-            this.listAssembly.AutoScroll = true;
-            this.listAssembly.AutoScrollMinSize = new System.Drawing.Size(276, 0);
-            this.listAssembly.BackColor = System.Drawing.Color.White;
-            this.listAssembly.ContextMenuStrip = this.contextMenuStrip2;
-            this.listAssembly.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listAssembly.Location = new System.Drawing.Point(0, 0);
-            this.listAssembly.Name = "listAssembly";
-            this.listAssembly.SelectedIndex = -1;
-            this.listAssembly.SelectedItem = null;
-            this.listAssembly.Size = new System.Drawing.Size(306, 157);
-            this.listAssembly.TabIndex = 12;
-            // 
-            // listService
-            // 
-            this.listService.AutoScroll = true;
-            this.listService.AutoScrollMinSize = new System.Drawing.Size(276, 0);
-            this.listService.BackColor = System.Drawing.Color.White;
-            this.listService.ContextMenuStrip = this.contextMenuStrip1;
-            this.listService.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listService.Location = new System.Drawing.Point(0, 0);
-            this.listService.Name = "listService";
-            this.listService.SelectedIndex = -1;
-            this.listService.SelectedItem = null;
-            this.listService.Size = new System.Drawing.Size(306, 328);
-            this.listService.TabIndex = 12;
-            // 
-            // listMethod
-            // 
-            this.listMethod.AutoScroll = true;
-            this.listMethod.AutoScrollMinSize = new System.Drawing.Size(547, 0);
-            this.listMethod.BackColor = System.Drawing.Color.White;
-            this.listMethod.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listMethod.Location = new System.Drawing.Point(0, 0);
-            this.listMethod.Name = "listMethod";
-            this.listMethod.SelectedIndex = -1;
-            this.listMethod.SelectedItem = null;
-            this.listMethod.Size = new System.Drawing.Size(577, 315);
-            this.listMethod.TabIndex = 12;
-            // 
-            // listConnect
-            // 
-            this.listConnect.AutoScroll = true;
-            this.listConnect.AutoScrollMinSize = new System.Drawing.Size(542, 0);
-            this.listConnect.BackColor = System.Drawing.Color.White;
-            this.listConnect.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listConnect.Location = new System.Drawing.Point(0, 0);
-            this.listConnect.Name = "listConnect";
-            this.listConnect.SelectedIndex = -1;
-            this.listConnect.SelectedItem = null;
-            this.listConnect.Size = new System.Drawing.Size(572, 489);
-            this.listConnect.TabIndex = 10;
-            // 
-            // listTimeout
-            // 
-            this.listTimeout.AutoScroll = true;
-            this.listTimeout.AutoScrollMinSize = new System.Drawing.Size(576, 0);
-            this.listTimeout.BackColor = System.Drawing.Color.White;
-            this.listTimeout.ContextMenuStrip = this.contextMenuStrip3;
-            this.listTimeout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listTimeout.Location = new System.Drawing.Point(0, 0);
-            this.listTimeout.Name = "listTimeout";
-            this.listTimeout.SelectedIndex = -1;
-            this.listTimeout.SelectedItem = null;
-            this.listTimeout.Size = new System.Drawing.Size(606, 350);
-            this.listTimeout.TabIndex = 12;
-            this.listTimeout.SelectedIndexChanged += new System.EventHandler(this.listBox3_SelectedIndexChanged);
-            // 
-            // listTotal
-            // 
-            this.listTotal.AutoScroll = true;
-            this.listTotal.AutoScrollMinSize = new System.Drawing.Size(576, 0);
-            this.listTotal.BackColor = System.Drawing.Color.White;
-            this.listTotal.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listTotal.Location = new System.Drawing.Point(0, 0);
-            this.listTotal.Name = "listTotal";
-            this.listTotal.SelectedIndex = -1;
-            this.listTotal.SelectedItem = null;
-            this.listTotal.Size = new System.Drawing.Size(606, 131);
-            this.listTotal.TabIndex = 13;
-            // 
-            // listError
-            // 
-            this.listError.AutoScroll = true;
-            this.listError.AutoScrollMinSize = new System.Drawing.Size(576, 0);
-            this.listError.BackColor = System.Drawing.Color.White;
-            this.listError.ContextMenuStrip = this.contextMenuStrip4;
-            this.listError.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listError.Location = new System.Drawing.Point(0, 0);
-            this.listError.Name = "listError";
-            this.listError.SelectedIndex = -1;
-            this.listError.SelectedItem = null;
-            this.listError.Size = new System.Drawing.Size(606, 346);
-            this.listError.TabIndex = 11;
-            this.listError.SelectedIndexChanged += new System.EventHandler(this.listBox2_SelectedIndexChanged);
-            // 
-            // panel2
-            // 
-            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel2.Controls.Add(this.lblError);
-            this.panel2.Controls.Add(this.label15);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(0, 0);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(273, 25);
-            this.panel2.TabIndex = 16;
-            // 
-            // lblError
-            // 
-            this.lblError.AutoSize = true;
-            this.lblError.ForeColor = System.Drawing.Color.Blue;
-            this.lblError.Location = new System.Drawing.Point(58, 6);
-            this.lblError.Name = "lblError";
-            this.lblError.Size = new System.Drawing.Size(53, 12);
-            this.lblError.TabIndex = 1;
-            this.lblError.Text = "0 times.";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(7, 6);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(47, 12);
-            this.label15.TabIndex = 0;
-            this.label15.Text = "异常数:";
             // 
             // frmMain
             // 
@@ -1242,14 +1242,14 @@
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.ResumeLayout(false);
             this.contextMenuStrip4.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.tabPage4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown5)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown6)).EndInit();
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

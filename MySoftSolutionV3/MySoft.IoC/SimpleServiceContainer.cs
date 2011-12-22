@@ -10,7 +10,6 @@ using Castle.Facilities.Startable;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
-using MySoft.Cache;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
@@ -25,8 +24,6 @@ namespace MySoft.IoC
         #region Private Members
 
         private IWindsorContainer container;
-        private ICacheDependent cache;
-
         private void Init(CastleFactoryType type, IDictionary serviceKeyTypes)
         {
             //如果不是远程模式，则加载配置节
@@ -98,21 +95,6 @@ namespace MySoft.IoC
         #endregion
 
         #region IServiceContainer Members
-
-        /// <summary>
-        /// 缓存依赖
-        /// </summary>
-        public ICacheDependent Cache
-        {
-            get
-            {
-                return this.cache;
-            }
-            set
-            {
-                this.cache = value;
-            }
-        }
 
         /// <summary>
         /// Gets the kernel.

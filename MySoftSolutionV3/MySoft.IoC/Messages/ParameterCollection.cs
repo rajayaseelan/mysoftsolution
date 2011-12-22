@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Messages
 {
     /// <summary>
     /// The parameter collection type used by request msg.

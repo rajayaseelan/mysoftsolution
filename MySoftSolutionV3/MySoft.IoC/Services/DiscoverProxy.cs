@@ -11,13 +11,17 @@ namespace MySoft.IoC.Services
     public class DiscoverProxy : IService, IDisposable
     {
         private CastleFactory factory;
-        private IList<RemoteProxy> proxies;
-        private IDictionary<string, RemoteProxy> services;
+        private IDictionary<string, IList<RemoteProxy>> services;
+
+        /// <summary>
+        /// 实例化DiscoverProxy
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="logger"></param>
         public DiscoverProxy(CastleFactory factory, ILog logger)
         {
             this.factory = factory;
-            this.proxies = factory.Proxies;
-            this.services = new Dictionary<string, RemoteProxy>();
+            this.services = new Dictionary<string, IList<RemoteProxy>>();
         }
 
         #region IService 成员
@@ -40,7 +44,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            RemoteProxy proxy = null;
+            IList<RemoteProxy> proxies = new List<RemoteProxy>();
 
             //判断是否为StatusService服务
             if (reqMsg.ServiceName == typeof(IStatusService).FullName)
@@ -51,24 +55,24 @@ namespace MySoft.IoC.Services
             //如果能找到服务
             if (this.services.ContainsKey(reqMsg.ServiceName))
             {
-                proxy = this.services[reqMsg.ServiceName];
+                proxies = this.services[reqMsg.ServiceName];
             }
             else
             {
                 lock (services)
                 {
                     //找到代理服务
-                    foreach (var p in proxies)
+                    foreach (var proxy in factory.Proxies)
                     {
                         try
                         {
                             //自定义实现一个RemoteNode
                             var node = new RemoteNode
                             {
-                                IP = p.Node.IP,
-                                Port = p.Node.Port,
-                                Compress = p.Node.Compress,
-                                Encrypt = p.Node.Encrypt,
+                                IP = proxy.Node.IP,
+                                Port = proxy.Node.Port,
+                                Compress = proxy.Node.Compress,
+                                Encrypt = proxy.Node.Encrypt,
                                 Key = Guid.NewGuid().ToString(),
                                 MaxPool = 1,
                                 Timeout = 30
@@ -79,9 +83,7 @@ namespace MySoft.IoC.Services
                             //检测是否存在服务
                             if (service.ContainsService(reqMsg.ServiceName))
                             {
-                                proxy = p;
-                                this.services[reqMsg.ServiceName] = p;
-                                break;
+                                proxies.Add(proxy);
                             }
                         }
                         catch (WarningException ex)
@@ -89,16 +91,18 @@ namespace MySoft.IoC.Services
                             throw ex;
                         }
                     }
+
+                    //缓存代理服务
+                    if (proxies.Count > 0)
+                        this.services[reqMsg.ServiceName] = proxies;
+                    else
+                        throw new WarningException(string.Format("Did not find the proxy service {0}!", reqMsg.ServiceName));
                 }
             }
 
-            //如果代理服务不存在
-            if (proxy == null)
-            {
-                throw new WarningException(string.Format("Did not find the discover agent service {0}!", reqMsg.ServiceName));
-            }
-
-            return proxy.CallService(reqMsg);
+            //随机获取一个代理，实现分布式处理
+            var rndIndex = new Random(Guid.NewGuid().GetHashCode()).Next(proxies.Count);
+            return proxies[rndIndex].CallService(reqMsg);
         }
 
         #endregion
@@ -110,8 +114,8 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
+            this.services.Clear();
             this.services = null;
-            this.proxies = null;
         }
 
         #endregion

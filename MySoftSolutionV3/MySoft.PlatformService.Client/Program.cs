@@ -128,13 +128,13 @@ namespace MySoft.PlatformService.Client
             //    }
             //}
 
-            //for (int i = 0; i < 2; i++)
-            //{
-            //    Thread thread = new Thread(DoWork1);
-            //    thread.Start();
-            //}
+            for (int i = 0; i < 10; i++)
+            {
+                Thread thread = new Thread(DoWork1);
+                thread.Start();
+            }
 
-            DoWork1();
+            //DoWork1();
             Console.ReadKey();
         }
 

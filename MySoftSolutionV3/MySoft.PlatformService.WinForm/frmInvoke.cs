@@ -180,10 +180,10 @@ namespace MySoft.PlatformService.WinForm
                     var text = p.Value.Text.Trim();
                     if (!string.IsNullOrEmpty(text))
                     {
-                        var pInfo = parameters.First(pi => pi.Name == p.Key);
-                        if (pInfo.IsPrimitive)
-                            jValue[p.Key] = text;
-                        else
+                        //var pInfo = parameters.First(pi => pi.Name == p.Key);
+                        //if (pInfo.IsPrimitive)
+                        //    jValue[p.Key] = text;
+                        //else
                             jValue[p.Key] = JToken.Parse(text);
                     }
                 }

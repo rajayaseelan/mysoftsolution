@@ -144,7 +144,7 @@
     <Compile Include="RemoteNode.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="IServiceContainer.cs" />
-    <Compile Include="ParameterCollection.cs" />
+    <Compile Include="Messages\ParameterCollection.cs" />
     <Compile Include="Messages\RequestMessage.cs" />
     <Compile Include="Messages\ResponseMessage.cs" />
     <Compile Include="ServiceNodeInfo.cs" />
