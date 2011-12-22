@@ -93,31 +93,52 @@ namespace MySoft.PlatformService.WinForm
                         StatusTimer = Convert.ToInt32(numericUpDown2.Value)
                     };
 
-                    service.Subscribe(options);
-                    button1.Text = "停止监控";
-                    button1.Tag = label1.Text;
-                    label1.Text = "正在进行监控...";
+                    try
+                    {
+                        service.Subscribe(options);
 
-                    checkBox1.Enabled = false;
-                    checkBox2.Enabled = false;
-                    checkBox3.Enabled = false;
-                    comboBox1.Enabled = false;
+                        button1.Text = "停止监控";
+                        button1.Tag = label1.Text;
+                        label1.Text = "正在进行监控...";
 
-                    numericUpDown1.Enabled = checkBox2.Enabled && checkBox2.Checked;
-                    numericUpDown2.Enabled = checkBox3.Enabled && checkBox3.Checked;
+                        checkBox1.Enabled = false;
+                        checkBox2.Enabled = false;
+                        checkBox3.Enabled = false;
+                        comboBox1.Enabled = false;
 
-                    checkBox4.Enabled = false;
-                    numericUpDown3.Enabled = false;
-                    numericUpDown4.Enabled = false;
-                    numericUpDown5.Enabled = false;
-                    //button1.Enabled = false;
+                        numericUpDown1.Enabled = checkBox2.Enabled && checkBox2.Checked;
+                        numericUpDown2.Enabled = checkBox3.Enabled && checkBox3.Checked;
+
+                        checkBox4.Enabled = false;
+                        numericUpDown3.Enabled = false;
+                        numericUpDown4.Enabled = false;
+                        numericUpDown5.Enabled = false;
+                        //button1.Enabled = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
                 else
                 {
-                    if (MessageBox.Show("确定停止监控吗？", "系统提示",
-                        MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel) return;
+                    if (sender != null)
+                    {
+                        try
+                        {
+                            service.Unsubscribe();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else
+                    {
+                        if (MessageBox.Show("确定停止监控吗？", "系统提示",
+                            MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel) return;
+                    }
 
-                    if (sender != null) service.Unsubscribe();
                     label1.Text = button1.Tag.ToString();
                     button1.Text = "开始监控";
                     button1.Tag = null;
