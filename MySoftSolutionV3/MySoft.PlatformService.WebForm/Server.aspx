@@ -85,7 +85,7 @@
         if(timer > 0) {        
             setInterval(function () {
                 tupdate();
-            }, 5000);
+            }, timer * 1000);
         }else{
             tupdate();
         }
