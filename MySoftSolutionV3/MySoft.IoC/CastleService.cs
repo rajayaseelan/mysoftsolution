@@ -314,6 +314,13 @@ namespace MySoft.IoC
                     status.ErrorCount++;
 
                     args.Error = resMsg.Error;
+
+                    //捕获全局错误
+                    if (reqMsg.InvokeMethod)
+                    {
+                        resMsg.Parameters.Clear();
+                        resMsg.Error = new WarningException(args.Error.Message);
+                    }
                 }
                 else
                 {

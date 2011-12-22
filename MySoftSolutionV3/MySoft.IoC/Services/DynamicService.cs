@@ -181,13 +181,7 @@ namespace MySoft.IoC.Services
             catch (Exception ex)
             {
                 //²¶»ñÈ«¾Ö´íÎó
-                if (reqMsg.InvokeMethod)
-                {
-                    resMsg.Parameters.Clear();
-                    resMsg.Error = new WarningException(ex.Message);
-                }
-                else
-                    resMsg.Error = ex;
+                resMsg.Error = ex;
             }
 
             return resMsg;
