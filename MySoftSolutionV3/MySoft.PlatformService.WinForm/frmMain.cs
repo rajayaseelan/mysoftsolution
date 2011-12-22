@@ -65,10 +65,15 @@ namespace MySoft.PlatformService.WinForm
                     {
                         var timer = Convert.ToInt32(numericUpDown2.Value);
                         var url = ConfigurationManager.AppSettings["ServerMonitorUrl"];
+
                         if (!string.IsNullOrEmpty(url))
-                            webBrowser2.Url = new Uri(url + "?timer=" + timer);
-                        else
-                            webBrowser2.Url = new Uri("about:blank");
+                        {
+                            if (url.IndexOf('?') > 0)
+                                url = url + "&timer=" + timer;
+                            else
+                                url = url + "?timer=" + timer;
+                            webBrowser2.Navigate(url);
+                        }
                     }
 
                     var listener = new StatusListener(tabControl1, listConnect, listTimeout, listError,
@@ -428,15 +433,15 @@ namespace MySoft.PlatformService.WinForm
         void InitBrowser()
         {
             webBrowser1.Url = new Uri("about:blank");
-            webBrowser1.AllowNavigation = false;
+            //webBrowser1.AllowNavigation = false;
             webBrowser1.IsWebBrowserContextMenuEnabled = false;
 
             var url = ConfigurationManager.AppSettings["ServerMonitorUrl"];
             if (!string.IsNullOrEmpty(url))
-                webBrowser2.Url = new Uri(url);
+                webBrowser2.Navigate(url);
             else
-                webBrowser2.Url = new Uri("about:blank");
-            webBrowser2.AllowNavigation = false;
+                webBrowser2.Navigate("about:blank");
+            //webBrowser2.AllowNavigation = false;
             //webBrowser2.IsWebBrowserContextMenuEnabled = false;
         }
 
