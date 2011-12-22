@@ -184,7 +184,7 @@ namespace MySoft.IoC.Services
                 if (reqMsg.InvokeMethod)
                 {
                     resMsg.Parameters.Clear();
-                    resMsg.Error = new WarningException(ex.ToString());
+                    resMsg.Error = new WarningException(ex.Message);
                 }
                 else
                     resMsg.Error = ex;

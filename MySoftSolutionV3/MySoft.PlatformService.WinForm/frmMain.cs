@@ -139,6 +139,9 @@ namespace MySoft.PlatformService.WinForm
                             MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel) return;
                     }
 
+                    checkedListBox1.Items.Clear();
+                    checkedListBox2.Items.Clear();
+
                     label1.Text = button1.Tag.ToString();
                     button1.Text = "开始监控";
                     button1.Tag = null;
