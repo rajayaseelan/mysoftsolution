@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.IoC.Status
+namespace MySoft.IoC.Messages
 {
     /// <summary>
     /// 调用事件参数

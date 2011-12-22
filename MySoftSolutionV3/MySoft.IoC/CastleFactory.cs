@@ -135,23 +135,13 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Create discover service channel.
-        /// </summary>
-        /// <typeparam name="IServiceInterfaceType"></typeparam>
-        /// <returns></returns>
-        public IServiceInterfaceType DiscoverChannel<IServiceInterfaceType>()
-        {
-            var proxy = new DiscoverProxy(singleton, container);
-            return GetChannel<IServiceInterfaceType>(proxy, true);
-        }
-
-        /// <summary>
         /// Create service channel.
         /// </summary>
         /// <returns>The service implemetation instance.</returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
-            return GetChannel<IServiceInterfaceType>(config.Default);
+            var proxy = new DiscoverProxy(singleton, container);
+            return GetChannel<IServiceInterfaceType>(proxy, true);
         }
 
         /// <summary>
@@ -331,17 +321,6 @@ namespace MySoft.IoC
                 throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
             }
             return GetChannel<IPublishService>(callback, node);
-        }
-
-        /// <summary>
-        /// 获取回调发布服务
-        /// </summary>
-        /// <typeparam name="IPublishService"></typeparam>
-        /// <param name="callback"></param>
-        /// <returns></returns>
-        public IPublishService GetChannel<IPublishService>(object callback)
-        {
-            return GetChannel<IPublishService>(callback, config.Default);
         }
 
         /// <summary>

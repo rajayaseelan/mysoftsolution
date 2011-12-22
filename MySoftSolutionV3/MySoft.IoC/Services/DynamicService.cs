@@ -1,11 +1,10 @@
 using System;
-using System.Reflection;
+using System.Collections;
+using System.Linq;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 using Newtonsoft.Json.Linq;
-using System.Linq;
-using System.Collections;
 
 namespace MySoft.IoC.Services
 {
@@ -46,7 +45,7 @@ namespace MySoft.IoC.Services
             #region 获取相应的方法
 
             string methodKey = string.Format("Method_{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
-            MethodInfo method = CacheHelper.Get<MethodInfo>(methodKey);
+            var method = CacheHelper.Get<System.Reflection.MethodInfo>(methodKey);
             if (method == null)
             {
                 method = CoreHelper.GetMethodFromType(classType, reqMsg.MethodName);
@@ -185,8 +184,7 @@ namespace MySoft.IoC.Services
                 if (reqMsg.InvokeMethod)
                 {
                     resMsg.Parameters.Clear();
-                    var e = ErrorHelper.GetInnerException(ex);
-                    resMsg.Error = new WarningException(e.Message);
+                    resMsg.Error = new WarningException(ex.Message);
                 }
                 else
                     resMsg.Error = ex;

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace MySoft.IoC
 {
@@ -11,12 +12,15 @@ namespace MySoft.IoC
     [Serializable]
     public class ParameterCollection
     {
-        private Hashtable parmValues = new Hashtable();
+        private IDictionary<string, object> parmValues;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParameterCollection"/> class.
         /// </summary>
-        public ParameterCollection() { }
+        public ParameterCollection()
+        {
+            this.parmValues = new Dictionary<string, object>();
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="System.String"/> with the specified param name.
@@ -70,7 +74,6 @@ namespace MySoft.IoC
             }
         }
 
-        private string paramString = string.Empty;
         /// <summary>
         /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
         /// </summary>
@@ -79,14 +82,9 @@ namespace MySoft.IoC
         /// </returns>
         public override string ToString()
         {
-            if (!string.IsNullOrEmpty(paramString))
-            {
-                return paramString;
-            }
-
             if (parmValues.Keys.Count == 0)
             {
-                paramString = "{}";
+                return "{}";
             }
             else
             {
@@ -108,10 +106,8 @@ namespace MySoft.IoC
                     json.Add(key, JToken.Parse(jsonString));
                 }
 
-                paramString = json.ToString(Formatting.Indented);
+                return json.ToString(Formatting.Indented);
             }
-
-            return paramString;
         }
     }
 }

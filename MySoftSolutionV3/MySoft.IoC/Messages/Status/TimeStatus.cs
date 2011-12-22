@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MySoft.IoC.Status
+namespace MySoft.IoC.Messages
 {
     /// <summary>
     /// 时间状态信息

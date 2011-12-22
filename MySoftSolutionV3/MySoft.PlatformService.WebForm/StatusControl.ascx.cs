@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using MySoft.IoC;
-using MySoft.IoC.Status;
+using MySoft.IoC.Messages;
 
 namespace MySoft.PlatformService.WebForm
 {

@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 
@@ -40,7 +39,7 @@ namespace MySoft.IoC
         /// <param name="methodInfo">Name of the sub service.</param>
         /// <param name="paramValues">The param values.</param>
         /// <returns>The result.</returns>
-        private object CallService(MethodInfo methodInfo, object[] paramValues)
+        private object CallService(System.Reflection.MethodInfo methodInfo, object[] paramValues)
         {
             #region 设置请求信息
 
@@ -161,7 +160,7 @@ namespace MySoft.IoC
         /// <param name="method"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public object Invoke(object proxy, MethodInfo method, object[] args)
+        public object Invoke(object proxy, System.Reflection.MethodInfo method, object[] args)
         {
             return CallService(method, args);
         }

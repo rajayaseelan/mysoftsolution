@@ -2,12 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using MySoft.IoC.Configuration;
-using MySoft.IoC.Status;
-using MySoft.Logger;
 using System.Threading;
-using System.Text;
+using MySoft.IoC.Configuration;
+using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.IoC
 {
@@ -95,6 +93,18 @@ namespace MySoft.IoC
 
         #endregion
 
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 销毁资源
+        /// </summary>
+        public virtual void Dispose()
+        {
+            container.Dispose();
+        }
+
+        #endregion
+
         #region IStatusService 成员
 
         /// <summary>
@@ -106,6 +116,8 @@ namespace MySoft.IoC
         {
             return container.Contains<ServiceContractAttribute>(serviceName);
         }
+
+        #region GetServiceInfos
 
         private IList<ServiceInfo> services;
         /// <summary>
@@ -191,7 +203,7 @@ namespace MySoft.IoC
             if (type.IsArray) type = type.GetElementType();
             if (type.IsGenericType) type = type.GetGenericArguments()[0];
 
-            if (GetTypeClass(type))
+            if (GetTypeClass(type) && !typeof(ICollection).IsAssignableFrom(type))
             {
                 var plist = new List<ParameterInfo>();
                 foreach (var p in type.GetProperties())
@@ -263,6 +275,8 @@ namespace MySoft.IoC
             return typeName;
         }
 
+        #endregion
+
         /// <summary>
         /// 服务状态信息
         /// </summary>
@@ -292,13 +306,11 @@ namespace MySoft.IoC
             }
         }
 
-        #region 服务器状态信息
-
         /// <summary>
         /// 获取最后一次服务状态
         /// </summary>
         /// <returns></returns>
-        public TimeStatus GetLatestStatus()
+        private TimeStatus GetLatestStatus()
         {
             return statuslist.GetNewest();
         }
@@ -371,8 +383,6 @@ namespace MySoft.IoC
             return status;
         }
 
-        #endregion
-
         /// <summary>
         /// 获取服务状态列表
         /// </summary>
@@ -388,21 +398,11 @@ namespace MySoft.IoC
         /// <returns></returns>
         public abstract IList<ClientInfo> GetClientList();
 
-        #endregion
-
-        #region IDisposable 成员
-
         /// <summary>
-        /// 销毁资源
+        /// 获取所有应用客户端
         /// </summary>
-        public virtual void Dispose()
-        {
-            container.Dispose();
-        }
-
-        #endregion
-
-        #region IStatusService 成员
+        /// <returns></returns>
+        public abstract IList<AppClient> GetAppClients();
 
         /// <summary>
         /// 订阅服务
@@ -482,7 +482,8 @@ namespace MySoft.IoC
         {
             var endPoint = OperationContext.Current.RemoteEndPoint;
             var listener = MessageCenter.Instance.GetListener(endPoint);
-            if (listener == null) return new List<string>();
+            if (listener == null)
+                throw new WarningException("Please enable to subscribe.");
 
             return listener.Types;
         }
@@ -495,14 +496,15 @@ namespace MySoft.IoC
         {
             var endPoint = OperationContext.Current.RemoteEndPoint;
             var listener = MessageCenter.Instance.GetListener(endPoint);
-            if (listener == null) return;
+            if (listener == null)
+                throw new WarningException("Please enable to subscribe.");
 
             if (subscribeType != null)
             {
                 if (!listener.Types.Contains(subscribeType))
                     listener.Types.Add(subscribeType);
                 else
-                    throw new WarningException("Already exists subscribe type " + subscribeType);
+                    throw new WarningException("Already exists subscribe type " + subscribeType + ".");
             }
         }
 
@@ -514,14 +516,15 @@ namespace MySoft.IoC
         {
             var endPoint = OperationContext.Current.RemoteEndPoint;
             var listener = MessageCenter.Instance.GetListener(endPoint);
-            if (listener == null) return;
+            if (listener == null)
+                throw new WarningException("Please enable to subscribe.");
 
             if (subscribeType != null)
             {
                 if (listener.Types.Contains(subscribeType))
                     listener.Types.Remove(subscribeType);
                 else
-                    throw new WarningException("Don't exist subscribe type " + subscribeType);
+                    throw new WarningException("Don't exist subscribe type " + subscribeType + ".");
             }
         }
 
@@ -533,7 +536,8 @@ namespace MySoft.IoC
         {
             var endPoint = OperationContext.Current.RemoteEndPoint;
             var listener = MessageCenter.Instance.GetListener(endPoint);
-            if (listener == null) return new List<string>();
+            if (listener == null)
+                throw new WarningException("Please enable to subscribe.");
 
             return listener.Apps;
         }
@@ -546,14 +550,15 @@ namespace MySoft.IoC
         {
             var endPoint = OperationContext.Current.RemoteEndPoint;
             var listener = MessageCenter.Instance.GetListener(endPoint);
-            if (listener == null) return;
+            if (listener == null)
+                throw new WarningException("Please enable to subscribe.");
 
             if (appName != null)
             {
                 if (!listener.Apps.Contains(appName))
                     listener.Apps.Add(appName);
                 else
-                    throw new WarningException("Already exists subscribe app " + appName);
+                    throw new WarningException("Already exists subscribe app " + appName + ".");
             }
         }
 
@@ -565,14 +570,15 @@ namespace MySoft.IoC
         {
             var endPoint = OperationContext.Current.RemoteEndPoint;
             var listener = MessageCenter.Instance.GetListener(endPoint);
-            if (listener == null) return;
+            if (listener == null)
+                throw new WarningException("Please enable to subscribe.");
 
             if (appName != null)
             {
                 if (listener.Apps.Contains(appName))
                     listener.Apps.Remove(appName);
                 else
-                    throw new WarningException("Don't exist subscribe app " + appName);
+                    throw new WarningException("Don't exist subscribe app " + appName + ".");
             }
         }
 

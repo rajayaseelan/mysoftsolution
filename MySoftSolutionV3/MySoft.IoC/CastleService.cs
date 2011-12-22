@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Text;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Status;
 using MySoft.Logger;
 
 namespace MySoft.IoC
@@ -203,11 +201,15 @@ namespace MySoft.IoC
                 if (server.Clients.ContainsKey(info.ClientId))
                 {
                     var client = server.Clients[info.ClientId];
-                    client.State = (e.Message as ScsClientMessage).Client;
+                    var appClient = (e.Message as ScsClientMessage).Client;
+                    client.State = appClient;
 
                     //响应客户端详细信息
                     var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
-                    MessageCenter.Instance.Notify(endPoint.IpAddress, endPoint.TcpPort, (e.Message as ScsClientMessage).Client);
+                    container_OnLog(string.Format("Change app 【{4}】 client {0}:{1} to {2}[{3}]！",
+                        endPoint.IpAddress, endPoint.TcpPort, appClient.IPAddress, appClient.HostName, appClient.AppName), LogType.Information);
+
+                    MessageCenter.Instance.Notify(endPoint.IpAddress, endPoint.TcpPort, appClient);
                 }
             }
             else if (e.Message is ScsResultMessage)
@@ -348,6 +350,28 @@ namespace MySoft.IoC
             if (request.ServiceName == typeof(IStatusService).FullName) return false;
 
             return true;
+        }
+
+        /// <summary>
+        /// 获取所有的客户端信息
+        /// </summary>
+        /// <returns></returns>
+        public override IList<AppClient> GetAppClients()
+        {
+            try
+            {
+                var items = server.Clients.GetAllItems();
+
+                //统计客户端数量
+                return items.Where(p => p.State != null)
+                      .Select(p => p.State as AppClient)
+                      .Distinct(new AppClientComparer())
+                      .ToList();
+            }
+            catch
+            {
+                return new List<AppClient>();
+            }
         }
 
         /// <summary>

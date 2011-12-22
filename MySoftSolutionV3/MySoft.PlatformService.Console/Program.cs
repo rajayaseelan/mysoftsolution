@@ -6,7 +6,6 @@ using System.Collections;
 using MySoft.Remoting;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
-using MySoft.IoC.Status;
 
 namespace MySoft.PlatformService.Console
 {
@@ -22,7 +21,6 @@ namespace MySoft.PlatformService.Console
 
             CastleServiceConfiguration config = CastleServiceConfiguration.GetConfig();
             CastleService server = new CastleService(config);
-            server.OnCalling += new EventHandler<CallEventArgs>(server_OnCaller);
             server.OnLog += new LogEventHandler(Program_OnLog);
             server.OnError += new ErrorLogEventHandler(Program_OnError);
             server.Start();
@@ -32,28 +30,6 @@ namespace MySoft.PlatformService.Console
             System.Console.WriteLine("Server host -> {0}", server.ServerUrl);
             System.Console.WriteLine("Press any key to exit and stop service...");
             System.Console.ReadLine();
-        }
-
-        static void server_OnCaller(object sender, CallEventArgs e)
-        {
-            //var database = mongo.GetDatabase("ServiceMonitor");
-            //var collection = database.GetCollection("ServiceInfo");
-
-            //var doc = new Document();
-            //doc["AppName"] = e.Caller.AppName;
-            //doc["IPAddress"] = e.Caller.IPAddress;
-            //doc["HostName"] = e.Caller.HostName;
-            //doc["ServiceName"] = e.Caller.ServiceName;
-            //doc["SubServiceName"] = e.Caller.SubServiceName;
-            //doc["ElapsedTime"] = Convert.ToDouble(e.ElapsedTime);
-            //doc["RowCount"] = e.RowCount;
-            //doc["Error"] = e.CallError;
-            //if (e.CallError != null)
-            //    doc["IsError"] = true;
-            //else
-            //    doc["IsError"] = false;
-
-            //collection.Insert(doc);
         }
 
         static void Program_OnLog(string log, LogType type)

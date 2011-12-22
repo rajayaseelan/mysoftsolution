@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace MySoft.IoC.Status
+namespace MySoft.IoC.Messages
 {
     /// <summary>
     /// 客户端连接信息

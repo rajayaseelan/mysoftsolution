@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.IoC.Status
+namespace MySoft.IoC.Messages
 {
     /// <summary>
     /// 汇总状态信息

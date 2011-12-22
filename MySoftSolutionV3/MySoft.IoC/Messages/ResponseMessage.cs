@@ -25,11 +25,11 @@ namespace MySoft.IoC.Messages
             set
             {
                 _value = value;
-                error = null;
+                _error = null;
             }
         }
 
-        private Exception error;
+        private Exception _error;
 
         /// <summary>
         /// Gets or sets the exception.
@@ -39,11 +39,11 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                return error;
+                return _error;
             }
             set
             {
-                error = value;
+                _error = value;
                 _value = null;
             }
         }
@@ -55,7 +55,7 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                return this.error != null;
+                return this._error != null;
             }
         }
 
@@ -66,7 +66,7 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                return this.error is BusinessException;
+                return this._error is BusinessException;
             }
         }
 
@@ -92,9 +92,9 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                if (error != null)
+                if (_error != null)
                 {
-                    return string.Format("Error: {0} (Type:{1}).", ErrorHelper.GetInnerException(error).Message, base.ReturnType);
+                    return string.Format("Error: {0} (Type:{1}).", ErrorHelper.GetInnerException(_error).Message, base.ReturnType);
                 }
                 else
                 {

@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppClientComparer.cs" />
     <Compile Include="Aspect\AspectFactory.cs" />
     <Compile Include="Aspect\AspectInterceptor.cs" />
     <Compile Include="Aspect\AspectManager.cs" />
@@ -66,9 +67,9 @@
     <Compile Include="Messages\InvokeMessage.cs" />
     <Compile Include="ServiceCaller.cs" />
     <Compile Include="Services\DiscoverProxy.cs" />
-    <Compile Include="Status\AppCaller.cs" />
-    <Compile Include="Status\AppClient.cs" />
-    <Compile Include="Status\CallEventArgs.cs" />
+    <Compile Include="Messages\Status\AppCaller.cs" />
+    <Compile Include="Messages\Status\AppClient.cs" />
+    <Compile Include="Messages\Status\CallEventArgs.cs" />
     <Compile Include="IoCException.cs" />
     <Compile Include="Messages\CallbackMessage.cs" />
     <Compile Include="Messages\CustomWireProtocol.cs" />
@@ -152,17 +153,18 @@
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
-    <Compile Include="Status\CallInfo.cs" />
-    <Compile Include="Status\IStatusListener.cs" />
-    <Compile Include="Status\ServiceInfo.cs" />
-    <Compile Include="Status\SummaryStatus.cs" />
-    <Compile Include="Status\ClientInfo.cs" />
-    <Compile Include="Status\IStatusService.cs" />
-    <Compile Include="Status\ServerStatus.cs" />
+    <Compile Include="Messages\Status\CallInfo.cs" />
+    <Compile Include="IStatusListener.cs" />
+    <Compile Include="Messages\Status\ServiceInfo.cs" />
+    <Compile Include="Messages\Status\SummaryStatus.cs" />
+    <Compile Include="Messages\Status\ClientInfo.cs" />
+    <Compile Include="IStatusService.cs" />
+    <Compile Include="Messages\Status\ServerStatus.cs" />
     <Compile Include="ServiceRequest.cs" />
-    <Compile Include="Status\SecondStatus.cs" />
-    <Compile Include="Status\HighestStatus.cs" />
-    <Compile Include="Status\TimeStatus.cs" />
+    <Compile Include="Messages\Status\SecondStatus.cs" />
+    <Compile Include="Messages\Status\HighestStatus.cs" />
+    <Compile Include="Messages\Status\TimeStatus.cs" />
+    <Compile Include="SubscribeOptions.cs" />
     <Compile Include="WarningException.cs" />
   </ItemGroup>
   <ItemGroup>

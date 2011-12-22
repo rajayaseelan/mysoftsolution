@@ -5,7 +5,6 @@ using MySoft.Installer;
 using MySoft.IoC;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
-using MySoft.IoC.Status;
 
 namespace MySoft.PlatformService.IoC
 {

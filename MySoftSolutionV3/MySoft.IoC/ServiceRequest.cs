@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Net.Sockets;
 using MySoft.Communication.Scs.Client;
 using MySoft.Communication.Scs.Communication;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
-using MySoft.IoC.Status;
-using System.Net.Sockets;
 
 namespace MySoft.IoC
 {

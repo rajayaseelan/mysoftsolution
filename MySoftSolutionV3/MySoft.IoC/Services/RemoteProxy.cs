@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Diagnostics;
 using System.Threading;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
@@ -99,7 +98,7 @@ namespace MySoft.IoC.Services
             //如果池为空，则判断是否达到最大池
             if (reqPool.Count == 0)
             {
-                throw new Exception("Service request pool is empty！");
+                throw new WarningException("Service request pool is empty！");
             }
 
             //获取一个服务请求

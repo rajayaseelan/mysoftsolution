@@ -1,9 +1,6 @@
-using System;
-using System.Reflection;
-using MySoft.IoC;
-using Castle.Windsor;
 using System.Configuration;
 using Castle.Core.Resource;
+using Castle.Windsor;
 
 namespace MySoft.IoC.Mvp
 {

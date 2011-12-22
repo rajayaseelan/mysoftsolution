@@ -4,6 +4,7 @@ using System.Text;
 using System.Data;
 using System.Threading;
 using MySoft.IoC;
+using System.Collections.Specialized;
 
 namespace MySoft.PlatformService.UserService
 {
@@ -12,6 +13,11 @@ namespace MySoft.PlatformService.UserService
         public string GetUser(UserInfo user)
         {
             return user.Name;
+        }
+
+        public string GetUser(NameValueCollection nv)
+        {
+            return "maoyong";
         }
 
         public int GetSex(Sex value)

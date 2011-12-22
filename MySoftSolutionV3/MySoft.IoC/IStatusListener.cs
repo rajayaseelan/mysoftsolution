@@ -1,7 +1,7 @@
-﻿using System.Net;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using MySoft.IoC.Messages;
 
-namespace MySoft.IoC.Status
+namespace MySoft.IoC
 {
     /// <summary>
     /// 状态信息监听

@@ -8,7 +8,6 @@ using System.Text;
 using System.Windows.Forms;
 using MySoft.IoC;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Status;
 using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 
@@ -219,6 +218,11 @@ namespace MySoft.PlatformService.WinForm
             {
                 label5.Text = watch.ElapsedMilliseconds + " ms";
             }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

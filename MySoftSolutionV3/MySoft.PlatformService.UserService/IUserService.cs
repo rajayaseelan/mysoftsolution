@@ -7,6 +7,7 @@ using MySoft.IoC;
 using MySoft.RESTful;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Collections.Specialized;
 
 namespace MySoft.PlatformService.UserService
 {
@@ -42,6 +43,8 @@ namespace MySoft.PlatformService.UserService
     public interface IUserService
     {
         UserInfo GetUserInfo(string name, ref int length);
+
+        string GetUser(NameValueCollection nv);
 
         string GetUser(UserInfo user);
 

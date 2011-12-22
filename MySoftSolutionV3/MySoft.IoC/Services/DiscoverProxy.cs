@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MySoft.Logger;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Status;
+using MySoft.Logger;
 
 namespace MySoft.IoC.Services
 {
@@ -87,7 +84,10 @@ namespace MySoft.IoC.Services
                                 break;
                             }
                         }
-                        catch { }
+                        catch (WarningException ex)
+                        {
+                            throw ex;
+                        }
                     }
                 }
             }

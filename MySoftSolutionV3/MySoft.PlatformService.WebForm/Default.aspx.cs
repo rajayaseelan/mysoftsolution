@@ -7,7 +7,6 @@ using System.Web.UI.WebControls;
 using MySoft.PlatformService.UserService;
 using MySoft.IoC;
 using System.Net;
-using MySoft.IoC.Status;
 using System.Text;
 
 namespace MySoft.PlatformService.WebForm

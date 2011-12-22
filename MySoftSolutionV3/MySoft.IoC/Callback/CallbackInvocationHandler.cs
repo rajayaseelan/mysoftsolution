@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Reflection;
+using System.Threading;
 using MySoft.Communication.Scs.Communication;
 using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using System.Collections;
-using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -33,7 +31,7 @@ namespace MySoft.IoC
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public object Invoke(object proxy, MethodInfo method, object[] parameters)
+        public object Invoke(object proxy, System.Reflection.MethodInfo method, object[] parameters)
         {
             if (client.CommunicationState == CommunicationStates.Connected)
             {

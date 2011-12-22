@@ -37,11 +37,17 @@ namespace MySoft.PlatformService
                     switch (optionalArgs.ToLower())
                     {
                         case "/?":
+                        case "/h":
                         case "/help":
+                        case "-?":
+                        case "-h":
+                        case "-help":
                             PrintHelp();
                             break;
                         case "/l":
                         case "/list":
+                        case "-l":
+                        case "-list":
                             {
                                 string contains = null;
                                 string status = null;
@@ -52,6 +58,8 @@ namespace MySoft.PlatformService
                             break;
                         case "/c":
                         case "/console":
+                        case "-c":
+                        case "-console":
                             {
                                 if (server.StartConsole())
                                 {
@@ -66,6 +74,8 @@ namespace MySoft.PlatformService
                             break;
                         case "/s":
                         case "/start":
+                        case "-s":
+                        case "-start":
                             {
                                 string service = null;
                                 if (args.Length == 2) service = args[1].Trim();
@@ -74,6 +84,8 @@ namespace MySoft.PlatformService
                             break;
                         case "/p":
                         case "/stop":
+                        case "-p":
+                        case "-stop":
                             {
                                 string service = null;
                                 if (args.Length == 2) service = args[1].Trim();
@@ -82,6 +94,8 @@ namespace MySoft.PlatformService
                             break;
                         case "/r":
                         case "/restart":
+                        case "-r":
+                        case "-restart":
                             {
                                 string service = null;
                                 if (args.Length == 2) service = args[1].Trim();
@@ -91,10 +105,14 @@ namespace MySoft.PlatformService
                             break;
                         case "/i":
                         case "/install":
+                        case "-i":
+                        case "-install":
                             server.InstallService();
                             break;
                         case "/u":
                         case "/uninstall":
+                        case "-u":
+                        case "-uninstall":
                             server.UninstallService();
                             break;
                         default:

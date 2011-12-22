@@ -1,6 +1,5 @@
 ﻿using System;
 using MySoft.Communication.Scs.Communication.Messages;
-using MySoft.IoC.Status;
 
 namespace MySoft.IoC.Messages
 {
