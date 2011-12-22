@@ -14,11 +14,13 @@ namespace MySoft.PlatformService.WebForm
     public partial class Server : MySoft.Web.UI.AjaxPage
     {
         protected IList<RemoteNode> nodelist = new List<RemoteNode>();
+        protected int timer = 0;
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
                 nodelist = CastleFactory.Create().GetRemoteNodes();
+                timer = GetRequestParam<int>("timer", 5);
             }
         }
 

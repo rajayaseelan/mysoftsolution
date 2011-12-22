@@ -52,7 +52,7 @@
     <Reference Include="System.Web.Mobile" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Default.aspx" />
+    <Content Include="Server.aspx" />
     <Content Include="StatusControl.ascx" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -63,12 +63,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Default.aspx.cs">
+    <Compile Include="Server.aspx.cs">
       <SubType>ASPXCodeBehind</SubType>
-      <DependentUpon>Default.aspx</DependentUpon>
+      <DependentUpon>Server.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Default.aspx.designer.cs">
-      <DependentUpon>Default.aspx</DependentUpon>
+    <Compile Include="Server.aspx.designer.cs">
+      <DependentUpon>Server.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatusControl.ascx.cs">

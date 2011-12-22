@@ -10,7 +10,7 @@
 namespace MySoft.PlatformService.WebForm {
     
     
-    public partial class _Default {
+    public partial class Server {
         
         /// <summary>
         /// Head1 控件。

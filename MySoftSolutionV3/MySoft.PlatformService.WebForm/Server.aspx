@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="MySoft.PlatformService.WebForm._Default" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Server.aspx.cs" Inherits="MySoft.PlatformService.WebForm.Server" %>
 
 <%@ Register Src="StatusControl.ascx" TagName="StatusControl" TagPrefix="uc1" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -76,14 +76,20 @@
     </form>
     <script type="text/javascript">
 
-        var timer = function () {
+        var tupdate = function () {
             var value = document.getElementById('currentIndex').value;
             Ajax.updatePanel('divContainer', '~/StatusControl.ascx', { CurrentIndex: value });
         };
 
-        setInterval(function () {
-            timer();
-        }, 5000);
+        var timer = <% = timer %>;
+        if(timer > 0) {        
+            setInterval(function () {
+                tupdate();
+            }, 5000);
+        }else{
+            tupdate();
+        }
+
     </script>
 </body>
 </html>

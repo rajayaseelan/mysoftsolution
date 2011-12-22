@@ -58,7 +58,18 @@ namespace MySoft.PlatformService.WinForm
                         return;
                     }
 
-                    InitService();
+                    if (listAssembly.Items.Count == 0)
+                        InitService();
+
+                    if (checkBox3.Checked)
+                    {
+                        var timer = Convert.ToInt32(numericUpDown2.Value);
+                        var url = ConfigurationManager.AppSettings["ServerMonitorUrl"];
+                        if (!string.IsNullOrEmpty(url))
+                            webBrowser2.Url = new Uri(url + "?timer=" + timer);
+                        else
+                            webBrowser2.Url = new Uri("about:blank");
+                    }
 
                     var listener = new StatusListener(tabControl1, listConnect, listTimeout, listError,
                         Convert.ToInt32(numericUpDown3.Value), Convert.ToInt32(numericUpDown5.Value),
@@ -228,6 +239,7 @@ namespace MySoft.PlatformService.WinForm
             listTimeout.Items.OnItemInserted += new InsertEventHandler(TimeoutItems_OnItemInserted);
             listError.MouseDoubleClick += new MouseEventHandler(listError_MouseDoubleClick);
             listError.Items.OnItemInserted += new InsertEventHandler(Items_OnItemInserted);
+            listTotal.MouseDoubleClick += new MouseEventHandler(listTotal_MouseDoubleClick);
 
             checkedListBox1.Items.Clear();
             checkedListBox2.Items.Clear();
@@ -305,6 +317,7 @@ namespace MySoft.PlatformService.WinForm
                             MessageType = msgType,
                             LineHeader = string.Format("【{3}】 Total => Call ({0}) Times , ElapsedTime ({1}) ms, Count ({2}) rows.", item.Times, item.ElapsedTime, item.Count, item.AppName),
                             MessageText = string.Format("{0},{1}", item.ServiceName, item.MethodName),
+                            Source = item
                         });
                 }
 
@@ -324,6 +337,18 @@ namespace MySoft.PlatformService.WinForm
             if (listTimeout.SelectedIndex < 0) return;
             var item = listTimeout.Items[listTimeout.SelectedIndex];
             PositionService((item.Source as CallTimeout).Caller);
+        }
+
+        void listTotal_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (listTotal.SelectedIndex < 0) return;
+            var item = listTotal.Items[listTotal.SelectedIndex];
+            var total = item.Source as TotalInfo;
+            PositionService(new AppCaller
+            {
+                ServiceName = total.ServiceName,
+                MethodName = total.MethodName
+            });
         }
 
         void PositionService(AppCaller caller)
