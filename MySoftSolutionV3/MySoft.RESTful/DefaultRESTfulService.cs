@@ -295,9 +295,6 @@ namespace MySoft.RESTful
                     Type retType;
                     result = Context.Invoke(format, kind, method, parameter, out retType);
 
-                    //清理上下文资源
-                    AuthenticationContext.Current = null;
-
                     //如果值为null，以对象方式返回
                     if (result == null || retType == typeof(string))
                     {
@@ -330,6 +327,11 @@ namespace MySoft.RESTful
 
                     //记录错误日志
                     SimpleLog.Instance.WriteLogForDir("RESTfulError", e);
+                }
+                finally
+                {
+                    //清理上下文资源
+                    AuthenticationContext.Current = null;
                 }
             }
             else
