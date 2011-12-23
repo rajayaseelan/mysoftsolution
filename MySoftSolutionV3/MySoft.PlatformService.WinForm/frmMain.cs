@@ -340,14 +340,17 @@ namespace MySoft.PlatformService.WinForm
                     else if (item.Count > count)
                         msgType = ParseMessageType.Question;
 
-                    listTotal.Items.Add(
-                        new ParseMessageEventArgs
-                        {
-                            MessageType = msgType,
-                            LineHeader = string.Format("【{3}】 Total => Call ({0}) Times , ElapsedTime ({1}) ms, Count ({2}) rows.", item.Times, item.ElapsedTime, item.Count, item.AppName),
-                            MessageText = string.Format("{0},{1}", item.ServiceName, item.MethodName),
-                            Source = item
-                        });
+                    if (msgType != ParseMessageType.None)
+                    {
+                        listTotal.Items.Add(
+                            new ParseMessageEventArgs
+                            {
+                                MessageType = msgType,
+                                LineHeader = string.Format("【{3}】 Total => Call ({0}) Times , ElapsedTime ({1}) ms, Count ({2}) rows.", item.Times, item.ElapsedTime, item.Count, item.AppName),
+                                MessageText = string.Format("{0},{1}", item.ServiceName, item.MethodName),
+                                Source = item
+                            });
+                    }
                 }
 
                 listTotal.Invalidate();

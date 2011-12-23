@@ -10,6 +10,7 @@ using MySoft.RESTful.Business;
 using MySoft.RESTful.Utils;
 using System.Net;
 using MySoft.Security;
+using MySoft.RESTful.Auth;
 
 namespace MySoft.RESTful
 {
@@ -293,6 +294,9 @@ namespace MySoft.RESTful
                 {
                     Type retType;
                     result = Context.Invoke(format, kind, method, parameter, out retType);
+
+                    //清理上下文资源
+                    AuthenticationContext.Current = null;
 
                     //如果值为null，以对象方式返回
                     if (result == null || retType == typeof(string))
