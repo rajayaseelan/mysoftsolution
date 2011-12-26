@@ -140,6 +140,9 @@ namespace MySoft.IoC
         /// <returns>The service implemetation instance.</returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
+            var service = GetLocalService<IServiceInterfaceType>();
+            if (service != null) return service;
+
             var proxy = new DiscoverProxy(singleton, container);
             return GetChannel<IServiceInterfaceType>(proxy, true);
         }
@@ -168,17 +171,20 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(RemoteNode node)
         {
-            IService service = null;
+            var service = GetLocalService<IServiceInterfaceType>();
+            if (service != null) return service;
+
+            IService proxy = null;
             var isCacheService = true;
             if (singleton.proxies.ContainsKey(node.Key.ToLower()))
-                service = singleton.proxies[node.Key.ToLower()];
+                proxy = singleton.proxies[node.Key.ToLower()];
             else
             {
-                service = new RemoteProxy(node, container);
+                proxy = new RemoteProxy(node, container);
                 isCacheService = false;
             }
 
-            return GetChannel<IServiceInterfaceType>(service, isCacheService);
+            return GetChannel<IServiceInterfaceType>(proxy, isCacheService);
         }
 
         /// <summary>
@@ -186,101 +192,28 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node">The node name.</param>
         /// <returns></returns>
-        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService service, bool isCacheService)
+        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService proxy, bool isCacheService)
         {
             Type serviceType = typeof(IServiceInterfaceType);
+            string serviceKey = string.Format("CastleFactory_{0}_{1}", proxy.ServiceName, serviceType.FullName);
+            var service = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
 
-            //定义异常
-            Exception ex = new ArgumentException("Generic parameter type - 【" + serviceType.FullName
-                   + "】 must be an interface marked with ServiceContractAttribute.");
-
-            if (!serviceType.IsInterface)
-            {
-                throw ex;
-            }
-            else
-            {
-                bool markedWithServiceContract = false;
-                var attr = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
-                if (attr != null)
-                {
-                    markedWithServiceContract = true;
-                }
-
-                if (!markedWithServiceContract)
-                {
-                    throw ex;
-                }
-            }
-
-            //如果是本地配置，则抛出异常
-            if (config.Type == CastleFactoryType.Local || config.Type == CastleFactoryType.LocalRemote)
-            {
-                //本地服务
-                if (container.Kernel.HasComponent(serviceType))
-                {
-                    lock (lockObject)
-                    {
-                        var aspect = container[serviceType];
-
-                        //返回拦截服务
-                        return AspectManager.GetService<IServiceInterfaceType>(aspect);
-                    }
-                }
-
-                if (config.Type == CastleFactoryType.Local)
-                    throw new WarningException(string.Format("Local not find service ({0}).", serviceType.FullName));
-            }
-
-            string serviceKey = string.Format("CastleFactory_{0}_{1}", service.ServiceName, serviceType.FullName);
-            IServiceInterfaceType iocService = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
-            if (iocService == null)
+            if (service == null)
             {
                 lock (lockObject)
                 {
-                    var handler = new ServiceInvocationHandler(this.config, this.container, service, serviceType);
+                    var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType);
                     var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
-                    iocService = (IServiceInterfaceType)dynamicProxy;
-                    if (isCacheService) CacheHelper.Permanent(serviceKey, iocService);
+                    service = (IServiceInterfaceType)dynamicProxy;
+                    if (isCacheService) CacheHelper.Permanent(serviceKey, service);
 
                     handler = null;
                     dynamicProxy = null;
                 }
             }
 
-            return iocService;
-        }
-
-        /// <summary>
-        /// 获取节点名称
-        /// </summary>
-        /// <param name="nodeKey"></param>
-        /// <returns></returns>
-        private string GetNodeKey(string nodeKey)
-        {
-            if (singleton.proxies.Count == 0)
-            {
-                throw new WarningException("Not find any service node！");
-            }
-
-            if (string.IsNullOrEmpty(nodeKey)) nodeKey = config.Default;
-            string oldNodeKey = nodeKey;
-
-            //如果不存在当前配置节，则使用默认配置节
-            if (string.IsNullOrEmpty(nodeKey) || !singleton.proxies.ContainsKey(nodeKey.ToLower()))
-            {
-                nodeKey = "default";
-            }
-
-            if (!singleton.proxies.ContainsKey(nodeKey.ToLower()))
-            {
-                if (oldNodeKey == nodeKey)
-                    throw new WarningException("Not find the service node [" + nodeKey + "]！");
-                else
-                    throw new WarningException("Not find the service node [" + oldNodeKey + "] or [" + nodeKey + "]！");
-            }
-            return nodeKey;
+            return service;
         }
 
         #endregion
@@ -291,10 +224,6 @@ namespace MySoft.IoC
         /// OnLog event.
         /// </summary>
         public event LogEventHandler OnLog;
-
-        #endregion
-
-        #region IErrorLogable Members
 
         /// <summary>
         /// OnError event.
@@ -359,7 +288,14 @@ namespace MySoft.IoC
         /// <returns></returns>
         public InvokeData Invoke(InvokeMessage message)
         {
-            return Invoke(config.Default, message);
+            IService service = GetLocalService(message);
+            if (service == null)
+            {
+                //本地服务为null，则使用发现服务调用
+                service = new DiscoverProxy(singleton, container);
+            }
+
+            return GetInvokeData(message, service);
         }
 
         /// <summary>
@@ -382,6 +318,133 @@ namespace MySoft.IoC
 
         public InvokeData Invoke(RemoteNode node, InvokeMessage message)
         {
+            IService service = GetLocalService(message);
+            if (service == null)
+            {
+                if (singleton.proxies.ContainsKey(node.Key.ToLower()))
+                    service = singleton.proxies[node.Key.ToLower()];
+                else
+                {
+                    service = new RemoteProxy(node, container);
+                }
+            }
+
+            return GetInvokeData(message, service);
+        }
+
+        #region Private Service
+
+        /// <summary>
+        /// 获取本地服务
+        /// </summary>
+        /// <typeparam name="IServiceInterfaceType"></typeparam>
+        /// <returns></returns>
+        private IServiceInterfaceType GetLocalService<IServiceInterfaceType>()
+        {
+            Type serviceType = typeof(IServiceInterfaceType);
+
+            //定义异常
+            Exception ex = new ArgumentException("Generic parameter type - 【" + serviceType.FullName
+                   + "】 must be an interface marked with ServiceContractAttribute.");
+
+            if (!serviceType.IsInterface)
+            {
+                throw ex;
+            }
+            else
+            {
+                bool markedWithServiceContract = false;
+                var attr = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
+                if (attr != null)
+                {
+                    markedWithServiceContract = true;
+                }
+
+                if (!markedWithServiceContract)
+                {
+                    throw ex;
+                }
+            }
+
+            //如果是本地配置，则抛出异常
+            if (config.Type == CastleFactoryType.Local || config.Type == CastleFactoryType.LocalRemote)
+            {
+                //本地服务
+                if (container.Kernel.HasComponent(serviceType))
+                {
+                    lock (lockObject)
+                    {
+                        var aspect = container[serviceType];
+
+                        //返回拦截服务
+                        return AspectManager.GetService<IServiceInterfaceType>(aspect);
+                    }
+                }
+
+                if (config.Type == CastleFactoryType.Local)
+                    throw new WarningException(string.Format("Local not find service ({0}).", serviceType.FullName));
+            }
+
+            return default(IServiceInterfaceType);
+        }
+
+        /// <summary>
+        /// 获取节点名称
+        /// </summary>
+        /// <param name="nodeKey"></param>
+        /// <returns></returns>
+        private string GetNodeKey(string nodeKey)
+        {
+            if (singleton.proxies.Count == 0)
+            {
+                throw new WarningException("Not find any service node！");
+            }
+
+            if (string.IsNullOrEmpty(nodeKey)) nodeKey = config.Default;
+            string oldNodeKey = nodeKey;
+
+            //如果不存在当前配置节，则使用默认配置节
+            if (string.IsNullOrEmpty(nodeKey) || !singleton.proxies.ContainsKey(nodeKey.ToLower()))
+            {
+                nodeKey = "default";
+            }
+
+            if (!singleton.proxies.ContainsKey(nodeKey.ToLower()))
+            {
+                if (oldNodeKey == nodeKey)
+                    throw new WarningException("Not find the service node [" + nodeKey + "]！");
+                else
+                    throw new WarningException("Not find the service node [" + oldNodeKey + "] or [" + nodeKey + "]！");
+            }
+            return nodeKey;
+        }
+
+        /// <summary>
+        /// 获取调用的数据
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        private InvokeData GetInvokeData(InvokeMessage message, IService service)
+        {
+            //调用分布式服务
+            var caller = new InvokeCaller(config, container, service);
+            var value = caller.CallMethod(message);
+
+            //返回值
+            if (value is InvokeData)
+                return value as InvokeData;
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// 获取本地服务
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        private IService GetLocalService(InvokeMessage message)
+        {
             IService service = null;
             string serviceKey = "Service_" + message.ServiceName;
             if (config.Type == CastleFactoryType.Local || config.Type == CastleFactoryType.LocalRemote)
@@ -395,26 +458,10 @@ namespace MySoft.IoC
                     throw new WarningException(string.Format("Local not find service ({0}).", message.ServiceName));
             }
 
-            if (service == null)
-            {
-                if (singleton.proxies.ContainsKey(node.Key.ToLower()))
-                    service = singleton.proxies[node.Key.ToLower()];
-                else
-                {
-                    service = new RemoteProxy(node, container);
-                }
-            }
-
-            //调用分布式服务
-            var caller = new InvokeCaller(config, container, service);
-            var value = caller.CallMethod(message);
-
-            //返回值
-            if (value is InvokeData)
-                return value as InvokeData;
-            else
-                return null;
+            return service;
         }
+
+        #endregion
 
         #endregion
     }

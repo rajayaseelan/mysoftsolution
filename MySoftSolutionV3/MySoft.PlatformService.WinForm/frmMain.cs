@@ -448,7 +448,7 @@ namespace MySoft.PlatformService.WinForm
 
                 SingletonMul.Show(string.Format("FORM_{0}_{1}", service.FullName, method.FullName), () =>
                 {
-                    frmInvoke frm = new frmInvoke(service.FullName, method.FullName, method.Parameters);
+                    frmInvoke frm = new frmInvoke(defaultNode, service.FullName, method.FullName, method.Parameters);
                     return frm;
                 });
             }
@@ -729,7 +729,7 @@ namespace MySoft.PlatformService.WinForm
 
             SingletonMul.Show(string.Format("FORM_{0}_{1}", service.FullName, method.FullName), () =>
             {
-                frmInvoke frm = new frmInvoke(service.FullName, method.FullName, method.Parameters, caller.Parameters);
+                frmInvoke frm = new frmInvoke(defaultNode, service.FullName, method.FullName, method.Parameters, caller.Parameters);
                 return frm;
             });
         }

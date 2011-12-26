@@ -102,6 +102,12 @@ namespace MySoft.IoC
         IList<ServiceInfo> GetServiceList();
 
         /// <summary>
+        /// 获取发布的服务类型
+        /// </summary>
+        /// <returns></returns>
+        IList<Type> GetPublishTypeList();
+
+        /// <summary>
         /// 获取服务状态信息（包括SummaryStatus，HighestStatus，TimeStatus）
         /// </summary>
         /// <returns></returns>

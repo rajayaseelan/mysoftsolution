@@ -16,6 +16,10 @@ namespace MySoft.RESTful.Business
         /// </summary>
         public bool Authorized { get; set; }
         /// <summary>
+        /// 本地服务
+        /// </summary>
+        public bool LocalService { get; set; }
+        /// <summary>
         /// 方法调用类型
         /// </summary>
         public HttpMethod HttpMethod { get; set; }

@@ -326,7 +326,7 @@ namespace MySoft.RESTful
                     response.StatusCode = HttpStatusCode.ExpectationFailed;
 
                     //记录错误日志
-                    SimpleLog.Instance.WriteLogForDir("RESTfulError", e);
+                    SimpleLog.Instance.WriteLogForDir("BusinessError", e);
                 }
                 finally
                 {

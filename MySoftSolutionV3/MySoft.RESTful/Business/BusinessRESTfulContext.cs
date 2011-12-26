@@ -222,7 +222,9 @@ namespace MySoft.RESTful.Business
                         template = item.Substring(item.IndexOf("</td>") + 5);
                     }
 
-                    var tempStr = string.Format("<a href='/help/{0}/{1}'>{1}</a>", e.Name, model.Name) + "<br/>" + model.Description;
+                    var tempStr = string.Format("<a href='/help/{0}/{1}'>{2}</a>", e.Name, model.Name,
+                        (model.LocalService ? "" : "<font color='red'>[*]</font>") + model.Name) + "<br/>" + model.Description;
+
                     if (!model.IsPassCheck)
                     {
                         tempStr = string.Format("<font color=\"red\" title=\"{0}\">{1}</font>", model.CheckMessage, tempStr);

@@ -6,6 +6,7 @@ using System.Threading;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using MySoft.RESTful;
 
 namespace MySoft.IoC
 {
@@ -118,6 +119,16 @@ namespace MySoft.IoC
         }
 
         #region GetServiceInfos
+
+        /// <summary>
+        /// 获取发布的服务类型
+        /// </summary>
+        /// <returns></returns>
+        public IList<Type> GetPublishTypeList()
+        {
+            //获取拥有PublishKind约束的服务
+            return container.GetInterfaces<PublishKindAttribute>().ToList();
+        }
 
         private IList<ServiceInfo> services;
         /// <summary>

@@ -47,6 +47,75 @@ namespace MySoft.RESTful.Business.Register
             return typelist.ToArray();
         }
 
+        /// <summary>
+        /// 获取发布的类型
+        /// </summary>
+        /// <returns></returns>
+        private TypeInstance[] GetPublishServices()
+        {
+            var list = new List<TypeInstance>();
+
+            var container = new WindsorContainer();
+            if (ConfigurationManager.GetSection("mysoft.framework/restful") != null)
+                container = new WindsorContainer(new ServiceInterpreter(new ConfigResource("mysoft.framework/restful")));
+
+            //获取本地的服务
+            foreach (var serviceType in GetInterfaces<PublishKindAttribute>(container))
+            {
+                if (list.Any(p => p.Type == serviceType)) continue;
+
+                try
+                {
+                    var instance = container.Resolve(serviceType);
+                    list.Add(new TypeInstance
+                    {
+                        Type = serviceType,
+                        Instance = instance,
+                        IsLocal = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    //记录错误日志
+                    SimpleLog.Instance.WriteLogForDir("RegisterError", ex);
+                }
+            }
+
+            //获取远程的服务
+            var nodes = CastleFactory.Create().GetRemoteNodes();
+            if (nodes.Count > 0)
+            {
+                foreach (var node in nodes)
+                {
+                    try
+                    {
+                        //获取远程服务
+                        var service = CastleFactory.Create().GetChannel<IStatusService>(node);
+                        foreach (var serviceType in service.GetPublishTypeList())
+                        {
+                            if (list.Any(p => p.Type == serviceType)) continue;
+
+                            //使用代理实现IoC服务的调用
+                            var proxy = new ProxyInvocationHandler(serviceType);
+                            var instance = ProxyFactory.GetInstance().Create(proxy, serviceType, true);
+
+                            list.Add(new TypeInstance
+                            {
+                                Type = serviceType,
+                                Instance = instance,
+                                IsLocal = false
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+            }
+
+            return list.ToArray();
+        }
+
         public void Register(IBusinessPool businessPool)
         {
             pool = businessPool;
@@ -55,89 +124,72 @@ namespace MySoft.RESTful.Business.Register
             {
                 BusinessKindModel kindModel = null;
                 BusinessMethodModel methodModel = null;
-                var container = new WindsorContainer();
-                if (ConfigurationManager.GetSection("mysoft.framework/restful") != null)
-                    container = new WindsorContainer(new ServiceInterpreter(new ConfigResource("mysoft.framework/restful")));
 
-                foreach (Type serviceType in GetInterfaces<PublishKindAttribute>(container))
+                foreach (var service in GetPublishServices())
                 {
                     //获取业务对象
-                    object instance = null;
-                    try
-                    {
-                        instance = container.Resolve(serviceType);
-                    }
-                    catch (Exception ex)
-                    {
-                    }
-
-                    if (instance == null)
-                    {
-                        var contract = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
-                        if (contract != null) //表明是Castle服务
-                        {
-                            //使用代理实现IoC服务的调用
-                            var proxy = new ProxyInvocationHandler(serviceType);
-                            instance = ProxyFactory.GetInstance().Create(proxy, serviceType, true);
-                        }
-                    }
+                    var serviceType = service.Type;
+                    object instance = service.Instance;
 
                     //获取类特性
                     var kind = CoreHelper.GetTypeAttribute<PublishKindAttribute>(serviceType);
-                    if (kind != null)
+
+                    kind.Name = kind.Name.ToLower();
+
+                    //如果包含了相同的类别，则继续
+                    if (pool.KindMethods.ContainsKey(kind.Name))
                     {
-                        kind.Name = kind.Name.ToLower();
-
-                        //如果包含了相同的类别，则继续
-                        if (pool.KindMethods.ContainsKey(kind.Name))
+                        kindModel = pool.KindMethods[kind.Name];
+                    }
+                    else
+                    {
+                        kindModel = new BusinessKindModel
                         {
-                            kindModel = pool.KindMethods[kind.Name];
-                        }
-                        else
-                        {
-                            kindModel = new BusinessKindModel();
-                            kindModel.Name = kind.Name;
-                            kindModel.Description = kind.Description;
-                            kindModel.State = kind.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN;
+                            Name = kind.Name,
+                            Description = kind.Description,
+                            State = kind.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN
+                        };
 
-                            pool.AddKindModel(kind.Name, kindModel);
-                        }
+                        pool.AddKindModel(kind.Name, kindModel);
+                    }
 
-                        //获取方法特性
-                        foreach (MethodInfo info in CoreHelper.GetMethodsFromType(serviceType))
+                    //获取方法特性
+                    foreach (MethodInfo info in CoreHelper.GetMethodsFromType(serviceType))
+                    {
+                        var method = CoreHelper.GetMemberAttribute<PublishMethodAttribute>(info);
+                        if (method != null)
                         {
-                            var method = CoreHelper.GetMemberAttribute<PublishMethodAttribute>(info);
-                            if (method != null)
+                            method.Name = method.Name.ToLower();
+
+                            //如果包含了相同的方法，则继续
+                            if (kindModel.MethodModels.ContainsKey(method.Name)) continue;
+
+                            methodModel = new BusinessMethodModel
                             {
-                                method.Name = method.Name.ToLower();
+                                Name = method.Name,
+                                Description = method.Description,
+                                HttpMethod = method.Method,
+                                Authorized = !string.IsNullOrEmpty(method.UserParameter),
+                                State = method.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN,
+                                Method = info,
+                                Parameters = info.GetParameters(),
+                                UserParameter = method.UserParameter,
+                                ParametersCount = info.GetParameters().Count(),
+                                Instance = instance,
+                                LocalService = service.IsLocal
+                            };
 
-                                //如果包含了相同的方法，则继续
-                                if (kindModel.MethodModels.ContainsKey(method.Name)) continue;
-
-                                methodModel = new BusinessMethodModel();
-                                methodModel.Name = method.Name;
-                                methodModel.Description = method.Description;
-                                methodModel.HttpMethod = method.Method;
-                                methodModel.Authorized = !string.IsNullOrEmpty(method.UserParameter);
-                                methodModel.State = method.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN;
-                                methodModel.Method = info;
-                                methodModel.Parameters = info.GetParameters();
-                                methodModel.UserParameter = method.UserParameter;
-                                methodModel.ParametersCount = methodModel.Parameters.Count();
-                                methodModel.Instance = instance;
-
-                                if (method.Method != HttpMethod.POST && !CheckGetSubmitType(info.GetParameters()))
-                                {
-                                    methodModel.IsPassCheck = false;
-                                    methodModel.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", kindModel.Name + "." + methodModel.Name);
-                                }
-                                else
-                                {
-                                    methodModel.IsPassCheck = true;
-                                }
-
-                                kindModel.MethodModels.Add(method.Name, methodModel);
+                            if (method.Method != HttpMethod.POST && !CheckGetSubmitType(info.GetParameters()))
+                            {
+                                methodModel.IsPassCheck = false;
+                                methodModel.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", kindModel.Name + "." + methodModel.Name);
                             }
+                            else
+                            {
+                                methodModel.IsPassCheck = true;
+                            }
+
+                            kindModel.MethodModels.Add(method.Name, methodModel);
                         }
                     }
                 }

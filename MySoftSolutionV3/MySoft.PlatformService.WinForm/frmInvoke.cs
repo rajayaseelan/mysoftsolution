@@ -17,22 +17,24 @@ namespace MySoft.PlatformService.WinForm
     {
         private string serviceName;
         private string methodName;
+        private RemoteNode node;
         private IList<ParameterInfo> parameters;
         private IDictionary<string, TextBox> txtParameters;
         private string paramValue;
 
-        public frmInvoke(string serviceName, string methodName, IList<ParameterInfo> parameters)
+        public frmInvoke(RemoteNode node, string serviceName, string methodName, IList<ParameterInfo> parameters)
         {
             InitializeComponent();
 
+            this.node = node;
             this.serviceName = serviceName;
             this.methodName = methodName;
             this.parameters = parameters;
             this.txtParameters = new Dictionary<string, TextBox>();
         }
 
-        public frmInvoke(string serviceName, string methodName, IList<ParameterInfo> parameters, string paramValue)
-            : this(serviceName, methodName, parameters)
+        public frmInvoke(RemoteNode node, string serviceName, string methodName, IList<ParameterInfo> parameters, string paramValue)
+            : this(node, serviceName, methodName, parameters)
         {
             this.paramValue = paramValue;
         }
@@ -184,13 +186,13 @@ namespace MySoft.PlatformService.WinForm
                         //if (pInfo.IsPrimitive)
                         //    jValue[p.Key] = text;
                         //else
-                            jValue[p.Key] = JToken.Parse(text);
+                        jValue[p.Key] = JToken.Parse(text);
                     }
                 }
 
                 //提交的参数信息
                 string parameter = jValue.ToString(Newtonsoft.Json.Formatting.None);
-                var data = CastleFactory.Create().Invoke(new InvokeMessage
+                var data = CastleFactory.Create().Invoke(node, new InvokeMessage
                 {
                     ServiceName = serviceName,
                     MethodName = methodName,

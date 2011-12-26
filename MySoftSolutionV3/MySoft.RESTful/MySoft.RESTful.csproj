@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Business\Register\ProxyInvocationHandler.cs" />
+    <Compile Include="Business\Register\TypeInstance.cs" />
     <Compile Include="Utils\AuthManager.cs" />
     <Compile Include="RESTfulException.cs" />
     <Compile Include="Business\BusinessKindModel.cs" />
