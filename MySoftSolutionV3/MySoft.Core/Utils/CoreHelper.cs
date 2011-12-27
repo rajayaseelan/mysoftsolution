@@ -376,8 +376,7 @@ namespace MySoft
         /// <param retval="type">The type.</param>
         public static PropertyInfo[] GetPropertiesFromType<T>()
         {
-            return typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public |
-                                                BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+            return GetPropertiesFromType(typeof(T));
         }
 
         /// <summary>
