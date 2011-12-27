@@ -26,11 +26,23 @@ namespace MySoft.RESTful.Business.Register
         /// <returns></returns>
         public object Invoke(object proxy, MethodInfo method, object[] parameters)
         {
-            var instance = CastleFactory.Create();
-            var service = instance.GetType().GetMethod("GetChannel", Type.EmptyTypes)
-                .MakeGenericMethod(serviceType).Invoke(instance, null);
+            var info = CoreHelper.GetMemberAttribute<PublishMethodAttribute>(method);
+            if (info != null)
+            {
+                var instance = CastleFactory.Create();
+                var service = instance.GetType().GetMethod("GetChannel", Type.EmptyTypes)
+                    .MakeGenericMethod(serviceType).Invoke(instance, null);
 
-            return DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
+                return DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
+            }
+            else
+            {
+                //定义异常
+                Exception ex = new ArgumentException("Method - 【" + method.Name
+                       + "】 must be an method marked with PublishMethodAttribute.");
+
+                throw ex;
+            }
         }
 
         #endregion
