@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace MySoft.Data
 {
     /// <summary>
-    /// 用于被排除的Field
+    /// 用于被选择的Field
     /// </summary>
     [Serializable]
-    public class ExcludeField : IFieldFilter
+    public class IncludeField : IFieldFilter
     {
         private Field[] fields;
         internal List<Field> Fields
@@ -22,10 +24,10 @@ namespace MySoft.Data
         }
 
         /// <summary>
-        /// 实例化被排除的Field
+        /// 实例化被选择的Field
         /// </summary>
         /// <param name="fields"></param>
-        internal ExcludeField(Field[] fields)
+        internal IncludeField(Field[] fields)
         {
             this.fields = fields;
         }
@@ -40,7 +42,7 @@ namespace MySoft.Data
         public Field[] GetFields(Field[] fields)
         {
             List<Field> list = new List<Field>(fields);
-            list.RemoveAll(f =>
+            list = list.FindAll(f =>
             {
                 if (this.Fields.Contains(f)) return true;
                 return false;

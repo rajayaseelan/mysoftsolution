@@ -5,6 +5,10 @@ using MySoft.Data.Design;
 
 namespace MySoft.Data
 {
+    /// <summary>
+    /// Form处理节
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class FromSection<T> : IQuerySection<T>
         where T : Entity
     {
@@ -193,11 +197,11 @@ namespace MySoft.Data
         /// <summary>
         /// 选择被排除以外的列（用于列多时排除某几列的情况）
         /// </summary>
-        /// <param name="field"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public QuerySection<T> Select(ExcludeField field)
+        public QuerySection<T> Select(IFieldFilter filter)
         {
-            return query.Select(field);
+            return query.Select(filter);
         }
 
         /// <summary>

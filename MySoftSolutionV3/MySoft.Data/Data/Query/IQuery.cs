@@ -51,7 +51,7 @@ namespace MySoft.Data
         QuerySection<T> GroupBy(GroupByClip groupBy);
         QuerySection<T> Having(WhereClip where);
         QuerySection<T> Select(params Field[] fields);
-        QuerySection<T> Select(ExcludeField field);
+        QuerySection<T> Select(IFieldFilter filter);
         QuerySection<T> Where(WhereClip where);
         QuerySection<T> Union(QuerySection<T> query);
         QuerySection<T> UnionAll(QuerySection<T> query);

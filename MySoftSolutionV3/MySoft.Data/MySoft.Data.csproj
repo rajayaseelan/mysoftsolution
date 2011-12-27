@@ -88,6 +88,7 @@
     <Compile Include="Data\Expression\SQLParameter.cs" />
     <Compile Include="Data\Query\TopSection.cs" />
     <Compile Include="Data\Relation\RelationPage.cs" />
+    <Compile Include="Data\Session\AllField.cs" />
     <Compile Include="Data\Session\EntityBase.cs" />
     <Compile Include="Data\Relation\ITableRelation.cs" />
     <Compile Include="Data\Relation\RelationQuery.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="Data\Session\DbField.cs" />
     <Compile Include="Data\Session\DbValue.cs" />
     <Compile Include="Data\Relation\TableRelation.cs" />
+    <Compile Include="Data\Session\IncludeField.cs" />
     <Compile Include="Data\Source\IListConvert.cs" />
     <Compile Include="Data\Source\SourceList.cs" />
     <Compile Include="Data\Source\SourceRow.cs" />

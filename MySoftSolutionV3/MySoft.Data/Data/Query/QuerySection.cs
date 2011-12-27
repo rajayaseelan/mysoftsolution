@@ -564,18 +564,15 @@ namespace MySoft.Data
         /// <summary>
         /// 选择被排除以外的列（用于列多时排除某几列的情况）
         /// </summary>
-        /// <param name="field"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public QuerySection<T> Select(ExcludeField field)
+        public QuerySection<T> Select(IFieldFilter filter)
         {
-            List<Field> list = new List<Field>(fromSection.GetSelectFields());
-            list.RemoveAll(f =>
-            {
-                if (field.Fields.Contains(f)) return true;
-                return false;
-            });
+            Field[] fields = new Field[0];
+            if (filter != null)
+                fields = filter.GetFields(fromSection.GetSelectFields());
 
-            return Select(list.ToArray());
+            return Select(fields);
         }
 
         /// <summary>

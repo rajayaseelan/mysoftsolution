@@ -124,19 +124,17 @@ namespace MySoft.PlatformService.WinForm
                 {
                     if (sender != null)
                     {
-                        try
-                        {
-                            service.Unsubscribe();
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                    else
-                    {
                         if (MessageBox.Show("确定停止监控吗？", "系统提示",
                             MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel) return;
+                    }
+
+                    try
+                    {
+                        service.Unsubscribe();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
 
                     checkedListBox1.Items.Clear();
