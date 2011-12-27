@@ -326,7 +326,7 @@ namespace MySoft.RESTful.SDK
                 var collection = new Dictionary<string, object>();
 
                 //添加参数
-                var plist = item.GetType().GetProperties();
+                var plist = CoreHelper.GetPropertiesFromType(item.GetType());
                 for (int index = 0; index < plist.Length; index++)
                 {
                     collection[plist[index].Name] = plist[index].GetValue(item, null);

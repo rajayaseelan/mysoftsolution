@@ -87,7 +87,7 @@ namespace MySoft
 
         protected void OnInit()
         {
-            foreach (PropertyInfo info in this.ObjectType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (PropertyInfo info in CoreHelper.GetPropertiesFromType(this.ObjectType))
             {
                 this.Properties.Add(new PropertyHandler(info));
             }

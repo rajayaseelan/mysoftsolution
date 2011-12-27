@@ -217,7 +217,7 @@ namespace MySoft.IoC
             if (GetTypeClass(type) && !typeof(ICollection).IsAssignableFrom(type))
             {
                 var plist = new List<ParameterInfo>();
-                foreach (var p in type.GetProperties())
+                foreach (var p in CoreHelper.GetPropertiesFromType(type))
                 {
                     var pi = new ParameterInfo
                     {

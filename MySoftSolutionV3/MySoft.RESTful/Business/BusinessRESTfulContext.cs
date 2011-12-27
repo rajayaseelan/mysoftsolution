@@ -350,7 +350,7 @@ namespace MySoft.RESTful.Business
                     for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
                     sb.Append("<b>[" + GetTypeName(type) + "]</b><br/>");
 
-                    foreach (var p in type.GetProperties())
+                    foreach (var p in CoreHelper.GetPropertiesFromType(type))
                     {
                         if (GetTypeClass(p.PropertyType) && type != p.PropertyType)
                         {

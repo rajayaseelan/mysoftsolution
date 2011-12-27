@@ -249,7 +249,7 @@ namespace MySoft
                 methodToMB.Add(method, mdb);
             }
 
-            foreach (PropertyInfo property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            foreach (PropertyInfo property in CoreHelper.GetPropertiesFromType(type))
             {
                 PropertyBuilder pb = typeBuilder.DefineProperty(property.Name, property.Attributes, property.PropertyType, ToTypes(property.GetIndexParameters()));
                 MethodInfo getMethod = property.GetGetMethod();

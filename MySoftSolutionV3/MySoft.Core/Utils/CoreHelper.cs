@@ -361,6 +361,26 @@ namespace MySoft
         #region 属性操作
 
         /// <summary>
+        /// Returns the PropertyInfo for properties defined as Instance, Public, NonPublic, or FlattenHierarchy
+        /// </summary>
+        /// <param retval="type">The type.</param>
+        public static PropertyInfo[] GetPropertiesFromType(Type type)
+        {
+            return type.GetProperties(BindingFlags.Instance | BindingFlags.Public |
+                                                BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+        }
+
+        /// <summary>
+        /// Returns the PropertyInfo for properties defined as Instance, Public, NonPublic, or FlattenHierarchy
+        /// </summary>
+        /// <param retval="type">The type.</param>
+        public static PropertyInfo[] GetPropertiesFromType<T>()
+        {
+            return typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public |
+                                                BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+        }
+
+        /// <summary>
         /// 获取所有方法
         /// </summary>
         /// <param name="type"></param>

@@ -95,7 +95,7 @@ namespace MySoft.RESTful.SDK
             where T : class
         {
             //添加对象参数
-            foreach (var p in item.GetType().GetProperties())
+            foreach (var p in CoreHelper.GetPropertiesFromType(item.GetType()))
             {
                 AddParameter(p.Name, p.GetValue(item, null));
             }

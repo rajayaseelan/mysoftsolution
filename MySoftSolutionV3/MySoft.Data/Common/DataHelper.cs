@@ -59,7 +59,7 @@ namespace MySoft.Data
                 }
                 else
                 {
-                    foreach (PropertyInfo p in t.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                    foreach (PropertyInfo p in CoreHelper.GetPropertiesFromType<TOutput>())
                     {
                         object value = null;
                         if (obj is NameValueCollection)
