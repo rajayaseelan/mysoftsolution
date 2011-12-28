@@ -167,6 +167,34 @@ namespace MySoft.RESTful.Business
             {
                 list.AddRange(pool.KindMethods.Values);
             }
+            else if (kind.ToLower() == "remote")
+            {
+                var models = pool.KindMethods.Values.Where(p =>
+                    p.MethodModels.Values.Any(x => !x.LocalService))
+                        .ToList();
+
+                foreach (var model in models)
+                {
+                    var mod = new BusinessKindModel
+                    {
+                        Name = model.Name,
+                        State = model.State,
+                        Description = model.Description,
+                        MethodModels = new Dictionary<string, BusinessMethodModel>()
+                    };
+
+                    var methods = model.MethodModels.Values
+                        .Where(p => !p.LocalService)
+                        .ToList();
+
+                    foreach (var m in methods)
+                    {
+                        mod.MethodModels.Add(m.Name, m);
+                    }
+
+                    list.Add(mod);
+                }
+            }
             else
             {
                 var model = pool.GetKindModel(kind);
