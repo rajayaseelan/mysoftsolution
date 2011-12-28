@@ -206,7 +206,7 @@
             this.numericUpDown1.Size = new System.Drawing.Size(60, 21);
             this.numericUpDown1.TabIndex = 5;
             this.numericUpDown1.Value = new decimal(new int[] {
-            100,
+            200,
             0,
             0,
             0});
@@ -1075,7 +1075,7 @@
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(65, 12);
             this.label9.TabIndex = 6;
-            this.label9.Text = "超过行数：";
+            this.label9.Text = "超过记录：";
             // 
             // numericUpDown5
             // 
@@ -1146,7 +1146,7 @@
             this.numericUpDown6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.numericUpDown6.Location = new System.Drawing.Point(418, 563);
             this.numericUpDown6.Maximum = new decimal(new int[] {
-            2000,
+            5000,
             0,
             0,
             0});
