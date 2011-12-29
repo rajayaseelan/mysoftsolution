@@ -21,6 +21,7 @@ namespace MySoft.IoC
 
         private CastleFactoryConfiguration config;
         private IServiceContainer container;
+        private DiscoverProxy discoverProxy;
         private IDictionary<string, IService> proxies = new Dictionary<string, IService>();
 
         /// <summary>
@@ -55,6 +56,7 @@ namespace MySoft.IoC
             if (config == null) config = new CastleFactoryConfiguration();
             this.config = config;
             this.container = container;
+            this.discoverProxy = new DiscoverProxy(this, container);
         }
 
         #region 创建单例
@@ -143,8 +145,7 @@ namespace MySoft.IoC
             var service = GetLocalService<IServiceInterfaceType>();
             if (service != null) return service;
 
-            var proxy = new DiscoverProxy(singleton, container);
-            return GetChannel<IServiceInterfaceType>(proxy, true);
+            return GetChannel<IServiceInterfaceType>(discoverProxy, true);
         }
 
         /// <summary>
@@ -292,7 +293,7 @@ namespace MySoft.IoC
             if (service == null)
             {
                 //本地服务为null，则使用发现服务调用
-                service = new DiscoverProxy(singleton, container);
+                service = discoverProxy;
             }
 
             return GetInvokeData(message, service);

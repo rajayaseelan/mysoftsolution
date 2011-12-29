@@ -42,7 +42,7 @@ namespace MySoft.PlatformService.UserService
     [ServiceContract]
     public interface IUserService
     {
-        UserInfo GetUserInfo(string name, ref int length);
+        UserInfo GetUserInfo(string name, ref int length, out UserInfo user);
 
         string GetUser(NameValueCollection nv);
 
