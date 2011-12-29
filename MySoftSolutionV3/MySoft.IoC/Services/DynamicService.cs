@@ -78,39 +78,7 @@ namespace MySoft.IoC.Services
                 var pis = method.GetParameters();
                 if (reqMsg.InvokeMethod)
                 {
-                    //解析参数
-                    var objValue = reqMsg.Parameters["InvokeParameter"];
-                    if (!(objValue == null || string.IsNullOrEmpty(objValue.ToString())))
-                    {
-                        JObject obj = JObject.Parse(objValue.ToString());
-                        if (obj.Count > 0)
-                        {
-                            foreach (var info in pis)
-                            {
-                                var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
-                                if (property != null)
-                                {
-                                    string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
-                                    object jsonValue = null;
-
-                                    //处理反系列化数据
-                                    if (!(string.IsNullOrEmpty(value) || value == "{}"))
-                                    {
-                                        if (value.Contains("new Date"))
-                                            jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
-                                        else
-                                            jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value);
-                                    }
-
-                                    //处理参数
-                                    if (jsonValue == null)
-                                        resMsg.Parameters[info.Name] = CoreHelper.GetTypeDefaultValue(GetPrimitiveType(info.ParameterType));
-                                    else
-                                        resMsg.Parameters[info.Name] = jsonValue;
-                                }
-                            }
-                        }
-                    }
+                    ParseParameter(reqMsg, resMsg, pis);
                 }
                 else
                 {
@@ -185,6 +153,63 @@ namespace MySoft.IoC.Services
             }
 
             return resMsg;
+        }
+
+        /// <summary>
+        /// 解析参数
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="resMsg"></param>
+        /// <param name="pis"></param>
+        private void ParseParameter(RequestMessage reqMsg, ResponseMessage resMsg, System.Reflection.ParameterInfo[] pis)
+        {
+            var objValue = reqMsg.Parameters["InvokeParameter"];
+            if (!(objValue == null || string.IsNullOrEmpty(objValue.ToString())))
+            {
+                JObject obj = JObject.Parse(objValue.ToString());
+                if (obj.Count > 0)
+                {
+                    foreach (var info in pis)
+                    {
+                        var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
+                        if (property != null)
+                        {
+                            string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
+
+                            //获取Json值
+                            object jsonValue = GetJsonValue(info, value);
+
+                            //处理参数
+                            if (jsonValue == null)
+                                resMsg.Parameters[info.Name] = CoreHelper.GetTypeDefaultValue(GetPrimitiveType(info.ParameterType));
+                            else
+                                resMsg.Parameters[info.Name] = jsonValue;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取Json值
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private object GetJsonValue(System.Reflection.ParameterInfo info, string value)
+        {
+            object jsonValue = null;
+
+            //处理反系列化数据
+            if (!(string.IsNullOrEmpty(value) || value == "{}"))
+            {
+                if (value.Contains("new Date"))
+                    jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+                else
+                    jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value);
+            }
+
+            return jsonValue;
         }
 
         private Type GetPrimitiveType(Type type)
