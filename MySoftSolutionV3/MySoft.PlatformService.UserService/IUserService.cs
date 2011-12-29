@@ -57,6 +57,44 @@ namespace MySoft.PlatformService.UserService
     }
 
     /// <summary>
+    /// 用户服务
+    /// </summary>
+    [ServiceContract]
+    public interface IUserService2
+    {
+        /// <summary>
+        /// 根据ID获取用户
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        User GetUser(int id);
+
+        /// <summary>
+        /// 根据用户名获取用户
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        User GetUser(string name);
+    }
+
+    /// <summary>
+    /// 用户信息
+    /// </summary>
+    [Serializable]
+    public class User
+    {
+        /// <summary>
+        /// 用户Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// 用户名
+        /// </summary>
+        public string Name { get; set; }
+    }
+
+    /// <summary>
     /// 用户信息
     /// </summary>
     [Serializable]

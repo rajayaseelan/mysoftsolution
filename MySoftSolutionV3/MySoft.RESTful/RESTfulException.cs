@@ -2,7 +2,7 @@
 namespace MySoft.RESTful
 {
     /// <summary>
-    /// 业务异常
+    /// RESTful异常
     /// </summary>
     public class RESTfulException : MySoftException
     {
@@ -17,7 +17,7 @@ namespace MySoft.RESTful
         }
 
         /// <summary>
-        /// 实例 化BusinessException
+        /// 实例 化RESTfulException
         /// </summary>
         /// <param name="code"></param>
         /// <param name="message"></param>
@@ -28,7 +28,7 @@ namespace MySoft.RESTful
         }
 
         /// <summary>
-        /// 实例 化BusinessException
+        /// 实例 化RESTfulException
         /// </summary>
         /// <param name="message"></param>
         public RESTfulException(string message)

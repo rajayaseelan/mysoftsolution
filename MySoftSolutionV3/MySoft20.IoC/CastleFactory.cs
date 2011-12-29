@@ -144,7 +144,11 @@ namespace MySoft.IoC
                     if (p.IsOut || p.ParameterType.IsByRef)
                     {
                         dictIndex[p.Name] = new InvokeResult { Index = index, ResultType = GetPrimitiveType(p.ParameterType) };
-                        if (p.IsOut) continue;
+                        if (p.IsOut)
+                        {
+                            index++;
+                            continue;
+                        }
                     }
 
                     dictParameter[p.Name] = parameters[index];
@@ -170,11 +174,8 @@ namespace MySoft.IoC
                     foreach (var kv in dictIndex)
                     {
                         var result = kv.Value;
-                        object outValue = null;
-                        if (result.ResultType.IsClass)
-                            outValue = DynamicCalls.GetMethodInvoker(deserializeMethod).Invoke(null, new object[] { result.ResultType, dictParameter[kv.Key].ToString(), null });
-                        else
-                            outValue = Convert.ChangeType(dictParameter[kv.Key], result.ResultType);
+                        object outValue = DynamicCalls.GetMethodInvoker(deserializeMethod)
+                                .Invoke(null, new object[] { result.ResultType, dictParameter[kv.Key].ToString(), null });
 
                         parameters[result.Index] = outValue;
                     }
@@ -191,6 +192,11 @@ namespace MySoft.IoC
             }
         }
 
+        /// <summary>
+        /// 获取基类型
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         private static Type GetPrimitiveType(Type type)
         {
             if (type.IsByRef) type = type.GetElementType();
@@ -205,7 +211,14 @@ namespace MySoft.IoC
     /// </summary>
     internal class InvokeResult
     {
+        /// <summary>
+        /// 索引值
+        /// </summary>
         public int Index { get; set; }
+
+        /// <summary>
+        /// 返回类型
+        /// </summary>
         public Type ResultType { get; set; }
     }
 }

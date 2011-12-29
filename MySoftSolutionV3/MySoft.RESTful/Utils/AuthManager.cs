@@ -182,12 +182,12 @@ namespace MySoft.RESTful.Utils
             catch (AuthenticationException ex)
             {
                 result.Code = ex.Code;
-                result.Message = RESTfulHelper.GetErrorMessage(ex, null);
+                result.Message = ex.Message;
             }
             catch (Exception ex)
             {
                 result.Code = (int)RESTfulCode.AUTH_ERROR;
-                result.Message = RESTfulHelper.GetErrorMessage(ex, null);
+                result.Message = ex.Message;
             }
 
             return result;

@@ -310,23 +310,10 @@ namespace MySoft.RESTful
                     //设置返回成功
                     response.StatusCode = HttpStatusCode.OK;
                 }
-                catch (RESTfulException e)
-                {
-                    result = new RESTfulResult { Code = (int)e.Code, Message = RESTfulHelper.GetErrorMessage(e, parameter) };
-                    //result = new WebFaultException<RESTfulResult>(ret, HttpStatusCode.BadRequest);
-                    response.StatusCode = HttpStatusCode.BadRequest;
-
-                    //记录错误日志
-                    SimpleLog.Instance.WriteLogForDir("RESTfulError", e);
-                }
                 catch (Exception e)
                 {
-                    result = new RESTfulResult { Code = (int)RESTfulCode.BUSINESS_ERROR, Message = RESTfulHelper.GetErrorMessage(e, parameter) };
-                    //result = new WebFaultException<RESTfulResult>(ret, HttpStatusCode.ExpectationFailed);
-                    response.StatusCode = HttpStatusCode.ExpectationFailed;
-
                     //记录错误日志
-                    SimpleLog.Instance.WriteLogForDir("BusinessError", e);
+                    result = GetResultWriteErrorLog(parameter, e);
                 }
                 finally
                 {
@@ -340,26 +327,47 @@ namespace MySoft.RESTful
             }
 
             ISerializer serializer = SerializerFactory.Create(format);
-            try
+            if (result is RESTfulResult)
             {
-                if (result is RESTfulResult)
-                {
-                    var ret = result as RESTfulResult;
-                    ret.Code = Convert.ToInt32(string.Format("{0}{1}", (int)response.StatusCode, ret.Code.ToString("00")));
-                }
-
-                return serializer.Serialize(result, format == ParameterFormat.Jsonp);
-            }
-            catch (Exception e)
-            {
-                response.StatusCode = HttpStatusCode.BadRequest;
-
-                //如果系列化失败
-                var ret = new RESTfulResult { Code = (int)RESTfulCode.BUSINESS_ERROR, Message = RESTfulHelper.GetErrorMessage(e, parameter) };
+                var ret = result as RESTfulResult;
                 ret.Code = Convert.ToInt32(string.Format("{0}{1}", (int)response.StatusCode, ret.Code.ToString("00")));
-
-                return serializer.Serialize(ret, format == ParameterFormat.Jsonp);
             }
+
+            return serializer.Serialize(result, format == ParameterFormat.Jsonp);
+        }
+
+        /// <summary>
+        /// 写错误日志
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <param name="exception"></param>
+        private RESTfulResult GetResultWriteErrorLog(string parameter, Exception exception)
+        {
+            var response = WebOperationContext.Current.OutgoingResponse;
+            int code = (int)RESTfulCode.BUSINESS_ERROR;
+            if (exception is BusinessException)
+            {
+                code = (exception as BusinessException).Code;
+                response.StatusCode = HttpStatusCode.ExpectationFailed;
+            }
+            else if (exception is RESTfulException)
+            {
+                code = (int)(exception as RESTfulException).Code;
+                response.StatusCode = HttpStatusCode.BadRequest;
+            }
+            else
+            {
+                response.StatusCode = HttpStatusCode.ExpectationFailed;
+            }
+
+            //重新定义一个异常
+            var error = new Exception(string.Format("{0} - {1}", code, exception.Message), exception);
+
+            //记录错误日志
+            SimpleLog.Instance.WriteLog(error);
+
+            //返回结果
+            return new RESTfulResult { Code = code, Message = exception.Message };
         }
     }
 }
