@@ -29,13 +29,13 @@ namespace MySoft.PlatformService
                 }
 
                 string serviceName = service.GetType().FullName;
-                SimpleLog.Instance.WriteLog(string.Format("正在启动服务{0}......", serviceName));
+                SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("正在启动服务{0}......", serviceName));
                 service.Start();
-                SimpleLog.Instance.WriteLog(string.Format("服务{0}启动成功！", serviceName));
+                SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("服务{0}启动成功！", serviceName));
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLog(ex);
+                SimpleLog.Instance.WriteLogForDir("ServiceRun", ex);
                 throw ex;
             }
 
@@ -52,13 +52,13 @@ namespace MySoft.PlatformService
                 }
 
                 string serviceName = service.GetType().FullName;
-                SimpleLog.Instance.WriteLog(string.Format("正在停止服务{0}......", serviceName));
+                SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("正在停止服务{0}......", serviceName));
                 service.Stop();
-                SimpleLog.Instance.WriteLog(string.Format("服务{0}停止成功！", serviceName));
+                SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("服务{0}停止成功！", serviceName));
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLog(ex);
+                SimpleLog.Instance.WriteLogForDir("ServiceRun", ex);
                 throw ex;
             }
 

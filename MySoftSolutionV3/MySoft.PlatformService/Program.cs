@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ServiceProcess;
+using System.Threading;
+using MySoft.Logger;
 
 namespace MySoft.PlatformService
 {
@@ -8,6 +10,7 @@ namespace MySoft.PlatformService
         [STAThread]
         static void Main(string[] args)
         {
+            Thread.GetDomain().UnhandledException += new UnhandledExceptionEventHandler(Program_UnhandledException);
             InstallerServer server = new InstallerServer();
             string optionalArgs = string.Empty;
 
@@ -125,6 +128,12 @@ namespace MySoft.PlatformService
             {
                 Console.BackgroundColor = color;
             }
+        }
+
+        static void Program_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var exception = e.ExceptionObject as Exception;
+            SimpleLog.Instance.WriteLogForDir("ServiceRun", exception);
         }
 
         static void PrintHelp()

@@ -84,6 +84,9 @@ namespace MySoft.PlatformService.IoC
             else
             {
                 server.Start();
+
+                //启动日志
+                //SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("Service has running, host => {0}", server.ServerUrl));
             }
         }
 
@@ -97,6 +100,9 @@ namespace MySoft.PlatformService.IoC
             else
             {
                 server.Stop();
+
+                //启动日志
+                //SimpleLog.Instance.WriteLogForDir("ServiceRun", "Service has stopped.");
             }
         }
 
