@@ -116,5 +116,19 @@ namespace MySoft.Core.UnitTest
 
             SimpleLog.Instance.WriteLog(ex);
         }
+
+        public void Register(string name, string email, int age)
+        {
+            name = "mm";
+            email = "my181@1.com";
+            age = 20;
+
+            var v = ValidateHelper.Begin()
+                           .NotNull(name)
+                           .NotNull(email)
+                           .InRange(age, 18, 120)
+                           .IsEmail(email);
+            bool a = v.IsValid;
+        }
     }
 }

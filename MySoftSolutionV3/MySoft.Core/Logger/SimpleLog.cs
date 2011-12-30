@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using MySoft.Mail;
 using System.Threading;
+using System.Linq;
 
 namespace MySoft.Logger
 {
@@ -82,14 +83,31 @@ namespace MySoft.Logger
         {
             string filePath = Path.Combine(Path.Combine(basedir, "ErrorLogs"), dir);
             filePath = Path.Combine(filePath, DateTime.Now.ToString("yyyy-MM-dd"));
-            if (GetApplicationName(ex) != null)
-            {
-                filePath = Path.Combine(filePath, GetApplicationName(ex));
-            }
-            filePath = Path.Combine(filePath, string.Format("{0}.log",
-                (GetServiceName(ex) == null ? ex.GetType().Name : GetServiceName(ex))));
+
+            var appName = GetApplicationName(ex);
+            if (!string.IsNullOrEmpty(appName)) filePath = Path.Combine(filePath, appName);
+
+            filePath = Path.Combine(filePath, string.Format("{0}.log", GetServiceFile(ex)));
 
             WriteFileLog(filePath, ex);
+        }
+
+        /// <summary>
+        /// 获取服务路径
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        private string GetServiceFile(Exception ex)
+        {
+            var serviceName = GetServiceName(ex);
+            var errorName = ErrorHelper.GetInnerException(ex).GetType().Name;
+
+            string[] files = new string[] { serviceName, errorName };
+            //去除为空或null的项
+            files = files.Where(p => !string.IsNullOrEmpty(p)).ToArray();
+            string fileName = string.Join("_", files);
+
+            return fileName.Replace(" ", "");
         }
 
         /// <summary>
@@ -255,10 +273,33 @@ namespace MySoft.Logger
             }
 
             string title = string.Format("({2})【{3}】 - 异常邮件由【{0}({1})】发出", DnsHelper.GetHostName(), DnsHelper.GetIPAddress(),
-                (GetServiceName(ex) == null ? ex.GetType().Name : GetServiceName(ex)),
-                (GetApplicationName(ex) == null ? "未知应用程序" : GetApplicationName(ex)));
+                GetServiceTitle(ex), GetAppTitle(ex));
 
             SmtpMail.Instance.SendExceptionAsync(ex, title, to);
+        }
+
+        /// <summary>
+        /// 获取App标题
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        private string GetAppTitle(Exception ex)
+        {
+            var appName = GetApplicationName(ex);
+            return string.IsNullOrEmpty(appName) ? "未知应用" : appName;
+        }
+
+        /// <summary>
+        /// 获取服务标题
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        private string GetServiceTitle(Exception ex)
+        {
+            var serviceName = GetServiceName(ex);
+            var errorName = ErrorHelper.GetInnerException(ex).GetType().Name;
+
+            return string.IsNullOrEmpty(serviceName) ? errorName : serviceName + " : " + errorName;
         }
 
         private string GetApplicationName(Exception ex)

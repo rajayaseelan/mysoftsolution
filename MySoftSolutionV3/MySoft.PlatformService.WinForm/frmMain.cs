@@ -41,8 +41,35 @@ namespace MySoft.PlatformService.WinForm
                         });
 
                     listConnect.Invalidate();
+
+                    //发送错误邮件
+                    var socketError = (error as SocketException);
+                    string errorMessage = string.Format("{0} - {1}", socketError.ErrorCode, socketError.Message);
+                    SendErrorMail(errorMessage, socketError);
                 }
             }
+        }
+
+        /// <summary>
+        /// 发送错误邮件
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="inner"></param>
+        private void SendErrorMail(string message, Exception inner)
+        {
+            var appClient = new AppClient
+            {
+                AppName = "监控客户端",
+                HostName = DnsHelper.GetHostName(),
+                IPAddress = DnsHelper.GetIPAddress()
+            };
+            var ex = new IoCException(message, inner)
+            {
+                ApplicationName = appClient.AppName,
+                ServiceName = "Shumi.Framework.Monitor",
+                ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", appClient.AppName, appClient.HostName, appClient.IPAddress)
+            };
+            SimpleLog.Instance.WriteLogWithSendMail(ex, emails);
         }
 
         private IStatusService service;
@@ -255,6 +282,7 @@ namespace MySoft.PlatformService.WinForm
             rich.AppendText(caller.Parameters);
         }
 
+        private string[] emails;
         private void frmMain_Load(object sender, EventArgs e)
         {
             listAssembly.SelectedIndexChanged += new EventHandler(listAssembly_SelectedIndexChanged);
@@ -273,6 +301,11 @@ namespace MySoft.PlatformService.WinForm
 
             comboBox1.DisplayMember = "Key";
             comboBox1.DataSource = CastleFactory.Create().GetRemoteNodes();
+
+            //解析邮件地址
+            var receivedEmail = ConfigurationManager.AppSettings["ReceivedEmail"];
+            if (string.IsNullOrEmpty(receivedEmail)) receivedEmail = "maoyong@fund123.cn";
+            emails = receivedEmail.Split('|', ',', ';');
 
             InitBrowser();
 
