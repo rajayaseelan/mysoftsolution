@@ -9,7 +9,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务调用者
     /// </summary>
-    public class ServiceCaller
+    public class ServiceCaller : IDisposable
     {
         private IServiceContainer container;
         private IDictionary<string, Type> callbackTypes;
@@ -84,5 +84,18 @@ namespace MySoft.IoC
 
             return resMsg;
         }
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            this.container.Dispose();
+            this.callbackTypes = null;
+        }
+
+        #endregion
     }
 }

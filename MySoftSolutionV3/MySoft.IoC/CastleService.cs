@@ -121,7 +121,7 @@ namespace MySoft.IoC
         /// </summary>1
         public void Stop()
         {
-            server.Stop();
+            this.Dispose();
         }
 
         /// <summary>
@@ -129,12 +129,14 @@ namespace MySoft.IoC
         /// </summary>
         public override void Dispose()
         {
+            caller.Dispose();
+
             server.Stop();
             server.Clients.ClearAll();
 
+            container = null;
             server = null;
             statuslist = null;
-            base.Dispose();
 
             GC.SuppressFinalize(this);
         }

@@ -226,5 +226,14 @@ namespace MySoft.PlatformService.WinForm
         {
             this.Close();
         }
+
+        private void frmInvoke_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            this.node = null;
+            this.parameters = null;
+            this.txtParameters = null;
+
+            this.Dispose();
+        }
     }
 }

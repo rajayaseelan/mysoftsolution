@@ -99,10 +99,7 @@ namespace MySoft.IoC
         /// <summary>
         /// 销毁资源
         /// </summary>
-        public virtual void Dispose()
-        {
-            container.Dispose();
-        }
+        public abstract void Dispose();
 
         #endregion
 
