@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MySoft.Data
 {
@@ -15,6 +16,23 @@ namespace MySoft.Data
     }
 
     /// <summary>
+    /// 无效的对象
+    /// </summary>
+    [Serializable]
+    public class InvalidValue
+    {
+        /// <summary>
+        /// 字段
+        /// </summary>
+        public Field Field { get; set; }
+
+        /// <summary>
+        /// 消息
+        /// </summary>
+        public string Message { get; set; }
+    }
+
+    /// <summary>
     /// 验证返回信息
     /// </summary>
     public class ValidateResult
@@ -24,25 +42,25 @@ namespace MySoft.Data
         /// </summary>
         public static readonly ValidateResult Default = new ValidateResult();
 
-        private IList<string> messages;
+        private IList<InvalidValue> invalidValues;
 
         /// <summary>
         /// 实例化ValidateResult
         /// </summary>
         private ValidateResult()
         {
-            this.messages = new List<string>();
+            this.invalidValues = new List<InvalidValue>();
         }
 
         /// <summary>
         /// 实例化ValidateResult
         /// </summary>
-        /// <param name="messages"></param>
-        public ValidateResult(IList<string> messages)
+        /// <param name="invalidValues"></param>
+        public ValidateResult(IList<InvalidValue> invalidValues)
             : this()
         {
-            if (messages != null)
-                this.messages = messages;
+            if (invalidValues != null)
+                this.invalidValues = invalidValues;
         }
 
         /// <summary>
@@ -52,22 +70,22 @@ namespace MySoft.Data
         {
             get
             {
-                return messages.Count == 0;
+                return invalidValues.Count == 0;
             }
         }
 
         /// <summary>
         /// 消息列表
         /// </summary>
-        public IList<string> Messages
+        public IList<InvalidValue> InvalidValues
         {
             get
             {
-                return messages;
+                return invalidValues;
             }
             private set
             {
-                messages = value;
+                invalidValues = value;
             }
         }
     }

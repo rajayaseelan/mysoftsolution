@@ -151,10 +151,9 @@ namespace MySoft.Data
             if (!result.IsSuccess)
             {
                 List<string> msgs = new List<string>();
-                foreach (string msg in result.Messages)
+                foreach (var msg in result.InvalidValues)
                 {
-                    if (string.IsNullOrEmpty(msg)) continue;
-                    msgs.Add(msg);
+                    msgs.Add(msg.Field.PropertyName + " : " + msg.Message);
                 }
                 string message = string.Join("\r\n", msgs.ToArray());
                 throw new DataException(message);

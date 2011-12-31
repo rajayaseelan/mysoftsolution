@@ -19,7 +19,7 @@ namespace MySoft.Data
         public Validator(T entity)
         {
             this.entity = entity;
-            this.messages = new List<string>();
+            this.invalidValue = new List<InvalidValue>();
 
             //获取需要处理的字段列表
             if (entity.As<IEntityBase>().GetObjectState() == EntityState.Insert)
@@ -30,7 +30,7 @@ namespace MySoft.Data
                     .ConvertAll<Field>(fv => fv.Field);
         }
 
-        private IList<string> messages;
+        private IList<InvalidValue> invalidValue;
 
         /// <summary>
         /// 验证的结果
@@ -39,23 +39,8 @@ namespace MySoft.Data
         {
             get
             {
-                return new ValidateResult(messages);
+                return new ValidateResult(invalidValue);
             }
-        }
-
-        /// <summary>
-        /// 验证实体属性的有效性并返回错误列表(验证所有的列)
-        /// </summary>
-        /// <param name="predicate"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public Validator<T> Check(Predicate<T> predicate, string message)
-        {
-            if (predicate(this.entity))
-            {
-                this.messages.Add(message);
-            }
-            return this;
         }
 
         /// <summary>
@@ -71,7 +56,11 @@ namespace MySoft.Data
             {
                 if (predicate(this.entity))
                 {
-                    this.messages.Add(message);
+                    this.invalidValue.Add(new InvalidValue
+                    {
+                        Field = field,
+                        Message = message
+                    });
                 }
             }
             return this;
