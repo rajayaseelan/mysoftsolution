@@ -102,7 +102,7 @@ namespace MySoft.Logger
             var serviceName = GetServiceName(ex);
             var errorName = ErrorHelper.GetInnerException(ex).GetType().Name;
 
-            string[] files = new string[] { serviceName, errorName };
+            string[] files = new string[] { errorName, serviceName };
             //去除为空或null的项
             files = files.Where(p => !string.IsNullOrEmpty(p)).ToArray();
             string fileName = string.Join("_", files);
@@ -272,8 +272,8 @@ namespace MySoft.Logger
                 throw new ArgumentException("请传入收件人地址信息参数！");
             }
 
-            string title = string.Format("({2})【{3}】 - 异常邮件由【{0}({1})】发出", DnsHelper.GetHostName(), DnsHelper.GetIPAddress(),
-                GetServiceTitle(ex), GetAppTitle(ex));
+            string title = string.Format("【{2}】({3}) - 异常邮件由【{0}({1})】发出", DnsHelper.GetHostName(), DnsHelper.GetIPAddress(),
+                                        GetAppTitle(ex), GetServiceTitle(ex));
 
             SmtpMail.Instance.SendExceptionAsync(ex, title, to);
         }
@@ -299,7 +299,7 @@ namespace MySoft.Logger
             var serviceName = GetServiceName(ex);
             var errorName = ErrorHelper.GetInnerException(ex).GetType().Name;
 
-            return string.IsNullOrEmpty(serviceName) ? errorName : serviceName + " : " + errorName;
+            return string.IsNullOrEmpty(serviceName) ? errorName : errorName + " : " + serviceName;
         }
 
         private string GetApplicationName(Exception ex)
