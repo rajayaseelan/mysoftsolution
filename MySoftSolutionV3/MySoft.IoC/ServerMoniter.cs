@@ -46,6 +46,9 @@ namespace MySoft.IoC
         {
             while (true)
             {
+                if (statuslist == null)
+                    break;
+
                 //响应定时信息
                 if (statuslist.Count > 0)
                 {
