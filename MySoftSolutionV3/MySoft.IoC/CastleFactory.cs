@@ -128,6 +128,25 @@ namespace MySoft.IoC
         #region Get Service
 
         /// <summary>
+        /// 获取默认的节点
+        /// </summary>
+        /// <returns></returns>
+        public RemoteNode GetDefaultNode()
+        {
+            return GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, config.Default, true) == 0);
+        }
+
+        /// <summary>
+        /// 通过nodeKey查找节点
+        /// </summary>
+        /// <param name="nodeKey"></param>
+        /// <returns></returns>
+        public RemoteNode GetRemoteNode(string nodeKey)
+        {
+            return GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+        }
+
+        /// <summary>
         /// 获取所有远程节点
         /// </summary>
         /// <returns></returns>
