@@ -43,12 +43,4 @@ namespace MySoft.IoC
         /// <returns>The result.</returns>
         ResponseMessage CallService(RequestMessage reqMsg);
     }
-
-    /// <summary>
-    /// 实现自启动处理
-    /// </summary>
-    public interface IStartable : Castle.Core.IStartable
-    {
-
-    }
 }
