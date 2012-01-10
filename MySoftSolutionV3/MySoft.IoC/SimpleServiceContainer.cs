@@ -176,16 +176,6 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// ½âÎö·þÎñ
-        /// </summary>
-        /// <typeparam name="ServiceType"></typeparam>
-        /// <returns></returns>
-        public ServiceType Resolve<ServiceType>()
-        {
-            return container.Resolve<ServiceType>();
-        }
-
-        /// <summary>
         /// Calls the service.
         /// </summary>
         /// <param name="reqMsg"></param>

@@ -128,16 +128,6 @@ namespace MySoft.IoC
         #region Get Service
 
         /// <summary>
-        /// 解析接口类型
-        /// </summary>
-        /// <typeparam name="IServiceInterfaceType"></typeparam>
-        /// <returns></returns>
-        public IServiceInterfaceType Resolve<IServiceInterfaceType>()
-        {
-            return container.Resolve<IServiceInterfaceType>();
-        }
-
-        /// <summary>
         /// 获取默认的节点
         /// </summary>
         /// <returns></returns>
