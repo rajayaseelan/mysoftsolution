@@ -145,7 +145,6 @@
     <Compile Include="Callback\OperationContext.cs" />
     <Compile Include="ServiceRequestPool.cs" />
     <Compile Include="ServerMoniter.cs" />
-    <Compile Include="ServiceInterpreter.cs" />
     <Compile Include="Services\BigInteger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceConfig.cs" />

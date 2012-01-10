@@ -11,6 +11,7 @@ using Castle.Windsor;
 using MySoft.IoC;
 using MySoft.Logger;
 using MySoft.RESTful.Business.Pool;
+using Castle.Windsor.Configuration.Interpreters;
 
 namespace MySoft.RESTful.Business.Register
 {
@@ -57,7 +58,7 @@ namespace MySoft.RESTful.Business.Register
 
             var container = new WindsorContainer();
             if (ConfigurationManager.GetSection("mysoft.framework/restful") != null)
-                container = new WindsorContainer(new ServiceInterpreter(new ConfigResource("mysoft.framework/restful")));
+                container = new WindsorContainer(new XmlInterpreter(new ConfigResource("mysoft.framework/restful")));
 
             //获取本地的服务
             foreach (var serviceType in GetInterfaces<PublishKindAttribute>(container))

@@ -128,6 +128,16 @@ namespace MySoft.IoC
         #region Get Service
 
         /// <summary>
+        /// 解析接口类型
+        /// </summary>
+        /// <typeparam name="IServiceInterfaceType"></typeparam>
+        /// <returns></returns>
+        public IServiceInterfaceType Resolve<IServiceInterfaceType>()
+        {
+            return container.Resolve<IServiceInterfaceType>();
+        }
+
+        /// <summary>
         /// 获取默认的节点
         /// </summary>
         /// <returns></returns>
@@ -258,10 +268,10 @@ namespace MySoft.IoC
         /// 获取回调发布服务
         /// </summary>
         /// <typeparam name="IPublishService"></typeparam>
-        /// <param name="callback"></param>
         /// <param name="nodeKey"></param>
+        /// <param name="callback"></param>
         /// <returns></returns>
-        public IPublishService GetChannel<IPublishService>(object callback, string nodeKey)
+        public IPublishService GetChannel<IPublishService>(string nodeKey, object callback)
         {
             nodeKey = GetNodeKey(nodeKey);
             var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
@@ -269,17 +279,17 @@ namespace MySoft.IoC
             {
                 throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
             }
-            return GetChannel<IPublishService>(callback, node);
+            return GetChannel<IPublishService>(node, callback);
         }
 
         /// <summary>
         /// 获取回调发布服务
         /// </summary>
         /// <typeparam name="IPublishService"></typeparam>
-        /// <param name="callback"></param>
         /// <param name="node"></param>
+        /// <param name="callback"></param>
         /// <returns></returns>
-        public IPublishService GetChannel<IPublishService>(object callback, RemoteNode node)
+        public IPublishService GetChannel<IPublishService>(RemoteNode node, object callback)
         {
             if (callback == null) throw new IoCException("Callback cannot be the null!");
             var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(typeof(IPublishService));

@@ -13,6 +13,7 @@ using Castle.Windsor;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using Castle.Windsor.Configuration.Interpreters;
 
 namespace MySoft.IoC
 {
@@ -30,7 +31,7 @@ namespace MySoft.IoC
             if (type == CastleFactoryType.Remote || ConfigurationManager.GetSection("mysoft.framework/castle") == null)
                 container = new WindsorContainer();
             else
-                container = new WindsorContainer(new ServiceInterpreter(new ConfigResource("mysoft.framework/castle")));
+                container = new WindsorContainer(new XmlInterpreter(new ConfigResource("mysoft.framework/castle")));
 
             //加载自启动注入
             container.AddFacility("startable", new StartableFacility());
@@ -113,7 +114,7 @@ namespace MySoft.IoC
         /// <param name="serviceType">Type of the service.</param>
         public void RegisterComponent(string key, Type classType, Type serviceType)
         {
-            container.Register(Component.For(classType).Named(key).ImplementedBy(serviceType).LifeStyle.Transient);
+            container.Register(Component.For(classType).Named(key).ImplementedBy(serviceType).LifeStyle.Singleton);
         }
 
         /// <summary>
@@ -123,7 +124,7 @@ namespace MySoft.IoC
         /// <param name="instance">Type of the class.</param>
         public void RegisterComponent(string key, object instance)
         {
-            container.Register(Component.For(instance.GetType()).Named(key).Instance(instance).LifeStyle.Transient);
+            container.Register(Component.For(instance.GetType()).Named(key).Instance(instance).LifeStyle.Singleton);
         }
 
         /// <summary>
@@ -172,6 +173,16 @@ namespace MySoft.IoC
         public object this[Type serviceType]
         {
             get { return container.Resolve(serviceType); }
+        }
+
+        /// <summary>
+        /// 解析服务
+        /// </summary>
+        /// <typeparam name="ServiceType"></typeparam>
+        /// <returns></returns>
+        public ServiceType Resolve<ServiceType>()
+        {
+            return container.Resolve<ServiceType>();
         }
 
         /// <summary>

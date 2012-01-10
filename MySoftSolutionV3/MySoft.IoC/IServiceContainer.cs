@@ -49,6 +49,12 @@ namespace MySoft.IoC
         /// <value></value>
         object this[Type serviceType] { get; }
         /// <summary>
+        /// 解析服务
+        /// </summary>
+        /// <typeparam name="ServiceType"></typeparam>
+        /// <returns></returns>
+        ServiceType Resolve<ServiceType>();
+        /// <summary>
         /// 获取约束的接口
         /// </summary>
         /// <returns></returns>

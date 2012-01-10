@@ -1,6 +1,7 @@
 using System.Configuration;
 using Castle.Core.Resource;
 using Castle.Windsor;
+using Castle.Windsor.Configuration.Interpreters;
 
 namespace MySoft.IoC.Mvp
 {
@@ -13,7 +14,7 @@ namespace MySoft.IoC.Mvp
         private PresenterFactory()
         {
             if (ConfigurationManager.GetSection("mysoft.framework/mvp") != null)
-                this.container = new WindsorContainer(new ServiceInterpreter(new ConfigResource("mysoft.framework/mvp")));
+                this.container = new WindsorContainer(new XmlInterpreter(new ConfigResource("mysoft.framework/mvp")));
             else
                 this.container = new WindsorContainer();
         }

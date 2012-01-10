@@ -24,7 +24,8 @@ namespace MySoft.PlatformService.WinForm
         static void Program_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var exception = e.ExceptionObject as Exception;
-            SimpleLog.Instance.WriteLog(exception);
+            //SimpleLog.Instance.WriteLog(exception);
+            SimpleLog.Instance.WriteLogWithSendMail(exception, "my181@163.com");
         }
     }
 }
