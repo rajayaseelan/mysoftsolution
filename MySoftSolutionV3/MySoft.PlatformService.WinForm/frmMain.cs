@@ -314,20 +314,6 @@ namespace MySoft.PlatformService.WinForm
                 defaultNode = comboBox1.Items[0] as RemoteNode;
                 InitService();
             }
-
-            //定时清理
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                while (true)
-                {
-                    GC.Collect();
-                    Thread.Sleep(100);
-                    GC.Collect(2);
-
-                    //30秒清理一次资源
-                    Thread.Sleep(TimeSpan.FromSeconds(30));
-                }
-            });
         }
 
         void Items_OnItemInserted(int index)

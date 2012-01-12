@@ -20,7 +20,6 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="container"></param>
         /// <param name="callbackTypes"></param>
-        /// <param name="logTime"></param>
         public ServiceCaller(IServiceContainer container, IDictionary<string, Type> callbackTypes)
         {
             this.container = container;
@@ -32,14 +31,15 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="client"></param>
         /// <param name="reqMsg"></param>
+        /// <param name="caller"></param>
         /// <param name="elapsedMilliseconds"></param>
         /// <returns></returns>
-        public ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg, out long elapsedMilliseconds)
+        public ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg, AppCaller caller, out long elapsedMilliseconds)
         {
             //实例化当前上下文
             Type callbackType = null;
             if (callbackTypes.ContainsKey(reqMsg.ServiceName)) callbackType = callbackTypes[reqMsg.ServiceName];
-            OperationContext.Current = new OperationContext(client, callbackType);
+            OperationContext.Current = new OperationContext(client, callbackType) { Caller = caller };
 
             Stopwatch watch = Stopwatch.StartNew();
 

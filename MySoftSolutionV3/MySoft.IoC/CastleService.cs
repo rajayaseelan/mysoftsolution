@@ -292,25 +292,29 @@ namespace MySoft.IoC
                 long elapsedMilliseconds;
 
                 //调用请求方法
-                var resMsg = caller.CallMethod(client, reqMsg, out elapsedMilliseconds);
+                var resMsg = caller.CallMethod(client, reqMsg, null, out elapsedMilliseconds);
 
                 //发送数据到服务端
                 client.SendMessage(new ScsResultMessage(resMsg, reqMsg.TransactionId.ToString()));
             }
             else
             {
+                //服务参数信息
                 args = new CallEventArgs();
+                args.CallTime = DateTime.Now;
                 args.Caller.AppName = reqMsg.AppName;
                 args.Caller.IPAddress = reqMsg.IPAddress;
                 args.Caller.HostName = reqMsg.HostName;
-                args.CallTime = DateTime.Now;
+                args.Caller.ServiceName = reqMsg.ServiceName;
+                args.Caller.MethodName = reqMsg.MethodName;
+                args.Caller.Parameters = reqMsg.Parameters.ToString();
 
                 //获取或创建一个对象
                 TimeStatus status = statuslist.GetOrCreate(DateTime.Now);
 
                 //调用请求方法
                 long elapsedMilliseconds;
-                var resMsg = caller.CallMethod(client, reqMsg, out elapsedMilliseconds);
+                var resMsg = caller.CallMethod(client, reqMsg, args.Caller, out elapsedMilliseconds);
 
                 //处理时间
                 status.ElapsedTime += elapsedMilliseconds;
@@ -346,11 +350,6 @@ namespace MySoft.IoC
 
                 //计算流量
                 status.DataFlow += sendMessage.DataLength;
-
-                //服务参数信息
-                args.Caller.ServiceName = reqMsg.ServiceName;
-                args.Caller.MethodName = reqMsg.MethodName;
-                args.Caller.Parameters = reqMsg.Parameters.ToString();
             }
         }
 

@@ -4,6 +4,7 @@ using System.Runtime.Remoting.Messaging;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Server;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {
@@ -21,7 +22,7 @@ namespace MySoft.IoC
             {
                 return CallContext.HostContext as OperationContext;
             }
-            set
+            internal set
             {
                 CallContext.HostContext = value;
             }
@@ -32,6 +33,15 @@ namespace MySoft.IoC
         /// </summary>
         private Type callbackType;
         private IScsServerClient client;
+        private AppCaller caller;
+        /// <summary>
+        /// 调用者
+        /// </summary>
+        public AppCaller Caller
+        {
+            get { return caller; }
+            internal set { caller = value; }
+        }
 
         /// <summary>
         /// 远程节点

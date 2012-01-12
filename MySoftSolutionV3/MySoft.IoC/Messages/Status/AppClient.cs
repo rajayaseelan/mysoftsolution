@@ -11,16 +11,16 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// 应用名称
         /// </summary>
-        public string AppName { get; set; }
+        public string AppName { get; internal set; }
 
         /// <summary>
         /// IP地址
         /// </summary>
-        public string IPAddress { get; set; }
+        public string IPAddress { get; internal set; }
 
         /// <summary>
         /// 客户端名称
         /// </summary>
-        public string HostName { get; set; }
+        public string HostName { get; internal set; }
     }
 }
