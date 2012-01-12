@@ -10,6 +10,12 @@ namespace MySoft.PlatformService.UserService
 {
     public class UserService : IUserService
     {
+        private DateTime startTime;
+        public UserService()
+        {
+            this.startTime = DateTime.Now;
+        }
+
         public string GetUser(UserInfo user)
         {
             return user.Name;
@@ -27,25 +33,27 @@ namespace MySoft.PlatformService.UserService
 
         public UserInfo GetUserInfo(string name, ref int length, out UserInfo user)
         {
-            var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
-            if (count % 5 == 0)
-            {
-                throw new UserException("Count: " + count);
-            }
-            else if (count % 6 == 0)
-            {
-                Thread.Sleep(new Random().Next(1, 10) * 1000);
-            }
+            //var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
+            //if (count % 5 == 0)
+            //{
+            //    throw new UserException("Count: " + count);
+            //}
+            //else if (count % 6 == 0)
+            //{
+            //    Thread.Sleep(new Random().Next(1, 10) * 1000);
+            //}
 
             //var a = SerializationManager.DeserializeJson(typeof(Sex), "1");
 
             user = new UserInfo()
-           {
-               Name = name,
-               Description = string.Format("您的用户名为：{0}", name)
-           };
+            {
+                Name = name,
+                Description = string.Format("您的用户名为：{0}", name)
+            };
 
             length = user.Description.Length;
+
+            Thread.Sleep(2000);
 
             return user;
         }

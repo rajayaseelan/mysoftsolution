@@ -128,18 +128,25 @@ namespace MySoft.PlatformService.Client
             //    }
             //}
 
-            for (int i = 0; i < 10; i++)
+
+            ManualResetEvent are = new ManualResetEvent(false);
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
-                thread.Start();
+                thread.Start(are);
             }
+
+            are.Set();
 
             //DoWork1();
             Console.ReadKey();
         }
 
-        static void DoWork1()
+        static void DoWork1(object state)
         {
+            ManualResetEvent are = state as ManualResetEvent;
+            are.WaitOne();
+
             while (true)
             {
                 try
@@ -147,10 +154,15 @@ namespace MySoft.PlatformService.Client
                     //var users = CastleFactory.Create().DiscoverChannel<IUserService>().GetUsers();
                     //Console.WriteLine(users[0].Description);
 
+                    Stopwatch watch = Stopwatch.StartNew();
+
                     int length = 1;
                     UserInfo user;
                     CastleFactory.Create().GetChannel<IUserService>().GetUserInfo("maoyong", ref length, out user);
-                    Console.WriteLine(user.Description);
+
+                    watch.Stop();
+
+                    Console.WriteLine(user.Description + " timeout: " + watch.ElapsedMilliseconds + " ms.");
                 }
                 catch (Exception ex)
                 {

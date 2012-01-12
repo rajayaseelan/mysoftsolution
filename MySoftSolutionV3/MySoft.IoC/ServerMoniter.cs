@@ -137,7 +137,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<ServiceInfo> GetServiceList()
         {
-            if (services == null)
+            if (services == null || services.Count == 0)
             {
                 //获取拥有ServiceContract约束的服务
                 var types = container.GetInterfaces<ServiceContractAttribute>();

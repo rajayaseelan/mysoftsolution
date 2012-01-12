@@ -117,6 +117,14 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 服务数
+        /// </summary>
+        public int ServiceCount
+        {
+            get { return container.GetInterfaces<ServiceContractAttribute>().Count(); }
+        }
+
+        /// <summary>
         /// 停止服务
         /// </summary>1
         public void Stop()
@@ -281,9 +289,10 @@ namespace MySoft.IoC
             if (!IsServiceCounter(reqMsg))
             {
                 args = null;
+                long elapsedMilliseconds;
 
                 //调用请求方法
-                var resMsg = caller.CallMethod(client, reqMsg);
+                var resMsg = caller.CallMethod(client, reqMsg, out elapsedMilliseconds);
 
                 //发送数据到服务端
                 client.SendMessage(new ScsResultMessage(resMsg, reqMsg.TransactionId.ToString()));
@@ -296,19 +305,15 @@ namespace MySoft.IoC
                 args.Caller.HostName = reqMsg.HostName;
                 args.CallTime = DateTime.Now;
 
-                //开始计时
-                Stopwatch watch = Stopwatch.StartNew();
-
                 //获取或创建一个对象
                 TimeStatus status = statuslist.GetOrCreate(DateTime.Now);
 
                 //调用请求方法
-                var resMsg = caller.CallMethod(client, reqMsg);
-
-                watch.Stop();
+                long elapsedMilliseconds;
+                var resMsg = caller.CallMethod(client, reqMsg, out elapsedMilliseconds);
 
                 //处理时间
-                status.ElapsedTime += watch.ElapsedMilliseconds;
+                status.ElapsedTime += elapsedMilliseconds;
 
                 //错误及成功计数
                 if (resMsg.IsError)
@@ -330,7 +335,7 @@ namespace MySoft.IoC
 
                     args.Count = resMsg.Count;
                     args.Value = resMsg.Value;
-                    args.ElapsedTime = watch.ElapsedMilliseconds;
+                    args.ElapsedTime = elapsedMilliseconds;
                 }
 
                 //实例化Message对象来进行发送

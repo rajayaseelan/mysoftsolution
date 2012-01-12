@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Threading;
 using MySoft.Communication.Scs.Communication;
 using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Messages;
@@ -37,24 +36,8 @@ namespace MySoft.IoC
             {
                 var message = new CallbackMessage { ServiceType = callType, MethodName = method.ToString(), Parameters = parameters };
 
-                Thread thread = null;
-                var caller = new AsyncMethodCaller(state =>
-                {
-                    thread = Thread.CurrentThread;
-                    client.SendMessage(new ScsCallbackMessage(message));
-                });
-
-                var ar = caller.BeginInvoke(null, iar => { }, caller);
-                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(timeout)))
-                {
-                    if (!ar.IsCompleted && thread != null)
-                        thread.Abort();
-
-                    throw new SocketException((int)SocketError.ConnectionAborted);
-                }
-
-                caller.EndInvoke(ar);
-                ar.AsyncWaitHandle.Close();
+                //发送i回调消息
+                client.SendMessage(new ScsCallbackMessage(message));
 
                 //返回null
                 return null;

@@ -27,7 +27,8 @@ namespace MySoft.PlatformService.Console
 
             //mongo.Connect();
 
-            System.Console.WriteLine("Server host -> {0}", server.ServerUrl);
+            System.Console.WriteLine("Server host -> {0}.", server.ServerUrl);
+            System.Console.WriteLine("Service count -> {0} services.", server.ServiceCount);
             System.Console.WriteLine("Press any key to exit and stop service...");
             System.Console.ReadLine();
         }

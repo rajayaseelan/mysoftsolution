@@ -53,48 +53,57 @@ namespace MySoft.IoC.Services
             }
 
             //如果能找到服务
-            if (this.services.ContainsKey(reqMsg.ServiceName))
+            if (services.ContainsKey(reqMsg.ServiceName))
             {
-                proxies = this.services[reqMsg.ServiceName];
+                proxies = services[reqMsg.ServiceName];
             }
             else
             {
+                //找到代理服务
                 lock (services)
                 {
-                    //找到代理服务
-                    foreach (var proxy in factory.Proxies)
+                    //代理数为1时，直接处理
+                    if (factory.Proxies.Count == 1)
                     {
-                        try
+                        proxies.Add(factory.Proxies[0]);
+                        services[reqMsg.ServiceName] = proxies;
+                    }
+                    else
+                    {
+                        foreach (var proxy in factory.Proxies)
                         {
-                            //自定义实现一个RemoteNode
-                            var node = new RemoteNode
+                            try
                             {
-                                IP = proxy.Node.IP,
-                                Port = proxy.Node.Port,
-                                Compress = proxy.Node.Compress,
-                                Encrypt = proxy.Node.Encrypt,
-                                Key = Guid.NewGuid().ToString(),
-                                MaxPool = 1,
-                                Timeout = 30
-                            };
+                                //自定义实现一个RemoteNode
+                                var node = new RemoteNode
+                                {
+                                    IP = proxy.Node.IP,
+                                    Port = proxy.Node.Port,
+                                    Compress = proxy.Node.Compress,
+                                    Encrypt = proxy.Node.Encrypt,
+                                    Key = Guid.NewGuid().ToString(),
+                                    MaxPool = 1,
+                                    Timeout = 30
+                                };
 
-                            var service = factory.GetChannel<IStatusService>(node);
+                                var service = factory.GetChannel<IStatusService>(node);
 
-                            //检测是否存在服务
-                            if (service.ContainsService(reqMsg.ServiceName))
-                            {
-                                proxies.Add(proxy);
+                                //检测是否存在服务
+                                if (service.ContainsService(reqMsg.ServiceName))
+                                {
+                                    proxies.Add(proxy);
+                                }
                             }
-                        }
-                        catch (WarningException ex)
-                        {
-                            throw ex;
+                            catch (WarningException ex)
+                            {
+                                throw ex;
+                            }
                         }
                     }
 
                     //缓存代理服务
                     if (proxies.Count > 0)
-                        this.services[reqMsg.ServiceName] = proxies;
+                        services[reqMsg.ServiceName] = proxies;
                     else
                         throw new WarningException(string.Format("Did not find the proxy service {0}!", reqMsg.ServiceName));
                 }

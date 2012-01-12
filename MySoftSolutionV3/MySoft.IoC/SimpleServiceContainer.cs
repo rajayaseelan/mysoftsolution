@@ -60,7 +60,7 @@ namespace MySoft.IoC
                 //判断实例是否从接口分配
                 if (instance != null && type.IsAssignableFrom(instance.GetType()))
                 {
-                    IService service = new DynamicService(this, type, instance);
+                    IService service = new DynamicService(this, type, null);
                     if (instance is IStartable)
                     {
                         RegisterComponent("Startable_" + service.ServiceName, type, instance.GetType());

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Linq;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
-using MySoft.Logger;
 using Newtonsoft.Json.Linq;
 
 namespace MySoft.IoC.Services
@@ -13,20 +12,20 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class DynamicService : BaseService
     {
-        private ILog logger;
-        private Type classType;
+        private IServiceContainer container;
         private object instance;
+        private Type classType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicService"/> class.
         /// </summary>
         /// <param name="classType">Type of the service interface.</param>
-        public DynamicService(ILog logger, Type classType, object instance)
-            : base(logger, classType.FullName)
+        public DynamicService(IServiceContainer container, Type classType, object instance)
+            : base(container, classType.FullName)
         {
-            this.logger = logger;
-            this.instance = instance;
+            this.container = container;
             this.classType = classType;
+            this.instance = instance;
         }
 
         /// <summary>
@@ -70,8 +69,12 @@ namespace MySoft.IoC.Services
             else
                 resMsg.ReturnType = method.ReturnType;
 
+            //从容器中获取对象
+            object service = instance;
+            if (service == null) service = container[classType];
+
             //返回拦截服务
-            var service = AspectManager.GetService(instance);
+            service = AspectManager.GetService(service);
 
             try
             {
