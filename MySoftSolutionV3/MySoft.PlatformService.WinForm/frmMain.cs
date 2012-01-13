@@ -324,7 +324,7 @@ namespace MySoft.PlatformService.WinForm
         void TimeoutItems_OnItemInserted(int index)
         {
             //统计
-            this.BeginInvoke(new Action(() =>
+            var ar = this.BeginInvoke(new Action(() =>
             {
                 var timeOuts = new List<CallTimeout>();
                 var totalCount = Convert.ToInt32(numericUpDown6.Value);
@@ -386,6 +386,8 @@ namespace MySoft.PlatformService.WinForm
 
                 listTotal.Invalidate();
             }));
+
+            this.EndInvoke(ar);
         }
 
         void listError_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -1051,7 +1053,7 @@ namespace MySoft.PlatformService.WinForm
 
         public void Push(ConnectInfo connectInfo)
         {
-            box1.BeginInvoke(new Action(() =>
+            var ar = box1.BeginInvoke(new Action(() =>
             {
                 if (box1.Items.Count >= rowCount)
                 {
@@ -1083,11 +1085,13 @@ namespace MySoft.PlatformService.WinForm
                     SimpleLog.Instance.WriteLogForDir("ConnectInfo", message);
                 }
             }));
+
+            box1.EndInvoke(ar);
         }
 
         public void Change(string ipAddress, int port, AppClient appClient)
         {
-            box1.BeginInvoke(new Action(() =>
+            var ar = box1.BeginInvoke(new Action(() =>
             {
                 for (int i = 0; i < box1.Items.Count; i++)
                 {
@@ -1106,11 +1110,13 @@ namespace MySoft.PlatformService.WinForm
 
                 box1.Invalidate();
             }));
+
+            box1.EndInvoke(ar);
         }
 
         public void Push(CallTimeout callTimeout)
         {
-            box2.BeginInvoke(new Action(() =>
+            var ar = box2.BeginInvoke(new Action(() =>
             {
                 if (box2.Items.Count >= rowCount)
                 {
@@ -1153,11 +1159,13 @@ namespace MySoft.PlatformService.WinForm
                         SimpleLog.Instance.WriteLogForDir("CallTimeout", message);
                 }
             }));
+
+            box2.EndInvoke(ar);
         }
 
         public void Push(CallError callError)
         {
-            box3.BeginInvoke(new Action(() =>
+            var ar = box3.BeginInvoke(new Action(() =>
             {
                 if (box3.Items.Count >= rowCount)
                 {
@@ -1185,6 +1193,8 @@ namespace MySoft.PlatformService.WinForm
                     SimpleLog.Instance.WriteLogForDir("CallError", message);
                 }
             }));
+
+            box3.EndInvoke(ar);
         }
 
         #endregion
