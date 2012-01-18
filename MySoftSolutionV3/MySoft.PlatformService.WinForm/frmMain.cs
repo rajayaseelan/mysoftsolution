@@ -219,10 +219,11 @@ namespace MySoft.PlatformService.WinForm
 
         private void listBox3_Click(object sender, EventArgs e)
         {
-            listTotal.SelectedIndex = -1;
-            listTotal.SelectedItems.Clear();
-
-            if (listTimeout.SelectedIndex < 0) richTextBox1.Text = string.Empty;
+            if (listTimeout.SelectedIndex < 0)
+            {
+                richTextBox1.Text = string.Empty;
+                return;
+            }
 
             var args = listTimeout.SelectedItem as ParseMessageEventArgs;
             var source = args.Source as CallTimeout;
@@ -233,7 +234,7 @@ namespace MySoft.PlatformService.WinForm
         {
             if (listTotal.SelectedIndex < 0) return;
 
-            listTimeout.SelectedItems.Clear();
+            listTimeout.SelectedIndex = -1;
             var args = listTotal.SelectedItem as ParseMessageEventArgs;
             var source = args.Source as TotalInfo;
             for (var i = 0; i < listTimeout.Items.Count; i++)
@@ -248,11 +249,18 @@ namespace MySoft.PlatformService.WinForm
                     listTimeout.SelectedIndex = i;
                 }
             }
+
+            listTimeout.Invalidate();
         }
 
         private void listBox2_Click(object sender, EventArgs e)
         {
-            if (listError.SelectedIndex < 0) webBrowser1.Text = string.Empty;
+            if (listError.SelectedIndex < 0)
+            {
+                try { webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty; }
+                catch { }
+                return;
+            }
 
             var args = listError.SelectedItem as ParseMessageEventArgs;
             var source = args.Source as CallError;
@@ -662,10 +670,7 @@ namespace MySoft.PlatformService.WinForm
         void messageListBox2_Click(object sender, EventArgs e)
         {
             richTextBox3.Clear();
-            if (listMethod.SelectedIndex < 0)
-            {
-                return;
-            }
+            if (listMethod.SelectedIndex < 0) return;
 
             var item = listMethod.Items[listMethod.SelectedIndex];
             var parameters = (item.Source as MethodInfo).Parameters;
