@@ -217,8 +217,11 @@ namespace MySoft.PlatformService.WinForm
             numericUpDown1.Enabled = checkBox2.Checked;
         }
 
-        private void listBox3_SelectedIndexChanged(object sender, EventArgs e)
+        private void listBox3_Click(object sender, EventArgs e)
         {
+            listTotal.SelectedIndex = -1;
+            listTotal.SelectedItems.Clear();
+
             if (listTimeout.SelectedIndex < 0) richTextBox1.Text = string.Empty;
 
             var args = listTimeout.SelectedItem as ParseMessageEventArgs;
@@ -226,26 +229,28 @@ namespace MySoft.PlatformService.WinForm
             AppendText(richTextBox1, source.Caller);
         }
 
-        private void listTotal_SelectedIndexChanged(object sender, EventArgs e)
+        private void listTotal_Click(object sender, EventArgs e)
         {
-            if (listTotal.SelectedIndex < 0) listTimeout.SelectedItems.Clear();
+            if (listTotal.SelectedIndex < 0) return;
 
-            var item = listTotal.SelectedItem as TotalInfo;
+            listTimeout.SelectedItems.Clear();
+            var args = listTotal.SelectedItem as ParseMessageEventArgs;
+            var source = args.Source as TotalInfo;
             for (var i = 0; i < listTimeout.Items.Count; i++)
             {
-                var args = listTimeout.Items[i] as ParseMessageEventArgs;
-                var caller = (args.Source as CallTimeout).Caller;
+                var item = listTimeout.Items[i] as ParseMessageEventArgs;
+                var caller = (item.Source as CallTimeout).Caller;
 
-                if (caller.AppName == item.AppName
-                    && caller.ServiceName == item.ServiceName
-                    && caller.MethodName == item.MethodName)
+                if (caller.AppName == source.AppName
+                    && caller.ServiceName == source.ServiceName
+                    && caller.MethodName == source.MethodName)
                 {
                     listTimeout.SelectedIndex = i;
                 }
             }
         }
 
-        private void listBox2_SelectedIndexChanged(object sender, EventArgs e)
+        private void listBox2_Click(object sender, EventArgs e)
         {
             if (listError.SelectedIndex < 0) webBrowser1.Text = string.Empty;
 
@@ -304,9 +309,9 @@ namespace MySoft.PlatformService.WinForm
         private string[] emails;
         private void frmMain_Load(object sender, EventArgs e)
         {
-            listAssembly.SelectedIndexChanged += new EventHandler(listAssembly_SelectedIndexChanged);
-            listService.SelectedIndexChanged += new EventHandler(messageListBox1_SelectedIndexChanged);
-            listMethod.SelectedIndexChanged += new EventHandler(messageListBox2_SelectedIndexChanged);
+            listAssembly.Click += new EventHandler(listAssembly_Click);
+            listService.Click += new EventHandler(messageListBox1_Click);
+            listMethod.Click += new EventHandler(messageListBox2_Click);
             listMethod.MouseDoubleClick += new MouseEventHandler(listMethod_MouseDoubleClick);
 
             listTimeout.MouseDoubleClick += new MouseEventHandler(listTimeout_MouseDoubleClick);
@@ -343,7 +348,7 @@ namespace MySoft.PlatformService.WinForm
         void TimeoutItems_OnItemInserted(int index)
         {
             //统计
-            var ar = listTotal.BeginInvoke(new Action(() =>
+            var ar = this.BeginInvoke(new Action(() =>
             {
                 var timeOuts = new List<CallTimeout>();
                 var totalCount = Convert.ToInt32(numericUpDown6.Value);
@@ -406,7 +411,7 @@ namespace MySoft.PlatformService.WinForm
                 listTotal.Invalidate();
             }));
 
-            listTotal.EndInvoke(ar);
+            this.EndInvoke(ar);
         }
 
         void listError_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -593,7 +598,7 @@ namespace MySoft.PlatformService.WinForm
             }
         }
 
-        void listAssembly_SelectedIndexChanged(object sender, EventArgs e)
+        void listAssembly_Click(object sender, EventArgs e)
         {
             listService.Items.Clear();
             listMethod.Items.Clear();
@@ -625,7 +630,7 @@ namespace MySoft.PlatformService.WinForm
             listService.Invalidate();
         }
 
-        void messageListBox1_SelectedIndexChanged(object sender, EventArgs e)
+        void messageListBox1_Click(object sender, EventArgs e)
         {
             listMethod.Items.Clear();
             listMethod.SelectedIndex = -1;
@@ -654,7 +659,7 @@ namespace MySoft.PlatformService.WinForm
             listMethod.Invalidate();
         }
 
-        void messageListBox2_SelectedIndexChanged(object sender, EventArgs e)
+        void messageListBox2_Click(object sender, EventArgs e)
         {
             richTextBox3.Clear();
             if (listMethod.SelectedIndex < 0)
@@ -843,7 +848,7 @@ namespace MySoft.PlatformService.WinForm
             }
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void comboBox1_Click(object sender, EventArgs e)
         {
             if (comboBox1.SelectedIndex < 0) return;
             defaultNode = comboBox1.SelectedItem as RemoteNode;

@@ -102,16 +102,21 @@ namespace MySoft.IoC
 
             //获取约束信息
             var opContract = CoreHelper.GetMemberAttribute<OperationContractAttribute>(methodInfo);
+            int clientCacheTime = -1;
             if (opContract != null)
             {
                 if (opContract.Timeout > 0) reqMsg.Timeout = opContract.Timeout;
                 if (opContract.ServerCacheTime > 0) reqMsg.CacheTime = opContract.ServerCacheTime;
+                if (opContract.ClientCacheTime > 0) clientCacheTime = opContract.ClientCacheTime;
             }
 
             try
             {
+                string cacheKey = string.Format("ClientCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
+                var resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
+
                 //调用服务
-                var resMsg = service.CallService(reqMsg);
+                if (resMsg == null) resMsg = service.CallService(reqMsg);
 
                 //如果数据为null,则返回null
                 if (resMsg == null)
@@ -120,7 +125,15 @@ namespace MySoft.IoC
                 }
 
                 //如果有异常，向外抛出
-                if (resMsg.IsError) throw resMsg.Error;
+                if (resMsg.IsError)
+                {
+                    throw resMsg.Error;
+                }
+                else if (clientCacheTime > 0)
+                {
+                    //没有异常，则缓存数据
+                    CacheHelper.Insert(cacheKey, resMsg, clientCacheTime);
+                }
 
                 //给引用的参数赋值
                 for (int i = 0; i < pis.Length; i++)

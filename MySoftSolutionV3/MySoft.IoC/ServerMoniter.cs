@@ -321,32 +321,42 @@ namespace MySoft.IoC
                 //流量
                 highest.DataFlow = list.Max(p => p.DataFlow);
                 if (highest.DataFlow > 0)
-                    try { highest.DataFlowCounterTime = list.First(p => p.DataFlow == highest.DataFlow).CounterTime; }
-                    finally { highest.DataFlowCounterTime = DateTime.MinValue; };
+                {
+                    var data = list.FirstOrDefault(p => p.DataFlow == highest.DataFlow);
+                    highest.DataFlowCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                }
 
                 //成功
                 highest.SuccessCount = list.Max(p => p.SuccessCount);
                 if (highest.SuccessCount > 0)
-                    try { highest.SuccessCountCounterTime = list.First(p => p.SuccessCount == highest.SuccessCount).CounterTime; }
-                    finally { highest.SuccessCountCounterTime = DateTime.MinValue; }
+                {
+                    var data = list.FirstOrDefault(p => p.SuccessCount == highest.SuccessCount);
+                    highest.SuccessCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                }
 
                 //失败
                 highest.ErrorCount = list.Max(p => p.ErrorCount);
                 if (highest.ErrorCount > 0)
-                    try { highest.ErrorCountCounterTime = list.First(p => p.ErrorCount == highest.ErrorCount).CounterTime; }
-                    finally { highest.ErrorCountCounterTime = DateTime.MinValue; }
+                {
+                    var data = list.FirstOrDefault(p => p.ErrorCount == highest.ErrorCount);
+                    highest.ErrorCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                }
 
                 //请求总数
                 highest.RequestCount = list.Max(p => p.RequestCount);
                 if (highest.RequestCount > 0)
-                    try { highest.RequestCountCounterTime = list.First(p => p.RequestCount == highest.RequestCount).CounterTime; }
-                    finally { highest.RequestCountCounterTime = DateTime.MinValue; }
+                {
+                    var data = list.FirstOrDefault(p => p.RequestCount == highest.RequestCount);
+                    highest.RequestCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                }
 
                 //耗时
                 highest.ElapsedTime = list.Max(p => p.ElapsedTime);
                 if (highest.ElapsedTime > 0)
-                    try { highest.ElapsedTimeCounterTime = list.First(p => p.ElapsedTime == highest.ElapsedTime).CounterTime; }
-                    finally { highest.ElapsedTimeCounterTime = DateTime.MinValue; }
+                {
+                    var data = list.FirstOrDefault(p => p.ElapsedTime == highest.ElapsedTime);
+                    highest.ElapsedTimeCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                }
             }
 
             #endregion

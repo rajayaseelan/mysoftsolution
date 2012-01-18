@@ -56,7 +56,7 @@ namespace MySoft.IoC.Services
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
             //处理cacheKey信息
-            string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
+            string cacheKey = string.Format("ServerCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
 
             //运行请求获得结果
             ResponseMessage resMsg = null;

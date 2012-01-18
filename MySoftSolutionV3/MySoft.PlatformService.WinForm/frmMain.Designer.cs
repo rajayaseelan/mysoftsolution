@@ -606,7 +606,7 @@
             this.listTimeout.SelectedItem = null;
             this.listTimeout.Size = new System.Drawing.Size(606, 350);
             this.listTimeout.TabIndex = 12;
-            this.listTimeout.SelectedIndexChanged += new System.EventHandler(this.listBox3_SelectedIndexChanged);
+            this.listTimeout.Click += new System.EventHandler(this.listBox3_Click);
             // 
             // contextMenuStrip3
             // 
@@ -678,7 +678,7 @@
             this.listTotal.SelectedItem = null;
             this.listTotal.Size = new System.Drawing.Size(606, 131);
             this.listTotal.TabIndex = 13;
-            this.listTotal.SelectedIndexChanged += new System.EventHandler(this.listTotal_SelectedIndexChanged);
+            this.listTotal.Click += new System.EventHandler(this.listTotal_Click);
             // 
             // richTextBox1
             // 
@@ -782,7 +782,7 @@
             this.listError.SelectedItem = null;
             this.listError.Size = new System.Drawing.Size(606, 346);
             this.listError.TabIndex = 11;
-            this.listError.SelectedIndexChanged += new System.EventHandler(this.listBox2_SelectedIndexChanged);
+            this.listError.Click += new System.EventHandler(this.listBox2_Click);
             // 
             // contextMenuStrip4
             // 
@@ -1130,7 +1130,7 @@
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(100, 20);
             this.comboBox1.TabIndex = 15;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.comboBox1.Click += new System.EventHandler(this.comboBox1_Click);
             // 
             // label12
             // 
