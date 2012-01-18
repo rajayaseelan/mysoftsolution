@@ -51,14 +51,20 @@ namespace MySoft.IoC
                 return container.CallService(reqMsg);
             });
 
+            //启动计时
+            var watch = Stopwatch.StartNew();
+
             //开始调用
             IAsyncResult ar = asyncCaller.BeginInvoke(reqMsg, iar => { }, asyncCaller);
 
             var elapsedTime = TimeSpan.FromSeconds(reqMsg.Timeout);
-            elapsedMilliseconds = (long)elapsedTime.TotalMilliseconds;
 
             //等待信号，等待5分钟
             bool timeout = !ar.AsyncWaitHandle.WaitOne(elapsedTime);
+
+            //停止计时
+            watch.Stop();
+            elapsedMilliseconds = watch.ElapsedMilliseconds;
 
             if (timeout)
             {

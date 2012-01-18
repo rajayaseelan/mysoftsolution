@@ -11,7 +11,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 消息中心；
     /// </summary>
-    class MessageCenter : IErrorLogable
+    internal class MessageCenter : IErrorLogable
     {
         #region MessageCenter 的单例实现
 
