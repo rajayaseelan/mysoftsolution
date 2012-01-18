@@ -14,7 +14,7 @@ namespace MySoft.IoC.Aspect
         /// <param name="instance"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static object CreateProxy(Type serviceType, params AspectInterceptor[] interceptors)
+        public static object CreateProxy(Type serviceType, params StandardInterceptor[] interceptors)
         {
             string aspectKey = string.Format("AspectFactory_{0}", serviceType);
             var service = CacheHelper.Get(aspectKey);
@@ -26,8 +26,8 @@ namespace MySoft.IoC.Aspect
                     Selector = new InterceptorSelector()
                 };
 
-                service = proxy.CreateClassProxy(serviceType, options, interceptors);
-                CacheHelper.Insert(aspectKey, service, 60);
+                service = proxy.CreateClassProxy(serviceType, new ProxyGenerationOptions(), interceptors);
+                CacheHelper.Permanent(aspectKey, service);
             }
 
             return service;
@@ -39,7 +39,7 @@ namespace MySoft.IoC.Aspect
         /// <typeparam name="TServiceType"></typeparam>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static TServiceType CreateProxy<TServiceType>(params AspectInterceptor[] interceptors)
+        public static TServiceType CreateProxy<TServiceType>(params StandardInterceptor[] interceptors)
             where TServiceType : class
         {
             return (TServiceType)CreateProxy(typeof(TServiceType));
@@ -52,7 +52,7 @@ namespace MySoft.IoC.Aspect
         /// <typeparam name="TServiceType"></typeparam>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static IServiceType CreateProxy<IServiceType, TServiceType>(params AspectInterceptor[] interceptors)
+        public static IServiceType CreateProxy<IServiceType, TServiceType>(params StandardInterceptor[] interceptors)
             where TServiceType : class, IServiceType
         {
             return (IServiceType)CreateProxy<TServiceType>(interceptors);

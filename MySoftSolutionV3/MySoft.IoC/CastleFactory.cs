@@ -100,8 +100,16 @@ namespace MySoft.IoC
             else
             {
                 var sContainer = new SimpleServiceContainer(config.Type);
-                sContainer.OnLog += (log, type) => { if (instance.OnLog != null) instance.OnLog(log, type); };
-                sContainer.OnError += (exception) => { if (instance.OnError != null) instance.OnError(exception); };
+                sContainer.OnLog += (log, type) =>
+                {
+                    if (instance != null && instance.OnLog != null)
+                        instance.OnLog(log, type);
+                };
+                sContainer.OnError += error =>
+                {
+                    if (instance != null && instance.OnError != null)
+                        instance.OnError(error);
+                };
 
                 instance = new CastleFactory(config, sContainer);
 
@@ -110,7 +118,7 @@ namespace MySoft.IoC
                     foreach (var node in config.Nodes)
                     {
                         if (node.Value.MaxPool < 1) throw new WarningException("Minimum pool size 1！");
-                        if (node.Value.MaxPool > 500) throw new WarningException("Maximum pool size 500！");
+                        if (node.Value.MaxPool > 1000) throw new WarningException("Maximum pool size 1000！");
 
                         var proxy = new RemoteProxy(node.Value, sContainer);
                         instance.proxies[node.Key.ToLower()] = proxy;
@@ -389,17 +397,28 @@ namespace MySoft.IoC
             //如果是本地配置，则抛出异常
             if (config.Type == CastleFactoryType.Local || config.Type == CastleFactoryType.LocalRemote)
             {
-                //本地服务
-                if (container.Kernel.HasComponent(serviceType))
+                string serviceKey = string.Format("LocalService_{0}", serviceType.FullName);
+                var service = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
+                if (service == null)
                 {
-                    lock (lockObject)
+                    //本地服务
+                    if (container.Kernel.HasComponent(serviceType))
                     {
-                        var aspect = container[serviceType];
+                        lock (lockObject)
+                        {
+                            var aspect = container[serviceType];
 
-                        //返回拦截服务
-                        return AspectManager.GetService<IServiceInterfaceType>(aspect);
+                            //返回拦截服务
+                            service = AspectManager.GetService<IServiceInterfaceType>(aspect, new LocalInterceptor(serviceType));
+                            if (service != null)
+                            {
+                                CacheHelper.Permanent(serviceKey, service);
+                            }
+                        }
                     }
                 }
+
+                if (service != null) return service;
 
                 if (config.Type == CastleFactoryType.Local)
                     throw new WarningException(string.Format("Local not find service ({0}).", serviceType.FullName));

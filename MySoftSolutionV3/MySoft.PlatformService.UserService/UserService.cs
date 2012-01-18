@@ -31,7 +31,7 @@ namespace MySoft.PlatformService.UserService
             return Convert.ToInt32(value);
         }
 
-        public UserInfo GetUserInfo(string name, ref int length, out UserInfo user)
+        public virtual UserInfo GetUserInfo(string name, ref int length, out UserInfo user)
         {
             //var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
             //if (count % 5 == 0)
@@ -53,7 +53,7 @@ namespace MySoft.PlatformService.UserService
 
             length = user.Description.Length;
 
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
 
             return user;
         }

@@ -92,7 +92,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="serviceName"></param>
         /// <returns></returns>
-        [OperationContract(CacheTime = 30)]
+        [OperationContract(ServerCacheTime = 30)]
         bool ContainsService(string serviceName);
 
         /// <summary>

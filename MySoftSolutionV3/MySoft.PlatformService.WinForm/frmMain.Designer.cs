@@ -678,6 +678,7 @@
             this.listTotal.SelectedItem = null;
             this.listTotal.Size = new System.Drawing.Size(606, 131);
             this.listTotal.TabIndex = 13;
+            this.listTotal.SelectedIndexChanged += new System.EventHandler(this.listTotal_SelectedIndexChanged);
             // 
             // richTextBox1
             // 

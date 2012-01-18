@@ -35,8 +35,8 @@ namespace MySoft.IoC.Services
             for (int i = 0; i < node.MaxPool; i++)
             {
                 var reqService = new ServiceRequest(node, logger, true);
-                reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
-                reqService.OnError += new EventHandler<ErrorMessageEventArgs>(reqService_OnError);
+                reqService.OnCallback += reqService_OnCallback;
+                reqService.OnError += reqService_OnError;
 
                 this.reqPool.Push(reqService);
             }
@@ -115,7 +115,7 @@ namespace MySoft.IoC.Services
                 Thread thread = null;
 
                 //获取消息
-                var caller = new AsyncMethodCaller<ResponseMessage, RequestMessage>(state =>
+                var asyncCaller = new AsyncMethodCaller<ResponseMessage, RequestMessage>(state =>
                 {
                     thread = Thread.CurrentThread;
 
@@ -139,7 +139,7 @@ namespace MySoft.IoC.Services
                 });
 
                 //开始调用
-                IAsyncResult ar = caller.BeginInvoke(reqMsg, iar => { }, caller);
+                IAsyncResult ar = asyncCaller.BeginInvoke(reqMsg, iar => { }, asyncCaller);
 
                 var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
 
@@ -167,7 +167,7 @@ namespace MySoft.IoC.Services
                 }
 
                 //获取返回结果
-                var resMsg = caller.EndInvoke(ar);
+                var resMsg = asyncCaller.EndInvoke(ar);
 
                 //关闭句柄
                 ar.AsyncWaitHandle.Close();
@@ -221,8 +221,6 @@ namespace MySoft.IoC.Services
             }
 
             this.reqPool = null;
-
-            GC.SuppressFinalize(this);
         }
     }
 }

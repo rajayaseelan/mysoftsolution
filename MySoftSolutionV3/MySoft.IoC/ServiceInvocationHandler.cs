@@ -105,7 +105,7 @@ namespace MySoft.IoC
             if (opContract != null)
             {
                 if (opContract.Timeout > 0) reqMsg.Timeout = opContract.Timeout;
-                if (opContract.CacheTime > 0) reqMsg.CacheTime = opContract.CacheTime;
+                if (opContract.ServerCacheTime > 0) reqMsg.CacheTime = opContract.ServerCacheTime;
             }
 
             try

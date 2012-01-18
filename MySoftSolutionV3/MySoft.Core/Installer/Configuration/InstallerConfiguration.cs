@@ -26,7 +26,7 @@ namespace MySoft.Installer.Configuration
             {
                 var tmp = ConfigurationManager.GetSection(key);
                 obj = tmp as InstallerConfiguration;
-                CacheHelper.Insert(key, obj, 60);
+                CacheHelper.Permanent(key, obj);;
             }
 
             return obj;

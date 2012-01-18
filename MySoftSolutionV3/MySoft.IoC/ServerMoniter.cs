@@ -33,8 +33,8 @@ namespace MySoft.IoC
             hashTypes[typeof(IStatusService)] = this;
 
             this.container = new SimpleServiceContainer(CastleFactoryType.Local, hashTypes);
-            this.container.OnError += new ErrorLogEventHandler(container_OnError);
-            this.container.OnLog += new LogEventHandler(container_OnLog);
+            this.container.OnError += error => { if (OnError != null) OnError(error); };
+            this.container.OnLog += (log, type) => { if (OnLog != null) OnLog(log, type); };
             this.statuslist = new TimeStatusCollection(config.Records);
             this.startTime = DateTime.Now;
 
@@ -62,28 +62,6 @@ namespace MySoft.IoC
         }
 
         #region ILogable Members
-
-        protected void container_OnLog(string log, LogType type)
-        {
-            try
-            {
-                if (OnLog != null) OnLog(log, type);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        protected void container_OnError(Exception error)
-        {
-            try
-            {
-                if (OnError != null) OnError(error);
-            }
-            catch (Exception)
-            {
-            }
-        }
 
         /// <summary>
         /// OnLog event.
@@ -343,27 +321,32 @@ namespace MySoft.IoC
                 //流量
                 highest.DataFlow = list.Max(p => p.DataFlow);
                 if (highest.DataFlow > 0)
-                    highest.DataFlowCounterTime = list.First(p => p.DataFlow == highest.DataFlow).CounterTime;
+                    try { highest.DataFlowCounterTime = list.First(p => p.DataFlow == highest.DataFlow).CounterTime; }
+                    finally { highest.DataFlowCounterTime = DateTime.MinValue; };
 
                 //成功
                 highest.SuccessCount = list.Max(p => p.SuccessCount);
                 if (highest.SuccessCount > 0)
-                    highest.SuccessCountCounterTime = list.First(p => p.SuccessCount == highest.SuccessCount).CounterTime;
+                    try { highest.SuccessCountCounterTime = list.First(p => p.SuccessCount == highest.SuccessCount).CounterTime; }
+                    finally { highest.SuccessCountCounterTime = DateTime.MinValue; }
 
                 //失败
                 highest.ErrorCount = list.Max(p => p.ErrorCount);
                 if (highest.ErrorCount > 0)
-                    highest.ErrorCountCounterTime = list.First(p => p.ErrorCount == highest.ErrorCount).CounterTime;
+                    try { highest.ErrorCountCounterTime = list.First(p => p.ErrorCount == highest.ErrorCount).CounterTime; }
+                    finally { highest.ErrorCountCounterTime = DateTime.MinValue; }
 
                 //请求总数
                 highest.RequestCount = list.Max(p => p.RequestCount);
                 if (highest.RequestCount > 0)
-                    highest.RequestCountCounterTime = list.First(p => p.RequestCount == highest.RequestCount).CounterTime;
+                    try { highest.RequestCountCounterTime = list.First(p => p.RequestCount == highest.RequestCount).CounterTime; }
+                    finally { highest.RequestCountCounterTime = DateTime.MinValue; }
 
                 //耗时
                 highest.ElapsedTime = list.Max(p => p.ElapsedTime);
                 if (highest.ElapsedTime > 0)
-                    highest.ElapsedTimeCounterTime = list.First(p => p.ElapsedTime == highest.ElapsedTime).CounterTime;
+                    try { highest.ElapsedTimeCounterTime = list.First(p => p.ElapsedTime == highest.ElapsedTime).CounterTime; }
+                    finally { highest.ElapsedTimeCounterTime = DateTime.MinValue; }
             }
 
             #endregion

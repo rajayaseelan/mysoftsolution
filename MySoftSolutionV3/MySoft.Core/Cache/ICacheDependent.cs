@@ -17,7 +17,7 @@ namespace MySoft.Cache
         /// <param name="cacheKey"></param>
         /// <param name="cacheValue"></param>
         /// <param name="cacheTime"></param>
-        void AddCache<T>(string cacheKey, object cacheValue, double cacheTime);
+        void AddCache<T>(string cacheKey, T cacheValue, int cacheTime);
 
         /// <summary>
         /// 移除缓存
@@ -32,7 +32,7 @@ namespace MySoft.Cache
         /// <typeparam name="T"></typeparam>
         /// <param name="cacheKey"></param>
         /// <returns></returns>
-        object GetCache<T>(string cacheKey);
+        T GetCache<T>(string cacheKey);
 
         #region 处理一组缓存
 
@@ -47,7 +47,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        IList<object> GetCache<T>();
+        IList<T> GetCache<T>();
 
         #endregion
     }

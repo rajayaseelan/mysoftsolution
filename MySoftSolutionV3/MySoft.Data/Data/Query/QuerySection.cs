@@ -1182,7 +1182,7 @@ namespace MySoft.Data
             if (dbProvider.Cache != null)
             {
                 int timeout = EntityConfig.Instance.GetTableTimeout<CacheType>();
-                dbProvider.Cache.AddCache<CacheType>(key, obj, timeout);
+                dbProvider.Cache.AddCache(key, obj, timeout);
             }
         }
 

@@ -51,17 +51,17 @@ namespace MySoft.IoC
                 epServer = new ScsTcpEndPoint(config.Host, config.Port);
 
             this.server = ScsServerFactory.CreateServer(epServer);
-            this.server.ClientConnected += new EventHandler<ServerClientEventArgs>(server_ClientConnected);
-            this.server.ClientDisconnected += new EventHandler<ServerClientEventArgs>(server_ClientDisconnected);
+            this.server.ClientConnected += server_ClientConnected;
+            this.server.ClientDisconnected += server_ClientDisconnected;
             this.server.WireProtocolFactory = new CustomWireProtocolFactory(config.Compress, config.Encrypt);
-            this.OnCalling += new EventHandler<CallEventArgs>(CastleService_OnCalling);
+            this.OnCalling += CastleService_OnCalling;
 
             //实例化调用者
             var callbackTypes = GetCallbackTypes();
             this.caller = new ServiceCaller(container, callbackTypes);
 
             //绑定事件
-            MessageCenter.Instance.OnError += new ErrorLogEventHandler(Instance_OnError);
+            MessageCenter.Instance.OnError += Instance_OnError;
         }
 
         void CastleService_OnCalling(object sender, CallEventArgs e)
@@ -76,7 +76,7 @@ namespace MySoft.IoC
         /// <param name="error"></param>
         void Instance_OnError(Exception error)
         {
-            container_OnError(error);
+            container.WriteError(error);
         }
 
         private IDictionary<string, Type> GetCallbackTypes()
@@ -141,12 +141,6 @@ namespace MySoft.IoC
 
             server.Stop();
             server.Clients.ClearAll();
-
-            container = null;
-            server = null;
-            statuslist = null;
-
-            GC.SuppressFinalize(this);
         }
 
         #endregion
@@ -156,10 +150,10 @@ namespace MySoft.IoC
         void server_ClientConnected(object sender, ServerClientEventArgs e)
         {
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
-            container_OnLog(string.Format("User connection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Information);
-            e.Client.MessageReceived += new EventHandler<MessageEventArgs>(Client_MessageReceived);
-            e.Client.MessageSent += new EventHandler<MessageEventArgs>(Client_MessageSent);
-            e.Client.ErrorReceived += new EventHandler<ErrorEventArgs>(Client_ErrorReceived);
+            container.WriteLog(string.Format("User connection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Information);
+            e.Client.MessageReceived += Client_MessageReceived;
+            e.Client.MessageSent += Client_MessageSent;
+            e.Client.ErrorReceived += Client_ErrorReceived;
 
             //处理登入事件
             var connect = new ConnectInfo
@@ -176,7 +170,7 @@ namespace MySoft.IoC
 
         void Client_ErrorReceived(object sender, ErrorEventArgs e)
         {
-            container_OnError(e.Error);
+            container.WriteError(e.Error);
         }
 
         void Client_MessageSent(object sender, MessageEventArgs e)
@@ -187,7 +181,7 @@ namespace MySoft.IoC
         void server_ClientDisconnected(object sender, ServerClientEventArgs e)
         {
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
-            container_OnLog(string.Format("User Disconnection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Error);
+            container.WriteLog(string.Format("User Disconnection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Error);
 
             //处理登出事件
             var connect = new ConnectInfo
@@ -216,7 +210,7 @@ namespace MySoft.IoC
 
                     //响应客户端详细信息
                     var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
-                    container_OnLog(string.Format("Change app 【{4}】 client {0}:{1} to {2}[{3}]！",
+                    container.WriteLog(string.Format("Change app 【{4}】 client {0}:{1} to {2}[{3}]！",
                         endPoint.IpAddress, endPoint.TcpPort, appClient.IPAddress, appClient.HostName, appClient.AppName), LogType.Information);
 
                     MessageCenter.Instance.Notify(endPoint.IpAddress, endPoint.TcpPort, appClient);
@@ -239,7 +233,7 @@ namespace MySoft.IoC
                 }
                 catch (Exception ex)
                 {
-                    container_OnError(ex);
+                    container.WriteError(ex);
 
                     var resMsg = new ResponseMessage
                     {
@@ -437,8 +431,7 @@ namespace MySoft.IoC
             }
             catch (Exception ex)
             {
-                container_OnError(ex);
-
+                container.WriteError(ex);
                 return new List<ClientInfo>();
             }
         }

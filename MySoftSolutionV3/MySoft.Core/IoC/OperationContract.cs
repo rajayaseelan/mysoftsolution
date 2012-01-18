@@ -27,19 +27,35 @@ namespace MySoft.IoC
             }
         }
 
-        private int cacheTime = -1;
+        private int clientCacheTime = -1;
         /// <summary>
-        /// 缓存时间（单位：秒）
+        /// 客户端缓存时间（单位：秒）
         /// </summary>
-        public int CacheTime
+        public int ClientCacheTime
         {
             get
             {
-                return cacheTime;
+                return clientCacheTime;
             }
             set
             {
-                cacheTime = value;
+                clientCacheTime = value;
+            }
+        }
+
+        private int serverCacheTime = -1;
+        /// <summary>
+        /// 服务端缓存时间（单位：秒）
+        /// </summary>
+        public int ServerCacheTime
+        {
+            get
+            {
+                return serverCacheTime;
+            }
+            set
+            {
+                serverCacheTime = value;
             }
         }
 

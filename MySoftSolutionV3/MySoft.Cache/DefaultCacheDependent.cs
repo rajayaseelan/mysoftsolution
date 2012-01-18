@@ -37,7 +37,7 @@ namespace MySoft.Cache
         /// <param name="cacheKey"></param>
         /// <param name="cacheValue"></param>
         /// <param name="cacheTime"></param>
-        public virtual void AddCache<T>(string cacheKey, object cacheValue, double cacheTime)
+        public virtual void AddCache<T>(string cacheKey, T cacheValue, int cacheTime)
         {
             lock (strategy)
             {
@@ -73,14 +73,14 @@ namespace MySoft.Cache
         /// <param name="?"></param>
         /// <param name="cacheKey"></param>
         /// <returns></returns>
-        public virtual object GetCache<T>(string cacheKey)
+        public virtual T GetCache<T>(string cacheKey)
         {
             lock (strategy)
             {
                 //组合CacheKey
                 cacheKey = string.Format("{0}_{1}", typeof(T).FullName, cacheKey);
 
-                return strategy.GetObject(cacheKey);
+                return strategy.GetObject<T>(cacheKey);
             }
         }
 
@@ -105,11 +105,11 @@ namespace MySoft.Cache
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public virtual IList<object> GetCache<T>()
+        public virtual IList<T> GetCache<T>()
         {
             lock (strategy)
             {
-                return strategy.GetMatchObjects(typeof(T).FullName).Values.ToList();
+                return strategy.GetMatchObjects<T>(typeof(T).FullName).Values.ToList();
             }
         }
 

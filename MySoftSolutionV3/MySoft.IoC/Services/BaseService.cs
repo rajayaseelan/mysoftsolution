@@ -59,7 +59,11 @@ namespace MySoft.IoC.Services
             string cacheKey = string.Format("{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
 
             //运行请求获得结果
-            ResponseMessage resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
+            ResponseMessage resMsg = null;
+            if (OperationContext.Current.Cache != null)
+                resMsg = OperationContext.Current.Cache.GetCache<ResponseMessage>(cacheKey);
+            else
+                resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
 
             //如果未获取值
             if (resMsg == null)
@@ -85,7 +89,10 @@ namespace MySoft.IoC.Services
                 else if (reqMsg.CacheTime > 0) //判断是否需要缓存
                 {
                     //加入缓存
-                    CacheHelper.Insert(cacheKey, resMsg, reqMsg.CacheTime);
+                    if (OperationContext.Current.Cache != null)
+                        OperationContext.Current.Cache.AddCache(cacheKey, resMsg, reqMsg.CacheTime);
+                    else
+                        CacheHelper.Insert(cacheKey, resMsg, reqMsg.CacheTime);
                 }
             }
             else

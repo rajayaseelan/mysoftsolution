@@ -42,6 +42,7 @@ namespace MySoft.PlatformService.UserService
     [ServiceContract]
     public interface IUserService
     {
+        [OperationContract]
         UserInfo GetUserInfo(string name, ref int length, out UserInfo user);
 
         string GetUser(NameValueCollection nv);
@@ -52,7 +53,7 @@ namespace MySoft.PlatformService.UserService
 
         string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
 
-        [OperationContract(CacheTime = 10)]
+        [OperationContract]
         IList<UserInfo> GetUsers();
     }
 

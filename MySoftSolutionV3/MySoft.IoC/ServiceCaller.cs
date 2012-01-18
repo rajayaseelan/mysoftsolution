@@ -36,34 +36,55 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg, AppCaller caller, out long elapsedMilliseconds)
         {
-            //实例化当前上下文
-            Type callbackType = null;
-            if (callbackTypes.ContainsKey(reqMsg.ServiceName)) callbackType = callbackTypes[reqMsg.ServiceName];
-            OperationContext.Current = new OperationContext(client, callbackType) { Caller = caller };
+            Thread thread = null;
 
-            Stopwatch watch = Stopwatch.StartNew();
-
-            //调用服务
-            var resMsg = container.CallService(reqMsg);
-
-            watch.Stop();
-            elapsedMilliseconds = watch.ElapsedMilliseconds;
-            var elapsedTime = TimeSpan.FromSeconds(reqMsg.Timeout);
-
-            //计算耗时
-            if (watch.ElapsedMilliseconds > elapsedTime.TotalMilliseconds)
+            //生成一个异步调用委托
+            var asyncCaller = new AsyncMethodCaller<ResponseMessage, RequestMessage>(state =>
             {
+                thread = Thread.CurrentThread;
+
+                //实例化当前上下文
+                Type callbackType = null;
+                if (callbackTypes.ContainsKey(reqMsg.ServiceName)) callbackType = callbackTypes[reqMsg.ServiceName];
+                OperationContext.Current = new OperationContext(client, callbackType) { Caller = caller };
+
+                return container.CallService(reqMsg);
+            });
+
+            //开始调用
+            IAsyncResult ar = asyncCaller.BeginInvoke(reqMsg, iar => { }, asyncCaller);
+
+            var elapsedTime = TimeSpan.FromSeconds(reqMsg.Timeout);
+            elapsedMilliseconds = (long)elapsedTime.TotalMilliseconds;
+
+            //等待信号，等待5分钟
+            bool timeout = !ar.AsyncWaitHandle.WaitOne(elapsedTime);
+
+            if (timeout)
+            {
+                try
+                {
+                    if (!ar.IsCompleted && thread != null)
+                        thread.Abort();
+                }
+                catch (Exception ex)
+                {
+                }
+
                 string body = string.Format("【{3}】Call service ({0},{1}) timeout ({2} ms)！", reqMsg.ServiceName, reqMsg.MethodName, elapsedMilliseconds, reqMsg.TransactionId);
-                var ex = new WarningException(body)
+                throw new WarningException(body)
                 {
                     ApplicationName = reqMsg.AppName,
                     ServiceName = reqMsg.ServiceName,
                     ErrorHeader = string.Format("Application【{0}】call service timeout. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                 };
-
-                //如果超时，则写异常
-                container.WriteError(ex);
             }
+
+            //获取返回结果
+            var resMsg = asyncCaller.EndInvoke(ar);
+
+            //关闭句柄
+            ar.AsyncWaitHandle.Close();
 
             return resMsg;
         }
@@ -76,7 +97,7 @@ namespace MySoft.IoC
         public void Dispose()
         {
             this.container.Dispose();
-            this.callbackTypes = null;
+            this.callbackTypes.Clear();
         }
 
         #endregion

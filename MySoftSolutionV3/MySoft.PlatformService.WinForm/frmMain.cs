@@ -226,6 +226,25 @@ namespace MySoft.PlatformService.WinForm
             AppendText(richTextBox1, source.Caller);
         }
 
+        private void listTotal_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listTotal.SelectedIndex < 0) listTimeout.SelectedItems.Clear();
+
+            var item = listTotal.SelectedItem as TotalInfo;
+            for (var i = 0; i < listTimeout.Items.Count; i++)
+            {
+                var args = listTimeout.Items[i] as ParseMessageEventArgs;
+                var caller = (args.Source as CallTimeout).Caller;
+
+                if (caller.AppName == item.AppName
+                    && caller.ServiceName == item.ServiceName
+                    && caller.MethodName == item.MethodName)
+                {
+                    listTimeout.SelectedIndex = i;
+                }
+            }
+        }
+
         private void listBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listError.SelectedIndex < 0) webBrowser1.Text = string.Empty;
@@ -324,7 +343,7 @@ namespace MySoft.PlatformService.WinForm
         void TimeoutItems_OnItemInserted(int index)
         {
             //统计
-            var ar = this.BeginInvoke(new Action(() =>
+            var ar = listTotal.BeginInvoke(new Action(() =>
             {
                 var timeOuts = new List<CallTimeout>();
                 var totalCount = Convert.ToInt32(numericUpDown6.Value);
@@ -387,7 +406,7 @@ namespace MySoft.PlatformService.WinForm
                 listTotal.Invalidate();
             }));
 
-            this.EndInvoke(ar);
+            listTotal.EndInvoke(ar);
         }
 
         void listError_MouseDoubleClick(object sender, MouseEventArgs e)

@@ -57,7 +57,7 @@ namespace MySoft.IoC.Services
                 }
                 else
                 {
-                    CacheHelper.Insert(methodKey, method, 60);
+                    CacheHelper.Permanent(methodKey, method);
                 }
             }
 
@@ -71,7 +71,19 @@ namespace MySoft.IoC.Services
 
             //从容器中获取对象
             object service = instance;
-            if (service == null) service = container[classType];
+            if (service == null)
+            {
+                try
+                {
+                    service = container[classType];
+
+                    //释放资源
+                    container.Release(service);
+                }
+                catch (Exception ex)
+                {
+                }
+            }
 
             //返回拦截服务
             service = AspectManager.GetService(service);

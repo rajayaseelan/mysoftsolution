@@ -14,6 +14,7 @@ using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
 using Castle.Windsor.Configuration.Interpreters;
+using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -51,9 +52,12 @@ namespace MySoft.IoC
                 object instance = null;
                 try
                 {
-                    instance = this[type];
+                    instance = container.Resolve(type);
+
+                    //释放资源
+                    container.Release(instance);
                 }
-                catch
+                catch (Exception ex)
                 {
                 }
 
@@ -154,7 +158,8 @@ namespace MySoft.IoC
         /// <param name="obj">The obj.</param>
         public void Release(object obj)
         {
-            container.Release(obj);
+            if (obj != null)
+                container.Release(obj);
         }
 
         /// <summary>
@@ -265,7 +270,6 @@ namespace MySoft.IoC
         public void Dispose()
         {
             container.Dispose();
-            GC.SuppressFinalize(this);
         }
 
         #endregion
@@ -294,15 +298,20 @@ namespace MySoft.IoC
         /// 输出日志
         /// </summary>
         /// <param name="log"></param>
+        /// <param name="type"></param>
         public void WriteLog(string log, LogType type)
         {
-            try
+            ThreadPool.QueueUserWorkItem(state =>
             {
-                if (OnLog != null) OnLog(log, type);
-            }
-            catch (Exception)
-            {
-            }
+                try
+                {
+                    var arr = state as ArrayList;
+                    if (OnLog != null) OnLog(arr[0] as string, (LogType)arr[1]);
+                }
+                catch (Exception)
+                {
+                }
+            }, new ArrayList { log, type });
         }
 
         /// <summary>
@@ -311,13 +320,16 @@ namespace MySoft.IoC
         /// <param name="error"></param>
         public void WriteError(Exception error)
         {
-            try
+            ThreadPool.QueueUserWorkItem(state =>
             {
-                if (OnError != null) OnError(error);
-            }
-            catch (Exception)
-            {
-            }
+                try
+                {
+                    if (OnError != null) OnError(state as Exception);
+                }
+                catch (Exception)
+                {
+                }
+            }, error);
         }
 
         #endregion

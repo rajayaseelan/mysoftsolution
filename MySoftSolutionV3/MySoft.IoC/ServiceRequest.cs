@@ -50,10 +50,10 @@ namespace MySoft.IoC
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
             this.client.ConnectTimeout = 5000;
             this.client.DisconnectTimeout = autoDisconnect ? node.Timeout * 1000 : -1;
-            this.client.Disconnected += new EventHandler(client_Disconnected);
-            this.client.MessageReceived += new EventHandler<MessageEventArgs>(client_MessageReceived);
-            this.client.MessageSent += new EventHandler<MessageEventArgs>(client_MessageSent);
-            this.client.ErrorReceived += new EventHandler<ErrorEventArgs>(client_ErrorReceived);
+            this.client.Disconnected += client_Disconnected;
+            this.client.MessageReceived += client_MessageReceived;
+            this.client.MessageSent += client_MessageSent;
+            this.client.ErrorReceived += client_ErrorReceived;
             this.client.WireProtocol = new CustomWireProtocol(node.Compress, node.Encrypt);
         }
 

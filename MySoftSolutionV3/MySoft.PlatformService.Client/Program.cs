@@ -146,6 +146,7 @@ namespace MySoft.PlatformService.Client
         {
             ManualResetEvent are = state as ManualResetEvent;
             are.WaitOne();
+            var service = CastleFactory.Create().GetChannel<IUserService>();
 
             while (true)
             {
@@ -158,7 +159,7 @@ namespace MySoft.PlatformService.Client
 
                     int length = 1;
                     UserInfo user;
-                    CastleFactory.Create().GetChannel<IUserService>().GetUserInfo("maoyong", ref length, out user);
+                    service.GetUserInfo("maoyong", ref length, out user);
 
                     watch.Stop();
 

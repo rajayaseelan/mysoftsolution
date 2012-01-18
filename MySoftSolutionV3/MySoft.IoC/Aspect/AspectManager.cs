@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.DynamicProxy;
 
 namespace MySoft.IoC.Aspect
 {
@@ -15,14 +16,14 @@ namespace MySoft.IoC.Aspect
         /// <typeparam name="IServiceType"></typeparam>
         /// <param name="service"></param>
         /// <returns></returns>
-        public static IServiceType GetService<IServiceType>(object service)
+        public static IServiceType GetService<IServiceType>(object service, params StandardInterceptor[] interceptors)
         {
             if (service == null)
             {
                 return default(IServiceType);
             }
 
-            return (IServiceType)GetService(service);
+            return (IServiceType)GetService(service, interceptors);
         }
 
         /// <summary>
@@ -30,11 +31,11 @@ namespace MySoft.IoC.Aspect
         /// </summary>
         /// <param name="service"></param>
         /// <returns></returns>
-        public static object GetService(object service)
+        public static object GetService(object service, params StandardInterceptor[] interceptors)
         {
             if (service != null)
             {
-                var aspect = CreateService(service.GetType());
+                var aspect = CreateService(service.GetType(), interceptors);
                 if (aspect != null) service = aspect;
             }
 
@@ -46,42 +47,44 @@ namespace MySoft.IoC.Aspect
         /// </summary>
         /// <param name="serviceType"></param>
         /// <returns></returns>
-        public static object CreateService(Type serviceType)
+        public static object CreateService(Type serviceType, params StandardInterceptor[] interceptors)
         {
-            string aspectKey = string.Format("AspectManager_{0}", serviceType);
-            var service = CacheHelper.Get(aspectKey);
-            if (service == null)
+            object service = null;
+            var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(serviceType);
+            if (attributes != null && attributes.Length > 0)
             {
-                var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(serviceType);
-                if (attributes != null && attributes.Length > 0)
+                IList<object> list = new List<object>();
+                foreach (var attribute in attributes)
                 {
-                    IList<object> list = new List<object>();
-                    foreach (var attribute in attributes)
+                    if (typeof(StandardInterceptor).IsAssignableFrom(attribute.InterceptorType))
                     {
-                        if (typeof(AspectInterceptor).IsAssignableFrom(attribute.InterceptorType))
+                        object value = null;
+                        if (attribute.Arguments == null)
+                            value = Activator.CreateInstance(attribute.InterceptorType);
+                        else
                         {
-                            object value = null;
-                            if (attribute.Arguments == null)
-                                value = Activator.CreateInstance(attribute.InterceptorType);
-                            else
+                            if (attribute.Arguments.GetType().IsClass)
                             {
-                                if (attribute.Arguments.GetType().IsClass)
-                                {
-                                    var arg = Activator.CreateInstance(attribute.Arguments.GetType());
-                                    value = Activator.CreateInstance(attribute.InterceptorType, arg);
-                                }
-                                else
-                                    value = Activator.CreateInstance(attribute.InterceptorType, attribute.Arguments);
+                                var arg = Activator.CreateInstance(attribute.Arguments.GetType());
+                                value = Activator.CreateInstance(attribute.InterceptorType, arg);
                             }
-
-                            list.Add(value);
+                            else
+                                value = Activator.CreateInstance(attribute.InterceptorType, attribute.Arguments);
                         }
-                    }
 
-                    var interceptors = list.Cast<AspectInterceptor>();
-                    service = AspectFactory.CreateProxy(serviceType, interceptors.ToArray());
-                    CacheHelper.Insert(aspectKey, service, 60);
+                        list.Add(value);
+                    }
                 }
+
+                var interceptorlist = new List<StandardInterceptor>();
+                interceptorlist.AddRange(interceptors);
+                interceptorlist.AddRange(list.Cast<StandardInterceptor>());
+
+                service = AspectFactory.CreateProxy(serviceType, interceptorlist.ToArray());
+            }
+            else if (interceptors != null && interceptors.Length > 0)
+            {
+                service = AspectFactory.CreateProxy(serviceType, interceptors.ToArray());
             }
 
             return service;

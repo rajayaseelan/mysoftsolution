@@ -71,7 +71,6 @@
   <ItemGroup>
     <Compile Include="AppClientComparer.cs" />
     <Compile Include="Aspect\AspectFactory.cs" />
-    <Compile Include="Aspect\AspectInterceptor.cs" />
     <Compile Include="Aspect\AspectManager.cs" />
     <Compile Include="Aspect\AspectProxyAttribute.cs" />
     <Compile Include="Aspect\AspectSwitcherAttribute.cs" />
@@ -80,6 +79,7 @@
     <Compile Include="Callback\MessageCenter.cs" />
     <Compile Include="Callback\MessageListener.cs" />
     <Compile Include="InvokeCaller.cs" />
+    <Compile Include="Services\LocalInterceptor.cs" />
     <Compile Include="Messages\InvokeMessage.cs" />
     <Compile Include="ServiceCaller.cs" />
     <Compile Include="Services\DiscoverProxy.cs" />

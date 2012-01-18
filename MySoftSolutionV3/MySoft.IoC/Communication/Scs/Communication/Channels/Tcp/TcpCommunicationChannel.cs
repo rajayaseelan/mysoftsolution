@@ -119,7 +119,7 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
         protected override void StartInternal()
         {
             _running = true;
-            _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), null);
+            _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), _clientSocket);
         }
 
         /// <summary>
@@ -164,6 +164,8 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
         /// <param name="ar">Asyncronous call result</param>
         private void ReceiveCallback(IAsyncResult ar)
         {
+            Socket __clientSocket = ar.AsyncState as Socket;
+
             if (!_running)
             {
                 return;
@@ -172,7 +174,7 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 //Get received bytes count
-                var bytesRead = _clientSocket.EndReceive(ar);
+                var bytesRead = __clientSocket.EndReceive(ar);
                 if (bytesRead > 0)
                 {
                     LastReceivedMessageTime = DateTime.Now;
@@ -198,7 +200,7 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
                 //Read more bytes if still running
                 if (_running)
                 {
-                    _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), null);
+                    __clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), __clientSocket);
                 }
             }
             catch (SocketException ex)

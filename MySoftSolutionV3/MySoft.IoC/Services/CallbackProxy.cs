@@ -23,9 +23,9 @@ namespace MySoft.IoC.Services
         protected override void InitRequest()
         {
             ServiceRequest reqService = new ServiceRequest(node, logger, false);
-            reqService.OnCallback += new EventHandler<ServiceMessageEventArgs>(reqService_OnCallback);
-            reqService.OnError += new EventHandler<ErrorMessageEventArgs>(reqService_OnError);
-            reqService.Disconnected += new EventHandler(reqService_Disconnected);
+            reqService.OnCallback += reqService_OnCallback;
+            reqService.OnError += reqService_OnError;
+            reqService.Disconnected += reqService_Disconnected;
 
             this.reqPool = new ServiceRequestPool(1);
             this.reqPool.Push(reqService);
