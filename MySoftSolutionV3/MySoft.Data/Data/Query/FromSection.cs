@@ -427,6 +427,26 @@ namespace MySoft.Data
         }
 
         /// <summary>
+        /// 返回一个DataSet
+        /// </summary>
+        /// <param name="startIndex"></param>
+        /// <param name="endIndex"></param>
+        /// <returns></returns>
+        public DataSet ToDataSet(int startIndex, int endIndex)
+        {
+            return query.ToDataSet(startIndex, endIndex);
+        }
+
+        /// <summary>
+        /// 返回一个DataSet
+        /// </summary>
+        /// <returns></returns>
+        public DataSet ToDataSet()
+        {
+            return query.ToDataSet();
+        }
+
+        /// <summary>
         /// 返回一个值
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
@@ -482,6 +502,17 @@ namespace MySoft.Data
         public DataPage<DataTable> ToTablePage(int pageSize, int pageIndex)
         {
             return query.ToTablePage(pageSize, pageIndex);
+        }
+
+        /// <summary>
+        /// 返回指定数据源的分页信息
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <returns></returns>
+        public DataPage<DataSet> ToDataSetPage(int pageSize, int pageIndex)
+        {
+            return query.ToDataSetPage(pageSize, pageIndex);
         }
 
         #endregion

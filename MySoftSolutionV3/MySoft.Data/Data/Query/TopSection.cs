@@ -1,4 +1,5 @@
 ﻿
+using System.Data;
 namespace MySoft.Data
 {
     /// <summary>
@@ -81,6 +82,15 @@ namespace MySoft.Data
         public override SourceTable ToTable()
         {
             return base.ToTable(0, topSize);
+        }
+
+        /// <summary>
+        /// 返回数据集
+        /// </summary>
+        /// <returns></returns>
+        public override DataSet ToDataSet()
+        {
+            return base.ToDataSet(0, topSize);
         }
 
         #endregion

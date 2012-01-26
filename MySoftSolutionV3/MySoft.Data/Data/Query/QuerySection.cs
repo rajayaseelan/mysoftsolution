@@ -267,7 +267,7 @@ namespace MySoft.Data
                 {
                     if (prefixString != null)
                     {
-                        string sql = "(" + queryString + ") " + this.fromSection.TableName;
+                        string sql = "(" + queryString + ") " + fromSection.TableName;
                         return string.Format(formatString, distinctString, prefixString, fieldString,
                                suffixString, sql, whereString, groupString, havingString, OrderString, endString);
                     }
@@ -306,6 +306,10 @@ namespace MySoft.Data
             {
                 this.isAddParameter = false;
                 pageWhere = value;
+            }
+            get
+            {
+                return pageWhere;
             }
         }
 
@@ -477,6 +481,7 @@ namespace MySoft.Data
         {
             QuerySection<TResult> query = new QuerySection<TResult>(new FromSection<TResult>(fromSection.TableName, fromSection.Relation, fromSection.EntityList), dbProvider, dbTran, pagingField);
             query.Where(queryWhere).OrderBy(orderBy).GroupBy(groupBy).Having(havingWhere);
+            query.PageWhere = this.PageWhere;
             query.Parameters = this.Parameters;
 
             if (fieldSelect) query.Select(fieldList.ToArray());
@@ -518,10 +523,12 @@ namespace MySoft.Data
         {
             if (topSize <= 0) throw new DataException("选取前N条数据值不能小于等于0！");
 
-            String topString = dbProvider.CreatePageQuery<T>(this, topSize, 0).QueryString;
+            var tempQuery = CloneNewQuery<T>(this);
+            String topString = dbProvider.CreatePageQuery<T>(tempQuery, topSize, 0).QueryString;
             TopSection<T> top = new TopSection<T>(topString, fromSection, dbProvider, dbTran, pagingField, topSize);
             top.Where(queryWhere).OrderBy(orderBy).GroupBy(groupBy).Having(havingWhere);
-            top.Parameters = this.Parameters;
+            top.PageWhere = tempQuery.PageWhere;
+            top.Parameters = tempQuery.Parameters;
 
             if (fieldSelect) top.Select(fieldList.ToArray());
             return top;
@@ -617,18 +624,37 @@ namespace MySoft.Data
         /// <returns></returns>
         private QuerySection<T> Union(QuerySection<T> query, bool isUnionAll)
         {
-            QuerySection<T> q = CreateQuery<T>();
-            q.QueryString = this.QueryString;
-            q.CountString = this.CountString;
-            q.QueryString += " UNION " + (isUnionAll ? " ALL " : "") + query.QueryString;
-            q.CountString += " UNION " + (isUnionAll ? " ALL " : "") + query.CountString;
-            q.unionQuery = true;
+            QuerySection<T> tempQuery = CreateQuery<T>();
+            tempQuery.QueryString = this.QueryString;
+            tempQuery.CountString = this.CountString;
+            tempQuery.QueryString += " UNION " + (isUnionAll ? " ALL " : "") + query.QueryString;
+            tempQuery.CountString += " UNION " + (isUnionAll ? " ALL " : "") + query.CountString;
+            tempQuery.unionQuery = true;
 
             //将排序进行合并
             OrderByClip order = this.orderBy && query.orderBy;
-            q.Parameters = query.Parameters;
+            tempQuery.Parameters = query.Parameters;
 
-            return q.OrderBy(order);
+            return tempQuery.OrderBy(order);
+        }
+
+        /// <summary>
+        /// 克隆一个Query
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        private QuerySection<TResult> CloneNewQuery<TResult>(QuerySection<TResult> query)
+            where TResult : Entity
+        {
+            QuerySection<TResult> tempQuery = CreateQuery<TResult>();
+            if (query.unionQuery)
+            {
+                tempQuery.QueryString = query.QueryString;
+                tempQuery.CountString = query.CountString;
+            }
+
+            return tempQuery;
         }
 
         #endregion
@@ -715,7 +741,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual ArrayList<object> ToListResult()
         {
-            return ExcuteDataListResult<object>(this, true);
+            return ExcuteDataListResult<object>(this);
         }
 
         /// <summary>
@@ -739,7 +765,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual ArrayList<TResult> ToListResult<TResult>()
         {
-            return ExcuteDataListResult<TResult>(this, true);
+            return ExcuteDataListResult<TResult>(this);
         }
 
         #endregion
@@ -752,7 +778,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual SourceList<T> ToList()
         {
-            return ExcuteDataList<T>(this, true);
+            return ExcuteDataList<T>(this);
         }
 
         /// <summary>
@@ -787,7 +813,29 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual SourceReader ToReader()
         {
-            return ExcuteDataReader(this, true);
+            return ExcuteDataReader(this);
+        }
+
+        /// <summary>
+        /// 返回一个DataSet
+        /// </summary>
+        /// <param name="startIndex"></param>
+        /// <param name="endIndex"></param>
+        /// <returns></returns>
+        public DataSet ToDataSet(int startIndex, int endIndex)
+        {
+            if (startIndex <= 0) startIndex = 1;
+            int topItem = endIndex - startIndex + 1;
+            return GetDataSet(this, topItem, endIndex - topItem);
+        }
+
+        /// <summary>
+        /// 返回一个DataSet
+        /// </summary>
+        /// <returns></returns>
+        public virtual DataSet ToDataSet()
+        {
+            return ExcuteDataSet(this);
         }
 
         /// <summary>
@@ -809,7 +857,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual SourceTable ToTable()
         {
-            return ExcuteDataTable(this, true);
+            return ExcuteDataTable(this);
         }
 
         /// <summary>
@@ -829,7 +877,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public object ToScalar()
         {
-            return ExcuteScalar(this, true);
+            return ExcuteScalar(this);
         }
 
         /// <summary>
@@ -860,26 +908,37 @@ namespace MySoft.Data
         private SourceList<TResult> GetList<TResult>(QuerySection<TResult> query, int itemCount, int skipCount)
             where TResult : Entity
         {
-            query = dbProvider.CreatePageQuery<TResult>(query, itemCount, skipCount);
-            return ExcuteDataList<TResult>(query, false);
+            var tempQuery = CloneNewQuery<TResult>(query);
+            tempQuery = dbProvider.CreatePageQuery<TResult>(tempQuery, itemCount, skipCount);
+            return ExcuteDataList<TResult>(tempQuery);
         }
 
         private ArrayList<TResult> GetListResult<TResult>(QuerySection<T> query, int itemCount, int skipCount)
         {
-            query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
-            return ExcuteDataListResult<TResult>(query, false);
+            var tempQuery = CloneNewQuery<T>(query);
+            tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
+            return ExcuteDataListResult<TResult>(tempQuery);
         }
 
         private SourceReader GetDataReader(QuerySection<T> query, int itemCount, int skipCount)
         {
-            query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
-            return ExcuteDataReader(query, false);
+            var tempQuery = CloneNewQuery<T>(query);
+            tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
+            return ExcuteDataReader(tempQuery);
         }
 
         private SourceTable GetDataTable(QuerySection<T> query, int itemCount, int skipCount)
         {
-            query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
-            return ExcuteDataTable(query, false);
+            var tempQuery = CloneNewQuery<T>(query);
+            tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
+            return ExcuteDataTable(tempQuery);
+        }
+
+        private DataSet GetDataSet(QuerySection<T> query, int itemCount, int skipCount)
+        {
+            var tempQuery = CloneNewQuery<T>(query);
+            tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
+            return ExcuteDataSet(tempQuery);
         }
 
         private int GetCount(QuerySection<T> query)
@@ -913,24 +972,19 @@ namespace MySoft.Data
 
         #region 私有方法
 
-        private ArrayList<TResult> ExcuteDataListResult<TResult>(QuerySection<T> query, bool all)
+        private ArrayList<TResult> ExcuteDataListResult<TResult>(QuerySection<T> query)
         {
             try
             {
                 string queryString = query.QueryString;
-                if (this.unionQuery && all)
-                {
-                    queryString += OrderString;
-                }
-
-                string cacheKey = GetCacheKey(queryString, this.Parameters);
+                string cacheKey = GetCacheKey(queryString, query.Parameters);
                 object obj = GetCache<T>("ListObject", cacheKey);
                 if (obj != null)
                 {
                     return (SourceList<TResult>)obj;
                 }
 
-                using (SourceReader reader = ExcuteDataReader(query, all))
+                using (SourceReader reader = ExcuteDataReader(query))
                 {
                     ArrayList<TResult> list = new ArrayList<TResult>();
 
@@ -969,25 +1023,20 @@ namespace MySoft.Data
             }
         }
 
-        private SourceList<TResult> ExcuteDataList<TResult>(QuerySection<TResult> query, bool all)
+        private SourceList<TResult> ExcuteDataList<TResult>(QuerySection<TResult> query)
             where TResult : Entity
         {
             try
             {
                 string queryString = query.QueryString;
-                if (this.unionQuery && all)
-                {
-                    queryString += OrderString;
-                }
-
-                string cacheKey = GetCacheKey(queryString, this.Parameters);
+                string cacheKey = GetCacheKey(queryString, query.Parameters);
                 object obj = GetCache<TResult>("ListEntity", cacheKey);
                 if (obj != null)
                 {
                     return (SourceList<TResult>)obj;
                 }
 
-                using (SourceReader reader = ExcuteDataReader(query, all))
+                using (SourceReader reader = ExcuteDataReader(query))
                 {
                     SourceList<TResult> list = new SourceList<TResult>();
 
@@ -1014,22 +1063,12 @@ namespace MySoft.Data
             }
         }
 
-        private SourceReader ExcuteDataReader<TResult>(QuerySection<TResult> query, bool all)
+        private SourceReader ExcuteDataReader<TResult>(QuerySection<TResult> query)
             where TResult : Entity
         {
             try
             {
-                if (all)
-                {
-                    prefixString = null;
-                    endString = null;
-                }
-
                 string queryString = query.QueryString;
-                if (this.unionQuery && all)
-                {
-                    queryString += OrderString;
-                }
 
                 //添加参数到Command中
                 queryCommand = dbProvider.CreateSqlCommand(queryString, query.Parameters);
@@ -1042,24 +1081,42 @@ namespace MySoft.Data
             }
         }
 
-        private SourceTable ExcuteDataTable<TResult>(QuerySection<TResult> query, bool all)
+        private DataSet ExcuteDataSet<TResult>(QuerySection<TResult> query)
             where TResult : Entity
         {
             try
             {
-                if (all)
-                {
-                    prefixString = null;
-                    endString = null;
-                }
-
                 string queryString = query.QueryString;
-                if (this.unionQuery && all)
+                string cacheKey = GetCacheKey(queryString, query.Parameters);
+                object obj = GetCache<TResult>("DataTable", cacheKey);
+                if (obj != null)
                 {
-                    queryString += OrderString;
+                    return (DataSet)obj;
                 }
 
-                string cacheKey = GetCacheKey(queryString, this.Parameters);
+                //添加参数到Command中
+                queryCommand = dbProvider.CreateSqlCommand(queryString, query.Parameters);
+
+                using (DataSet dataSet = dbProvider.ExecuteDataSet(queryCommand, dbTran))
+                {
+                    SetCache<TResult>("DataSet", cacheKey, dataSet);
+
+                    return dataSet;
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private SourceTable ExcuteDataTable<TResult>(QuerySection<TResult> query)
+            where TResult : Entity
+        {
+            try
+            {
+                string queryString = query.QueryString;
+                string cacheKey = GetCacheKey(queryString, query.Parameters);
                 object obj = GetCache<TResult>("DataTable", cacheKey);
                 if (obj != null)
                 {
@@ -1085,24 +1142,13 @@ namespace MySoft.Data
             }
         }
 
-        private object ExcuteScalar<TResult>(QuerySection<TResult> query, bool all)
+        private object ExcuteScalar<TResult>(QuerySection<TResult> query)
             where TResult : Entity
         {
             try
             {
-                if (all)
-                {
-                    prefixString = null;
-                    endString = null;
-                }
-
                 string queryString = query.QueryString;
-                if (this.unionQuery && all)
-                {
-                    queryString += OrderString;
-                }
-
-                string cacheKey = GetCacheKey(queryString, this.Parameters);
+                string cacheKey = GetCacheKey(queryString, query.Parameters);
                 object obj = GetCache<TResult>("GetObject", cacheKey);
                 if (obj != null)
                 {
@@ -1221,6 +1267,22 @@ namespace MySoft.Data
             view.CurrentPageIndex = pageIndex;
             view.RowCount = page.RowCount;
             view.DataSource = page.ToTable(pageIndex);
+            return view;
+        }
+
+        /// <summary>
+        /// 返回DataPage
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <returns></returns>
+        public DataPage<DataSet> ToDataSetPage(int pageSize, int pageIndex)
+        {
+            DataPage<DataSet> view = new DataPage<DataSet>(pageSize);
+            PageSection<T> page = GetPage(pageSize);
+            view.CurrentPageIndex = pageIndex;
+            view.RowCount = page.RowCount;
+            view.DataSource = page.ToDataSet(pageIndex);
             return view;
         }
 

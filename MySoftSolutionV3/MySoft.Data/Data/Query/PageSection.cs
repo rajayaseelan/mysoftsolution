@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace MySoft.Data
 {
@@ -97,6 +98,18 @@ namespace MySoft.Data
             int startIndex = pageSize * (pageIndex - 1) + 1;
             int endIndex = pageSize * pageIndex;
             return query.ToTable(startIndex, endIndex);
+        }
+
+        /// <summary>
+        /// ·µ»ØÒ»¸öDataSet
+        /// </summary>
+        /// <param name="pageIndex"></param>
+        /// <returns></returns>
+        public DataSet ToDataSet(int pageIndex)
+        {
+            int startIndex = pageSize * (pageIndex - 1) + 1;
+            int endIndex = pageSize * pageIndex;
+            return query.ToDataSet(startIndex, endIndex);
         }
 
         /// <summary>

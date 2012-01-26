@@ -224,11 +224,6 @@ namespace MySoft.Data
                         .Replace("__[", leftToken.ToString())
                         .Replace("]__", rightToken.ToString());
 
-            //string str = sql.Replace(" . ", ".")
-            //                .Replace(" , ", ",")
-            //                .Replace(" ( ", " (")
-            //                .Replace(" ) ", ") ");
-
             return CoreHelper.RemoveSurplusSpaces(sql);
         }
 

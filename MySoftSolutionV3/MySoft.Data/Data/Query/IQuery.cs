@@ -43,8 +43,7 @@ namespace MySoft.Data
         void End(string end);
     }
 
-    interface IQuerySection<T> : IQuery<T>
-        where T : Entity
+    interface IQuerySection<T> : IQuery<T> where T : Entity
     {
         #region ·Ö×éÅÅÐò
 
@@ -88,12 +87,15 @@ namespace MySoft.Data
 
         DataPage<IList<T>> ToListPage(int pageSize, int pageIndex);
         DataPage<DataTable> ToTablePage(int pageSize, int pageIndex);
+        DataPage<DataSet> ToDataSetPage(int pageSize, int pageIndex);
     }
 
-    interface IQuery<T>
-        where T : Entity
+    interface IQuery<T> where T : Entity
     {
         T ToSingle();
+
+        DataSet ToDataSet();
+        DataSet ToDataSet(int startIndex, int endIndex);
 
         SourceTable ToTable();
         SourceTable ToTable(int startIndex, int endIndex);

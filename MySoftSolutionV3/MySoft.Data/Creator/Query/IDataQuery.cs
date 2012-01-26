@@ -27,8 +27,12 @@ namespace MySoft.Data
         SourceTable ToTable();
         SourceTable ToTable(int topSize);
 
+        DataSet ToDataSet();
+        DataSet ToDataSet(int topSize);
+
         DataPage<IList<T>> ToListPage<T>(int pageSize, int pageIndex) where T : class;
         DataPage<DataTable> ToTablePage(int pageSize, int pageIndex);
+        DataPage<DataSet> ToDataSetPage(int pageSize, int pageIndex);
     }
 
     interface IPageQuery
@@ -39,5 +43,6 @@ namespace MySoft.Data
         SourceReader ToReader(int pageIndex);
         SourceList<T> ToList<T>(int pageIndex) where T : class;
         SourceTable ToTable(int pageIndex);
+        DataSet ToDataSet(int pageIndex);
     }
 }

@@ -133,6 +133,15 @@ namespace MySoft.Data
         }
 
         /// <summary>
+        /// 返回DataTable
+        /// </summary>
+        /// <returns></returns>
+        public DataSet ToDataSet()
+        {
+            return query.ToDataSet();
+        }
+
+        /// <summary>
         /// 返回ISourceReader
         /// </summary>
         /// <returns></returns>
@@ -159,6 +168,15 @@ namespace MySoft.Data
         public SourceTable ToTable(int topSize)
         {
             return query.GetTop(topSize).ToTable();
+        }
+
+        /// <summary>
+        /// 返回DataSet
+        /// </summary>
+        /// <returns></returns>
+        public DataSet ToDataSet(int topSize)
+        {
+            return query.GetTop(topSize).ToDataSet();
         }
 
         /// <summary>
@@ -192,6 +210,23 @@ namespace MySoft.Data
             view.CurrentPageIndex = pageIndex;
             view.RowCount = page.RowCount;
             view.DataSource = page.ToTable(pageIndex);
+            return view;
+        }
+
+
+        /// <summary>
+        /// 返回DataPage
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <returns></returns>
+        public DataPage<DataSet> ToDataSetPage(int pageSize, int pageIndex)
+        {
+            DataPage<DataSet> view = new DataPage<DataSet>(pageSize);
+            PageSection page = GetPage(pageSize);
+            view.CurrentPageIndex = pageIndex;
+            view.RowCount = page.RowCount;
+            view.DataSource = page.ToDataSet(pageIndex);
             return view;
         }
     }

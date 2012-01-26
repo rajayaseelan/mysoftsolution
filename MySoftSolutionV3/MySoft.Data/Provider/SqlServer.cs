@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Text;
+using MySoft.Data.Design;
 
 namespace MySoft.Data.SqlServer
 {
@@ -105,6 +106,48 @@ namespace MySoft.Data.SqlServer
                         p.SqlDbType = SqlDbType.Image;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// 创建分页查询
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="itemCount"></param>
+        /// <param name="skipCount"></param>
+        /// <returns></returns>
+        protected internal override QuerySection<T> CreatePageQuery<T>(QuerySection<T> query, int itemCount, int skipCount)
+        {
+            if (skipCount == 0)
+            {
+                ((IPaging)query).Prefix("top " + itemCount);
+                return query;
+            }
+            else
+            {
+                ((IPaging)query).Prefix("top " + itemCount);
+
+                Field pagingField = query.PagingField;
+
+                if ((IField)pagingField == null)
+                {
+                    throw new DataException("SqlServer2000或Access请使用SetPagingField设定分页主键！");
+                }
+
+                QuerySection<T> jquery = query.CreateQuery<T>();
+                ((IPaging)jquery).Prefix("top " + skipCount);
+                jquery.Select(pagingField);
+
+                //如果是联合查询，则需要符值整个QueryString
+                if (query.UnionQuery)
+                {
+                    jquery.QueryString = query.QueryString;
+                }
+
+                query.PageWhere = !pagingField.In(jquery);
+
+                return query;
             }
         }
     }

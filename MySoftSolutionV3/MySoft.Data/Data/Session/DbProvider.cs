@@ -903,49 +903,6 @@ namespace MySoft.Data
             return name;
         }
 
-        /// <summary>
-        /// 创建分页查询
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="query"></param>
-        /// <param name="itemCount"></param>
-        /// <param name="skipCount"></param>
-        /// <returns></returns>
-        protected internal virtual QuerySection<T> CreatePageQuery<T>(QuerySection<T> query, int itemCount, int skipCount)
-            where T : Entity
-        {
-            if (skipCount == 0)
-            {
-                ((IPaging)query).Prefix("top " + itemCount);
-                return query;
-            }
-            else
-            {
-                ((IPaging)query).Prefix("top " + itemCount);
-
-                Field pagingField = query.PagingField;
-
-                if ((IField)pagingField == null)
-                {
-                    throw new DataException("SqlServer2000或Access请使用SetPagingField设定分页主键！");
-                }
-
-                QuerySection<T> jquery = query.CreateQuery<T>();
-                ((IPaging)jquery).Prefix("top " + skipCount);
-                jquery.Select(pagingField);
-
-                //如果是联合查询，则需要符值整个QueryString
-                if (query.UnionQuery)
-                {
-                    jquery.QueryString = query.QueryString;
-                }
-
-                query.PageWhere = !pagingField.In(jquery);
-
-                return query;
-            }
-        }
-
         #endregion
 
         #region 抽像方法
@@ -997,6 +954,16 @@ namespace MySoft.Data
         /// <param name="cmd"></param>
         /// <returns></returns>
         protected abstract void PrepareParameter(DbCommand cmd);
+
+        /// <summary>
+        /// 创建分页查询
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="itemCount"></param>
+        /// <param name="skipCount"></param>
+        /// <returns></returns>
+        protected internal abstract QuerySection<T> CreatePageQuery<T>(QuerySection<T> query, int itemCount, int skipCount) where T : Entity;
 
         #endregion
 

@@ -35,17 +35,7 @@ namespace MySoft.IoC
         private Type callbackType;
         private IScsServerClient client;
         private AppCaller caller;
-        private bool isCached = true;
         private ICacheDependent cache;
-
-        /// <summary>
-        /// 是否缓存
-        /// </summary>
-        public bool IsCached
-        {
-            get { return isCached; }
-            set { isCached = true; }
-        }
 
         /// <summary>
         /// 缓存依赖

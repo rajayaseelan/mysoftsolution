@@ -3,16 +3,17 @@ using System.Data;
 using System.Data.Common;
 using System.Data.OleDb;
 using System.Text;
+using MySoft.Data.SqlServer;
 
 namespace MySoft.Data.MsAccess
 {
     /// <summary>
     /// Access Çý¶¯
     /// </summary>
-    public class MsAccessProvider : DbProvider
+    public class MsAccessProvider : SqlServerProvider
     {
         public MsAccessProvider(string connectionString)
-            : base(connectionString, OleDbFactory.Instance, '[', ']', '@')
+            : base(connectionString, OleDbFactory.Instance)
         {
         }
 

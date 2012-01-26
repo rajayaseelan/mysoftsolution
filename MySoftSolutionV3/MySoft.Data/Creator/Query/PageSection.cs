@@ -1,5 +1,6 @@
 ﻿using System;
 using MySoft.Data.Design;
+using System.Data;
 
 namespace MySoft.Data
 {
@@ -77,6 +78,16 @@ namespace MySoft.Data
         public SourceTable ToTable(int pageIndex)
         {
             return query.GetPage(pageSize).ToTable(pageIndex);
+        }
+
+        /// <summary>
+        /// 返回DataSet
+        /// </summary>
+        /// <param name="pageIndex"></param>
+        /// <returns></returns>
+        public DataSet ToDataSet(int pageIndex)
+        {
+            return query.GetPage(pageSize).ToDataSet(pageIndex);
         }
     }
 }

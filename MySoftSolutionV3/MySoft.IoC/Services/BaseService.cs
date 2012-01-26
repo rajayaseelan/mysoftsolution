@@ -86,7 +86,7 @@ namespace MySoft.IoC.Services
                         logger.WriteError(exception);
                     }
                 }
-                else if (reqMsg.CacheTime > 0 && OperationContext.Current.IsCached) //判断是否需要缓存
+                else if (reqMsg.CacheTime > 0) //判断是否需要缓存
                 {
                     //加入缓存
                     if (OperationContext.Current.Cache != null)
