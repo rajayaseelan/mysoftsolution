@@ -104,6 +104,12 @@ namespace MySoft.Data
         /// <returns></returns>
         void Fill(FillRelation relation, params string[] fillNames);
 
+        /// <summary>
+        /// 转换成SourceReader
+        /// </summary>
+        /// <returns></returns>
+        SourceReader ToReader();
+
         #endregion
     }
 }

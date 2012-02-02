@@ -75,6 +75,17 @@ namespace MySoft.IoC.Messages
         }
 
         /// <summary>
+        /// Get param Keys;
+        /// </summary>
+        public IList<string> Keys
+        {
+            get
+            {
+                return new List<string>(parmValues.Keys);
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
         /// </summary>
         /// <returns>
@@ -88,25 +99,32 @@ namespace MySoft.IoC.Messages
             }
             else
             {
-                JObject json = new JObject();
-                foreach (string key in parmValues.Keys)
+                try
                 {
-                    //将数据进行系列化
-                    var jsonString = string.Empty;
-                    try
-                    {
-                        jsonString = SerializationManager.SerializeJson(parmValues[key]);
-                    }
-                    catch (Exception ex)
-                    {
-                        jsonString = SerializationManager.SerializeJson(ex.Message);
-                    }
-
-                    //添加到json对象
-                    json.Add(key, JToken.Parse(jsonString));
+                    return SerializationManager.SerializeJson(parmValues);
                 }
+                catch
+                {
+                    JObject json = new JObject();
+                    foreach (string key in new List<string>(parmValues.Keys))
+                    {
+                        //将数据进行系列化
+                        var jsonString = string.Empty;
+                        try
+                        {
+                            jsonString = SerializationManager.SerializeJson(parmValues[key]);
+                        }
+                        catch (Exception ex)
+                        {
+                            jsonString = SerializationManager.SerializeJson(ex.Message);
+                        }
 
-                return json.ToString(Formatting.Indented);
+                        //添加到json对象
+                        json.Add(key, JToken.Parse(jsonString));
+                    }
+
+                    return json.ToString(Formatting.Indented);
+                }
             }
         }
     }

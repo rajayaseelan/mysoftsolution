@@ -128,6 +128,7 @@ namespace MySoft.IoC.Messages
         private string appName;
         private string hostName;
         private string requestAddress;
+        private string cacheKey;
         private int timeout = -1;
         private bool invokeMethod;
 
@@ -193,6 +194,21 @@ namespace MySoft.IoC.Messages
             set
             {
                 timeout = value;
+            }
+        }
+
+        /// <summary>
+        /// 获取或设置CacheKey
+        /// </summary>
+        public string CacheKey
+        {
+            get
+            {
+                return cacheKey;
+            }
+            set
+            {
+                cacheKey = value;
             }
         }
 

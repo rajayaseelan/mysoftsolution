@@ -90,19 +90,7 @@ namespace MySoft.Data
         {
             get
             {
-                DataTable table = new DataTable(this.TableName);
-                foreach (DataColumn column in this.Columns)
-                {
-                    table.Columns.Add(column.ColumnName, column.DataType);
-                }
-                if (this.Rows.Count != 0)
-                {
-                    foreach (DataRow row in this.Rows)
-                    {
-                        table.ImportRow(row);
-                    }
-                }
-                return table;
+                return this.Copy();
             }
         }
 
@@ -439,6 +427,16 @@ namespace MySoft.Data
                 list.Add(handler(this[index]));
             }
             return list;
+        }
+
+        /// <summary>
+        /// 转换成SourceReader
+        /// </summary>
+        /// <returns></returns>
+        public SourceReader ToReader()
+        {
+            var reader = this.CreateDataReader();
+            return new SourceReader(reader);
         }
 
         // 摘要:

@@ -78,11 +78,19 @@ namespace MySoft.IoC
                 }
 
                 string body = string.Format("【{3}】Call service ({0},{1}) timeout ({2} ms)！", reqMsg.ServiceName, reqMsg.MethodName, elapsedMilliseconds, reqMsg.TransactionId);
-                throw new WarningException(body)
+                var error = new WarningException(body)
                 {
                     ApplicationName = reqMsg.AppName,
                     ServiceName = reqMsg.ServiceName,
                     ErrorHeader = string.Format("Application【{0}】call service timeout. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                };
+
+                return new ResponseMessage
+                {
+                    TransactionId = reqMsg.TransactionId,
+                    Expiration = reqMsg.Expiration,
+                    ReturnType = reqMsg.ReturnType,
+                    Error = error
                 };
             }
 

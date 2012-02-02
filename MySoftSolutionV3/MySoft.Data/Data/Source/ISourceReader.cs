@@ -27,6 +27,12 @@ namespace MySoft.Data
         bool Read();
 
         /// <summary>
+        /// 转换为SourceTable
+        /// </summary>
+        /// <returns></returns>
+        SourceTable ToTable();
+
+        /// <summary>
         /// 返回下一结果集
         /// </summary>
         /// <returns></returns>

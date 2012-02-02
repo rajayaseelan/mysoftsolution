@@ -55,15 +55,12 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            //处理cacheKey信息
-            string cacheKey = string.Format("ServerCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
-
             //运行请求获得结果
             ResponseMessage resMsg = null;
             if (OperationContext.Current.Cache != null)
-                resMsg = OperationContext.Current.Cache.GetCache<ResponseMessage>(cacheKey);
+                resMsg = OperationContext.Current.Cache.GetCache<ResponseMessage>(reqMsg.CacheKey);
             else
-                resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
+                resMsg = CacheHelper.Get<ResponseMessage>(reqMsg.CacheKey);
 
             //如果未获取值
             if (resMsg == null)
@@ -90,9 +87,9 @@ namespace MySoft.IoC.Services
                 {
                     //加入缓存
                     if (OperationContext.Current.Cache != null)
-                        OperationContext.Current.Cache.AddCache(cacheKey, resMsg, reqMsg.CacheTime);
+                        OperationContext.Current.Cache.AddCache(reqMsg.CacheKey, resMsg, reqMsg.CacheTime);
                     else
-                        CacheHelper.Insert(cacheKey, resMsg, reqMsg.CacheTime);
+                        CacheHelper.Insert(reqMsg.CacheKey, resMsg, reqMsg.CacheTime);
                 }
             }
             else

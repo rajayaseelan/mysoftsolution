@@ -59,9 +59,33 @@ namespace MySoft.IoC
             }
         }
 
+        private string cacheKey;
+        /// <summary>
+        /// 获取或设置CacheKey
+        /// </summary>
+        public string CacheKey
+        {
+            get
+            {
+                return cacheKey;
+            }
+            set
+            {
+                cacheKey = value;
+            }
+        }
+
         /// <summary>
         /// 实例化OperationContractAttribute
         /// </summary>
         public OperationContractAttribute() { }
+
+        /// <summary>
+        /// 实例化OperationContractAttribute
+        /// </summary>
+        public OperationContractAttribute(int timeout)
+        {
+            this.timeout = timeout;
+        }
     }
 }

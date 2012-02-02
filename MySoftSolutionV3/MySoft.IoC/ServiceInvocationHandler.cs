@@ -112,27 +112,32 @@ namespace MySoft.IoC
 
             try
             {
-                string cacheKey = string.Format("ClientCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
+                string cacheKey = GetCacheKey(reqMsg, opContract);
+                reqMsg.CacheKey = cacheKey;
+
                 var resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
 
                 //调用服务
-                if (resMsg == null) resMsg = service.CallService(reqMsg);
-
-                //如果数据为null,则返回null
                 if (resMsg == null)
                 {
-                    return CoreHelper.GetTypeDefaultValue(methodInfo.ReturnType);
-                }
+                    resMsg = service.CallService(reqMsg);
 
-                //如果有异常，向外抛出
-                if (resMsg.IsError)
-                {
-                    throw resMsg.Error;
-                }
-                else if (clientCacheTime > 0)
-                {
-                    //没有异常，则缓存数据
-                    CacheHelper.Insert(cacheKey, resMsg, clientCacheTime);
+                    //如果数据为null,则返回null
+                    if (resMsg == null)
+                    {
+                        return CoreHelper.GetTypeDefaultValue(methodInfo.ReturnType);
+                    }
+
+                    //如果有异常，向外抛出
+                    if (resMsg.IsError)
+                    {
+                        throw resMsg.Error;
+                    }
+                    else if (clientCacheTime > 0)
+                    {
+                        //没有异常，则缓存数据
+                        CacheHelper.Insert(cacheKey, resMsg, clientCacheTime);
+                    }
                 }
 
                 //给引用的参数赋值
@@ -176,6 +181,36 @@ namespace MySoft.IoC
         public object Invoke(object proxy, System.Reflection.MethodInfo method, object[] args)
         {
             return CallService(method, args);
+        }
+
+        /// <summary>
+        /// 获取缓存Key值
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="opContract"></param>
+        /// <returns></returns>
+        private string GetCacheKey(RequestMessage reqMsg, OperationContractAttribute opContract)
+        {
+            if (opContract != null && !string.IsNullOrEmpty(opContract.CacheKey))
+            {
+                string cacheKey = opContract.CacheKey;
+                foreach (var key in reqMsg.Parameters.Keys)
+                {
+                    string name = "{" + key + "}";
+                    if (cacheKey.Contains(name))
+                    {
+                        var parameter = reqMsg.Parameters[key];
+                        if (parameter != null)
+                            cacheKey = cacheKey.Replace(name, parameter.ToString());
+                        else
+                            cacheKey = cacheKey.Replace(name, "");
+                    }
+                }
+
+                return string.Format("CastleCache_{0}_{1}", reqMsg.ServiceName, cacheKey);
+            }
+
+            return string.Format("CastleCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
         }
 
         #endregion

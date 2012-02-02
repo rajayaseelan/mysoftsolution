@@ -516,10 +516,24 @@ namespace MySoft.Data
                 //读取数据到实体
                 list.Add(handler(this));
             }
-            this.Close();
-            this.Dispose();
+            reader.Close();
+            reader.Dispose();
 
             return list;
+        }
+
+        /// <summary>
+        /// 转换为SourceTable
+        /// </summary>
+        /// <returns></returns>
+        public SourceTable ToTable()
+        {
+            var sourceTable = new SourceTable();
+            sourceTable.Load(reader);
+            reader.Close();
+            reader.Dispose();
+
+            return sourceTable;
         }
     }
 }

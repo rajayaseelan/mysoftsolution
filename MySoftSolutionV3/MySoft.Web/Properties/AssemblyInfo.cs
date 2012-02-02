@@ -10,7 +10,7 @@ using System.Web.UI;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("MySoft开发组")]
 [assembly: AssemblyProduct("MySoft.Web")]
-[assembly: AssemblyCopyright("版权所有 © MySoft 2011")]
+[assembly: AssemblyCopyright("版权所有 © MySoft 2012")]
 [assembly: AssemblyTrademark("MySoft")]
 [assembly: AssemblyCulture("")]
 
@@ -37,4 +37,4 @@ using System.Web.UI;
 // 可以指定所有这些值，也可以使用“修订号”和“内部版本号”的默认值，
 // 方法是按如下所示使用“*”:
 [assembly: AssemblyVersion("3.0.0.0")]
-[assembly: AssemblyFileVersion("3.0.2012.0105")]
+[assembly: AssemblyFileVersion("3.0.2012.0202")]

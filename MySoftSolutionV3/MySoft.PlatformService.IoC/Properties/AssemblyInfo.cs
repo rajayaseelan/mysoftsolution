@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("MySoft开发组")]
 [assembly: AssemblyProduct("MySoft.PlatformService.IoC")]
-[assembly: AssemblyCopyright("版权所有 © MySoft 2011")]
+[assembly: AssemblyCopyright("版权所有 © MySoft 2012")]
 [assembly: AssemblyTrademark("MySoft")]
 [assembly: AssemblyCulture("")]
 
