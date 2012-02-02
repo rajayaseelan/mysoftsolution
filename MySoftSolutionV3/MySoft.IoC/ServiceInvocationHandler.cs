@@ -202,12 +202,10 @@ namespace MySoft.IoC
                         var parameter = reqMsg.Parameters[key];
                         if (parameter != null)
                             cacheKey = cacheKey.Replace(name, parameter.ToString());
-                        else
-                            cacheKey = cacheKey.Replace(name, "");
                     }
                 }
 
-                return string.Format("CastleCache_{0}_{1}", reqMsg.ServiceName, cacheKey);
+                return string.Format("{0}_{1}", reqMsg.ServiceName, cacheKey);
             }
 
             return string.Format("CastleCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
