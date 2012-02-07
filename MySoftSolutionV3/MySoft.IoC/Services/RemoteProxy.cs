@@ -126,10 +126,11 @@ namespace MySoft.IoC.Services
                 //启动线程来
                 if (autoEvent.WaitOne(elapsedTime))
                 {
-                    autoEvent.Close();
-
                     var value = hashtable[reqMsg.TransactionId];
                     resMsg = value.Message;
+
+                    //Release Resource
+                    autoEvent.Close();
                 }
 
                 //用完后移除

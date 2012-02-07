@@ -121,9 +121,17 @@ namespace MySoft.Web.UI
                 }
             }
             catch (ThreadAbortException) { }
+            catch (BusinessException ex)
+            {
+                AjaxCallbackParam param = new AjaxCallbackParam(string.Format("[{0}]{1}", ex.Code, ex.Message));
+                param.Success = false;
+
+                WriteToBuffer(param);
+            }
             catch (Exception ex)
             {
-                AjaxCallbackParam param = new AjaxCallbackParam(ex.Message);
+                var error = ErrorHelper.GetInnerException(ex);
+                AjaxCallbackParam param = new AjaxCallbackParam(error.Message);
                 param.Success = false;
 
                 WriteToBuffer(param);
@@ -359,7 +367,6 @@ namespace MySoft.Web.UI
         /// <summary>
         /// 获取页面参数
         /// </summary>
-        /// <param name="eventArgument"></param>
         private CallbackParams GetCallbackParams()
         {
             CallbackParams callbackParams = new CallbackParams();
@@ -394,7 +401,8 @@ namespace MySoft.Web.UI
         /// </summary>
         private object GetObject(Type type, string paramsKey)
         {
-            return SerializationManager.DeserializeJson(type, WebHelper.GetRequestParam<string>(info.CurrentPage.Request, paramsKey, ""));
+            string jsonString = WebHelper.GetRequestParam<string>(info.CurrentPage.Request, paramsKey, "");
+            return SerializationManager.DeserializeJson(type, jsonString);
         }
 
         /// <summary>
@@ -403,24 +411,16 @@ namespace MySoft.Web.UI
         /// <param name="param"></param>
         private void WriteToBuffer(AjaxCallbackParam param)
         {
-            try
-            {
-                info.CurrentPage.Response.Clear();
+            info.CurrentPage.Response.Clear();
 
-                if (param != null)
-                    info.CurrentPage.Response.Write(SerializationManager.SerializeJson(param));
-                else
-                    info.CurrentPage.Response.ContentType = "image/gif";
+            if (param != null)
+                info.CurrentPage.Response.Write(SerializationManager.SerializeJson(param));
+            else
+                info.CurrentPage.Response.ContentType = "image/gif";
 
-                info.CurrentPage.Response.Cache.SetNoStore();
-                info.CurrentPage.Response.Flush();
-                info.CurrentPage.Response.End();
-            }
-            catch (ThreadAbortException) { }
-            finally
-            {
-                HttpContext.Current.ApplicationInstance.CompleteRequest();
-            }
+            info.CurrentPage.Response.Cache.SetNoStore();
+            info.CurrentPage.Response.Flush();
+            info.CurrentPage.Response.End();
         }
 
         /// <summary>
@@ -429,19 +429,11 @@ namespace MySoft.Web.UI
         /// <param name="methods"></param>
         private void WriteToBuffer(AjaxMethodInfo[] methods)
         {
-            try
-            {
-                info.CurrentPage.Response.Clear();
-                info.CurrentPage.Response.Write(SerializationManager.SerializeJson(methods));
-                info.CurrentPage.Response.Cache.SetNoStore();
-                info.CurrentPage.Response.Flush();
-                info.CurrentPage.Response.End();
-            }
-            catch (ThreadAbortException) { }
-            finally
-            {
-                HttpContext.Current.ApplicationInstance.CompleteRequest();
-            }
+            info.CurrentPage.Response.Clear();
+            info.CurrentPage.Response.Write(SerializationManager.SerializeJson(methods));
+            info.CurrentPage.Response.Cache.SetNoStore();
+            info.CurrentPage.Response.Flush();
+            info.CurrentPage.Response.End();
         }
 
         /// <summary>
@@ -450,19 +442,11 @@ namespace MySoft.Web.UI
         /// <param name="html"></param>
         private void WriteToBuffer(string html)
         {
-            try
-            {
-                info.CurrentPage.Response.Clear();
-                info.CurrentPage.Response.Write(html);
-                info.CurrentPage.Response.Cache.SetNoStore();
-                info.CurrentPage.Response.Flush();
-                info.CurrentPage.Response.End();
-            }
-            catch (ThreadAbortException) { }
-            finally
-            {
-                HttpContext.Current.ApplicationInstance.CompleteRequest();
-            }
+            info.CurrentPage.Response.Clear();
+            info.CurrentPage.Response.Write(html);
+            info.CurrentPage.Response.Cache.SetNoStore();
+            info.CurrentPage.Response.Flush();
+            info.CurrentPage.Response.End();
         }
 
         #endregion
