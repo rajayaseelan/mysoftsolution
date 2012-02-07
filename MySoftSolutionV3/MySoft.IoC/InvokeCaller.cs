@@ -7,7 +7,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 调用者
     /// </summary>
-    public class InvokeCaller : IDisposable
+    public class InvokeCaller
     {
         private CastleFactoryConfiguration config;
         private IServiceContainer container;
@@ -69,19 +69,5 @@ namespace MySoft.IoC
             //返回数据
             return resMsg.Value;
         }
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        public void Dispose()
-        {
-            this.config = null;
-            this.container = null;
-            this.service = null;
-        }
-
-        #endregion
     }
 }
