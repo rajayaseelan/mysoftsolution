@@ -123,7 +123,7 @@ namespace MySoft.Web.UI
             catch (ThreadAbortException) { }
             catch (Exception ex)
             {
-                AjaxCallbackParam param = new AjaxCallbackParam(ex.ToString());
+                AjaxCallbackParam param = new AjaxCallbackParam(ex.Message);
                 param.Success = false;
 
                 WriteToBuffer(param);
