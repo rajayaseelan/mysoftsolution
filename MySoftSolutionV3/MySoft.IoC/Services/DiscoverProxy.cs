@@ -49,7 +49,7 @@ namespace MySoft.IoC.Services
             //判断是否为StatusService服务
             if (reqMsg.ServiceName == typeof(IStatusService).FullName)
             {
-                throw new WarningException("State services can't use discover service way!");
+                throw new WarningException("Status service can't use discover service way!");
             }
 
             //如果能找到服务

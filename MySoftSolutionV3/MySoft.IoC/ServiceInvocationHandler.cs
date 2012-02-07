@@ -51,9 +51,7 @@ namespace MySoft.IoC
             reqMsg.MethodName = methodInfo.ToString();                  //方法名称
             reqMsg.ReturnType = methodInfo.ReturnType;                      //返回类型
             reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
-            reqMsg.Timeout = config.Timeout;                                //设置超时时间
             reqMsg.CacheTime = -1;                                          //设置缓存时间
-            //reqMsg.Expiration = DateTime.Now.AddSeconds(config.Timeout)                   //设置过期时间
 
             #endregion
 
@@ -105,7 +103,6 @@ namespace MySoft.IoC
             int clientCacheTime = -1;
             if (opContract != null)
             {
-                if (opContract.Timeout > 0) reqMsg.Timeout = opContract.Timeout;
                 if (opContract.ServerCacheTime > 0) reqMsg.CacheTime = opContract.ServerCacheTime;
                 if (opContract.ClientCacheTime > 0) clientCacheTime = opContract.ClientCacheTime;
             }
@@ -113,14 +110,19 @@ namespace MySoft.IoC
             try
             {
                 string cacheKey = GetCacheKey(reqMsg, opContract);
-                reqMsg.CacheKey = cacheKey;
-
                 var resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
 
                 //调用服务
                 if (resMsg == null)
                 {
-                    resMsg = service.CallService(reqMsg);
+                    //调用多次
+                    var timesCount = config.Times;
+                    if (timesCount < 1) timesCount = 1;
+                    for (int times = 0; times < timesCount; times++)
+                    {
+                        resMsg = service.CallService(reqMsg);
+                        if (resMsg != null) break;
+                    }
 
                     //如果数据为null,则返回null
                     if (resMsg == null)
@@ -208,7 +210,7 @@ namespace MySoft.IoC
                 return string.Format("{0}_{1}", reqMsg.ServiceName, cacheKey);
             }
 
-            return string.Format("CastleCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
+            return string.Format("ClientCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
         }
 
         #endregion

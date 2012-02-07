@@ -49,45 +49,53 @@ namespace MySoft.IoC.Aspect
         /// <returns></returns>
         public static object CreateService(Type serviceType, params StandardInterceptor[] interceptors)
         {
-            object service = null;
-            var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(serviceType);
-            if (attributes != null && attributes.Length > 0)
-            {
-                IList<object> list = new List<object>();
-                foreach (var attribute in attributes)
-                {
-                    if (typeof(StandardInterceptor).IsAssignableFrom(attribute.InterceptorType))
-                    {
-                        object value = null;
-                        if (attribute.Arguments == null)
-                            value = Activator.CreateInstance(attribute.InterceptorType);
-                        else
-                        {
-                            if (attribute.Arguments.GetType().IsClass)
-                            {
-                                var arg = Activator.CreateInstance(attribute.Arguments.GetType());
-                                value = Activator.CreateInstance(attribute.InterceptorType, arg);
-                            }
-                            else
-                                value = Activator.CreateInstance(attribute.InterceptorType, attribute.Arguments);
-                        }
+            string interceptorKey = string.Format("AspectInterceptor_{0}", serviceType);
+            var interceptorlist = CacheHelper.Get<List<StandardInterceptor>>(interceptorKey);
 
-                        list.Add(value);
+            if (interceptorlist == null)
+            {
+                interceptorlist = new List<StandardInterceptor>();
+                var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(serviceType);
+                if (attributes != null && attributes.Length > 0)
+                {
+                    IList<object> list = new List<object>();
+                    foreach (var attribute in attributes)
+                    {
+                        if (typeof(StandardInterceptor).IsAssignableFrom(attribute.InterceptorType))
+                        {
+                            object value = null;
+                            if (attribute.Arguments == null)
+                                value = Activator.CreateInstance(attribute.InterceptorType);
+                            else
+                            {
+                                if (attribute.Arguments.GetType().IsClass)
+                                {
+                                    var arg = Activator.CreateInstance(attribute.Arguments.GetType());
+                                    value = Activator.CreateInstance(attribute.InterceptorType, arg);
+                                }
+                                else
+                                    value = Activator.CreateInstance(attribute.InterceptorType, attribute.Arguments);
+                            }
+
+                            list.Add(value);
+                        }
                     }
+
+                    interceptorlist.AddRange(interceptors);
+                    interceptorlist.AddRange(list.Cast<StandardInterceptor>());
+                }
+                else if (interceptors != null && interceptors.Length > 0)
+                {
+                    interceptorlist.AddRange(interceptors);
                 }
 
-                var interceptorlist = new List<StandardInterceptor>();
-                interceptorlist.AddRange(interceptors);
-                interceptorlist.AddRange(list.Cast<StandardInterceptor>());
-
-                service = AspectFactory.CreateProxy(serviceType, interceptorlist.ToArray());
-            }
-            else if (interceptors != null && interceptors.Length > 0)
-            {
-                service = AspectFactory.CreateProxy(serviceType, interceptors.ToArray());
+                CacheHelper.Permanent(interceptorKey, interceptorlist);
             }
 
-            return service;
+            if (interceptorlist.Count > 0)
+                return AspectFactory.CreateProxy(serviceType, interceptorlist.ToArray());
+            else
+                return null;
         }
     }
 }

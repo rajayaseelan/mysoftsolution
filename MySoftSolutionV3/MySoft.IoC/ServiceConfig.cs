@@ -9,11 +9,6 @@ namespace MySoft.IoC
         #region Const Members
 
         /// <summary>
-        /// The default timeout number. 
-        /// </summary>
-        public const int DEFAULT_TIMEOUT_NUMBER = 30; //30秒
-
-        /// <summary>
         /// The default record number.
         /// </summary>
         public const int DEFAULT_RECORD_NUMBER = 3600; //3600次
@@ -21,7 +16,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default client timeout number. 
         /// </summary>
-        public const int DEFAULT_CLIENT_TIMEOUT = 60 * 2; //120秒
+        public const int DEFAULT_CLIENT_TIMEOUT = 60; //60秒
 
         /// <summary>
         /// The default pool number.

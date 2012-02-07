@@ -22,6 +22,16 @@ namespace MySoft.PlatformService.WinForm
             CastleFactory.Create().OnError += new ErrorLogEventHandler(frmMain_OnError);
         }
 
+        ~frmMain()
+        {
+            try
+            {
+                webBrowser1.Dispose();
+                webBrowser2.Dispose();
+            }
+            finally { }
+        }
+
         void frmMain_OnError(Exception error)
         {
             //发生错误SocketException为网络断开
@@ -99,7 +109,7 @@ namespace MySoft.PlatformService.WinForm
                                 url = url + "&timer=" + timer;
                             else
                                 url = url + "?timer=" + timer;
-                            webBrowser2.Navigate(url);
+                            webBrowser2.Url = new Uri(url);
                         }
                     }
 
@@ -530,9 +540,10 @@ namespace MySoft.PlatformService.WinForm
 
             var url = ConfigurationManager.AppSettings["ServerMonitorUrl"];
             if (!string.IsNullOrEmpty(url))
-                webBrowser2.Navigate(url);
+                webBrowser2.Url = new Uri(url);
             else
-                webBrowser2.Navigate("about:blank");
+                webBrowser2.Url = new Uri("about:blank");
+
             //webBrowser2.AllowNavigation = false;
             //webBrowser2.IsWebBrowserContextMenuEnabled = false;
         }

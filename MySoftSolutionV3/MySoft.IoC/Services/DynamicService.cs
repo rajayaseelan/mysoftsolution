@@ -39,7 +39,6 @@ namespace MySoft.IoC.Services
             resMsg.TransactionId = reqMsg.TransactionId;
             resMsg.ServiceName = reqMsg.ServiceName;
             resMsg.MethodName = reqMsg.MethodName;
-            resMsg.Expiration = reqMsg.Expiration;
 
             #region 获取相应的方法
 
@@ -75,18 +74,19 @@ namespace MySoft.IoC.Services
             {
                 try
                 {
+                    //解析服务
                     service = container[classType];
 
                     //释放资源
                     container.Release(service);
+
+                    //返回拦截服务
+                    service = AspectManager.GetService(service);
                 }
                 catch (Exception ex)
                 {
                 }
             }
-
-            //返回拦截服务
-            service = AspectManager.GetService(service);
 
             try
             {

@@ -55,14 +55,11 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            //运行请求获得结果
-            ResponseMessage resMsg = null;
-            if (OperationContext.Current.Cache != null)
-                resMsg = OperationContext.Current.Cache.GetCache<ResponseMessage>(reqMsg.CacheKey);
-            else
-                resMsg = CacheHelper.Get<ResponseMessage>(reqMsg.CacheKey);
+            //从缓存获取值
+            string cacheKey = GetCacheKey(reqMsg);
+            ResponseMessage resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
 
-            //如果未获取值
+            //运行请求获得结果
             if (resMsg == null)
             {
                 resMsg = Run(reqMsg);
@@ -86,19 +83,25 @@ namespace MySoft.IoC.Services
                 else if (reqMsg.CacheTime > 0) //判断是否需要缓存
                 {
                     //加入缓存
-                    if (OperationContext.Current.Cache != null)
-                        OperationContext.Current.Cache.AddCache(reqMsg.CacheKey, resMsg, reqMsg.CacheTime);
-                    else
-                        CacheHelper.Insert(reqMsg.CacheKey, resMsg, reqMsg.CacheTime);
+                    CacheHelper.Insert(cacheKey, resMsg, reqMsg.CacheTime);
                 }
             }
             else
             {
                 resMsg.TransactionId = reqMsg.TransactionId;
-                resMsg.Expiration = reqMsg.Expiration;
             }
 
             return resMsg;
+        }
+
+        /// <summary>
+        /// 获取缓存Key值
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private string GetCacheKey(RequestMessage reqMsg)
+        {
+            return string.Format("ServerCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
         }
 
         #endregion

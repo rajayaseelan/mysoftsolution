@@ -5,7 +5,6 @@ using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using MySoft.Cache;
 
 namespace MySoft.IoC
 {
@@ -35,16 +34,6 @@ namespace MySoft.IoC
         private Type callbackType;
         private IScsServerClient client;
         private AppCaller caller;
-        private ICacheDependent cache;
-
-        /// <summary>
-        /// 缓存依赖
-        /// </summary>
-        public ICacheDependent Cache
-        {
-            get { return cache; }
-            set { cache = value; }
-        }
 
         /// <summary>
         /// 调用者

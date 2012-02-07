@@ -3,6 +3,7 @@ using System.Collections;
 using System.Threading;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using System.Collections.Generic;
 
 namespace MySoft.IoC.Services
 {
@@ -14,7 +15,7 @@ namespace MySoft.IoC.Services
         protected ILog logger;
         protected RemoteNode node;
         protected ServiceRequestPool reqPool;
-        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+        private IDictionary<Guid, WaitResult> hashtable = new Dictionary<Guid, WaitResult>();
 
         public RemoteProxy(RemoteNode node, ILog logger)
         {
@@ -56,7 +57,6 @@ namespace MySoft.IoC.Services
                     TransactionId = request.TransactionId,
                     ServiceName = request.ServiceName,
                     MethodName = request.Message,
-                    Expiration = request.Expiration,
                     ReturnType = request.ReturnType,
                     Error = error
                 };
@@ -71,9 +71,12 @@ namespace MySoft.IoC.Services
         /// <param name="resMsg"></param>
         protected void QueueMessage(ResponseMessage resMsg)
         {
-            if (resMsg.Expiration > DateTime.Now)
+            if (hashtable.ContainsKey(resMsg.TransactionId))
             {
-                hashtable[resMsg.TransactionId] = resMsg;
+                var value = hashtable[resMsg.TransactionId];
+                value.Message = resMsg;
+
+                value.Reset.Set();
             }
         }
 
@@ -106,71 +109,33 @@ namespace MySoft.IoC.Services
 
             try
             {
-                //设置过期时间
-                reqMsg.Expiration = DateTime.Now.AddSeconds(node.Timeout);
-
                 //发送消息
                 reqService.SendMessage(reqMsg);
 
-                Thread thread = null;
-
-                //获取消息
-                var asyncCaller = new AsyncMethodCaller<ResponseMessage, RequestMessage>(state =>
+                //处理数据
+                var autoEvent = new AutoResetEvent(false);
+                lock (hashtable)
                 {
-                    thread = Thread.CurrentThread;
-
-                    //启动线程来
-                    while (true)
-                    {
-                        var retMsg = hashtable[state.TransactionId] as ResponseMessage;
-
-                        //如果有数据返回，则响应
-                        if (retMsg != null)
-                        {
-                            //用完后移除
-                            hashtable.Remove(state.TransactionId);
-
-                            return retMsg;
-                        }
-
-                        //防止cpu使用率过高
-                        Thread.Sleep(1);
-                    }
-                });
-
-                //开始调用
-                IAsyncResult ar = asyncCaller.BeginInvoke(reqMsg, iar => { }, asyncCaller);
-
-                var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
-
-                //等待信号，客户端等待5分钟
-                bool timeout = !ar.AsyncWaitHandle.WaitOne(elapsedTime);
-
-                if (timeout)
-                {
-                    try
-                    {
-                        if (!ar.IsCompleted && thread != null)
-                            thread.Abort();
-                    }
-                    catch (Exception ex)
-                    {
-                    }
-
-                    string body = string.Format("【{5}】Call ({0}:{1}) remote service ({2},{3}) timeout ({4} ms)！", node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, elapsedTime.TotalMilliseconds, reqMsg.TransactionId);
-                    throw new WarningException(body)
-                    {
-                        ApplicationName = reqMsg.AppName,
-                        ServiceName = reqMsg.ServiceName,
-                        ErrorHeader = string.Format("Application【{0}】call service timeout. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                    };
+                    hashtable[reqMsg.TransactionId] = new WaitResult { Reset = autoEvent };
                 }
 
-                //获取返回结果
-                var resMsg = asyncCaller.EndInvoke(ar);
+                var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
+                ResponseMessage resMsg = null;
 
-                //关闭句柄
-                ar.AsyncWaitHandle.Close();
+                //启动线程来
+                if (autoEvent.WaitOne(elapsedTime))
+                {
+                    autoEvent.Close();
+
+                    var value = hashtable[reqMsg.TransactionId];
+                    resMsg = value.Message;
+                }
+
+                //用完后移除
+                lock (hashtable)
+                {
+                    hashtable.Remove(reqMsg.TransactionId);
+                }
 
                 return resMsg;
             }

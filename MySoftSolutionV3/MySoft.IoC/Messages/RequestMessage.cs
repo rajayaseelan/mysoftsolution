@@ -12,7 +12,6 @@ namespace MySoft.IoC.Messages
         private string methodName;
         private Guid transactionId;
         private ParameterCollection parameters = new ParameterCollection();
-        private DateTime expiration;
         private Type returnType;
 
         /// <summary>
@@ -96,22 +95,6 @@ namespace MySoft.IoC.Messages
         }
 
         /// <summary>
-        /// Gets or sets the expiration.
-        /// </summary>
-        /// <value>The expiration.</value>
-        public DateTime Expiration
-        {
-            get
-            {
-                return expiration;
-            }
-            set
-            {
-                expiration = value;
-            }
-        }
-
-        /// <summary>
         /// 响应的消息
         /// </summary>
         public abstract string Message { get; }
@@ -128,8 +111,6 @@ namespace MySoft.IoC.Messages
         private string appName;
         private string hostName;
         private string requestAddress;
-        private string cacheKey;
-        private int timeout = -1;
         private bool invokeMethod;
 
         #endregion
@@ -179,36 +160,6 @@ namespace MySoft.IoC.Messages
             set
             {
                 cacheTime = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the timeout of the service.
-        /// </summary>
-        public int Timeout
-        {
-            get
-            {
-                return timeout;
-            }
-            set
-            {
-                timeout = value;
-            }
-        }
-
-        /// <summary>
-        /// 获取或设置CacheKey
-        /// </summary>
-        public string CacheKey
-        {
-            get
-            {
-                return cacheKey;
-            }
-            set
-            {
-                cacheKey = value;
             }
         }
 

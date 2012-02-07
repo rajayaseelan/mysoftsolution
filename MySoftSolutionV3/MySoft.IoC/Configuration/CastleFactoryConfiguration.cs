@@ -15,7 +15,7 @@ namespace MySoft.IoC.Configuration
         private string defaultKey;              //默认服务
         private string appName;                 //host名称
         private bool throwerror = true;         //抛出异常
-        private int timeout = ServiceConfig.DEFAULT_TIMEOUT_NUMBER;       //默认超时时间        60秒
+        private int times = 3;              //调用次数
 
         /// <summary>
         /// 获取远程对象配置
@@ -29,7 +29,7 @@ namespace MySoft.IoC.Configuration
             {
                 var tmp = ConfigurationManager.GetSection(key);
                 obj = tmp as CastleFactoryConfiguration;
-                CacheHelper.Permanent(key, obj);;
+                CacheHelper.Permanent(key, obj); ;
             }
 
             return obj;
@@ -48,8 +48,8 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["type"] != null && xmlnode["type"].Value.Trim() != string.Empty)
                 type = (CastleFactoryType)Enum.Parse(typeof(CastleFactoryType), xmlnode["type"].Value, true);
 
-            if (xmlnode["timeout"] != null && xmlnode["timeout"].Value.Trim() != string.Empty)
-                timeout = Convert.ToInt32(xmlnode["timeout"].Value);
+            if (xmlnode["times"] != null && xmlnode["times"].Value.Trim() != string.Empty)
+                times = Convert.ToInt32(xmlnode["times"].Value);
 
             if (xmlnode["throwerror"] != null && xmlnode["throwerror"].Value.Trim() != string.Empty)
                 throwerror = Convert.ToBoolean(xmlnode["throwerror"].Value);
@@ -129,6 +129,15 @@ namespace MySoft.IoC.Configuration
         }
 
         /// <summary>
+        /// Gets or sets the times
+        /// </summary>
+        public int Times
+        {
+            get { return times; }
+            set { times = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the app name.
         /// </summary>
         /// <value>The host name.</value>
@@ -136,16 +145,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return appName; }
             set { appName = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the timeout
-        /// </summary>
-        /// <value>The timeout. ：单位（秒）</value>
-        public int Timeout
-        {
-            get { return timeout; }
-            set { timeout = value; }
         }
 
         /// <summary>

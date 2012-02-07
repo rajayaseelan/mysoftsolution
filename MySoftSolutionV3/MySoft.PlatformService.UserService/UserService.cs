@@ -53,7 +53,7 @@ namespace MySoft.PlatformService.UserService
 
             length = user.Description.Length;
 
-            //Thread.Sleep(2000);
+            Thread.Sleep(2000);
 
             return user;
         }

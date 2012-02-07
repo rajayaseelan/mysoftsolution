@@ -3,30 +3,6 @@ using MySoft.IoC.Messages;
 namespace MySoft.IoC
 {
     /// <summary>
-    /// 异步调用委托
-    /// </summary>
-    /// <param name="state"></param>
-    /// <returns></returns>
-    public delegate void AsyncMethodCaller(object state);
-
-    /// <summary>
-    /// 异步调用委托
-    /// </summary>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="state"></param>
-    /// <returns></returns>
-    public delegate TResult AsyncMethodCaller<TResult>(object state);
-
-    /// <summary>
-    /// 异步调用委托
-    /// </summary>
-    /// <typeparam name="TResult"></typeparam>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="state"></param>
-    /// <returns></returns>
-    public delegate TResult AsyncMethodCaller<TResult, T>(T state);
-
-    /// <summary>
     /// interface of all services.
     /// </summary>
     public interface IService

@@ -160,7 +160,6 @@ namespace MySoft.IoC
                     var resMsg = new ResponseMessage
                     {
                         TransactionId = new Guid(e.Message.RepliedMessageId),
-                        Expiration = DateTime.Now.AddMinutes(1),
                         ReturnType = ex.GetType(),
                         Error = ex
                     };

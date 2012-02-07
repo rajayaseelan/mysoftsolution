@@ -11,22 +11,6 @@ namespace MySoft.IoC
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class OperationContractAttribute : ContractAttribute
     {
-        private int timeout = -1;
-        /// <summary>
-        /// Gets or sets the timeout.
-        /// </summary>
-        public int Timeout
-        {
-            get
-            {
-                return timeout;
-            }
-            set
-            {
-                timeout = value;
-            }
-        }
-
         private int clientCacheTime = -1;
         /// <summary>
         /// 客户端缓存时间（单位：秒）
@@ -79,13 +63,5 @@ namespace MySoft.IoC
         /// 实例化OperationContractAttribute
         /// </summary>
         public OperationContractAttribute() { }
-
-        /// <summary>
-        /// 实例化OperationContractAttribute
-        /// </summary>
-        public OperationContractAttribute(int timeout)
-        {
-            this.timeout = timeout;
-        }
     }
 }

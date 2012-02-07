@@ -49,11 +49,7 @@ namespace MySoft.IoC.Services
 
             if (cacheKey != null)
             {
-                object obj = null;
-                if (OperationContext.Current.Cache != null)
-                    obj = OperationContext.Current.Cache.GetCache<object>(cacheKey);
-                else
-                    obj = CacheHelper.Get(cacheKey);
+                object obj = CacheHelper.Get(cacheKey);
 
                 if (obj != null)
                 {
@@ -75,10 +71,8 @@ namespace MySoft.IoC.Services
             {
                 int cacheTime = cacheTimes[invocation.Method.ToString()];
                 object value = new ArrayList { invocation.Arguments, invocation.ReturnValue };
-                if (OperationContext.Current.Cache != null)
-                    OperationContext.Current.Cache.AddCache(cacheKey, value, cacheTime);
-                else
-                    CacheHelper.Insert(cacheKey, value, cacheTime);
+
+                CacheHelper.Insert(cacheKey, value, cacheTime);
             }
         }
     }

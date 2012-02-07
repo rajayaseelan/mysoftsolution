@@ -227,19 +227,36 @@ namespace MySoft.IoC
                 //调用事件
                 CallEventArgs args = null;
 
-                //发送响应信息
-                GetSendResponse(client, reqMsg, out args);
-
-                //如果调用句柄不为空，则调用
-                if (args != null && OnCalling != null)
+                try
                 {
-                    try
+                    //发送响应信息
+                    GetSendResponse(client, reqMsg, out args);
+
+                    //如果调用句柄不为空，则调用
+                    if (args != null && OnCalling != null)
                     {
-                        OnCalling(client, args);
+                        try
+                        {
+                            OnCalling(client, args);
+                        }
+                        catch (Exception ex)
+                        {
+                        }
                     }
-                    catch (Exception ex)
+                }
+                catch (Exception ex)
+                {
+                    container.WriteError(ex);
+
+                    var resMsg = new ResponseMessage
                     {
-                    }
+                        TransactionId = new Guid(data.RepliedMessageId),
+                        ReturnType = ex.GetType(),
+                        Error = ex
+                    };
+
+                    //发送数据到服务端
+                    SendMessage(client, new ScsResultMessage(resMsg, data.RepliedMessageId));
                 }
             }
         }
@@ -261,7 +278,7 @@ namespace MySoft.IoC
                 var resMsg = caller.CallMethod(client, reqMsg, null, out elapsedMilliseconds);
 
                 //发送数据到服务端
-                SendMessage(client, new ScsResultMessage(resMsg, reqMsg.TransactionId.ToString()));
+                SendMessage(client, new ScsResultMessage(resMsg, resMsg.TransactionId.ToString()));
             }
             else
             {
@@ -309,7 +326,7 @@ namespace MySoft.IoC
                 }
 
                 //实例化Message对象来进行发送
-                var sendMessage = new ScsResultMessage(resMsg, reqMsg.TransactionId.ToString());
+                var sendMessage = new ScsResultMessage(resMsg, resMsg.TransactionId.ToString());
 
                 //发送消息到客户端
                 SendMessage(client, sendMessage);
@@ -333,6 +350,8 @@ namespace MySoft.IoC
             catch (SocketException ex)
             {
                 //Socket异常，不处理
+                string a = ex.ToString();
+                string b = a;
             }
             catch (Exception ex)
             {

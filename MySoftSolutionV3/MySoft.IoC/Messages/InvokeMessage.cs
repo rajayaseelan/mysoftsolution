@@ -44,37 +44,5 @@ namespace MySoft.IoC.Messages
         /// 参数值，必须为json格式
         /// </summary>
         public string Parameters { get; set; }
-
-        private int timeout = -1;
-        /// <summary>
-        /// Gets or sets the timeout.
-        /// </summary>
-        public int Timeout
-        {
-            get
-            {
-                return timeout;
-            }
-            set
-            {
-                timeout = value;
-            }
-        }
-
-        private int cacheTime = -1;
-        /// <summary>
-        /// 缓存时间（单位：秒）
-        /// </summary>
-        public int CacheTime
-        {
-            get
-            {
-                return cacheTime;
-            }
-            set
-            {
-                cacheTime = value;
-            }
-        }
     }
 }
