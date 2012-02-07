@@ -123,7 +123,7 @@ namespace MySoft.Web.UI
             catch (ThreadAbortException) { }
             catch (Exception ex)
             {
-                AjaxCallbackParam param = new AjaxCallbackParam(ex.Message);
+                AjaxCallbackParam param = new AjaxCallbackParam(ex.ToString());
                 param.Success = false;
 
                 WriteToBuffer(param);
@@ -403,16 +403,24 @@ namespace MySoft.Web.UI
         /// <param name="param"></param>
         private void WriteToBuffer(AjaxCallbackParam param)
         {
-            info.CurrentPage.Response.Clear();
+            try
+            {
+                info.CurrentPage.Response.Clear();
 
-            if (param != null)
-                info.CurrentPage.Response.Write(SerializationManager.SerializeJson(param));
-            else
-                info.CurrentPage.Response.ContentType = "image/gif";
+                if (param != null)
+                    info.CurrentPage.Response.Write(SerializationManager.SerializeJson(param));
+                else
+                    info.CurrentPage.Response.ContentType = "image/gif";
 
-            info.CurrentPage.Response.Cache.SetNoStore();
-            info.CurrentPage.Response.Flush();
-            info.CurrentPage.Response.End();
+                info.CurrentPage.Response.Cache.SetNoStore();
+                info.CurrentPage.Response.Flush();
+                info.CurrentPage.Response.End();
+            }
+            catch (ThreadAbortException) { }
+            finally
+            {
+                HttpContext.Current.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>
@@ -421,11 +429,19 @@ namespace MySoft.Web.UI
         /// <param name="methods"></param>
         private void WriteToBuffer(AjaxMethodInfo[] methods)
         {
-            info.CurrentPage.Response.Clear();
-            info.CurrentPage.Response.Write(SerializationManager.SerializeJson(methods));
-            info.CurrentPage.Response.Cache.SetNoStore();
-            info.CurrentPage.Response.Flush();
-            info.CurrentPage.Response.End();
+            try
+            {
+                info.CurrentPage.Response.Clear();
+                info.CurrentPage.Response.Write(SerializationManager.SerializeJson(methods));
+                info.CurrentPage.Response.Cache.SetNoStore();
+                info.CurrentPage.Response.Flush();
+                info.CurrentPage.Response.End();
+            }
+            catch (ThreadAbortException) { }
+            finally
+            {
+                HttpContext.Current.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>
@@ -434,11 +450,19 @@ namespace MySoft.Web.UI
         /// <param name="html"></param>
         private void WriteToBuffer(string html)
         {
-            info.CurrentPage.Response.Clear();
-            info.CurrentPage.Response.Write(html);
-            info.CurrentPage.Response.Cache.SetNoStore();
-            info.CurrentPage.Response.Flush();
-            info.CurrentPage.Response.End();
+            try
+            {
+                info.CurrentPage.Response.Clear();
+                info.CurrentPage.Response.Write(html);
+                info.CurrentPage.Response.Cache.SetNoStore();
+                info.CurrentPage.Response.Flush();
+                info.CurrentPage.Response.End();
+            }
+            catch (ThreadAbortException) { }
+            finally
+            {
+                HttpContext.Current.ApplicationInstance.CompleteRequest();
+            }
         }
 
         #endregion
