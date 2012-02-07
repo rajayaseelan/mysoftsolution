@@ -15,7 +15,8 @@ namespace MySoft.IoC.Configuration
         private string defaultKey;              //默认服务
         private string appName;                 //host名称
         private bool throwerror = true;         //抛出异常
-        private int times = 3;              //调用次数
+        private int times = 3;                  //调用次数
+        private bool json = false;              //是否json输入输出
 
         /// <summary>
         /// 获取远程对象配置
@@ -53,6 +54,9 @@ namespace MySoft.IoC.Configuration
 
             if (xmlnode["throwerror"] != null && xmlnode["throwerror"].Value.Trim() != string.Empty)
                 throwerror = Convert.ToBoolean(xmlnode["throwerror"].Value);
+
+            if (xmlnode["json"] != null && xmlnode["json"].Value.Trim() != string.Empty)
+                json = Convert.ToBoolean(xmlnode["json"].Value);
 
             if (xmlnode["default"] != null && xmlnode["default"].Value.Trim() != string.Empty)
                 defaultKey = xmlnode["default"].Value;
@@ -165,6 +169,16 @@ namespace MySoft.IoC.Configuration
         {
             get { return throwerror; }
             set { throwerror = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the json
+        /// </summary>
+        /// <value>The throwerror.</value>
+        public bool Json
+        {
+            get { return json; }
+            set { json = value; }
         }
 
         /// <summary>

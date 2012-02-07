@@ -67,10 +67,7 @@ namespace MySoft
         public static object GetTypeDefaultValue(Type type)
         {
             Type elementType = type;
-            if (type.IsByRef)
-            {
-                elementType = type.GetElementType();
-            }
+            if (type.IsByRef) elementType = type.GetElementType();
 
             //如果是void类型，返回null
             if (type == typeof(void)) return null;

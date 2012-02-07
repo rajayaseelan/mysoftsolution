@@ -79,6 +79,7 @@
     <Compile Include="Callback\MessageCenter.cs" />
     <Compile Include="Callback\MessageListener.cs" />
     <Compile Include="InvokeCaller.cs" />
+    <Compile Include="JsonInvocationHandler.cs" />
     <Compile Include="Services\LocalInterceptor.cs" />
     <Compile Include="Messages\InvokeMessage.cs" />
     <Compile Include="ServiceCaller.cs" />

@@ -230,7 +230,11 @@ namespace MySoft.IoC
             {
                 lock (lockObject)
                 {
-                    var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType);
+                    IProxyInvocationHandler handler = null;
+                    if (config.Json)
+                        handler = new JsonInvocationHandler(this.config, this.container, proxy, serviceType);
+                    else
+                        handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType);
                     var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                     service = (IServiceInterfaceType)dynamicProxy;

@@ -9,7 +9,7 @@ namespace MySoft.IoC
     /// </summary>
     public class ServiceInvocationHandler : IProxyInvocationHandler
     {
-        private CastleFactoryConfiguration config;
+        protected CastleFactoryConfiguration config;
         private IServiceContainer container;
         private IService service;
         private Type serviceType;
@@ -48,7 +48,7 @@ namespace MySoft.IoC
             reqMsg.HostName = hostName;                                     //客户端名称
             reqMsg.IPAddress = ipAddress;                                   //客户端IP地址
             reqMsg.ServiceName = serviceType.FullName;                      //服务名称
-            reqMsg.MethodName = methodInfo.ToString();                  //方法名称
+            reqMsg.MethodName = methodInfo.ToString();                      //方法名称
             reqMsg.ReturnType = methodInfo.ReturnType;                      //返回类型
             reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
             reqMsg.CacheTime = -1;                                          //设置缓存时间
@@ -94,6 +94,9 @@ namespace MySoft.IoC
                         reqMsg.Parameters[pis[i].Name] = null;
                     }
                 }
+
+                //处理参数
+                if (config.Json) JsonInParameter(reqMsg);
             }
 
             #endregion
@@ -131,11 +134,13 @@ namespace MySoft.IoC
                     }
 
                     //如果有异常，向外抛出
-                    if (resMsg.IsError)
-                    {
-                        throw resMsg.Error;
-                    }
-                    else if (clientCacheTime > 0)
+                    if (resMsg.IsError) throw resMsg.Error;
+
+                    //处理参数
+                    if (config.Json) JsonOutParameter(pis, resMsg);
+
+                    //如果客户端缓存时间大于0
+                    if (clientCacheTime > 0)
                     {
                         //没有异常，则缓存数据
                         CacheHelper.Insert(cacheKey, resMsg, clientCacheTime);
@@ -169,6 +174,25 @@ namespace MySoft.IoC
 
             //返回默认值
             return CoreHelper.GetTypeDefaultValue(methodInfo.ReturnType);
+        }
+
+        /// <summary>
+        /// Json输入处理
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        protected virtual void JsonInParameter(RequestMessage reqMsg)
+        {
+            //Json输入参数
+        }
+
+        /// <summary>
+        /// Json输出处理
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// <param name="resMsg"></param>
+        protected virtual void JsonOutParameter(System.Reflection.ParameterInfo[] parameters, ResponseMessage resMsg)
+        {
+            //Json输出参数
         }
 
         #region IInvocationHandler 成员

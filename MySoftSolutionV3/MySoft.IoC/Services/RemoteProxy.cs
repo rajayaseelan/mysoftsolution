@@ -140,6 +140,10 @@ namespace MySoft.IoC.Services
 
                 return resMsg;
             }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
             finally
             {
                 this.reqPool.Push(reqService);

@@ -162,7 +162,7 @@ namespace MySoft.IoC
 
                 var value = DynamicCalls.GetMethodInvoker(invokeMethod).Invoke(instance, new object[] { invoke });
                 var json = DynamicCalls.GetPropertyGetter(valueProperty).Invoke(value);
-                var retValue = DynamicCalls.GetMethodInvoker(deserializeMethod).Invoke(null, new object[] { method.ReturnType, json, null });
+                var retValue = DynamicCalls.GetMethodInvoker(deserializeMethod).Invoke(null, new object[] { GetPrimitiveType(method.ReturnType), json, null });
 
                 if (dictIndex.Count > 0)
                 {
