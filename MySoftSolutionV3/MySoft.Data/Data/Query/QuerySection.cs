@@ -1187,7 +1187,7 @@ namespace MySoft.Data
             {
                 sql = sql.Replace(p.Name, DataHelper.FormatValue(p.Value));
             }
-            return sql;
+            return sql.ToLower();
         }
 
         #region ºÏ≤‚ «∑Ò”–ª∫¥Ê
