@@ -76,6 +76,7 @@ namespace MySoft.IoC.Services
                 var value = hashtable[resMsg.TransactionId];
                 value.Message = resMsg;
 
+                //Êý¾ÝÏìÓ¦
                 value.Reset.Set();
             }
         }
