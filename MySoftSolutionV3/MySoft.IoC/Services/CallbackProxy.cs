@@ -28,7 +28,11 @@ namespace MySoft.IoC.Services
             reqService.Disconnected += reqService_Disconnected;
 
             this.reqPool = new ServiceRequestPool(1);
-            this.reqPool.Push(reqService);
+
+            lock (this.reqPool)
+            {
+                this.reqPool.Push(reqService);
+            }
         }
 
         void reqService_OnError(object sender, ErrorMessageEventArgs e)

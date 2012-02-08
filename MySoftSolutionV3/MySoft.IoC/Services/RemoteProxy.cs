@@ -32,14 +32,17 @@ namespace MySoft.IoC.Services
         {
             this.reqPool = new ServiceRequestPool(node.MaxPool);
 
-            //服务请求池化
-            for (int i = 0; i < node.MaxPool; i++)
+            lock (this.reqPool)
             {
-                var reqService = new ServiceRequest(node, logger, true);
-                reqService.OnCallback += reqService_OnCallback;
-                reqService.OnError += reqService_OnError;
+                //服务请求池化
+                for (int i = 0; i < node.MaxPool; i++)
+                {
+                    var reqService = new ServiceRequest(node, logger, true);
+                    reqService.OnCallback += reqService_OnCallback;
+                    reqService.OnError += reqService_OnError;
 
-                this.reqPool.Push(reqService);
+                    this.reqPool.Push(reqService);
+                }
             }
         }
 
@@ -128,9 +131,6 @@ namespace MySoft.IoC.Services
                 {
                     var value = hashtable[reqMsg.TransactionId];
                     resMsg = value.Message;
-
-                    //Release Resource
-                    autoEvent.Close();
                 }
 
                 //用完后移除

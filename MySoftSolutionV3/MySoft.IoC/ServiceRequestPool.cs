@@ -38,7 +38,10 @@ namespace MySoft.IoC
         {
             lock (this.pool)
             {
-                return this.pool.Pop();
+                if (this.Count > 0)
+                    return this.pool.Pop();
+                else
+                    return null;
             }
         }
 
