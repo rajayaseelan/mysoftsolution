@@ -11,7 +11,7 @@ namespace MySoft
     /// 用于业务出错时抛出业务异常信息
     /// </summary>
     [Serializable]
-    public class BusinessException : SystemException
+    public class BusinessException : ApplicationException
     {
         const int BUSINESS_EXCEPTION = 503;
 

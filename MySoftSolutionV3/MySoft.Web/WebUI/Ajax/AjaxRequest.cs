@@ -110,7 +110,6 @@ namespace MySoft.Web.UI
                     }
                 }
             }
-            catch (ThreadAbortException) { }
             catch (BusinessException ex)
             {
                 AjaxCallbackParam param = new AjaxCallbackParam(string.Format("[{0}]{1}", ex.Code, ex.Message));
@@ -118,13 +117,17 @@ namespace MySoft.Web.UI
 
                 WriteToBuffer(param);
             }
-            catch (Exception ex)
+            catch (ApplicationException ex)
             {
                 var error = ErrorHelper.GetInnerException(ex);
                 AjaxCallbackParam param = new AjaxCallbackParam(error.Message);
                 param.Success = false;
 
                 WriteToBuffer(param);
+            }
+            catch (Exception)
+            {
+                //不做处理
             }
         }
 
