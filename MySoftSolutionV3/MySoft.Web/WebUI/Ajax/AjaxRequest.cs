@@ -110,25 +110,24 @@ namespace MySoft.Web.UI
                     }
                 }
             }
+            catch (ThreadAbortException) { }
             catch (BusinessException ex)
             {
-                AjaxCallbackParam param = new AjaxCallbackParam(string.Format("[{0}]{1}", ex.Code, ex.Message));
-                param.Success = false;
-
-                WriteToBuffer(param);
+                WriteErrorMessage(string.Format("[{0}]{1}", ex.Code, ex.Message));
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 var error = ErrorHelper.GetInnerException(ex);
-                AjaxCallbackParam param = new AjaxCallbackParam(error.Message);
-                param.Success = false;
+                WriteErrorMessage(error.Message);
+            }
+        }
 
-                WriteToBuffer(param);
-            }
-            catch (Exception)
-            {
-                //不做处理
-            }
+        private void WriteErrorMessage(string message)
+        {
+            AjaxCallbackParam param = new AjaxCallbackParam(message);
+            param.Success = false;
+
+            WriteToBuffer(param);
         }
 
         #region 私有方法
@@ -404,16 +403,23 @@ namespace MySoft.Web.UI
         /// <param name="param"></param>
         private void WriteToBuffer(AjaxCallbackParam param)
         {
-            info.CurrentPage.Response.Clear();
+            try
+            {
+                info.CurrentPage.Response.Clear();
 
-            if (param != null)
-                info.CurrentPage.Response.Write(SerializationManager.SerializeJson(param));
-            else
-                info.CurrentPage.Response.ContentType = "image/gif";
+                if (param != null)
+                    info.CurrentPage.Response.Write(SerializationManager.SerializeJson(param));
+                else
+                    info.CurrentPage.Response.ContentType = "image/gif";
 
-            info.CurrentPage.Response.Cache.SetNoStore();
-            info.CurrentPage.Response.Flush();
-            info.CurrentPage.Response.End();
+                info.CurrentPage.Response.Cache.SetNoStore();
+                info.CurrentPage.Response.Flush();
+                info.CurrentPage.Response.End();
+            }
+            catch
+            {
+                //不处理异常
+            }
         }
 
         /// <summary>
@@ -422,11 +428,18 @@ namespace MySoft.Web.UI
         /// <param name="methods"></param>
         private void WriteToBuffer(AjaxMethodInfo[] methods)
         {
-            info.CurrentPage.Response.Clear();
-            info.CurrentPage.Response.Write(SerializationManager.SerializeJson(methods));
-            info.CurrentPage.Response.Cache.SetNoStore();
-            info.CurrentPage.Response.Flush();
-            info.CurrentPage.Response.End();
+            try
+            {
+                info.CurrentPage.Response.Clear();
+                info.CurrentPage.Response.Write(SerializationManager.SerializeJson(methods));
+                info.CurrentPage.Response.Cache.SetNoStore();
+                info.CurrentPage.Response.Flush();
+                info.CurrentPage.Response.End();
+            }
+            catch
+            {
+                //不处理异常
+            }
         }
 
         #endregion
