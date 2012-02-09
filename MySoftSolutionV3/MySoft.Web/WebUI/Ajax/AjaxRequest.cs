@@ -111,6 +111,10 @@ namespace MySoft.Web.UI
                 }
             }
             catch (ThreadAbortException) { }
+            catch (AjaxException ex)
+            {
+                WriteErrorMessage("AjaxError: " + ex.Message);
+            }
             catch (BusinessException ex)
             {
                 WriteErrorMessage(string.Format("[{0}]{1}", ex.Code, ex.Message));
@@ -203,36 +207,25 @@ namespace MySoft.Web.UI
         /// <returns></returns>
         private AjaxCallbackParam InvokeMethod(object invokeObject, string MethodName)
         {
-            try
+            Dictionary<string, AsyncMethodInfo> ajaxMethods = AjaxMethodHelper.GetAjaxMethods(invokeObject.GetType());
+            if (ajaxMethods.ContainsKey(MethodName))
             {
-                Dictionary<string, AsyncMethodInfo> ajaxMethods = AjaxMethodHelper.GetAjaxMethods(invokeObject.GetType());
-                if (ajaxMethods.ContainsKey(MethodName))
+                ParameterInfo[] parameters = ajaxMethods[MethodName].MethodInfo.GetParameters();
+                List<object> list = new List<object>();
+                foreach (ParameterInfo p in parameters)
                 {
-                    ParameterInfo[] parameters = ajaxMethods[MethodName].MethodInfo.GetParameters();
-                    List<object> list = new List<object>();
-                    foreach (ParameterInfo p in parameters)
-                    {
-                        object obj = GetObject(p.ParameterType, p.Name);
-                        list.Add(obj);
-                    }
+                    object obj = GetObject(p.ParameterType, p.Name);
+                    list.Add(obj);
+                }
 
-                    MethodInfo method = ajaxMethods[MethodName].MethodInfo;
-                    FastInvokeHandler handler = DynamicCalls.GetMethodInvoker(method);
-                    object value = handler.Invoke(invokeObject, list.ToArray());
-                    return new AjaxCallbackParam(value);
-                }
-                else
-                {
-                    throw new AjaxException(string.Format("未找到服务器端方法{0}！", MethodName));
-                }
+                MethodInfo method = ajaxMethods[MethodName].MethodInfo;
+                FastInvokeHandler handler = DynamicCalls.GetMethodInvoker(method);
+                object value = handler.Invoke(invokeObject, list.ToArray());
+                return new AjaxCallbackParam(value);
             }
-            catch (AjaxException ex)
+            else
             {
-                throw ex;
-            }
-            catch (Exception ex)
-            {
-                throw new AjaxException(ex.Message, ex);
+                throw new AjaxException(string.Format("未找到服务器端方法{0}！", MethodName));
             }
         }
 
@@ -254,46 +247,39 @@ namespace MySoft.Web.UI
         /// <returns></returns>
         private AjaxCallbackParam LoadAjaxControl(string controlPath, string templatePath)
         {
-            try
-            {
-                string path = controlPath.ToLower().EndsWith(".ascx") ? controlPath : controlPath + ".ascx";
+            string path = controlPath.ToLower().EndsWith(".ascx") ? controlPath : controlPath + ".ascx";
 
-                //从缓存读取数据
-                string html = GetCache(path, info.CurrentPage.Request.Form.ToString());
-                if (html == null)
+            //从缓存读取数据
+            string html = GetCache(path, info.CurrentPage.Request.Form.ToString());
+            if (html == null)
+            {
+                Control control = info.CurrentPage.LoadControl(path);
+                if (control != null)
                 {
-                    Control control = info.CurrentPage.LoadControl(path);
-                    if (control != null)
+                    var args = GetCallbackParams();
+
+                    if (control is IAjaxInitHandler)
+                        (control as IAjaxInitHandler).OnAjaxInit(args);
+
+                    if (control is IAjaxProcessHandler)
+                        (control as IAjaxProcessHandler).OnAjaxProcess(args);
+
+                    StringBuilder sb = new StringBuilder();
+                    control.RenderControl(new HtmlTextWriter(new StringWriter(sb)));
+                    html = sb.ToString();
+
+                    if (info.EnableAjaxTemplate && templatePath != null)
                     {
-                        var args = GetCallbackParams();
-
-                        if (control is IAjaxInitHandler)
-                            (control as IAjaxInitHandler).OnAjaxInit(args);
-
-                        if (control is IAjaxProcessHandler)
-                            (control as IAjaxProcessHandler).OnAjaxProcess(args);
-
-                        StringBuilder sb = new StringBuilder();
-                        control.RenderControl(new HtmlTextWriter(new StringWriter(sb)));
-                        html = sb.ToString();
-
-                        if (info.EnableAjaxTemplate && templatePath != null)
-                        {
-                            string templateString = LoadTemplate(templatePath);
-                            html = "{ data : " + html + ",\r\njst : " + SerializationManager.SerializeJson(templateString) + " }";
-                        }
-
-                        //将数据放入缓存
-                        SetCache(path, info.CurrentPage.Request.Form.ToString(), html);
+                        string templateString = LoadTemplate(templatePath);
+                        html = "{ data : " + html + ",\r\njst : " + SerializationManager.SerializeJson(templateString) + " }";
                     }
-                }
 
-                return new AjaxCallbackParam(html);
+                    //将数据放入缓存
+                    SetCache(path, info.CurrentPage.Request.Form.ToString(), html);
+                }
             }
-            catch (Exception ex)
-            {
-                throw new AjaxException(ex.Message, ex);
-            }
+
+            return new AjaxCallbackParam(html);
         }
 
         private bool CheckHeader(string AjaxKey)
