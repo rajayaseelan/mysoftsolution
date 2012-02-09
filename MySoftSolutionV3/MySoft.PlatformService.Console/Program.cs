@@ -9,6 +9,27 @@ using MySoft.Logger;
 
 namespace MySoft.PlatformService.Console
 {
+
+    public class Cache : IServiceCache
+    {
+
+        #region IServiceCache ≥…‘±
+
+        public void AddCache(string key, object value, int seconds)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T GetCache<T>(string key)
+        {
+            //throw new NotImplementedException();
+
+            return default(T);
+        }
+
+        #endregion
+    }
+
     class Program
     {
         private static readonly object syncobj = new object();
@@ -23,7 +44,7 @@ namespace MySoft.PlatformService.Console
             CastleService server = new CastleService(config);
             server.OnLog += new LogEventHandler(Program_OnLog);
             server.OnError += new ErrorLogEventHandler(Program_OnError);
-            server.Start();
+            server.Start(new Cache());
 
             //mongo.Connect();
 

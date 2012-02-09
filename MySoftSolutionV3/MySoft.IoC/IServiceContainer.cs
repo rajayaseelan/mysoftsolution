@@ -49,15 +49,19 @@ namespace MySoft.IoC
         /// <value></value>
         object this[Type serviceType] { get; }
         /// <summary>
-        /// 获取约束的接口
+        /// Get contract interface
         /// </summary>
         /// <returns></returns>
         Type[] GetInterfaces<ContractType>();
         /// <summary>
-        /// 是否包含服务
+        /// Contains service
         /// </summary>
         /// <param name="serviceName"></param>
         /// <returns></returns>
         bool Contains<ContractType>(string serviceName);
+        /// <summary>
+        /// Get service cache.
+        /// </summary>
+        IServiceCache Cache { get; set; }
     }
 }

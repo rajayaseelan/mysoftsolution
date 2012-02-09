@@ -110,6 +110,16 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 启用服务，并注入缓存
+        /// </summary>
+        /// <param name="cache"></param>
+        public void Start(IServiceCache cache)
+        {
+            this.container.Cache = cache;
+            this.Start();
+        }
+
+        /// <summary>
         /// 获取服务的ServerUrl地址
         /// </summary>
         public string ServerUrl
@@ -313,7 +323,7 @@ namespace MySoft.IoC
                     if (reqMsg.InvokeMethod)
                     {
                         resMsg.Parameters.Clear();
-                        resMsg.Error = new WarningException(args.Error.Message);
+                        resMsg.Error = new ApplicationException(args.Error.Message);
                     }
                 }
                 else

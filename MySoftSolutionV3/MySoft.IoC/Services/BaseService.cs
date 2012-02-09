@@ -13,7 +13,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         ///  The service logger
         /// </summary>
-        private ILog logger;
+        private IServiceContainer container;
 
         /// <summary>
         /// The service name.
@@ -33,9 +33,9 @@ namespace MySoft.IoC.Services
         /// Initializes a new instance of the <see cref="BaseService"/> class.
         /// </summary>
         /// <param name="serviceName">Name of the service.</param>
-        public BaseService(ILog logger, string serviceName)
+        public BaseService(IServiceContainer container, string serviceName)
         {
-            this.logger = logger;
+            this.container = container;
             this.serviceName = serviceName;
         }
 
@@ -57,7 +57,15 @@ namespace MySoft.IoC.Services
         {
             //从缓存获取值
             string cacheKey = GetCacheKey(reqMsg);
-            ResponseMessage resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
+            ResponseMessage resMsg = null;
+
+            if (reqMsg.CacheTime > 0)
+            {
+                if (container.Cache == null)
+                    resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
+                else
+                    resMsg = container.Cache.GetCache<ResponseMessage>(cacheKey);
+            }
 
             //运行请求获得结果
             if (resMsg == null)
@@ -77,13 +85,16 @@ namespace MySoft.IoC.Services
                             ServiceName = reqMsg.ServiceName,
                             ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                         };
-                        logger.WriteError(exception);
+                        container.WriteError(exception);
                     }
                 }
                 else if (reqMsg.CacheTime > 0) //判断是否需要缓存
                 {
                     //加入缓存
-                    CacheHelper.Insert(cacheKey, resMsg, reqMsg.CacheTime);
+                    if (container.Cache == null)
+                        CacheHelper.Insert(cacheKey, resMsg, reqMsg.CacheTime);
+                    else
+                        container.Cache.AddCache(cacheKey, resMsg, reqMsg.CacheTime);
                 }
             }
             else

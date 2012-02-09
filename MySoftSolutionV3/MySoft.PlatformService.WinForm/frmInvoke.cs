@@ -171,6 +171,10 @@ namespace MySoft.PlatformService.WinForm
 
         private void button1_Click(object sender, EventArgs e)
         {
+            if (MessageBox.Show("请确认参数是否全部填写正确！", "系统提示",
+                MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
+                return;
+
             Stopwatch watch = Stopwatch.StartNew();
             try
             {

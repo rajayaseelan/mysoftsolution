@@ -43,9 +43,28 @@ namespace MySoft.IoC
 
             //启动计时
             var watch = Stopwatch.StartNew();
+            ResponseMessage resMsg = null;
 
-            //获取返回结果
-            var resMsg = container.CallService(reqMsg);
+            try
+            {
+                //获取返回结果
+                resMsg = container.CallService(reqMsg);
+            }
+            catch (Exception ex)
+            {
+                container.WriteError(ex);
+
+                //处理异常
+                resMsg = new ResponseMessage
+                {
+                    TransactionId = reqMsg.TransactionId,
+                    ServiceName = reqMsg.ServiceName,
+                    MethodName = reqMsg.MethodName,
+                    //Parameters = reqMsg.Parameters,
+                    ReturnType = reqMsg.ReturnType,
+                    Error = ex
+                };
+            }
 
             //停止计时
             watch.Stop();

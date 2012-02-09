@@ -16,6 +16,7 @@ namespace MySoft.PlatformService.IoC
         private readonly object syncobj = new object();
         private StartMode startMode = StartMode.Service;
         private CastleService server;
+        private IServiceCache cache;
         private string[] mailTo;
 
         /// <summary>
@@ -53,6 +54,23 @@ namespace MySoft.PlatformService.IoC
             //处理邮件地址
             string address = ConfigurationManager.AppSettings["SendMailAddress"];
             if (!string.IsNullOrEmpty(address)) mailTo = address.Split(',', ';', '|');
+
+            //加载缓存服务
+            string service = ConfigurationManager.AppSettings["ServiceCacheType"];
+            if (!string.IsNullOrEmpty(service))
+            {
+                try
+                {
+                    var type = Type.GetType(service);
+                    object instance = Activator.CreateInstance(type);
+                    if (instance != null && instance is IServiceCache)
+                        cache = instance as IServiceCache;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("[{0}] => {1}", DateTime.Now, ex.Message);
+                }
+            }
         }
 
         /// <summary>
@@ -76,18 +94,26 @@ namespace MySoft.PlatformService.IoC
             {
                 Console.WriteLine("[{0}] => Service ready started...", DateTime.Now);
 
-                server.Start();
+                StartService();
 
                 Console.WriteLine("[{0}] => Server host: {1}", DateTime.Now, server.ServerUrl);
                 Console.WriteLine("[{0}] => Press enter to exit and stop service...", DateTime.Now);
             }
             else
             {
-                server.Start();
+                StartService();
 
                 //启动日志
                 //SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("Service has running, host => {0}", server.ServerUrl));
             }
+        }
+
+        private void StartService()
+        {
+            if (cache == null)
+                server.Start();
+            else
+                server.Start(cache);
         }
 
         public void Stop()

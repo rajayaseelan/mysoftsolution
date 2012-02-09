@@ -76,16 +76,24 @@ namespace MySoft.Web.UI
 
                     if (AjaxRegister)
                     {
+                        //将value写入Response流
                         WriteAjaxMethods(info.CurrentPage.GetType());
                     }
                     else if (AjaxRequest)
                     {
-                        //如果不是Ajax调用，则直接返回
-                        info.CurrentPage.Response.Cache.SetNoStore();
-                        info.CurrentPage.Response.Flush();
-                        info.CurrentPage.Response.End();
+                        string AjaxMethodName = WebHelper.GetRequestParam<string>(info.CurrentPage.Request, "X-Ajax-Method", null);
+
+                        if (CheckHeader(AjaxKey))
+                        {
+                            AjaxCallbackParam value = InvokeMethod(info.CurrentPage, AjaxMethodName);
+
+                            //将value写入Response流
+                            WriteToBuffer(value);
+                        }
+                        else
+                            throw new AjaxException("Method \"" + AjaxMethodName + "\" Is Invoke Error！");
                     }
-                    if (AjaxLoad)
+                    else if (AjaxLoad)
                     {
                         string AjaxControlPath = WebHelper.GetRequestParam<string>(info.CurrentPage.Request, "X-Ajax-Path", null);
                         string AjaxTemplatePath = WebHelper.GetRequestParam<string>(info.CurrentPage.Request, "X-Ajax-Template", null);
@@ -98,25 +106,7 @@ namespace MySoft.Web.UI
                             WriteToBuffer(param);
                         }
                         else
-                        {
                             throw new AjaxException("Control \"" + AjaxControlPath + "\" Is Load Error！");
-                        }
-                    }
-                    else
-                    {
-                        string AjaxMethodName = WebHelper.GetRequestParam<string>(info.CurrentPage.Request, "X-Ajax-Method", null);
-
-                        if (CheckHeader(AjaxKey))
-                        {
-                            AjaxCallbackParam value = InvokeMethod(info.CurrentPage, AjaxMethodName);
-
-                            //将value写入Response流
-                            WriteToBuffer(value);
-                        }
-                        else
-                        {
-                            throw new AjaxException("Method \"" + AjaxMethodName + "\" Is Invoke Error！");
-                        }
                     }
                 }
             }
@@ -431,19 +421,6 @@ namespace MySoft.Web.UI
         {
             info.CurrentPage.Response.Clear();
             info.CurrentPage.Response.Write(SerializationManager.SerializeJson(methods));
-            info.CurrentPage.Response.Cache.SetNoStore();
-            info.CurrentPage.Response.Flush();
-            info.CurrentPage.Response.End();
-        }
-
-        /// <summary>
-        /// 将数据写入页面流
-        /// </summary>
-        /// <param name="html"></param>
-        private void WriteToBuffer(string html)
-        {
-            info.CurrentPage.Response.Clear();
-            info.CurrentPage.Response.Write(html);
             info.CurrentPage.Response.Cache.SetNoStore();
             info.CurrentPage.Response.Flush();
             info.CurrentPage.Response.End();

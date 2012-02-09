@@ -110,6 +110,16 @@ namespace MySoft.IoC
             get { return container.Kernel; }
         }
 
+        private IServiceCache cache;
+        /// <summary>
+        /// Get the cache
+        /// </summary>
+        public IServiceCache Cache
+        {
+            get { return cache; }
+            set { cache = value; }
+        }
+
         /// <summary>
         /// Registers the component.
         /// </summary>
@@ -159,7 +169,9 @@ namespace MySoft.IoC
         public void Release(object obj)
         {
             if (obj != null)
+            {
                 container.Release(obj);
+            }
         }
 
         /// <summary>

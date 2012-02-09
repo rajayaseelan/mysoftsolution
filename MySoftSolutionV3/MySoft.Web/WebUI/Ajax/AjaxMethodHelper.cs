@@ -40,20 +40,20 @@ namespace MySoft.Web.UI
             foreach (MethodInfo mi in mis)
             {
                 string methodName = mi.Name;
-                AjaxMethodAttribute[] amas = (AjaxMethodAttribute[])mi.GetCustomAttributes(typeof(AjaxMethodAttribute), false);
-                if (amas.Length == 1)
+                AjaxMethodAttribute method = CoreHelper.GetTypeAttribute<AjaxMethodAttribute>(type);
+                if (method != null)
                 {
-                    if (amas[0].Name != null)
+                    if (!string.IsNullOrEmpty(method.Name))
                     {
-                        methodName = amas[0].Name;
+                        methodName = method.Name;
                     }
 
                     if (!ret.ContainsKey(methodName))
                     {
                         AsyncMethodInfo asyncMethod = new AsyncMethodInfo();
                         asyncMethod.MethodInfo = mi;
-                        asyncMethod.Async = amas[0].Async;
-                        ret.Add(methodName, asyncMethod);
+                        asyncMethod.Async = method.Async;
+                        ret[methodName] = asyncMethod;
                     }
                 }
             }
