@@ -53,7 +53,10 @@ namespace MySoft.Web
             context.Response.Clear();
             context.Response.Write(sb.ToString());
             context.Response.Flush();
-            context.Response.End();
+
+            //Ω· ¯«Î«Û
+            context.Response.Close();
+            context.ApplicationInstance.CompleteRequest();
         }
     }
 }

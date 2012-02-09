@@ -108,7 +108,10 @@ namespace MySoft.Web
                                     //将文件写入流中
                                     context.Response.Clear();
                                     context.Response.WriteFile(staticFile);
-                                    context.Response.End();
+
+                                    //结束请求
+                                    context.Response.Close();
+                                    context.ApplicationInstance.CompleteRequest();
                                 }
                             }
                         }
