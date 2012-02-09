@@ -117,8 +117,7 @@ namespace MySoft.Web.UI
             }
             catch (Exception ex)
             {
-                var error = ErrorHelper.GetInnerException(ex);
-                WriteErrorMessage(error.Message);
+                WriteErrorMessage(ex.Message);
             }
         }
 
@@ -414,7 +413,11 @@ namespace MySoft.Web.UI
 
                 info.CurrentPage.Response.Cache.SetNoStore();
                 info.CurrentPage.Response.Flush();
-                info.CurrentPage.Response.End();
+                //info.CurrentPage.Response.End();
+
+                //完成请求
+                info.CurrentPage.Response.Close();
+                HttpContext.Current.ApplicationInstance.CompleteRequest();
             }
             catch
             {
@@ -434,7 +437,11 @@ namespace MySoft.Web.UI
                 info.CurrentPage.Response.Write(SerializationManager.SerializeJson(methods));
                 info.CurrentPage.Response.Cache.SetNoStore();
                 info.CurrentPage.Response.Flush();
-                info.CurrentPage.Response.End();
+                //info.CurrentPage.Response.End();
+
+                //完成请求
+                info.CurrentPage.Response.Close();
+                HttpContext.Current.ApplicationInstance.CompleteRequest();
             }
             catch
             {
