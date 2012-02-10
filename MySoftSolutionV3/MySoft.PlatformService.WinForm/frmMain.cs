@@ -327,9 +327,9 @@ namespace MySoft.PlatformService.WinForm
         private string[] emails;
         private void frmMain_Load(object sender, EventArgs e)
         {
-            listAssembly.Click += new EventHandler(listAssembly_Click);
-            listService.Click += new EventHandler(messageListBox1_Click);
-            listMethod.Click += new EventHandler(messageListBox2_Click);
+            listAssembly.SelectedIndexChanged += new EventHandler(listAssembly_SelectedIndexChanged);
+            listService.SelectedIndexChanged += new EventHandler(listService_SelectedIndexChanged);
+            listMethod.SelectedIndexChanged += new EventHandler(listMethod_SelectedIndexChanged);
             listMethod.MouseDoubleClick += new MouseEventHandler(listMethod_MouseDoubleClick);
 
             listTimeout.MouseDoubleClick += new MouseEventHandler(listTimeout_MouseDoubleClick);
@@ -617,7 +617,7 @@ namespace MySoft.PlatformService.WinForm
             }
         }
 
-        void listAssembly_Click(object sender, EventArgs e)
+        void listAssembly_SelectedIndexChanged(object sender, EventArgs e)
         {
             listService.Items.Clear();
             listMethod.Items.Clear();
@@ -649,7 +649,7 @@ namespace MySoft.PlatformService.WinForm
             listService.Invalidate();
         }
 
-        void messageListBox1_Click(object sender, EventArgs e)
+        void listService_SelectedIndexChanged(object sender, EventArgs e)
         {
             listMethod.Items.Clear();
             listMethod.SelectedIndex = -1;
@@ -678,7 +678,7 @@ namespace MySoft.PlatformService.WinForm
             listMethod.Invalidate();
         }
 
-        void messageListBox2_Click(object sender, EventArgs e)
+        void listMethod_SelectedIndexChanged(object sender, EventArgs e)
         {
             richTextBox3.Clear();
             if (listMethod.SelectedIndex < 0) return;
