@@ -88,8 +88,10 @@
     <Compile Include="Common\EntityMapping.cs" />
     <Compile Include="Common\IValidator.cs" />
     <Compile Include="Common\Validator.cs" />
-    <Compile Include="Creator\DeleteCreator.cs" />
     <Compile Include="Creator\IDeleteCreator.cs" />
+    <Compile Include="Creator\BaseCreator.cs" />
+    <Compile Include="Creator\DeleteCreator.cs" />
+    <Compile Include="Creator\IBaseCreator.cs" />
     <Compile Include="Creator\IInsertCreator.cs" />
     <Compile Include="Creator\IQueryCreator.cs" />
     <Compile Include="Creator\IUpdateCreator.cs" />

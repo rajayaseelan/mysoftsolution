@@ -18,7 +18,7 @@ namespace MySoft.Data
     /// 查询创建器
     /// </summary>
     [Serializable]
-    public class QueryCreator : IQueryCreator
+    public class QueryCreator : WhereCreator<QueryCreator>, IQueryCreator
     {
         /// <summary>
         /// 创建一个新的查询器（条件为全部，排序为默认)
@@ -44,18 +44,7 @@ namespace MySoft.Data
             return new QueryCreator(table);
         }
 
-        /// <summary>
-        /// 创建一个新的查询器（条件为全部，排序为默认)
-        /// </summary>
-        public static QueryCreator NewCreator<T>() where T : Entity
-        {
-            var table = Table.GetTable<T>();
-            return new QueryCreator(table);
-        }
-
-        private Table table;
         private IDictionary<string, TableJoin> joinTables;
-        private IList<WhereClip> whereList;
         private List<OrderByClip> orderList;
         private List<Field> fieldList;
 
@@ -63,8 +52,8 @@ namespace MySoft.Data
         /// 实例化QueryCreater
         /// </summary>
         private QueryCreator()
+            : base()
         {
-            this.whereList = new List<WhereClip>();
             this.orderList = new List<OrderByClip>();
             this.fieldList = new List<Field>();
             this.joinTables = new Dictionary<string, TableJoin>();
@@ -75,9 +64,11 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="tableName"></param>
         private QueryCreator(string tableName)
-            : this()
+            : base(tableName)
         {
-            this.table = new Table(tableName);
+            this.orderList = new List<OrderByClip>();
+            this.fieldList = new List<Field>();
+            this.joinTables = new Dictionary<string, TableJoin>();
         }
 
         /// <summary>
@@ -85,39 +76,14 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="table"></param>
         private QueryCreator(Table table)
-            : this()
+            : base(table)
         {
-            this.table = table;
+            this.orderList = new List<OrderByClip>();
+            this.fieldList = new List<Field>();
+            this.joinTables = new Dictionary<string, TableJoin>();
         }
 
         #region 内部属性
-
-        /// <summary>
-        /// 返回table
-        /// </summary>
-        internal Table Table
-        {
-            get
-            {
-                return table;
-            }
-        }
-
-        /// <summary>
-        /// 返回条件
-        /// </summary>
-        internal WhereClip Where
-        {
-            get
-            {
-                WhereClip newWhere = WhereClip.None;
-                foreach (WhereClip where in whereList)
-                {
-                    newWhere &= where;
-                }
-                return newWhere;
-            }
-        }
 
         /// <summary>
         /// 返回排序
@@ -144,7 +110,7 @@ namespace MySoft.Data
             {
                 if (fieldList.Count == 0)
                 {
-                    return new Field[] { Field.All.At(table) };
+                    return new Field[] { Field.All.At(base.Table) };
                 }
                 return fieldList.ToArray();
             }
@@ -174,40 +140,6 @@ namespace MySoft.Data
 
         #endregion
 
-        #region 设置表信息
-
-        /// <summary>
-        /// 设置表信息
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public QueryCreator From<T>()
-            where T : Entity
-        {
-            this.table = Table.GetTable<T>();
-            return this;
-        }
-
-        /// <summary>
-        /// 设置表名
-        /// </summary>
-        /// <param name="tableName"></param>
-        public QueryCreator From(string tableName)
-        {
-            this.table = new Table(tableName);
-            return this;
-        }
-
-        /// <summary>
-        /// 设置表信息
-        /// </summary>
-        /// <param name="table"></param>
-        public QueryCreator From(Table table)
-        {
-            this.table = table;
-            return this;
-        }
-
         #region 表关联处理
 
         /// <summary>
@@ -231,31 +163,6 @@ namespace MySoft.Data
         {
             return Join(JoinType.LeftJoin, table, where);
         }
-
-        /// <summary>
-        /// 关联表信息
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="where"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public QueryCreator Join<T>(string where, params SQLParameter[] parameters)
-            where T : Entity
-        {
-            return Join<T>(JoinType.LeftJoin, where, parameters);
-        }
-
-        /// <summary>
-        /// 关联表信息
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="where"></param>
-        public QueryCreator Join<T>(WhereClip where)
-              where T : Entity
-        {
-            return Join<T>(JoinType.LeftJoin, where);
-        }
-
 
         /// <summary>
         /// 关联表信息
@@ -298,109 +205,6 @@ namespace MySoft.Data
                 this.joinTables.Add(table.OriginalName, join);
             }
             return this;
-        }
-
-        /// <summary>
-        /// 关联表信息
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="where"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public QueryCreator Join<T>(JoinType joinType, string where, params SQLParameter[] parameters)
-            where T : Entity
-        {
-            return Join(joinType, Table.GetTable<T>().OriginalName, where, parameters);
-        }
-
-        /// <summary>
-        /// 关联表信息
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="where"></param>
-        public QueryCreator Join<T>(JoinType joinType, WhereClip where)
-              where T : Entity
-        {
-            return Join(joinType, Table.GetTable<T>(), where);
-        }
-
-        #endregion
-
-        #endregion
-
-        #region 增加一个条件
-
-        /// <summary>
-        /// 添加一个条件
-        /// </summary>
-        /// <param name="where"></param>
-        public QueryCreator AddWhere(WhereClip where)
-        {
-            if (DataHelper.IsNullOrEmpty(where)) return this;
-
-            //不存在条件，则加入
-            whereList.Add(where);
-
-            return this;
-        }
-
-        /// <summary>
-        /// 添加一个条件
-        /// </summary>
-        /// <param name="where"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public QueryCreator AddWhere(string where, params SQLParameter[] parameters)
-        {
-            if (string.IsNullOrEmpty(where)) return this;
-
-            return AddWhere(new WhereClip(where, parameters));
-        }
-
-        /// <summary>
-        /// 添加一个条件
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="value"></param>
-        public QueryCreator AddWhere(Field field, object value)
-        {
-            if (value == null)
-                return AddWhere(field.IsNull());
-            else
-                return AddWhere(field == value);
-        }
-
-        /// <summary>
-        /// 添加一个条件
-        /// </summary>
-        /// <param name="fieldName"></param>
-        /// <param name="value"></param>
-        public QueryCreator AddWhere(string fieldName, object value)
-        {
-            return AddWhere(new Field(fieldName), value);
-        }
-
-        /// <summary>
-        /// 添加一个条件
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="fieldName"></param>
-        /// <param name="value"></param>
-        public QueryCreator AddWhere(string tableName, string fieldName, object value)
-        {
-            return AddWhere(new Field(fieldName).At(new Table(tableName)), value);
-        }
-
-        /// <summary>
-        /// 添加一个条件
-        /// </summary>
-        /// <param name="fieldName"></param>
-        /// <param name="value"></param>
-        public QueryCreator AddWhere<T>(string fieldName, object value)
-            where T : MySoft.Data.Entity
-        {
-            string tableName = Table.GetTable<T>().OriginalName;
-            return AddWhere(tableName, fieldName, value);
         }
 
         #endregion
@@ -463,29 +267,6 @@ namespace MySoft.Data
             return AddOrder(new Field(fieldName), desc);
         }
 
-        /// <summary>
-        /// 增加排序规则
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="fieldName"></param>
-        /// <param name="desc"></param>
-        public QueryCreator AddOrder(string tableName, string fieldName, bool desc)
-        {
-            return AddOrder(new Field(fieldName).At(new Table(tableName)), desc);
-        }
-
-        /// <summary>
-        /// 增加排序规则
-        /// </summary>
-        /// <param name="fieldName"></param>
-        /// <param name="desc"></param>
-        public QueryCreator AddOrder<T>(string fieldName, bool desc)
-            where T : MySoft.Data.Entity
-        {
-            string tableName = Table.GetTable<T>().OriginalName;
-            return AddOrder(tableName, fieldName, desc);
-        }
-
         #endregion
 
         #region 增加字段
@@ -531,17 +312,6 @@ namespace MySoft.Data
         }
 
         /// <summary>
-        /// 添加一个字段
-        /// </summary>
-        /// <param name="fieldName"></param>
-        public QueryCreator AddField<T>(string fieldName)
-            where T : MySoft.Data.Entity
-        {
-            string tableName = Table.GetTable<T>().OriginalName;
-            return AddField(tableName, fieldName);
-        }
-
-        /// <summary>
         /// 移除指定的列
         /// </summary>
         /// <param name="fields"></param>
@@ -552,10 +322,15 @@ namespace MySoft.Data
 
             foreach (Field field in fields)
             {
-                this.fieldList.RemoveAll(f =>
+                int count = this.fieldList.RemoveAll(f =>
                 {
                     return string.Compare(f.OriginalName, field.OriginalName, true) == 0;
                 });
+
+                if (count == 0)
+                {
+                    throw new DataException("指定的字段不存在于Query列表中！");
+                }
             }
 
             return this;
@@ -570,15 +345,13 @@ namespace MySoft.Data
         {
             if (fieldNames == null) return this;
 
+            List<Field> fields = new List<Field>();
             foreach (string fieldName in fieldNames)
             {
-                this.fieldList.RemoveAll(f =>
-                {
-                    return string.Compare(f.OriginalName, fieldName, true) == 0;
-                });
+                fields.Add(new Field(fieldName));
             }
 
-            return this;
+            return RemoveField(fields.ToArray());
         }
 
         #endregion

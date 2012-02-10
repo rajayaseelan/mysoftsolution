@@ -7,7 +7,7 @@ namespace MySoft.Data
     /// 插入创建器
     /// </summary>
     [Serializable]
-    public class InsertCreator : IInsertCreator
+    public class InsertCreator : TableCreator<InsertCreator>, IInsertCreator
     {
         /// <summary>
         /// 创建一个新的插入器
@@ -33,16 +33,6 @@ namespace MySoft.Data
             return new InsertCreator(table);
         }
 
-        /// <summary>
-        /// 创建一个新的插入器
-        /// </summary>
-        public static InsertCreator NewCreator<T>() where T : Entity
-        {
-            var table = Table.GetTable<T>();
-            return new InsertCreator(table);
-        }
-
-        private Table table;
         private Field identityField;
         private string sequenceName;
         private List<FieldValue> fvlist;
@@ -51,6 +41,7 @@ namespace MySoft.Data
         /// 实例化InsertCreator
         /// </summary>
         private InsertCreator()
+            : base()
         {
             this.fvlist = new List<FieldValue>();
         }
@@ -60,9 +51,9 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="tableName"></param>
         private InsertCreator(string tableName)
-            : this()
+            : base(tableName)
         {
-            this.table = new Table(tableName);
+            this.fvlist = new List<FieldValue>();
         }
 
         /// <summary>
@@ -70,23 +61,12 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="table"></param>
         private InsertCreator(Table table)
-            : this()
+            : base(table)
         {
-            this.table = table;
+            this.fvlist = new List<FieldValue>();
         }
 
         #region 内部属性
-
-        /// <summary>
-        /// 返回table
-        /// </summary>
-        internal Table Table
-        {
-            get
-            {
-                return table;
-            }
-        }
 
         /// <summary>
         /// 返回标识列字段
@@ -123,38 +103,6 @@ namespace MySoft.Data
         #region 设置表信息
 
         /// <summary>
-        /// 设置表信息
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public InsertCreator From<T>()
-            where T : Entity
-        {
-            this.table = Table.GetTable<T>();
-            return this;
-        }
-
-        /// <summary>
-        /// 设置表名
-        /// </summary>
-        /// <param name="tableName"></param>
-        public InsertCreator From(string tableName)
-        {
-            this.table = new Table(tableName);
-            return this;
-        }
-
-        /// <summary>
-        /// 设置表信息
-        /// </summary>
-        /// <param name="table"></param>
-        public InsertCreator From(Table table)
-        {
-            this.table = table;
-            return this;
-        }
-
-        /// <summary>
         /// 设置实体信息
         /// </summary>
         /// <param name="t"></param>
@@ -176,7 +124,7 @@ namespace MySoft.Data
                 }
             });
 
-            return this.From<T>();
+            return this.From(Table.GetTable<T>());
         }
 
         #endregion

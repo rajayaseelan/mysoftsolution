@@ -7,7 +7,7 @@ namespace MySoft.Data
     /// 更新创建器
     /// </summary>
     [Serializable]
-    public class UpdateCreator : IUpdateCreator
+    public class UpdateCreator : WhereCreator<UpdateCreator>, IUpdateCreator
     {
         /// <summary>
         /// 创建一个新的更新器
@@ -33,25 +33,14 @@ namespace MySoft.Data
             return new UpdateCreator(table);
         }
 
-        /// <summary>
-        /// 创建一个新的更新器
-        /// </summary>
-        public static UpdateCreator NewCreator<T>() where T : Entity
-        {
-            var table = Table.GetTable<T>();
-            return new UpdateCreator(table);
-        }
-
-        private Table table;
-        private IList<WhereClip> whereList;
         private List<FieldValue> fvlist;
 
         /// <summary>
         /// 实例化UpdateCreator
         /// </summary>
         private UpdateCreator()
+            : base()
         {
-            this.whereList = new List<WhereClip>();
             this.fvlist = new List<FieldValue>();
         }
 
@@ -60,9 +49,9 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="tableName"></param>
         private UpdateCreator(string tableName)
-            : this()
+            : base(tableName)
         {
-            this.table = new Table(tableName);
+            this.fvlist = new List<FieldValue>();
         }
 
         /// <summary>
@@ -70,23 +59,12 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="table"></param>
         private UpdateCreator(Table table)
-            : this()
+            : base(table)
         {
-            this.table = table;
+            this.fvlist = new List<FieldValue>();
         }
 
         #region 内部属性
-
-        /// <summary>
-        /// 返回table
-        /// </summary>
-        internal Table Table
-        {
-            get
-            {
-                return table;
-            }
-        }
 
         internal Field[] Fields
         {
@@ -105,62 +83,16 @@ namespace MySoft.Data
             }
         }
 
-        /// <summary>
-        /// 返回条件
-        /// </summary>
-        internal WhereClip Where
-        {
-            get
-            {
-                WhereClip newWhere = WhereClip.None;
-                foreach (WhereClip where in whereList)
-                {
-                    newWhere &= where;
-                }
-                return newWhere;
-            }
-        }
-
         #endregion
 
         #region 设置表信息
 
         /// <summary>
-        /// 设置表信息
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public UpdateCreator From<T>()
-            where T : Entity
-        {
-            this.table = Table.GetTable<T>();
-            return this;
-        }
-
-        /// <summary>
-        /// 设置表名
-        /// </summary>
-        /// <param name="tableName"></param>
-        public UpdateCreator From(string tableName)
-        {
-            this.table = new Table(tableName);
-            return this;
-        }
-
-        /// <summary>
-        /// 设置表信息
-        /// </summary>
-        /// <param name="table"></param>
-        public UpdateCreator From(Table table)
-        {
-            this.table = table;
-            return this;
-        }
-
-        /// <summary>
         /// 设置表和实体信息
         /// </summary>
-        /// <param name="t"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entity"></param>
+        /// <param name="useKeyWhere"></param>
         /// <returns></returns>
         public UpdateCreator SetEntity<T>(T entity, bool useKeyWhere)
             where T : Entity
@@ -174,66 +106,12 @@ namespace MySoft.Data
                 WhereClip where = DataHelper.GetPkWhere<T>(entity.GetTable(), entity);
 
                 //返回加入值及条件的对象
-                return this.From<T>().AddWhere(where);
+                return this.From(Table.GetTable<T>()).AddWhere(where);
             }
             else
             {
-                return this.From<T>();
+                return this.From(Table.GetTable<T>());
             }
-        }
-
-        #endregion
-
-        #region 增加一个条件
-
-        /// <summary>
-        /// 添加一个条件
-        /// </summary>
-        /// <param name="where"></param>
-        public UpdateCreator AddWhere(WhereClip where)
-        {
-            if (DataHelper.IsNullOrEmpty(where)) return this;
-
-            //不存在条件，则加入
-            whereList.Add(where);
-
-            return this;
-        }
-
-        /// <summary>
-        /// 添加一个条件
-        /// </summary>
-        /// <param name="where"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public UpdateCreator AddWhere(string where, params SQLParameter[] parameters)
-        {
-            if (string.IsNullOrEmpty(where)) return this;
-
-            return AddWhere(new WhereClip(where, parameters));
-        }
-
-        /// <summary>
-        /// 添加一个条件
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="value"></param>
-        public UpdateCreator AddWhere(Field field, object value)
-        {
-            if (value == null)
-                return AddWhere(field.IsNull());
-            else
-                return AddWhere(field == value);
-        }
-
-        /// <summary>
-        /// 添加一个条件
-        /// </summary>
-        /// <param name="fieldName"></param>
-        /// <param name="value"></param>
-        public UpdateCreator AddWhere(string fieldName, object value)
-        {
-            return AddWhere(new Field(fieldName), value);
         }
 
         #endregion
