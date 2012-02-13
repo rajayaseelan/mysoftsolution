@@ -14,6 +14,8 @@ namespace MySoft.IoC.Services
         ///  The service logger
         /// </summary>
         private IServiceContainer container;
+        private Type classType;
+        private OperationContractAttribute opContract;
 
         /// <summary>
         /// The service name.
@@ -33,10 +35,12 @@ namespace MySoft.IoC.Services
         /// Initializes a new instance of the <see cref="BaseService"/> class.
         /// </summary>
         /// <param name="serviceName">Name of the service.</param>
-        public BaseService(IServiceContainer container, string serviceName)
+        public BaseService(IServiceContainer container, Type classType)
         {
             this.container = container;
-            this.serviceName = serviceName;
+            this.classType = classType;
+            this.serviceName = classType.FullName;
+            this.opContract = CoreHelper.GetTypeAttribute<OperationContractAttribute>(classType);
         }
 
         /// <summary>
@@ -56,15 +60,15 @@ namespace MySoft.IoC.Services
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
             //从缓存获取值
-            string cacheKey = GetCacheKey(reqMsg);
+            string cacheKey = ServiceConfig.GetCacheKey(reqMsg, opContract);
             ResponseMessage resMsg = null;
 
             if (reqMsg.CacheTime > 0)
             {
-                if (container.Cache == null)
+                if (container.ServiceCache == null)
                     resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
                 else
-                    resMsg = container.Cache.GetCache<ResponseMessage>(cacheKey);
+                    resMsg = container.ServiceCache.GetCache<ResponseMessage>(cacheKey);
             }
 
             //运行请求获得结果
@@ -91,10 +95,10 @@ namespace MySoft.IoC.Services
                 else if (reqMsg.CacheTime > 0) //判断是否需要缓存
                 {
                     //加入缓存
-                    if (container.Cache == null)
+                    if (container.ServiceCache == null)
                         CacheHelper.Insert(cacheKey, resMsg, reqMsg.CacheTime);
                     else
-                        container.Cache.AddCache(cacheKey, resMsg, reqMsg.CacheTime);
+                        container.ServiceCache.AddCache(cacheKey, resMsg, reqMsg.CacheTime);
                 }
             }
             else
@@ -103,16 +107,6 @@ namespace MySoft.IoC.Services
             }
 
             return resMsg;
-        }
-
-        /// <summary>
-        /// 获取缓存Key值
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private string GetCacheKey(RequestMessage reqMsg)
-        {
-            return string.Format("ServerCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
         }
 
         #endregion

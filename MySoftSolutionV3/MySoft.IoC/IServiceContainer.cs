@@ -62,6 +62,6 @@ namespace MySoft.IoC
         /// <summary>
         /// Get service cache.
         /// </summary>
-        IServiceCache Cache { get; set; }
+        IServiceCache ServiceCache { get; set; }
     }
 }

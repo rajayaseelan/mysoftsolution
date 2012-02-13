@@ -24,16 +24,6 @@ namespace MySoft.PlatformService.WinForm
             CastleFactory.Create().OnError += new ErrorLogEventHandler(frmMain_OnError);
         }
 
-        ~frmMain()
-        {
-            try
-            {
-                webBrowser1.Dispose();
-                webBrowser2.Dispose();
-            }
-            finally { }
-        }
-
         void frmMain_OnError(Exception error)
         {
             //发生错误SocketException为网络断开
@@ -353,6 +343,11 @@ namespace MySoft.PlatformService.WinForm
 
             InitBrowser();
 
+            var timer = new System.Windows.Forms.Timer();
+            timer.Interval = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
+            timer.Tick += new EventHandler(timer_Tick);
+            timer.Start();
+
             if (comboBox1.Items.Count > 0)
             {
                 defaultNode = comboBox1.Items[0] as RemoteNode;
@@ -556,18 +551,23 @@ namespace MySoft.PlatformService.WinForm
 
             //webBrowser2.AllowNavigation = false;
             //webBrowser2.IsWebBrowserContextMenuEnabled = false;
-
-            var timer = new System.Windows.Forms.Timer();
-            timer.Interval = (int)TimeSpan.FromMinutes(1).TotalMilliseconds;
-            timer.Tick += new EventHandler(timer_Tick);
-            timer.Start();
         }
 
         void timer_Tick(object sender, EventArgs e)
         {
-            GC.Collect();
-            GC.Collect(2);
-            GC.Collect();
+            try { webBrowser2.Dispose(); }
+            catch { }
+
+            tabPage4.Controls.Clear();
+            webBrowser2 = new WebBrowser();
+            webBrowser2.Dock = DockStyle.Fill;
+            tabPage4.Controls.Add(webBrowser2);
+
+            var url = ConfigurationManager.AppSettings["ServerMonitorUrl"];
+            if (!string.IsNullOrEmpty(url))
+                webBrowser2.Url = new Uri(url);
+            else
+                webBrowser2.Url = new Uri("about:blank");
         }
 
         /// <summary>

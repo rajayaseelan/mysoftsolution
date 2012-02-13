@@ -34,6 +34,16 @@ namespace MySoft.IoC
         private Type callbackType;
         private IScsServerClient client;
         private AppCaller caller;
+        private IServiceCache serviceCache;
+
+        /// <summary>
+        /// 服务缓存
+        /// </summary>
+        public IServiceCache ServiceCache
+        {
+            get { return serviceCache; }
+            internal set { serviceCache = value; }
+        }
 
         /// <summary>
         /// 调用者
@@ -65,14 +75,46 @@ namespace MySoft.IoC
             this.callbackType = callbackType;
         }
 
+        #region 缓存处理
+
         /// <summary>
-        /// 发送消息
+        /// 移除缓存
         /// </summary>
-        /// <param name="message"></param>
-        public void SendMessage(IScsMessage message)
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheKey"></param>
+        public void RemoveCache<T>(string cacheKey)
         {
-            this.client.SendMessage(message);
+            if (serviceCache != null)
+                serviceCache.RemoveCache(string.Format("{0}_{1}", typeof(T).FullName, cacheKey));
         }
+
+        /// <summary>
+        /// 添加缓存
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheObject"></param>
+        /// <param name="timeSpan"></param>
+        public void AddCache(string cacheKey, object cacheObject, TimeSpan timeSpan)
+        {
+            if (serviceCache != null)
+                serviceCache.AddCache(cacheKey, cacheObject, (int)timeSpan.TotalSeconds);
+        }
+
+        /// <summary>
+        /// 获取缓存
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheKey"></param>
+        /// <returns></returns>
+        public T GetCache<T>(string cacheKey)
+        {
+            if (serviceCache != null)
+                return serviceCache.GetCache<T>(cacheKey);
+            else
+                return default(T);
+        }
+
+        #endregion
 
         /// <summary>
         /// 获取回调代理服务

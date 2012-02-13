@@ -25,5 +25,11 @@ namespace MySoft.IoC
         /// <param name="key"></param>
         /// <returns></returns>
         T GetCache<T>(string key);
+
+        /// <summary>
+        /// 移除缓存
+        /// </summary>
+        /// <param name="key"></param>
+        void RemoveCache(string key);
     }
 }

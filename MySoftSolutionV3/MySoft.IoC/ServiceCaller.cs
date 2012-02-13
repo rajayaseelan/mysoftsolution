@@ -39,7 +39,11 @@ namespace MySoft.IoC
             //实例化当前上下文
             Type callbackType = null;
             if (callbackTypes.ContainsKey(reqMsg.ServiceName)) callbackType = callbackTypes[reqMsg.ServiceName];
-            OperationContext.Current = new OperationContext(client, callbackType) { Caller = caller };
+            OperationContext.Current = new OperationContext(client, callbackType)
+            {
+                ServiceCache = container.ServiceCache,
+                Caller = caller
+            };
 
             //启动计时
             var watch = Stopwatch.StartNew();

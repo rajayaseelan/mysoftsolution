@@ -112,7 +112,7 @@ namespace MySoft.IoC
 
             try
             {
-                string cacheKey = GetCacheKey(reqMsg, opContract);
+                string cacheKey = ServiceConfig.GetCacheKey(reqMsg, opContract);
                 var resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
 
                 //调用服务
@@ -207,34 +207,6 @@ namespace MySoft.IoC
         public object Invoke(object proxy, System.Reflection.MethodInfo method, object[] args)
         {
             return CallService(method, args);
-        }
-
-        /// <summary>
-        /// 获取缓存Key值
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="opContract"></param>
-        /// <returns></returns>
-        private string GetCacheKey(RequestMessage reqMsg, OperationContractAttribute opContract)
-        {
-            if (opContract != null && !string.IsNullOrEmpty(opContract.CacheKey))
-            {
-                string cacheKey = opContract.CacheKey;
-                foreach (var key in reqMsg.Parameters.Keys)
-                {
-                    string name = "{" + key + "}";
-                    if (cacheKey.Contains(name))
-                    {
-                        var parameter = reqMsg.Parameters[key];
-                        if (parameter != null)
-                            cacheKey = cacheKey.Replace(name, parameter.ToString());
-                    }
-                }
-
-                return string.Format("{0}_{1}", reqMsg.ServiceName, cacheKey);
-            }
-
-            return string.Format("ClientCache_{0}_{1}_{2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters);
         }
 
         #endregion

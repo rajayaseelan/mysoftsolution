@@ -110,14 +110,14 @@ namespace MySoft.IoC
             get { return container.Kernel; }
         }
 
-        private IServiceCache cache;
+        private IServiceCache serviceCache;
         /// <summary>
         /// Get the cache
         /// </summary>
-        public IServiceCache Cache
+        public IServiceCache ServiceCache
         {
-            get { return cache; }
-            set { cache = value; }
+            get { return serviceCache; }
+            set { serviceCache = value; }
         }
 
         /// <summary>
