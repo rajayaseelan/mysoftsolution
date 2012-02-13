@@ -27,6 +27,11 @@ namespace MySoft.PlatformService.Console
             return default(T);
         }
 
+        public void RemoveCache(string key)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 
