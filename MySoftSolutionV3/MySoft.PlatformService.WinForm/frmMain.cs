@@ -555,8 +555,8 @@ namespace MySoft.PlatformService.WinForm
 
         void timer_Tick(object sender, EventArgs e)
         {
-            try { webBrowser2.Dispose(); }
-            catch { }
+            webBrowser2.Dispose();
+            webBrowser2 = null;
 
             tabPage4.Controls.Clear();
             webBrowser2 = new WebBrowser();
