@@ -16,6 +16,8 @@ namespace MySoft.PlatformService.WinForm
     public partial class frmMain : Form
     {
         private RemoteNode defaultNode;
+        private WebBrowser webBrowser1, webBrowser2;
+
         public frmMain()
         {
             InitializeComponent();
@@ -534,6 +536,14 @@ namespace MySoft.PlatformService.WinForm
         /// </summary>
         void InitBrowser()
         {
+            webBrowser1 = new WebBrowser();
+            webBrowser1.Dock = DockStyle.Fill;
+            splitContainer2.Panel2.Controls.Add(webBrowser1);
+
+            webBrowser2 = new WebBrowser();
+            webBrowser2.Dock = DockStyle.Fill;
+            tabPage4.Controls.Add(webBrowser2);
+
             webBrowser1.Url = new Uri("about:blank");
             //webBrowser1.AllowNavigation = false;
             webBrowser1.IsWebBrowserContextMenuEnabled = false;
@@ -546,6 +556,18 @@ namespace MySoft.PlatformService.WinForm
 
             //webBrowser2.AllowNavigation = false;
             //webBrowser2.IsWebBrowserContextMenuEnabled = false;
+
+            var timer = new System.Windows.Forms.Timer();
+            timer.Interval = (int)TimeSpan.FromMinutes(1).TotalMilliseconds;
+            timer.Tick += new EventHandler(timer_Tick);
+            timer.Start();
+        }
+
+        void timer_Tick(object sender, EventArgs e)
+        {
+            GC.Collect();
+            GC.Collect(2);
+            GC.Collect();
         }
 
         /// <summary>

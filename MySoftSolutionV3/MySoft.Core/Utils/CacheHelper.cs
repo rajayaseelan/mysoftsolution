@@ -148,7 +148,7 @@ namespace MySoft
         /// <param name="seconds"></param>
         public static void Insert(string key, object obj, CacheDependency dep, int seconds)
         {
-            Insert(key, obj, dep, seconds, CacheItemPriority.High);
+            Insert(key, obj, dep, seconds, CacheItemPriority.Normal);
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace MySoft
         {
             if (obj != null)
             {
-                _cache.Insert(key, obj, dep, System.Web.Caching.Cache.NoAbsoluteExpiration, System.Web.Caching.Cache.NoSlidingExpiration, CacheItemPriority.High, null);
+                _cache.Insert(key, obj, dep, System.Web.Caching.Cache.NoAbsoluteExpiration, System.Web.Caching.Cache.NoSlidingExpiration, CacheItemPriority.AboveNormal, null);
             }
         }
 

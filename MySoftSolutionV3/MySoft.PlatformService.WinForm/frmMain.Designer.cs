@@ -93,13 +93,11 @@
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.订阅此服务SToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.退订此服务UToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.webBrowser1 = new System.Windows.Forms.WebBrowser();
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.lblError = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.webBrowser2 = new System.Windows.Forms.WebBrowser();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -156,11 +154,9 @@
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.splitContainer2.Panel1.SuspendLayout();
-            this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             this.contextMenuStrip4.SuspendLayout();
             this.panel2.SuspendLayout();
-            this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
@@ -761,10 +757,6 @@
             // splitContainer2.Panel1
             // 
             this.splitContainer2.Panel1.Controls.Add(this.listError);
-            // 
-            // splitContainer2.Panel2
-            // 
-            this.splitContainer2.Panel2.Controls.Add(this.webBrowser1);
             this.splitContainer2.Size = new System.Drawing.Size(610, 489);
             this.splitContainer2.SplitterDistance = 350;
             this.splitContainer2.TabIndex = 12;
@@ -842,15 +834,6 @@
             this.退订此服务UToolStripMenuItem2.Text = "退订此服务(&U)";
             this.退订此服务UToolStripMenuItem2.Click += new System.EventHandler(this.退订此服务UToolStripMenuItem2_Click);
             // 
-            // webBrowser1
-            // 
-            this.webBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.webBrowser1.Location = new System.Drawing.Point(0, 0);
-            this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
-            this.webBrowser1.Name = "webBrowser1";
-            this.webBrowser1.Size = new System.Drawing.Size(606, 131);
-            this.webBrowser1.TabIndex = 13;
-            // 
             // richTextBox2
             // 
             this.richTextBox2.BackColor = System.Drawing.SystemColors.Window;
@@ -894,22 +877,12 @@
             // 
             // tabPage4
             // 
-            this.tabPage4.Controls.Add(this.webBrowser2);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Size = new System.Drawing.Size(887, 489);
             this.tabPage4.TabIndex = 4;
             this.tabPage4.Text = "状态信息";
             this.tabPage4.UseVisualStyleBackColor = true;
-            // 
-            // webBrowser2
-            // 
-            this.webBrowser2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.webBrowser2.Location = new System.Drawing.Point(0, 0);
-            this.webBrowser2.MinimumSize = new System.Drawing.Size(20, 20);
-            this.webBrowser2.Name = "webBrowser2";
-            this.webBrowser2.Size = new System.Drawing.Size(887, 489);
-            this.webBrowser2.TabIndex = 0;
             // 
             // checkBox1
             // 
@@ -1240,12 +1213,10 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.ResumeLayout(false);
             this.splitContainer2.Panel1.ResumeLayout(false);
-            this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.ResumeLayout(false);
             this.contextMenuStrip4.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
-            this.tabPage4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).EndInit();
@@ -1275,7 +1246,6 @@
         private System.Windows.Forms.NumericUpDown numericUpDown2;
         private System.Windows.Forms.CheckBox checkBox3;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.WebBrowser webBrowser1;
         private System.Windows.Forms.NumericUpDown numericUpDown3;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox checkBox4;
@@ -1300,7 +1270,6 @@
         private System.Windows.Forms.SplitContainer splitContainer6;
         private ListControls.MessageListBox listAssembly;
         private System.Windows.Forms.TabPage tabPage4;
-        private System.Windows.Forms.WebBrowser webBrowser2;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.NumericUpDown numericUpDown5;
         private System.Windows.Forms.Button button2;
