@@ -344,7 +344,7 @@ namespace MySoft.PlatformService.WinForm
             InitBrowser();
 
             var timer = new System.Windows.Forms.Timer();
-            timer.Interval = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
+            timer.Interval = (int)TimeSpan.FromMinutes(1).TotalMilliseconds;
             timer.Tick += new EventHandler(timer_Tick);
             timer.Start();
 
@@ -555,6 +555,7 @@ namespace MySoft.PlatformService.WinForm
 
         void timer_Tick(object sender, EventArgs e)
         {
+            var uri = webBrowser2.Url;
             webBrowser2.Dispose();
             webBrowser2 = null;
 
@@ -562,12 +563,7 @@ namespace MySoft.PlatformService.WinForm
             webBrowser2 = new WebBrowser();
             webBrowser2.Dock = DockStyle.Fill;
             tabPage4.Controls.Add(webBrowser2);
-
-            var url = ConfigurationManager.AppSettings["ServerMonitorUrl"];
-            if (!string.IsNullOrEmpty(url))
-                webBrowser2.Url = new Uri(url);
-            else
-                webBrowser2.Url = new Uri("about:blank");
+            webBrowser2.Url = uri;
         }
 
         /// <summary>
