@@ -77,19 +77,21 @@ namespace MySoft.IoC.Http
             string uri = string.Empty;
             if (plist.Count == 0)
             {
-                uri = string.Format("http://localhost:{0}/{1}", port, kv.Key);
+                uri = string.Format("http://127.0.0.1:{0}/{1}", port, kv.Key);
                 if (callback) uri += "?callback=[callback]";
             }
             else
             {
-                uri = string.Format("http://localhost:{0}/{1}?{2}", port, kv.Key, string.Join("&", plist.ToArray()));
+                uri = string.Format("http://127.0.0.1:{0}/{1}?{2}", port, kv.Key, string.Join("&", plist.ToArray()));
                 if (callback) uri += "&callback=[callback]";
             }
 
             var url = string.Format("<a rel=\"operation\" target=\"_blank\" href=\"{0}\">{0}</a> 处的服务", uri);
 
-            template = template.Replace("${method}", kv.Key);
+            template = template.Replace("${method}", string.Format("<b>{0}</b><br/>{1}", kv.Key, kv.Value.Description));
+            template = template.Replace("${parameter}", string.Join("&", plist.ToArray()));
             template = template.Replace("${uri}", url.ToString());
+            template = template.Replace('[', '{').Replace(']', '}');
 
             return template;
         }

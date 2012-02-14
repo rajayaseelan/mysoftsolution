@@ -33,6 +33,7 @@ namespace MySoft.IoC.Http
             {
                 var serviceAttr = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
                 var serviceName = serviceAttr.Name ?? serviceType.FullName;
+                var description = serviceAttr.Description;
 
                 //添加方法
                 foreach (var methodInfo in CoreHelper.GetMethodsFromType(serviceType))
@@ -40,11 +41,23 @@ namespace MySoft.IoC.Http
                     var methodAttr = CoreHelper.GetMemberAttribute<OperationContractAttribute>(methodInfo);
                     if (methodAttr != null && methodAttr.HttpEnabled)
                     {
-                        var callerInfo = new CallerInfo { Method = methodInfo, Instance = container[serviceType] };
                         string methodName = methodAttr.Name ?? methodInfo.Name;
                         string fullName = string.Format("{0}.{1}", serviceName, methodName);
+                        if (!string.IsNullOrEmpty(methodAttr.Description))
+                        {
+                            if (string.IsNullOrEmpty(description))
+                                description = methodAttr.Description;
+                            else
+                                description += " - " + methodAttr.Description;
+                        }
 
                         //将方法添加到字典
+                        var callerInfo = new CallerInfo
+                        {
+                            Method = methodInfo,
+                            Instance = container[serviceType],
+                            Description = description
+                        };
                         callers[fullName] = callerInfo;
                     }
                 }
@@ -71,7 +84,6 @@ namespace MySoft.IoC.Http
         {
             if (callers.ContainsKey(name))
             {
-
                 var caller = callers[name];
                 var parameters = ParseParameters(collection, caller.Method);
 
@@ -127,5 +139,10 @@ namespace MySoft.IoC.Http
         /// 调用实例
         /// </summary>
         public object Instance { get; set; }
+
+        /// <summary>
+        /// 方法描述
+        /// </summary>
+        public string Description { get; set; }
     }
 }

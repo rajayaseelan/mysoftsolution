@@ -39,7 +39,7 @@ namespace MySoft.PlatformService.UserService
         }
     }
 
-    [ServiceContract(Name = "user")]
+    [ServiceContract(Name = "user", Description = "用户管理")]
     public interface IUserService
     {
         //[OperationContract(ClientCacheTime = 10, ServerCacheTime = 20, CacheKey = "User_{name}")]
@@ -57,7 +57,7 @@ namespace MySoft.PlatformService.UserService
         [OperationContract]
         IList<UserInfo> GetUsers();
 
-        [OperationContract(Name = "getuser", HttpEnabled = true)]
+        [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true)]
         UserInfo GetUser(int id, IList<string> names);
     }
 
