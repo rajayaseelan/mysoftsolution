@@ -78,6 +78,12 @@
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
     <Compile Include="Callback\MessageCenter.cs" />
     <Compile Include="Callback\MessageListener.cs" />
+    <Compile Include="Http\APIDocument.cs" />
+    <Compile Include="Http\HTTPRequestHandlerFactory.cs" />
+    <Compile Include="Http\HttpServiceCaller.cs" />
+    <Compile Include="Http\HttpServiceException.cs" />
+    <Compile Include="Http\HttpServiceHandler.cs" />
+    <Compile Include="Http\ParameterHelper.cs" />
     <Compile Include="InvokeCaller.cs" />
     <Compile Include="JsonInvocationHandler.cs" />
     <Compile Include="Services\LocalInterceptor.cs" />
@@ -189,6 +195,13 @@
       <Project>{1DF7ED40-1747-4114-A8E4-6B3B85034883}</Project>
       <Name>MySoft.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Http\Template\help.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Http\Template\helpitem.htm" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
