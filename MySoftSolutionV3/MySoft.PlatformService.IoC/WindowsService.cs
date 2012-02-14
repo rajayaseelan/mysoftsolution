@@ -5,6 +5,8 @@ using MySoft.Installer;
 using MySoft.IoC;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
+using MySoft.IoC.Http;
+using MySoft.Net.HTTP;
 
 namespace MySoft.PlatformService.IoC
 {
@@ -14,9 +16,11 @@ namespace MySoft.PlatformService.IoC
     public class WindowsService : IServiceRun
     {
         private readonly object syncobj = new object();
+        private CastleServiceConfiguration config;
         private StartMode startMode = StartMode.Service;
         private CastleService server;
-        private IServiceCache cache;
+        private IServiceCache serviceCache;
+        private HTTPServer httpServer;
         private string[] mailTo;
 
         /// <summary>
@@ -45,7 +49,7 @@ namespace MySoft.PlatformService.IoC
         /// </summary>
         public void Init()
         {
-            var config = CastleServiceConfiguration.GetConfig();
+            this.config = CastleServiceConfiguration.GetConfig();
             this.server = new CastleService(config);
 
             this.server.OnLog += new LogEventHandler(server_OnLog);
@@ -64,7 +68,7 @@ namespace MySoft.PlatformService.IoC
                     var type = Type.GetType(service);
                     object instance = Activator.CreateInstance(type);
                     if (instance != null && instance is IServiceCache)
-                        cache = instance as IServiceCache;
+                        serviceCache = instance as IServiceCache;
                 }
                 catch (Exception ex)
                 {
@@ -102,18 +106,31 @@ namespace MySoft.PlatformService.IoC
             else
             {
                 StartService();
-
-                //启动日志
-                //SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("Service has running, host => {0}", server.ServerUrl));
             }
         }
 
         private void StartService()
         {
-            if (cache == null)
+            if (serviceCache == null)
                 server.Start();
             else
-                server.Start(cache);
+                server.Start(serviceCache);
+
+            if (config.HttpGet)
+            {
+                var caller = new HttpServiceCaller(server.Container, config.HttpPort);
+                var factory = new HTTPRequestHandlerFactory(caller);
+                httpServer = new HTTPServer(factory, config.HttpPort);
+
+                if (startMode == StartMode.Console)
+                {
+                    httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://127.0.0.1:{1}", DateTime.Now, config.HttpPort); };
+                    httpServer.OnServerStop += () => { Console.WriteLine("[{0}] => Http server stoped.", DateTime.Now); };
+                }
+
+                httpServer.OnServerException += ex => server_OnError(ex);
+                httpServer.Start();
+            }
         }
 
         public void Stop()
@@ -121,15 +138,10 @@ namespace MySoft.PlatformService.IoC
             if (startMode == StartMode.Console)
             {
                 Console.WriteLine("[{0}] => Service ready stopped...", DateTime.Now);
-                server.Stop();
             }
-            else
-            {
-                server.Stop();
 
-                //启动日志
-                //SimpleLog.Instance.WriteLogForDir("ServiceRun", "Service has stopped.");
-            }
+            if (httpServer != null) httpServer.Stop();
+            server.Stop();
         }
 
         #endregion

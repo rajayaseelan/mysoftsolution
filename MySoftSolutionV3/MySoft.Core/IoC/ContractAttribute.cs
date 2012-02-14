@@ -10,14 +10,36 @@ namespace MySoft.IoC
     /// </summary>
     public abstract class ContractAttribute : Attribute
     {
+        private string name;
+        /// <summary>
+        /// 名称
+        /// </summary>
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+            set
+            {
+                name = value;
+            }
+        }
+
         private string description;
         /// <summary>
         /// 描述信息
         /// </summary>
         public string Description
         {
-            get { return description; }
-            set { description = value; }
+            get
+            {
+                return description;
+            }
+            set
+            {
+                description = value;
+            }
         }
     }
 }

@@ -11,6 +11,22 @@ namespace MySoft.IoC
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class OperationContractAttribute : ContractAttribute
     {
+        private bool httpEnabled = false;
+        /// <summary>
+        /// 发布为http方法
+        /// </summary>
+        public bool HttpEnabled
+        {
+            get
+            {
+                return httpEnabled;
+            }
+            set
+            {
+                httpEnabled = value;
+            }
+        }
+
         private int clientCacheTime = -1;
         /// <summary>
         /// 客户端缓存时间（单位：秒）

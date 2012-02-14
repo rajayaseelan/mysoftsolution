@@ -11,6 +11,8 @@ namespace MySoft.IoC.Configuration
     {
         private string host = "any";
         private int port = 8888;
+        private int httpPort = 8080;
+        private bool httpGet = false;
         private bool encrypt = false;
         private bool compress = false;
         private int records = ServiceConfig.DEFAULT_RECORD_NUMBER;                 //默认记录3600次   //记录条数，默认为3600条，1小时记录
@@ -27,7 +29,7 @@ namespace MySoft.IoC.Configuration
             {
                 var tmp = ConfigurationManager.GetSection(key);
                 obj = tmp as CastleServiceConfiguration;
-                CacheHelper.Permanent(key, obj);;
+                CacheHelper.Permanent(key, obj); ;
             }
 
             return obj;
@@ -49,6 +51,12 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["port"] != null && xmlnode["port"].Value.Trim() != string.Empty)
                 port = Convert.ToInt32(xmlnode["port"].Value);
 
+            if (xmlnode["httpPort"] != null && xmlnode["httpPort"].Value.Trim() != string.Empty)
+                httpPort = Convert.ToInt32(xmlnode["httpPort"].Value);
+
+            if (xmlnode["httpGet"] != null && xmlnode["httpGet"].Value.Trim() != string.Empty)
+                httpGet = Convert.ToBoolean(xmlnode["httpGet"].Value);
+
             if (xmlnode["encrypt"] != null && xmlnode["encrypt"].Value.Trim() != string.Empty)
                 encrypt = Convert.ToBoolean(xmlnode["encrypt"].Value);
 
@@ -58,6 +66,28 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["records"] != null && xmlnode["records"].Value.Trim() != string.Empty)
                 records = Convert.ToInt32(xmlnode["records"].Value);
         }
+
+        #region Http参数
+
+        /// <summary>
+        /// Gets or sets the httpPort
+        /// </summary>
+        public int HttpPort
+        {
+            get { return httpPort; }
+            set { httpPort = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the httpGet
+        /// </summary>
+        public bool HttpGet
+        {
+            get { return httpGet; }
+            set { httpGet = value; }
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets or sets the host.

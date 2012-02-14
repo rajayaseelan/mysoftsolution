@@ -80,12 +80,23 @@ namespace MySoft.IoC
         /// <summary>
         /// 移除缓存
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TService"></typeparam>
         /// <param name="cacheKey"></param>
-        public void RemoveCache<T>(string cacheKey)
+        public void RemoveCache<TService>(string cacheKey)
+        {
+            RemoveCache(string.Format("{0}_{1}", typeof(TService).FullName, cacheKey));
+        }
+
+        /// <summary>
+        /// 移除缓存
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        public void RemoveCache(string cacheKey)
         {
             if (serviceCache != null)
-                serviceCache.RemoveCache(string.Format("{0}_{1}", typeof(T).FullName, cacheKey));
+                serviceCache.RemoveCache(cacheKey);
+            else
+                CacheHelper.Remove(cacheKey);
         }
 
         /// <summary>
@@ -98,6 +109,8 @@ namespace MySoft.IoC
         {
             if (serviceCache != null)
                 serviceCache.AddCache(cacheKey, cacheObject, (int)timeSpan.TotalSeconds);
+            else
+                CacheHelper.Insert(cacheKey, cacheObject, (int)timeSpan.TotalSeconds);
         }
 
         /// <summary>
@@ -111,7 +124,7 @@ namespace MySoft.IoC
             if (serviceCache != null)
                 return serviceCache.GetCache<T>(cacheKey);
             else
-                return default(T);
+                return CacheHelper.Get<T>(cacheKey);
         }
 
         #endregion

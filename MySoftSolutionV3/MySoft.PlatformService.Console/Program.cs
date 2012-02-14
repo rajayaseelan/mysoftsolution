@@ -6,6 +6,8 @@ using System.Collections;
 using MySoft.Remoting;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
+using MySoft.IoC.Http;
+using MySoft.Net.HTTP;
 
 namespace MySoft.PlatformService.Console
 {
@@ -50,6 +52,17 @@ namespace MySoft.PlatformService.Console
             server.OnLog += new LogEventHandler(Program_OnLog);
             server.OnError += new ErrorLogEventHandler(Program_OnError);
             server.Start(new Cache());
+
+            if (config.HttpGet)
+            {
+                var caller = new HttpServiceCaller(server.Container, config.HttpPort);
+                var factory = new HTTPRequestHandlerFactory(caller);
+                var httpServer = new HTTPServer(factory, config.HttpPort);
+                httpServer.OnServerStart += () => { System.Console.WriteLine("Http server started. http://127.0.0.1:" + config.HttpPort); };
+                httpServer.OnServerStop += () => { System.Console.WriteLine("Http server stoped."); };
+                httpServer.OnServerException += ex => Program_OnError(ex);
+                httpServer.Start();
+            }
 
             //mongo.Connect();
 

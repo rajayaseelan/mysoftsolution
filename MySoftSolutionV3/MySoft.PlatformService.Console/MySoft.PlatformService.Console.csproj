@@ -121,6 +121,10 @@
       <Project>{7B603EE2-B9F0-445E-817F-F058F43E5F48}</Project>
       <Name>MySoft.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MySoft.IoC.HTTP\MySoft.IoC.Http.csproj">
+      <Project>{F7C9676A-576D-4864-A67C-67E6CF5DE76B}</Project>
+      <Name>MySoft.IoC.Http</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MySoft.IoC\MySoft.IoC.csproj">
       <Project>{075BD20E-ABD5-4754-8C40-58E3EC025E42}</Project>
       <Name>MySoft.IoC</Name>
