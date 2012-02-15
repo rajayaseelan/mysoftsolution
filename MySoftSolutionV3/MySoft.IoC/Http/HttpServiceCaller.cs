@@ -33,11 +33,11 @@ namespace MySoft.IoC.Http
             {
                 var serviceAttr = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
                 var serviceName = serviceAttr.Name ?? serviceType.FullName;
-                var description = serviceAttr.Description;
 
                 //添加方法
                 foreach (var methodInfo in CoreHelper.GetMethodsFromType(serviceType))
                 {
+                    var description = serviceAttr.Description;
                     var methodAttr = CoreHelper.GetMemberAttribute<OperationContractAttribute>(methodInfo);
                     if (methodAttr != null && methodAttr.HttpEnabled)
                     {
@@ -54,10 +54,26 @@ namespace MySoft.IoC.Http
                         //将方法添加到字典
                         var callerInfo = new CallerInfo
                         {
+                            ServiceName = string.Format("【{0}】\r\n{1}", serviceType.FullName, methodInfo.ToString()),
                             Method = methodInfo,
                             Instance = container[serviceType],
                             Description = description
                         };
+
+                        if (callers.ContainsKey(fullName))
+                        {
+                            //处理重复的方法
+                            for (int i = 0; i < 10000; i++)
+                            {
+                                var name = fullName + (i + 1);
+                                if (!callers.ContainsKey(name))
+                                {
+                                    fullName = name;
+                                    break;
+                                }
+                            }
+                        }
+
                         callers[fullName] = callerInfo;
                     }
                 }
@@ -130,6 +146,11 @@ namespace MySoft.IoC.Http
     /// </summary>
     internal class CallerInfo
     {
+        /// <summary>
+        /// 服务名称
+        /// </summary>
+        public string ServiceName { get; set; }
+
         /// <summary>
         /// 调用方法
         /// </summary>

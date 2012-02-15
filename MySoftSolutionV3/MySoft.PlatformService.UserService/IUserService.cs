@@ -50,11 +50,13 @@ namespace MySoft.PlatformService.UserService
 
         string GetUser(UserInfo user);
 
+        [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true)]
         int GetSex(Sex value);
 
+        [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true)]
         string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
 
-        [OperationContract]
+        [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true)]
         IList<UserInfo> GetUsers();
 
         [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true)]

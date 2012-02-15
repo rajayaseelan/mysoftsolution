@@ -110,6 +110,8 @@ namespace MySoft.RESTful.Business.Register
                     }
                     catch (Exception ex)
                     {
+                        //记录错误日志
+                        SimpleLog.Instance.WriteLogForDir("RegisterError", ex);
                     }
                 }
             }
@@ -163,7 +165,19 @@ namespace MySoft.RESTful.Business.Register
                             method.Name = method.Name.ToLower();
 
                             //如果包含了相同的方法，则继续
-                            if (kindModel.MethodModels.ContainsKey(method.Name)) continue;
+                            if (kindModel.MethodModels.ContainsKey(method.Name))
+                            {
+                                //处理重复的方法
+                                for (int i = 0; i < 10000; i++)
+                                {
+                                    var name = method.Name + (i + 1);
+                                    if (!kindModel.MethodModels.ContainsKey(name))
+                                    {
+                                        method.Name = name;
+                                        break;
+                                    }
+                                }
+                            }
 
                             methodModel = new BusinessMethodModel
                             {

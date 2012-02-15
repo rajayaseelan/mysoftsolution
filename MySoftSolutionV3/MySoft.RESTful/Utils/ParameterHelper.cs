@@ -75,7 +75,11 @@ namespace MySoft.RESTful.Utils
 
                     }
                     else
-                        throw new NullReferenceException(info.Name + " is not found in parameters");
+                    {
+                        //没有的参数使用默认值
+                        var jsonValue = CoreHelper.GetTypeDefaultValue(GetPrimitiveType(info.ParameterType));
+                        args.Add(jsonValue);
+                    }
                 }
 
                 return args.ToArray();
