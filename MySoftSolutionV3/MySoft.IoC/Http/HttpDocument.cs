@@ -10,11 +10,11 @@ namespace MySoft.IoC.Http
     /// <summary>
     /// API文档类
     /// </summary>
-    internal class APIDocument
+    internal class HttpDocument
     {
         private IDictionary<string, CallerInfo> callers;
         private int port;
-        public APIDocument(IDictionary<string, CallerInfo> callers, int port)
+        public HttpDocument(IDictionary<string, CallerInfo> callers, int port)
         {
             this.callers = callers;
             this.port = port;
@@ -40,7 +40,7 @@ namespace MySoft.IoC.Http
 
             #endregion
 
-            string uri = string.Format("http://{0}:{1}/", "127.0.0.1", port);
+            string uri = string.Format("http://{0}:{1}/", DnsHelper.GetIPAddress(), port);
             html = html.Replace("${uri}", uri);
 
             StringBuilder sbUrl = new StringBuilder();
@@ -71,11 +71,11 @@ namespace MySoft.IoC.Http
             string uri = string.Empty;
             if (plist.Count == 0)
             {
-                uri = string.Format("http://127.0.0.1:{0}/{1}", port, kv.Key);
+                uri = string.Format("http://{0}:{1}/{2}", DnsHelper.GetIPAddress(), port, kv.Key);
             }
             else
             {
-                uri = string.Format("http://127.0.0.1:{0}/{1}?{2}", port, kv.Key, string.Join("&", plist.ToArray()));
+                uri = string.Format("http://{0}:{1}/{2}?{3}", DnsHelper.GetIPAddress(), port, kv.Key, string.Join("&", plist.ToArray()));
             }
 
             var url = string.Format("<a rel=\"operation\" target=\"_blank\" href=\"{0}\">{0}</a> 处的服务", uri);

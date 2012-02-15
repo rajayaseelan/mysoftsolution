@@ -86,7 +86,7 @@ namespace MySoft.IoC.Http
         /// <returns></returns>
         public string GetDocument()
         {
-            var doc = new APIDocument(callers, port);
+            var doc = new HttpDocument(callers, port);
             return doc.MakeDocument();
         }
 

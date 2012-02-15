@@ -78,8 +78,8 @@
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
     <Compile Include="Callback\MessageCenter.cs" />
     <Compile Include="Callback\MessageListener.cs" />
-    <Compile Include="Http\APIDocument.cs" />
-    <Compile Include="Http\HTTPRequestHandlerFactory.cs" />
+    <Compile Include="Http\HttpDocument.cs" />
+    <Compile Include="Http\HttpRequestHandlerFactory1.cs" />
     <Compile Include="Http\HttpServiceCaller.cs" />
     <Compile Include="Http\HttpServiceException.cs" />
     <Compile Include="Http\HttpServiceHandler.cs" />
