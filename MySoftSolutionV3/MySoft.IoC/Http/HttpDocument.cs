@@ -12,9 +12,9 @@ namespace MySoft.IoC.Http
     /// </summary>
     internal class HttpDocument
     {
-        private IDictionary<string, CallerInfo> callers;
+        private IDictionary<string, HttpCallerInfo> callers;
         private int port;
-        public HttpDocument(IDictionary<string, CallerInfo> callers, int port)
+        public HttpDocument(IDictionary<string, HttpCallerInfo> callers, int port)
         {
             this.callers = callers;
             this.port = port;
@@ -59,12 +59,13 @@ namespace MySoft.IoC.Http
         /// <param name="kv"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        private string GetItemDocument(KeyValuePair<string, CallerInfo> kv, string item)
+        private string GetItemDocument(KeyValuePair<string, HttpCallerInfo> kv, string item)
         {
             var template = item;
             var plist = new List<string>();
             foreach (var p in kv.Value.Method.GetParameters())
             {
+                if (kv.Value.Authorized && string.Compare(p.Name, kv.Value.AuthParameter, true) == 0) continue;
                 plist.Add(string.Format("{0}=[{0}]", p.Name));
             }
 
@@ -80,8 +81,16 @@ namespace MySoft.IoC.Http
 
             var url = string.Format("<a rel=\"operation\" target=\"_blank\" href=\"{0}\">{0}</a> 处的服务", uri);
 
-            template = template.Replace("${method}", string.Format("<p title=\"分布式服务接口:\r\n{2}\"><b>{0}</b><br/>{1}</p>", kv.Key, kv.Value.Description, kv.Value.ServiceName));
+            if (kv.Value.IsPassCheck)
+                template = template.Replace("${method}", string.Format("<p title=\"分布式服务接口:\r\n{2}\"><b>{0}</b><br/>{1}</p>", kv.Key, kv.Value.Description, kv.Value.ServiceName));
+            else
+                template = template.Replace("${method}", string.Format("<p title=\"{3}\r\n\r\n分布式服务接口:\r\n{2}\"><b><font color='red'>{0}</font></b><br/>{1}</p>", kv.Key, kv.Value.Description, kv.Value.ServiceName, kv.Value.CheckMessage));
+
             template = template.Replace("${parameter}", string.Join("&", plist.ToArray()));
+            if (kv.Value.Authorized)
+                template = template.Replace("${auth}", "<font color='red'>是</font>");
+            else
+                template = template.Replace("${auth}", "");
             template = template.Replace("${uri}", url.ToString());
             template = template.Replace("[[", "{").Replace("]]", "}");
 

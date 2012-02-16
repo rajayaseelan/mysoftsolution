@@ -38,6 +38,14 @@ namespace MySoft.IoC
             this.statuslist = new TimeStatusCollection(config.Records);
             this.startTime = DateTime.Now;
 
+            //加载cacheType
+            if (!string.IsNullOrEmpty(config.CacheType))
+            {
+                Type type = Type.GetType(config.CacheType);
+                object instance = Activator.CreateInstance(type);
+                this.container.ServiceCache = instance as IServiceCache;
+            }
+
             //启动定义推送线程
             ThreadPool.QueueUserWorkItem(DoPushWork);
         }
@@ -98,17 +106,7 @@ namespace MySoft.IoC
 
         #region GetServiceInfos
 
-        /// <summary>
-        /// 获取发布的服务类型
-        /// </summary>
-        /// <returns></returns>
-        public IList<Type> GetPublishTypeList()
-        {
-            //获取拥有PublishKind约束的服务
-            return container.GetInterfaces<PublishKindAttribute>().ToList();
-        }
-
-        private IList<ServiceInfo> services;
+         private IList<ServiceInfo> services;
         /// <summary>
         /// 获取服务信息列表
         /// </summary>

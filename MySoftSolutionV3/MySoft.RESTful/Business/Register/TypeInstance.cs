@@ -20,10 +20,5 @@ namespace MySoft.RESTful.Business.Register
         /// 对象实例
         /// </summary>
         public object Instance { get; set; }
-
-        /// <summary>
-        /// 是否本地
-        /// </summary>
-        public bool IsLocal { get; set; }
     }
 }

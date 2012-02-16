@@ -36,9 +36,8 @@ namespace MySoft.RESTful.Utils
         /// </summary>
         /// <param name="paramters"></param>
         /// <param name="obj"></param>
-        /// <param name="userParameter"></param>
         /// <returns></returns>
-        public static object[] Convert(ParameterInfo[] paramters, JObject obj, string userParameter)
+        public static object[] Convert(ParameterInfo[] paramters, JObject obj)
         {
             try
             {
@@ -63,16 +62,6 @@ namespace MySoft.RESTful.Utils
                             jsonValue = CoreHelper.GetTypeDefaultValue(GetPrimitiveType(info.ParameterType));
 
                         args.Add(jsonValue);
-                    }
-                    else if (string.Compare(info.Name, userParameter, true) == 0)
-                    {
-                        if (info.ParameterType == typeof(string))
-                            args.Add(AuthenticationContext.Current.User.Name);
-                        else if (info.ParameterType == typeof(int))
-                            args.Add(AuthenticationContext.Current.User.ID);
-                        else
-                            args.Add(AuthenticationContext.Current.User);
-
                     }
                     else
                     {

@@ -19,7 +19,6 @@ namespace MySoft.PlatformService.IoC
         private CastleServiceConfiguration config;
         private StartMode startMode = StartMode.Service;
         private CastleService server;
-        private IServiceCache serviceCache;
         private HTTPServer httpServer;
         private string[] mailTo;
 
@@ -58,23 +57,6 @@ namespace MySoft.PlatformService.IoC
             //处理邮件地址
             string address = ConfigurationManager.AppSettings["SendMailAddress"];
             if (!string.IsNullOrEmpty(address)) mailTo = address.Split(',', ';', '|');
-
-            //加载缓存服务
-            string service = ConfigurationManager.AppSettings["ServiceCacheType"];
-            if (!string.IsNullOrEmpty(service))
-            {
-                try
-                {
-                    var type = Type.GetType(service);
-                    object instance = Activator.CreateInstance(type);
-                    if (instance != null && instance is IServiceCache)
-                        serviceCache = instance as IServiceCache;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("[{0}] => {1}", DateTime.Now, ex.Message);
-                }
-            }
         }
 
         /// <summary>
@@ -111,20 +93,17 @@ namespace MySoft.PlatformService.IoC
 
         private void StartService()
         {
-            if (serviceCache == null)
-                server.Start();
-            else
-                server.Start(serviceCache);
+            server.Start();
 
             if (config.HttpGet)
             {
-                var caller = new HttpServiceCaller(server.Container, config.HttpPort);
-                var factory = new HTTPRequestHandlerFactory(caller);
+                var caller = new HttpServiceCaller(server.Container, config.HttpAuth, config.HttpPort);
+                var factory = new HttpRequestHandlerFactory(caller);
                 httpServer = new HTTPServer(factory, config.HttpPort);
 
                 if (startMode == StartMode.Console)
                 {
-                    httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://127.0.0.1:{1}", DateTime.Now, config.HttpPort); };
+                    httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://{1}:{2}", DateTime.Now, DnsHelper.GetIPAddress(), config.HttpPort); };
                     httpServer.OnServerStop += () => { Console.WriteLine("[{0}] => Http server stoped.", DateTime.Now); };
                 }
 

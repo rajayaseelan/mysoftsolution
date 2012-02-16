@@ -115,47 +115,30 @@ namespace MySoft.RESTful.Business.Pool
         public BusinessMethodModel FindMethod(string businessKindName, string businessMethodName)
         {
             bool hasException = false;
-            string msg = string.Empty;
+            string message = string.Empty;
             RESTfulCode code = RESTfulCode.OK;
             BusinessKindModel kind = businessPool.Where(e => e.Key.Equals(businessKindName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
             BusinessMethodModel method = null;
             if (kind == null)
             {
                 hasException = true;
-                msg = businessKindName + ", did not found!";
+                message = businessKindName + ", did not found!";
                 code = RESTfulCode.BUSINESS_KIND_NOT_FOUND;
             }
             else
             {
-                if (kind.State == BusinessState.ACTIVATED)
-                {
-                    method = kind.MethodModels.Where(e => e.Key.Equals(businessMethodName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
-                    if (method == null)
-                    {
-                        hasException = true;
-                        msg = businessMethodName + ", did not found!";
-                        code = RESTfulCode.BUSINESS_METHOD_NOT_FOUND;
-                    }
-                    else
-                    {
-                        if (method.State != BusinessState.ACTIVATED)
-                        {
-                            hasException = true;
-                            msg = businessMethodName + ", did not Activeted!";
-                            code = RESTfulCode.BUSINESS_KIND_NO_ACTIVATED;
-                        }
-                    }
-                }
-                else
+                method = kind.MethodModels.Where(e => e.Key.Equals(businessMethodName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
+                if (method == null)
                 {
                     hasException = true;
-                    msg = businessKindName + ", did not Activeted!";
-                    code = RESTfulCode.BUSINESS_KIND_NO_ACTIVATED;
+                    message = businessMethodName + ", did not found!";
+                    code = RESTfulCode.BUSINESS_METHOD_NOT_FOUND;
                 }
             }
+
             if (hasException)
             {
-                throw new RESTfulException(msg) { Code = code };
+                throw new RESTfulException(message) { Code = code };
             }
 
             return method;

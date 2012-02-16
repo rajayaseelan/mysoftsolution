@@ -71,48 +71,13 @@ namespace MySoft.RESTful.Business.Register
                     list.Add(new TypeInstance
                     {
                         Type = serviceType,
-                        Instance = instance,
-                        IsLocal = true
+                        Instance = instance
                     });
                 }
                 catch (Exception ex)
                 {
                     //记录错误日志
                     SimpleLog.Instance.WriteLogForDir("RegisterError", ex);
-                }
-            }
-
-            //获取远程的服务
-            var nodes = CastleFactory.Create().GetRemoteNodes();
-            if (nodes.Count > 0)
-            {
-                foreach (var node in nodes)
-                {
-                    try
-                    {
-                        //获取远程服务
-                        var service = CastleFactory.Create().GetChannel<IStatusService>(node);
-                        foreach (var serviceType in service.GetPublishTypeList())
-                        {
-                            if (list.Any(p => p.Type == serviceType)) continue;
-
-                            //使用代理实现IoC服务的调用
-                            var proxy = new ProxyInvocationHandler(serviceType);
-                            var instance = ProxyFactory.GetInstance().Create(proxy, serviceType, true);
-
-                            list.Add(new TypeInstance
-                            {
-                                Type = serviceType,
-                                Instance = instance,
-                                IsLocal = false
-                            });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        //记录错误日志
-                        SimpleLog.Instance.WriteLogForDir("RegisterError", ex);
-                    }
                 }
             }
 
@@ -136,6 +101,7 @@ namespace MySoft.RESTful.Business.Register
 
                     //获取类特性
                     var kind = CoreHelper.GetTypeAttribute<PublishKindAttribute>(serviceType);
+                    if (kind == null) continue;
 
                     kind.Name = kind.Name.ToLower();
 
@@ -149,8 +115,7 @@ namespace MySoft.RESTful.Business.Register
                         kindModel = new BusinessKindModel
                         {
                             Name = kind.Name,
-                            Description = kind.Description,
-                            State = kind.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN
+                            Description = kind.Description
                         };
 
                         pool.AddKindModel(kind.Name, kindModel);
@@ -184,14 +149,11 @@ namespace MySoft.RESTful.Business.Register
                                 Name = method.Name,
                                 Description = method.Description,
                                 HttpMethod = method.Method,
-                                Authorized = !string.IsNullOrEmpty(method.UserParameter),
-                                State = method.Enabled ? BusinessState.ACTIVATED : BusinessState.SHUTDOWN,
+                                Authorized = method.Authorized,
                                 Method = info,
                                 Parameters = info.GetParameters(),
-                                UserParameter = method.UserParameter,
                                 ParametersCount = info.GetParameters().Count(),
-                                Instance = instance,
-                                LocalService = service.IsLocal
+                                Instance = instance
                             };
 
                             if (method.Method != HttpMethod.POST && !CheckGetSubmitType(info.GetParameters()))

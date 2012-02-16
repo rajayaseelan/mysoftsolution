@@ -59,8 +59,8 @@ namespace MySoft.PlatformService.UserService
         [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true)]
         IList<UserInfo> GetUsers();
 
-        [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true)]
-        UserInfo GetUser(int id, IList<string> names);
+        [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true, Authorized = true, AuthParameter = "name")]
+        UserInfo GetUser(int id, string name);
     }
 
     /// <summary>

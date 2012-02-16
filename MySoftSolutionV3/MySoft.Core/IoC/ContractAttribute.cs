@@ -41,5 +41,19 @@ namespace MySoft.IoC
                 description = value;
             }
         }
+
+        /// <summary>
+        /// 实例化ContractAttribute
+        /// </summary>
+        public ContractAttribute() { }
+
+        /// <summary>
+        /// 实例化ContractAttribute
+        /// </summary>
+        /// <param name="name"></param>
+        public ContractAttribute(string name)
+        {
+            this.Name = name;
+        }
     }
 }

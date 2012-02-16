@@ -15,6 +15,11 @@ namespace MySoft.IoC
         public const int DEFAULT_RECORD_NUMBER = 3600; //3600次
 
         /// <summary>
+        /// The default minute call number.
+        /// </summary>
+        public const int DEFAULT_MINUTE_CALL_NUMBER = 1000; //1000次
+
+        /// <summary>
         /// The default client timeout number. 
         /// </summary>
         public const int DEFAULT_CLIENT_TIMEOUT = 60; //60秒

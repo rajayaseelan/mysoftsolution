@@ -110,16 +110,6 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 启用服务，并注入缓存
-        /// </summary>
-        /// <param name="serviceCache"></param>
-        public void Start(IServiceCache serviceCache)
-        {
-            this.container.ServiceCache = serviceCache;
-            this.Start();
-        }
-
-        /// <summary>
         /// 获取服务的ServerUrl地址
         /// </summary>
         public string ServerUrl

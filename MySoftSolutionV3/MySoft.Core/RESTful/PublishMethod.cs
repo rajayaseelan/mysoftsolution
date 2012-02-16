@@ -24,21 +24,15 @@ namespace MySoft.RESTful
         public HttpMethod Method { get; set; }
 
         /// <summary>
-        /// 是否启用
+        /// 是否认证
         /// </summary>
-        public bool Enabled { get; set; }
-
-        /// <summary>
-        /// 用户认证的参数名，如UserParameter = "username" 或 “userid"
-        /// </summary>
-        public string UserParameter { get; set; }
+        public bool Authorized { get; set; }
 
         /// <summary>
         /// 实例化PublishMethod
         /// </summary>
         public PublishMethodAttribute()
         {
-            this.Enabled = true;
             this.Method = HttpMethod.GET;
         }
 

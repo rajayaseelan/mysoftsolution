@@ -32,7 +32,7 @@ namespace MySoft.PlatformService.RESTful
         /// </summary>
         public void Init()
         {
-            service = new ServiceHost(typeof(DefaultRESTfulService), new Uri("http://127.0.0.1:58888/"));
+            service = new ServiceHost(typeof(DefaultRESTfulService), new Uri(string.Format("http://{0}:58888/", DnsHelper.GetIPAddress())));
         }
 
         /// <summary>

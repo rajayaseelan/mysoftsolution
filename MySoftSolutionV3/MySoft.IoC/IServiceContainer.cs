@@ -8,7 +8,7 @@ namespace MySoft.IoC
     /// <summary>
     /// The service container interface.
     /// </summary>
-    public interface IServiceContainer : IService, IDisposable, ILog, ILogable, IErrorLogable
+    public interface IServiceContainer : IService, IContainer, IDisposable, ILog, ILogable, IErrorLogable
     {
         /// <summary>
         /// Gets the kernel.

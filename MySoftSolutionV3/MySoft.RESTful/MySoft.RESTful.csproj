@@ -55,10 +55,10 @@
     <OutputPath>bin\x64\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Castle.Core, Version=2.5.1.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+    <Reference Include="Castle.Core">
       <HintPath>..\lib\Castle\Castle.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Castle.Windsor, Version=2.5.1.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+    <Reference Include="Castle.Windsor">
       <HintPath>..\lib\Castle\Castle.Windsor.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -70,13 +70,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Business\Register\ProxyInvocationHandler.cs" />
     <Compile Include="Business\Register\TypeInstance.cs" />
     <Compile Include="Utils\AuthManager.cs" />
     <Compile Include="RESTfulException.cs" />
     <Compile Include="Business\BusinessKindModel.cs" />
     <Compile Include="Business\BusinessMethodModel.cs" />
-    <Compile Include="Business\BusinessState.cs" />
     <Compile Include="Business\BusinessStateModel.cs" />
     <Compile Include="Business\Pool\DefaultBusinessPool.cs" />
     <Compile Include="Business\Pool\IBusinessPool.cs" />
@@ -100,10 +98,6 @@
     <ProjectReference Include="..\MySoft.Core\MySoft.Core.csproj">
       <Project>{1DF7ED40-1747-4114-A8E4-6B3B85034883}</Project>
       <Name>MySoft.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MySoft.IoC\MySoft.IoC.csproj">
-      <Project>{075BD20E-ABD5-4754-8C40-58E3EC025E42}</Project>
-      <Name>MySoft.IoC</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

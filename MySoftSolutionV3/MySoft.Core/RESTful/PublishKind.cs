@@ -19,17 +19,9 @@ namespace MySoft.RESTful
         public string Description { get; set; }
 
         /// <summary>
-        /// 是否启用
-        /// </summary>
-        public bool Enabled { get; set; }
-
-        /// <summary>
         /// 实例化PublishKind
         /// </summary>
-        public PublishKindAttribute()
-        {
-            this.Enabled = true;
-        }
+        public PublishKindAttribute() { }
 
         /// <summary>
         /// 实例化PublishKind

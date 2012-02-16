@@ -15,24 +15,40 @@ namespace MySoft.IoC.Http
     public class HttpServiceCaller
     {
         private IServiceContainer container;
-        private IDictionary<string, CallerInfo> callers;
+        private IHttpAuthentication handler;
+        private IDictionary<string, HttpCallerInfo> callers;
         private int port;
 
         /// <summary>
         /// HttpServiceCaller初始化
         /// </summary>
         /// <param name="container"></param>
-        public HttpServiceCaller(IServiceContainer container, int port)
+        /// <param name="httpAuth"></param>
+        /// <param name="port"></param>
+        public HttpServiceCaller(IServiceContainer container, string httpAuth, int port)
         {
             this.container = container;
             this.port = port;
-            this.callers = new Dictionary<string, CallerInfo>();
+            this.callers = new Dictionary<string, HttpCallerInfo>();
+
+            //加载httpAuth
+            if (!string.IsNullOrEmpty(httpAuth))
+            {
+                Type type = Type.GetType(httpAuth);
+                object instance = Activator.CreateInstance(type);
+                this.handler = instance as IHttpAuthentication;
+            }
 
             //初始化字典
             foreach (var serviceType in container.GetInterfaces<ServiceContractAttribute>())
             {
                 var serviceAttr = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
                 var serviceName = serviceAttr.Name ?? serviceType.FullName;
+
+                object instance = null;
+                try { instance = container.Resolve(serviceType); }
+                catch { }
+                if (instance == null) continue;
 
                 //添加方法
                 foreach (var methodInfo in CoreHelper.GetMethodsFromType(serviceType))
@@ -52,13 +68,25 @@ namespace MySoft.IoC.Http
                         }
 
                         //将方法添加到字典
-                        var callerInfo = new CallerInfo
+                        var callerInfo = new HttpCallerInfo
                         {
                             ServiceName = string.Format("【{0}】\r\n{1}", serviceType.FullName, methodInfo.ToString()),
                             Method = methodInfo,
-                            Instance = container[serviceType],
+                            Instance = instance,
+                            Authorized = methodAttr.Authorized,
+                            AuthParameter = methodAttr.AuthParameter,
                             Description = description
                         };
+
+                        if (!CheckGetSubmitType(methodInfo.GetParameters()))
+                        {
+                            callerInfo.IsPassCheck = false;
+                            callerInfo.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", fullName);
+                        }
+                        else
+                        {
+                            callerInfo.IsPassCheck = true;
+                        }
 
                         if (callers.ContainsKey(fullName))
                         {
@@ -101,7 +129,16 @@ namespace MySoft.IoC.Http
             if (callers.ContainsKey(name))
             {
                 var caller = callers[name];
-                var parameters = ParseParameters(collection, caller.Method);
+                if (!caller.IsPassCheck)
+                {
+                    throw new HTTPMessageException(caller.CheckMessage);
+                }
+
+                var parameters = new object[0];
+                if (caller.Method.GetParameters().Length > 0)
+                {
+                    parameters = ParseParameters(collection, caller);
+                }
 
                 try
                 {
@@ -127,43 +164,65 @@ namespace MySoft.IoC.Http
         /// 处理参数
         /// </summary>
         /// <param name="collection"></param>
-        /// <param name="method"></param>
+        /// <param name="caller"></param>
         /// <returns></returns>
-        private object[] ParseParameters(NameValueCollection collection, MethodInfo method)
+        private object[] ParseParameters(NameValueCollection collection, HttpCallerInfo caller)
         {
             var jobject = ParameterHelper.Resolve(collection);
+            if (caller.Authorized)
+            {
+                if (string.IsNullOrEmpty(caller.AuthParameter))
+                {
+                    throw new HTTPMessageException("AuthParameter is empty or not set correct.");
+                }
+                else
+                {
+                    if (handler != null)
+                    {
+                        //进行授权处理
+                        try
+                        {
+                            //处理sessionKey
+                            string authString = handler.Authorize(container, collection["sessionKey"]);
+                            jobject[caller.AuthParameter] = authString;
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new HTTPMessageException("SessionKey is empty or not set correct, authorized failed! Error: " + ex.Message);
+                        }
+                    }
+                    else
+                    {
+                        throw new HTTPMessageException("Authorized failed ,httpAuth not set correct.");
+                    }
+                }
+            }
 
-            //处理参数
-            if (jobject.Count == 0)
-                return null;
-            else
-                return ParameterHelper.Convert(jobject, method.GetParameters());
+            return ParameterHelper.Convert(jobject, caller.Method.GetParameters());
         }
-    }
-
-    /// <summary>
-    /// 调用信息
-    /// </summary>
-    internal class CallerInfo
-    {
-        /// <summary>
-        /// 服务名称
-        /// </summary>
-        public string ServiceName { get; set; }
 
         /// <summary>
-        /// 调用方法
+        /// 检查Get类型的参数
         /// </summary>
-        public MethodInfo Method { get; set; }
+        /// <param name="paramsInfo"></param>
+        /// <returns></returns>
+        private bool CheckGetSubmitType(ParameterInfo[] paramsInfo)
+        {
+            //如果参数为0
+            if (paramsInfo.Length == 0) return true;
 
-        /// <summary>
-        /// 调用实例
-        /// </summary>
-        public object Instance { get; set; }
+            bool result = true;
+            StringBuilder sb = new StringBuilder();
+            foreach (ParameterInfo p in paramsInfo)
+            {
+                if (!(p.ParameterType.IsValueType || p.ParameterType == typeof(string)))
+                {
+                    result = false;
+                    break;
+                }
+            }
 
-        /// <summary>
-        /// 方法描述
-        /// </summary>
-        public string Description { get; set; }
+            return result;
+        }
     }
 }

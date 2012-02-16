@@ -11,10 +11,28 @@ using MySoft.Net.HTTP;
 
 namespace MySoft.PlatformService.Console
 {
-
-    public class Cache : IServiceCache
+    public class HttpAuthentication : IHttpAuthentication
     {
+        #region IUserHandler 成员
 
+        /// <summary>
+        /// 认证用户
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
+        public string Authorize(IContainer container, string sessionId)
+        {
+            var str = Base64UrlHelper.UrlBase64ToString(sessionId);
+            string[] arr = str.Split('|');
+            return arr[0];
+        }
+
+        #endregion
+    }
+
+    public class ServiceCache : IServiceCache
+    {
         #region IServiceCache 成员
 
         public void AddCache(string key, object value, int seconds)
@@ -31,7 +49,7 @@ namespace MySoft.PlatformService.Console
 
         public void RemoveCache(string key)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         #endregion
@@ -43,6 +61,8 @@ namespace MySoft.PlatformService.Console
         //private static readonly IMongo mongo = new Mongo("mongodb://192.168.1.223");
         static void Main(string[] args)
         {
+            var str = Base64UrlHelper.StringToUrlBase64("my181|19810108");
+
             System.Console.BackgroundColor = ConsoleColor.DarkBlue;
             System.Console.ForegroundColor = ConsoleColor.White;
             System.Console.WriteLine("Service ready started...");
@@ -51,20 +71,18 @@ namespace MySoft.PlatformService.Console
             CastleService server = new CastleService(config);
             server.OnLog += new LogEventHandler(Program_OnLog);
             server.OnError += new ErrorLogEventHandler(Program_OnError);
-            server.Start(new Cache());
+            server.Start();
 
             if (config.HttpGet)
             {
-                var caller = new HttpServiceCaller(server.Container, config.HttpPort);
-                var factory = new HTTPRequestHandlerFactory(caller);
+                var caller = new HttpServiceCaller(server.Container, config.HttpAuth, config.HttpPort);
+                var factory = new HttpRequestHandlerFactory(caller);
                 var httpServer = new HTTPServer(factory, config.HttpPort);
-                httpServer.OnServerStart += () => { System.Console.WriteLine("Http server started. http://127.0.0.1:" + config.HttpPort); };
+                httpServer.OnServerStart += () => { System.Console.WriteLine("Http server started. http://{0}:{1}", DnsHelper.GetIPAddress(), config.HttpPort); };
                 httpServer.OnServerStop += () => { System.Console.WriteLine("Http server stoped."); };
                 httpServer.OnServerException += ex => Program_OnError(ex);
                 httpServer.Start();
             }
-
-            //mongo.Connect();
 
             System.Console.WriteLine("Server host -> {0}.", server.ServerUrl);
             System.Console.WriteLine("Service count -> {0} services.", server.ServiceCount);

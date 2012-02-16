@@ -50,46 +50,34 @@ namespace MySoft.RESTful
         /// <summary>
         /// 认证失败
         /// </summary>
-        AUTH_FAULT = 98,
+        AUTH_FAULT = 41,
         /// <summary>
         /// 验证错误
         /// </summary>
-        AUTH_ERROR = 99,
+        AUTH_ERROR = 42,
         /// <summary>
         /// 业务错误
         /// </summary>
-        BUSINESS_ERROR = 99,
+        BUSINESS_ERROR = 51,
         /// <summary>
         /// 业务类型没找到
         /// </summary>
-        BUSINESS_KIND_NOT_FOUND = 30,
+        BUSINESS_KIND_NOT_FOUND = 52,
         /// <summary>
         /// 业务方法没找到
         /// </summary>
-        BUSINESS_METHOD_NOT_FOUND = 32,
-        /// <summary>
-        /// 业务类型不是激活状态
-        /// </summary>
-        BUSINESS_KIND_NO_ACTIVATED = 31,
-        /// <summary>
-        /// 业务方法不是激活状态
-        /// </summary>
-        BUSINESS_METHOD_NO_ACTIVATED = 33,
-        /// <summary>
-        /// 业务方法参数个数不匹配
-        /// </summary>
-        BUSINESS_METHOD_PARAMS_COUNT_NOT_MATCH = 50,
+        BUSINESS_METHOD_NOT_FOUND = 53,
         /// <summary>
         /// 业务方法参数类型不匹配
         /// </summary>
-        BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH = 51,
+        BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH = 54,
         /// <summary>
         /// 业务方法调用类型不匹配
         /// </summary>
-        BUSINESS_METHOD_CALL_TYPE_NOT_MATCH = 52,
+        BUSINESS_METHOD_CALL_TYPE_NOT_MATCH = 55,
         /// <summary>
         /// 业务方法没有通过检查
         /// </summary>
-        BUSINESS_METHOD_NOT_PASS_CHECK = 53
+        BUSINESS_METHOD_NOT_PASS_CHECK = 56
     }
 }

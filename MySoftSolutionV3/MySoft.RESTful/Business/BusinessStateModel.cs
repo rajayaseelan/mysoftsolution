@@ -19,15 +19,5 @@ namespace MySoft.RESTful.Business
         /// 描述
         /// </summary>
         public string Description { get; set; }
-
-        /// <summary>
-        /// 业务接口状态
-        /// </summary>
-        public BusinessState State { get; set; }
-
-        public BusinessStateModel()
-        {
-            this.State = BusinessState.ACTIVATED;
-        }
     }
 }

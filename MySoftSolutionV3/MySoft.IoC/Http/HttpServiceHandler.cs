@@ -42,7 +42,7 @@ namespace MySoft.IoC.Http
                     tw.WriteLine(caller.GetDocument());
                 }
             }
-            else if (request.URI.Substring(request.URI.IndexOf('/') + 1).Length >= 10)
+            else if (request.URI.Substring(request.URI.IndexOf('/') + 1).Length > 5)
             {
                 /**
                              * In this example we'll write the body into the

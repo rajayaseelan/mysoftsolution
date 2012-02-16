@@ -13,8 +13,11 @@ namespace MySoft.IoC.Configuration
         private int port = 8888;
         private int httpPort = 8080;
         private bool httpGet = false;
+        private string httpAuth;
+        private string cacheType;
         private bool encrypt = false;
         private bool compress = false;
+        private int minuteCall = ServiceConfig.DEFAULT_MINUTE_CALL_NUMBER;         //默认为每分钟调用1000次，超过报异常
         private int records = ServiceConfig.DEFAULT_RECORD_NUMBER;                 //默认记录3600次   //记录条数，默认为3600条，1小时记录
 
         /// <summary>
@@ -51,12 +54,6 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["port"] != null && xmlnode["port"].Value.Trim() != string.Empty)
                 port = Convert.ToInt32(xmlnode["port"].Value);
 
-            if (xmlnode["httpPort"] != null && xmlnode["httpPort"].Value.Trim() != string.Empty)
-                httpPort = Convert.ToInt32(xmlnode["httpPort"].Value);
-
-            if (xmlnode["httpGet"] != null && xmlnode["httpGet"].Value.Trim() != string.Empty)
-                httpGet = Convert.ToBoolean(xmlnode["httpGet"].Value);
-
             if (xmlnode["encrypt"] != null && xmlnode["encrypt"].Value.Trim() != string.Empty)
                 encrypt = Convert.ToBoolean(xmlnode["encrypt"].Value);
 
@@ -65,6 +62,29 @@ namespace MySoft.IoC.Configuration
 
             if (xmlnode["records"] != null && xmlnode["records"].Value.Trim() != string.Empty)
                 records = Convert.ToInt32(xmlnode["records"].Value);
+
+            if (xmlnode["minuteCall"] != null && xmlnode["minuteCall"].Value.Trim() != string.Empty)
+                minuteCall = Convert.ToInt32(xmlnode["minuteCall"].Value);
+
+            foreach (XmlNode child in node.ChildNodes)
+            {
+                if (child.NodeType == XmlNodeType.Comment) continue;
+
+                XmlAttributeCollection childnode = child.Attributes;
+                if (child.Name == "httpServer")
+                {
+                    httpPort = Convert.ToInt32(childnode["httpPort"].Value);
+                    httpGet = Convert.ToBoolean(childnode["httpGet"].Value);
+
+                    if (childnode["httpAuth"] != null && childnode["httpAuth"].Value.Trim() != string.Empty)
+                        httpAuth = childnode["httpAuth"].Value;
+                }
+                else if (child.Name == "serverCache")
+                {
+                    if (childnode["cacheType"] != null && childnode["cacheType"].Value.Trim() != string.Empty)
+                        cacheType = childnode["cacheType"].Value;
+                }
+            }
         }
 
         #region Http参数
@@ -87,7 +107,25 @@ namespace MySoft.IoC.Configuration
             set { httpGet = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the httpAuth
+        /// </summary>
+        public string HttpAuth
+        {
+            get { return httpAuth; }
+            set { httpAuth = value; }
+        }
+
         #endregion
+
+        /// <summary>
+        /// Gets or sets the cacheType
+        /// </summary>
+        public string CacheType
+        {
+            get { return cacheType; }
+            set { cacheType = value; }
+        }
 
         /// <summary>
         /// Gets or sets the host.
@@ -137,6 +175,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return records; }
             set { records = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the minuteCall
+        /// </summary>
+        public int MinuteCall
+        {
+            get { return minuteCall; }
+            set { minuteCall = value; }
         }
     }
 }

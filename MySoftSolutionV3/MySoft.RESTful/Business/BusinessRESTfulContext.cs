@@ -132,7 +132,7 @@ namespace MySoft.RESTful.Business
                 throw new RESTfulException(String.Format("Fault parameters: {0}!", parameters)) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
             }
 
-            object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj, metadata.UserParameter);
+            object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj);
             return DynamicCalls.GetMethodInvoker(metadata.Method)(metadata.Instance, arguments);
         }
 
@@ -167,34 +167,6 @@ namespace MySoft.RESTful.Business
             {
                 list.AddRange(pool.KindMethods.Values);
             }
-            else if (kind.ToLower() == "remote")
-            {
-                var models = pool.KindMethods.Values.Where(p =>
-                    p.MethodModels.Values.Any(x => !x.LocalService))
-                        .ToList();
-
-                foreach (var model in models)
-                {
-                    var mod = new BusinessKindModel
-                    {
-                        Name = model.Name,
-                        State = model.State,
-                        Description = model.Description,
-                        MethodModels = new Dictionary<string, BusinessMethodModel>()
-                    };
-
-                    var methods = model.MethodModels.Values
-                        .Where(p => !p.LocalService)
-                        .ToList();
-
-                    foreach (var m in methods)
-                    {
-                        mod.MethodModels.Add(m.Name, m);
-                    }
-
-                    list.Add(mod);
-                }
-            }
             else
             {
                 var model = pool.GetKindModel(kind);
@@ -212,7 +184,6 @@ namespace MySoft.RESTful.Business
                             var mod = new BusinessKindModel
                             {
                                 Name = model.Name,
-                                State = model.State,
                                 Description = model.Description
                             };
                             mod.MethodModels.Add(m.Name, m);
@@ -250,9 +221,7 @@ namespace MySoft.RESTful.Business
                         template = item.Substring(item.IndexOf("</td>") + 5);
                     }
 
-                    var tempStr = string.Format("<a href='/help/{0}/{1}'>{2}</a>", e.Name, model.Name,
-                        (model.LocalService ? "" : "<font color='red'>[*]</font>") + model.Name) + "<br/>" + model.Description;
-
+                    var tempStr = string.Format("<a href='/help/{0}/{1}'>{2}</a><br/>{3}", e.Name, model.Name, model.Name, model.Description);
                     if (!model.IsPassCheck)
                     {
                         tempStr = string.Format("<font color=\"red\" title=\"{0}\">{1}</font>", model.CheckMessage, tempStr);
@@ -265,12 +234,6 @@ namespace MySoft.RESTful.Business
                     var parametersCount = model.ParametersCount;
                     foreach (var p in model.Parameters)
                     {
-                        if (string.Compare(p.Name, model.UserParameter, true) == 0)
-                        {
-                            parametersCount--;
-                            continue;
-                        }
-
                         if (!GetTypeClass(p.ParameterType))
                         {
                             plist.Add(string.Format("{0}=[{0}]", p.Name.ToLower()).Replace('[', '{').Replace(']', '}'));

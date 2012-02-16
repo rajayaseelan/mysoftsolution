@@ -27,7 +27,7 @@ namespace MySoft.RESTful.Demo
         /// 获取一个用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethod("getuser", Description = "获取一个用户", UserParameter = "name")]
+        [PublishMethod("getuser", Description = "获取一个用户")]
         User GetUser(string name);
 
         /// <summary>

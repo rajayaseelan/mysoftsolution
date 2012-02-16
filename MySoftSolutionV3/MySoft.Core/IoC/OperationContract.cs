@@ -11,6 +11,38 @@ namespace MySoft.IoC
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class OperationContractAttribute : ContractAttribute
     {
+        private string authParameter;
+        /// <summary>
+        /// 认证参数
+        /// </summary>
+        public string AuthParameter
+        {
+            get
+            {
+                return authParameter;
+            }
+            set
+            {
+                authParameter = value;
+            }
+        }
+
+        private bool authorized;
+        /// <summary>
+        /// 是否认证
+        /// </summary>
+        public bool Authorized
+        {
+            get
+            {
+                return authorized;
+            }
+            set
+            {
+                authorized = value;
+            }
+        }
+
         private bool httpEnabled = false;
         /// <summary>
         /// 发布为http方法
@@ -74,10 +106,5 @@ namespace MySoft.IoC
                 cacheKey = value;
             }
         }
-
-        /// <summary>
-        /// 实例化OperationContractAttribute
-        /// </summary>
-        public OperationContractAttribute() { }
     }
 }

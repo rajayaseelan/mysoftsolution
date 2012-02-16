@@ -9,7 +9,7 @@ namespace MySoft.IoC.Http
     /// <summary>
     /// http解析工厂类
     /// </summary>
-    public class HTTPRequestHandlerFactory : IHTTPRequestHandlerFactory
+    public class HttpRequestHandlerFactory : IHTTPRequestHandlerFactory
     {
         private HttpServiceCaller caller;
 
@@ -19,7 +19,7 @@ namespace MySoft.IoC.Http
         /// 初始化CastleServiceHandler
         /// </summary>
         /// <param name="caller"></param>
-        public HTTPRequestHandlerFactory(HttpServiceCaller caller)
+        public HttpRequestHandlerFactory(HttpServiceCaller caller)
         {
             this.caller = caller;
         }

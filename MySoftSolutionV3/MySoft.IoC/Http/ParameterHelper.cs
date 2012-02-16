@@ -36,10 +36,8 @@ namespace MySoft.IoC.Http
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="paramters"></param>
-        /// <param name="userParameter"></param>
-        /// <param name="authName"></param>
         /// <returns></returns>
-        public static object[] Convert(JObject obj, ParameterInfo[] paramters, string userParameter, string authName)
+        public static object[] Convert(JObject obj, ParameterInfo[] paramters)
         {
             try
             {
@@ -76,10 +74,6 @@ namespace MySoft.IoC.Http
                             jsonValue = CoreHelper.GetTypeDefaultValue(GetPrimitiveType(info.ParameterType));
 
                         args.Add(jsonValue);
-                    }
-                    else if (string.Compare(info.Name, userParameter, true) == 0)
-                    {
-                        args.Add(authName);
                     }
                     else
                     {

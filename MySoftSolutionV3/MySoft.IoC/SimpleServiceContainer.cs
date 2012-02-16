@@ -193,6 +193,36 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// Resolve local service
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public object Resolve(Type type)
+        {
+            return container.Resolve(type);
+        }
+
+        /// <summary>
+        /// Resolve local service
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object Resolve(string key)
+        {
+            return container.Resolve<object>(key);
+        }
+
+        /// <summary>
+        /// Resolve local service
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns></returns>
+        public TService Resolve<TService>()
+        {
+            return container.Resolve<TService>();
+        }
+
+        /// <summary>
         /// Calls the service.
         /// </summary>
         /// <param name="reqMsg"></param>
