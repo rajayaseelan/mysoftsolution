@@ -66,7 +66,7 @@ namespace MySoft.IoC.Http
             foreach (var p in kv.Value.Method.GetParameters())
             {
                 if (kv.Value.Authorized && string.Compare(p.Name, kv.Value.AuthParameter, true) == 0) continue;
-                plist.Add(string.Format("{0}=[{0}]", p.Name));
+                plist.Add(string.Format("{0}=[[{0}]]", p.Name));
             }
 
             string uri = string.Empty;
