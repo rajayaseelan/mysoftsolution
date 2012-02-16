@@ -144,10 +144,8 @@ namespace MySoft.IoC.Http
                 {
                     var retVal = DynamicCalls.GetMethodInvoker(caller.Method).Invoke(caller.Instance, parameters);
 
-                    if (retVal != null)
-                        return SerializationManager.SerializeJson(retVal);
-                    else
-                        return null;
+                    if (retVal == null) return "{}";
+                    return SerializationManager.SerializeJson(retVal, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
                 }
                 catch (Exception ex)
                 {
