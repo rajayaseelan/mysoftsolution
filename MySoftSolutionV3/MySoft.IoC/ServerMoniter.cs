@@ -106,7 +106,7 @@ namespace MySoft.IoC
 
         #region GetServiceInfos
 
-         private IList<ServiceInfo> services;
+        private IList<ServiceInfo> services;
         /// <summary>
         /// 获取服务信息列表
         /// </summary>
@@ -186,10 +186,7 @@ namespace MySoft.IoC
 
         private IList<ParameterInfo> GetSubParameters(Type type)
         {
-            if (type.IsByRef) type = type.GetElementType();
-            if (type.IsArray) type = type.GetElementType();
-            if (type.IsGenericType) type = type.GetGenericArguments()[0];
-
+            type = CoreHelper.GetPrimitiveType(type);
             if (GetTypeClass(type) && !typeof(ICollection).IsAssignableFrom(type))
             {
                 var plist = new List<ParameterInfo>();

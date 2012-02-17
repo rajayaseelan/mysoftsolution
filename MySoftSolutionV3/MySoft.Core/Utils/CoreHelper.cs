@@ -752,5 +752,51 @@ namespace MySoft
         }
 
         #endregion
+
+        /// <summary>
+        /// 检查Primitive类型
+        /// </summary>
+        /// <param name="types"></param>
+        /// <returns></returns>
+        public static bool CheckPrimitiveType(params Type[] types)
+        {
+            //如果参数为0
+            if (types == null || types.Length == 0) return true;
+
+            bool result = true;
+            foreach (var type in types)
+            {
+                var t = GetPrimitiveType(type);
+                if (!(t.IsValueType || t.IsEnum || t == typeof(string)))
+                {
+                    result = false;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 获取无类型
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static Type GetPrimitiveType(Type type)
+        {
+            if (type.IsByRef) type = type.GetElementType();
+            if (type.IsArray) type = type.GetElementType();
+            if (type.IsGenericType)
+            {
+                var t = type.GetGenericTypeDefinition();
+                if (typeof(IList<>).IsAssignableFrom(t))
+                {
+                    var types = type.GetGenericArguments();
+                    type = types[0];
+                }
+            }
+
+            return type;
+        }
     }
 }

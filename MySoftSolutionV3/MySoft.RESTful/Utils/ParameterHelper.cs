@@ -52,10 +52,22 @@ namespace MySoft.RESTful.Utils
 
                         if (!(string.IsNullOrEmpty(value) || value == "{}"))
                         {
+                            var type = GetPrimitiveType(info.ParameterType);
+                            if (type.IsArray)
+                            {
+                                value = string.Format("[{0}]", value.Replace(",", "\",\""));
+                            }
+                            else if (type.IsGenericType)
+                            {
+                                var t = type.GetGenericTypeDefinition();
+                                if (typeof(IList<>).IsAssignableFrom(t))
+                                    value = string.Format("[{0}]", value.Replace(",", "\",\""));
+                            }
+
                             if (value.Contains("new Date"))
-                                jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+                                jsonValue = SerializationManager.DeserializeJson(type, value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
                             else
-                                jsonValue = SerializationManager.DeserializeJson(GetPrimitiveType(info.ParameterType), value);
+                                jsonValue = SerializationManager.DeserializeJson(type, value);
                         }
 
                         if (jsonValue == null)

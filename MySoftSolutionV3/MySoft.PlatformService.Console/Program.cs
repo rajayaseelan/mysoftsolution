@@ -63,6 +63,9 @@ namespace MySoft.PlatformService.Console
         {
             var str = Base64UrlHelper.StringToUrlBase64("my181|19810108");
 
+            string[] arr = { "aa", "bb" };
+            var type = arr.GetType().GetElementType();
+
             System.Console.BackgroundColor = ConsoleColor.DarkBlue;
             System.Console.ForegroundColor = ConsoleColor.White;
             System.Console.WriteLine("Service ready started...");

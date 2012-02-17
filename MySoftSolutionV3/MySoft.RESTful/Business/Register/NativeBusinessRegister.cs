@@ -156,7 +156,8 @@ namespace MySoft.RESTful.Business.Register
                                 Instance = instance
                             };
 
-                            if (method.Method != HttpMethod.POST && !CheckGetSubmitType(info.GetParameters()))
+                            var types = info.GetParameters().Select(p => p.ParameterType).ToArray();
+                            if (method.Method != HttpMethod.POST && !CoreHelper.CheckPrimitiveType(types))
                             {
                                 methodModel.IsPassCheck = false;
                                 methodModel.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", kindModel.Name + "." + methodModel.Name);
@@ -175,30 +176,6 @@ namespace MySoft.RESTful.Business.Register
             {
                 SimpleLog.Instance.WriteLog(ex);
             }
-        }
-
-        /// <summary>
-        /// 检查Get类型的参数
-        /// </summary>
-        /// <param name="paramsInfo"></param>
-        /// <returns></returns>
-        private bool CheckGetSubmitType(ParameterInfo[] paramsInfo)
-        {
-            //如果参数为0
-            if (paramsInfo.Length == 0) return true;
-
-            bool result = true;
-            StringBuilder sb = new StringBuilder();
-            foreach (ParameterInfo p in paramsInfo)
-            {
-                if (!(p.ParameterType.IsValueType || p.ParameterType == typeof(string)))
-                {
-                    result = false;
-                    break;
-                }
-            }
-
-            return result;
         }
     }
 }

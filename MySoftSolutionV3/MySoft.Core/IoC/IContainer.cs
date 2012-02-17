@@ -11,6 +11,13 @@ namespace MySoft.IoC
     public interface IContainer
     {
         /// <summary>
+        /// 获取远程服务
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns></returns>
+        TService GetChannel<TService>();
+
+        /// <summary>
         /// Resolve local service
         /// </summary>
         /// <typeparam name="TService"></typeparam>

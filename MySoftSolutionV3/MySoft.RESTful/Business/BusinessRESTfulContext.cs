@@ -317,10 +317,7 @@ namespace MySoft.RESTful.Business
                 sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", name, GetTypeName(type)) + "<br/>");
             }
 
-            if (type.IsByRef) type = type.GetElementType();
-            if (type.IsArray) type = type.GetElementType();
-            if (type.IsGenericType) type = type.GetGenericArguments()[0];
-
+            type = CoreHelper.GetPrimitiveType(type);
             if (GetTypeClass(type))
             {
                 if (type.IsEnum)

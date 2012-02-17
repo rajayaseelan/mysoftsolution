@@ -60,7 +60,7 @@ namespace MySoft.PlatformService.UserService
         IList<UserInfo> GetUsers();
 
         [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true, Authorized = true, AuthParameter = "name")]
-        UserInfo GetUser(int id, string name);
+        UserInfo GetUser(int id, string name, IList<string> list, int[] values);
     }
 
     /// <summary>

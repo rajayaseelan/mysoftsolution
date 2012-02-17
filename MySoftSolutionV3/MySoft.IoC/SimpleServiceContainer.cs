@@ -223,6 +223,16 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 获取远程服务
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns></returns>
+        public TService GetChannel<TService>()
+        {
+            return CastleFactory.Create().GetChannel<TService>();
+        }
+
+        /// <summary>
         /// Calls the service.
         /// </summary>
         /// <param name="reqMsg"></param>

@@ -53,8 +53,11 @@ namespace MySoft.IoC.Http
                 //添加方法
                 foreach (var methodInfo in CoreHelper.GetMethodsFromType(serviceType))
                 {
+                    bool authorized = true;
+                    string authParameter = null;
                     var description = serviceAttr.Description;
                     var methodAttr = CoreHelper.GetMemberAttribute<OperationContractAttribute>(methodInfo);
+
                     if (methodAttr != null && methodAttr.HttpEnabled)
                     {
                         string methodName = methodAttr.Name ?? methodInfo.Name;
@@ -67,45 +70,56 @@ namespace MySoft.IoC.Http
                                 description += " - " + methodAttr.Description;
                         }
 
-                        //将方法添加到字典
-                        var callerInfo = new HttpCallerInfo
-                        {
-                            ServiceName = string.Format("【{0}】\r\n{1}", serviceType.FullName, methodInfo.ToString()),
-                            Method = methodInfo,
-                            Instance = instance,
-                            Authorized = methodAttr.Authorized,
-                            AuthParameter = methodAttr.AuthParameter,
-                            Description = description
-                        };
+                        authorized = methodAttr.Authorized;
+                        authParameter = methodAttr.AuthParameter;
 
-                        if (!CheckGetSubmitType(methodInfo.GetParameters()))
-                        {
-                            callerInfo.IsPassCheck = false;
-                            callerInfo.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", fullName);
-                        }
-                        else
-                        {
-                            callerInfo.IsPassCheck = true;
-                        }
-
-                        if (callers.ContainsKey(fullName))
-                        {
-                            //处理重复的方法
-                            for (int i = 0; i < 10000; i++)
-                            {
-                                var name = fullName + (i + 1);
-                                if (!callers.ContainsKey(name))
-                                {
-                                    fullName = name;
-                                    break;
-                                }
-                            }
-                        }
-
-                        callers[fullName] = callerInfo;
+                        //创建一个新的Caller
+                        CreateNewCaller(serviceType, methodInfo, instance, fullName, description, authorized, authParameter);
                     }
                 }
             }
+        }
+
+        private void CreateNewCaller(Type serviceType, MethodInfo methodInfo, object instance,
+            string fullName, string description, bool authorized, string authParameter)
+        {
+            //将方法添加到字典
+            var callerInfo = new HttpCallerInfo
+            {
+                ServiceName = string.Format("【{0}】\r\n{1}", serviceType.FullName, methodInfo.ToString()),
+                Method = methodInfo,
+                Instance = instance,
+                Authorized = authorized,
+                AuthParameter = authParameter,
+                Description = description
+            };
+
+            var types = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
+            if (!CoreHelper.CheckPrimitiveType(types))
+            {
+                callerInfo.IsPassCheck = false;
+                callerInfo.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", fullName);
+            }
+            else
+            {
+                callerInfo.IsPassCheck = true;
+            }
+
+            if (callers.ContainsKey(fullName))
+            {
+                //处理重复的方法
+                for (int i = 0; i < 10000; i++)
+                {
+                    var name = fullName + (i + 1);
+                    if (!callers.ContainsKey(name))
+                    {
+                        fullName = name;
+                        break;
+                    }
+                }
+            }
+
+            callers[fullName] = callerInfo;
         }
 
         /// <summary>
@@ -197,30 +211,6 @@ namespace MySoft.IoC.Http
             }
 
             return ParameterHelper.Convert(jobject, caller.Method.GetParameters());
-        }
-
-        /// <summary>
-        /// 检查Get类型的参数
-        /// </summary>
-        /// <param name="paramsInfo"></param>
-        /// <returns></returns>
-        private bool CheckGetSubmitType(ParameterInfo[] paramsInfo)
-        {
-            //如果参数为0
-            if (paramsInfo.Length == 0) return true;
-
-            bool result = true;
-            StringBuilder sb = new StringBuilder();
-            foreach (ParameterInfo p in paramsInfo)
-            {
-                if (!(p.ParameterType.IsValueType || p.ParameterType == typeof(string)))
-                {
-                    result = false;
-                    break;
-                }
-            }
-
-            return result;
         }
     }
 }

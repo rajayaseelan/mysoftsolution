@@ -84,7 +84,7 @@ namespace MySoft.PlatformService.UserService
             return list;
         }
 
-        public UserInfo GetUser(int id, string name)
+        public UserInfo GetUser(int id, string name, IList<string> list, int[] values)
         {
             return new UserInfo { Name = id.ToString(), Description = id.ToString() + "你好！" + name };
         }
