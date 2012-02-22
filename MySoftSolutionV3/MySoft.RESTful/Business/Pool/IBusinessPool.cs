@@ -19,11 +19,10 @@ namespace MySoft.RESTful.Business.Pool
         /// <summary>
         /// 检查方法
         /// </summary>
-        /// <param name="parameterFormat"></param>
         /// <param name="businessKindName"></param>
         /// <param name="businessMethodName"></param>
         /// <returns></returns>
-        bool CheckAuthorized(ParameterFormat parameterFormat, string businessKindName, string businessMethodName);
+        bool CheckAuthorized(string businessKindName, string businessMethodName);
         /// <summary>
         /// 查找业务元数据对象
         /// </summary>

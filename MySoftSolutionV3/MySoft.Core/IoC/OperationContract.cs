@@ -43,19 +43,19 @@ namespace MySoft.IoC
             }
         }
 
-        private bool httpEnabled = false;
+        private bool httpGet = false;
         /// <summary>
-        /// 发布为http方法
+        /// 启用httpGet方法
         /// </summary>
-        public bool HttpEnabled
+        public bool HttpGet
         {
             get
             {
-                return httpEnabled;
+                return httpGet;
             }
             set
             {
-                httpEnabled = value;
+                httpGet = value;
             }
         }
 
@@ -106,5 +106,16 @@ namespace MySoft.IoC
                 cacheKey = value;
             }
         }
+
+        /// <summary>
+        /// 实例化OperationContractAttribute
+        /// </summary>
+        public OperationContractAttribute() : base() { }
+
+        /// <summary>
+        /// 实例化OperationContractAttribute
+        /// </summary>
+        /// <param name="name"></param>
+        public OperationContractAttribute(string name) : base(name) { }
     }
 }

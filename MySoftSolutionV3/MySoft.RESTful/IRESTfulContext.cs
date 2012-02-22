@@ -17,20 +17,18 @@ namespace MySoft.RESTful
         /// <summary>
         /// 是否需要认证
         /// </summary>
-        /// <param name="format"></param>
         /// <param name="kind"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        bool IsAuthorized(ParameterFormat format, string kind, string method);
+        bool IsAuthorized(string kind, string method);
 
         /// <summary>
         /// 方法调用
         /// </summary>
-        /// <param name="format"></param>
         /// <param name="kind"></param>
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        object Invoke(ParameterFormat format, string kind, string method, string parameters, out Type retType);
+        object Invoke(string kind, string method, string parameters, out Type retType);
     }
 }

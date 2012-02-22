@@ -12,7 +12,7 @@ namespace MySoft.IoC.Configuration
         private string host = "any";
         private int port = 8888;
         private int httpPort = 8080;
-        private bool httpGet = false;
+        private bool httpEnabled = false;
         private string httpAuth;
         private string cacheType;
         private bool encrypt = false;
@@ -74,7 +74,7 @@ namespace MySoft.IoC.Configuration
                 if (child.Name == "httpServer")
                 {
                     httpPort = Convert.ToInt32(childnode["httpPort"].Value);
-                    httpGet = Convert.ToBoolean(childnode["httpGet"].Value);
+                    httpEnabled = Convert.ToBoolean(childnode["httpEnabled"].Value);
 
                     if (childnode["httpAuth"] != null && childnode["httpAuth"].Value.Trim() != string.Empty)
                         httpAuth = childnode["httpAuth"].Value;
@@ -99,12 +99,12 @@ namespace MySoft.IoC.Configuration
         }
 
         /// <summary>
-        /// Gets or sets the httpGet
+        /// Gets or sets the httpEnabled
         /// </summary>
-        public bool HttpGet
+        public bool HttpEnabled
         {
-            get { return httpGet; }
-            set { httpGet = value; }
+            get { return httpEnabled; }
+            set { httpEnabled = value; }
         }
 
         /// <summary>

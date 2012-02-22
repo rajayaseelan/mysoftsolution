@@ -147,22 +147,6 @@ namespace MySoft.IoC.Messages
             }
         }
 
-        protected int cacheTime = -1;
-        /// <summary>
-        /// 缓存时间（单位：秒）
-        /// </summary>
-        public int CacheTime
-        {
-            get
-            {
-                return cacheTime;
-            }
-            set
-            {
-                cacheTime = value;
-            }
-        }
-
         /// <summary>
         /// Gets or sets the request address
         /// </summary>

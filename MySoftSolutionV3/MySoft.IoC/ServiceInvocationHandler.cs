@@ -51,7 +51,6 @@ namespace MySoft.IoC
             reqMsg.MethodName = methodInfo.ToString();                      //方法名称
             reqMsg.ReturnType = methodInfo.ReturnType;                      //返回类型
             reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
-            reqMsg.CacheTime = -1;                                          //设置缓存时间
 
             #endregion
 
@@ -106,7 +105,6 @@ namespace MySoft.IoC
             int clientCacheTime = -1;
             if (opContract != null)
             {
-                if (opContract.ServerCacheTime > 0) reqMsg.CacheTime = opContract.ServerCacheTime;
                 if (opContract.ClientCacheTime > 0) clientCacheTime = opContract.ClientCacheTime;
             }
 

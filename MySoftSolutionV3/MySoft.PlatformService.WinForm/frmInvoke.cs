@@ -48,6 +48,10 @@ namespace MySoft.PlatformService.WinForm
             if (!string.IsNullOrEmpty(paramValue))
             {
                 obj = JObject.Parse(paramValue);
+                if (obj.Count == 1 && obj["InvokeParameter"] != null)
+                {
+                    obj = JObject.Parse(obj["InvokeParameter"].ToString());
+                }
             }
 
             if (parameters.Count > 0)

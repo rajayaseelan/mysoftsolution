@@ -87,11 +87,10 @@ namespace MySoft.RESTful.Business.Pool
         /// <summary>
         /// 检查方法
         /// </summary>
-        /// <param name="parameterFormat"></param>
         /// <param name="businessKindName"></param>
         /// <param name="businessMethodName"></param>
         /// <returns></returns>
-        public bool CheckAuthorized(ParameterFormat parameterFormat, string businessKindName, string businessMethodName)
+        public bool CheckAuthorized(string businessKindName, string businessMethodName)
         {
             BusinessKindModel kind = businessPool.Where(e => e.Key.Equals(businessKindName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
             if (kind != null)

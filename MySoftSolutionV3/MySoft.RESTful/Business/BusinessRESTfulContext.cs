@@ -72,24 +72,22 @@ namespace MySoft.RESTful.Business
         /// <summary>
         /// 是否需要认证
         /// </summary>
-        /// <param name="format"></param>
         /// <param name="kind"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        public bool IsAuthorized(ParameterFormat format, string kind, string method)
+        public bool IsAuthorized(string kind, string method)
         {
-            return pool.CheckAuthorized(format, kind, method);
+            return pool.CheckAuthorized(kind, method);
         }
 
         /// <summary>
         /// 方法调用
         /// </summary>
-        /// <param name="format"></param>
         /// <param name="kind"></param>
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public object Invoke(ParameterFormat format, string kind, string method, string parameters, out Type retType)
+        public object Invoke(string kind, string method, string parameters, out Type retType)
         {
             WebOperationContext context = WebOperationContext.Current;
             JObject obj = new JObject();
@@ -161,6 +159,15 @@ namespace MySoft.RESTful.Business
             string uri = string.Format("http://{0}/", requestUri.Authority.Replace("127.0.0.1", DnsHelper.GetIPAddress()));
             html = html.Replace("${uri}", uri);
 
+            var sb = new StringBuilder();
+            foreach (BusinessKindModel e in pool.KindMethods.Values.OrderBy(p => p.Name).ToList())
+            {
+                sb.AppendFormat("<a href='/help/{0}' title='{1}'>{0}</a>", e.Name, e.Description);
+                sb.AppendFormat("&nbsp;&nbsp;");
+            }
+
+            html = html.Replace("${kind}", sb.ToString());
+
             StringBuilder table = new StringBuilder();
             List<BusinessKindModel> list = new List<BusinessKindModel>();
             if (string.IsNullOrEmpty(kind))
@@ -205,23 +212,11 @@ namespace MySoft.RESTful.Business
             foreach (BusinessKindModel e in kinds)
             {
                 StringBuilder items = new StringBuilder();
-                int index = 0;
                 var methods = e.MethodModels.Values.OrderBy(p => p.Name).ToList();
                 foreach (BusinessMethodModel model in methods)
                 {
                     string template = item;
-                    if (index == 0)
-                    {
-                        template = template.Replace("${count}", e.MethodModels.Count.ToString());
-                        template = template.Replace("${kind}",
-                            string.Format("<a href='/help/{0}'>{0}</a>", e.Name) + "<br/>" + e.Description);
-                    }
-                    else
-                    {
-                        template = item.Substring(item.IndexOf("</td>") + 5);
-                    }
-
-                    var tempStr = string.Format("<a href='/help/{0}/{1}'>{2}</a><br/>{3}", e.Name, model.Name, model.Name, model.Description);
+                    var tempStr = string.Format("<a href='/help/{0}/{1}'>{0}.{2}</a><br/>{3}", e.Name, model.Name, model.Name, model.Description);
                     if (!model.IsPassCheck)
                     {
                         tempStr = string.Format("<font color=\"red\" title=\"{0}\">{1}</font>", model.CheckMessage, tempStr);
@@ -275,12 +270,18 @@ namespace MySoft.RESTful.Business
                     {
                         anchor.Append("<br/>");
                         anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "jsonp"));
+
+                        if (model.Method.ReturnType == typeof(string))
+                        {
+                            anchor.Append("<br/>");
+                            anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "text"));
+                            anchor.Append("<br/>");
+                            anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "html"));
+                        }
                     }
 
                     template = template.Replace("${uri}", anchor.ToString());
                     items.Append(template);
-
-                    index++;
                 }
 
                 table.Append(items.ToString());

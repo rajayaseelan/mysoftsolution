@@ -165,16 +165,16 @@ namespace MySoft.RESTful.SDK
                 if (parameter.DataObject != null && parameter.HttpMethod != HttpMethod.GET)
                 {
                     request.ContentType = "application/x-www-form-urlencoded";
+                    //request.ContentType = "application/json";
                     request.Method = parameter.HttpMethod.ToString();
 
-                    request.ContentType = "application/json";
                     string input = SerializationManager.SerializeJson(parameter.DataObject);
                     var buffer = encoding.GetBytes(input);
-
-                    var stream = request.GetRequestStream();
-                    stream.Write(buffer, 0, buffer.Length);
-                    stream.Flush();
-                    stream.Close();
+                    using (var stream = request.GetRequestStream())
+                    {
+                        stream.Write(buffer, 0, buffer.Length);
+                        stream.Flush();
+                    }
                 }
 
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();

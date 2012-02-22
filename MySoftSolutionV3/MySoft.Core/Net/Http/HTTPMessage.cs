@@ -41,18 +41,18 @@ namespace MySoft.Net.HTTP
     {
         protected const int EOF = -1;
 
-        public const string HTTP_1_0                   = "HTTP/1.0";
-        public const string HTTP_1_1                   = "HTTP/1.1";
+        public const string HTTP_1_0 = "HTTP/1.0";
+        public const string HTTP_1_1 = "HTTP/1.1";
         public const string IDENTITY_TRANSFER_ENCODING = "identity";
-        public const string CHUNKED_TRANSFER_ENCODING  = "chunked";
-        public const int    UNKNOWN_CONTENT_LENGTH     = -1;
-        public const string UNKNOWN_CONTENT_TYPE       = "";
-        public const string CONTENT_LENGTH             = "Content-Length";
-        public const string CONTENT_TYPE               = "Content-Type";
-        public const string TRANSFER_ENCODING          = "Transfer-Encoding";
-        public const string CONNECTION                 = "Connection";
-        public const string CONNECTION_KEEP_ALIVE      = "Keep-Alive";
-        public const string CONNECTION_CLOSE           = "Close";
+        public const string CHUNKED_TRANSFER_ENCODING = "chunked";
+        public const int UNKNOWN_CONTENT_LENGTH = -1;
+        public const string UNKNOWN_CONTENT_TYPE = "";
+        public const string CONTENT_LENGTH = "Content-Length";
+        public const string CONTENT_TYPE = "Content-Type";
+        public const string TRANSFER_ENCODING = "Transfer-Encoding";
+        public const string CONNECTION = "Connection";
+        public const string CONNECTION_KEEP_ALIVE = "Keep-Alive";
+        public const string CONNECTION_CLOSE = "Close";
 
         private int _lastRead;
         private string _version;
@@ -201,7 +201,7 @@ namespace MySoft.Net.HTTP
         /// </summary>
         public bool KeepAlive
         {
-            get 
+            get
             {
                 if (Has(CONNECTION))
                     return string.Compare(Get(CONNECTION), CONNECTION_KEEP_ALIVE, true) == 0;
@@ -223,34 +223,34 @@ namespace MySoft.Net.HTTP
         /// <param name="istr"></param>
         public virtual void Read(Stream istr)
         {
-	        int c = istr.ReadByte();
-	        while (c != EOF && c != '\r' && c != '\n')
-	        {
-		        string name = "";
-		        string value = "";
+            int c = istr.ReadByte();
+            while (c != EOF && c != '\r' && c != '\n')
+            {
+                string name = "";
+                string value = "";
 
-		        while (c != EOF && c != ':' && c != '\n') { name += (char)c; c = istr.ReadByte(); }
-		        if (c == '\n') { c = istr.ReadByte(); continue; } // ignore invalid header lines
+                while (c != EOF && c != ':' && c != '\n') { name += (char)c; c = istr.ReadByte(); }
+                if (c == '\n') { c = istr.ReadByte(); continue; } // ignore invalid header lines
                 if (c != ':') throw new HTTPMessageException("Field name too long/no colon found");
-		        if (c != EOF) c = istr.ReadByte(); // ':'
-		        while (char.IsWhiteSpace((char)c)) c = istr.ReadByte();
-		        while (c != EOF && c != '\r' && c != '\n') { value += (char)c; c = istr.ReadByte(); }
-		        if (c == '\r') c = istr.ReadByte();
-		        if (c == '\n')
-			        c = istr.ReadByte();
-		        else if (c != EOF)
+                if (c != EOF) c = istr.ReadByte(); // ':'
+                while (char.IsWhiteSpace((char)c)) c = istr.ReadByte();
+                while (c != EOF && c != '\r' && c != '\n') { value += (char)c; c = istr.ReadByte(); }
+                if (c == '\r') c = istr.ReadByte();
+                if (c == '\n')
+                    c = istr.ReadByte();
+                else if (c != EOF)
                     throw new HTTPMessageException("Field value too long/no CRLF found");
-		        while (c == ' ' || c == '\t') // folding
-		        {
-			        while (c != EOF && c != '\r' && c != '\n') { value += (char)c; c = istr.ReadByte(); }
-			        if (c == '\r') c = istr.ReadByte();
-			        if (c == '\n')
-				        c = istr.ReadByte();
-			        else if (c != EOF)
+                while (c == ' ' || c == '\t') // folding
+                {
+                    while (c != EOF && c != '\r' && c != '\n') { value += (char)c; c = istr.ReadByte(); }
+                    if (c == '\r') c = istr.ReadByte();
+                    if (c == '\n')
+                        c = istr.ReadByte();
+                    else if (c != EOF)
                         throw new HTTPMessageException("Folded field value too long/no CRLF found");
-		        }
-		        Add(name, value);
-	        }
+                }
+                Add(name, value);
+            }
 
             _lastRead = c;
         }

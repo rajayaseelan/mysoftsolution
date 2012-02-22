@@ -17,5 +17,16 @@ namespace MySoft.IoC
             get { return callbackType; }
             set { callbackType = value; }
         }
+
+        /// <summary>
+        /// 实例化ServiceContractAttribute
+        /// </summary>
+        public ServiceContractAttribute() : base() { }
+
+        /// <summary>
+        /// 实例化OperationContractAttribute
+        /// </summary>
+        /// <param name="name"></param>
+        public ServiceContractAttribute(string name) : base(name) { }
     }
 }

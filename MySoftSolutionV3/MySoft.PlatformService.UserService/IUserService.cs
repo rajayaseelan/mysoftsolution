@@ -44,22 +44,22 @@ namespace MySoft.PlatformService.UserService
     {
         //[OperationContract(ClientCacheTime = 10, ServerCacheTime = 20, CacheKey = "User_{name}")]
         [OperationContract(ServerCacheTime = 10)]
-        UserInfo GetUserInfo(string name, ref int length, out UserInfo user);
+        UserInfo GetUserInfo(string name, ref int length, out UserInfo user, params int[] ids);
 
         string GetUser(NameValueCollection nv);
 
         string GetUser(UserInfo user);
 
-        [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true)]
+        [OperationContract(Name = "getuser", Description = "获取用户", HttpGet = true)]
         int GetSex(Sex value);
 
-        [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true)]
+        [OperationContract(Name = "getuser", Description = "获取用户", HttpGet = true)]
         string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
 
-        [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true)]
+        [OperationContract(Name = "getuser", Description = "获取用户", HttpGet = true)]
         IList<UserInfo> GetUsers();
 
-        [OperationContract(Name = "getuser", Description = "获取用户", HttpEnabled = true, Authorized = true, AuthParameter = "name")]
+        [OperationContract(Name = "getuser", Description = "获取用户", HttpGet = true, Authorized = true, AuthParameter = "name")]
         UserInfo GetUser(int id, string name, IList<string> list, int[] values);
     }
 

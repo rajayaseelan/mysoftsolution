@@ -197,7 +197,6 @@
     <Compile Include="Installer\IServiceRun.cs" />
     <Compile Include="Common\ResponseResult.cs" />
     <Compile Include="Exception\MySoftException.cs" />
-    <Compile Include="Common\ResponseFormat.cs" />
     <Compile Include="Installer\Configuration\InstallerConfiguration.cs" />
     <Compile Include="Installer\Configuration\InstallerConfigurationHandler.cs" />
     <Compile Include="IoC\OperationContract.cs" />

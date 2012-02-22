@@ -54,11 +54,10 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameter"></param>
         /// <returns></returns>
-        public Stream DeleteJsonEntry(string kind, string method, Stream parameter)
+        public Stream DeleteJsonEntry(string kind, string method)
         {
-            return PostJsonEntry(kind, method, parameter);
+            return GetJsonEntry(kind, method);
         }
 
         /// <summary>
@@ -66,11 +65,10 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameter"></param>
         /// <returns></returns>
-        public Stream PutJsonEntry(string kind, string method, Stream parameter)
+        public Stream PutJsonEntry(string kind, string method)
         {
-            return PostJsonEntry(kind, method, parameter);
+            return GetJsonEntry(kind, method);
         }
 
         /// <summary>
@@ -81,7 +79,7 @@ namespace MySoft.RESTful
         /// <returns></returns>
         public Stream GetJsonEntry(string kind, string method)
         {
-            return PostJsonEntry(kind, method, null);
+            return GetResponseStream(ParameterFormat.Json, kind, method, null);
         }
 
         /// <summary>
@@ -101,11 +99,10 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameter"></param>
         /// <returns></returns>
-        public Stream DeleteXmlEntry(string kind, string method, Stream parameter)
+        public Stream DeleteXmlEntry(string kind, string method)
         {
-            return PostXmlEntry(kind, method, parameter);
+            return GetXmlEntry(kind, method);
         }
 
         /// <summary>
@@ -113,11 +110,10 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameter"></param>
         /// <returns></returns>
-        public Stream PutXmlEntry(string kind, string method, Stream parameter)
+        public Stream PutXmlEntry(string kind, string method)
         {
-            return PostXmlEntry(kind, method, parameter);
+            return GetXmlEntry(kind, method);
         }
 
         /// <summary>
@@ -128,7 +124,7 @@ namespace MySoft.RESTful
         /// <returns></returns>
         public Stream GetXmlEntry(string kind, string method)
         {
-            return PostXmlEntry(kind, method, null);
+            return GetResponseStream(ParameterFormat.Xml, kind, method, null);
         }
 
         /// <summary>
@@ -262,7 +258,7 @@ namespace MySoft.RESTful
             return new MemoryStream(buffer);
         }
 
-        private string GetResponseString(ParameterFormat format, string kind, string method, string parameter)
+        private string GetResponseString(ParameterFormat format, string kind, string method, string parameters)
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
@@ -272,68 +268,79 @@ namespace MySoft.RESTful
             else if (format == ParameterFormat.Xml)
                 response.ContentType = "text/xml;charset=utf-8";
             else if (format == ParameterFormat.Text)
-                response.ContentType = "text/plain";
+                response.ContentType = "text/plain;charset=utf-8";
             else if (format == ParameterFormat.Html)
-                response.ContentType = "text/html";
+                response.ContentType = "text/html;charset=utf-8";
 
-            object result = null;
-
-            //进行认证处理
-            RESTfulResult authResult = new RESTfulResult { Code = (int)RESTfulCode.OK };
-
-            //进行认证处理
-            if (Context != null && Context.IsAuthorized(format, kind, method))
+            //从缓存读取
+            var cacheKey = string.Format("{0}_{1}_{2}_{3}", format, kind, method, parameters);
+            var responseString = CacheHelper.Get<string>(cacheKey);
+            if (responseString == null)
             {
-                authResult = AuthManager.Authorize();
-            }
+                object result = null;
 
-            //认证成功
-            if (authResult.Code == (int)RESTfulCode.OK)
-            {
-                try
+                //进行认证处理
+                RESTfulResult authResult = new RESTfulResult { Code = (int)RESTfulCode.OK };
+
+                //进行认证处理
+                if (Context != null && Context.IsAuthorized(kind, method))
                 {
-                    Type retType;
-                    result = Context.Invoke(format, kind, method, parameter, out retType);
+                    authResult = AuthManager.Authorize();
+                }
 
-                    //如果值为null，以对象方式返回
-                    if (result == null || retType == typeof(string))
+                //认证成功
+                if (authResult.Code == (int)RESTfulCode.OK)
+                {
+                    try
                     {
-                        return Convert.ToString(result);
-                    }
+                        Type retType;
+                        result = Context.Invoke(kind, method, parameters, out retType);
 
-                    //如果是值类型，则以对象方式返回
-                    if (retType.IsValueType)
+                        //如果值为null，以对象方式返回
+                        if (result == null || retType == typeof(string))
+                        {
+                            return Convert.ToString(result);
+                        }
+
+                        //如果是值类型，则以对象方式返回
+                        if (retType.IsValueType)
+                        {
+                            result = new RESTfulResponse { Value = result };
+                        }
+
+                        //设置返回成功
+                        response.StatusCode = HttpStatusCode.OK;
+                    }
+                    catch (Exception e)
                     {
-                        result = new RESTfulResponse { Value = result };
+                        //记录错误日志
+                        result = GetResultWriteErrorLog(parameters, e);
                     }
-
-                    //设置返回成功
-                    response.StatusCode = HttpStatusCode.OK;
+                    finally
+                    {
+                        //清理上下文资源
+                        AuthenticationContext.Current = null;
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    //记录错误日志
-                    result = GetResultWriteErrorLog(parameter, e);
+                    result = authResult;
                 }
-                finally
+
+                ISerializer serializer = SerializerFactory.Create(format);
+                if (result is RESTfulResult)
                 {
-                    //清理上下文资源
-                    AuthenticationContext.Current = null;
+                    var ret = result as RESTfulResult;
+                    ret.Code = Convert.ToInt32(string.Format("{0}{1}", (int)response.StatusCode, ret.Code.ToString("00")));
                 }
-            }
-            else
-            {
-                result = authResult;
+
+                responseString = serializer.Serialize(result, format == ParameterFormat.Jsonp);
+
+                //缓存5秒钟
+                CacheHelper.Insert(cacheKey, responseString, 5);
             }
 
-            ISerializer serializer = SerializerFactory.Create(format);
-            if (result is RESTfulResult)
-            {
-                var ret = result as RESTfulResult;
-                ret.Code = Convert.ToInt32(string.Format("{0}{1}", (int)response.StatusCode, ret.Code.ToString("00")));
-            }
-
-            return serializer.Serialize(result, format == ParameterFormat.Jsonp);
+            return responseString;
         }
 
         /// <summary>

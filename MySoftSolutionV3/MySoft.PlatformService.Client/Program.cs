@@ -8,6 +8,8 @@ using System.Diagnostics;
 using MySoft.PlatformService.UserService;
 using MySoft.Logger;
 using MySoft.Cache;
+using System.Net;
+using System.IO;
 
 namespace MySoft.PlatformService.Client
 {
@@ -129,19 +131,35 @@ namespace MySoft.PlatformService.Client
             //}
 
 
-            ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 1; i++)
-            {
-                Thread thread = new Thread(DoWork1);
-                thread.Start(are);
-            }
+            //ManualResetEvent are = new ManualResetEvent(false);
+            //for (int i = 0; i < 1; i++)
+            //{
+            //    Thread thread = new Thread(DoWork1);
+            //    thread.Start(are);
+            //}
 
-            are.Set();
+            //are.Set();
 
             //var node = CastleFactory.Create().GetDefaultNode();
             //var clients = CastleFactory.Create().GetChannel<IStatusService>(node).GetAppClients();
 
             //DoWork1();
+
+            var request = WebRequest.Create("http://127.0.0.1:8012/user.getuser3?id=1");
+            //request.Headers.Set("uid", "my181");
+            //request.Headers.Set("pwd", "19810108");
+
+            request.Headers.Set(HttpRequestHeader.Cookie, "my181|19810108");
+
+
+            var response = request.GetResponse();
+
+            using (var sr = new StreamReader(response.GetResponseStream()))
+            {
+                var str = sr.ReadToEnd();
+                Console.WriteLine(str);
+            }
+
             Console.ReadKey();
         }
 

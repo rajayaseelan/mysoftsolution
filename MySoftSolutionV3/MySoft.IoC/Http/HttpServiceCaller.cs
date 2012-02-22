@@ -6,6 +6,7 @@ using System.Reflection;
 using MySoft.RESTful;
 using MySoft.Net.HTTP;
 using System.Collections.Specialized;
+using System.Net;
 
 namespace MySoft.IoC.Http
 {
@@ -58,7 +59,7 @@ namespace MySoft.IoC.Http
                     var description = serviceAttr.Description;
                     var methodAttr = CoreHelper.GetMemberAttribute<OperationContractAttribute>(methodInfo);
 
-                    if (methodAttr != null && methodAttr.HttpEnabled)
+                    if (methodAttr != null && methodAttr.HttpGet)
                     {
                         string methodName = methodAttr.Name ?? methodInfo.Name;
                         string fullName = string.Format("{0}.{1}", serviceName, methodName);
@@ -91,7 +92,8 @@ namespace MySoft.IoC.Http
                 Instance = instance,
                 Authorized = authorized,
                 AuthParameter = authParameter,
-                Description = description
+                Description = description,
+                HttpMethod = "GET" //默认为GET方式
             };
 
             var types = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
@@ -99,6 +101,7 @@ namespace MySoft.IoC.Http
             {
                 callerInfo.IsPassCheck = false;
                 callerInfo.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", fullName);
+                callerInfo.HttpMethod = "POST";
             }
             else
             {
@@ -133,12 +136,28 @@ namespace MySoft.IoC.Http
         }
 
         /// <summary>
+        /// 获取调用信息
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public HttpCallerInfo GetCaller(string name)
+        {
+            if (callers.ContainsKey(name))
+            {
+                return callers[name];
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// 调用服务，并返回字符串
         /// </summary>
         /// <param name="name"></param>
         /// <param name="collection"></param>
+        /// <param name="cookies"></param>
         /// <returns></returns>
-        public string CallMethod(string name, NameValueCollection collection)
+        public string CallMethod(string name, NameValueCollection collection, CookieCollection cookies)
         {
             if (callers.ContainsKey(name))
             {
@@ -151,15 +170,23 @@ namespace MySoft.IoC.Http
                 var parameters = new object[0];
                 if (caller.Method.GetParameters().Length > 0)
                 {
-                    parameters = ParseParameters(collection, caller);
+                    parameters = ParseParameters(collection, cookies, caller);
                 }
 
                 try
                 {
                     var retVal = DynamicCalls.GetMethodInvoker(caller.Method).Invoke(caller.Instance, parameters);
 
-                    if (retVal == null) return "{}";
-                    return SerializationManager.SerializeJson(retVal, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+                    //如果返回类型为字符串，直接返回值
+                    if (caller.Method.ReturnType == typeof(string))
+                    {
+                        return Convert.ToString(retVal);
+                    }
+                    else
+                    {
+                        if (retVal == null) return "{}";
+                        return SerializationManager.SerializeJson(retVal, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -176,9 +203,10 @@ namespace MySoft.IoC.Http
         /// 处理参数
         /// </summary>
         /// <param name="collection"></param>
+        /// <param name="cookies"></param>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private object[] ParseParameters(NameValueCollection collection, HttpCallerInfo caller)
+        private object[] ParseParameters(NameValueCollection collection, CookieCollection cookies, HttpCallerInfo caller)
         {
             var jobject = ParameterHelper.Resolve(collection);
             if (caller.Authorized)
@@ -194,18 +222,18 @@ namespace MySoft.IoC.Http
                         //进行授权处理
                         try
                         {
-                            //处理sessionKey
-                            string authString = handler.Authorize(container, collection["sessionKey"]);
+                            //处理collection
+                            string authString = handler.Authorize(container, cookies);
                             jobject[caller.AuthParameter] = authString;
                         }
                         catch (Exception ex)
                         {
-                            throw new HTTPMessageException("SessionKey is empty or not set correct, authorized failed! Error: " + ex.Message);
+                            throw new HTTPAuthMessageException("Authorize failed! Error: " + ex.Message);
                         }
                     }
                     else
                     {
-                        throw new HTTPMessageException("Authorized failed ,httpAuth not set correct.");
+                        throw new HTTPAuthMessageException("Authorize failed ,httpAuth not set correct.");
                     }
                 }
             }

@@ -8,6 +8,8 @@ using MySoft.IoC.Configuration;
 using MySoft.Logger;
 using MySoft.IoC.Http;
 using MySoft.Net.HTTP;
+using System.Collections.Specialized;
+using System.Net;
 
 namespace MySoft.PlatformService.Console
 {
@@ -19,13 +21,16 @@ namespace MySoft.PlatformService.Console
         /// 认证用户
         /// </summary>
         /// <param name="container"></param>
-        /// <param name="sessionId"></param>
+        /// <param name="collection"></param>
         /// <returns></returns>
-        public string Authorize(IContainer container, string sessionId)
+        public string Authorize(IContainer container, CookieCollection cookies)
         {
-            var str = Base64UrlHelper.UrlBase64ToString(sessionId);
-            string[] arr = str.Split('|');
-            return arr[0];
+            var user = cookies["user"].Value;
+
+            if (user == "my181|19810108")
+                return user.Split('|')[0];
+
+            throw new Exception("认证用户信息失败！");
         }
 
         #endregion
@@ -61,11 +66,6 @@ namespace MySoft.PlatformService.Console
         //private static readonly IMongo mongo = new Mongo("mongodb://192.168.1.223");
         static void Main(string[] args)
         {
-            var str = Base64UrlHelper.StringToUrlBase64("my181|19810108");
-
-            string[] arr = { "aa", "bb" };
-            var type = arr.GetType().GetElementType();
-
             System.Console.BackgroundColor = ConsoleColor.DarkBlue;
             System.Console.ForegroundColor = ConsoleColor.White;
             System.Console.WriteLine("Service ready started...");
@@ -76,7 +76,7 @@ namespace MySoft.PlatformService.Console
             server.OnError += new ErrorLogEventHandler(Program_OnError);
             server.Start();
 
-            if (config.HttpGet)
+            if (config.HttpEnabled)
             {
                 var caller = new HttpServiceCaller(server.Container, config.HttpAuth, config.HttpPort);
                 var factory = new HttpRequestHandlerFactory(caller);

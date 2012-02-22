@@ -57,22 +57,20 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind">发布的分类</param>
         /// <param name="method">发布的方法名称</param>
-        /// <param name="parameters">请求参数</param>
         /// <returns>字节数据流</returns>
         [OperationContract]
         [WebInvoke(Method = "DELETE", BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "delete.json/{kind}.{method}")]
-        Stream DeleteJsonEntry(string kind, string method, Stream parameters);
+        Stream DeleteJsonEntry(string kind, string method);
 
         /// <summary>
         /// POST入口
         /// </summary>
         /// <param name="kind">发布的分类</param>
         /// <param name="method">发布的方法名称</param>
-        /// <param name="parameters">请求参数</param>
         /// <returns>字节数据流</returns>
         [OperationContract]
         [WebInvoke(Method = "PUT", BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "put.json/{kind}.{method}")]
-        Stream PutJsonEntry(string kind, string method, Stream parameters);
+        Stream PutJsonEntry(string kind, string method);
 
         /// <summary>
         /// GET入口
@@ -104,22 +102,20 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind">发布的分类</param>
         /// <param name="method">发布的方法名称</param>
-        /// <param name="parameters">请求参数</param>
         /// <returns>字节数据流</returns>
         [OperationContract]
         [WebInvoke(Method = "DELETE", BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "delete.xml/{kind}.{method}")]
-        Stream DeleteXmlEntry(string kind, string method, Stream parameters);
+        Stream DeleteXmlEntry(string kind, string method);
 
         /// <summary>
         /// POST入口
         /// </summary>
         /// <param name="kind">发布的分类</param>
         /// <param name="method">发布的方法名称</param>
-        /// <param name="parameters">请求参数</param>
         /// <returns>字节数据流</returns>
         [OperationContract]
         [WebInvoke(Method = "PUT", BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "put.xml/{kind}.{method}")]
-        Stream PutXmlEntry(string kind, string method, Stream parameters);
+        Stream PutXmlEntry(string kind, string method);
 
         /// <summary>
         /// GET入口

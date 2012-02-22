@@ -49,8 +49,6 @@ namespace MySoft.IoC
             reqMsg.MethodName = message.MethodName;                         //方法名称
             reqMsg.ReturnType = typeof(string);                             //返回类型
             reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
-            reqMsg.CacheTime = -1;                                          //设置缓存时间
-            //reqMsg.Expiration = DateTime.Now.AddSeconds(config.Timeout)                   //设置过期时间
 
             #endregion
 

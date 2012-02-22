@@ -9,7 +9,7 @@ namespace MySoft.IoC.Http
     /// <summary>
     /// 调用信息
     /// </summary>
-    internal class HttpCallerInfo
+    public class HttpCallerInfo
     {
         /// <summary>
         /// 服务名称
@@ -50,5 +50,10 @@ namespace MySoft.IoC.Http
         /// 检查的消息
         /// </summary>
         public string CheckMessage { get; set; }
+
+        /// <summary>
+        /// Http方式
+        /// </summary>
+        public string HttpMethod { get; set; }
     }
 }

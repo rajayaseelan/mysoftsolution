@@ -81,12 +81,9 @@ namespace MySoft.IoC.Http
 
             var url = string.Format("<a rel=\"operation\" target=\"_blank\" href=\"{0}\">{0}</a> 处的服务", uri);
 
-            if (kv.Value.IsPassCheck)
-                template = template.Replace("${method}", string.Format("<p title=\"分布式服务接口:\r\n{2}\"><b>{0}</b><br/>{1}</p>", kv.Key, kv.Value.Description, kv.Value.ServiceName));
-            else
-                template = template.Replace("${method}", string.Format("<p title=\"{3}\r\n\r\n分布式服务接口:\r\n{2}\"><b><font color='red'>{0}</font></b><br/>{1}</p>", kv.Key, kv.Value.Description, kv.Value.ServiceName, kv.Value.CheckMessage));
-
+            template = template.Replace("${method}", string.Format("<p title=\"分布式服务接口:\r\n{2}\"><b>{0}</b><br/>{1}</p>", kv.Key, kv.Value.Description, kv.Value.ServiceName));
             template = template.Replace("${parameter}", string.Join("&", plist.ToArray()));
+            template = template.Replace("${type}", kv.Value.HttpMethod);
             if (kv.Value.Authorized)
                 template = template.Replace("${auth}", "<font color='red'>是</font>");
             else

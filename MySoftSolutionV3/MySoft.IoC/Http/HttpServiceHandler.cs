@@ -5,6 +5,7 @@ using System.Text;
 using MySoft.Net.HTTP;
 using System.IO;
 using System.Collections.Specialized;
+using System.Net;
 
 namespace MySoft.IoC.Http
 {
@@ -35,7 +36,7 @@ namespace MySoft.IoC.Http
         {
             if (request.URI.ToLower() == "/help")
             {
-                response.ContentType = "text/html";
+                response.ContentType = "text/html;charset=utf-8";
                 using (Stream ostr = response.Send())
                 using (TextWriter tw = new StreamWriter(ostr))
                 {
@@ -53,24 +54,35 @@ namespace MySoft.IoC.Http
 
                 try
                 {
+                    response.ContentType = "application/json;charset=utf-8";
                     var paramString = request.URI.Substring(request.URI.IndexOf("/") + 1);
                     var arr = paramString.Split('?');
-                    var collection = ParseCollection(arr[1]);
+                    var collection = ParseCollection(arr[1], '&');
+                    var cookies = ConvertCookies(ParseCollection(request.Get("Cookie"), ';'));
 
-                    //调用方法
-                    string responseString = caller.CallMethod(arr[0], collection);
-
-                    string callback = collection["callback"];
-                    if (string.IsNullOrEmpty(callback))
+                    var call = caller.GetCaller(arr[0]);
+                    if (call == null)
                     {
-                        response.ContentType = "application/json;charset=utf-8";
                     }
                     else
                     {
-                        response.ContentType = "application/javascript;charset=utf-8";
-                        responseString = string.Format("{0}({1});", callback, responseString ?? "{}");
+                        if (call.HttpMethod != request.Method.ToUpper())
+                        {
+                            response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_METHOD_NOT_ALLOWED;
+                            response.Send();
+                            return;
+                        }
+
+                        //接收流内部数据
+                        using (var stream = request.GetRequestStream())
+                        using (var sr = new StreamReader(stream))
+                        {
+                            string streamValue = sr.ReadToEnd();
+                        }
                     }
 
+                    //调用方法
+                    string responseString = caller.CallMethod(arr[0], collection, cookies);
                     using (Stream ostr = response.Send())
                     using (TextWriter tw = new StreamWriter(ostr))
                     {
@@ -80,13 +92,17 @@ namespace MySoft.IoC.Http
                 catch (HTTPMessageException ex)
                 {
                     response.ContentType = "application/json;charset=utf-8";
+                    if (ex is HTTPAuthMessageException)
+                        response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_UNAUTHORIZED;
+                    else
+                        response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
+
                     var error = new HttpServiceException
                     {
-                        Code = (int)HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST,
+                        Code = (int)response.Status,
                         Message = ex.Message
                     };
 
-                    response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
                     using (Stream ostr = response.Send())
                     using (TextWriter tw = new StreamWriter(ostr))
                     {
@@ -106,23 +122,34 @@ namespace MySoft.IoC.Http
             }
         }
 
-        private NameValueCollection ParseCollection(string paramString)
+        private NameValueCollection ParseCollection(string paramString, char split)
         {
             if (!string.IsNullOrEmpty(paramString))
             {
                 var arr = paramString.Split('&');
 
-                var nameValue = new NameValueCollection(arr.Length);
+                var values = new NameValueCollection(arr.Length);
                 foreach (var str in arr)
                 {
                     var arr2 = str.Split('=');
-                    nameValue[arr2[0]] = arr2[1];
+                    if (arr2.Length == 2)
+                        values[arr2[0]] = arr2[1];
                 }
 
-                return nameValue;
+                return values;
             }
 
             return null;
+        }
+
+        private CookieCollection ConvertCookies(NameValueCollection values)
+        {
+            var cookies = new CookieCollection();
+            foreach (var key in values.AllKeys)
+            {
+                cookies.Add(new Cookie(key, values[key]));
+            }
+            return cookies;
         }
 
         #endregion

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 
@@ -15,7 +16,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         private IServiceContainer container;
         private Type classType;
-        private OperationContractAttribute opContract;
+        private IDictionary<string, OperationContractAttribute> opContracts;
 
         /// <summary>
         /// The service name.
@@ -40,7 +41,13 @@ namespace MySoft.IoC.Services
             this.container = container;
             this.classType = classType;
             this.serviceName = classType.FullName;
-            this.opContract = CoreHelper.GetTypeAttribute<OperationContractAttribute>(classType);
+
+            this.opContracts = new Dictionary<string, OperationContractAttribute>();
+            foreach (var method in CoreHelper.GetMethodsFromType(classType))
+            {
+                string methodKey = string.Format("{0}_{1}", classType.FullName, method.ToString());
+                opContracts[methodKey] = CoreHelper.GetMemberAttribute<OperationContractAttribute>(method);
+            }
         }
 
         /// <summary>
@@ -59,11 +66,23 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
+            OperationContractAttribute opContract = null;
+            string methodKey = string.Format("{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
+            if (opContracts.ContainsKey(methodKey))
+            {
+                opContract = opContracts[methodKey];
+            }
+
             //从缓存获取值
             string cacheKey = ServiceConfig.GetCacheKey(reqMsg, opContract);
             ResponseMessage resMsg = null;
+            int serverCacheTime = -1;
+            if (opContract != null)
+            {
+                if (opContract.ServerCacheTime > 0) serverCacheTime = opContract.ServerCacheTime;
+            }
 
-            if (reqMsg.CacheTime > 0)
+            if (serverCacheTime > 0)
             {
                 if (container.ServiceCache == null)
                     resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
@@ -92,13 +111,13 @@ namespace MySoft.IoC.Services
                         container.WriteError(exception);
                     }
                 }
-                else if (reqMsg.CacheTime > 0) //判断是否需要缓存
+                else if (serverCacheTime > 0) //判断是否需要缓存
                 {
                     //加入缓存
                     if (container.ServiceCache == null)
-                        CacheHelper.Insert(cacheKey, resMsg, reqMsg.CacheTime);
+                        CacheHelper.Insert(cacheKey, resMsg, serverCacheTime);
                     else
-                        container.ServiceCache.AddCache(cacheKey, resMsg, reqMsg.CacheTime);
+                        container.ServiceCache.AddCache(cacheKey, resMsg, serverCacheTime);
                 }
             }
             else
