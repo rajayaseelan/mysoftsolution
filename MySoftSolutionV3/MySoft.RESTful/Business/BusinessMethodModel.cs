@@ -35,20 +35,10 @@ namespace MySoft.RESTful.Business
         /// 业务实例方法参数个数
         /// </summary>
         public int ParametersCount { get; set; }
-        /// <summary>
-        /// 是否通过检查
-        /// </summary>
-        public bool IsPassCheck { get; set; }
-        /// <summary>
-        /// 异常消息
-        /// </summary>
-        public string CheckMessage { get; set; }
 
         public BusinessMethodModel()
         {
             this.Authorized = true;
-            this.IsPassCheck = true;
-            this.HttpMethod = HttpMethod.GET;
         }
     }
 }

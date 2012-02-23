@@ -28,7 +28,6 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="name"></param>
         public PublishKindAttribute(string name)
-            : this()
         {
             this.Name = name;
         }

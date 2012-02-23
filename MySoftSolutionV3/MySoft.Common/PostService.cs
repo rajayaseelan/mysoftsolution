@@ -224,10 +224,8 @@ namespace MySoft.Common
             if (Request.RequestType != "POST")
             {
                 RsaDESSTRING = "";
-
                 return "";
             }
-
 
             try
             {
@@ -246,12 +244,8 @@ namespace MySoft.Common
                     count = sr.Read(read, 0, 256);
                 }
 
-
-
                 RsaDESSTRING = FunctionHelper.CheckValiable(Request.Headers["CS_DESSTRING"]) ? Request.Headers["CS_DESSTRING"] : "";
-
                 return strResult;
-
             }
             catch (Exception exc)
             {
@@ -270,28 +264,20 @@ namespace MySoft.Common
             if (Request.RequestType != "POST")
             {
                 RsaDESSTRING = "";
-
                 return null;
             }
-
 
             try
             {
                 Stream stream = Request.InputStream;
+                using (StreamReader sr = new StreamReader(stream, Encoding.UTF8))
+                {
+                    byte[] buffer = new byte[(int)stream.Length];
+                    stream.Write(buffer, 0, buffer.Length);
+                    RsaDESSTRING = FunctionHelper.CheckValiable(Request.Headers["CS_DESSTRING"]) ? Request.Headers["CS_DESSTRING"] : "";
 
-
-
-
-                StreamReader sr = new StreamReader(stream, Encoding.UTF8);
-                byte[] buffer = new byte[(int)stream.Length];
-                stream.Write(buffer, 0, buffer.Length);
-
-
-
-                RsaDESSTRING = FunctionHelper.CheckValiable(Request.Headers["CS_DESSTRING"]) ? Request.Headers["CS_DESSTRING"] : "";
-
-                return buffer;
-
+                    return buffer;
+                }
             }
             catch (Exception exc)
             {
@@ -299,7 +285,6 @@ namespace MySoft.Common
             }
         }
         #endregion
-
 
         #region 发送方获取接收方返回的信息
         /// <summary>
@@ -327,7 +312,6 @@ namespace MySoft.Common
                 count = sr.Read(read, 0, 256);
             }
 
-
             // 释放资源
             sr.Close();
             res.Close();
@@ -335,7 +319,6 @@ namespace MySoft.Common
             return strResult;
         }
         #endregion
-
 
         #endregion
 

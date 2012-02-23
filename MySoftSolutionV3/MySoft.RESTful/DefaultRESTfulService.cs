@@ -50,28 +50,6 @@ namespace MySoft.RESTful
         }
 
         /// <summary>
-        /// 实现Delete方式Json响应
-        /// </summary>
-        /// <param name="kind"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public Stream DeleteJsonEntry(string kind, string method)
-        {
-            return GetJsonEntry(kind, method);
-        }
-
-        /// <summary>
-        /// 实现Put方式Json响应
-        /// </summary>
-        /// <param name="kind"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public Stream PutJsonEntry(string kind, string method)
-        {
-            return GetJsonEntry(kind, method);
-        }
-
-        /// <summary>
         /// 实现Get方式Json响应
         /// </summary>
         /// <param name="kind"></param>
@@ -92,28 +70,6 @@ namespace MySoft.RESTful
         public Stream PostXmlEntry(string kind, string method, Stream parameter)
         {
             return GetResponseStream(ParameterFormat.Xml, kind, method, parameter);
-        }
-
-        /// <summary>
-        /// 实现Delete方式Xml响应
-        /// </summary>
-        /// <param name="kind"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public Stream DeleteXmlEntry(string kind, string method)
-        {
-            return GetXmlEntry(kind, method);
-        }
-
-        /// <summary>
-        /// 实现Put方式Xml响应
-        /// </summary>
-        /// <param name="kind"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public Stream PutXmlEntry(string kind, string method)
-        {
-            return GetXmlEntry(kind, method);
         }
 
         /// <summary>
@@ -208,7 +164,7 @@ namespace MySoft.RESTful
         public Stream GetMethodHtmlFromKindAndMethod(string kind, string method)
         {
             var request = WebOperationContext.Current.IncomingRequest;
-            var html = Context.MakeApiDocument(request.UriTemplateMatch.RequestUri, kind, method);
+            var html = Context.MakeDocument(request.UriTemplateMatch.RequestUri, kind, method);
             var response = WebOperationContext.Current.OutgoingResponse;
             response.ContentType = "text/html;charset=utf-8";
             MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(html));

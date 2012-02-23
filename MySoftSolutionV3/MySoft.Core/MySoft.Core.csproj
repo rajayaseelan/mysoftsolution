@@ -91,9 +91,8 @@
     <Compile Include="Aop\AopSwitcherAttribute.cs" />
     <Compile Include="Aop\IAopOperator.cs" />
     <Compile Include="Aop\IAopProxyFactory.cs" />
+    <Compile Include="Common\HttpMethod.cs" />
     <Compile Include="IoC\ContractAttribute.cs" />
-    <Compile Include="IoC\IContainer.cs" />
-    <Compile Include="IoC\IHttpAuthentication.cs" />
     <Compile Include="IoC\IServiceCache.cs" />
     <Compile Include="Net\CountingOutputStream.cs" />
     <Compile Include="Net\Http\HTTPException.cs" />
@@ -370,7 +369,6 @@
     <Compile Include="RESTful\Auth\AuthenticationToken.cs" />
     <Compile Include="RESTful\Auth\AuthenticationUser.cs" />
     <Compile Include="RESTful\Auth\IAuthentication.cs" />
-    <Compile Include="RESTful\HttpMethod.cs" />
     <Compile Include="RESTful\PublishKind.cs" />
     <Compile Include="RESTful\PublishMethod.cs" />
     <Compile Include="Security\MD5.cs" />

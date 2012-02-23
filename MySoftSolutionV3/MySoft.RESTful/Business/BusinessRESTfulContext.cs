@@ -98,14 +98,9 @@ namespace MySoft.RESTful.Business
 
             try
             {
-                if (metadata.HttpMethod != (HttpMethod)Enum.Parse(typeof(HttpMethod), context.IncomingRequest.Method, true))
+                if (metadata.HttpMethod == HttpMethod.POST && context.IncomingRequest.Method.ToUpper() == "GET")
                 {
-                    throw new RESTfulException("Resources can only by the [" + metadata.HttpMethod.ToString().ToUpper() + "] way to acquire!") { Code = RESTfulCode.BUSINESS_METHOD_CALL_TYPE_NOT_MATCH };
-                }
-
-                if (!metadata.IsPassCheck)
-                {
-                    throw new RESTfulException(metadata.CheckMessage) { Code = RESTfulCode.BUSINESS_METHOD_NOT_PASS_CHECK };
+                    throw new RESTfulException("Resources can only by the [" + metadata.HttpMethod + "] way to acquire!") { Code = RESTfulCode.BUSINESS_METHOD_CALL_TYPE_NOT_MATCH };
                 }
 
                 if (!string.IsNullOrEmpty(parameters))
@@ -127,7 +122,7 @@ namespace MySoft.RESTful.Business
             }
             catch (Exception e)
             {
-                throw new RESTfulException(String.Format("Fault parameters: {0}!", parameters)) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
+                throw new RESTfulException(string.Format("Fault parameters: {0}!", parameters)) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
             }
 
             object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj);
@@ -140,7 +135,7 @@ namespace MySoft.RESTful.Business
         /// 生成API文档
         /// </summary>
         /// <returns></returns>
-        public string MakeApiDocument(Uri requestUri, string kind, string method)
+        public string MakeDocument(Uri requestUri, string kind, string method)
         {
             #region 读取资源
 
@@ -217,49 +212,24 @@ namespace MySoft.RESTful.Business
                 {
                     string template = item;
                     var tempStr = string.Format("<a href='/help/{0}/{1}'>{0}.{2}</a><br/>{3}", e.Name, model.Name, model.Name, model.Description);
-                    if (!model.IsPassCheck)
-                    {
-                        tempStr = string.Format("<font color=\"red\" title=\"{0}\">{1}</font>", model.CheckMessage, tempStr);
-                    }
                     template = template.Replace("${method}", tempStr);
 
-                    StringBuilder buider = new StringBuilder();
-                    List<string> plist = new List<string>();
-
-                    var parametersCount = model.ParametersCount;
+                    var plist = new List<string>();
                     foreach (var p in model.Parameters)
                     {
                         if (!GetTypeClass(p.ParameterType))
                         {
                             plist.Add(string.Format("{0}=[{0}]", p.Name.ToLower()).Replace('[', '{').Replace(']', '}'));
                         }
-
-                        if (!string.IsNullOrEmpty(kind) && !string.IsNullOrEmpty(method))
-                        {
-                            buider.Append(GetTypeDetail(p.Name, p.ParameterType, 0));
-                        }
-                        else
-                        {
-                            buider.AppendFormat(string.Format("&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.ParameterType)) + "<br/>");
-                        }
                     }
 
-                    if (parametersCount > 0) buider.Append("<hr/>");
-
-                    var value = String.Format("<b>RESULT</b> -> {0}<br/>", GetTypeName(model.Method.ReturnType));
-                    buider.Append("<font color=\"#336699\">").Append(value);
-                    if (!string.IsNullOrEmpty(kind) && !string.IsNullOrEmpty(method))
-                    {
-                        buider.Append(GetTypeDetail(null, model.Method.ReturnType, 0));
-                    }
-                    buider.Append("</font>");
-
-                    if (string.IsNullOrEmpty(buider.ToString()))
+                    string strParameter = GetMethodParameter(model, kind, method);
+                    if (string.IsNullOrEmpty(strParameter))
                         template = template.Replace("${parameter}", "&nbsp;");
                     else
-                        template = template.Replace("${parameter}", buider.ToString());
+                        template = template.Replace("${parameter}", strParameter);
 
-                    template = template.Replace("${type}", model.HttpMethod.ToString().ToUpper());
+                    template = template.Replace("${type}", model.HttpMethod == HttpMethod.GET ? "GET<br/>POST" : "<font color='red'>POST</font>");
                     template = template.Replace("${auth}", model.Authorized ? "<font color='red'>是</font>" : "&nbsp;");
 
                     StringBuilder anchor = new StringBuilder();
@@ -288,6 +258,34 @@ namespace MySoft.RESTful.Business
             }
 
             return html.Replace("${body}", table.ToString());
+        }
+
+        private string GetMethodParameter(BusinessMethodModel model, string kind, string method)
+        {
+            StringBuilder buider = new StringBuilder();
+            var parametersCount = model.ParametersCount;
+            if (parametersCount > 0) buider.Append("<b>INPUT</b> -><br/>");
+            foreach (var p in model.Parameters)
+            {
+                if (!string.IsNullOrEmpty(kind) && !string.IsNullOrEmpty(method))
+                {
+                    buider.Append(GetTypeDetail(p.Name, p.ParameterType, 1));
+                }
+                else
+                {
+                    buider.AppendFormat(string.Format("&nbsp;&nbsp;&nbsp;&nbsp;&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.ParameterType)) + "<br/>");
+                }
+            }
+            if (parametersCount > 0) buider.Append("<hr/>");
+            var value = string.Format("<b>OUTPUT</b> -> {0}<br/>", GetTypeName(model.Method.ReturnType));
+            buider.Append("<font color=\"#336699\">").Append(value);
+            if (!string.IsNullOrEmpty(kind) && !string.IsNullOrEmpty(method))
+            {
+                buider.Append(GetTypeDetail(null, model.Method.ReturnType, 1));
+            }
+            buider.Append("</font>");
+
+            return buider.ToString();
         }
 
         private bool GetTypeClass(Type type)
@@ -327,7 +325,7 @@ namespace MySoft.RESTful.Business
                     var values = Enum.GetValues(type);
 
                     for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                    sb.Append("<b>[" + GetTypeName(type) + "]</b><br/>");
+                    sb.Append("<b style='color:#999;'>[" + GetTypeName(type) + "]</b><br/>");
                     for (int n = 0; n < names.Length; n++)
                     {
                         for (int i = 0; i <= index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
@@ -337,7 +335,7 @@ namespace MySoft.RESTful.Business
                 else
                 {
                     for (int i = 0; i < index; i++) sb.Append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                    sb.Append("<b>[" + GetTypeName(type) + "]</b><br/>");
+                    sb.Append("<b style='color:#999;'>[" + GetTypeName(type) + "]</b><br/>");
 
                     foreach (var p in CoreHelper.GetPropertiesFromType(type))
                     {
@@ -374,7 +372,7 @@ namespace MySoft.RESTful.Business
         {
             string url = string.Empty;
             string method = mode.ToString().ToLower();
-            if (mode != HttpMethod.POST && plist.Count > 0)
+            if (mode == HttpMethod.GET && plist.Count > 0)
                 url = string.Format("{0}{1}.{2}/{3}.{4}?{5}", uri, method, format, e.Name, model.Name, string.Join("&", plist.ToArray()));
             else
                 url = string.Format("{0}{1}.{2}/{3}.{4}", uri, method, format, e.Name, model.Name);

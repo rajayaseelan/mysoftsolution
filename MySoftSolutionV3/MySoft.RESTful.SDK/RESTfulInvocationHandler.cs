@@ -4,6 +4,7 @@ using System.Text;
 using System.Reflection;
 using System.Web;
 using System.Net;
+using System.Linq;
 
 namespace MySoft.RESTful.SDK
 {
@@ -47,20 +48,15 @@ namespace MySoft.RESTful.SDK
             var attr = CoreHelper.GetMemberAttribute<PublishMethodAttribute>(method);
             if (attr == null) return null;
 
+            var httpMethod = HttpMethod.GET;
+            if (!CoreHelper.CheckPrimitiveType(method.GetParameters().Select(p => p.ParameterType).ToArray()))
+                httpMethod = HttpMethod.POST;
+
             string name = attribute.Name + "." + attr.Name;
-            RESTfulParameter parameter = new RESTfulParameter(name, attr.Method, format);
+            RESTfulParameter parameter = new RESTfulParameter(name, httpMethod, format);
             parameter.Token = token;
 
-            if (attr.Method != HttpMethod.POST)
-            {
-                //添加参数
-                var plist = method.GetParameters();
-                for (int index = 0; index < parameters.Length; index++)
-                {
-                    parameter.AddParameter(plist[index].Name, parameters[index]);
-                }
-            }
-            else
+            if (httpMethod == HttpMethod.POST)
             {
                 var collection = new Dictionary<string, object>();
 
@@ -73,6 +69,16 @@ namespace MySoft.RESTful.SDK
 
                 parameter.DataObject = collection;
             }
+            else
+            {
+                //添加参数
+                var plist = method.GetParameters();
+                for (int index = 0; index < parameters.Length; index++)
+                {
+                    parameter.AddParameter(plist[index].Name, parameters[index]);
+                }
+            }
+
 
             //处理Cookies
             if (HttpContext.Current != null)

@@ -148,7 +148,7 @@ namespace MySoft.RESTful.Business.Register
                             {
                                 Name = method.Name,
                                 Description = method.Description,
-                                HttpMethod = method.Method,
+                                HttpMethod = HttpMethod.GET,
                                 Authorized = method.Authorized,
                                 Method = info,
                                 Parameters = info.GetParameters(),
@@ -157,14 +157,9 @@ namespace MySoft.RESTful.Business.Register
                             };
 
                             var types = info.GetParameters().Select(p => p.ParameterType).ToArray();
-                            if (method.Method != HttpMethod.POST && !CoreHelper.CheckPrimitiveType(types))
+                            if (!CoreHelper.CheckPrimitiveType(types))
                             {
-                                methodModel.IsPassCheck = false;
-                                methodModel.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", kindModel.Name + "." + methodModel.Name);
-                            }
-                            else
-                            {
-                                methodModel.IsPassCheck = true;
+                                methodModel.HttpMethod = HttpMethod.POST;
                             }
 
                             kindModel.MethodModels.Add(method.Name, methodModel);

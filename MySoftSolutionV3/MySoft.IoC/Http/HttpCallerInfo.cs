@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace MySoft.IoC.Http
 {
     /// <summary>
     /// 调用信息
     /// </summary>
+    [Serializable]
     public class HttpCallerInfo
     {
         /// <summary>
@@ -19,11 +21,13 @@ namespace MySoft.IoC.Http
         /// <summary>
         /// 调用方法
         /// </summary>
+        [JsonIgnore]
         public MethodInfo Method { get; set; }
 
         /// <summary>
         /// 调用实例
         /// </summary>
+        [JsonIgnore]
         public object Instance { get; set; }
 
         /// <summary>
@@ -39,21 +43,12 @@ namespace MySoft.IoC.Http
         /// <summary>
         /// 方法描述
         /// </summary>
+        [JsonIgnore]
         public string Description { get; set; }
-
-        /// <summary>
-        /// 是否通过检查
-        /// </summary>
-        public bool IsPassCheck { get; set; }
-
-        /// <summary>
-        /// 检查的消息
-        /// </summary>
-        public string CheckMessage { get; set; }
 
         /// <summary>
         /// Http方式
         /// </summary>
-        public string HttpMethod { get; set; }
+        public HttpMethod HttpMethod { get; set; }
     }
 }

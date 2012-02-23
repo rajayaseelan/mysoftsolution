@@ -5,7 +5,7 @@ using System.Text;
 using MySoft.Net.HTTP;
 using System.IO;
 using System.Collections.Specialized;
-using System.Net;
+using Newtonsoft.Json.Linq;
 
 namespace MySoft.IoC.Http
 {
@@ -34,101 +34,142 @@ namespace MySoft.IoC.Http
         /// <param name="response"></param>
         public void HandleRequest(HTTPServerRequest request, HTTPServerResponse response)
         {
+            /**
+                     * In this example we'll write the body into the
+                     * stream obtained by response.Send(). This will cause the
+                     * KeepAlive to be false since the size of the body is not
+                     * known when the response header is sent.
+                     **/
+
+
             if (request.URI.ToLower() == "/help")
             {
+                //发送文档信息
                 response.ContentType = "text/html;charset=utf-8";
-                using (Stream ostr = response.Send())
-                using (TextWriter tw = new StreamWriter(ostr))
-                {
-                    tw.WriteLine(caller.GetDocument());
-                }
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_OK;
+                SendResponse(response, caller.GetDocument());
+            }
+            else if (request.URI.ToLower() == "/favicon.ico")
+            {
+                response.ContentType = "text/html;charset=utf-8";
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_FOUND;
+                response.Send();
             }
             else if (request.URI.Substring(request.URI.IndexOf('/') + 1).Length > 5)
             {
-                /**
-                             * In this example we'll write the body into the
-                             * stream obtained by response.Send(). This will cause the
-                             * KeepAlive to be false since the size of the body is not
-                             * known when the response header is sent.
-                             **/
+                response.ContentType = "application/json;charset=utf-8";
+
+                var paramString = request.URI.Substring(request.URI.IndexOf("/") + 1);
+                var arr = paramString.Split('?');
+                var call = caller.GetCaller(arr[0]);
+
+                if (call == null)
+                {
+                    response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_FOUND;
+                    var error = new HttpServiceException { Message = string.Format("HTTP_NOT_FOUND {0}", arr[0]) };
+                    SendResponse(response, error);
+                    return;
+                }
+                else
+                {
+                    if (call.HttpMethod == HttpMethod.POST && request.Method.ToUpper() == "GET")
+                    {
+                        response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_METHOD_NOT_ALLOWED;
+                        var error = new HttpServiceException { Message = "HTTP_METHOD_NOT_ALLOWED" };
+                        SendResponse(response, error);
+                        return;
+                    }
+                }
 
                 try
                 {
-                    response.ContentType = "application/json;charset=utf-8";
-                    var paramString = request.URI.Substring(request.URI.IndexOf("/") + 1);
-                    var arr = paramString.Split('?');
-                    var collection = ParseCollection(arr[1], '&');
-                    var cookies = ConvertCookies(ParseCollection(request.Get("Cookie"), ';'));
-
-                    var call = caller.GetCaller(arr[0]);
-                    if (call == null)
+                    //调用方法
+                    var collection = new Dictionary<string, string>();
+                    if (arr.Length > 1) collection = ParseDictionary(arr[1]);
+                    var headers = request.HeaderValues;
+                    if (call.Authorized)
                     {
-                    }
-                    else
-                    {
-                        if (call.HttpMethod != request.Method.ToUpper())
+                        if (headers.ContainsKey("AuthParameter"))
                         {
-                            response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_METHOD_NOT_ALLOWED;
-                            response.Send();
+                            collection[call.AuthParameter] = headers["AuthParameter"];
+                        }
+                        else
+                        {
+                            response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_UNAUTHORIZED;
+                            var error = new HttpServiceException { Message = "HTTP_UNAUTHORIZED" };
+                            SendResponse(response, error);
                             return;
                         }
+                    }
 
+                    if (call.HttpMethod == HttpMethod.POST)
+                    {
                         //接收流内部数据
                         using (var stream = request.GetRequestStream())
                         using (var sr = new StreamReader(stream))
                         {
                             string streamValue = sr.ReadToEnd();
+                            var jobject = JObject.Parse(streamValue);
+
+                            //处理POST的数据
+                            foreach (var kvp in jobject)
+                            {
+                                collection[kvp.Key] = kvp.Value.ToString(Newtonsoft.Json.Formatting.None);
+                            }
                         }
                     }
 
-                    //调用方法
-                    string responseString = caller.CallMethod(arr[0], collection, cookies);
-                    using (Stream ostr = response.Send())
-                    using (TextWriter tw = new StreamWriter(ostr))
-                    {
-                        tw.WriteLine(responseString);
-                    }
+                    string responseString = caller.CallMethod(arr[0], collection);
+                    SendResponse(response, responseString);
                 }
                 catch (HTTPMessageException ex)
                 {
-                    response.ContentType = "application/json;charset=utf-8";
-                    if (ex is HTTPAuthMessageException)
-                        response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_UNAUTHORIZED;
-                    else
-                        response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
-
-                    var error = new HttpServiceException
-                    {
-                        Code = (int)response.Status,
-                        Message = ex.Message
-                    };
-
-                    using (Stream ostr = response.Send())
-                    using (TextWriter tw = new StreamWriter(ostr))
-                    {
-                        tw.WriteLine(SerializationManager.SerializeJson(error));
-                    }
+                    response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
+                    var error = new HttpServiceException { Message = "HTTPMessageException - " + ex.Message };
+                    SendResponse(response, error);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_INTERNAL_SERVER_ERROR;
-                    response.Send();
+                    response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
+                    var e = ErrorHelper.GetInnerException(ex);
+                    var error = new HttpServiceException { Message = e.GetType().Name + " - " + e.Message };
+                    SendResponse(response, error);
                 }
             }
             else
             {
-                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_FOUND;
-                response.Send();
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_ACCEPTABLE;
+                var error = new HttpServiceException { Message = "HTTP_NOT_ACCEPTABLE" };
+                SendResponse(response, error);
             }
         }
 
-        private NameValueCollection ParseCollection(string paramString, char split)
+        private void SendResponse(HTTPServerResponse response, string responseString)
+        {
+            using (Stream ostr = response.Send())
+            using (TextWriter tw = new StreamWriter(ostr))
+            {
+                tw.WriteLine(responseString);
+            }
+        }
+
+        private void SendResponse(HTTPServerResponse response, HttpServiceException error)
+        {
+            error.Code = (int)response.Status;
+            using (Stream ostr = response.Send())
+            using (TextWriter tw = new StreamWriter(ostr))
+            {
+                tw.WriteLine(SerializationManager.SerializeJson(error));
+            }
+        }
+
+        private Dictionary<string, string> ParseDictionary(string paramString)
         {
             if (!string.IsNullOrEmpty(paramString))
             {
                 var arr = paramString.Split('&');
 
-                var values = new NameValueCollection(arr.Length);
+                var values = new Dictionary<string, string>(arr.Length);
                 foreach (var str in arr)
                 {
                     var arr2 = str.Split('=');
@@ -140,16 +181,6 @@ namespace MySoft.IoC.Http
             }
 
             return null;
-        }
-
-        private CookieCollection ConvertCookies(NameValueCollection values)
-        {
-            var cookies = new CookieCollection();
-            foreach (var key in values.AllKeys)
-            {
-                cookies.Add(new Cookie(key, values[key]));
-            }
-            return cookies;
         }
 
         #endregion

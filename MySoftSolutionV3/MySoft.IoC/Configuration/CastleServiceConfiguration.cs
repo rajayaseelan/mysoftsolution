@@ -13,7 +13,6 @@ namespace MySoft.IoC.Configuration
         private int port = 8888;
         private int httpPort = 8080;
         private bool httpEnabled = false;
-        private string httpAuth;
         private string cacheType;
         private bool encrypt = false;
         private bool compress = false;
@@ -75,9 +74,6 @@ namespace MySoft.IoC.Configuration
                 {
                     httpPort = Convert.ToInt32(childnode["httpPort"].Value);
                     httpEnabled = Convert.ToBoolean(childnode["httpEnabled"].Value);
-
-                    if (childnode["httpAuth"] != null && childnode["httpAuth"].Value.Trim() != string.Empty)
-                        httpAuth = childnode["httpAuth"].Value;
                 }
                 else if (child.Name == "serverCache")
                 {
@@ -105,15 +101,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return httpEnabled; }
             set { httpEnabled = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the httpAuth
-        /// </summary>
-        public string HttpAuth
-        {
-            get { return httpAuth; }
-            set { httpAuth = value; }
         }
 
         #endregion

@@ -21,12 +21,12 @@ namespace MySoft.IoC.Http
         /// </summary>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public static JObject Resolve(NameValueCollection parameters)
+        public static JObject Resolve(IDictionary<string, string> parameters)
         {
             JObject obj = new JObject();
-            foreach (var key in parameters.AllKeys)
+            foreach (var kvp in parameters)
             {
-                obj.Add(key, parameters[key]);
+                obj.Add(kvp.Key, kvp.Value);
             }
             return obj;
         }

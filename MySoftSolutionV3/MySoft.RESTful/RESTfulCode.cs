@@ -75,9 +75,5 @@ namespace MySoft.RESTful
         /// 业务方法调用类型不匹配
         /// </summary>
         BUSINESS_METHOD_CALL_TYPE_NOT_MATCH = 55,
-        /// <summary>
-        /// 业务方法没有通过检查
-        /// </summary>
-        BUSINESS_METHOD_NOT_PASS_CHECK = 56
     }
 }

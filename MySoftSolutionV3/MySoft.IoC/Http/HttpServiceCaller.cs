@@ -6,7 +6,6 @@ using System.Reflection;
 using MySoft.RESTful;
 using MySoft.Net.HTTP;
 using System.Collections.Specialized;
-using System.Net;
 
 namespace MySoft.IoC.Http
 {
@@ -16,7 +15,6 @@ namespace MySoft.IoC.Http
     public class HttpServiceCaller
     {
         private IServiceContainer container;
-        private IHttpAuthentication handler;
         private IDictionary<string, HttpCallerInfo> callers;
         private int port;
 
@@ -26,19 +24,11 @@ namespace MySoft.IoC.Http
         /// <param name="container"></param>
         /// <param name="httpAuth"></param>
         /// <param name="port"></param>
-        public HttpServiceCaller(IServiceContainer container, string httpAuth, int port)
+        public HttpServiceCaller(IServiceContainer container, int port)
         {
             this.container = container;
             this.port = port;
             this.callers = new Dictionary<string, HttpCallerInfo>();
-
-            //加载httpAuth
-            if (!string.IsNullOrEmpty(httpAuth))
-            {
-                Type type = Type.GetType(httpAuth);
-                object instance = Activator.CreateInstance(type);
-                this.handler = instance as IHttpAuthentication;
-            }
 
             //初始化字典
             foreach (var serviceType in container.GetInterfaces<ServiceContractAttribute>())
@@ -93,19 +83,13 @@ namespace MySoft.IoC.Http
                 Authorized = authorized,
                 AuthParameter = authParameter,
                 Description = description,
-                HttpMethod = "GET" //默认为GET方式
+                HttpMethod = HttpMethod.GET //默认为GET方式
             };
 
             var types = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
             if (!CoreHelper.CheckPrimitiveType(types))
             {
-                callerInfo.IsPassCheck = false;
-                callerInfo.CheckMessage = string.Format("{0} business is not pass check, because the SubmitType of 'GET' parameters only suport primitive type.", fullName);
-                callerInfo.HttpMethod = "POST";
-            }
-            else
-            {
-                callerInfo.IsPassCheck = true;
+                callerInfo.HttpMethod = HttpMethod.POST;
             }
 
             if (callers.ContainsKey(fullName))
@@ -155,90 +139,29 @@ namespace MySoft.IoC.Http
         /// </summary>
         /// <param name="name"></param>
         /// <param name="collection"></param>
-        /// <param name="cookies"></param>
         /// <returns></returns>
-        public string CallMethod(string name, NameValueCollection collection, CookieCollection cookies)
+        public string CallMethod(string name, IDictionary<string, string> collection)
         {
-            if (callers.ContainsKey(name))
+            var caller = callers[name];
+            var parameters = new object[0];
+            if (caller.Method.GetParameters().Length > 0)
             {
-                var caller = callers[name];
-                if (!caller.IsPassCheck)
-                {
-                    throw new HTTPMessageException(caller.CheckMessage);
-                }
+                var jobject = ParameterHelper.Resolve(collection);
+                parameters = ParameterHelper.Convert(jobject, caller.Method.GetParameters());
+            }
 
-                var parameters = new object[0];
-                if (caller.Method.GetParameters().Length > 0)
-                {
-                    parameters = ParseParameters(collection, cookies, caller);
-                }
+            var retVal = DynamicCalls.GetMethodInvoker(caller.Method).Invoke(caller.Instance, parameters);
 
-                try
-                {
-                    var retVal = DynamicCalls.GetMethodInvoker(caller.Method).Invoke(caller.Instance, parameters);
-
-                    //如果返回类型为字符串，直接返回值
-                    if (caller.Method.ReturnType == typeof(string))
-                    {
-                        return Convert.ToString(retVal);
-                    }
-                    else
-                    {
-                        if (retVal == null) return "{}";
-                        return SerializationManager.SerializeJson(retVal, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new HTTPMessageException(ex.Message);
-                }
+            //如果返回类型为字符串，直接返回值
+            if (caller.Method.ReturnType == typeof(string))
+            {
+                return Convert.ToString(retVal);
             }
             else
             {
-                throw new HTTPMessageException(string.Format("Not found method {0}!", name));
+                if (retVal == null) return "{}";
+                return SerializationManager.SerializeJson(retVal, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
             }
-        }
-
-        /// <summary>
-        /// 处理参数
-        /// </summary>
-        /// <param name="collection"></param>
-        /// <param name="cookies"></param>
-        /// <param name="caller"></param>
-        /// <returns></returns>
-        private object[] ParseParameters(NameValueCollection collection, CookieCollection cookies, HttpCallerInfo caller)
-        {
-            var jobject = ParameterHelper.Resolve(collection);
-            if (caller.Authorized)
-            {
-                if (string.IsNullOrEmpty(caller.AuthParameter))
-                {
-                    throw new HTTPMessageException("AuthParameter is empty or not set correct.");
-                }
-                else
-                {
-                    if (handler != null)
-                    {
-                        //进行授权处理
-                        try
-                        {
-                            //处理collection
-                            string authString = handler.Authorize(container, cookies);
-                            jobject[caller.AuthParameter] = authString;
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new HTTPAuthMessageException("Authorize failed! Error: " + ex.Message);
-                        }
-                    }
-                    else
-                    {
-                        throw new HTTPAuthMessageException("Authorize failed ,httpAuth not set correct.");
-                    }
-                }
-            }
-
-            return ParameterHelper.Convert(jobject, caller.Method.GetParameters());
         }
     }
 }

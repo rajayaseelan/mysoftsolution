@@ -9,33 +9,9 @@ using MySoft.Logger;
 using MySoft.IoC.Http;
 using MySoft.Net.HTTP;
 using System.Collections.Specialized;
-using System.Net;
 
 namespace MySoft.PlatformService.Console
 {
-    public class HttpAuthentication : IHttpAuthentication
-    {
-        #region IUserHandler 成员
-
-        /// <summary>
-        /// 认证用户
-        /// </summary>
-        /// <param name="container"></param>
-        /// <param name="collection"></param>
-        /// <returns></returns>
-        public string Authorize(IContainer container, CookieCollection cookies)
-        {
-            var user = cookies["user"].Value;
-
-            if (user == "my181|19810108")
-                return user.Split('|')[0];
-
-            throw new Exception("认证用户信息失败！");
-        }
-
-        #endregion
-    }
-
     public class ServiceCache : IServiceCache
     {
         #region IServiceCache 成员
@@ -78,7 +54,7 @@ namespace MySoft.PlatformService.Console
 
             if (config.HttpEnabled)
             {
-                var caller = new HttpServiceCaller(server.Container, config.HttpAuth, config.HttpPort);
+                var caller = new HttpServiceCaller(server.Container, config.HttpPort);
                 var factory = new HttpRequestHandlerFactory(caller);
                 var httpServer = new HTTPServer(factory, config.HttpPort);
                 httpServer.OnServerStart += () => { System.Console.WriteLine("Http server started. http://{0}:{1}", DnsHelper.GetIPAddress(), config.HttpPort); };

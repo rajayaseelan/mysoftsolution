@@ -19,11 +19,6 @@ namespace MySoft.RESTful
         public string Description { get; set; }
 
         /// <summary>
-        /// 调用方式
-        /// </summary>
-        public HttpMethod Method { get; set; }
-
-        /// <summary>
         /// 是否认证
         /// </summary>
         public bool Authorized { get; set; }
@@ -31,17 +26,13 @@ namespace MySoft.RESTful
         /// <summary>
         /// 实例化PublishMethod
         /// </summary>
-        public PublishMethodAttribute()
-        {
-            this.Method = HttpMethod.GET;
-        }
+        public PublishMethodAttribute() { }
 
         /// <summary>
         /// 实例化PublishMethod
         /// </summary>
         /// <param name="name"></param>
         public PublishMethodAttribute(string name)
-            : this()
         {
             this.Name = name;
         }
