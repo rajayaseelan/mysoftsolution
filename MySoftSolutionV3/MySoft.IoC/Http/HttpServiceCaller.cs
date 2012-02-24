@@ -89,8 +89,11 @@ namespace MySoft.IoC.Http
         public string GetDocument(string name)
         {
             var dicCaller = new Dictionary<string, HttpCallerInfo>();
-            if (!string.IsNullOrEmpty(name) && callers.ContainsKey(name))
-                dicCaller[name] = callers[name];
+            if (!string.IsNullOrEmpty(name))
+            {
+                if (callers.ContainsKey(name))
+                    dicCaller[name] = callers[name];
+            }
             else
                 dicCaller = callers;
 

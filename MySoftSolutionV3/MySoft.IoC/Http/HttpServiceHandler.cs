@@ -75,7 +75,7 @@ namespace MySoft.IoC.Http
                 if (call == null)
                 {
                     response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_FOUND;
-                    var error = new HttpServiceException { Message = string.Format("HTTP_NOT_FOUND {0}", arr[0]) };
+                    var error = new HttpServiceException { Message = string.Format("HTTP_NOT_FOUND【{0}】", arr[0]) };
                     SendResponse(response, error);
                     return;
                 }
