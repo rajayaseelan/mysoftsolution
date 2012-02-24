@@ -217,7 +217,7 @@ namespace MySoft.RESTful.Business
                     var plist = new List<string>();
                     foreach (var p in model.Parameters)
                     {
-                        if (!GetTypeClass(p.ParameterType))
+                        if (CoreHelper.CheckPrimitiveType(p.ParameterType))
                         {
                             plist.Add(string.Format("{0}=[{0}]", p.Name.ToLower()).Replace('[', '{').Replace(']', '}'));
                         }
@@ -282,14 +282,6 @@ namespace MySoft.RESTful.Business
             return buider.ToString();
         }
 
-        private bool GetTypeClass(Type type)
-        {
-            if (type.IsGenericType)
-                return GetTypeClass(type.GetGenericArguments()[0]);
-            else
-                return (type.IsClass && type != typeof(string)) || type.IsEnum;
-        }
-
         private string GetTypeName(Type type)
         {
             string typeName = type.Name;
@@ -311,7 +303,7 @@ namespace MySoft.RESTful.Business
             }
 
             type = CoreHelper.GetPrimitiveType(type);
-            if (GetTypeClass(type))
+            if (!CoreHelper.CheckPrimitiveType(type) || type.IsEnum)
             {
                 if (type.IsEnum)
                 {
@@ -333,7 +325,7 @@ namespace MySoft.RESTful.Business
 
                     foreach (var p in CoreHelper.GetPropertiesFromType(type))
                     {
-                        if (GetTypeClass(p.PropertyType) && type != p.PropertyType)
+                        if (!CoreHelper.CheckPrimitiveType(p.PropertyType) && type != p.PropertyType)
                         {
                             sb.Append(GetTypeDetail(p.Name, p.PropertyType, index + 1));
                         }
@@ -346,7 +338,7 @@ namespace MySoft.RESTful.Business
 
                     foreach (var p in type.GetFields())
                     {
-                        if (GetTypeClass(p.FieldType))
+                        if (!CoreHelper.CheckPrimitiveType(p.FieldType))
                         {
                             sb.Append(GetTypeDetail(p.Name, p.FieldType, index + 1));
                         }
