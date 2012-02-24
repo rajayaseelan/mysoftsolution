@@ -46,33 +46,10 @@ namespace MySoft.RESTful.Utils
                 {
                     var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
                     if (property != null)
-                    {
+                    {   
+                        //获取Json值
                         string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
-                        object jsonValue = null;
-
-                        if (!(string.IsNullOrEmpty(value) || value == "{}"))
-                        {
-                            var type = GetPrimitiveType(info.ParameterType);
-                            if (type.IsArray)
-                            {
-                                value = string.Format("[{0}]", value.Replace(",", "\",\""));
-                            }
-                            else if (type.IsGenericType)
-                            {
-                                var t = type.GetGenericTypeDefinition();
-                                if (typeof(IList<>).IsAssignableFrom(t))
-                                    value = string.Format("[{0}]", value.Replace(",", "\",\""));
-                            }
-
-                            if (value.Contains("new Date"))
-                                jsonValue = SerializationManager.DeserializeJson(type, value, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
-                            else
-                                jsonValue = SerializationManager.DeserializeJson(type, value);
-                        }
-
-                        if (jsonValue == null)
-                            jsonValue = CoreHelper.GetTypeDefaultValue(GetPrimitiveType(info.ParameterType));
-
+                        object jsonValue = CoreHelper.ConvertJsonToObject(info, value);
                         args.Add(jsonValue);
                     }
                     else
@@ -94,6 +71,8 @@ namespace MySoft.RESTful.Utils
                 throw new RESTfulException("Parameter type did not match!") { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
             }
         }
+
+
 
         private static Type GetPrimitiveType(Type type)
         {
