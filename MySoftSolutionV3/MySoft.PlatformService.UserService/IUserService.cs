@@ -39,7 +39,7 @@ namespace MySoft.PlatformService.UserService
         }
     }
 
-    [ServiceContract(Name = "user", Description = "用户管理")]
+    [ServiceContract]
     public interface IUserService
     {
         //[OperationContract(ClientCacheTime = 10, ServerCacheTime = 20, CacheKey = "User_{name}")]
@@ -50,16 +50,16 @@ namespace MySoft.PlatformService.UserService
 
         string GetUser(UserInfo user);
 
-        [OperationContract(Name = "getuser", Description = "获取用户", HttpGet = true)]
+        [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         int GetSex(Sex value);
 
-        [OperationContract(Name = "getuser", Description = "获取用户", HttpGet = true)]
+        [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
 
-        [OperationContract(Name = "getuser", Description = "获取用户", HttpGet = true)]
+        [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         IList<UserInfo> GetUsers();
 
-        [OperationContract(Name = "getuser", Description = "获取用户", HttpGet = true, Authorized = true, AuthParameter = "name")]
+        [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         UserInfo GetUser(int id, string name, IList<string> list, int[] values);
     }
 

@@ -471,7 +471,7 @@ namespace MySoft.IoC
         private InvokeData GetInvokeData(InvokeMessage message, IService service)
         {
             //调用分布式服务
-            var caller = new InvokeCaller(config, container, service);
+            var caller = new InvokeCaller(config.AppName, service);
             return caller.CallMethod(message) as InvokeData;
         }
 

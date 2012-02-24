@@ -223,6 +223,16 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// Resolve local service
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns></returns>
+        public TService Resolve<TService>(string key)
+        {
+            return container.Resolve<TService>(key);
+        }
+
+        /// <summary>
         /// Calls the service.
         /// </summary>
         /// <param name="reqMsg"></param>

@@ -6,7 +6,7 @@ namespace MySoft.IoC
     /// Attribute used to mark service interfaces.
     /// </summary>
     [AttributeUsage(AttributeTargets.Interface, AllowMultiple = false)]
-    public class ServiceContractAttribute : ContractAttribute
+    public class ServiceContractAttribute : Attribute
     {
         private Type callbackType;
         /// <summary>
@@ -17,16 +17,5 @@ namespace MySoft.IoC
             get { return callbackType; }
             set { callbackType = value; }
         }
-
-        /// <summary>
-        /// 实例化ServiceContractAttribute
-        /// </summary>
-        public ServiceContractAttribute() : base() { }
-
-        /// <summary>
-        /// 实例化OperationContractAttribute
-        /// </summary>
-        /// <param name="name"></param>
-        public ServiceContractAttribute(string name) : base(name) { }
     }
 }

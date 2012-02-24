@@ -25,11 +25,6 @@ namespace MySoft.IoC.Messages
         public string FullName { get; set; }
 
         /// <summary>
-        /// 描述信息
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
         /// 方法信息
         /// </summary>
         public IList<MethodInfo> Methods { get; set; }
@@ -55,11 +50,6 @@ namespace MySoft.IoC.Messages
         /// 服务全称
         /// </summary>
         public string FullName { get; set; }
-
-        /// <summary>
-        /// 描述信息
-        /// </summary>
-        public string Description { get; set; }
 
         /// <summary>
         /// 参数信息

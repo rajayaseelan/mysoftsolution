@@ -31,8 +31,8 @@ namespace MySoft.IoC.Http
         /// <returns></returns>
         public IHTTPRequestHandler CreateRequestHandler(HTTPServerRequest request)
         {
-            //不是HttpGET方式，直接返回
-            if (request.Method == HTTPServerRequest.HTTP_GET)
+            //不是HttpGET或HttpPOST方式，直接返回
+            if (request.Method == HTTPServerRequest.HTTP_GET || request.Method == HTTPServerRequest.HTTP_POST)
                 return new HttpServiceHandler(caller);
             else
                 return null;

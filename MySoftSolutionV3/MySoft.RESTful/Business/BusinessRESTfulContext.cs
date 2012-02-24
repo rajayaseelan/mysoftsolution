@@ -233,20 +233,20 @@ namespace MySoft.RESTful.Business
                     template = template.Replace("${auth}", model.Authorized ? "<font color='red'>是</font>" : "&nbsp;");
 
                     StringBuilder anchor = new StringBuilder();
-                    anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "xml"));
+                    anchor.Append(CreateAnchorHtml(requestUri, e, model, plist, model.HttpMethod, "xml"));
                     anchor.Append("<br/>");
-                    anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "json"));
+                    anchor.Append(CreateAnchorHtml(requestUri, e, model, plist, model.HttpMethod, "json"));
                     if (model.HttpMethod == HttpMethod.GET)
                     {
                         anchor.Append("<br/>");
-                        anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "jsonp"));
+                        anchor.Append(CreateAnchorHtml(requestUri, e, model, plist, model.HttpMethod, "jsonp"));
 
                         if (model.Method.ReturnType == typeof(string))
                         {
                             anchor.Append("<br/>");
-                            anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "text"));
+                            anchor.Append(CreateAnchorHtml(requestUri, e, model, plist, model.HttpMethod, "text"));
                             anchor.Append("<br/>");
-                            anchor.Append(CreateAnchorHtml(requestUri, uri, e, model, plist, model.HttpMethod, "html"));
+                            anchor.Append(CreateAnchorHtml(requestUri, e, model, plist, model.HttpMethod, "html"));
                         }
                     }
 
@@ -268,21 +268,15 @@ namespace MySoft.RESTful.Business
             foreach (var p in model.Parameters)
             {
                 if (!string.IsNullOrEmpty(kind) && !string.IsNullOrEmpty(method))
-                {
                     buider.Append(GetTypeDetail(p.Name, p.ParameterType, 1));
-                }
                 else
-                {
                     buider.AppendFormat(string.Format("&nbsp;&nbsp;&nbsp;&nbsp;&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.ParameterType)) + "<br/>");
-                }
             }
             if (parametersCount > 0) buider.Append("<hr/>");
             var value = string.Format("<b>OUTPUT</b> -> {0}<br/>", GetTypeName(model.Method.ReturnType));
             buider.Append("<font color=\"#336699\">").Append(value);
             if (!string.IsNullOrEmpty(kind) && !string.IsNullOrEmpty(method))
-            {
                 buider.Append(GetTypeDetail(null, model.Method.ReturnType, 1));
-            }
             buider.Append("</font>");
 
             return buider.ToString();
@@ -368,14 +362,14 @@ namespace MySoft.RESTful.Business
             return sb.ToString();
         }
 
-        private string CreateAnchorHtml(Uri requestUri, string uri, BusinessKindModel e, BusinessMethodModel model, List<string> plist, HttpMethod mode, string format)
+        private string CreateAnchorHtml(Uri requestUri, BusinessKindModel e, BusinessMethodModel model, List<string> plist, HttpMethod mode, string format)
         {
             string url = string.Empty;
             string method = mode.ToString().ToLower();
             if (mode == HttpMethod.GET && plist.Count > 0)
-                url = string.Format("{0}{1}.{2}/{3}.{4}?{5}", uri, method, format, e.Name, model.Name, string.Join("&", plist.ToArray()));
+                url = string.Format("/{0}.{1}/{2}.{3}?{4}", method, format, e.Name, model.Name, string.Join("&", plist.ToArray()));
             else
-                url = string.Format("{0}{1}.{2}/{3}.{4}", uri, method, format, e.Name, model.Name);
+                url = string.Format("/{0}.{1}/{2}.{3}", method, format, e.Name, model.Name);
 
             if (!string.IsNullOrEmpty(requestUri.Query))
             {
@@ -393,8 +387,7 @@ namespace MySoft.RESTful.Business
                     url += "?callback={callback}";
             }
 
-            url = string.Format("<a rel=\"operation\" target=\"_blank\" title=\"{0}\" href=\"{0}\">{1}</a> 处的服务", url, url.Replace(uri, "/"));
-            return url;
+            return string.Format("<a rel=\"operation\" target=\"_blank\" title=\"{0}\" href=\"{0}\">{0}</a> 处的服务", url);
         }
     }
 }

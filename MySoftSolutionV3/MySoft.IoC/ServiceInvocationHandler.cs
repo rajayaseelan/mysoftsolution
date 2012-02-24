@@ -74,24 +74,8 @@ namespace MySoft.IoC
             {
                 for (int i = 0; i < paramValues.Length; i++)
                 {
-                    if (paramValues[i] != null)
-                    {
-                        if (!pis[i].ParameterType.IsByRef)
-                        {
-                            //如果传递的是引用，则跳过
-                            reqMsg.Parameters[pis[i].Name] = paramValues[i];
-                        }
-                        else if (!pis[i].IsOut)
-                        {
-                            //如果传递的是引用，则跳过
-                            reqMsg.Parameters[pis[i].Name] = paramValues[i];
-                        }
-                    }
-                    else
-                    {
-                        //传递参数值为null
-                        reqMsg.Parameters[pis[i].Name] = null;
-                    }
+                    //处理默认值
+                    reqMsg.Parameters[pis[i].Name] = paramValues[i] ?? CoreHelper.GetTypeDefaultValue(pis[i].ParameterType);
                 }
 
                 //处理参数

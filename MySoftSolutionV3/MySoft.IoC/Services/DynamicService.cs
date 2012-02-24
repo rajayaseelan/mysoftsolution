@@ -104,18 +104,8 @@ namespace MySoft.IoC.Services
                 object[] paramValues = new object[pis.Length];
                 for (int i = 0; i < pis.Length; i++)
                 {
-                    if (!pis[i].ParameterType.IsByRef)
-                    {
-                        paramValues[i] = resMsg.Parameters[pis[i].Name];
-                    }
-                    else if (!pis[i].IsOut)
-                    {
-                        paramValues[i] = resMsg.Parameters[pis[i].Name];
-                    }
-                    else
-                    {
-                        paramValues[i] = CoreHelper.GetTypeDefaultValue(pis[i].ParameterType);
-                    }
+                    //处理默认值
+                    paramValues[i] = resMsg.Parameters[pis[i].Name] ?? CoreHelper.GetTypeDefaultValue(pis[i].ParameterType);
                 }
 
                 //调用对应的服务

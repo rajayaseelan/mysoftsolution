@@ -96,9 +96,6 @@
     <Compile Include="Http\HttpServiceHandler.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Http\ParameterHelper.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="InvokeCaller.cs" />
     <Compile Include="JsonInvocationHandler.cs" />
     <Compile Include="Services\LocalInterceptor.cs" />

@@ -42,18 +42,27 @@ namespace MySoft.IoC.Http
                      **/
 
 
-            if (request.URI.ToLower() == "/help")
-            {
-                //发送文档信息
-                response.ContentType = "text/html;charset=utf-8";
-                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_OK;
-                SendResponse(response, caller.GetDocument());
-            }
-            else if (request.URI.ToLower() == "/favicon.ico")
+            if (request.URI.ToLower() == "/favicon.ico")
             {
                 response.ContentType = "text/html;charset=utf-8";
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_FOUND;
                 response.Send();
+            }
+            else if (request.URI.ToLower() == "/help")
+            {
+                //发送文档帮助信息
+                response.ContentType = "text/html;charset=utf-8";
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_OK;
+                SendResponse(response, caller.GetDocument(null));
+            }
+            else if (request.URI.ToLower().IndexOf("/help/") == 0)
+            {
+                //发送文档帮助信息
+                response.ContentType = "text/html;charset=utf-8";
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_OK;
+                var url = request.URI.ToLower();
+                var name = url.Substring(url.IndexOf("/help/") + 6);
+                SendResponse(response, caller.GetDocument(name));
             }
             else if (request.URI.Substring(request.URI.IndexOf('/') + 1).Length > 5)
             {
@@ -84,23 +93,8 @@ namespace MySoft.IoC.Http
                 try
                 {
                     //调用方法
-                    var collection = new Dictionary<string, string>();
-                    if (arr.Length > 1) collection = ParseDictionary(arr[1]);
-                    var headers = request.HeaderValues;
-                    if (call.Authorized)
-                    {
-                        if (headers.ContainsKey("AuthParameter"))
-                        {
-                            collection[call.AuthParameter] = headers["AuthParameter"];
-                        }
-                        else
-                        {
-                            response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_UNAUTHORIZED;
-                            var error = new HttpServiceException { Message = "HTTP_UNAUTHORIZED" };
-                            SendResponse(response, error);
-                            return;
-                        }
-                    }
+                    var collection = new JObject();
+                    if (arr.Length > 1) collection = ParseCollection(arr[1]);
 
                     if (call.HttpMethod == HttpMethod.POST)
                     {
@@ -114,7 +108,7 @@ namespace MySoft.IoC.Http
                             //处理POST的数据
                             foreach (var kvp in jobject)
                             {
-                                collection[kvp.Key] = kvp.Value.ToString(Newtonsoft.Json.Formatting.None);
+                                collection[kvp.Key] = kvp.Value;
                             }
                         }
                     }
@@ -163,13 +157,13 @@ namespace MySoft.IoC.Http
             }
         }
 
-        private Dictionary<string, string> ParseDictionary(string paramString)
+        private JObject ParseCollection(string paramString)
         {
             if (!string.IsNullOrEmpty(paramString))
             {
                 var arr = paramString.Split('&');
 
-                var values = new Dictionary<string, string>(arr.Length);
+                var values = new JObject();
                 foreach (var str in arr)
                 {
                     var arr2 = str.Split('=');

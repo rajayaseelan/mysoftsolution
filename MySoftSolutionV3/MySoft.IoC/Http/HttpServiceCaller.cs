@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Reflection;
 using MySoft.RESTful;
 using MySoft.Net.HTTP;
 using System.Collections.Specialized;
+using MySoft.IoC.Messages;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace MySoft.IoC.Http
 {
@@ -15,7 +17,7 @@ namespace MySoft.IoC.Http
     public class HttpServiceCaller
     {
         private IServiceContainer container;
-        private IDictionary<string, HttpCallerInfo> callers;
+        private Dictionary<string, HttpCallerInfo> callers;
         private int port;
 
         /// <summary>
@@ -33,55 +35,26 @@ namespace MySoft.IoC.Http
             //初始化字典
             foreach (var serviceType in container.GetInterfaces<ServiceContractAttribute>())
             {
-                var serviceAttr = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
-                var serviceName = serviceAttr.Name ?? serviceType.FullName;
-
-                object instance = null;
-                try { instance = container.Resolve(serviceType); }
-                catch { }
-                if (instance == null) continue;
-
                 //添加方法
                 foreach (var methodInfo in CoreHelper.GetMethodsFromType(serviceType))
                 {
-                    bool authorized = true;
-                    string authParameter = null;
-                    var description = serviceAttr.Description;
-                    var methodAttr = CoreHelper.GetMemberAttribute<OperationContractAttribute>(methodInfo);
-
-                    if (methodAttr != null && methodAttr.HttpGet)
+                    var httpInvoke = CoreHelper.GetMemberAttribute<HttpInvokeAttribute>(methodInfo);
+                    if (httpInvoke != null)
                     {
-                        string methodName = methodAttr.Name ?? methodInfo.Name;
-                        string fullName = string.Format("{0}.{1}", serviceName, methodName);
-                        if (!string.IsNullOrEmpty(methodAttr.Description))
-                        {
-                            if (string.IsNullOrEmpty(description))
-                                description = methodAttr.Description;
-                            else
-                                description += " - " + methodAttr.Description;
-                        }
-
-                        authorized = methodAttr.Authorized;
-                        authParameter = methodAttr.AuthParameter;
-
                         //创建一个新的Caller
-                        CreateNewCaller(serviceType, methodInfo, instance, fullName, description, authorized, authParameter);
+                        CreateNewCaller(serviceType, methodInfo, httpInvoke.Name, httpInvoke.Description);
                     }
                 }
             }
         }
 
-        private void CreateNewCaller(Type serviceType, MethodInfo methodInfo, object instance,
-            string fullName, string description, bool authorized, string authParameter)
+        private void CreateNewCaller(Type serviceType, System.Reflection.MethodInfo methodInfo, string fullName, string description)
         {
             //将方法添加到字典
             var callerInfo = new HttpCallerInfo
             {
-                ServiceName = string.Format("【{0}】\r\n{1}", serviceType.FullName, methodInfo.ToString()),
+                ServiceName = serviceType.FullName,
                 Method = methodInfo,
-                Instance = instance,
-                Authorized = authorized,
-                AuthParameter = authParameter,
                 Description = description,
                 HttpMethod = HttpMethod.GET //默认为GET方式
             };
@@ -113,10 +86,16 @@ namespace MySoft.IoC.Http
         /// 获取Http方法
         /// </summary>
         /// <returns></returns>
-        public string GetDocument()
+        public string GetDocument(string name)
         {
-            var doc = new HttpDocument(callers, port);
-            return doc.MakeDocument();
+            var dicCaller = new Dictionary<string, HttpCallerInfo>();
+            if (!string.IsNullOrEmpty(name) && callers.ContainsKey(name))
+                dicCaller[name] = callers[name];
+            else
+                dicCaller = callers;
+
+            var doc = new HttpDocument(dicCaller, port);
+            return doc.MakeDocument(name);
         }
 
         /// <summary>
@@ -140,28 +119,27 @@ namespace MySoft.IoC.Http
         /// <param name="name"></param>
         /// <param name="collection"></param>
         /// <returns></returns>
-        public string CallMethod(string name, IDictionary<string, string> collection)
+        public string CallMethod(string name, JObject collection)
         {
-            var caller = callers[name];
-            var parameters = new object[0];
-            if (caller.Method.GetParameters().Length > 0)
+            if (callers.ContainsKey(name))
             {
-                var jobject = ParameterHelper.Resolve(collection);
-                parameters = ParameterHelper.Convert(jobject, caller.Method.GetParameters());
+                var caller = callers[name];
+                var service = container.Resolve<IService>("Service_" + caller.ServiceName);
+                var invoke = new InvokeCaller("HttpCaller", service);
+                var message = new InvokeMessage
+                {
+                    ServiceName = caller.ServiceName,
+                    MethodName = caller.Method.ToString(),
+                    Parameters = collection.ToString()
+                };
+
+                //处理数据返回InvokeData
+                var invokeData = invoke.CallMethod(message) as InvokeData;
+                if (invokeData != null)
+                    return invokeData.Value;
             }
 
-            var retVal = DynamicCalls.GetMethodInvoker(caller.Method).Invoke(caller.Instance, parameters);
-
-            //如果返回类型为字符串，直接返回值
-            if (caller.Method.ReturnType == typeof(string))
-            {
-                return Convert.ToString(retVal);
-            }
-            else
-            {
-                if (retVal == null) return "{}";
-                return SerializationManager.SerializeJson(retVal, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
-            }
+            return null;
         }
     }
 }

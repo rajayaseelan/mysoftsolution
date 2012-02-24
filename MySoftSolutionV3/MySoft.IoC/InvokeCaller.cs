@@ -9,24 +9,20 @@ namespace MySoft.IoC
     /// </summary>
     public class InvokeCaller
     {
-        private CastleFactoryConfiguration config;
-        private IServiceContainer container;
         private IService service;
+        private string appName;
         private string hostName;
         private string ipAddress;
 
         /// <summary>
         /// 实例化InvokeCaller
         /// </summary>
-        /// <param name="config"></param>
-        /// <param name="container"></param>
+        /// <param name="appName"></param>
         /// <param name="service"></param>
-        public InvokeCaller(CastleFactoryConfiguration config, IServiceContainer container, IService service)
+        public InvokeCaller(string appName, IService service)
         {
-            this.config = config;
-            this.container = container;
             this.service = service;
-
+            this.appName = appName;
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
         }
@@ -42,7 +38,7 @@ namespace MySoft.IoC
 
             RequestMessage reqMsg = new RequestMessage();
             reqMsg.InvokeMethod = true;
-            reqMsg.AppName = config.AppName;                                //应用名称
+            reqMsg.AppName = appName;                                       //应用名称
             reqMsg.HostName = hostName;                                     //客户端名称
             reqMsg.IPAddress = ipAddress;                                   //客户端IP地址
             reqMsg.ServiceName = message.ServiceName;                       //服务名称

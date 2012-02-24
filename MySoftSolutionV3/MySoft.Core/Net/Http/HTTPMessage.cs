@@ -58,11 +58,6 @@ namespace MySoft.Net.HTTP
         private string _version;
         private Dictionary<string, string> _dictionary;
 
-        public IDictionary<string, string> HeaderValues
-        {
-            get { return _dictionary; }
-        }
-
         public Dictionary<string, string>.KeyCollection Headers
         {
             get { return _dictionary.Keys; }

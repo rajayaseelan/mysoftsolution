@@ -131,34 +131,37 @@ namespace MySoft.PlatformService.Client
             //}
 
 
-            //ManualResetEvent are = new ManualResetEvent(false);
-            //for (int i = 0; i < 1; i++)
-            //{
-            //    Thread thread = new Thread(DoWork1);
-            //    thread.Start(are);
-            //}
+            ManualResetEvent are = new ManualResetEvent(false);
+            for (int i = 0; i < 1; i++)
+            {
+                Thread thread = new Thread(DoWork1);
+                thread.Start(are);
+            }
 
-            //are.Set();
+            are.Set();
 
             //var node = CastleFactory.Create().GetDefaultNode();
             //var clients = CastleFactory.Create().GetChannel<IStatusService>(node).GetAppClients();
 
             //DoWork1();
 
-            var request = WebRequest.Create("http://127.0.0.1:8012/user.getuser3?id=1");
-            //request.Headers.Set("uid", "my181");
-            //request.Headers.Set("pwd", "19810108");
+            //var request = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:8012/user.getuser1");
+            //request.Method = "POST";
+            //request.ContentType = "application/x-www-form-urlencoded";
 
-            request.Headers.Set(HttpRequestHeader.Cookie, "my181|19810108");
+            //using (var stream = request.GetRequestStream())
+            //{
+            //    var user = MySoft.SerializationManager.SerializeJson(new { user = new { Name = "123" } });
+            //    stream.Write(Encoding.UTF8.GetBytes(user), 0, Encoding.UTF8.GetByteCount(user));
+            //    stream.Flush();
+            //}
 
-
-            var response = request.GetResponse();
-
-            using (var sr = new StreamReader(response.GetResponseStream()))
-            {
-                var str = sr.ReadToEnd();
-                Console.WriteLine(str);
-            }
+            //var response = (HttpWebResponse)request.GetResponse();
+            //using (var sr = new StreamReader(response.GetResponseStream()))
+            //{
+            //    var str = sr.ReadToEnd();
+            //    Console.WriteLine(str);
+            //}
 
             Console.ReadKey();
         }

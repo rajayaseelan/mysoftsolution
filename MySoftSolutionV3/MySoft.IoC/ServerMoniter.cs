@@ -121,28 +121,22 @@ namespace MySoft.IoC
                 services = new List<ServiceInfo>();
                 foreach (var type in types)
                 {
-                    string description1 = null;
                     var contract1 = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(type);
-                    if (contract1 != null) description1 = contract1.Description;
                     var s = new ServiceInfo
                     {
                         Assembly = type.Assembly.FullName,
                         Name = type.Name,
-                        FullName = type.FullName,
-                        Description = description1
+                        FullName = type.FullName
                     };
 
                     //读取方法
                     foreach (var method in CoreHelper.GetMethodsFromType(type))
                     {
-                        string description2 = null;
                         var contract2 = CoreHelper.GetMemberAttribute<OperationContractAttribute>(type);
-                        if (contract2 != null) description2 = contract2.Description;
                         var m = new MethodInfo
                         {
                             Name = method.Name,
-                            FullName = method.ToString(),
-                            Description = description2
+                            FullName = method.ToString()
                         };
 
                         //读取参数

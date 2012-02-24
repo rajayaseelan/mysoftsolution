@@ -162,7 +162,7 @@ namespace MySoft.RESTful.SDK
                 #endregion
 
                 //判断是否为POST方式
-                if (parameter.DataObject != null && parameter.HttpMethod != HttpMethod.GET)
+                if (parameter.DataObject != null && parameter.HttpMethod == HttpMethod.POST)
                 {
                     request.ContentType = "application/x-www-form-urlencoded";
                     //request.ContentType = "application/json";

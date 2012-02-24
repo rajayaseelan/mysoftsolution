@@ -57,6 +57,12 @@ namespace MySoft.IoC
         /// <summary>
         /// Resolve local service
         /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns></returns>
+        TService Resolve<TService>(string key);
+        /// <summary>
+        /// Resolve local service
+        /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
         object Resolve(Type type);
