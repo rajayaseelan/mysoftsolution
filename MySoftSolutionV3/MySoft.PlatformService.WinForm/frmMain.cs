@@ -567,7 +567,7 @@ namespace MySoft.PlatformService.WinForm
             tabPage4.Controls.Add(webBrowser2);
 
             (sender as System.Windows.Forms.Timer).Start();
-            webBrowser2.Navigate(uri);
+            webBrowser2.Url = uri;
         }
 
         /// <summary>

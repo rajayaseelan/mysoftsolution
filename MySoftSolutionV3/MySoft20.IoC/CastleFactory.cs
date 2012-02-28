@@ -52,7 +52,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <typeparam name="IServiceInterfaceType"></typeparam>
         /// <returns></returns>
-        public IServiceInterfaceType GetService<IServiceInterfaceType>()
+        public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
             var serviceType = typeof(IServiceInterfaceType);
             var serviceKey = string.Format("CastleFactory_2.0_{0}", serviceType.FullName);

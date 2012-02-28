@@ -5,10 +5,11 @@ using System.Data;
 using System.Threading;
 using MySoft.IoC;
 using System.Collections.Specialized;
+using Castle.Core;
 
 namespace MySoft.PlatformService.UserService
 {
-    public class UserService : BaseContainer, IUserService
+    public class UserService : BaseContainer, IUserService, IInitializable
     {
         private DateTime startTime;
         public UserService()
@@ -83,5 +84,17 @@ namespace MySoft.PlatformService.UserService
         {
             return null;
         }
+
+        #region IInitializable 成员
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public void Initialize()
+        {
+            //throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

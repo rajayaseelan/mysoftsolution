@@ -12,7 +12,7 @@ namespace MySoft20.IoC.Client
         {
             int length = 10;
             UserInfo user;
-            var user1 = CastleFactory.Create().GetService<IUserService>().GetUserInfo("maoyong", ref length, out user);
+            var user1 = CastleFactory.Create().GetChannel<IUserService>().GetUserInfo("maoyong", ref length, out user);
             Console.WriteLine(user1.Description);
             Console.ReadLine();
         }
