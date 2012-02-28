@@ -135,20 +135,22 @@ namespace MySoft.IoC.HttpServer
         private bool GetTypeClass(Type type)
         {
             if (type.IsGenericType)
-                return GetTypeClass(type.GetGenericArguments()[0]);
+            {
+                foreach (var t in type.GetGenericArguments())
+                {
+                    var isClass = GetTypeClass(t);
+                    if (isClass) return isClass;
+                }
+
+                return false;
+            }
             else
                 return (type.IsClass && type != typeof(string)) || type.IsEnum;
         }
 
         private string GetTypeName(Type type)
         {
-            string typeName = type.Name;
-            if (type.IsGenericType) type = type.GetGenericArguments()[0];
-            if (typeName.Contains("`1"))
-            {
-                typeName = typeName.Replace("`1", "&lt;" + type.Name + "&gt;");
-            }
-            return typeName;
+            return CoreHelper.GetTypeName(type).Replace("<", "&lt;").Replace(">", "&gt;");
         }
 
         private string GetTypeDetail(string name, Type type, int index)

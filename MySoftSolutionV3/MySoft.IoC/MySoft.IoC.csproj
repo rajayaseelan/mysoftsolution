@@ -75,6 +75,7 @@
     <Compile Include="Aspect\AspectSwitcherAttribute.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
+    <Compile Include="BaseContainer.cs" />
     <Compile Include="Callback\MessageCenter.cs" />
     <Compile Include="Callback\MessageListener.cs" />
     <Compile Include="HttpServer\HttpCallerInfo.cs" />

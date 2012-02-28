@@ -145,7 +145,7 @@ namespace MySoft.IoC
                             var p = new ParameterInfo
                             {
                                 Name = parameter.Name,
-                                TypeName = GetTypeName(parameter.ParameterType),
+                                TypeName = CoreHelper.GetTypeName(parameter.ParameterType),
                                 TypeFullName = parameter.ParameterType.FullName,
                                 IsByRef = parameter.ParameterType.IsByRef,
                                 IsOut = parameter.IsOut,
@@ -189,7 +189,7 @@ namespace MySoft.IoC
                     var pi = new ParameterInfo
                     {
                         Name = p.Name,
-                        TypeName = GetTypeName(p.PropertyType),
+                        TypeName = CoreHelper.GetTypeName(p.PropertyType),
                         TypeFullName = p.PropertyType.FullName,
                         IsByRef = p.PropertyType.IsByRef,
                         IsOut = false,
@@ -240,17 +240,6 @@ namespace MySoft.IoC
                 return GetTypeClass(type.GetGenericArguments()[0]);
             else
                 return type.IsClass && type != typeof(string);
-        }
-
-        private string GetTypeName(Type type)
-        {
-            string typeName = type.Name;
-            if (type.IsGenericType) type = type.GetGenericArguments()[0];
-            if (typeName.Contains("`1"))
-            {
-                typeName = typeName.Replace("`1", "<" + type.Name + ">");
-            }
-            return typeName;
         }
 
         #endregion

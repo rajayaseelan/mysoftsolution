@@ -402,7 +402,7 @@ namespace MySoft.IoC
             if (config.Type == CastleFactoryType.Local || config.Type == CastleFactoryType.LocalRemote)
             {
                 string serviceKey = string.Format("LocalService_{0}", serviceType.FullName);
-                var service = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
+                var service = CacheHelper.Get(serviceKey);
                 if (service == null)
                 {
                     //本地服务
@@ -410,10 +410,17 @@ namespace MySoft.IoC
                     {
                         lock (lockObject)
                         {
-                            var aspect = container[serviceType];
+                            service = container[serviceType];
+                            if (service is BaseContainer)
+                            {
+                                (service as BaseContainer).Container = container;
+                            }
+
+                            //释放资源
+                            container.Release(service);
 
                             //返回拦截服务
-                            service = AspectManager.GetService<IServiceInterfaceType>(aspect, new LocalInterceptor(serviceType));
+                            service = AspectManager.GetService<IServiceInterfaceType>(service, new LocalInterceptor(serviceType));
                             if (service != null)
                             {
                                 CacheHelper.Permanent(serviceKey, service);
@@ -422,7 +429,9 @@ namespace MySoft.IoC
                     }
                 }
 
-                if (service != null) return service;
+                //如果服务不为null，则转换返回
+                if (service != null)
+                    return (IServiceInterfaceType)service;
 
                 if (config.Type == CastleFactoryType.Local)
                     throw new WarningException(string.Format("Local not find service ({0}).", serviceType.FullName));

@@ -8,7 +8,7 @@ using System.Collections.Specialized;
 
 namespace MySoft.PlatformService.UserService
 {
-    public class UserService : IUserService
+    public class UserService : BaseContainer, IUserService
     {
         private DateTime startTime;
         public UserService()
@@ -77,6 +77,11 @@ namespace MySoft.PlatformService.UserService
         public UserInfo GetUser(int id, string name, IList<string> list, int[] values)
         {
             return new UserInfo { Name = id.ToString(), Description = id.ToString() + "你好！" + name };
+        }
+
+        public IDictionary<IList<UserInfo>, Sex> GetDict()
+        {
+            return null;
         }
     }
 }

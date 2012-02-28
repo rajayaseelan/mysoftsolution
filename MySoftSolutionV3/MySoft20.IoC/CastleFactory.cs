@@ -143,7 +143,7 @@ namespace MySoft.IoC
                 {
                     if (p.IsOut || p.ParameterType.IsByRef)
                     {
-                        dictIndex[p.Name] = new InvokeResult { Index = index, ResultType = GetPrimitiveType(p.ParameterType) };
+                        dictIndex[p.Name] = new InvokeResult { Index = index, ResultType = GetElementType(p.ParameterType) };
                         if (p.IsOut)
                         {
                             index++;
@@ -162,7 +162,7 @@ namespace MySoft.IoC
 
                 var value = DynamicCalls.GetMethodInvoker(invokeMethod).Invoke(instance, new object[] { invoke });
                 var json = DynamicCalls.GetPropertyGetter(valueProperty).Invoke(value);
-                var retValue = DynamicCalls.GetMethodInvoker(deserializeMethod).Invoke(null, new object[] { GetPrimitiveType(method.ReturnType), json, null });
+                var retValue = DynamicCalls.GetMethodInvoker(deserializeMethod).Invoke(null, new object[] { GetElementType(method.ReturnType), json, null });
 
                 if (dictIndex.Count > 0)
                 {
@@ -197,7 +197,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        private static Type GetPrimitiveType(Type type)
+        private static Type GetElementType(Type type)
         {
             if (type.IsByRef) type = type.GetElementType();
             return type;

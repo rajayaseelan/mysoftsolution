@@ -61,6 +61,9 @@ namespace MySoft.PlatformService.UserService
 
         [HttpInvoke(Name = "user.getuser", Description = "获取用户", Authorized = true, AuthParameter = "name")]
         UserInfo GetUser(int id, string name, IList<string> list, int[] values);
+
+        [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
+        IDictionary<IList<UserInfo>, Sex> GetDict();
     }
 
     /// <summary>

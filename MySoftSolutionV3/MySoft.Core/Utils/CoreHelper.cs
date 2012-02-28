@@ -778,6 +778,32 @@ namespace MySoft
         }
 
         /// <summary>
+        /// 获取类型的名称
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetTypeName(Type type)
+        {
+            string typeName = type.Name;
+            if (type.IsGenericType)
+            {
+                var types = type.GetGenericArguments();
+                var list = new List<string>();
+                foreach (var t in types)
+                {
+                    list.Add(GetTypeName(t));
+                }
+
+                if (typeName.Contains("`" + types.Length))
+                {
+                    typeName = typeName.Replace("`" + +types.Length, "<" + string.Join(", ", list.ToArray()) + ">");
+                }
+            }
+
+            return typeName;
+        }
+
+        /// <summary>
         /// 获取无类型
         /// </summary>
         /// <param name="type"></param>
@@ -792,7 +818,17 @@ namespace MySoft
                 if (typeof(IList<>).IsAssignableFrom(t))
                 {
                     var types = type.GetGenericArguments();
-                    type = types[0];
+                    type = GetPrimitiveType(types[0]);
+                }
+                else if (typeof(IDictionary<,>).IsAssignableFrom(t))
+                {
+                    var types = type.GetGenericArguments();
+                    type = GetPrimitiveType(types[0]);
+                }
+                else if (typeof(ICollection<>).IsAssignableFrom(t))
+                {
+                    var types = type.GetGenericArguments();
+                    type = GetPrimitiveType(types[0]);
                 }
             }
 

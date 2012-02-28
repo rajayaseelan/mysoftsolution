@@ -562,8 +562,9 @@ namespace MySoft.PlatformService.WinForm
             tabPage4.Controls.Clear();
             webBrowser2 = new WebBrowser();
             webBrowser2.Dock = DockStyle.Fill;
-            tabPage4.Controls.Add(webBrowser2);
             webBrowser2.Url = uri;
+
+            tabPage4.Controls.Add(webBrowser2);
         }
 
         /// <summary>

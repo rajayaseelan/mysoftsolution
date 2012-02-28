@@ -55,7 +55,7 @@ namespace MySoft.RESTful.Utils
                     else
                     {
                         //没有的参数使用默认值
-                        var jsonValue = CoreHelper.GetTypeDefaultValue(GetPrimitiveType(info.ParameterType));
+                        var jsonValue = CoreHelper.GetTypeDefaultValue(GetElementType(info.ParameterType));
                         args.Add(jsonValue);
                     }
                 }
@@ -72,9 +72,7 @@ namespace MySoft.RESTful.Utils
             }
         }
 
-
-
-        private static Type GetPrimitiveType(Type type)
+        private static Type GetElementType(Type type)
         {
             if (type.IsByRef) type = type.GetElementType();
             return type;

@@ -284,13 +284,7 @@ namespace MySoft.RESTful.Business
 
         private string GetTypeName(Type type)
         {
-            string typeName = type.Name;
-            if (type.IsGenericType) type = type.GetGenericArguments()[0];
-            if (typeName.Contains("`1"))
-            {
-                typeName = typeName.Replace("`1", "&lt;" + type.Name + "&gt;");
-            }
-            return typeName;
+            return CoreHelper.GetTypeName(type).Replace("<", "&lt;").Replace(">", "&gt;");
         }
 
         private string GetTypeDetail(string name, Type type, int index)

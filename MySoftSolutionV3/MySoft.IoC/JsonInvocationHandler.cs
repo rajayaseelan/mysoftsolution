@@ -55,14 +55,14 @@ namespace MySoft.IoC
             {
                 if (hashtable.ContainsKey(parameter.Name))
                 {
-                    var type = GetPrimitiveType(parameter.ParameterType);
+                    var type = GetElementType(parameter.ParameterType);
                     var obj = SerializationManager.DeserializeJson(type, hashtable[parameter.Name].ToString());
                     resMsg.Parameters[parameter.Name] = obj;
                 }
             }
 
             //处理返回值
-            resMsg.Value = SerializationManager.DeserializeJson(GetPrimitiveType(resMsg.ReturnType), value.Value);
+            resMsg.Value = SerializationManager.DeserializeJson(GetElementType(resMsg.ReturnType), value.Value);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        private static Type GetPrimitiveType(Type type)
+        private static Type GetElementType(Type type)
         {
             if (type.IsByRef) type = type.GetElementType();
             return type;

@@ -161,7 +161,7 @@ namespace MySoft.IoC.HttpServer
                     return invokeData.Value;
             }
 
-            return null;
+            return "{}";
         }
     }
 }

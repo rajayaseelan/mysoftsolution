@@ -8,7 +8,7 @@ namespace MySoft.IoC
     /// <summary>
     /// The service container interface.
     /// </summary>
-    public interface IServiceContainer : IService, IDisposable, ILog, ILogable, IErrorLogable
+    public interface IServiceContainer : IService, IContainer, IDisposable, ILog, ILogable, IErrorLogable
     {
         /// <summary>
         /// Gets the kernel.
@@ -48,18 +48,6 @@ namespace MySoft.IoC
         /// </summary>
         /// <value></value>
         object this[Type serviceType] { get; }
-        /// <summary>
-        /// Resolve local service
-        /// </summary>
-        /// <typeparam name="TService"></typeparam>
-        /// <returns></returns>
-        TService Resolve<TService>();
-        /// <summary>
-        /// Resolve local service
-        /// </summary>
-        /// <typeparam name="TService"></typeparam>
-        /// <returns></returns>
-        TService Resolve<TService>(string key);
         /// <summary>
         /// Resolve local service
         /// </summary>

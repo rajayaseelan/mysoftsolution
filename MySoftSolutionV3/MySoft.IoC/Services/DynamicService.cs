@@ -77,6 +77,10 @@ namespace MySoft.IoC.Services
                 {
                     //解析服务
                     service = container[classType];
+                    if (service is BaseContainer)
+                    {
+                        (service as BaseContainer).Container = container;
+                    }
 
                     //释放资源
                     container.Release(service);
@@ -138,6 +142,10 @@ namespace MySoft.IoC.Services
                         else
                             json1 = SerializationManager.SerializeJson(returnValue);
                     }
+                    else
+                    {
+                        json1 = "{}";
+                    }
 
                     if (outValues.Count > 0)
                         json2 = SerializationManager.SerializeJson(outValues);
@@ -190,7 +198,7 @@ namespace MySoft.IoC.Services
             }
         }
 
-        private Type GetPrimitiveType(Type type)
+        private Type GetElementType(Type type)
         {
             if (type.IsByRef) type = type.GetElementType();
             return type;
