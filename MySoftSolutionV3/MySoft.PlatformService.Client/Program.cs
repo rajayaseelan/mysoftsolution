@@ -146,11 +146,6 @@ namespace MySoft.PlatformService.Client
 
             //DoWork1();
 
-            var nvs = new NameValueCollection();
-            nvs["name"] = "123";
-            nvs["age"] = "111";
-            var s = nvs.ToString();
-
             var request = (HttpWebRequest)WebRequest.Create("http://webapi.fund123.cn/user.getuser1");
             request.Method = "POST";
             //request.ContentType = "application/x-www-form-urlencoded";

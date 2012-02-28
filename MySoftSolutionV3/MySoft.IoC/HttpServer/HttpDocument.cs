@@ -79,7 +79,7 @@ namespace MySoft.IoC.HttpServer
 
             var url = string.Format("<a rel=\"operation\" target=\"_blank\" title=\"{0}\" href=\"{0}\">{0}</a> 处的服务", uri);
 
-            var serviceInfo = string.Format("【{0}】\r\n{1}", kv.Value.ServiceName, kv.Value.Method.ToString());
+            var serviceInfo = string.Format("【{0}】\r\n【{1}】", kv.Value.ServiceName, kv.Value.Method.ToString());
             template = template.Replace("${method}", string.Format("<p title=\"分布式服务接口:\r\n{2}\"><b><a href='/help/{0}'>{0}</a></b><br/>{1}</p>",
                 kv.Key, kv.Value.Description, serviceInfo));
 
