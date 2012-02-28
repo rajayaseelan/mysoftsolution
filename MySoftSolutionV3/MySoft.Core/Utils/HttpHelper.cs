@@ -101,6 +101,18 @@ namespace MySoft
         /// <returns></returns>
         public string Reader(string method, string parameter)
         {
+            return Reader(method, parameter, -1);
+        }
+
+        /// <summary>
+        /// 读取指定url的数据，通过parameter传递参数
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="parameter"></param>
+        /// <param name="cacheTime"></param>
+        /// <returns></returns>
+        public string Reader(string method, string parameter, int cacheTime)
+        {
             string query = string.Empty;
             if (string.IsNullOrEmpty(parameter))
                 query = string.Format("/{0}", method);
@@ -108,7 +120,7 @@ namespace MySoft
                 query = string.Format("/{0}?{1}", method, parameter);
 
             var url = uri.TrimEnd('/') + query;
-            return Reader(url);
+            return Reader(url, cacheTime);
         }
 
         /// <summary>

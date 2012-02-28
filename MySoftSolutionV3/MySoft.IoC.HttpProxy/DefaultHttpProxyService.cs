@@ -45,7 +45,8 @@ namespace MySoft.IoC.HttpProxy
         /// </summary>
         private void ReaderService()
         {
-            var jsonString = helper.Reader("api", null);
+            //数据缓存1分钟
+            var jsonString = helper.Reader("api", string.Empty, 60);
 
             //将数据反系列化成对象
             this.services = SerializationManager.DeserializeJson<IList<ServiceItem>>(jsonString);
@@ -70,7 +71,8 @@ namespace MySoft.IoC.HttpProxy
 
             try
             {
-                var jsonString = helper.Reader(name, query.ToString());
+                //数据缓存5秒
+                var jsonString = helper.Reader(name, query.ToString(), 5);
 
                 //如果无值，则置为null
                 if (string.IsNullOrEmpty(jsonString)) jsonString = null;
@@ -191,7 +193,9 @@ namespace MySoft.IoC.HttpProxy
             var response = WebOperationContext.Current.OutgoingResponse;
             var method = "help";
             if (!string.IsNullOrEmpty(kind)) method += ("/" + kind);
-            string html = helper.Reader(method, null);
+
+            //文档缓存1分钟
+            string html = helper.Reader(method, string.Empty, 60);
 
             //转换成utf8返回
             response.ContentType = "text/html;charset=utf-8";

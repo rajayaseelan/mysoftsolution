@@ -10,6 +10,7 @@ using MySoft.Logger;
 using MySoft.Cache;
 using System.Net;
 using System.IO;
+using System.Collections.Specialized;
 
 namespace MySoft.PlatformService.Client
 {
@@ -144,6 +145,11 @@ namespace MySoft.PlatformService.Client
             //var clients = CastleFactory.Create().GetChannel<IStatusService>(node).GetAppClients();
 
             //DoWork1();
+
+            var nvs = new NameValueCollection();
+            nvs["name"] = "123";
+            nvs["age"] = "111";
+            var s = nvs.ToString();
 
             var request = (HttpWebRequest)WebRequest.Create("http://webapi.fund123.cn/user.getuser1");
             request.Method = "POST";
