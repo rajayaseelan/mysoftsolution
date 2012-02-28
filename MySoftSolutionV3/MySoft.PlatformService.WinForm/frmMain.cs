@@ -101,7 +101,7 @@ namespace MySoft.PlatformService.WinForm
                                 url = url + "&timer=" + timer;
                             else
                                 url = url + "?timer=" + timer;
-                            webBrowser2.Url = new Uri(url);
+                            webBrowser2.Navigate(url);
                         }
                     }
 
@@ -539,15 +539,15 @@ namespace MySoft.PlatformService.WinForm
             webBrowser2.Dock = DockStyle.Fill;
             tabPage4.Controls.Add(webBrowser2);
 
-            webBrowser1.Url = new Uri("about:blank");
+            webBrowser1.Navigate("about:blank");
             //webBrowser1.AllowNavigation = false;
             webBrowser1.IsWebBrowserContextMenuEnabled = false;
 
             var url = ConfigurationManager.AppSettings["ServerMonitorUrl"];
             if (!string.IsNullOrEmpty(url))
-                webBrowser2.Url = new Uri(url);
+                webBrowser2.Navigate(url);
             else
-                webBrowser2.Url = new Uri("about:blank");
+                webBrowser2.Navigate("about:blank");
 
             //webBrowser2.AllowNavigation = false;
             //webBrowser2.IsWebBrowserContextMenuEnabled = false;
@@ -555,6 +555,8 @@ namespace MySoft.PlatformService.WinForm
 
         void timer_Tick(object sender, EventArgs e)
         {
+            (sender as System.Windows.Forms.Timer).Stop();
+
             var uri = webBrowser2.Url;
             webBrowser2.Dispose();
             webBrowser2 = null;
@@ -562,9 +564,10 @@ namespace MySoft.PlatformService.WinForm
             tabPage4.Controls.Clear();
             webBrowser2 = new WebBrowser();
             webBrowser2.Dock = DockStyle.Fill;
-            webBrowser2.Url = uri;
-
             tabPage4.Controls.Add(webBrowser2);
+
+            (sender as System.Windows.Forms.Timer).Start();
+            webBrowser2.Navigate(uri);
         }
 
         /// <summary>
