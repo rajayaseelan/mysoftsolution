@@ -93,9 +93,8 @@ namespace MySoft.RESTful
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
-
-            NameValueCollection values = request.UriTemplateMatch.QueryParameters;
-            var callback = values["callback"];
+            var query = request.UriTemplateMatch.QueryParameters;
+            var callback = query["callback"];
             string result = string.Empty;
 
             if (string.IsNullOrEmpty(callback))
@@ -113,8 +112,7 @@ namespace MySoft.RESTful
                 result = string.Format("{0}({1});", callback, result ?? "{}");
             }
 
-            MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(result));
-            return stream;
+            return new MemoryStream(Encoding.UTF8.GetBytes(result));
         }
 
         /// <summary>
@@ -167,8 +165,7 @@ namespace MySoft.RESTful
             var html = Context.MakeDocument(request.UriTemplateMatch.RequestUri, kind, method);
             var response = WebOperationContext.Current.OutgoingResponse;
             response.ContentType = "text/html;charset=utf-8";
-            MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(html));
-            return stream;
+            return new MemoryStream(Encoding.UTF8.GetBytes(html));
         }
 
         #endregion
@@ -178,9 +175,10 @@ namespace MySoft.RESTful
             string data = null;
             if (stream != null)
             {
-                StreamReader sr = new StreamReader(stream);
-                data = sr.ReadToEnd();
-                sr.Close();
+                using (var sr = new StreamReader(stream))
+                {
+                    data = sr.ReadToEnd();
+                }
             }
 
             string result = GetResponseString(format, kind, method, data);
@@ -230,73 +228,64 @@ namespace MySoft.RESTful
 
             //从缓存读取
             var cacheKey = string.Format("{0}_{1}_{2}_{3}", format, kind, method, parameters);
-            var responseString = CacheHelper.Get<string>(cacheKey);
-            if (responseString == null)
+            object result = null;
+
+            //进行认证处理
+            RESTfulResult authResult = new RESTfulResult { Code = (int)RESTfulCode.OK };
+
+            //进行认证处理
+            if (Context != null && Context.IsAuthorized(kind, method))
             {
-                object result = null;
-
-                //进行认证处理
-                RESTfulResult authResult = new RESTfulResult { Code = (int)RESTfulCode.OK };
-
-                //进行认证处理
-                if (Context != null && Context.IsAuthorized(kind, method))
-                {
-                    authResult = AuthManager.Authorize();
-                }
-
-                //认证成功
-                if (authResult.Code == (int)RESTfulCode.OK)
-                {
-                    try
-                    {
-                        Type retType;
-                        result = Context.Invoke(kind, method, parameters, out retType);
-
-                        //如果值为null，以对象方式返回
-                        if (result == null || retType == typeof(string))
-                        {
-                            return Convert.ToString(result);
-                        }
-
-                        //如果是值类型，则以对象方式返回
-                        if (retType.IsValueType)
-                        {
-                            result = new RESTfulResponse { Value = result };
-                        }
-
-                        //设置返回成功
-                        response.StatusCode = HttpStatusCode.OK;
-                    }
-                    catch (Exception e)
-                    {
-                        //记录错误日志
-                        result = GetResultWriteErrorLog(parameters, e);
-                    }
-                    finally
-                    {
-                        //清理上下文资源
-                        AuthenticationContext.Current = null;
-                    }
-                }
-                else
-                {
-                    result = authResult;
-                }
-
-                ISerializer serializer = SerializerFactory.Create(format);
-                if (result is RESTfulResult)
-                {
-                    var ret = result as RESTfulResult;
-                    ret.Code = Convert.ToInt32(string.Format("{0}{1}", (int)response.StatusCode, ret.Code.ToString("00")));
-                }
-
-                responseString = serializer.Serialize(result, format == ParameterFormat.Jsonp);
-
-                //缓存5秒钟
-                CacheHelper.Insert(cacheKey, responseString, 5);
+                authResult = AuthManager.Authorize();
             }
 
-            return responseString;
+            //认证成功
+            if (authResult.Code == (int)RESTfulCode.OK)
+            {
+                try
+                {
+                    Type retType;
+                    result = Context.Invoke(kind, method, parameters, out retType);
+
+                    //如果值为null，以对象方式返回
+                    if (result == null || retType == typeof(string))
+                    {
+                        return Convert.ToString(result);
+                    }
+
+                    //如果是值类型，则以对象方式返回
+                    if (retType.IsValueType)
+                    {
+                        result = new RESTfulResponse { Value = result };
+                    }
+
+                    //设置返回成功
+                    response.StatusCode = HttpStatusCode.OK;
+                }
+                catch (Exception e)
+                {
+                    //记录错误日志
+                    result = GetResultWriteErrorLog(parameters, e);
+                }
+                finally
+                {
+                    //清理上下文资源
+                    AuthenticationContext.Current = null;
+                }
+            }
+            else
+            {
+                result = authResult;
+            }
+
+            ISerializer serializer = SerializerFactory.Create(format);
+            if (result is RESTfulResult)
+            {
+                var ret = result as RESTfulResult;
+                ret.Code = Convert.ToInt32(string.Format("{0}{1}", (int)response.StatusCode, ret.Code.ToString("00")));
+            }
+
+            return serializer.Serialize(result, format == ParameterFormat.Jsonp);
         }
 
         /// <summary>

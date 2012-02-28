@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     #region COM interface IFtpFile
     public interface IFtpFile : IFtpItem

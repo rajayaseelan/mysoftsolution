@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MySoft.Net.HTTP;
+using MySoft.Net.Http;
 
-namespace MySoft.IoC.Http
+namespace MySoft.IoC.HttpServer
 {
     /// <summary>
     /// http解析工厂类

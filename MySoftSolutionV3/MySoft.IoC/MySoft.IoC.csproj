@@ -64,7 +64,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -78,24 +77,12 @@
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
     <Compile Include="Callback\MessageCenter.cs" />
     <Compile Include="Callback\MessageListener.cs" />
-    <Compile Include="Http\HttpCallerInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Http\HttpDocument.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Http\HttpRequestHandlerFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Http\HttpServiceCaller.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Http\HttpServiceException.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Http\HttpServiceHandler.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="HttpServer\HttpCallerInfo.cs" />
+    <Compile Include="HttpServer\HttpDocument.cs" />
+    <Compile Include="HttpServer\HttpRequestHandlerFactory.cs" />
+    <Compile Include="HttpServer\HttpServiceCaller.cs" />
+    <Compile Include="HttpServer\HttpServiceException.cs" />
+    <Compile Include="HttpServer\HttpServiceHandler.cs" />
     <Compile Include="InvokeCaller.cs" />
     <Compile Include="JsonInvocationHandler.cs" />
     <Compile Include="Services\LocalInterceptor.cs" />
@@ -209,8 +196,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Http\Template\help.htm" />
-    <EmbeddedResource Include="Http\Template\helpitem.htm" />
+    <EmbeddedResource Include="HttpServer\Template\help.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="HttpServer\Template\helpitem.htm" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

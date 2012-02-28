@@ -1,5 +1,5 @@
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     internal class SessionDisconnected : SessionState
     {

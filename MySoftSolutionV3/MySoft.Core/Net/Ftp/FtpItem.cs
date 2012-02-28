@@ -1,6 +1,6 @@
 //using System.Runtime.InteropServices;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     public interface IFtpItem
     {

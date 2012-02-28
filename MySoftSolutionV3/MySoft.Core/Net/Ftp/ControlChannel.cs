@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     public enum TransferMode
     {

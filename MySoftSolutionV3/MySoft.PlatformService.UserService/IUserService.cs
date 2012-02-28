@@ -59,7 +59,7 @@ namespace MySoft.PlatformService.UserService
         [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         IList<UserInfo> GetUsers();
 
-        [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
+        [HttpInvoke(Name = "user.getuser", Description = "获取用户", Authorized = true, AuthParameter = "name")]
         UserInfo GetUser(int id, string name, IList<string> list, int[] values);
     }
 

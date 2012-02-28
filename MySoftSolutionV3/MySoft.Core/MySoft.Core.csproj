@@ -362,8 +362,6 @@
     <Compile Include="Proxy\DynamicProxy.cs" />
     <Compile Include="Proxy\IProxyInvocationHandler.cs" />
     <Compile Include="Proxy\ProxyFactory.cs" />
-    <Compile Include="Proxy\SecurityManager.cs" />
-    <Compile Include="Proxy\SecurityProxy.cs" />
     <Compile Include="RESTful\Auth\AuthenticationContext.cs" />
     <Compile Include="RESTful\Auth\AuthenticationException.cs" />
     <Compile Include="RESTful\Auth\AuthenticationToken.cs" />
@@ -445,6 +443,7 @@
     <Compile Include="Utils\CoreHelper.cs" />
     <Compile Include="Converter\ConverterFactory.cs" />
     <Compile Include="Converter\IStringConverter.cs" />
+    <Compile Include="Utils\HttpHelper.cs" />
     <Compile Include="Utils\ImageHelper.cs" />
     <Compile Include="Utils\MemoryManager.cs" />
     <Compile Include="Utils\ObjectBuilder.cs" />

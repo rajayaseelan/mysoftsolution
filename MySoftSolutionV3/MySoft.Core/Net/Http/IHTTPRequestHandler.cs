@@ -29,7 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MySoft.Net.HTTP
+namespace MySoft.Net.Http
 {
     /// <summary>
     /// This interface defines the contract between the Server and the

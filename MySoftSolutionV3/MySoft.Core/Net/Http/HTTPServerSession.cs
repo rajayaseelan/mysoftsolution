@@ -31,7 +31,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Text;
 
-namespace MySoft.Net.HTTP
+namespace MySoft.Net.Http
 {
     internal class HTTPServerSession : IDisposable
     {

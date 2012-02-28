@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 
-namespace MySoft.IoC.Http
+namespace MySoft.IoC.HttpServer
 {
     /// <summary>
     /// 调用信息
@@ -26,6 +26,16 @@ namespace MySoft.IoC.Http
         /// 方法描述
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// 是否认证
+        /// </summary>
+        public bool Authorized { get; set; }
+
+        /// <summary>
+        /// 认证参数
+        /// </summary>
+        public string AuthParameter { get; set; }
 
         /// <summary>
         /// Http方式

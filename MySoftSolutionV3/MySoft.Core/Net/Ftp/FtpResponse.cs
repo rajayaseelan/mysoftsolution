@@ -2,7 +2,7 @@ using System.Collections;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     #region COM interface IFtpResponse
     public interface IFtpResponse

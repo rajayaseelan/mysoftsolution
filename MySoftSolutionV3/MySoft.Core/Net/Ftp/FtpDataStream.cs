@@ -3,7 +3,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     /// <summary>
     /// 

@@ -5,8 +5,8 @@ using MySoft.Installer;
 using MySoft.IoC;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
-using MySoft.IoC.Http;
-using MySoft.Net.HTTP;
+using MySoft.IoC.HttpServer;
+using MySoft.Net.Http;
 
 namespace MySoft.PlatformService.IoC
 {

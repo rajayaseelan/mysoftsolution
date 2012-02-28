@@ -32,7 +32,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace MySoft.Net.HTTP
+namespace MySoft.Net.Http
 {
     /// <summary>
     /// This class represents the response from the server to the client.

@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Runtime.InteropServices;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     #region COM Interface IFtpAsyncResult
     public interface IFtpAsyncResult

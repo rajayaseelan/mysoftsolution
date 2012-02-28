@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     [ComVisible(false)]
     public class FtpException : Exception

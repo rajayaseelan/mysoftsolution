@@ -32,7 +32,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
-namespace MySoft.Net.HTTP
+namespace MySoft.Net.Http
 {
     /// <summary>
     /// This class represents the actual HTTP server.

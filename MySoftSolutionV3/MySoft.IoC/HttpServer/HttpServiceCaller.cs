@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using MySoft.RESTful;
-using MySoft.Net.HTTP;
-using System.Collections.Specialized;
 using MySoft.IoC.Messages;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+using System.Collections;
 
-namespace MySoft.IoC.Http
+namespace MySoft.IoC.HttpServer
 {
     /// <summary>
     /// Http服务调用
@@ -42,20 +37,22 @@ namespace MySoft.IoC.Http
                     if (httpInvoke != null)
                     {
                         //创建一个新的Caller
-                        CreateNewCaller(serviceType, methodInfo, httpInvoke.Name, httpInvoke.Description);
+                        CreateNewCaller(serviceType, methodInfo, httpInvoke);
                     }
                 }
             }
         }
 
-        private void CreateNewCaller(Type serviceType, System.Reflection.MethodInfo methodInfo, string fullName, string description)
+        private void CreateNewCaller(Type serviceType, System.Reflection.MethodInfo methodInfo, HttpInvokeAttribute invoke)
         {
             //将方法添加到字典
             var callerInfo = new HttpCallerInfo
             {
                 ServiceName = serviceType.FullName,
                 Method = methodInfo,
-                Description = description,
+                Description = invoke.Description,
+                Authorized = invoke.Authorized,
+                AuthParameter = invoke.AuthParameter,
                 HttpMethod = HttpMethod.GET //默认为GET方式
             };
 
@@ -65,6 +62,7 @@ namespace MySoft.IoC.Http
                 callerInfo.HttpMethod = HttpMethod.POST;
             }
 
+            string fullName = invoke.Name;
             if (callers.ContainsKey(fullName))
             {
                 //处理重复的方法
@@ -102,6 +100,27 @@ namespace MySoft.IoC.Http
         }
 
         /// <summary>
+        /// 获取API文档
+        /// </summary>
+        /// <returns></returns>
+        public string GetAPIText()
+        {
+            var array = new ArrayList();
+            foreach (var kvp in callers)
+            {
+                array.Add(new
+                {
+                    Name = kvp.Key,
+                    Authorized = kvp.Value.Authorized,
+                    AuthParameter = kvp.Value.AuthParameter
+                });
+            }
+
+            //系列化json输出
+            return SerializationManager.SerializeJson(array);
+        }
+
+        /// <summary>
         /// 获取调用信息
         /// </summary>
         /// <param name="name"></param>
@@ -120,9 +139,9 @@ namespace MySoft.IoC.Http
         /// 调用服务，并返回字符串
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="collection"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
-        public string CallMethod(string name, JObject collection)
+        public string CallMethod(string name, string parameters)
         {
             if (callers.ContainsKey(name))
             {
@@ -133,7 +152,7 @@ namespace MySoft.IoC.Http
                 {
                     ServiceName = caller.ServiceName,
                     MethodName = caller.Method.ToString(),
-                    Parameters = collection.ToString()
+                    Parameters = parameters
                 };
 
                 //处理数据返回InvokeData

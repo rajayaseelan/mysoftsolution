@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
 
     [ClassInterface(ClassInterfaceType.AutoDispatch)]

@@ -5,7 +5,7 @@ using System.Text;
 using System.Reflection;
 using System.IO;
 
-namespace MySoft.IoC.Http
+namespace MySoft.IoC.HttpServer
 {
     /// <summary>
     /// API文档类
@@ -29,8 +29,8 @@ namespace MySoft.IoC.Http
             #region 读取资源
 
             Assembly assm = this.GetType().Assembly;
-            Stream helpStream = assm.GetManifestResourceStream("MySoft.IoC.Http.Template.help.htm");
-            Stream helpitemStream = assm.GetManifestResourceStream("MySoft.IoC.Http.Template.helpitem.htm");
+            Stream helpStream = assm.GetManifestResourceStream("MySoft.IoC.HttpServer.Template.help.htm");
+            Stream helpitemStream = assm.GetManifestResourceStream("MySoft.IoC.HttpServer.Template.helpitem.htm");
 
             StreamReader helpReader = new StreamReader(helpStream);
             StreamReader helpitemReader = new StreamReader(helpitemStream);
@@ -65,6 +65,9 @@ namespace MySoft.IoC.Http
             var plist = new List<string>();
             foreach (var p in kv.Value.Method.GetParameters())
             {
+                if (kv.Value.Authorized && string.Compare(p.Name, kv.Value.AuthParameter, true) == 0)
+                    continue;
+
                 plist.Add(string.Format("{0}=[{0}]", p.Name.ToLower()).Replace('[', '{').Replace(']', '}'));
             }
 
@@ -80,33 +83,44 @@ namespace MySoft.IoC.Http
             template = template.Replace("${method}", string.Format("<p title=\"分布式服务接口:\r\n{2}\"><b><a href='/help/{0}'>{0}</a></b><br/>{1}</p>",
                 kv.Key, kv.Value.Description, serviceInfo));
 
-            var strParameter = GetMethodParameter(kv.Value.Method, name);
+            var strParameter = GetMethodParameter(kv.Value.Method, kv.Value.Authorized, kv.Value.AuthParameter, name);
             if (string.IsNullOrEmpty(strParameter))
                 template = template.Replace("${parameter}", "&nbsp;");
             else
                 template = template.Replace("${parameter}", strParameter);
 
             template = template.Replace("${type}", kv.Value.HttpMethod == HttpMethod.GET ? "GET<br/>POST" : "<font color='red'>POST</font>");
+            template = template.Replace("${auth}", kv.Value.Authorized ? "<font color='red'>是</font>" : "&nbsp;");
+            if (kv.Value.Authorized)
+                template = template.Replace("${authparameter}", kv.Value.AuthParameter);
+            else
+                template = template.Replace("${authparameter}", "&nbsp;");
             template = template.Replace("${uri}", url.ToString());
 
             return template;
         }
 
-        private string GetMethodParameter(MethodInfo method, string name)
+        private string GetMethodParameter(MethodInfo method, bool authorized, string authParameter, string name)
         {
             StringBuilder buider = new StringBuilder();
-            List<string> plist = new List<string>();
 
             var parameters = method.GetParameters();
             var parametersCount = parameters.Count();
+
+            if (authorized) parametersCount--;
             if (parametersCount > 0) buider.Append("<b>INPUT</b> -><br/>");
+
             foreach (var p in parameters)
             {
+                if (authorized && string.Compare(p.Name, authParameter, true) == 0)
+                    continue;
+
                 if (!string.IsNullOrEmpty(name))
                     buider.Append(GetTypeDetail(p.Name, p.ParameterType, 1));
                 else
                     buider.AppendFormat(string.Format("&nbsp;&nbsp;&nbsp;&nbsp;&lt;{0} : {1}&gt;", p.Name, GetTypeName(p.ParameterType)) + "<br/>");
             }
+
             if (parametersCount > 0) buider.Append("<hr/>");
             var value = string.Format("<b>OUTPUT</b> -> {0}<br/>", GetTypeName(method.ReturnType));
             buider.Append("<font color=\"#336699\">").Append(value);

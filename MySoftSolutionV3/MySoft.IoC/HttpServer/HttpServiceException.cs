@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MySoft.IoC.Http
+namespace MySoft.IoC.HttpServer
 {
     /// <summary>
     /// http服务异常

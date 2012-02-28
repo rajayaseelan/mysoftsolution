@@ -43,16 +43,53 @@ namespace MySoft.IoC
             }
         }
 
+        private bool authorized;
+        /// <summary>
+        /// 是否认证
+        /// </summary>
+        public bool Authorized
+        {
+            get
+            {
+                return authorized;
+            }
+            set
+            {
+                authorized = value;
+            }
+        }
+
+        private string authParameter;
+        /// <summary>
+        /// 认证参数
+        /// </summary>
+        public string AuthParameter
+        {
+            get
+            {
+                return authParameter;
+            }
+            set
+            {
+                authParameter = value;
+            }
+        }
+
         /// <summary>
         /// 初始化HttpInvokeAttribute
         /// </summary>
-        public HttpInvokeAttribute() { }
+        public HttpInvokeAttribute()
+        {
+            this.authorized = false;
+            this.authParameter = "username";
+        }
 
         /// <summary>
         /// 初始化HttpInvokeAttribute
         /// </summary>
         /// <param name="name"></param>
         public HttpInvokeAttribute(string name)
+            : this()
         {
             this.name = name;
         }

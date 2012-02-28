@@ -220,13 +220,15 @@ namespace MySoft.RESTful.SDK
                 try
                 {
                     var stream = (ex.Response as HttpWebResponse).GetResponseStream();
-                    StreamReader sr = new StreamReader(stream);
-                    string content = sr.ReadToEnd();
+                    using (var sr = new StreamReader(stream))
+                    {
+                        string content = sr.ReadToEnd();
 
-                    if (parameter.DataFormat == DataFormat.JSON)
-                        result = SerializationManager.DeserializeJson<RESTfulResult>(content);
-                    else if (parameter.DataFormat == DataFormat.XML)
-                        result = SerializationManager.DeserializeXml<RESTfulResult>(content);
+                        if (parameter.DataFormat == DataFormat.JSON)
+                            result = SerializationManager.DeserializeJson<RESTfulResult>(content);
+                        else if (parameter.DataFormat == DataFormat.XML)
+                            result = SerializationManager.DeserializeXml<RESTfulResult>(content);
+                    }
                 }
                 catch { }
 

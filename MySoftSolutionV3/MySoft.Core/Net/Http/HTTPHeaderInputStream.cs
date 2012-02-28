@@ -30,7 +30,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace MySoft.Net.HTTP
+namespace MySoft.Net.Http
 {
     internal class HTTPHeaderInputStream : Stream
     {

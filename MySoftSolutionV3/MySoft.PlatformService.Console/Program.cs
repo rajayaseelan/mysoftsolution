@@ -6,8 +6,8 @@ using System.Collections;
 using MySoft.Remoting;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
-using MySoft.IoC.Http;
-using MySoft.Net.HTTP;
+using MySoft.IoC.HttpServer;
+using MySoft.Net.Http;
 using System.Collections.Specialized;
 
 namespace MySoft.PlatformService.Console

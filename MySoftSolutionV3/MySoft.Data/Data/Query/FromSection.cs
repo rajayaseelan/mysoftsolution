@@ -91,6 +91,11 @@ namespace MySoft.Data
         {
             this.tableName = table == null ? fromTable.Name : table.Name;
             fromTable.As(this.tableName);
+            if (table != null && table.AliasName != null)
+            {
+                this.tableName += " __[" + table.AliasName + "]__ ";
+            }
+
             this.query = new QuerySection<T>(this);
         }
 

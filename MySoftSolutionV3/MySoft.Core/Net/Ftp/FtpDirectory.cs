@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     internal struct ItemInfo
     {

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     //I decide not to use UCOMIEnumVariant since I got no idea how 
     //to Marshal int back to array. As a result, I re-define the

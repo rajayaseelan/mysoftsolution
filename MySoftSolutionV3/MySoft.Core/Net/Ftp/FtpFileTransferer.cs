@@ -3,7 +3,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     public enum TransferDirection
     {

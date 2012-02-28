@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace MySoft.Net.FTP
+namespace MySoft.Net.Ftp
 {
     internal class SessionConnected : SessionState
     {

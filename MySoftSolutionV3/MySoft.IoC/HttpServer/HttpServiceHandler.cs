@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MySoft.Net.HTTP;
 using System.IO;
-using System.Collections.Specialized;
+using MySoft.Net.Http;
 using Newtonsoft.Json.Linq;
 
-namespace MySoft.IoC.Http
+namespace MySoft.IoC.HttpServer
 {
     /// <summary>
     /// Castle服务处理器
@@ -47,6 +43,11 @@ namespace MySoft.IoC.Http
                 response.ContentType = "text/html;charset=utf-8";
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_FOUND;
                 response.Send();
+            }
+            else if (request.URI.ToLower() == "/api")
+            {
+                response.ContentType = "application/json;charset=utf-8";
+                SendResponse(response, caller.GetAPIText());
             }
             else if (request.URI.ToLower() == "/help")
             {
@@ -113,7 +114,7 @@ namespace MySoft.IoC.Http
                         }
                     }
 
-                    string responseString = caller.CallMethod(arr[0], collection);
+                    string responseString = caller.CallMethod(arr[0], collection.ToString());
                     SendResponse(response, responseString);
                 }
                 catch (HTTPMessageException ex)
