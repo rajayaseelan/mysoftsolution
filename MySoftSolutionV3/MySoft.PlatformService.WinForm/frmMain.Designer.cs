@@ -98,6 +98,7 @@
             this.lblError = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.panel3 = new System.Windows.Forms.Panel();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -157,6 +158,7 @@
             this.splitContainer2.SuspendLayout();
             this.contextMenuStrip4.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
@@ -270,6 +272,7 @@
             // 
             // splitContainer6
             // 
+            this.splitContainer6.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.splitContainer6.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer6.Location = new System.Drawing.Point(0, 0);
             this.splitContainer6.Name = "splitContainer6";
@@ -289,7 +292,7 @@
             // listAssembly
             // 
             this.listAssembly.AutoScroll = true;
-            this.listAssembly.AutoScrollMinSize = new System.Drawing.Size(276, 0);
+            this.listAssembly.AutoScrollMinSize = new System.Drawing.Size(272, 0);
             this.listAssembly.BackColor = System.Drawing.Color.White;
             this.listAssembly.ContextMenuStrip = this.contextMenuStrip2;
             this.listAssembly.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -297,7 +300,7 @@
             this.listAssembly.Name = "listAssembly";
             this.listAssembly.SelectedIndex = -1;
             this.listAssembly.SelectedItem = null;
-            this.listAssembly.Size = new System.Drawing.Size(306, 157);
+            this.listAssembly.Size = new System.Drawing.Size(302, 153);
             this.listAssembly.TabIndex = 12;
             // 
             // contextMenuStrip2
@@ -317,7 +320,7 @@
             // listService
             // 
             this.listService.AutoScroll = true;
-            this.listService.AutoScrollMinSize = new System.Drawing.Size(276, 0);
+            this.listService.AutoScrollMinSize = new System.Drawing.Size(272, 0);
             this.listService.BackColor = System.Drawing.Color.White;
             this.listService.ContextMenuStrip = this.contextMenuStrip1;
             this.listService.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -325,7 +328,7 @@
             this.listService.Name = "listService";
             this.listService.SelectedIndex = -1;
             this.listService.SelectedItem = null;
-            this.listService.Size = new System.Drawing.Size(306, 328);
+            this.listService.Size = new System.Drawing.Size(302, 324);
             this.listService.TabIndex = 12;
             // 
             // contextMenuStrip1
@@ -352,6 +355,7 @@
             // 
             // splitContainer5
             // 
+            this.splitContainer5.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.splitContainer5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer5.Location = new System.Drawing.Point(0, 0);
             this.splitContainer5.Name = "splitContainer5";
@@ -371,14 +375,14 @@
             // listMethod
             // 
             this.listMethod.AutoScroll = true;
-            this.listMethod.AutoScrollMinSize = new System.Drawing.Size(547, 0);
+            this.listMethod.AutoScrollMinSize = new System.Drawing.Size(543, 0);
             this.listMethod.BackColor = System.Drawing.Color.White;
             this.listMethod.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listMethod.Location = new System.Drawing.Point(0, 0);
             this.listMethod.Name = "listMethod";
             this.listMethod.SelectedIndex = -1;
             this.listMethod.SelectedItem = null;
-            this.listMethod.Size = new System.Drawing.Size(577, 315);
+            this.listMethod.Size = new System.Drawing.Size(573, 311);
             this.listMethod.TabIndex = 12;
             // 
             // richTextBox3
@@ -389,7 +393,7 @@
             this.richTextBox3.Location = new System.Drawing.Point(0, 0);
             this.richTextBox3.Name = "richTextBox3";
             this.richTextBox3.ReadOnly = true;
-            this.richTextBox3.Size = new System.Drawing.Size(577, 170);
+            this.richTextBox3.Size = new System.Drawing.Size(573, 166);
             this.richTextBox3.TabIndex = 15;
             this.richTextBox3.Text = "";
             // 
@@ -405,6 +409,7 @@
             // 
             // splitContainer7
             // 
+            this.splitContainer7.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.splitContainer7.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer7.Location = new System.Drawing.Point(0, 0);
             this.splitContainer7.Name = "splitContainer7";
@@ -424,18 +429,19 @@
             // listConnect
             // 
             this.listConnect.AutoScroll = true;
-            this.listConnect.AutoScrollMinSize = new System.Drawing.Size(542, 0);
+            this.listConnect.AutoScrollMinSize = new System.Drawing.Size(538, 0);
             this.listConnect.BackColor = System.Drawing.Color.White;
             this.listConnect.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listConnect.Location = new System.Drawing.Point(0, 0);
             this.listConnect.Name = "listConnect";
             this.listConnect.SelectedIndex = -1;
             this.listConnect.SelectedItem = null;
-            this.listConnect.Size = new System.Drawing.Size(572, 489);
+            this.listConnect.Size = new System.Drawing.Size(568, 485);
             this.listConnect.TabIndex = 10;
             // 
             // splitContainer8
             // 
+            this.splitContainer8.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.splitContainer8.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer8.Location = new System.Drawing.Point(0, 23);
             this.splitContainer8.Name = "splitContainer8";
@@ -456,12 +462,13 @@
             // 
             // checkedListBox1
             // 
+            this.checkedListBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.checkedListBox1.ContextMenuStrip = this.contextMenuStrip5;
             this.checkedListBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.checkedListBox1.FormattingEnabled = true;
             this.checkedListBox1.Location = new System.Drawing.Point(0, 0);
             this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(311, 173);
+            this.checkedListBox1.Size = new System.Drawing.Size(307, 169);
             this.checkedListBox1.TabIndex = 0;
             // 
             // contextMenuStrip5
@@ -502,12 +509,13 @@
             // 
             // checkedListBox2
             // 
+            this.checkedListBox2.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.checkedListBox2.ContextMenuStrip = this.contextMenuStrip6;
             this.checkedListBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.checkedListBox2.FormattingEnabled = true;
             this.checkedListBox2.Location = new System.Drawing.Point(0, 0);
             this.checkedListBox2.Name = "checkedListBox2";
-            this.checkedListBox2.Size = new System.Drawing.Size(311, 289);
+            this.checkedListBox2.Size = new System.Drawing.Size(307, 285);
             this.checkedListBox2.TabIndex = 1;
             // 
             // contextMenuStrip6
@@ -554,7 +562,6 @@
             // 
             // splitContainer3
             // 
-            this.splitContainer3.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer3.Location = new System.Drawing.Point(0, 0);
             this.splitContainer3.Name = "splitContainer3";
@@ -573,6 +580,7 @@
             // 
             // splitContainer9
             // 
+            this.splitContainer9.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.splitContainer9.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer9.Location = new System.Drawing.Point(0, 0);
             this.splitContainer9.Name = "splitContainer9";
@@ -585,8 +593,8 @@
             // splitContainer9.Panel2
             // 
             this.splitContainer9.Panel2.Controls.Add(this.listTotal);
-            this.splitContainer9.Size = new System.Drawing.Size(606, 485);
-            this.splitContainer9.SplitterDistance = 350;
+            this.splitContainer9.Size = new System.Drawing.Size(610, 489);
+            this.splitContainer9.SplitterDistance = 352;
             this.splitContainer9.TabIndex = 13;
             // 
             // listTimeout
@@ -600,7 +608,7 @@
             this.listTimeout.Name = "listTimeout";
             this.listTimeout.SelectedIndex = -1;
             this.listTimeout.SelectedItem = null;
-            this.listTimeout.Size = new System.Drawing.Size(606, 350);
+            this.listTimeout.Size = new System.Drawing.Size(606, 348);
             this.listTimeout.TabIndex = 12;
             this.listTimeout.Click += new System.EventHandler(this.listBox3_Click);
             // 
@@ -665,38 +673,36 @@
             // listTotal
             // 
             this.listTotal.AutoScroll = true;
-            this.listTotal.AutoScrollMinSize = new System.Drawing.Size(576, 0);
+            this.listTotal.AutoScrollMinSize = new System.Drawing.Size(580, 0);
             this.listTotal.BackColor = System.Drawing.Color.White;
             this.listTotal.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listTotal.Location = new System.Drawing.Point(0, 0);
             this.listTotal.Name = "listTotal";
             this.listTotal.SelectedIndex = -1;
             this.listTotal.SelectedItem = null;
-            this.listTotal.Size = new System.Drawing.Size(606, 131);
+            this.listTotal.Size = new System.Drawing.Size(606, 129);
             this.listTotal.TabIndex = 13;
             this.listTotal.Click += new System.EventHandler(this.listTotal_Click);
             // 
             // richTextBox1
             // 
             this.richTextBox1.BackColor = System.Drawing.SystemColors.Window;
-            this.richTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.richTextBox1.Location = new System.Drawing.Point(0, 25);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(269, 460);
+            this.richTextBox1.Size = new System.Drawing.Size(273, 464);
             this.richTextBox1.TabIndex = 14;
             this.richTextBox1.Text = "";
             // 
             // panel1
             // 
-            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel1.Controls.Add(this.lblTimeout);
             this.panel1.Controls.Add(this.label13);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(269, 25);
+            this.panel1.Size = new System.Drawing.Size(273, 25);
             this.panel1.TabIndex = 15;
             // 
             // lblTimeout
@@ -847,7 +853,6 @@
             // 
             // panel2
             // 
-            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel2.Controls.Add(this.lblError);
             this.panel2.Controls.Add(this.label15);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
@@ -877,12 +882,22 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.panel3);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Size = new System.Drawing.Size(887, 489);
             this.tabPage4.TabIndex = 4;
             this.tabPage4.Text = "状态信息";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // panel3
+            // 
+            this.panel3.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel3.Location = new System.Drawing.Point(0, 0);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(887, 489);
+            this.panel3.TabIndex = 0;
             // 
             // checkBox1
             // 
@@ -1217,6 +1232,7 @@
             this.contextMenuStrip4.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).EndInit();
@@ -1316,5 +1332,6 @@
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label lblError;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Panel panel3;
     }
 }

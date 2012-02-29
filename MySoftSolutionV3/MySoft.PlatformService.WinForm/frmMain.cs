@@ -537,7 +537,7 @@ namespace MySoft.PlatformService.WinForm
 
             webBrowser2 = new WebBrowser();
             webBrowser2.Dock = DockStyle.Fill;
-            tabPage4.Controls.Add(webBrowser2);
+            panel3.Controls.Add(webBrowser2);
 
             webBrowser1.Navigate("about:blank");
             //webBrowser1.AllowNavigation = false;
@@ -569,8 +569,8 @@ namespace MySoft.PlatformService.WinForm
             else
                 webBrowser2.Url = new Uri("about:blank");
 
-            tabPage4.Controls.Clear();
-            tabPage4.Controls.Add(webBrowser2);
+            panel3.Controls.Clear();
+            panel3.Controls.Add(webBrowser2);
 
             timer.Start();
         }
