@@ -57,13 +57,13 @@ namespace MySoft.PlatformService.Console
                 var caller = new HttpServiceCaller(server.Container, config.HttpPort);
                 var factory = new HttpRequestHandlerFactory(caller);
                 var httpServer = new HTTPServer(factory, config.HttpPort);
-                httpServer.OnServerStart += () => { System.Console.WriteLine("Http server started. http://{0}:{1}", DnsHelper.GetIPAddress(), config.HttpPort); };
+                httpServer.OnServerStart += () => { System.Console.WriteLine("Http server started. http://{0}:{1}/", DnsHelper.GetIPAddress(), config.HttpPort); };
                 httpServer.OnServerStop += () => { System.Console.WriteLine("Http server stoped."); };
                 httpServer.OnServerException += ex => Program_OnError(ex);
                 httpServer.Start();
             }
 
-            System.Console.WriteLine("Server host -> {0}.", server.ServerUrl);
+            System.Console.WriteLine("Tcp server started. {0}", server.ServerUrl);
             System.Console.WriteLine("Service count -> {0} services.", server.ServiceCount);
             System.Console.WriteLine("Press any key to exit and stop service...");
             System.Console.ReadLine();

@@ -40,7 +40,7 @@ namespace MySoft.Threading.Internal
                     break;
                 default:
                     // Unknown state
-                    Debug.Assert(false);
+                    //Debug.Assert(false);
                     break;
             }
 
@@ -286,7 +286,7 @@ namespace MySoft.Threading.Internal
                     return result;
 				}
 
-				Debug.Assert(WorkItemState.InQueue == GetWorkItemState());
+				//Debug.Assert(WorkItemState.InQueue == GetWorkItemState());
 
                 // No need for a lock yet, only after the state has changed to InProgress
                 _executingThread = Thread.CurrentThread;
@@ -315,7 +315,7 @@ namespace MySoft.Threading.Internal
 					currentCallToPostExecute |= CallToPostExecute.WhenWorkItemCanceled;
 					break;
 				default:
-					Debug.Assert(false);
+					//Debug.Assert(false);
 					throw new NotSupportedException();
 			}
 
@@ -437,7 +437,7 @@ namespace MySoft.Threading.Internal
                 }
                 catch (Exception e) 
                 {
-                    Debug.Assert(null != e);
+                    //Debug.Assert(null != e);
                 }
 			}
 		}
@@ -606,7 +606,7 @@ namespace MySoft.Threading.Internal
             for (int i = 0; i < waitableResults.Length; ++i)
 			{
                 WorkItemResult wir = waitableResults[i].GetWorkItemResult() as WorkItemResult;
-                Debug.Assert(null != wir, "All waitableResults must be WorkItemResult objects");
+                //Debug.Assert(null != wir, "All waitableResults must be WorkItemResult objects");
 
 				waitHandles[i] = wir.GetWorkItem().GetWaitHandle();
 			}
@@ -841,7 +841,7 @@ namespace MySoft.Threading.Internal
                     case STPEventWaitHandle.WaitTimeout:
 						throw new WorkItemTimeoutException("Work item timeout");
 					default:
-						Debug.Assert(false);
+						//Debug.Assert(false);
 						break;
 
 				}
@@ -853,7 +853,7 @@ namespace MySoft.Threading.Internal
 				throw new WorkItemCancelException("Work item canceled");
 			}
 
-			Debug.Assert(IsCompleted);
+            //Debug.Assert(IsCompleted);
 
 			e = _exception;
 

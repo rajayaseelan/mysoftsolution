@@ -31,7 +31,7 @@ namespace MySoft.IoC.HttpProxy
         {
             var url = ConfigurationManager.AppSettings["HttpProxyServer"];
             if (string.IsNullOrEmpty(url))
-                throw new ArgumentNullException("HttpProxyServer can't for empty.");
+                throw new ArgumentNullException("Http proxy server can't for empty.");
 
             this.helper = new HttpHelper(url);
             this.services = new List<ServiceItem>();
@@ -219,7 +219,7 @@ namespace MySoft.IoC.HttpProxy
             if (name == "favicon.ico" || !services.Any(p => string.Compare(p.Name, name, true) == 0))
             {
                 response.StatusCode = HttpStatusCode.NotFound;
-                var item = new { Code = (int)response.StatusCode, Message = "【" + name + "】 NOT FOUND." };
+                var item = new { Code = (int)response.StatusCode, Message = "Method 【" + name + "】 not found." };
                 return new MemoryStream(SerializeJson(item));
             }
             else
@@ -242,14 +242,14 @@ namespace MySoft.IoC.HttpProxy
                         else
                         {
                             response.StatusCode = HttpStatusCode.Unauthorized;
-                            var item = new { Code = (int)response.StatusCode, Message = "UNAUTHORIZED OR AUTHORIZE NAME IS EMPTY." };
+                            var item = new { Code = (int)response.StatusCode, Message = "Unauthorized or authorize name is empty." };
                             return new MemoryStream(SerializeJson(item));
                         }
                     }
                     catch (Exception ex)
                     {
                         response.StatusCode = HttpStatusCode.Unauthorized;
-                        var item = new { Code = (int)response.StatusCode, Message = "UNAUTHORIZED - " + ex.Message };
+                        var item = new { Code = (int)response.StatusCode, Message = "Unauthorized - " + ex.Message };
                         return new MemoryStream(SerializeJson(item));
                     }
                 }

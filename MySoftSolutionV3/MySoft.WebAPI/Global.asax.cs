@@ -17,7 +17,7 @@ namespace MySoft.WebAPI
         private void RegisterRoutes()
         {
             // Edit the base address of Service1 by replacing the "Service1" string below
-            RouteTable.Routes.Add(new ServiceRoute("", new WebServiceHostFactory(), typeof(UserAuthorizeHttpProxyService)));
+            RouteTable.Routes.Add(new ServiceRoute("", new WebServiceHostFactory(), typeof(AuthorizeHttpProxyService)));
         }
     }
 
@@ -26,7 +26,7 @@ namespace MySoft.WebAPI
     /// </summary>
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
-    public class UserAuthorizeHttpProxyService : DefaultHttpProxyService
+    public class AuthorizeHttpProxyService : DefaultHttpProxyService
     {
         /// <summary>
         /// 进行认证处理，如用户认证

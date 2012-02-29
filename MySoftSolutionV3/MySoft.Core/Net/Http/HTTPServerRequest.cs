@@ -149,7 +149,7 @@ namespace MySoft.Net.Http
             else
                 _stream = new HTTPInputStream(_session);
 
-            Debug.Assert(_stream != null);
+            //Debug.Assert(_stream != null);
             return _stream;
         }
     }

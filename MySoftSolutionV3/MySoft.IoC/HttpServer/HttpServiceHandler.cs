@@ -2,6 +2,7 @@
 using System.IO;
 using MySoft.Net.Http;
 using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -37,12 +38,11 @@ namespace MySoft.IoC.HttpServer
                      * known when the response header is sent.
                      **/
 
-
             if (request.URI.ToLower() == "/favicon.ico")
             {
                 response.ContentType = "text/html;charset=utf-8";
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_FOUND;
-                response.Send();
+                response.SendContinue();
             }
             else if (request.URI.ToLower() == "/api")
             {
@@ -67,95 +67,98 @@ namespace MySoft.IoC.HttpServer
             }
             else if (request.URI.Substring(request.URI.IndexOf('/') + 1).Length > 5)
             {
-                response.ContentType = "application/json;charset=utf-8";
-
-                var paramString = request.URI.Substring(request.URI.IndexOf("/") + 1);
-                var arr = paramString.Split('?');
-                var call = caller.GetCaller(arr[0]);
-
-                if (call == null)
-                {
-                    response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_FOUND;
-                    var error = new HttpServiceException { Message = string.Format("HTTP_NOT_FOUND【{0}】", arr[0]) };
-                    SendResponse(response, error);
-                    return;
-                }
-                else
-                {
-                    if (call.HttpMethod == HttpMethod.POST && request.Method.ToUpper() == "GET")
-                    {
-                        response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_METHOD_NOT_ALLOWED;
-                        var error = new HttpServiceException { Message = "HTTP_METHOD_NOT_ALLOWED" };
-                        SendResponse(response, error);
-                        return;
-                    }
-                }
-
-                try
-                {
-                    //调用方法
-                    var collection = new JObject();
-                    if (arr.Length > 1) collection = ParseCollection(arr[1]);
-
-                    if (call.HttpMethod == HttpMethod.POST)
-                    {
-                        //接收流内部数据
-                        using (var stream = request.GetRequestStream())
-                        using (var sr = new StreamReader(stream))
-                        {
-                            string streamValue = sr.ReadToEnd();
-                            var jobject = JObject.Parse(streamValue);
-
-                            //处理POST的数据
-                            foreach (var kvp in jobject)
-                            {
-                                collection[kvp.Key] = kvp.Value;
-                            }
-                        }
-                    }
-
-                    string responseString = caller.CallMethod(arr[0], collection.ToString());
-                    SendResponse(response, responseString);
-                }
-                catch (HTTPMessageException ex)
-                {
-                    response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
-                    var error = new HttpServiceException { Message = "HTTPMessageException - " + ex.Message };
-                    SendResponse(response, error);
-                }
-                catch (Exception ex)
-                {
-                    response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
-                    var e = ErrorHelper.GetInnerException(ex);
-                    var error = new HttpServiceException { Message = e.GetType().Name + " - " + e.Message };
-                    SendResponse(response, error);
-                }
+                HandleResponse(request, response);
             }
             else
             {
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_ACCEPTABLE;
-                var error = new HttpServiceException { Message = "HTTP_NOT_ACCEPTABLE" };
+                var error = new HttpServiceException { Message = response.Reason };
+                SendResponse(response, error);
+            }
+        }
+
+        private void HandleResponse(HTTPServerRequest request, HTTPServerResponse response)
+        {
+            response.ContentType = "application/json;charset=utf-8";
+
+            var pathAndQuery = request.URI.TrimStart('/');
+            var array = pathAndQuery.Split('?');
+            var methodName = array[0];
+            var paramString = array.Length > 1 ? array[1] : null;
+            var callMethod = caller.GetCaller(methodName);
+
+            if (callMethod == null)
+            {
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_FOUND;
+                var error = new HttpServiceException { Message = string.Format("{0}【{1}】", response.Reason, methodName) };
+                SendResponse(response, error);
+                return;
+            }
+            else
+            {
+                if (callMethod.HttpMethod == HttpMethod.POST && request.Method.ToUpper() == "GET")
+                {
+                    response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_METHOD_NOT_ALLOWED;
+                    var error = new HttpServiceException { Message = response.Reason };
+                    SendResponse(response, error);
+                    return;
+                }
+            }
+
+            try
+            {
+                //调用方法
+                var collection = ParseCollection(paramString);
+
+                if (callMethod.HttpMethod == HttpMethod.POST)
+                {
+                    //接收流内部数据
+                    using (var stream = request.GetRequestStream())
+                    using (var sr = new StreamReader(stream))
+                    {
+                        string streamValue = sr.ReadToEnd();
+                        var jobject = JObject.Parse(streamValue);
+
+                        //处理POST的数据
+                        foreach (var kvp in jobject)
+                        {
+                            collection[kvp.Key] = kvp.Value;
+                        }
+                    }
+                }
+
+                string responseString = caller.CallMethod(methodName, collection.ToString());
+                SendResponse(response, responseString);
+            }
+            catch (HTTPMessageException ex)
+            {
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
+                var error = new HttpServiceException { Message = string.Format("{0} - {1}", response.Reason, ex.Message) };
+                SendResponse(response, error);
+            }
+            catch (Exception ex)
+            {
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
+                var e = ErrorHelper.GetInnerException(ex);
+                var error = new HttpServiceException { Message = string.Format("{0} - {1}", e.GetType().Name, e.Message) };
                 SendResponse(response, error);
             }
         }
 
         private void SendResponse(HTTPServerResponse response, string responseString)
         {
-            using (Stream ostr = response.Send())
-            using (TextWriter tw = new StreamWriter(ostr))
+            using (var sw = new StreamWriter(response.Send()))
             {
-                tw.WriteLine(responseString);
+                sw.Write(responseString);
             }
         }
 
         private void SendResponse(HTTPServerResponse response, HttpServiceException error)
         {
             error.Code = (int)response.Status;
-            using (Stream ostr = response.Send())
-            using (TextWriter tw = new StreamWriter(ostr))
-            {
-                tw.WriteLine(SerializationManager.SerializeJson(error));
-            }
+
+            var jsonString = SerializationManager.SerializeJson(error);
+            SendResponse(response, jsonString);
         }
 
         private JObject ParseCollection(string paramString)
@@ -175,7 +178,7 @@ namespace MySoft.IoC.HttpServer
                 return values;
             }
 
-            return null;
+            return new JObject();
         }
 
         #endregion

@@ -82,7 +82,7 @@ namespace MySoft.Threading.Internal
 			bool captureCallContext, 
 			bool captureHttpContext)
 		{
-			Debug.Assert(captureCallContext || captureHttpContext);
+            //Debug.Assert(captureCallContext || captureHttpContext);
 
 			CallerThreadContext callerThreadContext = new CallerThreadContext();
 

@@ -57,11 +57,11 @@ namespace MySoft.Threading.Internal
 		/// <param name="workItem">A work item</param>
 		public void Enqueue(IHasWorkItemPriority workItem)
 		{
-			Debug.Assert(null != workItem);
+            //Debug.Assert(null != workItem);
 
 			int queueIndex = _queuesCount-(int)workItem.WorkItemPriority-1;
-			Debug.Assert(queueIndex >= 0);
-			Debug.Assert(queueIndex < _queuesCount);
+            //Debug.Assert(queueIndex >= 0);
+            //Debug.Assert(queueIndex < _queuesCount);
 
 			_queues[queueIndex].AddLast(workItem);
 			++_workItemsCount;
@@ -79,10 +79,10 @@ namespace MySoft.Threading.Internal
 			if(_workItemsCount > 0)
 			{
 				int queueIndex = GetNextNonEmptyQueue(-1);
-				Debug.Assert(queueIndex >= 0);
+                //Debug.Assert(queueIndex >= 0);
                 workItem = _queues[queueIndex].First.Value;
 				_queues[queueIndex].RemoveFirst();
-				Debug.Assert(null != workItem);
+                //Debug.Assert(null != workItem);
 				--_workItemsCount;
 				++_version;
 			}
@@ -198,7 +198,7 @@ namespace MySoft.Threading.Internal
 			{
 				get
 				{
-					Debug.Assert(null != _enumerator);
+					//Debug.Assert(null != _enumerator);
 					return _enumerator.Current;
 				}
 			}

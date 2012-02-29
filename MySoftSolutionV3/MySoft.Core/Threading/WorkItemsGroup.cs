@@ -115,7 +115,7 @@ namespace MySoft.Threading.Internal
             get { return _concurrency; }
             set
             {
-                Debug.Assert(value > 0);
+                //Debug.Assert(value > 0);
 
                 int diff = value - _concurrency;
                 _concurrency = value;

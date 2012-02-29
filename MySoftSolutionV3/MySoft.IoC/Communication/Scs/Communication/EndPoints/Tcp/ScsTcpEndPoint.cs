@@ -78,7 +78,7 @@ namespace MySoft.Communication.Scs.Communication.EndPoints.Tcp
         /// <returns>String representation of this end point object</returns>
         public override string ToString()
         {
-            return "tcp://" + (IpAddress ?? DnsHelper.GetIPAddress()) + ":" + TcpPort;
+            return string.Format("tcp://{0}:{1}/", (IpAddress ?? DnsHelper.GetIPAddress()), TcpPort);
         }
     }
 }

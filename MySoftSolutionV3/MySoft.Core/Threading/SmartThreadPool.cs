@@ -496,7 +496,7 @@ namespace MySoft.Threading
         internal override void Enqueue(WorkItem workItem)
         {
             // Make sure the workItem is not null
-            Debug.Assert(null != workItem);
+            //Debug.Assert(null != workItem);
 
             IncrementWorkItemsCount();
 
@@ -785,7 +785,7 @@ namespace MySoft.Threading
             }
             catch (Exception e)
             {
-                Debug.Assert(null != e);
+                //Debug.Assert(null != e);
             }
             finally
             {
@@ -1188,7 +1188,7 @@ namespace MySoft.Threading
                     catch (Exception e)
                     {
                         e.GetHashCode();
-                        Debug.Assert(false);
+                        //Debug.Assert(false);
                         throw;
                     }
                 }
@@ -1208,7 +1208,7 @@ namespace MySoft.Threading
                     catch (Exception e)
                     {
                         e.GetHashCode();
-                        Debug.Assert(false);
+                        //Debug.Assert(false);
                         throw;
                     }
                 }
@@ -1270,8 +1270,8 @@ namespace MySoft.Threading
             }
             set
             {
-                Debug.Assert(value >= 0);
-                Debug.Assert(value <= _stpStartInfo.MaxWorkerThreads);
+                //Debug.Assert(value >= 0);
+                //Debug.Assert(value <= _stpStartInfo.MaxWorkerThreads);
                 if (_stpStartInfo.MaxWorkerThreads < value)
                 {
                     _stpStartInfo.MaxWorkerThreads = value;
@@ -1294,8 +1294,8 @@ namespace MySoft.Threading
 
             set
             {
-                Debug.Assert(value > 0);
-                Debug.Assert(value >= _stpStartInfo.MinWorkerThreads);
+                //Debug.Assert(value > 0);
+                //Debug.Assert(value >= _stpStartInfo.MinWorkerThreads);
                 if (_stpStartInfo.MinWorkerThreads > value)
                 {
                     _stpStartInfo.MinWorkerThreads = value;
