@@ -1675,7 +1675,6 @@
             <summary>
             获取页面参数
             </summary>
-            <param name="eventArgument"></param>
         </member>
         <member name="M:MySoft.Web.UI.AjaxRequest.GetObject``1(System.String)">
             <summary>
@@ -1701,12 +1700,6 @@
             将数据写入页面流
             </summary>
             <param name="methods"></param>
-        </member>
-        <member name="M:MySoft.Web.UI.AjaxRequest.WriteToBuffer(System.String)">
-            <summary>
-            将数据写入页面流
-            </summary>
-            <param name="html"></param>
         </member>
         <member name="T:MySoft.Web.AjaxPageHandler">
             <summary>
@@ -2423,17 +2416,17 @@
             启动静态管理类
             </summary>
         </member>
-        <member name="M:MySoft.Web.StaticPageManager.Start(System.Double)">
+        <member name="M:MySoft.Web.StaticPageManager.Start(System.Int32)">
             <summary>
             启动静态管理类
             </summary>
-            <param name="interval">检测间隔时间(默认为一分钟) 单位：秒</param>
+            <param name="interval">检测间隔时间(默认为一分钟) ：单位（秒）</param>
         </member>
-        <member name="M:MySoft.Web.StaticPageManager.Start(System.Double,System.Boolean)">
+        <member name="M:MySoft.Web.StaticPageManager.Start(System.Int32,System.Boolean)">
             <summary>
             启动静态管理类
             </summary>
-            <param name="interval">检测间隔时间 单位：秒</param>
+            <param name="interval">检测间隔时间：单位（秒）</param>
         </member>
         <member name="M:MySoft.Web.StaticPageManager.AddItem(MySoft.Web.IStaticPageItem[])">
             <summary>

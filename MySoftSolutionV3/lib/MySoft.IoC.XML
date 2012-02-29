@@ -4,84 +4,196 @@
         <name>MySoft.IoC</name>
     </assembly>
     <members>
-        <member name="T:MySoft.IoC.Status.TimeStatus">
+        <member name="T:MySoft.IoC.IStatusService">
             <summary>
-            时间状态信息
+            状态服务信息
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Status.SecondStatus">
+        <member name="M:MySoft.IoC.IStatusService.GetAppClients">
             <summary>
-            每秒服务器状态信息
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.SecondStatus.DataFlow">
-            <summary>
-            数据流量
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.SecondStatus.RequestCount">
-            <summary>
-            请求数
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.SecondStatus.SuccessCount">
-            <summary>
-            成功计数
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.SecondStatus.ErrorCount">
-            <summary>
-            错误数
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.SecondStatus.ElapsedTime">
-            <summary>
-            总耗时
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.SecondStatus.AverageDataFlow">
-            <summary>
-            平均数据流量（每次请求）
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.SecondStatus.AverageElapsedTime">
-            <summary>
-            平均耗时（每次请求）
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.TimeStatus.CounterTime">
-            <summary>
-            记数时间
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.Status.TimeStatusCollection">
-            <summary>
-            时间状态集合
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Status.TimeStatusCollection.GetOrCreate(System.DateTime)">
-            <summary>
-            获取或创建
-            </summary>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Status.TimeStatusCollection.ToList">
-            <summary>
-            返回列表
+            获取所有应用客户端
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Status.TimeStatusCollection.GetNewest">
+        <member name="M:MySoft.IoC.IStatusService.Subscribe(System.String[])">
             <summary>
-            获取最后一条
+            订阅服务
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.Subscribe(System.Double,System.String[])">
+            <summary>
+            订阅服务
+            </summary>
+            <param name="callTimeout">调用超时时间</param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.Subscribe(System.Int32,System.String[])">
+            <summary>
+            订阅服务
+            </summary>
+            <param name="statusTimer">定时推送时间</param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.Subscribe(System.Double,System.Int32,System.String[])">
+            <summary>
+            订阅服务
+            </summary>
+            <param name="callTimeout">调用超时时间</param>
+            <param name="statusTimer">定时推送时间</param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.Subscribe(MySoft.IoC.SubscribeOptions,System.String[])">
+            <summary>
+            订阅服务
+            </summary>
+            <param name="options">订阅选项</param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.Unsubscribe">
+            <summary>
+            退订服务
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.GetSubscribeTypes">
+            <summary>
+            获取订阅的类型
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Status.TimeStatusCollection.Clear">
+        <member name="M:MySoft.IoC.IStatusService.SubscribeType(System.String)">
             <summary>
-            清除字典中的数据
+            订阅发布类型
             </summary>
+            <param name="subscribeType"></param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.UnsubscribeType(System.String)">
+            <summary>
+            退订发布类型
+            </summary>
+            <param name="subscribeType"></param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.GetSubscribeApps">
+            <summary>
+            获取订阅的应用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.SubscribeApp(System.String)">
+            <summary>
+            订阅发布应用
+            </summary>
+            <param name="appName"></param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.UnsubscribeApp(System.String)">
+            <summary>
+            退订发布应用
+            </summary>
+            <param name="appName"></param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.ContainsService(System.String)">
+            <summary>
+            是否存在服务
+            </summary>
+            <param name="serviceName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.GetServiceList">
+            <summary>
+            获取服务信息列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.GetServerStatus">
+            <summary>
+            获取服务状态信息（包括SummaryStatus，HighestStatus，TimeStatus）
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.ClearServerStatus">
+            <summary>
+            清除服务器状态
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.GetTimeStatusList">
+            <summary>
+            获取时段的服务状态信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IStatusService.GetClientList">
+            <summary>
+            获取所有的客户端信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.IoC.Services.CallbackProxy">
+            <summary>
+            回调代理
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Services.RemoteProxy">
+            <summary>
+            服务代理
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.IService">
+            <summary>
+            interface of all services.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.IService.CallService(MySoft.IoC.Messages.RequestMessage)">
+            <summary>
+            Calls the service.
+            </summary>
+            <param name="reqMsg">The MSG.</param>
+            <returns>The result.</returns>
+        </member>
+        <member name="P:MySoft.IoC.IService.ServiceName">
+            <summary>
+            Gets the name of the service.
+            </summary>
+            <value>The name of the service.</value>
+        </member>
+        <member name="M:MySoft.IoC.Services.RemoteProxy.InitRequest">
+            <summary>
+            初始化请求
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Services.RemoteProxy.QueueMessage(MySoft.IoC.Messages.ResponseMessage)">
+            <summary>
+            添加消息到队列
+            </summary>
+            <param name="resMsg"></param>
+        </member>
+        <member name="M:MySoft.IoC.Services.RemoteProxy.CallService(MySoft.IoC.Messages.RequestMessage)">
+            <summary>
+            调用方法
+            </summary>
+            <param name="reqMsg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.RemoteProxy.Dispose">
+            <summary>
+            清理资源
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.RemoteProxy.Node">
+            <summary>
+            远程节点
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.RemoteProxy.ServiceName">
+            <summary>
+            服务名称
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Services.CallbackProxy.InitRequest">
+            <summary>
+            初始化请求
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Services.CallbackProxy.reqService_OnCallback(System.Object,MySoft.IoC.Messages.ServiceMessageEventArgs)">
+            <summary>
+            消息回调
+            </summary>
+            <param name="sender"></param>
+            <param name="args"></param>
         </member>
         <member name="T:MySoft.IoC.Messages.ServiceMessageEventArgs">
             <summary>
@@ -96,6 +208,21 @@
         <member name="P:MySoft.IoC.Messages.ServiceMessageEventArgs.Client">
             <summary>
             返回通讯的Client对象
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.ErrorMessageEventArgs">
+            <summary>
+            错误消息事件参数
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ErrorMessageEventArgs.Request">
+            <summary>
+            请求信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ErrorMessageEventArgs.Error">
+            <summary>
+            错误信息
             </summary>
         </member>
         <member name="T:MySoft.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel">
@@ -134,6 +261,11 @@
             <summary>
             This event is raised when a new message is sent without any error.
             It does not guaranties that message is properly handled and processed by remote application.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Communication.Messengers.IMessenger.ErrorReceived">
+            <summary>
+            Receive error message.
             </summary>
         </member>
         <member name="P:MySoft.Communication.Scs.Communication.Messengers.IMessenger.WireProtocol">
@@ -227,6 +359,12 @@
             </summary>
             <param name="message">Received message</param>
         </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.OnErrorReceived(System.Exception)">
+            <summary>
+            Raises MessageReceived event.
+            </summary>
+            <param name="error"></param>
+        </member>
         <member name="E:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.MessageReceived">
             <summary>
             This event is raised when a new message is received.
@@ -236,6 +374,11 @@
             <summary>
             This event is raised when a new message is sent without any error.
             It does not guaranties that message is properly handled and processed by remote application.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.ErrorReceived">
+            <summary>
+            Receive error message.
             </summary>
         </member>
         <member name="E:MySoft.Communication.Scs.Communication.Channels.CommunicationChannelBase.Disconnected">
@@ -381,166 +524,9 @@
             Gets the current communication state.
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Messages.MessageBase">
+        <member name="T:MySoft.IoC.Messages.ScsCallbackMessage">
             <summary>
-            request base
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Messages.MessageBase.ReturnType">
-            <summary>
-            Gets or sets the returnType.
-            </summary>
-            <value>The returnType.</value>
-        </member>
-        <member name="P:MySoft.IoC.Messages.MessageBase.TransactionId">
-            <summary>
-            Gets or sets the transaction id.
-            </summary>
-            <value>The transaction id.</value>
-        </member>
-        <member name="P:MySoft.IoC.Messages.MessageBase.ServiceName">
-            <summary>
-            Gets or sets the name of the service.
-            </summary>
-            <value>The name of the service.</value>
-        </member>
-        <member name="P:MySoft.IoC.Messages.MessageBase.SubServiceName">
-            <summary>
-            Gets or sets the name of the sub service.
-            </summary>
-            <value>The name of the sub service.</value>
-        </member>
-        <member name="P:MySoft.IoC.Messages.MessageBase.Parameters">
-            <summary>
-            Gets or sets the parameters.
-            </summary>
-            <value>The parameters.</value>
-        </member>
-        <member name="P:MySoft.IoC.Messages.MessageBase.Expiration">
-            <summary>
-            Gets or sets the expiration.
-            </summary>
-            <value>The expiration.</value>
-        </member>
-        <member name="P:MySoft.IoC.Messages.MessageBase.Message">
-            <summary>
-            响应的消息
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.Messages.RequestMessage">
-            <summary>
-            The request msg.
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Messages.RequestMessage.AppName">
-            <summary>
-            Gets or sets the name of the appName.
-            </summary>
-            <value>The name of the appName.</value>
-        </member>
-        <member name="P:MySoft.IoC.Messages.RequestMessage.HostName">
-            <summary>
-            Gets or sets the name of the hostName.
-            </summary>
-            <value>The name of the hostName.</value>
-        </member>
-        <member name="P:MySoft.IoC.Messages.RequestMessage.Timeout">
-            <summary>
-            Gets or sets the timeout of the service.
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Messages.RequestMessage.IPAddress">
-            <summary>
-            Gets or sets the request address
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Messages.RequestMessage.Message">
-            <summary>
-            请求的消息
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.CastleFactory">
-            <summary>
-            The service factory.
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.#ctor(MySoft.IoC.Configuration.CastleFactoryConfiguration,MySoft.IoC.IServiceContainer)">
-            <summary>
-            Initializes a new instance of the <see cref="T:MySoft.IoC.CastleFactory"/> class.
-            </summary>
-            <param name="container">The container.</param>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.Create">
-            <summary>
-            Creates this instance.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.CreateNew(MySoft.IoC.Configuration.CastleFactoryConfiguration)">
-            <summary>
-            Creates this instance. Used in a multithreaded environment
-            </summary>
-            <param name="config"></param>
-            <param name="name">service name</param>
-            <returns>The service factoru new instance.</returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.RegisterCacheDependent(MySoft.Cache.ICacheDependent)">
-            <summary>
-            注册缓存依赖
-            </summary>
-            <param name="cache"></param>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.ResolveService``1">
-            <summary>
-            Gets local the service.
-            </summary>
-            <returns>The service implemetation instance.</returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.GetRemoteNodes">
-            <summary>
-            获取所有远程节点
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.GetService``1">
-            <summary>
-            Gets the service.
-            </summary>
-            <returns>The service implemetation instance.</returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.GetService``1(MySoft.IoC.Configuration.RemoteNode)">
-            <summary>
-            Gets the service.
-            </summary>
-            <param name="node">The node name.</param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.CastleFactory.GetService``1(System.String)">
-            <summary>
-            Gets the service.
-            </summary>
-            <param name="nodeKey">The node key.</param>
-            <returns></returns>
-        </member>
-        <member name="P:MySoft.IoC.CastleFactory.ServiceContainer">
-            <summary>
-            Gets the service container.
-            </summary>
-            <value>The service container.</value>
-        </member>
-        <member name="E:MySoft.IoC.CastleFactory.OnLog">
-            <summary>
-            OnLog event.
-            </summary>
-        </member>
-        <member name="E:MySoft.IoC.CastleFactory.OnError">
-            <summary>
-            OnError event.
-            </summary>
-        </member>
-        <member name="T:MySoft.Communication.Scs.Communication.Messages.ScsTextMessage">
-            <summary>
-            This message is used to send/receive a text as message data.
+            回调消息
             </summary>
         </member>
         <member name="T:MySoft.Communication.Scs.Communication.Messages.ScsMessage">
@@ -609,6 +595,321 @@
             It may be null if this is not a reply message.
             </summary>
         </member>
+        <member name="T:MySoft.IoC.Messages.TimeStatus">
+            <summary>
+            时间状态信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.SecondStatus">
+            <summary>
+            每秒服务器状态信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.SecondStatus.DataFlow">
+            <summary>
+            数据流量
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.SecondStatus.RequestCount">
+            <summary>
+            请求数
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.SecondStatus.SuccessCount">
+            <summary>
+            成功计数
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.SecondStatus.ErrorCount">
+            <summary>
+            错误数
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.SecondStatus.ElapsedTime">
+            <summary>
+            总耗时
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.SecondStatus.AverageDataFlow">
+            <summary>
+            平均数据流量（每次请求）
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.SecondStatus.AverageElapsedTime">
+            <summary>
+            平均耗时（每次请求）
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.TimeStatus.CounterTime">
+            <summary>
+            记数时间
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.TimeStatusCollection">
+            <summary>
+            时间状态集合
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Messages.TimeStatusCollection.GetOrCreate(System.DateTime)">
+            <summary>
+            获取或创建
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Messages.TimeStatusCollection.ToList">
+            <summary>
+            返回列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Messages.TimeStatusCollection.GetNewest">
+            <summary>
+            获取最后一条
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Messages.TimeStatusCollection.Clear">
+            <summary>
+            清除字典中的数据
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.TimeStatusCollection.Count">
+            <summary>
+            记录数
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.MessageBase">
+            <summary>
+            request base
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.ReturnType">
+            <summary>
+            Gets or sets the returnType.
+            </summary>
+            <value>The returnType.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.TransactionId">
+            <summary>
+            Gets or sets the transaction id.
+            </summary>
+            <value>The transaction id.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.ServiceName">
+            <summary>
+            Gets or sets the name of the service.
+            </summary>
+            <value>The name of the service.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.MethodName">
+            <summary>
+            Gets or sets the name of the method.
+            </summary>
+            <value>The name of the sub service.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.Parameters">
+            <summary>
+            Gets or sets the parameters.
+            </summary>
+            <value>The parameters.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MessageBase.Message">
+            <summary>
+            响应的消息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.RequestMessage">
+            <summary>
+            The request msg.
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.RequestMessage.AppName">
+            <summary>
+            Gets or sets the name of the appName.
+            </summary>
+            <value>The name of the appName.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.RequestMessage.HostName">
+            <summary>
+            Gets or sets the name of the hostName.
+            </summary>
+            <value>The name of the hostName.</value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.RequestMessage.IPAddress">
+            <summary>
+            Gets or sets the request address
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.RequestMessage.InvokeMethod">
+            <summary>
+            invoke method
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.RequestMessage.Message">
+            <summary>
+            请求的消息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.CastleFactory">
+            <summary>
+            The service factory.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.#ctor(MySoft.IoC.Configuration.CastleFactoryConfiguration,MySoft.IoC.IServiceContainer)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MySoft.IoC.CastleFactory"/> class.
+            </summary>
+            <param name="container">The container.</param>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.Create">
+            <summary>
+            Creates this instance.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.CreateNew(MySoft.IoC.Configuration.CastleFactoryConfiguration)">
+            <summary>
+            Creates this instance. Used in a multithreaded environment
+            </summary>
+            <param name="config"></param>
+            <param name="name">service name</param>
+            <returns>The service factoru new instance.</returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetDefaultNode">
+            <summary>
+            获取默认的节点
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetRemoteNode(System.String)">
+            <summary>
+            通过nodeKey查找节点
+            </summary>
+            <param name="nodeKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetRemoteNodes">
+            <summary>
+            获取所有远程节点
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetChannel``1">
+            <summary>
+            Create service channel.
+            </summary>
+            <returns>The service implemetation instance.</returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetChannel``1(System.String)">
+            <summary>
+            Create service channel.
+            </summary>
+            <param name="nodeKey">The node key.</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetChannel``1(MySoft.IoC.RemoteNode)">
+            <summary>
+            Create service channel.
+            </summary>
+            <param name="node">The node name.</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetChannel``1(MySoft.IoC.IService,System.Boolean)">
+            <summary>
+            Create service channel.
+            </summary>
+            <param name="node">The node name.</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetChannel``1(System.String,System.Object)">
+            <summary>
+            获取回调发布服务
+            </summary>
+            <typeparam name="IPublishService"></typeparam>
+            <param name="nodeKey"></param>
+            <param name="callback"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetChannel``1(MySoft.IoC.RemoteNode,System.Object)">
+            <summary>
+            获取回调发布服务
+            </summary>
+            <typeparam name="IPublishService"></typeparam>
+            <param name="node"></param>
+            <param name="callback"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.Invoke(MySoft.IoC.Messages.InvokeMessage)">
+            <summary>
+            调用分布式服务
+            </summary>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.Invoke(System.String,MySoft.IoC.Messages.InvokeMessage)">
+            <summary>
+            调用分布式服务
+            </summary>
+            <param name="message"></param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetLocalService``1">
+            <summary>
+            获取本地服务
+            </summary>
+            <typeparam name="IServiceInterfaceType"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetNodeKey(System.String)">
+            <summary>
+            获取节点名称
+            </summary>
+            <param name="nodeKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetInvokeData(MySoft.IoC.Messages.InvokeMessage,MySoft.IoC.IService)">
+            <summary>
+            获取调用的数据
+            </summary>
+            <param name="message"></param>
+            <param name="service"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleFactory.GetLocalService(MySoft.IoC.Messages.InvokeMessage)">
+            <summary>
+            获取本地服务
+            </summary>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.IoC.CastleFactory.Proxies">
+            <summary>
+            所有代理信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.CastleFactory.ServiceContainer">
+            <summary>
+            Gets the service container.
+            </summary>
+            <value>The service container.</value>
+        </member>
+        <member name="E:MySoft.IoC.CastleFactory.OnLog">
+            <summary>
+            OnLog event.
+            </summary>
+        </member>
+        <member name="E:MySoft.IoC.CastleFactory.OnError">
+            <summary>
+            OnError event.
+            </summary>
+        </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Messages.ScsTextMessage">
+            <summary>
+            This message is used to send/receive a text as message data.
+            </summary>
+        </member>
         <member name="M:MySoft.Communication.Scs.Communication.Messages.ScsTextMessage.#ctor">
             <summary>
             Creates a new ScsTextMessage object.
@@ -657,6 +958,22 @@
             Message object that is associated with this event.
             </summary>
         </member>
+        <member name="T:MySoft.Communication.Scs.Communication.Messages.ErrorEventArgs">
+            <summary>
+            Error message args.
+            </summary>
+        </member>
+        <member name="M:MySoft.Communication.Scs.Communication.Messages.ErrorEventArgs.#ctor(System.Exception)">
+            <summary>
+            Creates a new MessageEventArgs object.
+            </summary>
+            <param name="message">Message object that is associated with this event</param>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Communication.Messages.ErrorEventArgs.Error">
+            <summary>
+            Message error.
+            </summary>
+        </member>
         <member name="T:MySoft.Communication.Scs.Client.ScsClientBase">
             <summary>
             This class provides base functionality for client classes.
@@ -665,6 +982,11 @@
         <member name="T:MySoft.Communication.Scs.Client.IScsClient">
             <summary>
             Represents a client to connect to server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Client.IScsClient.DisconnectTimeout">
+            <summary>
+            连接断开时间
             </summary>
         </member>
         <member name="F:MySoft.Communication.Scs.Client.ScsClientBase.DefaultConnectionAttemptTimeout">
@@ -766,6 +1088,12 @@
             </summary>
             <param name="message">Received message</param>
         </member>
+        <member name="M:MySoft.Communication.Scs.Client.ScsClientBase.OnErrorReceived(System.Exception)">
+            <summary>
+            Raises MessageReceived event.
+            </summary>
+            <param name="error"></param>
+        </member>
         <member name="E:MySoft.Communication.Scs.Client.ScsClientBase.MessageReceived">
             <summary>
             This event is raised when a new message is received.
@@ -777,6 +1105,11 @@
             It does not guaranties that message is properly handled and processed by remote application.
             </summary>
         </member>
+        <member name="E:MySoft.Communication.Scs.Client.ScsClientBase.ErrorReceived">
+            <summary>
+            Receive error message.
+            </summary>
+        </member>
         <member name="E:MySoft.Communication.Scs.Client.ScsClientBase.Connected">
             <summary>
             This event is raised when communication channel closed.
@@ -785,6 +1118,11 @@
         <member name="E:MySoft.Communication.Scs.Client.ScsClientBase.Disconnected">
             <summary>
             This event is raised when client disconnected from server.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Client.ScsClientBase.DisconnectTimeout">
+            <summary>
+            Auto disconnected
             </summary>
         </member>
         <member name="P:MySoft.Communication.Scs.Client.ScsClientBase.ConnectTimeout">
@@ -813,6 +1151,85 @@
             Gets the time of the last succesfully received message.
             </summary>
         </member>
+        <member name="T:MySoft.IoC.InvokeCaller">
+            <summary>
+            调用者
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.InvokeCaller.#ctor(System.String,MySoft.IoC.IService)">
+            <summary>
+            实例化InvokeCaller
+            </summary>
+            <param name="appName"></param>
+            <param name="service"></param>
+        </member>
+        <member name="M:MySoft.IoC.InvokeCaller.CallMethod(MySoft.IoC.Messages.InvokeMessage)">
+            <summary>
+            调用方法
+            </summary>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.IoC.HttpServer.HttpServiceException">
+            <summary>
+            http服务异常
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpServiceException.Code">
+            <summary>
+            代码
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpServiceException.Message">
+            <summary>
+            消息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.ServerStatus">
+            <summary>
+            服务器状态信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ServerStatus.StartDate">
+            <summary>
+            开始时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ServerStatus.TotalSeconds">
+            <summary>
+            汇总时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ServerStatus.Summary">
+            <summary>
+            汇总状态信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ServerStatus.Highest">
+            <summary>
+            最高状态信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ServerStatus.Latest">
+            <summary>
+            最新状态信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Services.WaitResult">
+            <summary>
+            返回值对象
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.WaitResult.Reset">
+            <summary>
+            信号量对象
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.WaitResult.Message">
+            <summary>
+            消息对象
+            </summary>
+        </member>
         <member name="T:MySoft.IoC.CastleService">
             <summary>
             Castle服务
@@ -823,100 +1240,40 @@
             服务监控
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Status.IStatusService">
-            <summary>
-            状态服务 (超时为30秒，缓存1秒)
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.GetServiceInfoList">
-            <summary>
-            获取服务信息列表
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.ClearStatus">
-            <summary>
-            清除服务器状态
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.GetServerStatus">
-            <summary>
-            获取服务状态信息（包括SummaryStatus，HighestStatus，TimeStatus）
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.GetSummaryStatus">
-            <summary>
-            获取汇总状态信息
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.GetHighestStatus">
-            <summary>
-            获取最高状态信息
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.GetLatestStatus">
-            <summary>
-            获取最后一次服务状态
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.GetTimeStatusList">
-            <summary>
-            获取时段的服务状态信息
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.GetConnectInfoList">
-            <summary>
-            获取所有的客户端信息
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.GetProcessInfos">
-            <summary>
-            获取服务器进程信息
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.GetProcessInfos(System.Int32[])">
-            <summary>
-            获取服务器进程信息
-            </summary>
-            <param name="ids"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Status.IStatusService.GetProcessInfos(System.String[])">
-            <summary>
-            获取服务器进程信息
-            </summary>
-            <param name="names"></param>
-            <returns></returns>
-        </member>
         <member name="M:MySoft.IoC.ServerMoniter.#ctor(MySoft.IoC.Configuration.CastleServiceConfiguration)">
             <summary>
             实例化ServerMoniter
             </summary>
             <param name="config"></param>
         </member>
-        <member name="M:MySoft.IoC.ServerMoniter.GetServiceInfoList">
+        <member name="M:MySoft.IoC.ServerMoniter.Dispose">
+            <summary>
+            销毁资源
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.ContainsService(System.String)">
+            <summary>
+            是否存在服务
+            </summary>
+            <param name="serviceName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetServiceList">
             <summary>
             获取服务信息列表
             </summary>
             <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ServerMoniter.ClearStatus">
-            <summary>
-            清除所有服务器状态
-            </summary>
         </member>
         <member name="M:MySoft.IoC.ServerMoniter.GetServerStatus">
             <summary>
             服务状态信息
             </summary>
             <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.ClearServerStatus">
+            <summary>
+            清除所有服务器状态
+            </summary>
         </member>
         <member name="M:MySoft.IoC.ServerMoniter.GetLatestStatus">
             <summary>
@@ -942,36 +1299,88 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.ServerMoniter.GetProcessInfos">
-            <summary>
-            获取服务器进程信息
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ServerMoniter.GetProcessInfos(System.Int32[])">
-            <summary>
-            获取服务器进程信息
-            </summary>
-            <param name="ids"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ServerMoniter.GetProcessInfos(System.String[])">
-            <summary>
-            获取服务器进程信息
-            </summary>
-            <param name="names"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ServerMoniter.GetConnectInfoList">
+        <member name="M:MySoft.IoC.ServerMoniter.GetClientList">
             <summary>
             获取连接客户信息
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.ServerMoniter.Dispose">
+        <member name="M:MySoft.IoC.ServerMoniter.GetAppClients">
             <summary>
-            销毁资源
+            获取所有应用客户端
             </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.Subscribe(System.String[])">
+            <summary>
+            订阅服务
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.Subscribe(System.Double,System.String[])">
+            <summary>
+            订阅服务
+            </summary>
+            <param name="callTimeout">调用超时时间</param>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.Subscribe(System.Int32,System.String[])">
+            <summary>
+            订阅服务
+            </summary>
+            <param name="statusTimer">定时推送时间</param>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.Subscribe(System.Double,System.Int32,System.String[])">
+            <summary>
+            订阅服务
+            </summary>
+            <param name="callTimeout">调用超时时间</param>
+            <param name="statusTimer">定时推送时间</param>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.Subscribe(MySoft.IoC.SubscribeOptions,System.String[])">
+            <summary>
+            订阅服务
+            </summary>
+            <param name="options">订阅选项</param>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.Unsubscribe">
+            <summary>
+            退订
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetSubscribeTypes">
+            <summary>
+            获取订阅的类型
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.SubscribeType(System.String)">
+            <summary>
+            订阅发布类型
+            </summary>
+            <param name="subscribeType"></param>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.UnsubscribeType(System.String)">
+            <summary>
+            退订发布类型
+            </summary>
+            <param name="subscribeType"></param>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.GetSubscribeApps">
+            <summary>
+            获取订阅的应用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.SubscribeApp(System.String)">
+            <summary>
+            订阅发布应用
+            </summary>
+            <param name="appName"></param>
+        </member>
+        <member name="M:MySoft.IoC.ServerMoniter.UnsubscribeApp(System.String)">
+            <summary>
+            退订发布应用
+            </summary>
+            <param name="appName"></param>
         </member>
         <member name="E:MySoft.IoC.ServerMoniter.OnLog">
             <summary>
@@ -989,20 +1398,15 @@
             </summary>
             <param name="config"></param>
         </member>
+        <member name="M:MySoft.IoC.CastleService.Instance_OnError(System.Exception)">
+            <summary>
+            处理异常信息
+            </summary>
+            <param name="error"></param>
+        </member>
         <member name="M:MySoft.IoC.CastleService.Start">
             <summary>
             启用服务
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.Start(System.Boolean)">
-            <summary>
-            启用服务
-            </summary>
-            <param name="isWriteLog"></param>
-        </member>
-        <member name="M:MySoft.IoC.CastleService.Publish">
-            <summary>
-            发布服务
             </summary>
         </member>
         <member name="M:MySoft.IoC.CastleService.Stop">
@@ -1015,19 +1419,19 @@
             资源释放
             </summary>
         </member>
-        <member name="M:MySoft.IoC.CastleService.GetSendResponse(MySoft.Communication.Scs.Server.IScsServerClient,MySoft.IoC.Messages.RequestMessage)">
+        <member name="M:MySoft.IoC.CastleService.GetSendResponse(MySoft.Communication.Scs.Server.IScsServerClient,MySoft.IoC.Messages.RequestMessage,MySoft.IoC.Messages.CallEventArgs@)">
             <summary>
             获取响应信息并发送
             </summary>
             <param name="client"></param>
             <param name="reqMsg"></param>
         </member>
-        <member name="M:MySoft.IoC.CastleService.CallMethod(MySoft.IoC.Messages.RequestMessage)">
+        <member name="M:MySoft.IoC.CastleService.SendMessage(MySoft.Communication.Scs.Server.IScsServerClient,MySoft.Communication.Scs.Communication.Messages.IScsMessage)">
             <summary>
-            调用 方法
+            发送消息
             </summary>
-            <param name="reqMsg"></param>
-            <returns></returns>
+            <param name="client"></param>
+            <param name="message"></param>
         </member>
         <member name="M:MySoft.IoC.CastleService.IsServiceCounter(MySoft.IoC.Messages.RequestMessage)">
             <summary>
@@ -1035,11 +1439,22 @@
             </summary>
             <param name="request"></param>
         </member>
-        <member name="M:MySoft.IoC.CastleService.GetConnectInfoList">
+        <member name="M:MySoft.IoC.CastleService.GetAppClients">
+            <summary>
+            获取所有的客户端信息
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.CastleService.GetClientList">
             <summary>
             获取连接客户信息
             </summary>
             <returns></returns>
+        </member>
+        <member name="E:MySoft.IoC.CastleService.OnCalling">
+            <summary>
+            调用方法委托
+            </summary>
         </member>
         <member name="P:MySoft.IoC.CastleService.Container">
             <summary>
@@ -1049,6 +1464,11 @@
         <member name="P:MySoft.IoC.CastleService.ServerUrl">
             <summary>
             获取服务的ServerUrl地址
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.CastleService.ServiceCount">
+            <summary>
+            服务数
             </summary>
         </member>
         <member name="T:MySoft.Communication.Scs.Communication.Protocols.IScsWireProtocolFactory">
@@ -1062,6 +1482,22 @@
             </summary>
             <returns>Newly created wire protocol object</returns>
         </member>
+        <member name="T:MySoft.IoC.Messages.ScsClientMessage">
+            <summary>
+            客户端信息
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Messages.ScsClientMessage.#ctor(MySoft.IoC.Messages.AppClient)">
+            <summary>
+            客户端信息
+            </summary>
+            <param name="client"></param>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ScsClientMessage.Client">
+            <summary>
+            客户端信息
+            </summary>
+        </member>
         <member name="T:MySoft.IoC.Messages.CustomWireProtocolFactory">
             <summary>
             自定义工厂类
@@ -1072,6 +1508,159 @@
             创建WireProtocol
             </summary>
             <returns></returns>
+        </member>
+        <member name="T:MySoft.IoC.MessageListener">
+            <summary>
+            消息监听
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.MessageListener.#ctor(System.Net.EndPoint,MySoft.IoC.IStatusListener)">
+            <summary>
+            初始化消息监听器
+            </summary>
+            <param name="endPoint"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageListener.#ctor(System.Net.EndPoint,MySoft.IoC.IStatusListener,MySoft.IoC.SubscribeOptions,System.String[])">
+            <summary>
+            初始化消息监听器
+            </summary>
+            <param name="endPoint"></param>
+            <param name="innerListener"></param>
+            <param name="options"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageListener.Notify(System.Collections.Generic.IList{MySoft.IoC.Messages.ClientInfo})">
+            <summary>
+            推送客户端连接信息（只有第一次订阅的时候推送）
+            </summary>
+            <param name="clientInfos"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageListener.Notify(MySoft.IoC.Messages.ConnectInfo)">
+            <summary>
+            通知消息
+            </summary>
+            <param name="connectInfo"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageListener.Notify(System.String,System.Int32,MySoft.IoC.Messages.AppClient)">
+            <summary>
+            通知消息
+            </summary>
+            <param name="ipAddress"></param>
+            <param name="port"></param>
+            <param name="appClient"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageListener.Notify(MySoft.IoC.Messages.ServerStatus)">
+            <summary>
+            通知消息
+            </summary>
+            <param name="status"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageListener.Notify(MySoft.IoC.Messages.CallError)">
+            <summary>
+            错误信息
+            </summary>
+            <param name="callError"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageListener.Notify(MySoft.IoC.Messages.CallTimeout)">
+            <summary>
+            超时信息
+            </summary>
+            <param name="callTimeout"></param>
+        </member>
+        <member name="P:MySoft.IoC.MessageListener.PushTime">
+            <summary>
+            推送时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.MessageListener.RemoteEndPoint">
+            <summary>
+            远程节点
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.MessageListener.Options">
+            <summary>
+            订阅选项
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.MessageListener.Types">
+            <summary>
+            订阅的类型
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.MessageListener.Apps">
+            <summary>
+            订阅的应用
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.MessageCenter">
+            <summary>
+            消息中心；
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.MessageCenter.#ctor">
+            <summary>
+            保证单例的私有构造函数；
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.MessageCenter.GetListener(System.Net.EndPoint)">
+            <summary>
+            获取监控器
+            </summary>
+            <param name="endPoint"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.MessageCenter.AddListener(MySoft.IoC.MessageListener)">
+            <summary>
+            添加监听器
+            </summary>
+            <param name="listener"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageCenter.RemoveListener(MySoft.IoC.MessageListener)">
+            <summary>
+            移除监听器
+            </summary>
+            <param name="listener"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageCenter.Notify(MySoft.IoC.Messages.ServerStatus)">
+            <summary>
+            响应状态信息
+            </summary>
+            <param name="status"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageCenter.Notify(MySoft.IoC.Messages.CallEventArgs)">
+            <summary>
+            调用事件信息
+            </summary>
+            <param name="callArgs"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageCenter.Notify(MySoft.IoC.Messages.ConnectInfo)">
+            <summary>
+            通知消息
+            </summary>
+            <param name="connectInfo"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageCenter.Notify(System.String,System.Int32,MySoft.IoC.Messages.AppClient)">
+            <summary>
+            改变客户端信息
+            </summary>
+            <param name="ipAddress"></param>
+            <param name="port"></param>
+            <param name="appClient"></param>
+        </member>
+        <member name="M:MySoft.IoC.MessageCenter.Notify(System.Collections.Generic.IList{MySoft.IoC.Messages.ClientInfo})">
+            <summary>
+            推送客户端连接信息（只有第一次订阅的时候推送）
+            </summary>
+            <param name="clientInfos"></param>
+        </member>
+        <member name="P:MySoft.IoC.MessageCenter.Instance">
+            <summary>
+            返回 MessageCenter 的唯一实例；
+            </summary>
+        </member>
+        <member name="E:MySoft.IoC.MessageCenter.OnError">
+            <summary>
+            错误处理Handler
+            </summary>
         </member>
         <member name="T:MySoft.IoC.Aspect.InterceptorSelector">
             <summary>
@@ -1091,6 +1680,111 @@
         <member name="P:MySoft.IoC.Aspect.AspectProxyAttribute.Arguments">
             <summary>
             拦截器参数
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.ConnectInfo">
+            <summary>
+            连接信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.AppClient">
+            <summary>
+            客户端信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.AppClient.AppName">
+            <summary>
+            应用名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.AppClient.IPAddress">
+            <summary>
+            IP地址
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.AppClient.HostName">
+            <summary>
+            客户端名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ConnectInfo.ConnectTime">
+            <summary>
+            调用时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ConnectInfo.Port">
+            <summary>
+            Port
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ConnectInfo.ServerIPAddress">
+            <summary>
+            服务端IP
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ConnectInfo.ServerPort">
+            <summary>
+            服务端Port
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ConnectInfo.Connected">
+            <summary>
+            连接状态
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.CallError">
+            <summary>
+            调用异常信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallError.Caller">
+            <summary>
+            调用信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallError.Message">
+            <summary>
+            错误信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallError.Error">
+            <summary>
+            错误信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallError.HtmlError">
+            <summary>
+            html错误信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallError.CallTime">
+            <summary>
+            调用时间
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.CallTimeout">
+            <summary>
+            调用超时
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallTimeout.Caller">
+            <summary>
+            调用信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallTimeout.CallTime">
+            <summary>
+            调用时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallTimeout.Count">
+            <summary>
+            数据数
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallTimeout.ElapsedTime">
+            <summary>
+            总耗时
             </summary>
         </member>
         <member name="T:MySoft.IoC.Configuration.CastleFactoryConfiguration">
@@ -1116,29 +1810,16 @@
             </summary>
             <value>The type.</value>
         </member>
+        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.Times">
+            <summary>
+            Gets or sets the times
+            </summary>
+        </member>
         <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.AppName">
             <summary>
             Gets or sets the app name.
             </summary>
             <value>The host name.</value>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.Timeout">
-            <summary>
-            Gets or sets the timeout
-            </summary>
-            <value>The timeout.</value>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.CacheTime">
-            <summary>
-            Gets or sets the cachetime
-            </summary>
-            <value>The cachetime.</value>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.LogTime">
-            <summary>
-            Gets or sets the logtime
-            </summary>
-            <value>The logtime.</value>
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.Default">
             <summary>
@@ -1149,6 +1830,12 @@
         <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.ThrowError">
             <summary>
             Gets or sets the throwerror
+            </summary>
+            <value>The throwerror.</value>
+        </member>
+        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.Json">
+            <summary>
+            Gets or sets the json
             </summary>
             <value>The throwerror.</value>
         </member>
@@ -1186,30 +1873,31 @@
             <param name="message">Exception message</param>
             <param name="innerException">Inner exception</param>
         </member>
+        <member name="T:MySoft.IoC.HttpServer.HttpDocument">
+            <summary>
+            API文档类
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpDocument.MakeDocument(System.String)">
+            <summary>
+            生成文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpDocument.GetItemDocument(System.Collections.Generic.KeyValuePair{System.String,MySoft.IoC.HttpServer.HttpCallerInfo},System.String,System.String)">
+            <summary>
+            获取Item文档
+            </summary>
+            <param name="kv"></param>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
         <member name="T:MySoft.IoC.Services.BaseService">
             <summary>
             The base class of services.
             </summary>
         </member>
-        <member name="T:MySoft.IoC.IService">
-            <summary>
-            interface of all services.
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.IService.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
-            <summary>
-            Calls the service.
-            </summary>
-            <param name="reqMsg">The MSG.</param>
-            <returns>The result.</returns>
-        </member>
-        <member name="P:MySoft.IoC.IService.ServiceName">
-            <summary>
-            Gets the name of the service.
-            </summary>
-            <value>The name of the service.</value>
-        </member>
-        <member name="F:MySoft.IoC.Services.BaseService.logger">
+        <member name="F:MySoft.IoC.Services.BaseService.container">
             <summary>
              The service logger
             </summary>
@@ -1219,7 +1907,7 @@
             The service name.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Services.BaseService.#ctor(MySoft.Logger.ILog,System.String)">
+        <member name="M:MySoft.IoC.Services.BaseService.#ctor(MySoft.IoC.IServiceContainer,System.Type)">
             <summary>
             Initializes a new instance of the <see cref="T:MySoft.IoC.Services.BaseService"/> class.
             </summary>
@@ -1232,7 +1920,7 @@
             <param name="reqMsg">The MSG.</param>
             <returns>The msg.</returns>
         </member>
-        <member name="M:MySoft.IoC.Services.BaseService.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
+        <member name="M:MySoft.IoC.Services.BaseService.CallService(MySoft.IoC.Messages.RequestMessage)">
             <summary>
             Calls the service.
             </summary>
@@ -1244,62 +1932,6 @@
             Gets the name of the service.
             </summary>
             <value>The name of the service.</value>
-        </member>
-        <member name="T:MySoft.IoC.Configuration.RemoteNode">
-            <summary>
-            远程节点
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Configuration.RemoteNode.Parse(System.String,System.Int32)">
-            <summary>
-            返回一个远程节点
-            </summary>
-            <param name="ip"></param>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Configuration.RemoteNode.Parse(System.String)">
-            <summary>
-            返回一个远程节点
-            </summary>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.RemoteNode.Key">
-            <summary>
-            Gets or sets the key.
-            </summary>
-            <value>The name.</value>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.RemoteNode.IP">
-            <summary>
-            Gets or sets the ip.
-            </summary>
-            <value>The server.</value>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.RemoteNode.Port">
-            <summary>
-            Gets or sets the port.
-            </summary>
-            <value>The port.</value>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.RemoteNode.Encrypt">
-            <summary>
-            Gets or sets the encrypt.
-            </summary>
-            <value>The encrypt.</value>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.RemoteNode.Compress">
-            <summary>
-            Gets or sets the compress.
-            </summary>
-            <value>The format.</value>
-        </member>
-        <member name="P:MySoft.IoC.Configuration.RemoteNode.MaxPool">
-            <summary>
-            Gets or sets the maxpool.
-            </summary>
-            <value>The maxpool.</value>
         </member>
         <member name="T:MySoft.Communication.Scs.Communication.Protocols.IScsWireProtocol">
             <summary>
@@ -1427,6 +2059,33 @@
             Default: 20 seconds.
             </summary>
         </member>
+        <member name="T:MySoft.IoC.ServiceCaller">
+            <summary>
+            服务调用者
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServiceCaller.#ctor(MySoft.IoC.IServiceContainer,System.Collections.Generic.IDictionary{System.String,System.Type})">
+            <summary>
+            初始化ServiceCaller
+            </summary>
+            <param name="container"></param>
+            <param name="callbackTypes"></param>
+        </member>
+        <member name="M:MySoft.IoC.ServiceCaller.CallMethod(MySoft.Communication.Scs.Server.IScsServerClient,MySoft.IoC.Messages.RequestMessage,MySoft.IoC.Messages.AppCaller,System.Int64@)">
+            <summary>
+            调用方法
+            </summary>
+            <param name="client"></param>
+            <param name="reqMsg"></param>
+            <param name="caller"></param>
+            <param name="elapsedMilliseconds"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.ServiceCaller.Dispose">
+            <summary>
+            清理资源
+            </summary>
+        </member>
         <member name="T:MySoft.IoC.SimpleServiceContainer">
             <summary>
             The simple service container.
@@ -1436,6 +2095,25 @@
             <summary>
             The service container interface.
             </summary>
+        </member>
+        <member name="T:MySoft.IoC.IContainer">
+            <summary>
+            容器接口
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.IContainer.Resolve``1">
+            <summary>
+            Resolve local service
+            </summary>
+            <typeparam name="TService"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IContainer.Resolve``1(System.String)">
+            <summary>
+            Resolve local service
+            </summary>
+            <typeparam name="TService"></typeparam>
+            <returns></returns>
         </member>
         <member name="M:MySoft.IoC.IServiceContainer.RegisterComponent(System.String,System.Object)">
             <summary>
@@ -1464,10 +2142,31 @@
             </summary>
             <param name="obj">The obj.</param>
         </member>
+        <member name="M:MySoft.IoC.IServiceContainer.Resolve(System.Type)">
+            <summary>
+            Resolve local service
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IServiceContainer.Resolve(System.String)">
+            <summary>
+            Resolve local service
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.IoC.IServiceContainer.GetInterfaces``1">
             <summary>
-            获取约束的接口
+            Get contract interface
             </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IServiceContainer.Contains``1(System.String)">
+            <summary>
+            Contains service
+            </summary>
+            <param name="serviceName"></param>
             <returns></returns>
         </member>
         <member name="P:MySoft.IoC.IServiceContainer.Kernel">
@@ -1488,9 +2187,9 @@
             </summary>
             <value></value>
         </member>
-        <member name="P:MySoft.IoC.IServiceContainer.Cache">
+        <member name="P:MySoft.IoC.IServiceContainer.ServiceCache">
             <summary>
-            缓存依赖
+            Get service cache.
             </summary>
         </member>
         <member name="M:MySoft.IoC.SimpleServiceContainer.#ctor(MySoft.IoC.CastleFactoryType)">
@@ -1533,12 +2232,46 @@
             </summary>
             <param name="obj">The obj.</param>
         </member>
-        <member name="M:MySoft.IoC.SimpleServiceContainer.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
+        <member name="M:MySoft.IoC.SimpleServiceContainer.Resolve(System.Type)">
+            <summary>
+            Resolve local service
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.SimpleServiceContainer.Resolve(System.String)">
+            <summary>
+            Resolve local service
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.SimpleServiceContainer.Resolve``1">
+            <summary>
+            Resolve local service
+            </summary>
+            <typeparam name="TService"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.SimpleServiceContainer.Resolve``1(System.String)">
+            <summary>
+            Resolve local service
+            </summary>
+            <typeparam name="TService"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.SimpleServiceContainer.CallService(MySoft.IoC.Messages.RequestMessage)">
             <summary>
             Calls the service.
             </summary>
             <param name="reqMsg"></param>
-            <param name="logTimeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.SimpleServiceContainer.Contains``1(System.String)">
+            <summary>
+            是否包含服务
+            </summary>
+            <param name="serviceName"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.IoC.SimpleServiceContainer.GetInterfaces``1">
@@ -1557,23 +2290,24 @@
             输出日志
             </summary>
             <param name="log"></param>
+            <param name="type"></param>
         </member>
         <member name="M:MySoft.IoC.SimpleServiceContainer.WriteError(System.Exception)">
             <summary>
             输出错误
             </summary>
-            <param name="exception"></param>
-        </member>
-        <member name="P:MySoft.IoC.SimpleServiceContainer.Cache">
-            <summary>
-            缓存依赖
-            </summary>
+            <param name="error"></param>
         </member>
         <member name="P:MySoft.IoC.SimpleServiceContainer.Kernel">
             <summary>
             Gets the kernel.
             </summary>
             <value>The kernel.</value>
+        </member>
+        <member name="P:MySoft.IoC.SimpleServiceContainer.ServiceCache">
+            <summary>
+            Get the cache
+            </summary>
         </member>
         <member name="P:MySoft.IoC.SimpleServiceContainer.Item(System.String)">
             <summary>
@@ -1607,19 +2341,29 @@
             The response msg.
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Messages.ResponseMessage.Data">
+        <member name="P:MySoft.IoC.Messages.ResponseMessage.Value">
             <summary>
             Gets or sets the data.
             </summary>
             <value>The data.</value>
         </member>
-        <member name="P:MySoft.IoC.Messages.ResponseMessage.Exception">
+        <member name="P:MySoft.IoC.Messages.ResponseMessage.Error">
             <summary>
             Gets or sets the exception.
             </summary>
             <value>The exception.</value>
         </member>
-        <member name="P:MySoft.IoC.Messages.ResponseMessage.RowCount">
+        <member name="P:MySoft.IoC.Messages.ResponseMessage.IsError">
+            <summary>
+            是否有异常
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ResponseMessage.IsBusinessError">
+            <summary>
+            是否是业务异常
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ResponseMessage.Count">
             <summary>
             记录数
             </summary>
@@ -2089,17 +2833,135 @@
             </summary>
             <value>The types of the model.</value>
         </member>
-        <member name="T:MySoft.IoC.ServiceInterpreter">
+        <member name="T:MySoft.IoC.AppClientComparer">
             <summary>
-            服务解析器
+            Appclient 对比类
             </summary>
         </member>
-        <member name="M:MySoft.IoC.ServiceInterpreter.ProcessResource(Castle.Core.Resource.IResource,Castle.MicroKernel.SubSystems.Configuration.IConfigurationStore)">
+        <member name="M:MySoft.IoC.AppClientComparer.Equals(MySoft.IoC.Messages.AppClient,MySoft.IoC.Messages.AppClient)">
             <summary>
-            处理资源
+            数据对比
             </summary>
-            <param name="source"></param>
-            <param name="store"></param>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.AppClientComparer.GetHashCode(MySoft.IoC.Messages.AppClient)">
+            <summary>
+            获取hash值
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.IoC.Messages.ServiceInfo">
+            <summary>
+            服务情况
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ServiceInfo.Assembly">
+            <summary>
+            程序集
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ServiceInfo.Name">
+            <summary>
+            服务名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ServiceInfo.FullName">
+            <summary>
+            服务全称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ServiceInfo.Methods">
+            <summary>
+            方法信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.MethodInfo">
+            <summary>
+            方法信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MethodInfo.Name">
+            <summary>
+            方法名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MethodInfo.FullName">
+            <summary>
+            服务全称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.MethodInfo.Parameters">
+            <summary>
+            参数信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.ParameterInfo">
+            <summary>
+            参数信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterInfo.Name">
+            <summary>
+            参数名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterInfo.TypeName">
+            <summary>
+            参数类型
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterInfo.TypeFullName">
+            <summary>
+            参数类型
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterInfo.IsByRef">
+            <summary>
+            是否引用类型
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterInfo.IsOut">
+            <summary>
+            是否输出类型
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterInfo.IsEnum">
+            <summary>
+            是否枚举
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterInfo.IsPrimitive">
+            <summary>
+            是否简单类型
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterInfo.EnumValue">
+            <summary>
+            枚举值
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterInfo.SubParameters">
+            <summary>
+            子参数信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.EnumInfo">
+            <summary>
+            枚举信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.EnumInfo.Name">
+            <summary>
+            枚举名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.EnumInfo.Value">
+            <summary>
+            枚举值
+            </summary>
         </member>
         <member name="T:MySoft.IoC.Messages.ScsResultMessage">
             <summary>
@@ -2207,7 +3069,7 @@
             AOP工厂类
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Aspect.AspectFactory.CreateProxy(System.Type,MySoft.IoC.Aspect.AspectInterceptor[])">
+        <member name="M:MySoft.IoC.Aspect.AspectFactory.CreateProxy(System.Type,Castle.DynamicProxy.StandardInterceptor[])">
             <summary>
             创建一个实例方式的拦截器
             </summary>
@@ -2215,7 +3077,7 @@
             <param name="interceptors"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Aspect.AspectFactory.CreateProxy``1(MySoft.IoC.Aspect.AspectInterceptor[])">
+        <member name="M:MySoft.IoC.Aspect.AspectFactory.CreateProxy``1(Castle.DynamicProxy.StandardInterceptor[])">
             <summary>
             创建一个实例方式的拦截器
             </summary>
@@ -2223,7 +3085,7 @@
             <param name="interceptors"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Aspect.AspectFactory.CreateProxy``2(MySoft.IoC.Aspect.AspectInterceptor[])">
+        <member name="M:MySoft.IoC.Aspect.AspectFactory.CreateProxy``2(Castle.DynamicProxy.StandardInterceptor[])">
             <summary>
             创建一个接口方式的拦截器
             </summary>
@@ -2232,25 +3094,54 @@
             <param name="interceptors"></param>
             <returns></returns>
         </member>
-        <member name="T:MySoft.IoC.Status.ServiceInfo">
+        <member name="T:MySoft.IoC.Messages.HighestStatus">
             <summary>
-            服务信息
+            最高峰状态
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ServiceInfo.Assembly">
+        <member name="P:MySoft.IoC.Messages.HighestStatus.RequestCount">
             <summary>
-            程序集
+            请求数
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ServiceInfo.Name">
+        <member name="P:MySoft.IoC.Messages.HighestStatus.DataFlowCounterTime">
             <summary>
-            服务名称
+            最高流量发生时间
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ServiceInfo.Methods">
+        <member name="P:MySoft.IoC.Messages.HighestStatus.RequestCountCounterTime">
             <summary>
-            服务方法
+            最大请求发生时间
             </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.HighestStatus.SuccessCountCounterTime">
+            <summary>
+            最多成功请求发生时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.HighestStatus.ErrorCountCounterTime">
+            <summary>
+            最多错误请求发生时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.HighestStatus.ElapsedTimeCounterTime">
+            <summary>
+            最耗时请求发生时间
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.CallbackInvocationHandler">
+            <summary>
+            回调代理
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.CallbackInvocationHandler.Invoke(System.Object,System.Reflection.MethodInfo,System.Object[])">
+            <summary>
+            响应消息
+            </summary>
+            <param name="proxy"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
         </member>
         <member name="T:MySoft.Communication.Scs.Server.ScsServerFactory">
             <summary>
@@ -2393,94 +3284,49 @@
             应用名称
             </summary>
         </member>
-        <member name="P:MySoft.IoC.IoCException.ExceptionHeader">
+        <member name="P:MySoft.IoC.IoCException.ServiceName">
+            <summary>
+            服务名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.IoCException.ErrorHeader">
             <summary>
             错误头
             </summary>
         </member>
-        <member name="P:MySoft.IoC.IoCException.Message">
-            <summary>
-            返回消息
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.Status.ServerStatus">
-            <summary>
-            服务器状态信息
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.ServerStatus.StartDate">
-            <summary>
-            开始时间
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.ServerStatus.TotalSeconds">
-            <summary>
-            汇总时间
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.ServerStatus.Summary">
+        <member name="T:MySoft.IoC.Messages.SummaryStatus">
             <summary>
             汇总状态信息
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ServerStatus.Highest">
+        <member name="P:MySoft.IoC.Messages.SummaryStatus.RunningSeconds">
             <summary>
-            最高状态信息
+            运行总时间
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ServerStatus.Latest">
+        <member name="P:MySoft.IoC.Messages.SummaryStatus.RequestCount">
             <summary>
-            最新状态信息
+            请求数
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Status.ConnectionInfo">
+        <member name="P:MySoft.IoC.Messages.SummaryStatus.AverageDataFlow">
             <summary>
-            连接信息
+            平均数据流量（每秒）
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ConnectionInfo.IP">
+        <member name="P:MySoft.IoC.Messages.SummaryStatus.AverageRequestCount">
             <summary>
-            连接的IP
+            平均请求数（每秒）
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ConnectionInfo.Count">
+        <member name="P:MySoft.IoC.Messages.SummaryStatus.AverageSuccessCount">
             <summary>
-            连接数
+            平均成功数（每秒）
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Services.RemoteProxy">
+        <member name="P:MySoft.IoC.Messages.SummaryStatus.AverageErrorCount">
             <summary>
-            服务代理
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.RemoteProxy.CallService(MySoft.IoC.Messages.RequestMessage,System.Double)">
-            <summary>
-            调用方法
-            </summary>
-            <param name="reqMsg"></param>
-            <param name="logTimeout"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.RemoteProxy.GetResponse(MySoft.IoC.Messages.RequestMessage)">
-            <summary>
-            获取响应的消息
-            </summary>
-            <param name="reqMsg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.RemoteProxy.Dispose">
-            <summary>
-            清理资源
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Services.RemoteProxy.Node">
-            <summary>
-            远程节点
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Services.RemoteProxy.ServiceName">
-            <summary>
-            服务名称
+            平均错误数（每秒）
             </summary>
         </member>
         <member name="T:MySoft.IoC.ServiceInvocationHandler">
@@ -2503,6 +3349,19 @@
             <param name="methodInfo">Name of the sub service.</param>
             <param name="paramValues">The param values.</param>
             <returns>The result.</returns>
+        </member>
+        <member name="M:MySoft.IoC.ServiceInvocationHandler.JsonInParameter(MySoft.IoC.Messages.RequestMessage)">
+            <summary>
+            Json输入处理
+            </summary>
+            <param name="reqMsg"></param>
+        </member>
+        <member name="M:MySoft.IoC.ServiceInvocationHandler.JsonOutParameter(System.Reflection.ParameterInfo[],MySoft.IoC.Messages.ResponseMessage)">
+            <summary>
+            Json输出处理
+            </summary>
+            <param name="parameters"></param>
+            <param name="resMsg"></param>
         </member>
         <member name="M:MySoft.IoC.ServiceInvocationHandler.Invoke(System.Object,System.Reflection.MethodInfo,System.Object[])">
             <summary>
@@ -2677,6 +3536,51 @@
             Gets the current communication state.
             </summary>
         </member>
+        <member name="P:MySoft.Communication.Scs.Server.IScsServerClient.State">
+            <summary>
+            Client state info.
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.InvokeData">
+            <summary>
+            Invoke 值
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.InvokeData.Value">
+            <summary>
+            值
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.InvokeData.Count">
+            <summary>
+            记录数
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.InvokeData.OutParameters">
+            <summary>
+            参数
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.InvokeMessage">
+            <summary>
+            调用消息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.InvokeMessage.ServiceName">
+            <summary>
+            服务名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.InvokeMessage.MethodName">
+            <summary>
+            方法名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.InvokeMessage.Parameters">
+            <summary>
+            参数值，必须为json格式
+            </summary>
+        </member>
         <member name="T:MySoft.IoC.Aspect.AspectSwitcherAttribute">
             <summary>
             切面方法选择器
@@ -2710,49 +3614,44 @@
             <param name="info">存储对象序列化和反序列化所需的全部数据</param>
             <param name="context">描述给定的序列化流的源和目标，并提供一个由调用方定义的附加上下文</param>
         </member>
-        <member name="T:MySoft.IoC.Status.ProcessInfo">
+        <member name="T:MySoft.IoC.SubscribeOptions">
             <summary>
-            进程信息
+            订阅选项（默认全部启用）
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ProcessInfo.CpuUsage">
+        <member name="M:MySoft.IoC.SubscribeOptions.#ctor">
             <summary>
-            cpu使用率
+            实例化SubscribeOptions
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ProcessInfo.Description">
+        <member name="P:MySoft.IoC.SubscribeOptions.CallTimeout">
             <summary>
-            进程I描述
+            超时时间，用于监控超时服务调用
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ProcessInfo.Id">
+        <member name="P:MySoft.IoC.SubscribeOptions.PushCallTimeout">
             <summary>
-            进程ID
+            推送调用超时
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ProcessInfo.Name">
+        <member name="P:MySoft.IoC.SubscribeOptions.PushCallError">
             <summary>
-            进程名称
+            推送调用错误
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ProcessInfo.Path">
+        <member name="P:MySoft.IoC.SubscribeOptions.PushServerStatus">
             <summary>
-            进程路径
+            推送服务状态信息
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ProcessInfo.Title">
+        <member name="P:MySoft.IoC.SubscribeOptions.StatusTimer">
             <summary>
-            进程标题
+            定时推送状态定时：单位（秒）
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.ProcessInfo.WorkingSet">
+        <member name="P:MySoft.IoC.SubscribeOptions.PushClientConnect">
             <summary>
-            进程使用内存
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.ProcessInfo.ThreadCount">
-            <summary>
-            线程数
+            推送客户端连接信息
             </summary>
         </member>
         <member name="T:MySoft.IoC.Configuration.CastleServiceConfiguration">
@@ -2771,6 +3670,21 @@
             从配置文件加载配置值
             </summary>
             <param name="node"></param>
+        </member>
+        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.HttpPort">
+            <summary>
+            Gets or sets the httpPort
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.HttpEnabled">
+            <summary>
+            Gets or sets the httpEnabled
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.CacheType">
+            <summary>
+            Gets or sets the cacheType
+            </summary>
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.Host">
             <summary>
@@ -2796,17 +3710,16 @@
             </summary>
             <value>The format.</value>
         </member>
-        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.LogTime">
-            <summary>
-            Gets or sets the logtime
-            </summary>
-            <value>The logtime.</value>
-        </member>
         <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.Records">
             <summary>
             Gets or sets the records
             </summary>
             <value>The records.</value>
+        </member>
+        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.MinuteCall">
+            <summary>
+            Gets or sets the minuteCall
+            </summary>
         </member>
         <member name="T:MySoft.IoC.CastleFactoryType">
             <summary>
@@ -2833,30 +3746,33 @@
             服务配置
             </summary>
         </member>
-        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_TIMEOUT_NUMBER">
-            <summary>
-            The default timeout number. 
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_CACHETIME_NUMBER">
-            <summary>
-            The default cachetime number.
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_LOGTIME_NUMBER">
-            <summary>
-            The default logtime number.
-            </summary>
-        </member>
         <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_RECORD_NUMBER">
             <summary>
             The default record number.
             </summary>
         </member>
-        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_CLIENTPOOL_NUMBER">
+        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_MINUTE_CALL_NUMBER">
             <summary>
-            The default maxpool number.
+            The default minute call number.
             </summary>
+        </member>
+        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_CLIENT_TIMEOUT">
+            <summary>
+            The default client timeout number. 
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.ServiceConfig.DEFAULT_CLIENTPOOL_MAXNUMBER">
+            <summary>
+            The default pool number.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.ServiceConfig.GetCacheKey(MySoft.IoC.Messages.RequestMessage,MySoft.IoC.OperationContractAttribute)">
+            <summary>
+            获取缓存Key值
+            </summary>
+            <param name="reqMsg"></param>
+            <param name="opContract"></param>
+            <returns></returns>
         </member>
         <member name="T:MySoft.Communication.Scs.Communication.Messages.ScsPingMessage">
             <summary>
@@ -3072,49 +3988,136 @@
             <param name="compress"></param>
             <param name="encrypt"></param>
         </member>
-        <member name="T:MySoft.IoC.Status.HighestStatus">
+        <member name="T:MySoft.IoC.Messages.AppCaller">
             <summary>
-            最高峰状态
+            应用服务调用信息
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.HighestStatus.RequestCount">
+        <member name="P:MySoft.IoC.Messages.AppCaller.ServiceName">
             <summary>
-            请求数
+            服务名称
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.HighestStatus.DataFlowCounterTime">
+        <member name="P:MySoft.IoC.Messages.AppCaller.MethodName">
             <summary>
-            最高流量发生时间
+            方法名称
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.HighestStatus.RequestCountCounterTime">
-            <summary>
-            最大请求发生时间
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.HighestStatus.SuccessCountCounterTime">
-            <summary>
-            最多成功请求发生时间
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.HighestStatus.ErrorCountCounterTime">
-            <summary>
-            最多错误请求发生时间
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.HighestStatus.ElapsedTimeCounterTime">
-            <summary>
-            最耗时请求发生时间
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.ServiceCache.CacheObject">
-            <summary>
-            缓存对象
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.ServiceCache.Parameters">
+        <member name="P:MySoft.IoC.Messages.AppCaller.Parameters">
             <summary>
             参数信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Services.DiscoverProxy">
+            <summary>
+            发现服务代理
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Services.DiscoverProxy.#ctor(MySoft.IoC.CastleFactory,MySoft.Logger.ILog)">
+            <summary>
+            实例化DiscoverProxy
+            </summary>
+            <param name="factory"></param>
+            <param name="logger"></param>
+        </member>
+        <member name="M:MySoft.IoC.Services.DiscoverProxy.CallService(MySoft.IoC.Messages.RequestMessage)">
+            <summary>
+            调用服务
+            </summary>
+            <param name="reqMsg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.DiscoverProxy.Dispose">
+            <summary>
+            销毁资源
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.DiscoverProxy.ServiceName">
+            <summary>
+            服务名称
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.HttpServer.HttpRequestHandlerFactory">
+            <summary>
+            http解析工厂类
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpRequestHandlerFactory.#ctor(MySoft.IoC.HttpServer.HttpServiceCaller)">
+            <summary>
+            初始化CastleServiceHandler
+            </summary>
+            <param name="caller"></param>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpRequestHandlerFactory.CreateRequestHandler(MySoft.Net.Http.HTTPServerRequest)">
+            <summary>
+            返回请求句柄
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.IoC.Messages.ClientInfo">
+            <summary>
+            客户端连接信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ClientInfo.ServerIPAddress">
+            <summary>
+            服务端IP
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ClientInfo.ServerPort">
+            <summary>
+            服务端Port
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ClientInfo.Count">
+            <summary>
+            连接数
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.ParameterCollection">
+            <summary>
+            The parameter collection type used by request msg.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Messages.ParameterCollection.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MySoft.IoC.Messages.ParameterCollection"/> class.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Messages.ParameterCollection.Remove(System.String)">
+            <summary>
+            Removes the specified param name.
+            </summary>
+            <param name="paramName">Name of the param.</param>
+        </member>
+        <member name="M:MySoft.IoC.Messages.ParameterCollection.Clear">
+            <summary>
+            Clears this instance.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Messages.ParameterCollection.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
+            </returns>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterCollection.Item(System.String)">
+            <summary>
+            Gets or sets the <see cref="T:System.String"/> with the specified param name.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterCollection.Count">
+            <summary>
+            Get param count.
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.ParameterCollection.Keys">
+            <summary>
+            Get param Keys;
             </summary>
         </member>
         <member name="T:MySoft.Communication.Scs.Client.ScsClientFactory">
@@ -3136,63 +4139,48 @@
             <param name="endpointAddress">End point address of the server to connect it</param>
             <returns>Created TCP client</returns>
         </member>
-        <member name="T:MySoft.IoC.Aspect.AspectInterceptor">
+        <member name="T:MySoft.IoC.Services.LocalInterceptor">
             <summary>
-            AOP拦截器
+            本地拦截器
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Aspect.AspectInterceptor.PerformProceed(Castle.DynamicProxy.IInvocation)">
+        <member name="M:MySoft.IoC.Services.LocalInterceptor.PreProceed(Castle.DynamicProxy.IInvocation)">
             <summary>
-            进行时的方法
+            处理前
             </summary>
             <param name="invocation"></param>
         </member>
-        <member name="M:MySoft.IoC.Aspect.AspectInterceptor.PostProceed(Castle.DynamicProxy.IInvocation)">
+        <member name="T:MySoft.IoC.JsonInvocationHandler">
             <summary>
-            处理后的方法
-            </summary>
-            <param name="invocation"></param>
-        </member>
-        <member name="M:MySoft.IoC.Aspect.AspectInterceptor.PreProceed(Castle.DynamicProxy.IInvocation)">
-            <summary>
-            处理前的方法
-            </summary>
-            <param name="invocation"></param>
-        </member>
-        <member name="T:MySoft.IoC.Status.SummaryStatus">
-            <summary>
-            汇总状态信息
+            Json处理句柄
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Status.SummaryStatus.RunningSeconds">
+        <member name="M:MySoft.IoC.JsonInvocationHandler.#ctor(MySoft.IoC.Configuration.CastleFactoryConfiguration,MySoft.IoC.IServiceContainer,MySoft.IoC.IService,System.Type)">
             <summary>
-            运行总时间
+            Initializes a new instance of the <see cref="T:MySoft.IoC.ServiceInvocationHandler"/> class.
             </summary>
+            <param name="container">config.</param>
+            <param name="container">The container.</param>
+            <param name="serviceInterfaceType">Type of the service interface.</param>
         </member>
-        <member name="P:MySoft.IoC.Status.SummaryStatus.RequestCount">
+        <member name="M:MySoft.IoC.JsonInvocationHandler.JsonInParameter(MySoft.IoC.Messages.RequestMessage)">
             <summary>
-            请求数
+            处理输入参数
             </summary>
+            <param name="reqMsg"></param>
         </member>
-        <member name="P:MySoft.IoC.Status.SummaryStatus.AverageDataFlow">
+        <member name="M:MySoft.IoC.JsonInvocationHandler.JsonOutParameter(System.Reflection.ParameterInfo[],MySoft.IoC.Messages.ResponseMessage)">
             <summary>
-            平均数据流量（每秒）
+            处理输出参数
             </summary>
+            <param name="resMsg"></param>
         </member>
-        <member name="P:MySoft.IoC.Status.SummaryStatus.AverageRequestCount">
+        <member name="M:MySoft.IoC.JsonInvocationHandler.GetElementType(System.Type)">
             <summary>
-            平均请求数（每秒）
+            获取基类型
             </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.SummaryStatus.AverageSuccessCount">
-            <summary>
-            平均成功数（每秒）
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Status.SummaryStatus.AverageErrorCount">
-            <summary>
-            平均错误数（每秒）
-            </summary>
+            <param name="type"></param>
+            <returns></returns>
         </member>
         <member name="T:MySoft.IoC.ServiceRequestPool">
             <summary>
@@ -3225,6 +4213,72 @@
         <member name="P:MySoft.IoC.ServiceRequestPool.Count">
             <summary>
             返回ServiceRequest池中的 数量
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.OperationContext">
+            <summary>
+            操作上下文对象
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.OperationContext.callbackType">
+            <summary>
+            回调类型
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.OperationContext.RemoveCache``1(System.String)">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="TService"></typeparam>
+            <param name="cacheKey"></param>
+        </member>
+        <member name="M:MySoft.IoC.OperationContext.RemoveCache(System.String)">
+            <summary>
+            移除缓存
+            </summary>
+            <param name="cacheKey"></param>
+        </member>
+        <member name="M:MySoft.IoC.OperationContext.AddCache(System.String,System.Object,System.TimeSpan)">
+            <summary>
+            添加缓存
+            </summary>
+            <param name="cacheKey"></param>
+            <param name="cacheObject"></param>
+            <param name="timeSpan"></param>
+        </member>
+        <member name="M:MySoft.IoC.OperationContext.GetCache``1(System.String)">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.OperationContext.GetCallbackChannel``1">
+            <summary>
+            获取回调代理服务
+            </summary>
+            <typeparam name="ICallbackService"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.IoC.OperationContext.Current">
+            <summary>
+            当前上下文对象
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.OperationContext.ServiceCache">
+            <summary>
+            服务缓存
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.OperationContext.Caller">
+            <summary>
+            调用者
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.OperationContext.RemoteEndPoint">
+            <summary>
+            远程节点
             </summary>
         </member>
         <member name="T:MySoft.Communication.Scs.Server.ScsServerManager">
@@ -3289,12 +4343,47 @@
             <param name="view">The view.</param>
             <returns></returns>
         </member>
+        <member name="T:MySoft.IoC.HttpServer.HttpCallerInfo">
+            <summary>
+            调用信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.ServiceName">
+            <summary>
+            服务名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.Method">
+            <summary>
+            调用方法
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.Description">
+            <summary>
+            方法描述
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.Authorized">
+            <summary>
+            是否认证
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.AuthParameter">
+            <summary>
+            认证参数
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.HttpMethod">
+            <summary>
+            Http方式
+            </summary>
+        </member>
         <member name="T:MySoft.IoC.Aspect.AspectManager">
             <summary>
             Aspect代理管理器
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Aspect.AspectManager.GetService``1(System.Object)">
+        <member name="M:MySoft.IoC.Aspect.AspectManager.GetService``1(System.Object,Castle.DynamicProxy.StandardInterceptor[])">
             <summary>
             获取Aspect服务
             </summary>
@@ -3302,19 +4391,81 @@
             <param name="service"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Aspect.AspectManager.GetService(System.Object)">
+        <member name="M:MySoft.IoC.Aspect.AspectManager.GetService(System.Object,Castle.DynamicProxy.StandardInterceptor[])">
             <summary>
             获取Aspect服务
             </summary>
             <param name="service"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Aspect.AspectManager.CreateService(System.Type)">
+        <member name="M:MySoft.IoC.Aspect.AspectManager.CreateService(System.Type,Castle.DynamicProxy.StandardInterceptor[])">
             <summary>
             创建Aspect服务
             </summary>
             <param name="serviceType"></param>
             <returns></returns>
+        </member>
+        <member name="T:MySoft.IoC.RemoteNode">
+            <summary>
+            远程节点
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.RemoteNode.Parse(System.String,System.Int32)">
+            <summary>
+            返回一个远程节点
+            </summary>
+            <param name="ip"></param>
+            <param name="port"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.RemoteNode.Parse(System.String)">
+            <summary>
+            返回一个远程节点
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.IoC.RemoteNode.Key">
+            <summary>
+            Gets or sets the key.
+            </summary>
+            <value>The name.</value>
+        </member>
+        <member name="P:MySoft.IoC.RemoteNode.IP">
+            <summary>
+            Gets or sets the ip.
+            </summary>
+            <value>The server.</value>
+        </member>
+        <member name="P:MySoft.IoC.RemoteNode.Port">
+            <summary>
+            Gets or sets the port.
+            </summary>
+            <value>The port.</value>
+        </member>
+        <member name="P:MySoft.IoC.RemoteNode.Encrypt">
+            <summary>
+            Gets or sets the encrypt.
+            </summary>
+            <value>The encrypt.</value>
+        </member>
+        <member name="P:MySoft.IoC.RemoteNode.Compress">
+            <summary>
+            Gets or sets the compress.
+            </summary>
+            <value>The format.</value>
+        </member>
+        <member name="P:MySoft.IoC.RemoteNode.Timeout">
+            <summary>
+            Gets or sets the timeout.
+            </summary>
+            <value>The timeout ：单位（秒）.</value>
+        </member>
+        <member name="P:MySoft.IoC.RemoteNode.MaxPool">
+            <summary>
+            Gets or sets the maxpool.
+            </summary>
+            <value>The maxpool.</value>
         </member>
         <member name="T:MySoft.IoC.Configuration.CastleServiceConfigurationHandler">
             <summary>
@@ -3425,12 +4576,52 @@
             </summary>
             <returns>Newly created wire protocol object</returns>
         </member>
+        <member name="T:MySoft.IoC.HttpServer.HttpServiceCaller">
+            <summary>
+            Http服务调用
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpServiceCaller.#ctor(MySoft.IoC.IServiceContainer,System.Int32)">
+            <summary>
+            HttpServiceCaller初始化
+            </summary>
+            <param name="container"></param>
+            <param name="httpAuth"></param>
+            <param name="port"></param>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpServiceCaller.GetDocument(System.String)">
+            <summary>
+            获取Http方法
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpServiceCaller.GetAPIText">
+            <summary>
+            获取API文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpServiceCaller.GetCaller(System.String)">
+            <summary>
+            获取调用信息
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpServiceCaller.CallMethod(System.String,System.String)">
+            <summary>
+            调用服务，并返回字符串
+            </summary>
+            <param name="name"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
         <member name="T:MySoft.IoC.ServiceRequest">
             <summary>
             服务请求类
             </summary>
         </member>
-        <member name="M:MySoft.IoC.ServiceRequest.#ctor(MySoft.IoC.Configuration.RemoteNode,MySoft.Logger.ILog)">
+        <member name="M:MySoft.IoC.ServiceRequest.#ctor(MySoft.IoC.RemoteNode,MySoft.Logger.ILog,System.Boolean)">
             <summary>
             实例化ServiceMessage
             </summary>
@@ -3454,14 +4645,69 @@
             数据回调
             </summary>
         </member>
+        <member name="E:MySoft.IoC.ServiceRequest.OnError">
+            <summary>
+            错误回调
+            </summary>
+        </member>
+        <member name="E:MySoft.IoC.ServiceRequest.Disconnected">
+            <summary>
+            This event is raised when client disconnected from server.
+            </summary>
+        </member>
         <member name="P:MySoft.IoC.ServiceRequest.IsConnected">
             <summary>
             是否连接
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Status.PerfProcess">
+        <member name="T:MySoft.IoC.Messages.CallEventArgs">
             <summary>
-            性能监控进程项
+            调用事件参数
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Messages.CallEventArgs.#ctor">
+            <summary>
+            实例化CallEventArgs
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallEventArgs.Caller">
+            <summary>
+            调用参数信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallEventArgs.CallTime">
+            <summary>
+            调用时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallEventArgs.ElapsedTime">
+            <summary>
+            耗时时间
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallEventArgs.Error">
+            <summary>
+            异常信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallEventArgs.Count">
+            <summary>
+            数据数
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallEventArgs.Value">
+            <summary>
+            返回值
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallEventArgs.IsError">
+            <summary>
+            是否错误
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallEventArgs.IsBusinessError">
+            <summary>
+            是否业务异常
             </summary>
         </member>
         <member name="T:MySoft.IoC.ServiceNodeInfo">
@@ -3500,19 +4746,75 @@
             </summary>
             <value>The implementation.</value>
         </member>
-        <member name="T:MySoft.IoC.Services.AsyncMethodCaller">
+        <member name="T:MySoft.IoC.Messages.CallbackMessage">
             <summary>
-            异步调用委托
+            回调消息
             </summary>
-            <param name="reqMsg"></param>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallbackMessage.ServiceType">
+            <summary>
+            服务名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallbackMessage.MethodName">
+            <summary>
+            方法名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CallbackMessage.Parameters">
+            <summary>
+            参数信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.IStatusListener">
+            <summary>
+            状态信息监听
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.IStatusListener.Push(MySoft.IoC.Messages.ConnectInfo)">
+            <summary>
+            推送客户端连接信息
+            </summary>
+            <param name="connectInfo"></param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusListener.Change(System.String,System.Int32,MySoft.IoC.Messages.AppClient)">
+            <summary>
+            推送改变客户端信息
+            </summary>
+            <param name="ipAddress"></param>
+            <param name="port"></param>
+            <param name="appClient"></param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusListener.Push(MySoft.IoC.Messages.CallError)">
+            <summary>
+            推送实时错误信息
+            </summary>
+            <param name="callError"></param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusListener.Push(MySoft.IoC.Messages.CallTimeout)">
+            <summary>
+            调用超时事件信息
+            </summary>
+            <param name="callTimeout"></param>
+        </member>
+        <member name="M:MySoft.IoC.IStatusListener.Push(MySoft.IoC.Messages.ServerStatus)">
+            <summary>
+            推送服务状态信息（包括SummaryStatus，HighestStatus，TimeStatus）
+            </summary>
             <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IStatusListener.Push(System.Collections.Generic.IList{MySoft.IoC.Messages.ClientInfo})">
+            <summary>
+            推送客户端连接信息
+            </summary>
+            <param name="clientInfos"></param>
         </member>
         <member name="T:MySoft.IoC.Services.DynamicService">
             <summary>
             The dynamic service.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Services.DynamicService.#ctor(MySoft.Logger.ILog,System.Type,System.Object)">
+        <member name="M:MySoft.IoC.Services.DynamicService.#ctor(MySoft.IoC.IServiceContainer,System.Type,System.Object)">
             <summary>
             Initializes a new instance of the <see cref="T:MySoft.IoC.Services.DynamicService"/> class.
             </summary>
@@ -3525,53 +4827,13 @@
             <param name="reqMsg">The MSG.</param>
             <returns>The msg.</returns>
         </member>
-        <member name="T:MySoft.IoC.ParameterCollection">
+        <member name="M:MySoft.IoC.Services.DynamicService.ParseParameter(MySoft.IoC.Messages.RequestMessage,MySoft.IoC.Messages.ResponseMessage,System.Reflection.ParameterInfo[])">
             <summary>
-            The parameter collection type used by request msg.
+            解析参数
             </summary>
-        </member>
-        <member name="M:MySoft.IoC.ParameterCollection.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:MySoft.IoC.ParameterCollection"/> class.
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.ParameterCollection.Remove(System.String)">
-            <summary>
-            Removes the specified param name.
-            </summary>
-            <param name="paramName">Name of the param.</param>
-        </member>
-        <member name="M:MySoft.IoC.ParameterCollection.Clear">
-            <summary>
-            Clears this instance.
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.ParameterCollection.ToString">
-            <summary>
-            Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-            </summary>
-            <returns>
-            A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-            </returns>
-        </member>
-        <member name="M:MySoft.IoC.ParameterCollection.GetJsonString(Newtonsoft.Json.Formatting)">
-            <summary>
-            获取json字符串
-            </summary>
-            <param name="format"></param>
-            <returns></returns>
-        </member>
-        <member name="P:MySoft.IoC.ParameterCollection.SerializedData">
-            <summary>
-            Gets or sets the serialized data.
-            </summary>
-            <value>The serialized data.</value>
-        </member>
-        <member name="P:MySoft.IoC.ParameterCollection.Item(System.String)">
-            <summary>
-            Gets or sets the <see cref="T:System.String"/> with the specified param name.
-            </summary>
-            <value></value>
+            <param name="reqMsg"></param>
+            <param name="resMsg"></param>
+            <param name="pis"></param>
         </member>
         <member name="M:MySoft.IoC.Services.BigInteger.Kernel.Multiply(System.UInt32[],System.UInt32,System.UInt32,System.UInt32[],System.UInt32,System.UInt32,System.UInt32[],System.UInt32)">
             <summary>
@@ -3734,6 +4996,12 @@
             </summary>
             <param name="message">Received message</param>
         </member>
+        <member name="M:MySoft.Communication.Scs.Server.ScsServerClient.OnErrorReceived(System.Exception)">
+            <summary>
+            Raises MessageReceived event.
+            </summary>
+            <param name="error"></param>
+        </member>
         <member name="E:MySoft.Communication.Scs.Server.ScsServerClient.MessageReceived">
             <summary>
             This event is raised when a new message is received.
@@ -3743,6 +5011,11 @@
             <summary>
             This event is raised when a new message is sent without any error.
             It does not guaranties that message is properly handled and processed by remote application.
+            </summary>
+        </member>
+        <member name="E:MySoft.Communication.Scs.Server.ScsServerClient.ErrorReceived">
+            <summary>
+            Receive error message.
             </summary>
         </member>
         <member name="E:MySoft.Communication.Scs.Server.ScsServerClient.Disconnected">
@@ -3758,6 +5031,11 @@
         <member name="P:MySoft.Communication.Scs.Server.ScsServerClient.CommunicationState">
             <summary>
             Gets the communication state of the Client.
+            </summary>
+        </member>
+        <member name="P:MySoft.Communication.Scs.Server.ScsServerClient.State">
+            <summary>
+            Get or Set client state.
             </summary>
         </member>
         <member name="P:MySoft.Communication.Scs.Server.ScsServerClient.WireProtocol">
@@ -3801,6 +5079,34 @@
             Creates a communication channel using ServerIpAddress and ServerPort.
             </summary>
             <returns>Ready communication channel to communicate</returns>
+        </member>
+        <member name="T:MySoft.IoC.HttpServer.HttpServiceHandler">
+            <summary>
+            Castle服务处理器
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpServiceHandler.#ctor(MySoft.IoC.HttpServer.HttpServiceCaller)">
+            <summary>
+            初始化CastleServiceHandler
+            </summary>
+            <param name="caller"></param>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpServiceHandler.HandleRequest(MySoft.Net.Http.HTTPServerRequest,MySoft.Net.Http.HTTPServerResponse)">
+            <summary>
+            实现Request响应
+            </summary>
+            <param name="request"></param>
+            <param name="response"></param>
+        </member>
+        <member name="T:MySoft.IoC.BaseContainer">
+            <summary>
+            容器基类
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.BaseContainer.Container">
+            <summary>
+            容器对象
+            </summary>
         </member>
     </members>
 </doc>

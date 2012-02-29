@@ -34,24 +34,6 @@
             <param name="parameters">请求参数</param>
             <returns>字节数据流</returns>
         </member>
-        <member name="M:MySoft.RESTful.IRESTfulService.DeleteJsonEntry(System.String,System.String,System.IO.Stream)">
-            <summary>
-            POST入口
-            </summary>
-            <param name="kind">发布的分类</param>
-            <param name="method">发布的方法名称</param>
-            <param name="parameters">请求参数</param>
-            <returns>字节数据流</returns>
-        </member>
-        <member name="M:MySoft.RESTful.IRESTfulService.PutJsonEntry(System.String,System.String,System.IO.Stream)">
-            <summary>
-            POST入口
-            </summary>
-            <param name="kind">发布的分类</param>
-            <param name="method">发布的方法名称</param>
-            <param name="parameters">请求参数</param>
-            <returns>字节数据流</returns>
-        </member>
         <member name="M:MySoft.RESTful.IRESTfulService.GetJsonEntry(System.String,System.String)">
             <summary>
             GET入口
@@ -61,24 +43,6 @@
             <returns>字节数据流</returns>
         </member>
         <member name="M:MySoft.RESTful.IRESTfulService.PostXmlEntry(System.String,System.String,System.IO.Stream)">
-            <summary>
-            POST入口
-            </summary>
-            <param name="kind">发布的分类</param>
-            <param name="method">发布的方法名称</param>
-            <param name="parameters">请求参数</param>
-            <returns>字节数据流</returns>
-        </member>
-        <member name="M:MySoft.RESTful.IRESTfulService.DeleteXmlEntry(System.String,System.String,System.IO.Stream)">
-            <summary>
-            POST入口
-            </summary>
-            <param name="kind">发布的分类</param>
-            <param name="method">发布的方法名称</param>
-            <param name="parameters">请求参数</param>
-            <returns>字节数据流</returns>
-        </member>
-        <member name="M:MySoft.RESTful.IRESTfulService.PutXmlEntry(System.String,System.String,System.IO.Stream)">
             <summary>
             POST入口
             </summary>
@@ -113,41 +77,46 @@
             发布接口的实时html文档
             </summary>
         </member>
+        <member name="M:MySoft.RESTful.IRESTfulService.GetMethodHtmlFromKindAndMethod(System.String,System.String)">
+            <summary>
+            发布接口的实时html文档
+            </summary>
+        </member>
         <member name="P:MySoft.RESTful.IRESTfulService.Context">
             <summary>
             内容对象
             </summary>
         </member>
-        <member name="T:MySoft.RESTful.Business.BusinessState">
+        <member name="T:MySoft.RESTful.Business.Register.TypeInstance">
             <summary>
-            业务状态枚举
+            类型及实例
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.Business.BusinessState.ACTIVATED">
+        <member name="P:MySoft.RESTful.Business.Register.TypeInstance.Type">
             <summary>
-            激活状态
+            类型
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.Business.BusinessState.SHUTDOWN">
+        <member name="P:MySoft.RESTful.Business.Register.TypeInstance.Instance">
             <summary>
-            关闭状态
+            对象实例
             </summary>
         </member>
         <member name="T:MySoft.RESTful.RESTfulException">
             <summary>
-            业务异常
+            RESTful异常
             </summary>
         </member>
         <member name="M:MySoft.RESTful.RESTfulException.#ctor(MySoft.RESTful.RESTfulCode,System.String)">
             <summary>
-            实例 化BusinessException
+            实例 化RESTfulException
             </summary>
             <param name="code"></param>
             <param name="message"></param>
         </member>
         <member name="M:MySoft.RESTful.RESTfulException.#ctor(System.String)">
             <summary>
-            实例 化BusinessException
+            实例 化RESTfulException
             </summary>
             <param name="message"></param>
         </member>
@@ -155,6 +124,33 @@
             <summary>
             状态码
             </summary>
+        </member>
+        <member name="T:MySoft.RESTful.Utils.AuthManager">
+            <summary>
+            认证工厂
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.Utils.AuthManager.auths">
+            <summary>
+            RESTful配置文件
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Utils.AuthManager.InitializeContext">
+            <summary>
+            初始化上下文
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.Utils.AuthManager.SetCookie(System.String)">
+            <summary>
+            设置Cookie
+            </summary>
+            <param name="cookie"></param>
+        </member>
+        <member name="M:MySoft.RESTful.Utils.AuthManager.Authorize">
+            <summary>
+            进行认证
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:MySoft.RESTful.Business.Pool.IBusinessPool">
             <summary>
@@ -169,11 +165,10 @@
             <param name="metadata">业务对象</param>
             <returns>返回该业务类别下的业务模型实例</returns>
         </member>
-        <member name="M:MySoft.RESTful.Business.Pool.IBusinessPool.CheckAuthorized(MySoft.RESTful.ParameterFormat,System.String,System.String)">
+        <member name="M:MySoft.RESTful.Business.Pool.IBusinessPool.CheckAuthorized(System.String,System.String)">
             <summary>
             检查方法
             </summary>
-            <param name="parameterFormat"></param>
             <param name="businessKindName"></param>
             <param name="businessMethodName"></param>
             <returns></returns>
@@ -208,19 +203,6 @@
             <param name="businessMethodName">业务方法</param>
             <returns>返回该业务类别下的业务模型实例</returns>
         </member>
-        <member name="T:MySoft.RESTful.Configuration.RESTfulConfigurationHandler">
-            <summary>
-            Deserializes the markup in Web.config into an instance of the <see cref="!:StaticPageConfiguration"/> class.
-            </summary>
-        </member>
-        <member name="M:MySoft.RESTful.Configuration.RESTfulConfigurationHandler.Create(System.Object,System.Object,System.Xml.XmlNode)">
-            <summary>
-            Creates an instance of the <see cref="!:StaticPageConfiguration"/> class.
-            </summary>
-            <remarks>Uses XML Serialization to deserialize the XML in the Web.config file into an
-            <see cref="!:StaticPageConfiguration"/> instance.</remarks>
-            <returns>An instance of the <see cref="!:StaticPageConfiguration"/> class.</returns>
-        </member>
         <member name="T:MySoft.RESTful.Business.Register.IBusinessRegister">
             <summary>
             业务注册器
@@ -231,25 +213,7 @@
             注册业务
             </summary>
         </member>
-        <member name="T:MySoft.RESTful.Configuration.RESTfulConfiguration">
-            <summary>
-            Specifies the configuration settings in the Web.config for the Auth.
-            </summary>
-        </member>
-        <member name="M:MySoft.RESTful.Configuration.RESTfulConfiguration.GetConfig">
-            <summary>
-            GetConfig() returns an instance of the <b>StaticPageConfiguration</b> class with the values populated from
-            the Web.config file.  It uses XML deserialization to convert the XML structure in Web.config into
-            a <b>StaticPageConfiguration</b> instance.
-            </summary>
-            <returns>A <see cref="!:StaticPageConfiguration"/> instance.</returns>
-        </member>
-        <member name="P:MySoft.RESTful.Configuration.RESTfulConfiguration.Auths">
-            <summary>
-            A <see cref="T:MySoft.RESTful.Configuration.AuthenticationCollection"/> instance that provides access to a set of <see cref="!:StaticPageRule"/>s.
-            </summary>
-        </member>
-        <member name="T:MySoft.RESTful.XmlSerializer">
+        <member name="T:MySoft.RESTful.Utils.XmlSerializer">
             <summary>
             xml系列化
             </summary>
@@ -277,11 +241,6 @@
         <member name="P:MySoft.RESTful.Business.BusinessStateModel.Description">
             <summary>
             描述
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.Business.BusinessStateModel.State">
-            <summary>
-            业务接口状态
             </summary>
         </member>
         <member name="P:MySoft.RESTful.Business.BusinessMethodModel.Authorized">
@@ -314,46 +273,29 @@
             业务实例方法参数个数
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.UserParameter">
-            <summary>
-            用户参数
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.IsPassCheck">
-            <summary>
-            是否通过检查
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.CheckMessage">
-            <summary>
-            异常消息
-            </summary>
-        </member>
         <member name="T:MySoft.RESTful.IRESTfulContext">
             <summary>
             默认服务上下文
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.IRESTfulContext.MakeApiDocument(System.Uri,System.String)">
+        <member name="M:MySoft.RESTful.IRESTfulContext.MakeDocument(System.Uri,System.String,System.String)">
             <summary>
             生成API文档
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.IRESTfulContext.IsAuthorized(MySoft.RESTful.ParameterFormat,System.String,System.String)">
+        <member name="M:MySoft.RESTful.IRESTfulContext.IsAuthorized(System.String,System.String)">
             <summary>
             是否需要认证
             </summary>
-            <param name="format"></param>
             <param name="kind"></param>
             <param name="method"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.IRESTfulContext.Invoke(MySoft.RESTful.ParameterFormat,System.String,System.String,System.String,System.Type@)">
+        <member name="M:MySoft.RESTful.IRESTfulContext.Invoke(System.String,System.String,System.String,System.Type@)">
             <summary>
             方法调用
             </summary>
-            <param name="format"></param>
             <param name="kind"></param>
             <param name="method"></param>
             <param name="parameters"></param>
@@ -375,25 +317,7 @@
             </summary>
             <param name="kind"></param>
             <param name="method"></param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.DeleteJsonEntry(System.String,System.String,System.IO.Stream)">
-            <summary>
-            实现Delete方式Json响应
-            </summary>
-            <param name="kind"></param>
-            <param name="method"></param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.PutJsonEntry(System.String,System.String,System.IO.Stream)">
-            <summary>
-            实现Put方式Json响应
-            </summary>
-            <param name="kind"></param>
-            <param name="method"></param>
-            <param name="parameters"></param>
+            <param name="parameter"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.RESTful.DefaultRESTfulService.GetJsonEntry(System.String,System.String)">
@@ -410,25 +334,7 @@
             </summary>
             <param name="kind"></param>
             <param name="method"></param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.DeleteXmlEntry(System.String,System.String,System.IO.Stream)">
-            <summary>
-            实现Delete方式Xml响应
-            </summary>
-            <param name="kind"></param>
-            <param name="method"></param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.PutXmlEntry(System.String,System.String,System.IO.Stream)">
-            <summary>
-            实现Put方式Xml响应
-            </summary>
-            <param name="kind"></param>
-            <param name="method"></param>
-            <param name="parameters"></param>
+            <param name="parameter"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.RESTful.DefaultRESTfulService.GetXmlEntry(System.String,System.String)">
@@ -475,17 +381,25 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetMethodHtmlFromKindAndMethod(System.String,System.String)">
+            <summary>
+            获取方法的html文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetResultWriteErrorLog(System.String,System.Exception)">
+            <summary>
+            写错误日志
+            </summary>
+            <param name="parameter"></param>
+            <param name="exception"></param>
+        </member>
         <member name="P:MySoft.RESTful.DefaultRESTfulService.Context">
             <summary>
             上下文处理
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.DefaultRESTfulService.IsRecordErrorLog">
-            <summary>
-            是否记录错误日志
-            </summary>
-        </member>
-        <member name="T:MySoft.RESTful.JsonSerializer">
+        <member name="T:MySoft.RESTful.Utils.JsonSerializer">
             <summary>
             Json系列化
             </summary>
@@ -530,11 +444,10 @@
             <param name="businessMethodName"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.Business.Pool.DefaultBusinessPool.CheckAuthorized(MySoft.RESTful.ParameterFormat,System.String,System.String)">
+        <member name="M:MySoft.RESTful.Business.Pool.DefaultBusinessPool.CheckAuthorized(System.String,System.String)">
             <summary>
             检查方法
             </summary>
-            <param name="parameterFormat"></param>
             <param name="businessKindName"></param>
             <param name="businessMethodName"></param>
             <returns></returns>
@@ -551,30 +464,6 @@
             <summary>
             获取业务池对象
             </summary>
-        </member>
-        <member name="T:MySoft.RESTful.Configuration.Authentication">
-            <summary>
-            Represents a rewriter rule.  A rewriter rule is composed of a pattern to search for and a string to replace
-            the pattern with (if matched).
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.Configuration.Authentication.Name">
-            <summary>
-            Gets or sets the pattern to look for.
-            </summary>
-            <remarks><b>CacheName</b> is a regular expression pattern.  Therefore, you might need to escape
-            characters in the pattern that are reserved characters in regular expression syntax (., ?, ^, $, etc.).
-            <p />
-            The pattern is searched for using the <b>System.Text.RegularExpression.Regex</b> class's <b>IsMatch()</b>
-            method.  The pattern is case insensitive.</remarks>
-        </member>
-        <member name="P:MySoft.RESTful.Configuration.Authentication.Type">
-            <summary>
-            The string to replace the pattern with, if found.
-            </summary>
-            <remarks>The replacement string may use grouping symbols, like $1, $2, etc.  Specifically, the
-            <b>System.Text.RegularExpression.Regex</b> class's <b>Replace()</b> method is used to replace
-            the match in <see cref="!:Timeout"/> with the value in <b>SendTo</b>.</remarks>
         </member>
         <member name="T:MySoft.RESTful.RESTfulResult">
             <summary>
@@ -631,21 +520,6 @@
             业务方法没找到
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_KIND_NO_ACTIVATED">
-            <summary>
-            业务类型不是激活状态
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_METHOD_NO_ACTIVATED">
-            <summary>
-            业务方法不是激活状态
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_METHOD_PARAMS_COUNT_NOT_MATCH">
-            <summary>
-            业务方法参数个数不匹配
-            </summary>
-        </member>
         <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH">
             <summary>
             业务方法参数类型不匹配
@@ -656,38 +530,24 @@
             业务方法调用类型不匹配
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.RESTfulCode.BUSINESS_METHOD_NOT_PASS_CHECK">
-            <summary>
-            业务方法没有通过检查
-            </summary>
-        </member>
-        <member name="T:MySoft.RESTful.ParameterHelper">
+        <member name="T:MySoft.RESTful.Utils.ParameterHelper">
             <summary>
             参数处理
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.ParameterHelper.Resolve(System.Collections.Specialized.NameValueCollection)">
+        <member name="M:MySoft.RESTful.Utils.ParameterHelper.Resolve(System.Collections.Specialized.NameValueCollection)">
             <summary>
             解析参数
             </summary>
             <param name="parameters"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.ParameterHelper.Resolve(System.String,MySoft.RESTful.ParameterFormat)">
-            <summary>
-            解析参数
-            </summary>
-            <param name="parameters"></param>
-            <param name="format"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.RESTful.ParameterHelper.Convert(System.Reflection.ParameterInfo[],Newtonsoft.Json.Linq.JObject,System.String)">
+        <member name="M:MySoft.RESTful.Utils.ParameterHelper.Convert(System.Reflection.ParameterInfo[],Newtonsoft.Json.Linq.JObject)">
             <summary>
             参数解析
             </summary>
             <param name="paramters"></param>
             <param name="obj"></param>
-            <param name="userParameter"></param>
             <returns></returns>
         </member>
         <member name="T:MySoft.RESTful.Business.Register.NativeBusinessRegister">
@@ -695,71 +555,44 @@
             本地业务注册器,读取本地配置文件,加载程序集,反射获取需要绑定的业务接口对象和业务方法
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.Business.Register.NativeBusinessRegister.CheckGetSubmitType(System.Reflection.ParameterInfo[])">
+        <member name="M:MySoft.RESTful.Business.Register.NativeBusinessRegister.GetInterfaces``1(Castle.Windsor.IWindsorContainer)">
             <summary>
-            检查Get类型的参数
-            </summary>
-            <param name="paramsInfo"></param>
-            <returns></returns>
-        </member>
-        <member name="T:MySoft.RESTful.AuthenticationManager">
-            <summary>
-            认证工厂
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.AuthenticationManager.auths">
-            <summary>
-            RESTful配置文件
-            </summary>
-        </member>
-        <member name="M:MySoft.RESTful.AuthenticationManager.InitializeContext">
-            <summary>
-            初始化上下文
-            </summary>
-        </member>
-        <member name="M:MySoft.RESTful.AuthenticationManager.SetCookie(System.String)">
-            <summary>
-            设置Cookie
-            </summary>
-            <param name="cookie"></param>
-        </member>
-        <member name="M:MySoft.RESTful.AuthenticationManager.Authorize">
-            <summary>
-            进行认证
+            获取约束的接口
             </summary>
             <returns></returns>
         </member>
-        <member name="T:MySoft.RESTful.TextSerializer">
+        <member name="M:MySoft.RESTful.Business.Register.NativeBusinessRegister.GetPublishServices">
             <summary>
-            Text系列化
+            获取发布的类型
             </summary>
+            <returns></returns>
         </member>
-        <member name="T:MySoft.RESTful.ParameterFormat">
+        <member name="T:MySoft.RESTful.Utils.ParameterFormat">
             <summary>
             参数格式
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.ParameterFormat.Jsonp">
+        <member name="F:MySoft.RESTful.Utils.ParameterFormat.Jsonp">
             <summary>
             Jsonp
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.ParameterFormat.Json">
+        <member name="F:MySoft.RESTful.Utils.ParameterFormat.Json">
             <summary>
             Json
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.ParameterFormat.Xml">
+        <member name="F:MySoft.RESTful.Utils.ParameterFormat.Xml">
             <summary>
             Xml
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.ParameterFormat.Text">
+        <member name="F:MySoft.RESTful.Utils.ParameterFormat.Text">
             <summary>
             Text
             </summary>
         </member>
-        <member name="F:MySoft.RESTful.ParameterFormat.Html">
+        <member name="F:MySoft.RESTful.Utils.ParameterFormat.Html">
             <summary>
             Html
             </summary>
@@ -803,85 +636,35 @@
             <param name="pool"></param>
             <param name="register"></param>
         </member>
-        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.IsAuthorized(MySoft.RESTful.ParameterFormat,System.String,System.String)">
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.IsAuthorized(System.String,System.String)">
             <summary>
             是否需要认证
             </summary>
-            <param name="format"></param>
             <param name="kind"></param>
             <param name="method"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.Invoke(MySoft.RESTful.ParameterFormat,System.String,System.String,System.String,System.Type@)">
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.Invoke(System.String,System.String,System.String,System.Type@)">
             <summary>
             方法调用
             </summary>
-            <param name="format"></param>
             <param name="kind"></param>
             <param name="method"></param>
             <param name="parameters"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.MakeApiDocument(System.Uri,System.String)">
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.MakeDocument(System.Uri,System.String,System.String)">
             <summary>
             生成API文档
             </summary>
             <returns></returns>
-        </member>
-        <member name="T:MySoft.RESTful.Business.Register.ProxyInvocationHandler">
-            <summary>
-            代理委托
-            </summary>
-        </member>
-        <member name="M:MySoft.RESTful.Business.Register.ProxyInvocationHandler.Invoke(System.Object,System.Reflection.MethodInfo,System.Object[])">
-            <summary>
-            委托调用
-            </summary>
-            <param name="proxy"></param>
-            <param name="method"></param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="T:MySoft.RESTful.Configuration.AuthenticationCollection">
-            <summary>
-            The RewriterRuleCollection models a set of RewriterRules in the Web.config file.
-            </summary>
-            <remarks>
-            The RewriterRuleCollection is expressed in XML as:
-            <code>
-            &lt;RewriterRule&gt;
-              &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
-              &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
-            &lt;RewriterRule&gt;
-            &lt;RewriterRule&gt;
-              &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
-              &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
-            &lt;RewriterRule&gt;
-            ...
-            &lt;RewriterRule&gt;
-              &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
-              &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
-            &lt;RewriterRule&gt;
-            </code>
-            </remarks>
-        </member>
-        <member name="M:MySoft.RESTful.Configuration.AuthenticationCollection.Add(MySoft.RESTful.Configuration.Authentication)">
-            <summary>
-            Adds a new RewriterRule to the collection.
-            </summary>
-            <param name="r">A RewriterRule instance.</param>
-        </member>
-        <member name="P:MySoft.RESTful.Configuration.AuthenticationCollection.Item(System.Int32)">
-            <summary>
-            Gets or sets a RewriterRule at a specified ordinal index.
-            </summary>
         </member>
         <member name="T:MySoft.RESTful.SerializerFactory">
             <summary>
             系列化工厂
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.SerializerFactory.Create(MySoft.RESTful.ParameterFormat)">
+        <member name="M:MySoft.RESTful.SerializerFactory.Create(MySoft.RESTful.Utils.ParameterFormat)">
             <summary>
             创建系列化
             </summary>

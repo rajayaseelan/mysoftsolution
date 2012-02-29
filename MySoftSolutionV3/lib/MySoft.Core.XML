@@ -1645,31 +1645,6 @@
             true if the next token was read successfully; false if there are no more tokens to read.
             </returns>
         </member>
-        <member name="T:MySoft.IoC.ContractAttribute">
-            <summary>
-            约束的基类
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.ContractAttribute.Description">
-            <summary>
-            描述信息
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.ContractAttribute.AllowCache">
-            <summary>
-            是否允许缓存
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.ContractAttribute.Timeout">
-            <summary>
-            超时时间（单位：秒）
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.ContractAttribute.CacheTime">
-            <summary>
-            缓存时间（单位：秒）
-            </summary>
-        </member>
         <member name="T:MySoft.ContentPager">
             <summary>
             内容分页器
@@ -1802,6 +1777,40 @@
             <param name="level">Block size acts as compression level (1 to 9) with 1 giving 
             the lowest compression and 9 the highest.</param>
         </member>
+        <member name="T:MySoft.Net.Http.IHTTPRequestHandlerFactory">
+            <summary>
+            This interface defines the contract between the server and the
+            RequestHandlerFactory. A different RequestHandler can be created
+            based on the the request.
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.IServiceCache">
+            <summary>
+            服务缓存
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.IServiceCache.AddCache(System.String,System.Object,System.Int32)">
+            <summary>
+            添加缓存
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="seconds"></param>
+        </member>
+        <member name="M:MySoft.IoC.IServiceCache.GetCache``1(System.String)">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IServiceCache.RemoveCache(System.String)">
+            <summary>
+            移除缓存
+            </summary>
+            <param name="key"></param>
+        </member>
         <member name="T:MySoft.Aop.IAopOperator">
             <summary>
             IAopOperator AOP操作符接口，包括前处理和后处理
@@ -1868,8 +1877,7 @@
                 <mysoft.framework>
             	    <remotingServer>
                         <server channelType="tcp" serverAddress="127.0.0.1" port="8888" compress="true"/>
-            		    <remoteObject name="基金净值" assemblyName="Shumi.BLL" className="SB.NetValue" mode="singleton" />
-            		    <remoteObject name="基金净值" assemblyName="Shumi.BLL" className="SB.NetValue" mode="singlecall" />
+            		    <remoteObject name="数据同步" assemblyName="Simple" className="Simple.SyncData" mode="singleton" />
             	    </remotingServer>
                 </mysoft.framework>
             </configuration>
@@ -2735,6 +2743,18 @@
             <param name="value"></param>
             <returns></returns>
         </member>
+        <member name="M:MySoft.CoreHelper.GetPropertiesFromType(System.Type)">
+            <summary>
+            Returns the PropertyInfo for properties defined as Instance, Public, NonPublic, or FlattenHierarchy
+            </summary>
+            <param retval="type">The type.</param>
+        </member>
+        <member name="M:MySoft.CoreHelper.GetPropertiesFromType``1">
+            <summary>
+            Returns the PropertyInfo for properties defined as Instance, Public, NonPublic, or FlattenHierarchy
+            </summary>
+            <param retval="type">The type.</param>
+        </member>
         <member name="M:MySoft.CoreHelper.GetMethodsFromType(System.Type)">
             <summary>
             获取所有方法
@@ -2852,6 +2872,35 @@
             <typeparam name="T"></typeparam>
             <param name="value1"></param>
             <param name="value2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.CoreHelper.CheckPrimitiveType(System.Type[])">
+            <summary>
+            检查Primitive类型
+            </summary>
+            <param name="types"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.CoreHelper.GetTypeName(System.Type)">
+            <summary>
+            获取类型的名称
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.CoreHelper.GetPrimitiveType(System.Type)">
+            <summary>
+            获取无类型
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.CoreHelper.ConvertJsonToObject(System.Reflection.ParameterInfo,System.String)">
+            <summary>
+            转换成JSON值
+            </summary>
+            <param name="info"></param>
+            <param name="jsonString"></param>
             <returns></returns>
         </member>
         <member name="T:MySoft.Threading.Internal.WorkItem">
@@ -7343,22 +7392,10 @@
             Attribute used to mark service interfaces.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.ServiceContractAttribute.#ctor">
+        <member name="P:MySoft.IoC.ServiceContractAttribute.CallbackType">
             <summary>
-            实例化ServiceContractAttribute
+            回调类型
             </summary>
-        </member>
-        <member name="M:MySoft.IoC.ServiceContractAttribute.#ctor(System.Boolean)">
-            <summary>
-            实例化ServiceContractAttribute
-            </summary>
-            <param name="allowCache"></param>
-        </member>
-        <member name="M:MySoft.IoC.ServiceContractAttribute.#ctor(System.Int32)">
-            <summary>
-            实例化ServiceContractAttribute
-            </summary>
-            <param name="cacheTime"></param>
         </member>
         <member name="T:SharpZip.Zip.ITaggedData">
             <summary>
@@ -8144,6 +8181,21 @@
             Returns the CRC32 data checksum computed so far.
             </summary>
         </member>
+        <member name="T:MySoft.HttpMethod">
+            <summary>
+            HTTP方法
+            </summary>
+        </member>
+        <member name="F:MySoft.HttpMethod.GET">
+            <summary>
+            GET方式
+            </summary>
+        </member>
+        <member name="F:MySoft.HttpMethod.POST">
+            <summary>
+            POST方式
+            </summary>
+        </member>
         <member name="T:MySoft.Aop.IAopProxyFactory">
             <summary>
             IAopProxyFactory 用于创建特定的Aop代理的实例，IAopProxyFactory的作用是使AopProxyAttribute独立于具体的AOP代理类。
@@ -8459,31 +8511,6 @@
         <member name="T:MySoft.Security.MD5">
             <summary>
             MD5加密
-            </summary>
-        </member>
-        <member name="T:MySoft.RESTful.HttpMethod">
-            <summary>
-            请求方式
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.HttpMethod.GET">
-            <summary>
-            Get方式
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.HttpMethod.POST">
-            <summary>
-            Post方式
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.HttpMethod.DELETE">
-            <summary>
-            Delete方式
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.HttpMethod.PUT">
-            <summary>
-            Put方式
             </summary>
         </member>
         <member name="M:Newtonsoft.Json.Utilities.ConvertUtils.Convert``1(System.Object)">
@@ -9161,41 +9188,41 @@
             缓存依赖
             </summary>
         </member>
-        <member name="M:MySoft.Cache.ICacheDependent.AddCache(System.Type,System.String,System.Object,System.Double)">
+        <member name="M:MySoft.Cache.ICacheDependent.AddCache``1(System.String,``0,System.Int32)">
             <summary>
             添加缓存
             </summary>
-            <param name="cacheType"></param>
+            <typeparam name="T"></typeparam>
             <param name="cacheKey"></param>
             <param name="cacheValue"></param>
             <param name="cacheTime"></param>
         </member>
-        <member name="M:MySoft.Cache.ICacheDependent.RemoveCache(System.Type,System.String)">
+        <member name="M:MySoft.Cache.ICacheDependent.RemoveCache``1(System.String)">
             <summary>
             移除缓存
             </summary>
-            <param name="cacheType"></param>
+            <typeparam name="T"></typeparam>
             <param name="cacheKey"></param>
         </member>
-        <member name="M:MySoft.Cache.ICacheDependent.GetCache(System.Type,System.String)">
+        <member name="M:MySoft.Cache.ICacheDependent.GetCache``1(System.String)">
             <summary>
             获取缓存
             </summary>
-            <param name="cacheType"></param>
+            <typeparam name="T"></typeparam>
             <param name="cacheKey"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Cache.ICacheDependent.RemoveCache(System.Type)">
+        <member name="M:MySoft.Cache.ICacheDependent.RemoveCache``1">
             <summary>
             移除缓存
             </summary>
-            <param name="cacheType"></param>
+            <typeparam name="T"></typeparam>
         </member>
-        <member name="M:MySoft.Cache.ICacheDependent.GetCache(System.Type)">
+        <member name="M:MySoft.Cache.ICacheDependent.GetCache``1">
             <summary>
             获取缓存
             </summary>
-            <param name="cacheType"></param>
+            <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
         <member name="T:SharpZip.Zip.Compression.Streams.InflaterInputBuffer">
@@ -9897,6 +9924,49 @@
             异常代码
             </summary>
         </member>
+        <member name="T:MySoft.Base64UrlHelper">
+            <summary>
+            Base64的url帮助类
+            </summary>
+        </member>
+        <member name="M:MySoft.Base64UrlHelper.StringToUrlBase64(System.String)">
+            <summary>
+            String 转换  UrlBase64，使之适合在url中使用
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Base64UrlHelper.UrlBase64ToString(System.String)">
+            <summary>
+            UrlBase64 转换  String
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Base64UrlHelper.StringToUrlBase64(System.String,System.Text.Encoding)">
+            <summary>
+            String 转换  UrlBase64，使之适合在url中使用
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Base64UrlHelper.UrlBase64ToString(System.String,System.Text.Encoding)">
+            <summary>
+            UrlBase64 转换  String
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Base64UrlHelper.Base64ToUrlBase64(System.String)">
+            <summary>
+            Base64 转换 UrlBase64，使之适合在url中使用
+            </summary>
+        </member>
+        <member name="M:MySoft.Base64UrlHelper.UrlBase64ToBase64(System.String)">
+            <summary>
+            UrlBase64 转换 Base64
+            </summary>
+        </member>
         <member name="T:MySoft.Logger.SimpleLog">
             <summary>
             简单日志管理类(按日期生成文件)
@@ -9924,6 +9994,13 @@
             写错误日志
             </summary>
             <param name="ex"></param>
+        </member>
+        <member name="M:MySoft.Logger.SimpleLog.GetServiceFile(System.Exception)">
+            <summary>
+            获取服务路径
+            </summary>
+            <param name="ex"></param>
+            <returns></returns>
         </member>
         <member name="M:MySoft.Logger.SimpleLog.WriteLog(System.String)">
             <summary>
@@ -10022,6 +10099,20 @@
             </summary>
             <param name="ex"></param>
             <param name="to"></param>
+        </member>
+        <member name="M:MySoft.Logger.SimpleLog.GetAppTitle(System.Exception)">
+            <summary>
+            获取App标题
+            </summary>
+            <param name="ex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Logger.SimpleLog.GetServiceTitle(System.Exception)">
+            <summary>
+            获取服务标题
+            </summary>
+            <param name="ex"></param>
+            <returns></returns>
         </member>
         <member name="M:MySoft.Logger.SimpleLog.WriteFileLog(System.String,System.Exception)">
             <summary>
@@ -10713,22 +10804,20 @@
             Attribute used to mark service interfaces.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.OperationContractAttribute.#ctor">
+        <member name="P:MySoft.IoC.OperationContractAttribute.ClientCacheTime">
             <summary>
-            实例化OperationContractAttribute
+            客户端缓存时间（单位：秒）
             </summary>
         </member>
-        <member name="M:MySoft.IoC.OperationContractAttribute.#ctor(System.Boolean)">
+        <member name="P:MySoft.IoC.OperationContractAttribute.ServerCacheTime">
             <summary>
-            实例化OperationContractAttribute
+            服务端缓存时间（单位：秒）
             </summary>
-            <param name="allowCache"></param>
         </member>
-        <member name="M:MySoft.IoC.OperationContractAttribute.#ctor(System.Int32)">
+        <member name="P:MySoft.IoC.OperationContractAttribute.CacheKey">
             <summary>
-            实例化OperationContractAttribute
+            获取或设置CacheKey
             </summary>
-            <param name="cacheTime"></param>
         </member>
         <member name="T:SharpZip.Zip.DescriptorData">
             <summary>
@@ -12482,6 +12571,19 @@
             <param name="message">A message describing the error.</param>
             <param name="exception">The exception that is the cause of the current exception.</param>
         </member>
+        <member name="T:MySoft.Net.Http.IHTTPRequestHandler">
+            <summary>
+            This interface defines the contract between the Server and the
+            Request Handlers.
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Http.IHTTPRequestHandler.HandleRequest(MySoft.Net.Http.HTTPServerRequest,MySoft.Net.Http.HTTPServerResponse)">
+            <summary>
+            Handles a request.
+            </summary>
+            <param name="request">The request to handle.</param>
+            <param name="response">The response to operate on.</param>
+        </member>
         <member name="T:MySoft.Aop.AopProxyAttribute">
             <summary>
             AopProxyAttribute
@@ -12668,24 +12770,9 @@
             方法描述
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.PublishMethodAttribute.Method">
+        <member name="P:MySoft.RESTful.PublishMethodAttribute.Authorized">
             <summary>
-            调用方式
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.PublishMethodAttribute.Enabled">
-            <summary>
-            是否启用
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.PublishMethodAttribute.IsPublic">
-            <summary>
-            是否为公共方法（公共方法不需要认证）
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.PublishMethodAttribute.UserParameter">
-            <summary>
-            用户认证的参数名，如UserParameter = "username"
+            是否认证
             </summary>
         </member>
         <member name="T:MySoft.Net.Sockets.DataPacket">
@@ -13200,6 +13287,245 @@
             Random numbers used to randomise repetitive blocks
             </summary>
         </member>
+        <member name="T:MySoft.Net.Http.HTTPServerResponse">
+            <summary>
+            This class represents the response from the server to the client.
+            </summary>
+        </member>
+        <member name="T:MySoft.Net.Http.HTTPMessage">
+            <summary>
+            HTTPMessage is the base class for HTTPServerRequest and
+            HTTPServerResponse. It reads, writes and manages all common
+            HTTP headers.
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPMessage.#ctor">
+            <summary>
+            Construct a new HTTPMessage.
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPMessage.Add(System.String,System.String)">
+            <summary>
+            Add a header to the set of headers. This will fail if a header
+            with the same name exists.
+            </summary>
+            <param name="name">Name of the header.</param>
+            <param name="value">Value of the header.</param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPMessage.Has(System.String)">
+            <summary>
+            Check if the set of headers contains a particular header.
+            </summary>
+            <param name="name">Name of the header to check for.</param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPMessage.Get(System.String)">
+            <summary>
+            Get the value for a particular header.
+            </summary>
+            <param name="name">Name of the header.</param>
+            <returns>The value for the header or an empty string if
+            it doesn't exist.</returns>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPMessage.Set(System.String,System.String)">
+            <summary>
+            Set the value for a particular header. This will create the header
+            if it doesn;t exist yet.
+            </summary>
+            <param name="name">Name of the header.</param>
+            <param name="value">Value of the header.</param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPMessage.Read(System.IO.Stream)">
+            <summary>
+            Reads the headers from a Stream.
+            </summary>
+            <param name="istr"></param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPMessage.Write(System.IO.Stream)">
+            <summary>
+            Writes the headers to a Stream.
+            </summary>
+            <param name="stream"></param>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPMessage.LastRead">
+            <summary>
+            Returns the last read character when an HTTP header has been read.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPMessage.Version">
+            <summary>
+            Sets or gets the HTTP protocol version.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPMessage.TransferEncoding">
+            <summary>
+            Gets or sets the transfer encoding
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPMessage.ChunkedTransferEncoding">
+            <summary>
+            Checks if the Transfer-Encoding is chunked or sets it to chunked or identity.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPMessage.ContentLength">
+            <summary>
+            Gets or sets the Content-Length header.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPMessage.ContentType">
+            <summary>
+            Gets or sets the Content-Type header.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPMessage.KeepAlive">
+            <summary>
+            Gets or sets the Connection header appropriate for the current
+            HTTP version.
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServerResponse.SendContinue">
+            <summary>
+            Send a continue reponse. This is used internally by the session.
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServerResponse.Send">
+            <summary>
+            Send the response header and get a stream to which the body can be written.
+            </summary>
+            <returns>The Stream for the body.</returns>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServerResponse.SendFile(System.String,System.String)">
+            <summary>
+            Send the content of a file.
+            </summary>
+            <param name="path">The path to the file.</param>
+            <param name="mediaType">The Content-Type of the file.</param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServerResponse.SendBuffer(System.Byte[],System.String)">
+            <summary>
+            Send the content of a buffer.
+            </summary>
+            <param name="buffer">The buffer.</param>
+            <param name="mediaType">The Content-Type of the buffer.</param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServerResponse.Redirect(System.String)">
+            <summary>
+            Redirect the request.
+            </summary>
+            <param name="uri">The URI to redirect to.</param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServerResponse.Write(System.IO.Stream)">
+            <summary>
+            Write the response header to a Stream.
+            </summary>
+            <param name="stream"></param>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerResponse.Status">
+            <summary>
+            Gets or sets the status of the response.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerResponse.Reason">
+            <summary>
+            Gets or sets the reason string of the response.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerResponse.StatusAndReason">
+            <summary>
+            Sets the status and the correct reason for it.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerResponse.Date">
+            <summary>
+            Gets or sets the date of the response.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerResponse.Sent">
+            <summary>
+            Get if the response header has been sent yet..
+            </summary>
+        </member>
+        <member name="T:MySoft.Net.Http.HTTPServer">
+            <summary>
+            This class represents the actual HTTP server.
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServer.#ctor(MySoft.Net.Http.IHTTPRequestHandlerFactory,System.Net.Sockets.Socket)">
+            <summary>
+            Create an HTTPServer with default parameters.
+            </summary>
+            <param name="factory">The RequestHandlerFactory that will instantiate the
+            Request handler(s) for this server.</param>
+            <param name="socket">The socket on which this server will listen for
+            connections. The socket must be bound to an endpoint prior to creating
+            the server.</param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServer.#ctor(MySoft.Net.Http.IHTTPRequestHandlerFactory,System.Net.Sockets.Socket,MySoft.Net.Http.HTTPServerParams)">
+            <summary>
+            Create an HTTPServer.
+            </summary>
+            <param name="factory">The RequestHandlerFactory that will instantiate the
+            Request handler(s) for this server.</param>
+            <param name="socket">The socket on which this server will listen for
+            connections. The socket must be bound to an endpoint prior to creating
+            the server.</param>
+            <param name="parameters">The parameters used for this server.</param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServer.#ctor(MySoft.Net.Http.IHTTPRequestHandlerFactory,System.Int32)">
+            <summary>
+            Create an HTTPServer with default parameters.
+            </summary>
+            <param name="factory">The RequestHandlerFactory that will instantiate the
+            Request handler(s) for this server.</param>
+            <param name="port">The port on which to listen for connections. The socket
+            will be created and bound to all interfaces by the HTTPServer</param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServer.#ctor(MySoft.Net.Http.IHTTPRequestHandlerFactory,System.Int32,MySoft.Net.Http.HTTPServerParams)">
+            <summary>
+            Create an HTTPServer.
+            </summary>
+            <param name="factory">The RequestHandlerFactory that will instantiate the
+            Request handler(s) for this server.</param>
+            <param name="port">The port on which to listen for connections. The socket
+            will be created and bound to all interfaces by the HTTPServer</param>
+            <param name="parameters">The parameters used for this server.</param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServer.Start">
+            <summary>
+            Start the server (in a background thread).
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServer.Stop">
+            <summary>
+            Stop the server. Once a server is stopped it can not be
+            started again.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServer.Port">
+            <summary>
+            Gets the port on which the server is listening.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServer.IsRunning">
+            <summary>
+            Gets if the server is still running.
+            </summary>
+        </member>
+        <member name="E:MySoft.Net.Http.HTTPServer.OnServerStart">
+            <summary>
+            Invoked when the server is started.
+            </summary>
+        </member>
+        <member name="E:MySoft.Net.Http.HTTPServer.OnServerStop">
+            <summary>
+            Invoked just before the server stops.
+            </summary>
+        </member>
+        <member name="E:MySoft.Net.Http.HTTPServer.OnServerException">
+            <summary>
+            Invoked when the server catches an exception;
+            </summary>
+        </member>
         <member name="T:MySoft.Task.ITask">
             <summary>
             任务接口
@@ -13600,7 +13926,7 @@
             	<c>true</c> if this instance can convert the specified value type; otherwise, <c>false</c>.
             </returns>
         </member>
-        <member name="T:MySoft.Net.FTP.FtpDataStream">
+        <member name="T:MySoft.Net.Ftp.FtpDataStream">
             <summary>
             
             </summary>
@@ -14314,6 +14640,42 @@
             </param>
             <returns>Returns the number of bytes actually read.</returns>
         </member>
+        <member name="T:MySoft.IoC.HttpInvokeAttribute">
+            <summary>
+            Http调用属性
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.HttpInvokeAttribute.#ctor">
+            <summary>
+            初始化HttpInvokeAttribute
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.HttpInvokeAttribute.#ctor(System.String)">
+            <summary>
+            初始化HttpInvokeAttribute
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="P:MySoft.IoC.HttpInvokeAttribute.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpInvokeAttribute.Description">
+            <summary>
+            描述信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpInvokeAttribute.Authorized">
+            <summary>
+            是否认证
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpInvokeAttribute.AuthParameter">
+            <summary>
+            认证参数
+            </summary>
+        </member>
         <member name="T:MySoft.Aop.AopSwitcherAttribute">
             <summary>
             AopSwitcherAttribute 用于决定一个被AopProxyAttribute修饰的class的某个特定方法是否启用截获 。
@@ -14327,6 +14689,85 @@
             <summary>
             是否使用切面处理
             </summary>
+        </member>
+        <member name="T:MySoft.ValidateHelper">
+            <summary>
+            验证帮助类
+            </summary>
+        </member>
+        <member name="M:MySoft.ValidateHelper.Begin">
+            <summary>
+            开始验证
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.Validation">
+            <summary>
+            验证类
+            </summary>
+        </member>
+        <member name="P:MySoft.Validation.IsValid">
+            <summary>
+            是否验证通过
+            </summary>
+        </member>
+        <member name="T:MySoft.ValidationExtensions">
+            <summary>
+            验证扩展类
+            </summary>
+        </member>
+        <member name="M:MySoft.ValidationExtensions.Check``1(MySoft.Validation,System.Func{System.Boolean},``0)">
+            <summary>
+            通讯检测，抛出异常
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="validation"></param>
+            <param name="filterMethod"></param>
+            <param name="exception"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.ValidationExtensions.Check(MySoft.Validation,System.Func{System.Boolean})">
+            <summary>
+            通讯检测
+            </summary>
+            <param name="validation"></param>
+            <param name="filterMethod"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.ValidationExtensions.NotNull(MySoft.Validation,System.Object)">
+            <summary>
+            是否为null
+            </summary>
+            <param name="validation"></param>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.ValidationExtensions.InRange(MySoft.Validation,System.Double,System.Double,System.Double)">
+            <summary>
+            数据区间判断
+            </summary>
+            <param name="validation"></param>
+            <param name="obj"></param>
+            <param name="min"></param>
+            <param name="max"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.ValidationExtensions.RegexMatch(MySoft.Validation,System.String,System.String)">
+            <summary>
+            正则匹配
+            </summary>
+            <param name="validation"></param>
+            <param name="input"></param>
+            <param name="pattern"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.ValidationExtensions.IsEmail(MySoft.Validation,System.String)">
+            <summary>
+            是否Email
+            </summary>
+            <param name="validation"></param>
+            <param name="email"></param>
+            <returns></returns>
         </member>
         <member name="T:MySoft.TypeConstructor">
             <summary> 
@@ -14479,11 +14920,6 @@
         <member name="P:MySoft.RESTful.PublishKindAttribute.Description">
             <summary>
             类别描述
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.PublishKindAttribute.Enabled">
-            <summary>
-            是否启用
             </summary>
         </member>
         <member name="T:Newtonsoft.Json.Serialization.ReflectionValueProvider">
@@ -17232,6 +17668,31 @@
             </summary>
             <returns>通过认证后返回是否响应成功，通过AuthenticationContext.Current.Token获取令牌信息进行认证</returns>
         </member>
+        <member name="P:MySoft.RESTful.Auth.IAuthentication.AuthType">
+            <summary>
+            认证类型
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.Auth.AuthType">
+            <summary>
+            认证类型
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.Auth.AuthType.OAuth">
+            <summary>
+            OAuth认证
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.Auth.AuthType.Cookie">
+            <summary>
+            Cookie认证
+            </summary>
+        </member>
+        <member name="F:MySoft.RESTful.Auth.AuthType.UidPwd">
+            <summary>
+            用户名密码
+            </summary>
+        </member>
         <member name="T:Newtonsoft.Json.Serialization.JsonISerializableContract">
             <summary>
             Contract details for a <see cref="T:System.Type"/> used by the <see cref="T:Newtonsoft.Json.JsonSerializer"/>.
@@ -17404,26 +17865,6 @@
             <returns>
             	<c>true</c> if this instance can convert the specified object type; otherwise, <c>false</c>.
             </returns>
-        </member>
-        <member name="T:MySoft.ResponseFormat">
-            <summary>
-            数据格式
-            </summary>
-        </member>
-        <member name="F:MySoft.ResponseFormat.Binary">
-            <summary>
-            二进制
-            </summary>
-        </member>
-        <member name="F:MySoft.ResponseFormat.Json">
-            <summary>
-            json格式
-            </summary>
-        </member>
-        <member name="F:MySoft.ResponseFormat.Xml">
-            <summary>
-            xml格式
-            </summary>
         </member>
         <member name="T:MySoft.SerializationManager">
             <summary>
@@ -18961,6 +19402,128 @@
             Get / set the key value applicable.
             </summary>
         </member>
+        <member name="T:MySoft.Net.Http.HTTPServerRequest">
+            <summary>
+            This class represents a request made by a client to the server.
+            </summary>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServerRequest.Read(System.IO.Stream)">
+            <summary>
+            Reads the request from a Stream.
+            </summary>
+            <param name="istr"></param>
+        </member>
+        <member name="M:MySoft.Net.Http.HTTPServerRequest.GetRequestStream">
+            <summary>
+            Gets a Stream that represents the body of the request.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerRequest.Method">
+            <summary>
+            Gets the request method.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerRequest.URI">
+            <summary>
+            Gets the request URI.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerRequest.ExpectsContinue">
+            <summary>
+            Gets if the request expects a continue. If so, the session will handle this
+            internally.
+            </summary>
+        </member>
+        <member name="T:MySoft.HttpHelper">
+            <summary>
+            Http资源帮助
+            </summary>
+        </member>
+        <member name="M:MySoft.HttpHelper.Reader(System.String)">
+            <summary>
+            读取指定的url的数据，默认缓存1分钟
+            </summary>
+            <param name="url"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.HttpHelper.Reader(System.String,System.Int32)">
+            <summary>
+            读取指定url的数据 ，cacheTime小于0，不进行缓存
+            </summary>
+            <param name="url"></param>
+            <param name="cacheTime"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.HttpHelper.Post(System.String,System.String)">
+            <summary>
+            Post指定url的数据
+            </summary>
+            <param name="url"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.HttpHelper.#ctor(System.String)">
+            <summary>
+            实例化HttpHelper，不带参数的uri，如http://127.0.0.1:8012/getuser/
+            </summary>
+            <param name="uri"></param>
+        </member>
+        <member name="M:MySoft.HttpHelper.Reader(System.String,System.String)">
+            <summary>
+            读取指定url的数据，通过parameter传递参数
+            </summary>
+            <param name="method"></param>
+            <param name="parameter"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.HttpHelper.Reader(System.String,System.String,System.Int32)">
+            <summary>
+            读取指定url的数据，通过parameter传递参数
+            </summary>
+            <param name="method"></param>
+            <param name="parameter"></param>
+            <param name="cacheTime"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.HttpHelper.Reader``1(System.String,``0)">
+            <summary>
+            读取指定url的数据，通过item传递参数
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="method"></param>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.HttpHelper.Reader``1(System.String,``0,System.Int32)">
+            <summary>
+            读取指定url的数据，通过item传递参数
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="method"></param>
+            <param name="item"></param>
+            <param name="cacheTime"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.HttpHelper.Post(System.String,System.String,System.String)">
+            <summary>
+            Post指定url的数据，通过parameter传递参数
+            </summary>
+            <param name="method"></param>
+            <param name="parameter"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.HttpHelper.Post``1(System.String,``0,System.String)">
+            <summary>
+            Post指定url的数据，通过item传递参数
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="method"></param>
+            <param name="item"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
         <member name="T:MySoft.Threading.STPStartInfo">
             <summary>
             Summary description for STPStartInfo.
@@ -19013,22 +19576,22 @@
             认证用户
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.AuthID">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.ID">
             <summary>
             认证用户ID
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.AuthName">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.Name">
             <summary>
             认证用户名称
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.AuthMobile">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.Mobile">
             <summary>
             认证用户的手机
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.AuthEmail">
+        <member name="P:MySoft.RESTful.Auth.AuthenticationUser.Email">
             <summary>
             认证用户邮箱
             </summary>
@@ -20132,25 +20695,6 @@
             The class the implements the enumerator
             </summary>
         </member>
-        <member name="T:MySoft.SecurityProxy">
-            <summary>
-            Test proxy invocation handler which is used to check a methods security
-            before invoking the method
-            </summary>
-        </member>
-        <member name="M:MySoft.SecurityProxy.#ctor(System.Object)">
-            <summary>
-             Class constructor
-            </summary>
-            <param name="obj">Instance of object to be proxied</param>
-        </member>
-        <member name="M:MySoft.SecurityProxy.NewInstance(System.Object)">
-            <summary>
-             Factory method to create a new proxy instance.
-            </summary>
-            <param name="obj">Instance of object to be proxied</param>
-        </member>
-        <!-- 对于成员“M:MySoft.SecurityProxy.Invoke(System.Object,System.Reflection.MethodInfo,System.Object[])”忽略有格式错误的 XML 注释 -->
         <member name="T:MySoft.Mail.SendResult">
             <summary>
             邮件发送结果
@@ -21366,6 +21910,48 @@
             Returns the Adler32 data checksum computed so far.
             </summary>
         </member>
+        <member name="T:MySoft.CancellableTask">
+            <summary>
+            支持Cancel的任务
+            </summary>
+        </member>
+        <member name="M:MySoft.CancellableTask.#ctor(MySoft.CancellableTask.WorkCallback)">
+            <summary>
+            实例化CancellableTask
+            </summary>
+            <param name="workCallback"></param>
+        </member>
+        <member name="M:MySoft.CancellableTask.#ctor(MySoft.CancellableTask.WorkCallback,MySoft.CancellableTask.CancelCallback)">
+            <summary>
+            实例化CancellableTask
+            </summary>
+            <param name="workCallback"></param>
+            <param name="cancelCallback"></param>
+        </member>
+        <member name="M:MySoft.CancellableTask.BeginInvoke(System.Object,System.AsyncCallback,System.Object,System.Int32)">
+            <summary>
+            开始调用委托
+            </summary>
+            <param name="arg"></param>
+            <param name="asyncCallback"></param>
+            <param name="state"></param>
+            <param name="timeout"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.CancellableTask.EndInvoke(System.IAsyncResult)">
+            <summary>
+            结束委托
+            </summary>
+            <param name="result"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.CancellableTask.WaitOrTimeout(System.Object,System.Boolean)">
+            <summary>
+            等待超时
+            </summary>
+            <param name="state"></param>
+            <param name="isTimeout"></param>
+        </member>
         <member name="T:MySoft.Task.Job">
             <summary>
             任务实体
@@ -21748,7 +22334,7 @@
             认证异常信息
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.Auth.AuthenticationException.#ctor(System.String,System.String)">
+        <member name="M:MySoft.RESTful.Auth.AuthenticationException.#ctor(System.Int32,System.String)">
             <summary>
             实例化AuthenticationException
             </summary>
@@ -22884,23 +23470,6 @@
             Specifies mode with end marker.
             </summary>
         </member>
-        <member name="T:MySoft.SecurityManager">
-            <summary>
-            Test class.
-            </summary>
-        </member>
-        <member name="M:MySoft.SecurityManager.#ctor">
-            <summary>
-             Class constructor
-            </summary>
-        </member>
-        <member name="M:MySoft.SecurityManager.IsMethodInRole(System.String,System.String)">
-            <summary>
-             Test method which can be implemented to check if a given method can
-             be accessed by a user given the following role.
-             NOTE:  This does not have any implementation...it's only used as a placeholder
-            </summary>
-        </member>
         <member name="M:Newtonsoft.Json.Utilities.EnumUtils.Parse``1(System.String)">
             <summary>
             Parses the specified enum member name, returning it's value.
@@ -23330,6 +23899,46 @@
         <member name="F:SharpZip.LZW.LzwConstants.INIT_BITS">
             <summary>
             Initial number of bits per code
+            </summary>
+        </member>
+        <member name="T:MySoft.Threading.Internal.Stopwatch">
+            <summary>
+            Stopwatch class
+            Used with WindowsCE and Silverlight which don't have Stopwatch
+            </summary>
+        </member>
+        <member name="T:MySoft.Net.Http.HTTPServerParams">
+            <summary>
+            The server parameters.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerParams.Default">
+            <summary>
+            The default server parameters.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerParams.Timeout">
+            <summary>
+            Gets or sets he timeout for the first request to be made after
+            a connection has been established.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerParams.KeepAliveTimeout">
+            <summary>
+            Gets or sets the timeout for subsequent request to be made after
+            the last request has been completed.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerParams.MaxRequests">
+            <summary>
+            Gets ot sets the maximum number of requests that are handled in
+            one session.
+            </summary>
+        </member>
+        <member name="P:MySoft.Net.Http.HTTPServerParams.KeepAlive">
+            <summary>
+            Gets or sets the keep alive feature. If this property is false, a
+            session will close the connection after each completed request.
             </summary>
         </member>
     </members>

@@ -456,41 +456,42 @@
             </summary>
             <param name="type"></param>
         </member>
-        <member name="M:MySoft.Cache.DefaultCacheDependent.AddCache(System.Type,System.String,System.Object,System.Double)">
+        <member name="M:MySoft.Cache.DefaultCacheDependent.AddCache``1(System.String,``0,System.Int32)">
             <summary>
             添加缓存
             </summary>
-            <param name="serviceType"></param>
+            <typeparam name="T"></typeparam>
             <param name="cacheKey"></param>
             <param name="cacheValue"></param>
             <param name="cacheTime"></param>
         </member>
-        <member name="M:MySoft.Cache.DefaultCacheDependent.RemoveCache(System.Type,System.String)">
+        <member name="M:MySoft.Cache.DefaultCacheDependent.RemoveCache``1(System.String)">
             <summary>
             移除缓存
             </summary>
-            <param name="serviceType"></param>
+            <typeparam name="T"></typeparam>
             <param name="cacheKey"></param>
         </member>
-        <member name="M:MySoft.Cache.DefaultCacheDependent.GetCache(System.Type,System.String)">
+        <member name="M:MySoft.Cache.DefaultCacheDependent.GetCache``1(System.String)">
             <summary>
             获取缓存
             </summary>
-            <param name="serviceType"></param>
+            <typeparam name="T"></typeparam>
+            <param name="?"></param>
             <param name="cacheKey"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Cache.DefaultCacheDependent.RemoveCache(System.Type)">
+        <member name="M:MySoft.Cache.DefaultCacheDependent.RemoveCache``1">
             <summary>
             移除缓存
             </summary>
-            <param name="serviceType"></param>
+            <typeparam name="T"></typeparam>
         </member>
-        <member name="M:MySoft.Cache.DefaultCacheDependent.GetCache(System.Type)">
+        <member name="M:MySoft.Cache.DefaultCacheDependent.GetCache``1">
             <summary>
             获取缓存
             </summary>
-            <param name="serviceType"></param>
+            <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
         <member name="T:MySoft.Cache.IMemoryCacheStrategy">
