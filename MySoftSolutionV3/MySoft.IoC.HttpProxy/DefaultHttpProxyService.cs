@@ -216,7 +216,13 @@ namespace MySoft.IoC.HttpProxy
             response.ContentType = "application/json;charset=utf-8";
 
             //检测服务名称
-            if (name == "favicon.ico" || !services.Any(p => string.Compare(p.Name, name, true) == 0))
+            if (name == "favicon.ico")
+            {
+                response.StatusCode = HttpStatusCode.NotFound;
+                response.ContentType = "text/html;charset=utf-8";
+                return new MemoryStream();
+            }
+            else if (!services.Any(p => string.Compare(p.Name, name, true) == 0))
             {
                 response.StatusCode = HttpStatusCode.NotFound;
                 var item = new { Code = (int)response.StatusCode, Message = "Method 【" + name + "】 not found." };
@@ -227,6 +233,12 @@ namespace MySoft.IoC.HttpProxy
                 #region 进行认证处理
 
                 var service = services.Single(p => string.Compare(p.Name, name, true) == 0);
+                if (service.TypeString)
+                {
+                    //如果返回是字符串类型，则设置为文本返回
+                    response.ContentType = "text/plain;charset=utf-8";
+                }
+
                 if (service.Authorized)
                 {
                     var token = new AuthorizeToken { Parameters = request.UriTemplateMatch.QueryParameters };

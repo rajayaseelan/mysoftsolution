@@ -27,9 +27,9 @@ namespace MySoft.PlatformService.UserService
             return "maoyong";
         }
 
-        public int GetSex(Sex value)
+        public string GetSex(Sex value)
         {
-            return Convert.ToInt32(value);
+            return Convert.ToString(value);
         }
 
         public virtual UserInfo GetUserInfo(string name, ref int length, out UserInfo user, params int[] ids)

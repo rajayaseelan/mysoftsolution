@@ -50,6 +50,7 @@ namespace MySoft.IoC.HttpServer
             {
                 ServiceName = serviceType.FullName,
                 Method = methodInfo,
+                TypeString = methodInfo.ReturnType == typeof(string),
                 Description = invoke.Description,
                 Authorized = invoke.Authorized,
                 AuthParameter = invoke.AuthParameter,
@@ -112,7 +113,8 @@ namespace MySoft.IoC.HttpServer
                 {
                     Name = kvp.Key,
                     Authorized = kvp.Value.Authorized,
-                    AuthParameter = kvp.Value.AuthParameter
+                    AuthParameter = kvp.Value.AuthParameter,
+                    TypeString = kvp.Value.TypeString
                 });
             }
 

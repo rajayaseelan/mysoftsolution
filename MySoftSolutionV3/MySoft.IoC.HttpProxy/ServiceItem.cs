@@ -25,5 +25,10 @@ namespace MySoft.IoC.HttpProxy
         /// 认证参数
         /// </summary>
         public string AuthParameter { get; set; }
+
+        /// <summary>
+        /// 是否String类型
+        /// </summary>
+        public bool TypeString { get; set; }
     }
 }

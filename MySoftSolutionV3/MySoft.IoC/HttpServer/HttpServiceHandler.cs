@@ -94,15 +94,18 @@ namespace MySoft.IoC.HttpServer
                 SendResponse(response, error);
                 return;
             }
-            else
+            else if (callMethod.HttpMethod == HttpMethod.POST && request.Method.ToUpper() == "GET")
             {
-                if (callMethod.HttpMethod == HttpMethod.POST && request.Method.ToUpper() == "GET")
-                {
-                    response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_METHOD_NOT_ALLOWED;
-                    var error = new HttpServiceException { Message = response.Reason };
-                    SendResponse(response, error);
-                    return;
-                }
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_METHOD_NOT_ALLOWED;
+                var error = new HttpServiceException { Message = response.Reason };
+                SendResponse(response, error);
+                return;
+            }
+
+            if (callMethod.TypeString)
+            {
+                //如果返回是字符串类型，则设置为文本返回
+                response.ContentType = "text/plain;charset=utf-8";
             }
 
             try

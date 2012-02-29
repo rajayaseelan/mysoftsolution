@@ -135,16 +135,16 @@ namespace MySoft.IoC.Services
                     string json1 = null;
                     string json2 = null;
 
-                    if (returnValue != null)
+                    if (method.ReturnType == typeof(string))
                     {
-                        if (returnValue is string)
-                            json1 = returnValue.ToString();
-                        else
-                            json1 = SerializationManager.SerializeJson(returnValue);
+                        json1 = Convert.ToString(returnValue);
                     }
                     else
                     {
-                        json1 = "{}";
+                        if (returnValue != null)
+                            json1 = SerializationManager.SerializeJson(returnValue);
+                        else
+                            json1 = "{}";
                     }
 
                     if (outValues.Count > 0)

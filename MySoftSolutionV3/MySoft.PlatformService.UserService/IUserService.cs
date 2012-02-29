@@ -51,7 +51,7 @@ namespace MySoft.PlatformService.UserService
         string GetUser(UserInfo user);
 
         [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
-        int GetSex(Sex value);
+        string GetSex(Sex value);
 
         [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
