@@ -80,7 +80,7 @@ namespace MySoft.PlatformService.UserService
             return new UserInfo { Name = id.ToString(), Description = id.ToString() + "你好！" + name };
         }
 
-        public IDictionary<IList<UserInfo>, Sex> GetDict()
+        public IDictionary<Sex, IList<UserInfo>> GetDict()
         {
             return null;
         }

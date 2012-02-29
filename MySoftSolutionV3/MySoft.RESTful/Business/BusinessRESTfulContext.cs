@@ -296,7 +296,7 @@ namespace MySoft.RESTful.Business
                 sb.AppendFormat(string.Format("&lt;{0} : {1}&gt;", name, GetTypeName(type)) + "<br/>");
             }
 
-            type = CoreHelper.GetPrimitiveType(type);
+            type = CoreHelper.GetInnerPrimitiveType(type);
             if (!CoreHelper.CheckPrimitiveType(type) || type.IsEnum)
             {
                 if (type.IsEnum)

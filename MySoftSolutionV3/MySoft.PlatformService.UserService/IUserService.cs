@@ -63,7 +63,7 @@ namespace MySoft.PlatformService.UserService
         UserInfo GetUser(int id, string name, IList<string> list, int[] values);
 
         [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
-        IDictionary<IList<UserInfo>, Sex> GetDict();
+        IDictionary<Sex, IList<UserInfo>> GetDict();
     }
 
     /// <summary>

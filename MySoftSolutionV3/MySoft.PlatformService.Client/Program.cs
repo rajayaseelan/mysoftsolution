@@ -131,7 +131,6 @@ namespace MySoft.PlatformService.Client
             //    }
             //}
 
-
             ManualResetEvent are = new ManualResetEvent(false);
             for (int i = 0; i < 1; i++)
             {
