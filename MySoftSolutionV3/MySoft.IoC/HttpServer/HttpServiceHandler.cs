@@ -166,22 +166,17 @@ namespace MySoft.IoC.HttpServer
 
         private JObject ParseCollection(string paramString)
         {
+            var collection = new JObject();
             if (!string.IsNullOrEmpty(paramString))
             {
-                var arr = paramString.Split('&');
-
-                var values = new JObject();
-                foreach (var str in arr)
+                var nvs = UrlUtility.ParseQueryString(paramString);
+                foreach (var key in nvs.AllKeys)
                 {
-                    var arr2 = str.Split('=');
-                    if (arr2.Length == 2)
-                        values[arr2[0]] = arr2[1];
+                    collection[key] = nvs[key];
                 }
-
-                return values;
             }
 
-            return new JObject();
+            return collection;
         }
 
         #endregion
