@@ -162,24 +162,6 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Gets the <see cref="System.Object"/> with the specified key.
-        /// </summary>
-        /// <value></value>
-        public object this[string key]
-        {
-            get { return container.Resolve<object>(key); }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="System.Object"/> with the specified service type.
-        /// </summary>
-        /// <value></value>
-        public object this[Type serviceType]
-        {
-            get { return container.Resolve(serviceType); }
-        }
-
-        /// <summary>
         /// Resolve local service
         /// </summary>
         /// <param name="type"></param>

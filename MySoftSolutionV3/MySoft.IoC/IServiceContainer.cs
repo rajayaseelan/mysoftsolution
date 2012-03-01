@@ -40,14 +40,6 @@ namespace MySoft.IoC
         void Release(object obj);
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
-        /// </summary>
-        /// <value></value>
-        object this[string Key] { get; }
-        /// <summary>
-        /// Gets the <see cref="System.Object"/> with the specified service type.
-        /// </summary>
-        /// <value></value>
-        object this[Type serviceType] { get; }
         /// <summary>
         /// Resolve local service
         /// </summary>

@@ -73,17 +73,11 @@ namespace MySoft.IoC.Services
             object service = instance;
             if (service == null)
             {
-                try
-                {
-                    //解析服务
-                    service = container[serviceType];
+                //解析服务
+                service = container.Resolve(serviceType);
 
-                    //释放资源
-                    container.Release(service);
-                }
-                catch (Exception ex)
-                {
-                }
+                //释放资源
+                container.Release(service);
             }
 
             try

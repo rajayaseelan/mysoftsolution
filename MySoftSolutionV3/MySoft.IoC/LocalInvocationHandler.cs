@@ -61,18 +61,10 @@ namespace MySoft.IoC
             if (cacheValue == null)
             {
                 //从容器中获取对象
-                object service = null;
-                try
-                {
-                    //解析服务
-                    service = container[serviceType];
+                var service = container.Resolve(serviceType);
 
-                    //释放资源
-                    container.Release(service);
-                }
-                catch (Exception ex)
-                {
-                }
+                //释放资源
+                container.Release(service);
 
                 //返回拦截服务
                 service = AspectFactory.CreateProxyService(serviceType, service);

@@ -482,7 +482,7 @@ namespace MySoft.IoC
             {
                 if (container.Kernel.HasComponent(serviceKey))
                 {
-                    service = container[serviceKey] as IService;
+                    service = container.Resolve<IService>(serviceKey);
                 }
 
                 if (service == null && config.Type == CastleFactoryType.Local)
