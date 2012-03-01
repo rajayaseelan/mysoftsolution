@@ -10,21 +10,17 @@ namespace MySoft.IoC
     public class InvokeCaller
     {
         private IService service;
-        private string appName;
-        private string hostName;
-        private string ipAddress;
+        private AppClient client;
 
         /// <summary>
         /// 实例化InvokeCaller
         /// </summary>
-        /// <param name="appName"></param>
+        /// <param name="client"></param>
         /// <param name="service"></param>
-        public InvokeCaller(string appName, IService service)
+        public InvokeCaller(AppClient client, IService service)
         {
             this.service = service;
-            this.appName = appName;
-            this.hostName = DnsHelper.GetHostName();
-            this.ipAddress = DnsHelper.GetIPAddress();
+            this.client = client;
         }
 
         /// <summary>
@@ -32,15 +28,15 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public object CallMethod(InvokeMessage message)
+        public InvokeData CallMethod(InvokeMessage message)
         {
             #region 设置请求信息
 
             RequestMessage reqMsg = new RequestMessage();
             reqMsg.InvokeMethod = true;
-            reqMsg.AppName = appName;                                       //应用名称
-            reqMsg.HostName = hostName;                                     //客户端名称
-            reqMsg.IPAddress = ipAddress;                                   //客户端IP地址
+            reqMsg.AppName = client.AppName;                                //应用名称
+            reqMsg.HostName = client.HostName;                              //客户端名称
+            reqMsg.IPAddress = client.IPAddress;                            //客户端IP地址
             reqMsg.ServiceName = message.ServiceName;                       //服务名称
             reqMsg.MethodName = message.MethodName;                         //方法名称
             reqMsg.ReturnType = typeof(string);                             //返回类型
@@ -61,7 +57,7 @@ namespace MySoft.IoC
             if (resMsg.IsError) throw resMsg.Error;
 
             //返回数据
-            return resMsg.Value;
+            return resMsg.Value as InvokeData;
         }
     }
 }

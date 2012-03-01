@@ -33,6 +33,7 @@ namespace MySoft.IoC
         /// </summary>
         private Type callbackType;
         private IScsServerClient client;
+        private IContainer container;
         private AppCaller caller;
         private IServiceCache serviceCache;
 
@@ -43,6 +44,15 @@ namespace MySoft.IoC
         {
             get { return serviceCache; }
             internal set { serviceCache = value; }
+        }
+
+        /// <summary>
+        /// 容器对象
+        /// </summary>
+        public IContainer Container
+        {
+            get { return container; }
+            internal set { container = value; }
         }
 
         /// <summary>

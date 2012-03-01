@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using Castle.DynamicProxy;
+using System.Collections.Generic;
 
 namespace MySoft.IoC.Aspect
 {
@@ -9,53 +11,105 @@ namespace MySoft.IoC.Aspect
     public static class AspectFactory
     {
         /// <summary>
-        /// 创建一个实例方式的拦截器
+        /// 创建一个实例方式的拦截器（支持Aspect方式）
         /// </summary>
-        /// <param name="instance"></param>
-        /// <param name="interceptors"></param>
+        /// <param name="serviceType"></param>
+        /// <param name="target"></param>
         /// <returns></returns>
-        public static object CreateProxy(Type serviceType, params StandardInterceptor[] interceptors)
+        internal static object CreateProxyService(Type serviceType, object target)
         {
-            string aspectKey = string.Format("AspectFactory_{0}", serviceType);
-            var service = CacheHelper.Get(aspectKey);
-            if (service == null)
-            {
-                ProxyGenerator proxy = new ProxyGenerator();
-                ProxyGenerationOptions options = new ProxyGenerationOptions(new ProxyGenerationHook())
-                {
-                    Selector = new InterceptorSelector()
-                };
+            var cacheKey = string.Format("AspectCache_{0}", serviceType);
+            var interceptors = CacheHelper.Get<List<IInterceptor>>(cacheKey);
 
-                service = proxy.CreateClassProxy(serviceType, new ProxyGenerationOptions(), interceptors);
-                CacheHelper.Permanent(aspectKey, service);
+            if (interceptors == null)
+            {
+                interceptors = new List<IInterceptor>();
+                var classType = target.GetType();
+                var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(classType);
+
+                if (attributes != null && attributes.Length > 0)
+                {
+                    foreach (var attribute in attributes)
+                    {
+                        if (typeof(IInterceptor).IsAssignableFrom(attribute.InterceptorType))
+                        {
+                            object value = null;
+                            if (attribute.Arguments == null)
+                                value = Activator.CreateInstance(attribute.InterceptorType);
+                            else
+                            {
+                                if (attribute.Arguments.GetType().IsClass)
+                                {
+                                    var arg = Activator.CreateInstance(attribute.Arguments.GetType());
+                                    value = Activator.CreateInstance(attribute.InterceptorType, arg);
+                                }
+                                else
+                                    value = Activator.CreateInstance(attribute.InterceptorType, attribute.Arguments);
+                            }
+
+                            interceptors.Add(value as IInterceptor);
+                        }
+                    }
+
+                    //将拦截器进行缓存
+                    CacheHelper.Permanent(cacheKey, interceptors);
+                }
             }
 
-            return service;
+            if (interceptors.Count > 0)
+                return AspectFactory.CreateProxy(serviceType, target, interceptors.ToArray());
+            else
+                return target;
         }
 
         /// <summary>
         /// 创建一个实例方式的拦截器
         /// </summary>
-        /// <typeparam name="TServiceType"></typeparam>
+        /// <typeparam name="TInterface"></typeparam>
+        /// <param name="target"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static TServiceType CreateProxy<TServiceType>(params StandardInterceptor[] interceptors)
-            where TServiceType : class
+        public static object CreateProxy(Type proxyType, object target, params IInterceptor[] interceptors)
         {
-            return (TServiceType)CreateProxy(typeof(TServiceType));
+            ProxyGenerator proxy = new ProxyGenerator();
+            ProxyGenerationOptions options = new ProxyGenerationOptions(new ProxyGenerationHook())
+            {
+                Selector = new InterceptorSelector()
+            };
+
+            return proxy.CreateInterfaceProxyWithTargetInterface(proxyType, target, options, interceptors);
         }
 
         /// <summary>
-        /// 创建一个接口方式的拦截器
+        /// 创建一个类型方式的拦截器
         /// </summary>
-        /// <typeparam name="IServiceType"></typeparam>
-        /// <typeparam name="TServiceType"></typeparam>
+        /// <param name="classType"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static IServiceType CreateProxy<IServiceType, TServiceType>(params StandardInterceptor[] interceptors)
-            where TServiceType : class, IServiceType
+        public static object CreateProxy(Type classType, params IInterceptor[] interceptors)
         {
-            return (IServiceType)CreateProxy<TServiceType>(interceptors);
+            return CreateProxy(classType, null, interceptors);
+        }
+
+        /// <summary>
+        /// 创建一个类型方式的拦截器（可传入参数）
+        /// </summary>
+        /// <param name="classType"></param>
+        /// <param name="arguments"></param>
+        /// <param name="interceptors"></param>
+        /// <returns></returns>
+        public static object CreateProxy(Type classType, object[] arguments, params IInterceptor[] interceptors)
+        {
+            ProxyGenerator proxy = new ProxyGenerator();
+            ProxyGenerationOptions options = new ProxyGenerationOptions(new ProxyGenerationHook())
+            {
+                Selector = new InterceptorSelector()
+            };
+
+            if (arguments == null || arguments.Length == 0)
+                return proxy.CreateClassProxy(classType, options, interceptors);
+            else
+                return proxy.CreateClassProxy(classType, options, arguments, interceptors);
         }
     }
 }

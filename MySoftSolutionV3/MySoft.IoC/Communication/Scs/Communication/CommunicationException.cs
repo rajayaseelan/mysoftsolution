@@ -23,7 +23,7 @@ namespace MySoft.Communication.Scs.Communication
         public CommunicationException(SerializationInfo serializationInfo, StreamingContext context)
             : base(serializationInfo, context)
         {
-            
+
         }
 
         /// <summary>

@@ -15,17 +15,17 @@ namespace MySoft.IoC.Services
     {
         private IServiceContainer container;
         private object instance;
-        private Type classType;
+        private Type serviceType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicService"/> class.
         /// </summary>
-        /// <param name="classType">Type of the service interface.</param>
-        public DynamicService(IServiceContainer container, Type classType, object instance)
-            : base(container, classType)
+        /// <param name="serviceType">Type of the service interface.</param>
+        public DynamicService(IServiceContainer container, Type serviceType, object instance)
+            : base(container, serviceType)
         {
             this.container = container;
-            this.classType = classType;
+            this.serviceType = serviceType;
             this.instance = instance;
         }
 
@@ -47,7 +47,7 @@ namespace MySoft.IoC.Services
             var method = CacheHelper.Get<System.Reflection.MethodInfo>(methodKey);
             if (method == null)
             {
-                method = CoreHelper.GetMethodFromType(classType, reqMsg.MethodName);
+                method = CoreHelper.GetMethodFromType(serviceType, reqMsg.MethodName);
                 if (method == null)
                 {
                     string message = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
@@ -76,17 +76,10 @@ namespace MySoft.IoC.Services
                 try
                 {
                     //解析服务
-                    service = container[classType];
-                    if (service is BaseContainer)
-                    {
-                        (service as BaseContainer).Container = container;
-                    }
+                    service = container[serviceType];
 
                     //释放资源
                     container.Release(service);
-
-                    //返回拦截服务
-                    service = AspectManager.GetService(service);
                 }
                 catch (Exception ex)
                 {
@@ -95,6 +88,9 @@ namespace MySoft.IoC.Services
 
             try
             {
+                //返回拦截服务
+                service = AspectFactory.CreateProxyService(serviceType, service);
+
                 var pis = method.GetParameters();
                 if (reqMsg.InvokeMethod)
                 {

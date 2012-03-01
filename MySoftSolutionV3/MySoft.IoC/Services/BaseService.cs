@@ -15,7 +15,7 @@ namespace MySoft.IoC.Services
         ///  The service logger
         /// </summary>
         private IServiceContainer container;
-        private Type classType;
+        private Type serviceType;
         private IDictionary<string, OperationContractAttribute> opContracts;
 
         /// <summary>
@@ -36,16 +36,16 @@ namespace MySoft.IoC.Services
         /// Initializes a new instance of the <see cref="BaseService"/> class.
         /// </summary>
         /// <param name="serviceName">Name of the service.</param>
-        public BaseService(IServiceContainer container, Type classType)
+        public BaseService(IServiceContainer container, Type serviceType)
         {
             this.container = container;
-            this.classType = classType;
-            this.serviceName = classType.FullName;
+            this.serviceType = serviceType;
+            this.serviceName = serviceType.FullName;
 
             this.opContracts = new Dictionary<string, OperationContractAttribute>();
-            foreach (var method in CoreHelper.GetMethodsFromType(classType))
+            foreach (var method in CoreHelper.GetMethodsFromType(serviceType))
             {
-                string methodKey = string.Format("{0}_{1}", classType.FullName, method.ToString());
+                string methodKey = string.Format("{0}_{1}", serviceType.FullName, method.ToString());
                 opContracts[methodKey] = CoreHelper.GetMemberAttribute<OperationContractAttribute>(method);
             }
         }

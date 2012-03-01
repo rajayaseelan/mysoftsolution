@@ -147,9 +147,15 @@ namespace MySoft.IoC.HttpServer
         {
             if (callers.ContainsKey(name))
             {
+                //获取当前调用者信息
+                var client = new AppClient
+                {
+                    AppName = "HttpServer",
+                    HostName = DnsHelper.GetHostName(),
+                    IPAddress = DnsHelper.GetIPAddress()
+                };
+
                 var caller = callers[name];
-                var service = container.Resolve<IService>("Service_" + caller.ServiceName);
-                var invoke = new InvokeCaller("HttpCaller", service);
                 var message = new InvokeMessage
                 {
                     ServiceName = caller.ServiceName,
@@ -157,8 +163,29 @@ namespace MySoft.IoC.HttpServer
                     Parameters = parameters
                 };
 
+                //初始化调用者
+                var appCaller = new AppCaller
+                {
+                    AppName = client.AppName,
+                    HostName = client.HostName,
+                    IPAddress = client.IPAddress,
+                    ServiceName = message.ServiceName,
+                    MethodName = message.MethodName,
+                    Parameters = message.Parameters
+                };
+
+                //初始化上下文
+                OperationContext.Current = new OperationContext
+                {
+                    ServiceCache = container.ServiceCache,
+                    Container = container,
+                    Caller = appCaller
+                };
+
                 //处理数据返回InvokeData
-                var invokeData = invoke.CallMethod(message) as InvokeData;
+                var service = container.Resolve<IService>("Service_" + caller.ServiceName);
+                var invoke = new InvokeCaller(client, service);
+                var invokeData = invoke.CallMethod(message);
                 if (invokeData != null)
                     return invokeData.Value;
             }

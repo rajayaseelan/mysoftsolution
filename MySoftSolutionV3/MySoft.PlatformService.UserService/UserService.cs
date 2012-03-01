@@ -4,12 +4,21 @@ using System.Text;
 using System.Data;
 using System.Threading;
 using MySoft.IoC;
+using MySoft.IoC.Aspect;
 using System.Collections.Specialized;
-using Castle.Core;
 
 namespace MySoft.PlatformService.UserService
 {
-    public class UserService : BaseContainer, IUserService, IInitializable
+    public class AspectLog : AspectInterceptor
+    {
+        protected override void PreProceed(IInvocation invocation)
+        {
+            base.PreProceed(invocation);
+        }
+    }
+
+    [AspectProxy(typeof(AspectLog))]
+    public class UserService : IUserService, IInitializable, IStartable
     {
         private DateTime startTime;
         public UserService()
@@ -32,6 +41,7 @@ namespace MySoft.PlatformService.UserService
             return Convert.ToString(value);
         }
 
+        //[AspectSwitcher(true)]
         public virtual UserInfo GetUserInfo(string name, ref int length, out UserInfo user, params int[] ids)
         {
             var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
@@ -91,6 +101,20 @@ namespace MySoft.PlatformService.UserService
         /// 初始化
         /// </summary>
         public void Initialize()
+        {
+            //throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region IStartable 成员
+
+        public void Start()
+        {
+            //throw new NotImplementedException();
+        }
+
+        public void Stop()
         {
             //throw new NotImplementedException();
         }

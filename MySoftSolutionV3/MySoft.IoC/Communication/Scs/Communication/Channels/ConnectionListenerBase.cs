@@ -16,7 +16,7 @@ namespace MySoft.Communication.Scs.Communication.Channels
         /// Starts listening incoming connections.
         /// </summary>
         public abstract void Start();
-        
+
         /// <summary>
         /// Stops listening incoming connections.
         /// </summary>

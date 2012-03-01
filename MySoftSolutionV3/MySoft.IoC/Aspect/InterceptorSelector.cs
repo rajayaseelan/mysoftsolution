@@ -21,7 +21,7 @@ namespace MySoft.IoC.Aspect
             {
                 return interceptors;
             }
-            else
+            else if (att.UseAspect)
             {
                 if (att.InterceptorTypes == null)
                 {
@@ -31,6 +31,10 @@ namespace MySoft.IoC.Aspect
                 {
                     return interceptors.Where(p => att.InterceptorTypes.Contains(p.GetType())).ToArray();
                 }
+            }
+            else
+            {
+                return null;
             }
         }
 

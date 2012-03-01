@@ -124,11 +124,11 @@ namespace MySoft.IoC
         /// Registers the component.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <param name="classType">Type of the service.</param>
         /// <param name="serviceType">Type of the service.</param>
-        public void RegisterComponent(string key, Type classType, Type serviceType)
+        /// <param name="classType">Type of the service.</param>
+        public void RegisterComponent(string key, Type serviceType, Type classType)
         {
-            container.Register(Component.For(classType).Named(key).ImplementedBy(serviceType).LifeStyle.Singleton);
+            container.Register(Component.For(serviceType).Named(key).ImplementedBy(classType).LifeStyle.Singleton);
         }
 
         /// <summary>

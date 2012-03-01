@@ -3,6 +3,7 @@ using System.IO;
 using MySoft.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -141,7 +142,7 @@ namespace MySoft.IoC.HttpServer
             }
             catch (Exception ex)
             {
-                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_EXPECTATION_FAILED;
                 var e = ErrorHelper.GetInnerException(ex);
                 var error = new HttpServiceException { Message = string.Format("{0} - {1}", e.GetType().Name, e.Message) };
                 SendResponse(response, error);
