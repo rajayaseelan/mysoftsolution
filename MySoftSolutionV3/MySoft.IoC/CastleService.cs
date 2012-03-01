@@ -85,7 +85,7 @@ namespace MySoft.IoC
             var callbackTypes = new Dictionary<string, Type>();
             callbackTypes[typeof(IStatusService).FullName] = typeof(IStatusListener);
 
-            var types = container.GetInterfaces<ServiceContractAttribute>();
+            var types = container.GetServiceTypes<ServiceContractAttribute>();
             foreach (var type in types)
             {
                 var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(type);
@@ -122,7 +122,7 @@ namespace MySoft.IoC
         /// </summary>
         public int ServiceCount
         {
-            get { return container.GetInterfaces<ServiceContractAttribute>().Count(); }
+            get { return container.GetServiceTypes<ServiceContractAttribute>().Count(); }
         }
 
         /// <summary>

@@ -17,14 +17,14 @@ namespace MySoft.PlatformService.UserService
         }
     }
 
-    [AspectProxy(typeof(AspectLog))]
-    public class UserService : IUserService, IInitializable, IStartable
+    //[AspectProxy(typeof(AspectLog))]
+    public class UserService : IUserService, Castle.Core.IInitializable, IStartable
     {
-        private DateTime startTime;
-        public UserService()
-        {
-            this.startTime = DateTime.Now;
-        }
+        //private DateTime startTime;
+        //public UserService()
+        //{
+        //    this.startTime = DateTime.Now;
+        //}
 
         public string GetUser(UserInfo user)
         {
@@ -103,6 +103,7 @@ namespace MySoft.PlatformService.UserService
         public void Initialize()
         {
             //throw new NotImplementedException();
+            Console.WriteLine("{0}: Initialize...", DateTime.Now);
         }
 
         #endregion
@@ -112,11 +113,13 @@ namespace MySoft.PlatformService.UserService
         public void Start()
         {
             //throw new NotImplementedException();
+            Console.WriteLine("{0}: Start...", DateTime.Now);
         }
 
         public void Stop()
         {
             //throw new NotImplementedException();
+            Console.WriteLine("{0}: Stop...", DateTime.Now);
         }
 
         #endregion

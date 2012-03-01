@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Threading;
 using Castle.Core;
 using Castle.Core.Internal;
 using Castle.Core.Resource;
@@ -10,11 +11,10 @@ using Castle.Facilities.Startable;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
+using Castle.Windsor.Configuration.Interpreters;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using Castle.Windsor.Configuration.Interpreters;
-using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -37,40 +37,26 @@ namespace MySoft.IoC
             //加载自启动注入
             container.AddFacility("startable", new StartableFacility());
 
+            //先解析服务
+            this.DiscoverServices();
+
             if (serviceKeyTypes != null && serviceKeyTypes.Count > 0)
             {
                 RegisterComponents(serviceKeyTypes);
             }
-
-            this.DiscoverServices();
         }
 
         private void DiscoverServices()
         {
-            foreach (Type type in GetInterfaces<ServiceContractAttribute>())
+            foreach (var model in GetComponentModels<ServiceContractAttribute>())
             {
-                object instance = null;
-                try
-                {
-                    instance = container.Resolve(type);
-
-                    //释放资源
-                    container.Release(instance);
-                }
-                catch (Exception ex)
-                {
-                }
-
                 //判断实例是否从接口分配
-                if (instance != null && type.IsAssignableFrom(instance.GetType()))
+                IService service = new DynamicService(this, model.Service, null);
+                if (typeof(Castle.Core.IStartable).IsAssignableFrom(model.Implementation))
                 {
-                    IService service = new DynamicService(this, type, null);
-                    if (instance is IStartable)
-                    {
-                        RegisterComponent("Startable_" + service.ServiceName, type, instance.GetType());
-                    }
-                    RegisterComponent("Service_" + service.ServiceName, service);
+                    RegisterComponent("Startable_" + service.ServiceName, model.Service, model.Implementation);
                 }
+                RegisterComponent("Service_" + service.ServiceName, typeof(IService), service);
             }
         }
 
@@ -134,11 +120,12 @@ namespace MySoft.IoC
         /// <summary>
         /// Registers the component.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="instance">Type of the class.</param>
-        public void RegisterComponent(string key, object instance)
+        /// <param name="key"></param>
+        /// <param name="serviceType"></param>
+        /// <param name="instance"></param>
+        public void RegisterComponent(string key, Type serviceType, object instance)
         {
-            container.Register(Component.For(instance.GetType()).Named(key).Instance(instance).LifeStyle.Singleton);
+            container.Register(Component.For(serviceType).Named(key).Instance(instance).LifeStyle.Singleton);
         }
 
         /// <summary>
@@ -153,11 +140,11 @@ namespace MySoft.IoC
                 if (en.Value != null)
                 {
                     IService service = new DynamicService(this, (Type)en.Key, en.Value);
-                    if (en.Value is IStartable)
+                    if (en.Value is Castle.Core.IStartable)
                     {
                         RegisterComponent("Startable_" + service.ServiceName, (Type)en.Key, en.Value.GetType());
                     }
-                    RegisterComponent("Service_" + service.ServiceName, service);
+                    RegisterComponent("Service_" + service.ServiceName, (Type)en.Key, service);
                 }
             }
         }
@@ -279,13 +266,40 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 获取约束的实现
+        /// </summary>
+        /// <typeparam name="ContractType"></typeparam>
+        /// <returns></returns>
+        private ComponentModel[] GetComponentModels<ContractType>()
+        {
+            var typelist = new List<ComponentModel>();
+            var nodes = this.Kernel.GraphNodes;
+            nodes.Cast<ComponentModel>().ForEach(model =>
+            {
+                bool markedWithServiceContract = false;
+                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Service);
+                if (attr != null)
+                {
+                    markedWithServiceContract = true;
+                }
+
+                if (markedWithServiceContract)
+                {
+                    typelist.Add(model);
+                }
+            });
+
+            return typelist.ToArray();
+        }
+
+        /// <summary>
         /// 获取约束的接口
         /// </summary>
         /// <returns></returns>
-        public Type[] GetInterfaces<ContractType>()
+        public Type[] GetServiceTypes<ContractType>()
         {
-            List<Type> typelist = new List<Type>();
-            GraphNode[] nodes = this.Kernel.GraphNodes;
+            var typelist = new List<Type>();
+            var nodes = this.Kernel.GraphNodes;
             nodes.Cast<ComponentModel>().ForEach(model =>
             {
                 bool markedWithServiceContract = false;

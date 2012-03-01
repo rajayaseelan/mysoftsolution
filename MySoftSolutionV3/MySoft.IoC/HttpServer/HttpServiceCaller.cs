@@ -28,7 +28,7 @@ namespace MySoft.IoC.HttpServer
             this.callers = new Dictionary<string, HttpCallerInfo>();
 
             //初始化字典
-            foreach (var serviceType in container.GetInterfaces<ServiceContractAttribute>())
+            foreach (var serviceType in container.GetServiceTypes<ServiceContractAttribute>())
             {
                 //添加方法
                 foreach (var methodInfo in CoreHelper.GetMethodsFromType(serviceType))

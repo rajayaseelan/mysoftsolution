@@ -20,7 +20,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="instance">Type of the class.</param>
-        void RegisterComponent(string key, object instance);
+        void RegisterComponent(string key, Type serviceType, object instance);
         /// <summary>
         /// Registers the component.
         /// </summary>
@@ -64,7 +64,7 @@ namespace MySoft.IoC
         /// Get contract interface
         /// </summary>
         /// <returns></returns>
-        Type[] GetInterfaces<ContractType>();
+        Type[] GetServiceTypes<ContractType>();
         /// <summary>
         /// Contains service
         /// </summary>

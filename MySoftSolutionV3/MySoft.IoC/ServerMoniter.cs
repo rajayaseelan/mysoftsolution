@@ -116,7 +116,7 @@ namespace MySoft.IoC
             if (services == null || services.Count == 0)
             {
                 //获取拥有ServiceContract约束的服务
-                var types = container.GetInterfaces<ServiceContractAttribute>();
+                var types = container.GetServiceTypes<ServiceContractAttribute>();
 
                 services = new List<ServiceInfo>();
                 foreach (var type in types)
