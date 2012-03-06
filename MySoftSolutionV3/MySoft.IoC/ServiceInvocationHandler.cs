@@ -79,7 +79,8 @@ namespace MySoft.IoC
                 }
 
                 //处理参数
-                if (config.Json) JsonInParameter(reqMsg);
+                if (config.DataType == DataType.Json)
+                    JsonInParameter(reqMsg);
             }
 
             #endregion
@@ -113,7 +114,8 @@ namespace MySoft.IoC
                     if (resMsg.IsError) throw resMsg.Error;
 
                     //处理参数
-                    if (config.Json) JsonOutParameter(pis, resMsg);
+                    if (config.DataType == DataType.Json)
+                        JsonOutParameter(pis, resMsg);
 
                     //如果客户端缓存时间大于0
                     if (clientCacheTime > 0)

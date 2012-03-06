@@ -41,10 +41,14 @@ namespace MySoft.IoC
                 //如果不是远程模式，则加载配置节
                 var sectionKey = "mysoft.framework/castle";
                 var castle = ConfigurationManager.GetSection(sectionKey);
-                if (!(type == CastleFactoryType.Remote || castle == null))
+                if (castle != null)
                 {
-                    //解析服务
-                    this.DiscoverServices(sectionKey);
+                    //只解析本地服务
+                    if (type == CastleFactoryType.Local)
+                    {
+                        //解析服务
+                        this.DiscoverServices(sectionKey);
+                    }
                 }
             }
         }

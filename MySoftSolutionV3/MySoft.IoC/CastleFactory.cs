@@ -231,7 +231,7 @@ namespace MySoft.IoC
                 lock (lockObject)
                 {
                     IProxyInvocationHandler handler = null;
-                    if (config.Json)
+                    if (config.DataType == DataType.Json)
                         handler = new JsonInvocationHandler(this.config, this.container, proxy, serviceType);
                     else
                         handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType);

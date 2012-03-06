@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Collections.Specialized;
 using System.Web;
+using System.Net;
 
 namespace MySoft.Auth
 {
@@ -23,6 +24,11 @@ namespace MySoft.Auth
         public string Method { get; set; }
 
         /// <summary>
+        /// 头信息
+        /// </summary>
+        public WebHeaderCollection Headers { get; set; }
+
+        /// <summary>
         /// 参数信息
         /// </summary>
         public NameValueCollection Parameters { get; set; }
@@ -37,6 +43,7 @@ namespace MySoft.Auth
         /// </summary>
         public AuthorizeToken()
         {
+            this.Headers = new WebHeaderCollection();
             this.Parameters = new NameValueCollection();
             this.Cookies = new HttpCookieCollection();
         }

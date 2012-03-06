@@ -16,8 +16,8 @@ namespace MySoft.IoC.Configuration
         private string assembly;
         private bool encrypt = false;
         private bool compress = false;
-        private int minutecalls = ServiceConfig.DEFAULT_MINUTE_CALL_NUMBER;         //默认为每分钟调用1000次，超过报异常
-        private int recordnums = ServiceConfig.DEFAULT_RECORD_NUMBER;              //默认记录3600次   //记录条数，默认为3600条，1小时记录
+        private int minuteCalls = ServiceConfig.DEFAULT_MINUTE_CALL_NUMBER;         //默认为每分钟调用1000次，超过报异常
+        private int recordNums = ServiceConfig.DEFAULT_RECORD_NUMBER;              //默认记录3600次   //记录条数，默认为3600条，1小时记录
 
         /// <summary>
         /// 获取远程对象配置
@@ -59,11 +59,11 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["compress"] != null && xmlnode["compress"].Value.Trim() != string.Empty)
                 compress = Convert.ToBoolean(xmlnode["compress"].Value);
 
-            if (xmlnode["recordnums"] != null && xmlnode["recordnums"].Value.Trim() != string.Empty)
-                recordnums = Convert.ToInt32(xmlnode["recordnums"].Value);
+            if (xmlnode["recordNums"] != null && xmlnode["recordNums"].Value.Trim() != string.Empty)
+                recordNums = Convert.ToInt32(xmlnode["recordNums"].Value);
 
-            if (xmlnode["minutecalls"] != null && xmlnode["minutecalls"].Value.Trim() != string.Empty)
-                minutecalls = Convert.ToInt32(xmlnode["minutecalls"].Value);
+            if (xmlnode["minuteCalls"] != null && xmlnode["minuteCalls"].Value.Trim() != string.Empty)
+                minuteCalls = Convert.ToInt32(xmlnode["minuteCalls"].Value);
 
             foreach (XmlNode child in node.ChildNodes)
             {
@@ -155,22 +155,22 @@ namespace MySoft.IoC.Configuration
         }
 
         /// <summary>
-        /// Gets or sets the recordnums
+        /// Gets or sets the recordNums
         /// </summary>
-        /// <value>The recordnums.</value>
+        /// <value>The recordNums.</value>
         public int RecordNums
         {
-            get { return recordnums; }
-            set { recordnums = value; }
+            get { return recordNums; }
+            set { recordNums = value; }
         }
 
         /// <summary>
-        /// Gets or sets the minutecalls
+        /// Gets or sets the minuteCalls
         /// </summary>
         public int MinuteCalls
         {
-            get { return minutecalls; }
-            set { minutecalls = value; }
+            get { return minuteCalls; }
+            set { minuteCalls = value; }
         }
     }
 }

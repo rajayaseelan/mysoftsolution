@@ -6,16 +6,39 @@ using System.Xml;
 namespace MySoft.IoC.Configuration
 {
     /// <summary>
+    /// 数据格式
+    /// </summary>
+    public enum DataType
+    {
+        /// <summary>
+        /// 二进制
+        /// </summary>
+        Binary,
+        /// <summary>
+        /// Json格式
+        /// </summary>
+        Json
+    }
+
+    /// <summary>
     /// The service factory configuration.
     /// </summary>
     public class CastleFactoryConfiguration : ConfigurationBase
     {
-        private IDictionary<string, RemoteNode> nodes = new Dictionary<string, RemoteNode>();
+        private IDictionary<string, RemoteNode> nodes;
         private CastleFactoryType type = CastleFactoryType.Local;
-        private string defaultKey;              //默认服务
-        private string appName;                 //host名称
-        private bool throwerror = true;         //抛出异常
-        private bool json = false;              //是否json输入输出
+        private string defaultKey;                                  //默认服务
+        private string appname;                                     //host名称
+        private bool throwError = true;                             //抛出异常
+        private DataType format = DataType.Binary;                //数据格式，默认为binary格式
+
+        /// <summary>
+        /// 实例化CastleFactoryConfiguration
+        /// </summary>
+        public CastleFactoryConfiguration()
+        {
+            this.nodes = new Dictionary<string, RemoteNode>();
+        }
 
         /// <summary>
         /// 获取远程对象配置
@@ -48,17 +71,17 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["type"] != null && xmlnode["type"].Value.Trim() != string.Empty)
                 type = (CastleFactoryType)Enum.Parse(typeof(CastleFactoryType), xmlnode["type"].Value, true);
 
-            if (xmlnode["throwerror"] != null && xmlnode["throwerror"].Value.Trim() != string.Empty)
-                throwerror = Convert.ToBoolean(xmlnode["throwerror"].Value);
+            if (xmlnode["throwError"] != null && xmlnode["throwError"].Value.Trim() != string.Empty)
+                throwError = Convert.ToBoolean(xmlnode["throwError"].Value);
 
-            if (xmlnode["json"] != null && xmlnode["json"].Value.Trim() != string.Empty)
-                json = Convert.ToBoolean(xmlnode["json"].Value);
+            if (xmlnode["format"] != null && xmlnode["format"].Value.Trim() != string.Empty)
+                format = (DataType)Enum.Parse(typeof(DataType), xmlnode["format"].Value, true);
 
             if (xmlnode["default"] != null && xmlnode["default"].Value.Trim() != string.Empty)
                 defaultKey = xmlnode["default"].Value;
 
             if (xmlnode["appname"] != null && xmlnode["appname"].Value.Trim() != string.Empty)
-                appName = xmlnode["appname"].Value;
+                appname = xmlnode["appname"].Value;
 
             foreach (XmlNode child in node.ChildNodes)
             {
@@ -96,10 +119,10 @@ namespace MySoft.IoC.Configuration
                 }
             }
 
-            if (type == CastleFactoryType.Remote)
+            if (type != CastleFactoryType.Local)
             {
                 //如果app名称为空
-                if (string.IsNullOrEmpty(appName))
+                if (string.IsNullOrEmpty(appname))
                 {
                     throw new WarningException("App name must be provided！");
                 }
@@ -134,8 +157,8 @@ namespace MySoft.IoC.Configuration
         /// <value>The host name.</value>
         public string AppName
         {
-            get { return appName; }
-            set { appName = value; }
+            get { return appname; }
+            set { appname = value; }
         }
 
         /// <summary>
@@ -149,23 +172,23 @@ namespace MySoft.IoC.Configuration
         }
 
         /// <summary>
-        /// Gets or sets the throwerror
+        /// Gets or sets the throwError
         /// </summary>
-        /// <value>The throwerror.</value>
+        /// <value>The throwError.</value>
         public bool ThrowError
         {
-            get { return throwerror; }
-            set { throwerror = value; }
+            get { return throwError; }
+            set { throwError = value; }
         }
 
         /// <summary>
-        /// Gets or sets the json
+        /// Gets or sets the format
         /// </summary>
-        /// <value>The throwerror.</value>
-        public bool Json
+        /// <value>The throwError.</value>
+        public DataType DataType
         {
-            get { return json; }
-            set { json = value; }
+            get { return format; }
+            set { format = value; }
         }
 
         /// <summary>

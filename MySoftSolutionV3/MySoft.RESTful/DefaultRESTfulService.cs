@@ -321,6 +321,7 @@ namespace MySoft.RESTful
             {
                 RequestUri = request.UriTemplateMatch.RequestUri,
                 Method = request.Method,
+                Headers = request.Headers,
                 Parameters = request.UriTemplateMatch.QueryParameters,
                 Cookies = GetCookies()
             };
