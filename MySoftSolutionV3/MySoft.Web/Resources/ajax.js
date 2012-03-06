@@ -6,7 +6,7 @@
 * postForm form_obj is formid,formelement
 **/
 
-Object.extend = function(dest, source, replace) {
+Object.extend = function (dest, source, replace) {
     for (var prop in source) {
         if (replace == false && dest[prop] != null) { continue; }
         dest[prop] = source[prop];
@@ -16,15 +16,15 @@ Object.extend = function(dest, source, replace) {
 
 Object.extend(window, {
     __Class: {
-        create: function() {
-            return function() {
+        create: function () {
+            return function () {
                 if (typeof this.initialize == "function") {
                     this.initialize.apply(this, arguments);
                 }
             };
         }
     },
-    $: function() {
+    $: function () {
         var elements = [];
         for (var i = 0; i < arguments.length; i++) {
             var e = arguments[i];
@@ -38,19 +38,19 @@ Object.extend(window, {
         }
         return elements;
     },
-    $get: function(id) {
+    $get: function (id) {
         return document.getElementById(id);
     },
-    $name: function(name) {
+    $name: function (name) {
         return document.getElementsByName(name);
     },
-    $tag: function(tagName) {
+    $tag: function (tagName) {
         return document.getElementsByTagName(tagName);
     },
-    $create: function(tagName) {
+    $create: function (tagName) {
         return document.createElement(tagName);
     },
-    $attach: function(element, eventName, eventFunction) {
+    $attach: function (element, eventName, eventFunction) {
         if (typeof (element) == 'string') element = $get(element);
 
         if (document.attachEvent) {
@@ -62,32 +62,32 @@ Object.extend(window, {
     }
 }, false);
 
-var StringBuilder = function(s) {
+var StringBuilder = function (s) {
     this.v = [];
     if (s) this.v.add(s);
 };
 
 Object.extend(StringBuilder.prototype, {
-    append: function(s) {
+    append: function (s) {
         this.v.add(s);
     },
-    appendLine: function(s) {
+    appendLine: function (s) {
         this.v.add(s + "\r\n");
     },
-    clear: function() {
+    clear: function () {
         this.v.clear();
     }
 }, false);
 
-StringBuilder.prototype.toString = function() {
+StringBuilder.prototype.toString = function () {
     return this.v.join("");
 };
 
 Object.extend(Array.prototype, {
-    add: function(o) {
+    add: function (o) {
         this[this.length] = o;
     },
-    addRange: function(items) {
+    addRange: function (items) {
         if (items.length > 0) {
             for (var i = 0; i < items.length; i++) {
                 if (typeof (items[i]) == 'function') continue;
@@ -95,11 +95,11 @@ Object.extend(Array.prototype, {
             }
         }
     },
-    clear: function() {
+    clear: function () {
         this.length = 0;
         return this;
     },
-    remove: function() {
+    remove: function () {
         if (this.length == 0) { return null; }
         var o = this[0];
         for (var i = 0; i < this.length - 1; i++) {
@@ -111,13 +111,13 @@ Object.extend(Array.prototype, {
 }, false);
 
 Object.extend(String, {
-    format: function(s) {
+    format: function (s) {
         for (var i = 1; i < arguments.length; i++) {
             s = s.replace("{" + (i - 1) + "}", arguments[i]);
         }
         return s;
     },
-    isNullOrEmpty: function(s) {
+    isNullOrEmpty: function (s) {
         if (s == null || s.length == 0) {
             return true;
         }
@@ -126,24 +126,24 @@ Object.extend(String, {
 }, false);
 
 Object.extend(String.prototype, {
-    trimLeft: function() {
+    trimLeft: function () {
         return this.replace(/^\s*/, "");
     },
-    trimRight: function() {
+    trimRight: function () {
         return this.replace(/\s*$/, "");
     },
-    trim: function() {
+    trim: function () {
         return this.trimRight().trimLeft();
     },
-    endsWith: function(s) {
+    endsWith: function (s) {
         if (this.length == 0 || this.length < s.length) { return false; }
         return (this.substr(this.length - s.length) == s);
     },
-    startsWith: function(s) {
+    startsWith: function (s) {
         if (this.length == 0 || this.length < s.length) { return false; }
         return (this.substr(0, s.length) == s);
     },
-    split: function(c) {
+    split: function (c) {
         var a = [];
         if (this.length == 0) return a;
         var p = 0;
@@ -158,11 +158,11 @@ Object.extend(String.prototype, {
     }
 }, false);
 
-var Ajax = new function() {
+var Ajax = new function () {
     this.showErrorMessage = true;
     this.timeout = 3600000;
     this.cache = {};
-    this.getRequestURL = function(url) {
+    this.getRequestURL = function (url) {
         if (url) return url;
         if (typeof (ajaxRequestInfo) != "undefined") {
             return ajaxRequestInfo.url;
@@ -173,7 +173,7 @@ var Ajax = new function() {
         }
         return url;
     };
-    this.getRequestData = function(xmlHttp, type) {
+    this.getRequestData = function (xmlHttp, type) {
         var ct = xmlHttp.getResponseHeader("Content-Type");
         var data = !type && ct && ct.indexOf("xml") >= 0;
         data = type == "xml" || data ? xmlHttp.responseXML : xmlHttp.responseText;
@@ -190,13 +190,13 @@ var Ajax = new function() {
         }
         return data;
     };
-    this.setRequest = function(ajax) {
+    this.setRequest = function (ajax) {
         ajax.setcallback(Ajax.onRequestStart, Ajax.onRequestEnd, Ajax.onException, Ajax.onTimeout, this.timeout);
     };
 };
 
 Object.extend(Ajax, {
-    toJSON: function(o) {
+    toJSON: function (o) {
         if (o == null)
             return "null";
         switch (o.constructor) {
@@ -257,7 +257,7 @@ Object.extend(Ajax, {
             return n < 10 ? '0' + n : n;
         }
     },
-    toQueryParams: function(s) {
+    toQueryParams: function (s) {
         var pairs = s.match(/^\??(.*)$/)[1].split('&');
         if (pairs == null) return null;
         var params = [];
@@ -267,7 +267,7 @@ Object.extend(Ajax, {
         }
         return params;
     },
-    toQueryString: function(a) {
+    toQueryString: function (a) {
         var s = [];
 
         if (a == null) return a;
@@ -287,72 +287,76 @@ Object.extend(Ajax, {
 }, false);
 
 Object.extend(Ajax, {
-    onRequestStart: function() { },
-    onRequestEnd: function() { },
-    onException: function() { },
-    onTimeout: function() { },
-    setTimeout: function(value) {
+    onRequestStart: function () { },
+    onRequestEnd: function () { },
+    onException: function () { },
+    onTimeout: function () { },
+    setTimeout: function (value) {
         this.timeout = value;
     },
-    get: function(obj, url, header) {
+    get: function (obj, url, header) {
         var ajax = new AJAXRequest();
         this.setRequest(ajax);
-        if (header) {
-            header.add(['X-Ajax-Process', 'true']);
-            header.add(['X-Ajax-Request', 'true']);
-        }
-        else header = [['X-Ajax-Process', 'true'], ['X-Ajax-Request', 'true']];
+
+        //set request header
+        if (!header) header = [];
+        header.add(['X-Ajax-Process', 'true']);
+        header.add(['X-Ajax-Request', 'true']);
+
         ajax.setheader(header);
         ajax.get(url, obj);
     },
-    getData: function(url, dtype, header) {
+    getData: function (url, dtype, header) {
         var data = null;
         if (!dtype) dtype = 'html';
         var ajax = new AJAXRequest();
         this.setRequest(ajax);
-        if (header) {
-            header.add(['X-Ajax-Process', 'true']);
-            header.add(['X-Ajax-Request', 'true']);
-        }
-        else header = [['X-Ajax-Process', 'true'], ['X-Ajax-Request', 'true']];
+
+        //set request header
+        if (!header) header = [];
+        header.add(['X-Ajax-Process', 'true']);
+        header.add(['X-Ajax-Request', 'true']);
+
         ajax.setheader(header);
-        ajax.get(url, function(xmlHttp) {
+        ajax.get(url, function (xmlHttp) {
             data = Ajax.getRequestData(xmlHttp, dtype);
         }, false);
         return data;
     },
-    post: function(obj, url, args, header) {
+    post: function (obj, url, args, header) {
         var content = Ajax.toQueryString(args);
         var ajax = new AJAXRequest();
         this.setRequest(ajax);
-        if (header) {
-            header.add(['X-Ajax-Process', 'true']);
-            header.add(['X-Ajax-Request', 'true']);
-        }
-        else header = [['X-Ajax-Process', 'true'], ['X-Ajax-Request', 'true']];
+
+        //set request header
+        if (!header) header = [];
+        header.add(['X-Ajax-Process', 'true']);
+        header.add(['X-Ajax-Request', 'true']);
+
         ajax.setheader(header);
         ajax.post(url, content, obj);
     },
-    postData: function(url, args, dtype, header) {
+    postData: function (url, args, dtype, header) {
         var data = null;
         var content = Ajax.toQueryString(args);
         if (!dtype) dtype = 'html';
         var ajax = new AJAXRequest();
         this.setRequest(ajax);
-        if (header) {
-            header.add(['X-Ajax-Process', 'true']);
-            header.add(['X-Ajax-Request', 'true']);
-        }
-        else header = [['X-Ajax-Process', 'true'], ['X-Ajax-Request', 'true']];
+
+        //set request header
+        if (!header) header = [];
+        header.add(['X-Ajax-Process', 'true']);
+        header.add(['X-Ajax-Request', 'true']);
+
         ajax.setheader(header);
-        ajax.post(url, content, function(xmlHttp) {
+        ajax.post(url, content, function (xmlHttp) {
             data = Ajax.getRequestData(xmlHttp, dtype);
         }, false);
         return data;
     },
-    postForm: function(form_obj, callback, url, ptype, header) {
+    postForm: function (form_obj, callback, url, ptype, header) {
         if (typeof (form_obj) == 'string') form_obj = $get(form_obj);
-        var callback1 = function(xmlHttp) {
+        var callback1 = function (xmlHttp) {
             json = Ajax.getRequestData(xmlHttp, 'json');
             if (json.Success == false) {
                 Ajax.onException(json);
@@ -363,17 +367,18 @@ Object.extend(Ajax, {
         };
         var ajax = new AJAXRequest();
         this.setRequest(ajax);
-        if (header) {
-            header.add(['X-Ajax-Process', 'true']);
-            header.add(['X-Ajax-Request', 'true']);
-        }
-        else header = [['X-Ajax-Process', 'true'], ['X-Ajax-Request', 'true']];
+
+        //set request header
+        if (!header) header = [];
+        header.add(['X-Ajax-Process', 'true']);
+        header.add(['X-Ajax-Request', 'true']);
+
         ajax.setheader(header);
         if (url && ptype) ajax.postf(form_obj, callback1, url, ptype);
         else if (url) ajax.postf(form_obj, callback1, url);
         else ajax.postf(form_obj, callback1);
     },
-    send: function(url, args, type, async, header, callback) {
+    send: function (url, args, type, async, header, callback) {
         var content = Ajax.toQueryString(args);
         var ev = {
             url: url,
@@ -387,36 +392,37 @@ Object.extend(Ajax, {
         ajax.setheader(header);
         ajax.call(ev);
     },
-    update: function(obj, url, interval, times, header) {
+    update: function (obj, url, interval, times, header) {
         var ajax = new AJAXRequest();
         this.setRequest(ajax);
-        if (header) {
-            header.add(['X-Ajax-Process', 'true']);
-            header.add(['X-Ajax-Request', 'true']);
-        }
-        else header = [['X-Ajax-Process', 'true'], ['X-Ajax-Request', 'true']];
+
+        //set request header
+        if (!header) header = [];
+        header.add(['X-Ajax-Process', 'true']);
+        header.add(['X-Ajax-Request', 'true']);
+
         ajax.setheader(header);
         ajax.update(obj, url, interval, times);
     }
 }, false);
 
-var AjaxClass = function(url) {
+var AjaxClass = function (url) {
     this.url = url;
     this.header = [];
 };
 
 Object.extend(AjaxClass.prototype, {
-    addHeader: function(type, value) {
-        var header = [type, value];
-        this.header.add(header);
-    },
-    clearHeader: function() {
-        this.header.clear();
-    },
-    invoke: function(method, args, type, async, callback) {
-        var json = null;
-        this.addHeader('X-Ajax-Method', method);
-        Ajax.send(this.url, args, type, async, this.header, function(xmlHttp) {
+    invoke: function (method, args, type, async, callback) {
+        if (typeof (ajaxRequestInfo) == "undefined") return;
+
+        //set request header
+        var header = [];
+        header.add(['X-Ajax-Process', 'true']);
+        header.add(['X-Ajax-Request', 'true']);
+        header.add(['X-Ajax-Method', method]);
+        header.add(['X-Ajax-Key', ajaxRequestInfo.key]);
+
+        Ajax.send(this.url, args, type, async, header, function (xmlHttp) {
             json = Ajax.getRequestData(xmlHttp, 'json');
             if (json) {
                 if (async && callback) {
@@ -443,7 +449,7 @@ Object.extend(AjaxClass.prototype, {
 }, false);
 
 Object.extend(Ajax, {
-    registerPage: function(url) {
+    registerPage: function (url) {
         if (typeof (ajaxRequestInfo) == "undefined") return null;
         if (url == window) url = this.getRequestURL();
         var header = [['X-Ajax-Register', 'true']];
@@ -500,9 +506,6 @@ Object.extend(Ajax, {
                 sb.append("\t\tvar args = " + sp.toString() + ";\r\n");
             }
             else sb.append("\t\tvar args = null;\r\n");
-            sb.append("\r\n\t\tthis.clearHeader();");
-            sb.append("\r\n\t\tthis.addHeader('X-Ajax-Process','true');");
-            sb.append("\r\n\t\tthis.addHeader('X-Ajax-Key','" + ajaxRequestInfo.key + "');");
             sb.append("\r\n\t\treturn this.invoke('" + method.Name + "'");
             sb.append(",args");
             if (isContent) sb.append(",'POST'");
@@ -527,7 +530,7 @@ Object.extend(Ajax, {
     * args is control params
     * option is callback,template,interval and cache
     */
-    updatePanel: function(obj, path, args, option) {
+    updatePanel: function (obj, path, args, option) {
         if (typeof (ajaxRequestInfo) == "undefined") return;
         var url = this.getRequestURL();
         var op = {
@@ -537,6 +540,8 @@ Object.extend(Ajax, {
             cache: false
         };
         Object.extend(op, option);
+
+        //set request header
         var header = [];
         header.add(['X-Ajax-Process', 'true']);
         header.add(['X-Ajax-Load', 'true']);
@@ -555,7 +560,7 @@ Object.extend(Ajax, {
                 fillElement(obj, Ajax.cache[key]);
                 return;
             }
-            Ajax.send(url, args, type, true, header, function(xmlHttp) {
+            Ajax.send(url, args, type, true, header, function (xmlHttp) {
                 var json = Ajax.getRequestData(xmlHttp, 'json');
                 if (json) {
                     if (json.Success) {
@@ -608,7 +613,7 @@ Object.extend(Ajax, {
                 $tag("head")[0].appendChild(script); //把该标签加入<head>
 
                 //5秒后移除此script标签
-                setTimeout(function() {
+                setTimeout(function () {
                     $tag("head")[0].removeChild(script)
                 }, 5000);
             }
@@ -629,7 +634,7 @@ Object.extend(Ajax, {
         };
 
         if (op.interval) {
-            update(); setInterval(function() { update(); }, value);
+            update(); setInterval(function () { update(); }, value);
         }
         else update();
     }

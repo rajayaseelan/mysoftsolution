@@ -187,10 +187,11 @@ namespace MySoft.Web.UI
                 paramList.Clear();
                 AjaxMethodInfo methodInfo = new AjaxMethodInfo();
                 methodInfo.Name = key;
-                foreach (ParameterInfo pi in ajaxMethods[key].MethodInfo.GetParameters())
+                foreach (ParameterInfo pi in ajaxMethods[key].Method.GetParameters())
                 {
                     paramList.Add(pi.Name);
                 }
+
                 methodInfo.Async = ajaxMethods[key].Async;
                 methodInfo.Paramters = paramList.ToArray();
                 methodInfoList.Add(methodInfo);
@@ -207,20 +208,20 @@ namespace MySoft.Web.UI
         /// <returns></returns>
         private AjaxCallbackParam InvokeMethod(object invokeObject, string MethodName)
         {
-            Dictionary<string, AsyncMethodInfo> ajaxMethods = AjaxMethodHelper.GetAjaxMethods(invokeObject.GetType());
+            var ajaxMethods = AjaxMethodHelper.GetAjaxMethods(invokeObject.GetType());
             if (ajaxMethods.ContainsKey(MethodName))
             {
-                ParameterInfo[] parameters = ajaxMethods[MethodName].MethodInfo.GetParameters();
-                List<object> list = new List<object>();
-                foreach (ParameterInfo p in parameters)
+                var parameters = ajaxMethods[MethodName].Method.GetParameters();
+                var plist = new List<object>();
+                foreach (var p in parameters)
                 {
                     object obj = GetObject(p.ParameterType, p.Name);
-                    list.Add(obj);
+                    plist.Add(obj);
                 }
 
-                MethodInfo method = ajaxMethods[MethodName].MethodInfo;
-                FastInvokeHandler handler = DynamicCalls.GetMethodInvoker(method);
-                object value = handler.Invoke(invokeObject, list.ToArray());
+                var method = ajaxMethods[MethodName].Method;
+                var handler = DynamicCalls.GetMethodInvoker(method);
+                object value = handler.Invoke(invokeObject, plist.ToArray());
                 return new AjaxCallbackParam(value);
             }
             else

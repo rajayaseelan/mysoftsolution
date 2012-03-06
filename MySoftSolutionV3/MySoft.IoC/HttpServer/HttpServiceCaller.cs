@@ -34,11 +34,10 @@ namespace MySoft.IoC.HttpServer
                 foreach (var methodInfo in CoreHelper.GetMethodsFromType(serviceType))
                 {
                     var httpInvoke = CoreHelper.GetMemberAttribute<HttpInvokeAttribute>(methodInfo);
-                    if (httpInvoke != null)
-                    {
-                        //创建一个新的Caller
-                        CreateNewCaller(serviceType, methodInfo, httpInvoke);
-                    }
+                    if (httpInvoke == null) continue;
+
+                    //创建一个新的Caller
+                    CreateNewCaller(serviceType, methodInfo, httpInvoke);
                 }
             }
         }

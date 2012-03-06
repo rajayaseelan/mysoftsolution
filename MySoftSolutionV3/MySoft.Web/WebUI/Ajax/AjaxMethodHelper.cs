@@ -8,9 +8,27 @@ using System.Reflection;
 
 namespace MySoft.Web.UI
 {
+    internal class AsyncMethodInfo
+    {
+        /// <summary>
+        /// 是否异步
+        /// </summary>
+        public bool Async { get; set; }
+
+        /// <summary>
+        /// 调用方法
+        /// </summary>
+        public MethodInfo Method { get; set; }
+    }
+
     internal class AjaxMethodHelper
     {
-        private static Dictionary<Type, Dictionary<string, AsyncMethodInfo>> AjaxMethodsMap = new Dictionary<Type, Dictionary<string, AsyncMethodInfo>>();
+        private static Dictionary<Type, Dictionary<string, AsyncMethodInfo>> ajaxMethods;
+
+        static AjaxMethodHelper()
+        {
+            ajaxMethods = new Dictionary<Type, Dictionary<string, AsyncMethodInfo>>();
+        }
 
         /// <summary>
         /// 获取方法列表
@@ -19,28 +37,25 @@ namespace MySoft.Web.UI
         /// <returns></returns>
         public static Dictionary<string, AsyncMethodInfo> GetAjaxMethods(Type t)
         {
-            if (AjaxMethodsMap.ContainsKey(t))
+            if (!ajaxMethods.ContainsKey(t))
             {
-                return AjaxMethodsMap[t];
-            }
-            else
-            {
-                lock (AjaxMethodsMap)
+                lock (ajaxMethods)
                 {
-                    AjaxMethodsMap[t] = InternalGetAjaxMethods(t);
-                    return AjaxMethodsMap[t];
+                    ajaxMethods[t] = InternalGetAjaxMethods(t);
                 }
             }
+
+            return ajaxMethods[t];
         }
 
         private static Dictionary<string, AsyncMethodInfo> InternalGetAjaxMethods(Type type)
         {
-            Dictionary<string, AsyncMethodInfo> ret = new Dictionary<string, AsyncMethodInfo>();
-            MethodInfo[] mis = CoreHelper.GetMethodsFromType(type);
+            var ret = new Dictionary<string, AsyncMethodInfo>();
+            var mis = CoreHelper.GetMethodsFromType(type);
             foreach (MethodInfo mi in mis)
             {
                 string methodName = mi.Name;
-                AjaxMethodAttribute method = CoreHelper.GetTypeAttribute<AjaxMethodAttribute>(type);
+                var method = CoreHelper.GetMemberAttribute<AjaxMethodAttribute>(mi);
                 if (method != null)
                 {
                     if (!string.IsNullOrEmpty(method.Name))
@@ -51,12 +66,13 @@ namespace MySoft.Web.UI
                     if (!ret.ContainsKey(methodName))
                     {
                         AsyncMethodInfo asyncMethod = new AsyncMethodInfo();
-                        asyncMethod.MethodInfo = mi;
+                        asyncMethod.Method = mi;
                         asyncMethod.Async = method.Async;
                         ret[methodName] = asyncMethod;
                     }
                 }
             }
+
             return ret;
         }
     }
