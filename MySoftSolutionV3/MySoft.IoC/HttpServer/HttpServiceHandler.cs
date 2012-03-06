@@ -63,8 +63,7 @@ namespace MySoft.IoC.HttpServer
                 //发送文档帮助信息
                 response.ContentType = "text/html;charset=utf-8";
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_OK;
-                var url = request.URI.ToLower();
-                var name = url.Substring(url.IndexOf("/help/") + 6);
+                var name = request.URI.Substring(request.URI.IndexOf("/help/") + 6);
                 SendResponse(response, caller.GetDocument(name));
             }
             else if (request.URI.Substring(request.URI.IndexOf('/') + 1).Length > 5)
