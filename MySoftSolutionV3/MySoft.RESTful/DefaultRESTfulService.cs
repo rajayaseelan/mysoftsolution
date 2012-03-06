@@ -1,16 +1,16 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.IO;
+using System.Net;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using System.Text;
+using System.Web;
+using MySoft.Auth;
 using MySoft.Logger;
 using MySoft.RESTful.Business;
 using MySoft.RESTful.Utils;
-using System.Net;
 using MySoft.Security;
-using MySoft.RESTful.Auth;
 
 namespace MySoft.RESTful
 {
@@ -99,7 +99,7 @@ namespace MySoft.RESTful
 
             if (string.IsNullOrEmpty(callback))
             {
-                var ret = new RESTfulResult { Code = (int)RESTfulCode.OK, Message = "Not found [callback] parameter!" };
+                var ret = new RESTfulResult { Code = (int)HttpStatusCode.OK, Message = "Not found [callback] parameter!" };
                 //throw new WebFaultException<RESTfulResult>(ret, HttpStatusCode.Forbidden);
                 response.StatusCode = HttpStatusCode.Forbidden;
                 response.ContentType = "application/json;charset=utf-8";
@@ -231,16 +231,16 @@ namespace MySoft.RESTful
             object result = null;
 
             //进行认证处理
-            RESTfulResult authResult = new RESTfulResult { Code = (int)RESTfulCode.OK };
+            RESTfulResult authResult = new RESTfulResult { Code = (int)HttpStatusCode.OK };
 
             //进行认证处理
             if (Context != null && Context.IsAuthorized(kind, method))
             {
-                authResult = AuthManager.Authorize();
+                authResult = AuthorizeRequest();
             }
 
             //认证成功
-            if (authResult.Code == (int)RESTfulCode.OK)
+            if (authResult.Code == (int)HttpStatusCode.OK)
             {
                 try
                 {
@@ -267,11 +267,6 @@ namespace MySoft.RESTful
                     //记录错误日志
                     result = GetResultWriteErrorLog(parameters, e);
                 }
-                finally
-                {
-                    //清理上下文资源
-                    AuthenticationContext.Current = null;
-                }
             }
             else
             {
@@ -279,12 +274,6 @@ namespace MySoft.RESTful
             }
 
             ISerializer serializer = SerializerFactory.Create(format);
-            if (result is RESTfulResult)
-            {
-                var ret = result as RESTfulResult;
-                ret.Code = Convert.ToInt32(string.Format("{0}{1}", (int)response.StatusCode, ret.Code.ToString("00")));
-            }
-
             return serializer.Serialize(result, format == ParameterFormat.Jsonp);
         }
 
@@ -296,30 +285,127 @@ namespace MySoft.RESTful
         private RESTfulResult GetResultWriteErrorLog(string parameter, Exception exception)
         {
             var response = WebOperationContext.Current.OutgoingResponse;
-            int code = (int)RESTfulCode.BUSINESS_ERROR;
+            var result = new RESTfulResult();
             if (exception is BusinessException)
             {
-                code = (exception as BusinessException).Code;
-                response.StatusCode = HttpStatusCode.ExpectationFailed;
-            }
-            else if (exception is RESTfulException)
-            {
-                code = (int)(exception as RESTfulException).Code;
                 response.StatusCode = HttpStatusCode.BadRequest;
+                result.Code = (exception as BusinessException).Code;
             }
             else
             {
                 response.StatusCode = HttpStatusCode.ExpectationFailed;
+                result.Code = (int)response.StatusCode;
             }
 
             //重新定义一个异常
-            var error = new Exception(string.Format("{0} - {1}", code, exception.Message), exception);
+            var error = new Exception(string.Format("{0} - {1}", result.Code, exception.Message), exception);
 
             //记录错误日志
             SimpleLog.Instance.WriteLog(error);
 
             //返回结果
-            return new RESTfulResult { Code = code, Message = exception.Message };
+            return result;
+        }
+
+        /// <summary>
+        /// 进行认证
+        /// </summary>
+        /// <returns></returns>
+        private RESTfulResult AuthorizeRequest()
+        {
+            var request = WebOperationContext.Current.IncomingRequest;
+            var response = WebOperationContext.Current.OutgoingResponse;
+            response.StatusCode = HttpStatusCode.Unauthorized;
+
+            var token = new AuthorizeToken
+            {
+                RequestUri = request.UriTemplateMatch.RequestUri,
+                Method = request.Method,
+                Parameters = request.UriTemplateMatch.QueryParameters,
+                Cookies = GetCookies()
+            };
+
+            //实例化一个结果
+            RESTfulResult restResult = new RESTfulResult { Code = (int)response.StatusCode };
+
+            try
+            {
+                var result = Authorize(token);
+                if (result.Succeed)
+                {
+                    response.StatusCode = HttpStatusCode.OK;
+
+                    //认证成功
+                    restResult.Code = (int)response.StatusCode;
+                    restResult.Message = "Authentication request success.";
+                }
+                else
+                {
+                    restResult.Message = "Authentication request fail.";
+                }
+            }
+            catch (AuthorizeException ex)
+            {
+                restResult.Code = ex.Code;
+                restResult.Message = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                restResult.Message = ex.Message;
+            }
+
+            return restResult;
+        }
+
+        /// <summary>
+        /// 获取Cookie信息
+        /// </summary>
+        /// <returns></returns>
+        private HttpCookieCollection GetCookies()
+        {
+            if (HttpContext.Current != null)
+                return HttpContext.Current.Request.Cookies;
+
+            HttpCookieCollection collection = new HttpCookieCollection();
+
+            var request = WebOperationContext.Current.IncomingRequest;
+            var cookie = request.Headers[HttpRequestHeader.Cookie];
+
+            //从头中获取Cookie
+            if (!string.IsNullOrEmpty(cookie))
+            {
+                string[] cookies = cookie.Split(';');
+                HttpCookie cook = null;
+                foreach (string e in cookies)
+                {
+                    if (!string.IsNullOrEmpty(e))
+                    {
+                        string[] values = e.Split(new char[] { '=' }, 2);
+                        if (values.Length == 2)
+                        {
+                            cook = new HttpCookie(values[0], values[1]);
+                        }
+                        collection.Add(cook);
+                    }
+                }
+            }
+
+            return collection;
+        }
+
+        /// <summary>
+        /// 进行认证处理
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        protected virtual AuthorizeResult Authorize(AuthorizeToken token)
+        {
+            //返回认证失败
+            return new AuthorizeResult
+            {
+                Succeed = false,
+                Name = "Unknown"
+            };
         }
     }
 }

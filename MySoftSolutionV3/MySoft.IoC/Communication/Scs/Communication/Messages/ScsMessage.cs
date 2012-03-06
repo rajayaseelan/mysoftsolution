@@ -10,11 +10,6 @@ namespace MySoft.Communication.Scs.Communication.Messages
     public class ScsMessage : IScsMessage
     {
         /// <summary>
-        /// data length for this message. 
-        /// </summary>
-        public int DataLength { get; set; }
-
-        /// <summary>
         /// Unique identified for this message.
         /// Default value: New GUID.
         /// Do not change if you do not want to do low level changes

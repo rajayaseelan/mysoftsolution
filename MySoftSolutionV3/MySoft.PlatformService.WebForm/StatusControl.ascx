@@ -32,9 +32,6 @@
             <li>总耗时:
                 <%=status.Summary.ElapsedTime%>
                 毫秒</li>
-            <li>总流量:
-                <%= Math.Round(status.Summary.DataFlow * 1.0 / 1024, 4)%>
-                KB</li>
             <li>请求总时间：
                 <%=status.Summary.RunningSeconds%>
                 秒</li>
@@ -50,9 +47,6 @@
             <li>平均耗时数:
                 <%=status.Summary.AverageElapsedTime%>
                 毫秒</li>
-            <li>每秒流量数:
-                <%=Math.Round(status.Summary.AverageDataFlow * 1.0 / 1024, 4)%>
-                KB</li>
         </ul>
     </div>
     <div style="float: left; width: 25%; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
@@ -72,15 +66,9 @@
             <li>总耗时:
                 <%=status.Latest.ElapsedTime%>
                 毫秒</li>
-            <li>总流量:
-                <%=Math.Round(status.Latest.DataFlow * 1.0 / 1024, 4)%>
-                KB</li>
             <li>平均耗时:
                 <%=status.Latest.AverageElapsedTime%>
                 毫秒</li>
-            <li>平均流量:
-                <%=Math.Round(status.Latest.AverageDataFlow * 1.0 / 1024, 4)%>
-                KB</li>
         </ul>
     </div>
     <div style="float: left; width: 35%; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
@@ -98,9 +86,6 @@
             <li>最大耗时:
                 <%=status.Highest.ElapsedTime%>
                 毫秒 (<%= status.Highest.ElapsedTimeCounterTime%>)</li>
-            <li>最大流量:
-                <%=Math.Round(status.Highest.DataFlow * 1.0 / 1024, 4)%>
-                KB (<%= status.Highest.DataFlowCounterTime%>)</li>
         </ul>
     </div>
     <div style="clear: both;">

@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Net;
 
-namespace MySoft.RESTful.Auth
+namespace MySoft.Auth
 {
     /// <summary>
     /// 认证异常信息
     /// </summary>
     [Serializable]
-    public class AuthenticationException : MySoftException
+    public class AuthorizeException : MySoftException
     {
         private int code;
         /// <summary>
@@ -23,11 +23,11 @@ namespace MySoft.RESTful.Auth
         }
 
         /// <summary>
-        /// 实例化AuthenticationException
+        /// 实例化AuthorizeException
         /// </summary>
         /// <param name="code"></param>
         /// <param name="message"></param>
-        public AuthenticationException(int code, string message)
+        public AuthorizeException(int code, string message)
             : base(message)
         {
             this.code = code;
@@ -37,7 +37,7 @@ namespace MySoft.RESTful.Auth
         /// 实例化AuthenticationException
         /// </summary>
         /// <param name="message"></param>
-        public AuthenticationException(string message)
+        public AuthorizeException(string message)
             : base(message)
         { }
     }

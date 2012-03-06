@@ -32,17 +32,22 @@ namespace MySoft.PlatformService.WinForm
                 //未连接状态，自动断开为SocketError.ConnectionReset
                 if ((error as SocketException).SocketErrorCode == SocketError.NotConnected)
                 {
-                    button1_Click(null, EventArgs.Empty);
+                    var ar = this.BeginInvoke(new Action(() =>
+                    {
+                        button1_Click(null, EventArgs.Empty);
 
-                    listConnect.Items.Insert(0,
-                        new ParseMessageEventArgs
-                        {
-                            MessageType = ParseMessageType.Error,
-                            LineHeader = string.Format("【{0}】 当前网络已经从服务器断开...", DateTime.Now),
-                            MessageText = string.Format("({0}){1}", (error as SocketException).ErrorCode, (error as SocketException).Message)
-                        });
+                        listConnect.Items.Insert(0,
+                            new ParseMessageEventArgs
+                            {
+                                MessageType = ParseMessageType.Error,
+                                LineHeader = string.Format("【{0}】 当前网络已经从服务器断开...", DateTime.Now),
+                                MessageText = string.Format("({0}){1}", (error as SocketException).ErrorCode, (error as SocketException).Message)
+                            });
 
-                    listConnect.Invalidate();
+                        listConnect.Invalidate();
+                    }));
+
+                    this.EndInvoke(ar);
 
                     //发送错误邮件
                     var socketError = (error as SocketException);
@@ -159,7 +164,7 @@ namespace MySoft.PlatformService.WinForm
 
                     try
                     {
-                        service.Unsubscribe();
+                        if (sender != null) service.Unsubscribe();
                     }
                     catch (Exception ex)
                     {

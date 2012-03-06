@@ -70,9 +70,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Business\Register\TypeInstance.cs" />
-    <Compile Include="Utils\AuthManager.cs" />
-    <Compile Include="RESTfulException.cs" />
+    <Compile Include="IContainer.cs" />
     <Compile Include="Business\BusinessKindModel.cs" />
     <Compile Include="Business\BusinessMethodModel.cs" />
     <Compile Include="Business\BusinessStateModel.cs" />
@@ -81,7 +79,8 @@
     <Compile Include="Business\Register\IBusinessRegister.cs" />
     <Compile Include="Business\Register\NativeBusinessRegister.cs" />
     <Compile Include="ISerializer.cs" />
-    <Compile Include="RESTfulCode.cs" />
+    <Compile Include="RESTfulException.cs" />
+    <Compile Include="RESTfulResult.cs" />
     <Compile Include="SerializerFactory.cs" />
     <Compile Include="DefaultRESTfulService.cs" />
     <Compile Include="IRESTfulService.cs" />

@@ -6,11 +6,6 @@
     public interface IScsMessage
     {
         /// <summary>
-        /// data length for this message. 
-        /// </summary>
-        int DataLength { get; set; }
-
-        /// <summary>
         /// Unique identified for this message. 
         /// </summary>
         string MessageId { get; }

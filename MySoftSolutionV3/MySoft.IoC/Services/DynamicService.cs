@@ -14,19 +14,17 @@ namespace MySoft.IoC.Services
     public class DynamicService : BaseService
     {
         private IServiceContainer container;
-        private object instance;
         private Type serviceType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicService"/> class.
         /// </summary>
         /// <param name="serviceType">Type of the service interface.</param>
-        public DynamicService(IServiceContainer container, Type serviceType, object instance)
+        public DynamicService(IServiceContainer container, Type serviceType)
             : base(container, serviceType)
         {
             this.container = container;
             this.serviceType = serviceType;
-            this.instance = instance;
         }
 
         /// <summary>
@@ -69,21 +67,16 @@ namespace MySoft.IoC.Services
             else
                 resMsg.ReturnType = method.ReturnType;
 
-            //从容器中获取对象
-            object service = instance;
-            if (service == null)
-            {
-                //解析服务
-                service = container.Resolve(serviceType);
-
-                //释放资源
-                container.Release(service);
-            }
+            //容器实例对象
+            object instance = null;
 
             try
             {
+                //解析服务
+                instance = container.Resolve(serviceType);
+
                 //返回拦截服务
-                service = AspectFactory.CreateProxyService(serviceType, service);
+                var service = AspectFactory.CreateProxyService(serviceType, instance);
 
                 var pis = method.GetParameters();
                 if (reqMsg.InvokeMethod)
@@ -154,6 +147,11 @@ namespace MySoft.IoC.Services
             {
                 //捕获全局错误
                 resMsg.Error = ex;
+            }
+            finally
+            {
+                //释放资源
+                container.Release(instance);
             }
 
             return resMsg;

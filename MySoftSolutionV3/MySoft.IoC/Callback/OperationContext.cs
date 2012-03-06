@@ -33,6 +33,7 @@ namespace MySoft.IoC
         /// </summary>
         private Type callbackType;
         private IScsServerClient client;
+        private EndPoint endPoint;
         private IContainer container;
         private AppCaller caller;
         private IServiceCache serviceCache;
@@ -71,9 +72,10 @@ namespace MySoft.IoC
         {
             get
             {
-                if (client == null) return null;
-                var endPoint = client.RemoteEndPoint as ScsTcpEndPoint;
-                return new IPEndPoint(IPAddress.Parse(endPoint.IpAddress), endPoint.TcpPort);
+                if (client == null)
+                    return null;
+                else
+                    return endPoint;
             }
         }
 
@@ -83,6 +85,12 @@ namespace MySoft.IoC
         {
             this.client = client;
             this.callbackType = callbackType;
+
+            if (client != null)
+            {
+                var ep = client.RemoteEndPoint as ScsTcpEndPoint;
+                this.endPoint = new IPEndPoint(IPAddress.Parse(ep.IpAddress), ep.TcpPort);
+            }
         }
 
         #region 缓存处理

@@ -113,31 +113,19 @@ namespace MySoft.RESTful.Business.Pool
         /// <returns></returns>
         public BusinessMethodModel FindMethod(string businessKindName, string businessMethodName)
         {
-            bool hasException = false;
-            string message = string.Empty;
-            RESTfulCode code = RESTfulCode.OK;
             BusinessKindModel kind = businessPool.Where(e => e.Key.Equals(businessKindName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
             BusinessMethodModel method = null;
             if (kind == null)
             {
-                hasException = true;
-                message = businessKindName + ", did not found!";
-                code = RESTfulCode.BUSINESS_KIND_NOT_FOUND;
+                throw new RESTfulException(businessKindName + ", did not found!");
             }
             else
             {
                 method = kind.MethodModels.Where(e => e.Key.Equals(businessMethodName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
                 if (method == null)
                 {
-                    hasException = true;
-                    message = businessMethodName + ", did not found!";
-                    code = RESTfulCode.BUSINESS_METHOD_NOT_FOUND;
+                    throw new RESTfulException(businessMethodName + ", did not found!");
                 }
-            }
-
-            if (hasException)
-            {
-                throw new RESTfulException(message) { Code = code };
             }
 
             return method;

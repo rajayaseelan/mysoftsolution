@@ -103,18 +103,21 @@ namespace MySoft.IoC.Services
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
             //如果池为空，则判断是否达到最大池
-            if (reqPool.Count == 0)
-            {
-                throw new WarningException("Service request pool is empty！");
-            }
+            ServiceRequest reqProxy = null;
 
-            //获取一个服务请求
-            var reqService = reqPool.Pop();
+            lock (this.reqPool)
+            {
+                //获取一个服务请求
+                reqProxy = reqPool.Pop();
+
+                if (reqProxy == null)
+                    throw new WarningException("Proxy service pool is null or empty！");
+            }
 
             try
             {
                 //发送消息
-                reqService.SendMessage(reqMsg);
+                reqProxy.SendMessage(reqMsg);
 
                 //处理数据
                 var autoEvent = new AutoResetEvent(false);
@@ -143,7 +146,7 @@ namespace MySoft.IoC.Services
             }
             finally
             {
-                this.reqPool.Push(reqService);
+                this.reqPool.Push(reqProxy);
             }
         }
 

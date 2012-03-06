@@ -100,14 +100,8 @@ namespace MySoft.IoC
                 //调用服务
                 if (resMsg == null)
                 {
-                    //调用多次
-                    var timesCount = config.Times;
-                    if (timesCount < 1) timesCount = 1;
-                    for (int times = 0; times < timesCount; times++)
-                    {
-                        resMsg = service.CallService(reqMsg);
-                        if (resMsg != null) break;
-                    }
+                    //调用服务
+                    resMsg = service.CallService(reqMsg);
 
                     //如果数据为null,则返回null
                     if (resMsg == null)

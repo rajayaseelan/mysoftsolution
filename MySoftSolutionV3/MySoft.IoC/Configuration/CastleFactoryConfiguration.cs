@@ -15,7 +15,6 @@ namespace MySoft.IoC.Configuration
         private string defaultKey;              //默认服务
         private string appName;                 //host名称
         private bool throwerror = true;         //抛出异常
-        private int times = 3;                  //调用次数
         private bool json = false;              //是否json输入输出
 
         /// <summary>
@@ -48,9 +47,6 @@ namespace MySoft.IoC.Configuration
 
             if (xmlnode["type"] != null && xmlnode["type"].Value.Trim() != string.Empty)
                 type = (CastleFactoryType)Enum.Parse(typeof(CastleFactoryType), xmlnode["type"].Value, true);
-
-            if (xmlnode["times"] != null && xmlnode["times"].Value.Trim() != string.Empty)
-                times = Convert.ToInt32(xmlnode["times"].Value);
 
             if (xmlnode["throwerror"] != null && xmlnode["throwerror"].Value.Trim() != string.Empty)
                 throwerror = Convert.ToBoolean(xmlnode["throwerror"].Value);
@@ -130,15 +126,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return type; }
             set { type = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the times
-        /// </summary>
-        public int Times
-        {
-            get { return times; }
-            set { times = value; }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using MySoft.Communication.Scs.Communication.Protocols;
 using MySoft.Communication.Threading;
+using MySoft.Communication.Scs.Communication.EndPoints;
 
 namespace MySoft.Communication.Scs.Server
 {
@@ -28,7 +29,12 @@ namespace MySoft.Communication.Scs.Server
         /// A collection of clients that are connected to the server.
         /// </summary>
         ThreadSafeSortedList<long, IScsServerClient> Clients { get; }
-        
+
+        /// <summary>
+        /// Get scs end point.
+        /// </summary>
+        ScsEndPoint EndPoint { get; }
+
         /// <summary>
         /// Starts the server.
         /// </summary>

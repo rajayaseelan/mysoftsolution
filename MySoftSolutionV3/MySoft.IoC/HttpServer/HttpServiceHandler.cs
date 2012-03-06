@@ -4,6 +4,7 @@ using MySoft.Net.Http;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using MySoft.IoC.Messages;
+using MySoft.Auth;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -114,6 +115,15 @@ namespace MySoft.IoC.HttpServer
                 //调用方法
                 var collection = ParseCollection(paramString);
 
+                if (callMethod.Authorized)
+                {
+                    if (!request.Has("Set-Authorize"))
+                        throw new AuthorizeException("Request header did not exist set-authorize info.");
+                    else
+                        //调用认证的信息
+                        collection[callMethod.AuthParameter] = request.Get("Set-Authorize");
+                }
+
                 if (callMethod.HttpMethod == HttpMethod.POST)
                 {
                     //接收流内部数据
@@ -136,13 +146,13 @@ namespace MySoft.IoC.HttpServer
             }
             catch (HTTPMessageException ex)
             {
-                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_EXPECTATION_FAILED;
                 var error = new HttpServiceException { Message = string.Format("{0} - {1}", response.Reason, ex.Message) };
                 SendResponse(response, error);
             }
             catch (Exception ex)
             {
-                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_EXPECTATION_FAILED;
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
                 var e = ErrorHelper.GetInnerException(ex);
                 var error = new HttpServiceException { Message = string.Format("{0} - {1}", e.GetType().Name, e.Message) };
                 SendResponse(response, error);

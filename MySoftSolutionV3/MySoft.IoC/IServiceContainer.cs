@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Castle.MicroKernel;
 using MySoft.Logger;
+using System.Collections.Generic;
 
 namespace MySoft.IoC
 {
@@ -32,7 +33,7 @@ namespace MySoft.IoC
         /// Registers the components.
         /// </summary>
         /// <param name="serviceKeyTypes">The service key types.</param>
-        void RegisterComponents(IDictionary serviceKeyTypes);
+        void RegisterComponents(IDictionary<Type, object> serviceKeyTypes);
         /// <summary>
         /// Releases the specified obj.
         /// </summary>

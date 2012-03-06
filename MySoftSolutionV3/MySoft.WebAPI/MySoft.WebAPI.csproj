@@ -66,6 +66,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MySoft.Core\MySoft.Core.csproj">
+      <Project>{1DF7ED40-1747-4114-A8E4-6B3B85034883}</Project>
+      <Name>MySoft.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MySoft.IoC.HttpProxy\MySoft.IoC.HttpProxy.csproj">
       <Project>{3C3B51AC-3939-487F-9831-F408E3B5D96F}</Project>
       <Name>MySoft.IoC.HttpProxy</Name>

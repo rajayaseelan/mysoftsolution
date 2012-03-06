@@ -26,14 +26,14 @@ namespace MySoft.RESTful.Business.Register
         /// 获取约束的接口
         /// </summary>
         /// <returns></returns>
-        private Type[] GetInterfaces<ContractType>(IWindsorContainer container)
+        private Type[] GetInterfaceServices<ContractType>(IWindsorContainer container)
         {
             List<Type> typelist = new List<Type>();
             GraphNode[] nodes = container.Kernel.GraphNodes;
             nodes.Cast<ComponentModel>().ForEach(model =>
             {
                 bool markedWithServiceContract = false;
-                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Service);
+                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Services.First());
                 if (attr != null)
                 {
                     markedWithServiceContract = true;
@@ -41,47 +41,11 @@ namespace MySoft.RESTful.Business.Register
 
                 if (markedWithServiceContract)
                 {
-                    typelist.Add(model.Service);
+                    typelist.Add(model.Services.First());
                 }
             });
 
             return typelist.ToArray();
-        }
-
-        /// <summary>
-        /// 获取发布的类型
-        /// </summary>
-        /// <returns></returns>
-        private TypeInstance[] GetPublishServices()
-        {
-            var list = new List<TypeInstance>();
-
-            var container = new WindsorContainer();
-            if (ConfigurationManager.GetSection("mysoft.framework/restful") != null)
-                container = new WindsorContainer(new XmlInterpreter(new ConfigResource("mysoft.framework/restful")));
-
-            //获取本地的服务
-            foreach (var serviceType in GetInterfaces<PublishKindAttribute>(container))
-            {
-                if (list.Any(p => p.Type == serviceType)) continue;
-
-                try
-                {
-                    var instance = container.Resolve(serviceType);
-                    list.Add(new TypeInstance
-                    {
-                        Type = serviceType,
-                        Instance = instance
-                    });
-                }
-                catch (Exception ex)
-                {
-                    //记录错误日志
-                    SimpleLog.Instance.WriteLogForDir("RegisterError", ex);
-                }
-            }
-
-            return list.ToArray();
         }
 
         public void Register(IBusinessPool businessPool)
@@ -93,14 +57,14 @@ namespace MySoft.RESTful.Business.Register
                 BusinessKindModel kindModel = null;
                 BusinessMethodModel methodModel = null;
 
-                foreach (var service in GetPublishServices())
-                {
-                    //获取业务对象
-                    var serviceType = service.Type;
-                    object instance = service.Instance;
+                var container = new WindsorContainer();
+                if (ConfigurationManager.GetSection("mysoft.framework/restful") != null)
+                    container = new WindsorContainer(new XmlInterpreter(new ConfigResource("mysoft.framework/restful")));
 
+                foreach (var type in GetInterfaceServices<PublishKindAttribute>(container))
+                {
                     //获取类特性
-                    var kind = CoreHelper.GetTypeAttribute<PublishKindAttribute>(serviceType);
+                    var kind = CoreHelper.GetTypeAttribute<PublishKindAttribute>(type);
                     if (kind == null) continue;
 
                     kind.Name = kind.Name.ToLower();
@@ -122,7 +86,7 @@ namespace MySoft.RESTful.Business.Register
                     }
 
                     //获取方法特性
-                    foreach (MethodInfo info in CoreHelper.GetMethodsFromType(serviceType))
+                    foreach (MethodInfo info in CoreHelper.GetMethodsFromType(type))
                     {
                         var method = CoreHelper.GetMemberAttribute<PublishMethodAttribute>(info);
                         if (method != null)
@@ -153,7 +117,7 @@ namespace MySoft.RESTful.Business.Register
                                 Method = info,
                                 Parameters = info.GetParameters(),
                                 ParametersCount = info.GetParameters().Count(),
-                                Instance = instance
+                                Container = new ServiceContainer(container, type)
                             };
 
                             var types = info.GetParameters().Select(p => p.ParameterType).ToArray();

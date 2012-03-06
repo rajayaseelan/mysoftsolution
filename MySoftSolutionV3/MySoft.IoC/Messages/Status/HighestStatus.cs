@@ -27,22 +27,6 @@ namespace MySoft.IoC.Messages
             }
         }
 
-        private DateTime dataFlowCounterTime;
-        /// <summary>
-        /// 最高流量发生时间
-        /// </summary>
-        public DateTime DataFlowCounterTime
-        {
-            get
-            {
-                return dataFlowCounterTime;
-            }
-            set
-            {
-                dataFlowCounterTime = value;
-            }
-        }
-
         private DateTime requestCountCounterTime;
         /// <summary>
         /// 最大请求发生时间

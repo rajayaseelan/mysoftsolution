@@ -2,6 +2,7 @@
 using MySoft.Communication.Scs.Communication.Channels;
 using MySoft.Communication.Scs.Communication.Protocols;
 using MySoft.Communication.Threading;
+using MySoft.Communication.Scs.Communication.EndPoints;
 
 namespace MySoft.Communication.Scs.Server
 {
@@ -128,7 +129,7 @@ namespace MySoft.Communication.Scs.Server
         /// <param name="e">Event arguments</param>
         private void Client_Disconnected(object sender, EventArgs e)
         {
-            var client = (IScsServerClient) sender;
+            var client = (IScsServerClient)sender;
             Clients.Remove(client.ClientId);
             OnClientDisconnected(client);
         }
@@ -164,5 +165,10 @@ namespace MySoft.Communication.Scs.Server
         }
 
         #endregion
+
+        /// <summary>
+        /// Get scs end point.
+        /// </summary>
+        public abstract ScsEndPoint EndPoint { get; }
     }
 }

@@ -4,6 +4,7 @@ using System.Web;
 using System.Web.Routing;
 using MySoft.IoC.HttpProxy;
 using System.ServiceModel;
+using MySoft.Auth;
 
 namespace MySoft.WebAPI
 {
@@ -35,7 +36,11 @@ namespace MySoft.WebAPI
         /// <returns></returns>
         protected override AuthorizeResult Authorize(AuthorizeToken token)
         {
-            return new AuthorizeResult();
+            return new AuthorizeResult
+            {
+                Succeed = true,
+                Name = "my181"
+            };
         }
     }
 }

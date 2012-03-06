@@ -1,6 +1,7 @@
 ﻿using MySoft.Communication.Scs.Communication.Channels;
 using MySoft.Communication.Scs.Communication.Channels.Tcp;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.Communication.Scs.Communication.EndPoints;
 
 namespace MySoft.Communication.Scs.Server.Tcp
 {
@@ -13,6 +14,14 @@ namespace MySoft.Communication.Scs.Server.Tcp
         /// The endpoint address of the server to listen incoming connections.
         /// </summary>
         private readonly ScsTcpEndPoint _endPoint;
+
+        /// <summary>
+        /// The endpoint address of the server to listen incoming connections.
+        /// </summary>
+        public override ScsEndPoint EndPoint
+        {
+            get { return _endPoint; }
+        }
 
         /// <summary>
         /// Creates a new ScsTcpServer object.

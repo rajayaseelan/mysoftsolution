@@ -18,7 +18,7 @@ namespace MySoft.PlatformService.UserService
     }
 
     //[AspectProxy(typeof(AspectLog))]
-    public class UserService : IUserService, Castle.Core.IInitializable, IStartable
+    public class UserService : IUserService, IInitializable, IStartable
     {
         //private DateTime startTime;
         //public UserService()

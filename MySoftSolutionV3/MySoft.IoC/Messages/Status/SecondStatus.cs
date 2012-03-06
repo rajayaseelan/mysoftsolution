@@ -8,25 +8,6 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public abstract class SecondStatus
     {
-        private long dataFlow;
-        /// <summary>
-        /// 数据流量
-        /// </summary>
-        public long DataFlow
-        {
-            get
-            {
-                return dataFlow;
-            }
-            set
-            {
-                lock (this)
-                {
-                    dataFlow = value;
-                }
-            }
-        }
-
         /// <summary>
         /// 请求数
         /// </summary>
@@ -92,20 +73,6 @@ namespace MySoft.IoC.Messages
                 {
                     elapsedTime = value;
                 }
-            }
-        }
-
-        /// <summary>
-        /// 平均数据流量（每次请求）
-        /// </summary>
-        public double AverageDataFlow
-        {
-            get
-            {
-                if (this.RequestCount > 0)
-                    return Math.Round((dataFlow * 1.0) / (this.RequestCount * 1.0), 4);
-                else
-                    return 0;
             }
         }
 

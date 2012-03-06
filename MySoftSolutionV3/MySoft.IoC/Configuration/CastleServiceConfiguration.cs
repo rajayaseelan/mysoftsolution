@@ -11,13 +11,13 @@ namespace MySoft.IoC.Configuration
     {
         private string host = "any";
         private int port = 8888;
-        private int httpPort = 8080;
-        private bool httpEnabled = false;
-        private string cacheType;
+        private int httpport = 8080;
+        private bool httpenabled = false;
+        private string assembly;
         private bool encrypt = false;
         private bool compress = false;
-        private int minuteCall = ServiceConfig.DEFAULT_MINUTE_CALL_NUMBER;         //默认为每分钟调用1000次，超过报异常
-        private int records = ServiceConfig.DEFAULT_RECORD_NUMBER;                 //默认记录3600次   //记录条数，默认为3600条，1小时记录
+        private int minutecalls = ServiceConfig.DEFAULT_MINUTE_CALL_NUMBER;         //默认为每分钟调用1000次，超过报异常
+        private int recordnums = ServiceConfig.DEFAULT_RECORD_NUMBER;              //默认记录3600次   //记录条数，默认为3600条，1小时记录
 
         /// <summary>
         /// 获取远程对象配置
@@ -31,7 +31,7 @@ namespace MySoft.IoC.Configuration
             {
                 var tmp = ConfigurationManager.GetSection(key);
                 obj = tmp as CastleServiceConfiguration;
-                CacheHelper.Permanent(key, obj); ;
+                CacheHelper.Permanent(key, obj);
             }
 
             return obj;
@@ -59,11 +59,11 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["compress"] != null && xmlnode["compress"].Value.Trim() != string.Empty)
                 compress = Convert.ToBoolean(xmlnode["compress"].Value);
 
-            if (xmlnode["records"] != null && xmlnode["records"].Value.Trim() != string.Empty)
-                records = Convert.ToInt32(xmlnode["records"].Value);
+            if (xmlnode["recordnums"] != null && xmlnode["recordnums"].Value.Trim() != string.Empty)
+                recordnums = Convert.ToInt32(xmlnode["recordnums"].Value);
 
-            if (xmlnode["minuteCall"] != null && xmlnode["minuteCall"].Value.Trim() != string.Empty)
-                minuteCall = Convert.ToInt32(xmlnode["minuteCall"].Value);
+            if (xmlnode["minutecalls"] != null && xmlnode["minutecalls"].Value.Trim() != string.Empty)
+                minutecalls = Convert.ToInt32(xmlnode["minutecalls"].Value);
 
             foreach (XmlNode child in node.ChildNodes)
             {
@@ -72,13 +72,13 @@ namespace MySoft.IoC.Configuration
                 XmlAttributeCollection childnode = child.Attributes;
                 if (child.Name == "httpServer")
                 {
-                    httpPort = Convert.ToInt32(childnode["httpPort"].Value);
-                    httpEnabled = Convert.ToBoolean(childnode["httpEnabled"].Value);
+                    httpport = Convert.ToInt32(childnode["port"].Value);
+                    httpenabled = Convert.ToBoolean(childnode["enabled"].Value);
                 }
                 else if (child.Name == "serverCache")
                 {
-                    if (childnode["cacheType"] != null && childnode["cacheType"].Value.Trim() != string.Empty)
-                        cacheType = childnode["cacheType"].Value;
+                    if (childnode["asselbly"] != null && childnode["assembly"].Value.Trim() != string.Empty)
+                        assembly = childnode["assembly"].Value;
                 }
             }
         }
@@ -86,32 +86,32 @@ namespace MySoft.IoC.Configuration
         #region Http参数
 
         /// <summary>
-        /// Gets or sets the httpPort
+        /// Gets or sets the httpport
         /// </summary>
         public int HttpPort
         {
-            get { return httpPort; }
-            set { httpPort = value; }
+            get { return httpport; }
+            set { httpport = value; }
         }
 
         /// <summary>
-        /// Gets or sets the httpEnabled
+        /// Gets or sets the httpenabled
         /// </summary>
         public bool HttpEnabled
         {
-            get { return httpEnabled; }
-            set { httpEnabled = value; }
+            get { return httpenabled; }
+            set { httpenabled = value; }
         }
 
         #endregion
 
         /// <summary>
-        /// Gets or sets the cacheType
+        /// Gets or sets the assembly
         /// </summary>
-        public string CacheType
+        public string AssemblyName
         {
-            get { return cacheType; }
-            set { cacheType = value; }
+            get { return assembly; }
+            set { assembly = value; }
         }
 
         /// <summary>
@@ -155,22 +155,22 @@ namespace MySoft.IoC.Configuration
         }
 
         /// <summary>
-        /// Gets or sets the records
+        /// Gets or sets the recordnums
         /// </summary>
-        /// <value>The records.</value>
-        public int Records
+        /// <value>The recordnums.</value>
+        public int RecordNums
         {
-            get { return records; }
-            set { records = value; }
+            get { return recordnums; }
+            set { recordnums = value; }
         }
 
         /// <summary>
-        /// Gets or sets the minuteCall
+        /// Gets or sets the minutecalls
         /// </summary>
-        public int MinuteCall
+        public int MinuteCalls
         {
-            get { return minuteCall; }
-            set { minuteCall = value; }
+            get { return minutecalls; }
+            set { minutecalls = value; }
         }
     }
 }

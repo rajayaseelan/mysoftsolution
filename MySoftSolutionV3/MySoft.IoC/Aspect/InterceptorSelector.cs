@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Castle.DynamicProxy;
 
 namespace MySoft.IoC.Aspect
 {
     /// <summary>
     /// 拦截器选择
     /// </summary>
-    public class InterceptorSelector : IInterceptorSelector
+    public class InterceptorSelector : Castle.DynamicProxy.IInterceptorSelector
     {
         #region IInterceptorSelector 成员
 
-        public IInterceptor[] SelectInterceptors(Type type, MethodInfo method, IInterceptor[] interceptors)
+        public Castle.DynamicProxy.IInterceptor[] SelectInterceptors(Type type, MethodInfo method, Castle.DynamicProxy.IInterceptor[] interceptors)
         {
             if (interceptors == null) return interceptors;
 

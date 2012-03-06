@@ -3,48 +3,39 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.Logger;
-using MySoft.RESTful;
 
 namespace MySoft.IoC
 {
     /// <summary>
-    /// 服务监控
+    /// 服务端监控
     /// </summary>
-    public abstract class ServerMoniter : IStatusService, ILogable, IErrorLogable, IDisposable
+    public class ServerStatusService : IStatusService
     {
-        protected IServiceContainer container;
-        protected CastleServiceConfiguration config;
-        protected TimeStatusCollection statuslist;
+        private CastleServiceConfiguration config;
+        private IScsServer server;
+        private IServiceContainer container;
+        private TimeStatusCollection statuslist;
+        private CounterInfoCollection counterlist;
         private DateTime startTime;
 
         /// <summary>
-        /// 实例化ServerMoniter
+        /// 实例化ServerStatusService
         /// </summary>
         /// <param name="config"></param>
-        public ServerMoniter(CastleServiceConfiguration config)
+        /// <param name="server"></param>
+        /// <param name="container"></param>
+        public ServerStatusService(CastleServiceConfiguration config, IScsServer server, IServiceContainer container)
         {
             this.config = config;
-
-            //注入内部的服务
-            Hashtable hashTypes = new Hashtable();
-            hashTypes[typeof(IStatusService)] = this;
-
-            this.container = new SimpleServiceContainer(CastleFactoryType.Local, hashTypes);
-            this.container.OnError += error => { if (OnError != null) OnError(error); };
-            this.container.OnLog += (log, type) => { if (OnLog != null) OnLog(log, type); };
-            this.statuslist = new TimeStatusCollection(config.Records);
+            this.server = server;
+            this.container = container;
             this.startTime = DateTime.Now;
-
-            //加载cacheType
-            if (!string.IsNullOrEmpty(config.CacheType))
-            {
-                Type type = Type.GetType(config.CacheType);
-                object instance = Activator.CreateInstance(type);
-                this.container.ServiceCache = instance as IServiceCache;
-            }
+            this.statuslist = new TimeStatusCollection(config.RecordNums);
+            this.counterlist = new CounterInfoCollection(config.MinuteCalls);
 
             //启动定义推送线程
             ThreadPool.QueueUserWorkItem(DoPushWork);
@@ -52,6 +43,7 @@ namespace MySoft.IoC
 
         void DoPushWork(object state)
         {
+            int counter = 0;
             while (true)
             {
                 if (statuslist == null)
@@ -64,35 +56,128 @@ namespace MySoft.IoC
                     MessageCenter.Instance.Notify(status);
                 }
 
+                counter++;
+
+                //每分钟进行一次计数
+                if (counter >= 60)
+                {
+                    counter = 0;
+                    counterlist.Reset();
+                }
+
                 //每秒推送一次
                 Thread.Sleep(1000);
             }
         }
 
-        #region ILogable Members
-
         /// <summary>
-        /// OnLog event.
+        /// 进行计数处理并响应
         /// </summary>
-        public event LogEventHandler OnLog;
+        /// <param name="args"></param>
+        internal void CounterNotify(CallEventArgs args)
+        {
+            //获取或创建一个对象
+            var status = statuslist.GetOrCreate(DateTime.Now);
 
-        /// <summary>
-        /// OnError event.
-        /// </summary>
-        public event ErrorLogEventHandler OnError;
+            //处理时间
+            status.ElapsedTime += args.ElapsedTime;
 
-        #endregion
+            //错误及成功计数
+            if (args.IsError)
+                status.ErrorCount++;
+            else
+                status.SuccessCount++;
 
-        #region IDisposable 成员
+            //计算统计
+            counterlist.Call(args);
 
-        /// <summary>
-        /// 销毁资源
-        /// </summary>
-        public abstract void Dispose();
-
-        #endregion
+            //响应错误信息
+            MessageCenter.Instance.Notify(args);
+        }
 
         #region IStatusService 成员
+
+        #region 获取客户端信息
+
+        /// <summary>
+        /// 获取所有的客户端信息
+        /// </summary>
+        /// <returns></returns>
+        public IList<AppClient> GetAppClients()
+        {
+            try
+            {
+                var items = server.Clients.GetAllItems();
+
+                //统计客户端数量
+                return items.Where(p => p.State != null)
+                      .Select(p => p.State as AppClient)
+                      .Distinct(new AppClientComparer())
+                      .ToList();
+            }
+            catch
+            {
+                return new List<AppClient>();
+            }
+        }
+
+        /// <summary>
+        /// 获取连接客户信息
+        /// </summary>
+        /// <returns></returns>
+        public IList<ClientInfo> GetClientList()
+        {
+            try
+            {
+                var epServer = server.EndPoint as ScsTcpEndPoint;
+                var items = server.Clients.GetAllItems();
+
+                //统计客户端数量
+                var list = items.Where(p => p.State != null)
+                     .Select(p => p.State as AppClient)
+                     .GroupBy(p => new
+                     {
+                         AppName = p.AppName,
+                         IPAddress = p.IPAddress,
+                         HostName = p.HostName
+                     }).Select(p => new ClientInfo
+                     {
+                         AppName = p.Key.AppName,
+                         IPAddress = p.Key.IPAddress,
+                         HostName = p.Key.HostName,
+                         ServerIPAddress = epServer.IpAddress,
+                         ServerPort = epServer.TcpPort,
+                         Count = p.Count()
+                     }).ToList();
+
+                if (items.Any(p => p.State == null))
+                {
+                    var ls = items.Where(p => p.State == null)
+                        .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
+                        .GroupBy(p => p.IpAddress)
+                        .Select(g => new ClientInfo
+                        {
+                            AppName = "Unknown",
+                            IPAddress = g.Key,
+                            ServerIPAddress = epServer.IpAddress,
+                            ServerPort = epServer.TcpPort,
+                            HostName = "Unknown",
+                            Count = g.Count()
+                        }).ToList();
+
+                    list.AddRange(ls);
+                }
+
+                return list;
+            }
+            catch (Exception ex)
+            {
+                container.WriteError(ex);
+                return new List<ClientInfo>();
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 是否存在服务
@@ -296,14 +381,6 @@ namespace MySoft.IoC
 
             if (list.Count > 0)
             {
-                //流量
-                highest.DataFlow = list.Max(p => p.DataFlow);
-                if (highest.DataFlow > 0)
-                {
-                    var data = list.FirstOrDefault(p => p.DataFlow == highest.DataFlow);
-                    highest.DataFlowCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
-                }
-
                 //成功
                 highest.SuccessCount = list.Max(p => p.SuccessCount);
                 if (highest.SuccessCount > 0)
@@ -358,8 +435,7 @@ namespace MySoft.IoC
                 RequestCount = list.Sum(p => p.RequestCount),
                 SuccessCount = list.Sum(p => p.SuccessCount),
                 ErrorCount = list.Sum(p => p.ErrorCount),
-                ElapsedTime = list.Sum(p => p.ElapsedTime),
-                DataFlow = list.Sum(p => p.DataFlow),
+                ElapsedTime = list.Sum(p => p.ElapsedTime)
             };
 
             return status;
@@ -373,18 +449,6 @@ namespace MySoft.IoC
         {
             return statuslist.ToList();
         }
-
-        /// <summary>
-        /// 获取连接客户信息
-        /// </summary>
-        /// <returns></returns>
-        public abstract IList<ClientInfo> GetClientList();
-
-        /// <summary>
-        /// 获取所有应用客户端
-        /// </summary>
-        /// <returns></returns>
-        public abstract IList<AppClient> GetAppClients();
 
         /// <summary>
         /// 订阅服务

@@ -43,7 +43,7 @@ namespace MySoft.PlatformService.UserService
     public interface IUserService
     {
         //[OperationContract(ClientCacheTime = 10, ServerCacheTime = 20, CacheKey = "User_{name}")]
-        [OperationContract(ServerCacheTime = 10)]
+        //[OperationContract(ServerCacheTime = 10)]
         UserInfo GetUserInfo(string name, ref int length, out UserInfo user, params int[] ids);
 
         string GetUser(NameValueCollection nv);

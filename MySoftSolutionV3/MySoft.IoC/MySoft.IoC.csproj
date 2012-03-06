@@ -91,7 +91,10 @@
     <Compile Include="JsonInvocationHandler.cs" />
     <Compile Include="LocalInvocationHandler.cs" />
     <Compile Include="Messages\InvokeMessage.cs" />
+    <Compile Include="Messages\Status\CounterInfo.cs" />
+    <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
+    <Compile Include="Services\ServiceDiscoverFacility.cs" />
     <Compile Include="Services\DiscoverProxy.cs" />
     <Compile Include="Messages\Status\AppCaller.cs" />
     <Compile Include="Messages\Status\AppClient.cs" />
@@ -154,7 +157,6 @@
     <Compile Include="Callback\CallbackInvocationHandler.cs" />
     <Compile Include="Callback\OperationContext.cs" />
     <Compile Include="ServiceRequestPool.cs" />
-    <Compile Include="ServerMoniter.cs" />
     <Compile Include="Services\BigInteger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceConfig.cs" />

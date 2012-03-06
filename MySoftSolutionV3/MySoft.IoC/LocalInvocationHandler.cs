@@ -60,17 +60,17 @@ namespace MySoft.IoC
             //缓存无值
             if (cacheValue == null)
             {
-                //从容器中获取对象
-                var service = container.Resolve(serviceType);
-
-                //释放资源
-                container.Release(service);
-
-                //返回拦截服务
-                service = AspectFactory.CreateProxyService(serviceType, service);
+                //容器实例对象
+                object instance = null;
 
                 try
                 {
+                    //从容器中获取对象
+                    instance = container.Resolve(serviceType);
+
+                    //返回拦截服务
+                    var service = AspectFactory.CreateProxyService(serviceType, instance);
+
                     //设置上下文
                     SetOperationContext(serviceType.FullName, method.ToString(), jsonString);
 
@@ -92,6 +92,9 @@ namespace MySoft.IoC
                 }
                 finally
                 {
+                    //释放资源
+                    container.Release(instance);
+
                     //初始化上下文
                     OperationContext.Current = null;
                 }
@@ -135,8 +138,8 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="serviceName"></param>
         /// <param name="methodName"></param>
-        /// <param name="jsonString"></param>
-        private void SetOperationContext(string serviceName, string methodName, string jsonString)
+        /// <param name="parameters"></param>
+        private void SetOperationContext(string serviceName, string methodName, string parameters)
         {
             //创建AppCaller对象
             var caller = new AppCaller
@@ -146,7 +149,7 @@ namespace MySoft.IoC
                 IPAddress = ipAddress,
                 ServiceName = serviceName,
                 MethodName = methodName,
-                Parameters = jsonString
+                Parameters = parameters
             };
 
             //初始化上下文

@@ -113,7 +113,6 @@ namespace MySoft.IoC.HttpServer
                 {
                     Name = kvp.Key,
                     Authorized = kvp.Value.Authorized,
-                    AuthParameter = kvp.Value.AuthParameter,
                     TypeString = kvp.Value.TypeString
                 });
             }

@@ -1,13 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Xml;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using MySoft.RESTful.Auth;
 
 namespace MySoft.RESTful.Utils
 {
@@ -46,7 +42,7 @@ namespace MySoft.RESTful.Utils
                 {
                     var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
                     if (property != null)
-                    {   
+                    {
                         //获取Json值
                         string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
                         object jsonValue = CoreHelper.ConvertJsonToObject(info, value);
@@ -62,13 +58,9 @@ namespace MySoft.RESTful.Utils
 
                 return args.ToArray();
             }
-            catch (NullReferenceException ex)
+            catch (Exception ex)
             {
-                throw new RESTfulException(ex.Message) { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
-            }
-            catch
-            {
-                throw new RESTfulException("Parameter type did not match!") { Code = RESTfulCode.BUSINESS_METHOD_PARAMS_TYPE_NOT_MATCH };
+                throw new RESTfulException("Parameter type did not match. " + ex.Message);
             }
         }
 

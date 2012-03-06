@@ -91,6 +91,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="user.config" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{B4F97281-0DBD-4835-9ED8-7DFB966E87FF}" />

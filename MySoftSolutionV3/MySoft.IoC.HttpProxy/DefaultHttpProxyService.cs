@@ -13,6 +13,7 @@ using MySoft.Security;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Web;
+using MySoft.Auth;
 
 namespace MySoft.IoC.HttpProxy
 {
@@ -21,7 +22,7 @@ namespace MySoft.IoC.HttpProxy
     /// </summary>
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
-    public abstract class DefaultHttpProxyService : IHttpProxyService
+    public class DefaultHttpProxyService : IHttpProxyService
     {
         private HttpHelper helper;
         private IList<ServiceItem> services;
@@ -46,7 +47,7 @@ namespace MySoft.IoC.HttpProxy
         private void ReaderService()
         {
             //数据缓存1分钟
-            var jsonString = helper.Reader("api", string.Empty, 60);
+            var jsonString = helper.Get("api", string.Empty, 60);
 
             //将数据反系列化成对象
             this.services = SerializationManager.DeserializeJson<IList<ServiceItem>>(jsonString);
@@ -64,7 +65,8 @@ namespace MySoft.IoC.HttpProxy
             var query = request.UriTemplateMatch.QueryParameters;
 
             //认证用户信息
-            var stream = AuthorizeData(name, query);
+            var header = new WebHeaderCollection();
+            var stream = AuthorizeData(name, header);
             if (stream != null) return stream;
 
             var buffer = new byte[0];
@@ -72,7 +74,7 @@ namespace MySoft.IoC.HttpProxy
             try
             {
                 //数据缓存5秒
-                var jsonString = helper.Reader(name, query.ToString(), 5);
+                var jsonString = helper.Get(name, query.ToString(), 5, header);
 
                 //如果无值，则置为null
                 if (string.IsNullOrEmpty(jsonString)) jsonString = null;
@@ -139,7 +141,8 @@ namespace MySoft.IoC.HttpProxy
             var query = request.UriTemplateMatch.QueryParameters;
 
             //认证用户信息
-            var stream = AuthorizeData(name, query);
+            var header = new WebHeaderCollection();
+            var stream = AuthorizeData(name, header);
             if (stream != null) return stream;
 
             var buffer = new byte[0];
@@ -152,7 +155,7 @@ namespace MySoft.IoC.HttpProxy
                     postValue = sr.ReadToEnd();
                 }
 
-                var jsonString = helper.Post(name, query.ToString(), postValue);
+                var jsonString = helper.Post(name, query.ToString(), postValue, header);
                 buffer = Encoding.UTF8.GetBytes(jsonString);
             }
             catch (WebException ex)
@@ -195,7 +198,7 @@ namespace MySoft.IoC.HttpProxy
             if (!string.IsNullOrEmpty(kind)) method += ("/" + kind);
 
             //文档缓存1分钟
-            string html = helper.Reader(method, string.Empty, 60);
+            string html = helper.Get(method, string.Empty, 60);
 
             //转换成utf8返回
             response.ContentType = "text/html;charset=utf-8";
@@ -209,7 +212,7 @@ namespace MySoft.IoC.HttpProxy
             return new MemoryStream(Encoding.UTF8.GetBytes(html));
         }
 
-        private Stream AuthorizeData(string name, NameValueCollection query)
+        private Stream AuthorizeData(string name, WebHeaderCollection header)
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
@@ -241,15 +244,20 @@ namespace MySoft.IoC.HttpProxy
 
                 if (service.Authorized)
                 {
-                    var token = new AuthorizeToken { Parameters = request.UriTemplateMatch.QueryParameters };
-                    if (HttpContext.Current != null) token.Cookies = HttpContext.Current.Request.Cookies;
+                    var token = new AuthorizeToken
+                    {
+                        RequestUri = request.UriTemplateMatch.RequestUri,
+                        Method = request.Method,
+                        Parameters = request.UriTemplateMatch.QueryParameters,
+                        Cookies = GetCookies()
+                    };
 
                     try
                     {
                         var result = Authorize(token);
                         if (result.Succeed && !string.IsNullOrEmpty(result.Name))
                         {
-                            query[service.AuthParameter] = result.Name;
+                            header["Set-Authorize"] = result.Name;
                         }
                         else
                         {
@@ -273,6 +281,42 @@ namespace MySoft.IoC.HttpProxy
         }
 
         /// <summary>
+        /// 获取Cookie信息
+        /// </summary>
+        /// <returns></returns>
+        private HttpCookieCollection GetCookies()
+        {
+            if (HttpContext.Current != null)
+                return HttpContext.Current.Request.Cookies;
+
+            HttpCookieCollection collection = new HttpCookieCollection();
+
+            var request = WebOperationContext.Current.IncomingRequest;
+            var cookie = request.Headers[HttpRequestHeader.Cookie];
+
+            //从头中获取Cookie
+            if (!string.IsNullOrEmpty(cookie))
+            {
+                string[] cookies = cookie.Split(';');
+                HttpCookie cook = null;
+                foreach (string e in cookies)
+                {
+                    if (!string.IsNullOrEmpty(e))
+                    {
+                        string[] values = e.Split(new char[] { '=' }, 2);
+                        if (values.Length == 2)
+                        {
+                            cook = new HttpCookie(values[0], values[1]);
+                        }
+                        collection.Add(cook);
+                    }
+                }
+            }
+
+            return collection;
+        }
+
+        /// <summary>
         /// 系列化数据
         /// </summary>
         /// <param name="item"></param>
@@ -288,6 +332,14 @@ namespace MySoft.IoC.HttpProxy
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        protected abstract AuthorizeResult Authorize(AuthorizeToken token);
+        protected virtual AuthorizeResult Authorize(AuthorizeToken token)
+        {
+            //返回认证失败
+            return new AuthorizeResult
+            {
+                Succeed = false,
+                Name = "Unknown"
+            };
+        }
     }
 }

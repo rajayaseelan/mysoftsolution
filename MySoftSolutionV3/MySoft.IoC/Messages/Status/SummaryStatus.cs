@@ -47,20 +47,6 @@ namespace MySoft.IoC.Messages
         }
 
         /// <summary>
-        /// 平均数据流量（每秒）
-        /// </summary>
-        public new double AverageDataFlow
-        {
-            get
-            {
-                if (runningSeconds > 0)
-                    return Math.Round((this.DataFlow * 1.0) / (runningSeconds * 1.0), 4);
-                else
-                    return 0;
-            }
-        }
-
-        /// <summary>
         /// 平均请求数（每秒）
         /// </summary>
         public double AverageRequestCount

@@ -147,7 +147,6 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
                 }
 
                 LastSentMessageTime = DateTime.Now;
-                message.DataLength = messageBytes.Length;
 
                 OnMessageSent(message);
             }

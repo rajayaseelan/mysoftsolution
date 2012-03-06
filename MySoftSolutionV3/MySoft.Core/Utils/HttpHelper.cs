@@ -18,7 +18,18 @@ namespace MySoft
         /// <returns></returns>
         public static string Reader(string url)
         {
-            return Reader(url, -1);
+            return Reader(url, null);
+        }
+
+        /// <summary>
+        /// 读取指定的url的数据，默认不缓存
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public static string Reader(string url, WebHeaderCollection header)
+        {
+            return Reader(url, -1, header);
         }
 
         /// <summary>
@@ -29,12 +40,25 @@ namespace MySoft
         /// <returns></returns>
         public static string Reader(string url, int cacheTime)
         {
+            return Reader(url, cacheTime, null);
+        }
+
+        /// <summary>
+        /// 读取指定url的数据 ，cacheTime小于0，不进行缓存
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="cacheTime"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public static string Reader(string url, int cacheTime, WebHeaderCollection header)
+        {
             string cacheKey = string.Format("Resource_{0}", url);
             string responseString = CacheHelper.Get(cacheKey) as string;
             if (responseString == null)
             {
                 var request = (HttpWebRequest)WebRequest.Create(url);
                 request.Timeout = 60 * 1000;
+                if (header != null) request.Headers = header;
 
                 var response = request.GetResponse();
                 using (var sr = new StreamReader(response.GetResponseStream()))
@@ -56,11 +80,24 @@ namespace MySoft
         /// <param name="url"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static string Post(string url, string value)
+        public static string Poster(string url, string value)
+        {
+            return Poster(url, value, null);
+        }
+
+        /// <summary>
+        /// Post指定url的数据
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="value"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public static string Poster(string url, string value, WebHeaderCollection header)
         {
             string cacheKey = string.Format("Resource_{0}", url);
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Timeout = 60 * 1000;
+            if (header != null) request.Headers = header;
 
             //将数据写入请求流
             if (!string.IsNullOrEmpty(value))
@@ -99,9 +136,21 @@ namespace MySoft
         /// <param name="method"></param>
         /// <param name="parameter"></param>
         /// <returns></returns>
-        public string Reader(string method, string parameter)
+        public string Get(string method, string parameter)
         {
-            return Reader(method, parameter, -1);
+            return Get(method, parameter, null);
+        }
+
+        /// <summary>
+        /// 读取指定url的数据，通过parameter传递参数
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="parameter"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public string Get(string method, string parameter, WebHeaderCollection header)
+        {
+            return Get(method, parameter, -1, header);
         }
 
         /// <summary>
@@ -111,7 +160,20 @@ namespace MySoft
         /// <param name="parameter"></param>
         /// <param name="cacheTime"></param>
         /// <returns></returns>
-        public string Reader(string method, string parameter, int cacheTime)
+        public string Get(string method, string parameter, int cacheTime)
+        {
+            return Get(method, parameter, cacheTime, null);
+        }
+
+        /// <summary>
+        /// 读取指定url的数据，通过parameter传递参数
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="parameter"></param>
+        /// <param name="cacheTime"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public string Get(string method, string parameter, int cacheTime, WebHeaderCollection header)
         {
             string query = string.Empty;
             if (string.IsNullOrEmpty(parameter))
@@ -120,7 +182,7 @@ namespace MySoft
                 query = string.Format("/{0}?{1}", method, parameter);
 
             var url = uri.TrimEnd('/') + query;
-            return Reader(url, cacheTime);
+            return HttpHelper.Reader(url, cacheTime, header);
         }
 
         /// <summary>
@@ -130,10 +192,24 @@ namespace MySoft
         /// <param name="method"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        public string Reader<T>(string method, T item)
+        public string Get<T>(string method, T item)
             where T : class
         {
-            return Reader<T>(method, item, -1);
+            return Get<T>(method, item, null);
+        }
+
+        /// <summary>
+        /// 读取指定url的数据，通过item传递参数
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="method"></param>
+        /// <param name="item"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public string Get<T>(string method, T item, WebHeaderCollection header)
+            where T : class
+        {
+            return Get<T>(method, item, -1, header);
         }
 
         /// <summary>
@@ -144,7 +220,22 @@ namespace MySoft
         /// <param name="item"></param>
         /// <param name="cacheTime"></param>
         /// <returns></returns>
-        public string Reader<T>(string method, T item, int cacheTime)
+        public string Get<T>(string method, T item, int cacheTime)
+            where T : class
+        {
+            return Get<T>(method, item, cacheTime, null);
+        }
+
+        /// <summary>
+        /// 读取指定url的数据，通过item传递参数
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="method"></param>
+        /// <param name="item"></param>
+        /// <param name="cacheTime"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public string Get<T>(string method, T item, int cacheTime, WebHeaderCollection header)
             where T : class
         {
             string query = string.Format("/{0}", method);
@@ -158,7 +249,7 @@ namespace MySoft
                 query += "?" + string.Join("&", list.ToArray());
 
             var url = uri.TrimEnd('/') + query;
-            return Reader(url, cacheTime);
+            return HttpHelper.Reader(url, cacheTime, header);
         }
 
         #endregion
@@ -174,6 +265,19 @@ namespace MySoft
         /// <returns></returns>
         public string Post(string method, string parameter, string value)
         {
+            return Post(method, parameter, value, null);
+        }
+
+        /// <summary>
+        /// Post指定url的数据，通过parameter传递参数
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="parameter"></param>
+        /// <param name="value"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public string Post(string method, string parameter, string value, WebHeaderCollection header)
+        {
             string query = string.Empty;
             if (string.IsNullOrEmpty(parameter))
                 query = string.Format("/{0}", method);
@@ -181,7 +285,7 @@ namespace MySoft
                 query = string.Format("/{0}?{1}", method, parameter);
 
             var url = uri.TrimEnd('/') + query;
-            return Post(url, value);
+            return HttpHelper.Poster(url, value, header);
         }
 
         /// <summary>
@@ -195,6 +299,21 @@ namespace MySoft
         public string Post<T>(string method, T item, string value)
             where T : class
         {
+            return Post<T>(method, item, value, null);
+        }
+
+        /// <summary>
+        /// Post指定url的数据，通过item传递参数
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="method"></param>
+        /// <param name="item"></param>
+        /// <param name="value"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public string Post<T>(string method, T item, string value, WebHeaderCollection header)
+            where T : class
+        {
             string query = string.Format("/{0}", method);
             var list = new List<string>();
             foreach (var p in typeof(T).GetProperties())
@@ -206,7 +325,7 @@ namespace MySoft
                 query += "?" + string.Join("&", list.ToArray());
 
             var url = uri.TrimEnd('/') + query;
-            return Post(url, value);
+            return HttpHelper.Poster(url, value, header);
         }
 
         #endregion

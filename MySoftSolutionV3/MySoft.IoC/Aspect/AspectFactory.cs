@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Castle.DynamicProxy;
 using System.Collections.Generic;
 
 namespace MySoft.IoC.Aspect
@@ -19,11 +18,11 @@ namespace MySoft.IoC.Aspect
         internal static object CreateProxyService(Type serviceType, object target)
         {
             var cacheKey = string.Format("AspectCache_{0}", serviceType);
-            var interceptors = CacheHelper.Get<List<IInterceptor>>(cacheKey);
+            var interceptors = CacheHelper.Get<List<Castle.DynamicProxy.IInterceptor>>(cacheKey);
 
             if (interceptors == null)
             {
-                interceptors = new List<IInterceptor>();
+                interceptors = new List<Castle.DynamicProxy.IInterceptor>();
                 var classType = target.GetType();
                 var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(classType);
 
@@ -31,7 +30,7 @@ namespace MySoft.IoC.Aspect
                 {
                     foreach (var attribute in attributes)
                     {
-                        if (typeof(IInterceptor).IsAssignableFrom(attribute.InterceptorType))
+                        if (typeof(Castle.DynamicProxy.IInterceptor).IsAssignableFrom(attribute.InterceptorType))
                         {
                             object value = null;
                             if (attribute.Arguments == null)
@@ -47,7 +46,7 @@ namespace MySoft.IoC.Aspect
                                     value = Activator.CreateInstance(attribute.InterceptorType, attribute.Arguments);
                             }
 
-                            interceptors.Add(value as IInterceptor);
+                            interceptors.Add(value as Castle.DynamicProxy.IInterceptor);
                         }
                     }
 
@@ -69,10 +68,10 @@ namespace MySoft.IoC.Aspect
         /// <param name="target"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static object CreateProxy(Type proxyType, object target, params IInterceptor[] interceptors)
+        public static object CreateProxy(Type proxyType, object target, params Castle.DynamicProxy.IInterceptor[] interceptors)
         {
-            ProxyGenerator proxy = new ProxyGenerator();
-            ProxyGenerationOptions options = new ProxyGenerationOptions(new ProxyGenerationHook())
+            Castle.DynamicProxy.ProxyGenerator proxy = new Castle.DynamicProxy.ProxyGenerator();
+            Castle.DynamicProxy.ProxyGenerationOptions options = new Castle.DynamicProxy.ProxyGenerationOptions(new ProxyGenerationHook())
             {
                 Selector = new InterceptorSelector()
             };
@@ -86,7 +85,7 @@ namespace MySoft.IoC.Aspect
         /// <param name="classType"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static object CreateProxy(Type classType, params IInterceptor[] interceptors)
+        public static object CreateProxy(Type classType, params Castle.DynamicProxy.IInterceptor[] interceptors)
         {
             return CreateProxy(classType, null, interceptors);
         }
@@ -98,10 +97,10 @@ namespace MySoft.IoC.Aspect
         /// <param name="arguments"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static object CreateProxy(Type classType, object[] arguments, params IInterceptor[] interceptors)
+        public static object CreateProxy(Type classType, object[] arguments, params Castle.DynamicProxy.IInterceptor[] interceptors)
         {
-            ProxyGenerator proxy = new ProxyGenerator();
-            ProxyGenerationOptions options = new ProxyGenerationOptions(new ProxyGenerationHook())
+            Castle.DynamicProxy.ProxyGenerator proxy = new Castle.DynamicProxy.ProxyGenerator();
+            Castle.DynamicProxy.ProxyGenerationOptions options = new Castle.DynamicProxy.ProxyGenerationOptions(new ProxyGenerationHook())
             {
                 Selector = new InterceptorSelector()
             };

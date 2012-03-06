@@ -26,38 +26,81 @@ namespace MySoft.IoC
         #region Private Members
 
         private IWindsorContainer container;
-        private void Init(CastleFactoryType type, IDictionary serviceKeyTypes)
+        private void Init(CastleFactoryType type)
         {
-            //如果不是远程模式，则加载配置节
-            if (type == CastleFactoryType.Remote || ConfigurationManager.GetSection("mysoft.framework/castle") == null)
-                container = new WindsorContainer();
-            else
-                container = new WindsorContainer(new XmlInterpreter(new ConfigResource("mysoft.framework/castle")));
+            this.container = new WindsorContainer();
 
-            //加载自启动注入
-            container.AddFacility("startable", new StartableFacility());
-
-            //先解析服务
-            this.DiscoverServices();
-
-            if (serviceKeyTypes != null && serviceKeyTypes.Count > 0)
+            lock (container)
             {
-                RegisterComponents(serviceKeyTypes);
+                //加载自启动注入
+                this.container.AddFacility(new StartableFacility());
+
+                //加载服务解析
+                this.container.AddFacility(new ServiceDiscoverFacility(this));
+
+                //如果不是远程模式，则加载配置节
+                var sectionKey = "mysoft.framework/castle";
+                var castle = ConfigurationManager.GetSection(sectionKey);
+                if (!(type == CastleFactoryType.Remote || castle == null))
+                {
+                    //解析服务
+                    this.DiscoverServices(sectionKey);
+                }
             }
         }
 
-        private void DiscoverServices()
+        private void DiscoverServices(string sectionKey)
         {
-            foreach (var model in GetComponentModels<ServiceContractAttribute>())
+            //加载服务
+            var windsorContainer = new WindsorContainer(new XmlInterpreter(new ConfigResource(sectionKey)));
+
+            //如果容易为空，则不加载
+            if (windsorContainer.Kernel.GraphNodes.Length > 0)
             {
-                //判断实例是否从接口分配
-                IService service = new DynamicService(this, model.Service, null);
-                if (typeof(Castle.Core.IStartable).IsAssignableFrom(model.Implementation))
+                var models = GetComponentModels<ServiceContractAttribute>(windsorContainer);
+                foreach (var model in models)
                 {
-                    RegisterComponent("Startable_" + service.ServiceName, model.Service, model.Implementation);
+                    //注册服务
+                    var component = Component.For(model.Services.First()).Named(model.Name).ImplementedBy(model.Implementation);
+                    if (model.LifestyleType == LifestyleType.Undefined)
+                        component = component.LifeStyle.Singleton;
+                    else
+                        component = component.LifeStyle.Is(model.LifestyleType);
+
+                    container.Register(component);
                 }
-                RegisterComponent("Service_" + service.ServiceName, typeof(IService), service);
+
+                //销毁资源
+                windsorContainer.Dispose();
             }
+        }
+
+        /// <summary>
+        /// 获取约束的实现
+        /// </summary>
+        /// <typeparam name="ContractType"></typeparam>
+        /// <param name="container"></param>
+        /// <returns></returns>
+        private ComponentModel[] GetComponentModels<ContractType>(WindsorContainer container)
+        {
+            var typelist = new List<ComponentModel>();
+            var nodes = container.Kernel.GraphNodes;
+            nodes.Cast<ComponentModel>().ForEach(model =>
+            {
+                bool markedWithServiceContract = false;
+                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Services.First());
+                if (attr != null)
+                {
+                    markedWithServiceContract = true;
+                }
+
+                if (markedWithServiceContract)
+                {
+                    typelist.Add(model);
+                }
+            });
+
+            return typelist.ToArray();
         }
 
         #endregion
@@ -70,17 +113,7 @@ namespace MySoft.IoC
         /// <param name="config"></param>
         public SimpleServiceContainer(CastleFactoryType type)
         {
-            Init(type, null);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SimpleServiceContainer"/> class.
-        /// </summary>
-        /// <param name="config"></param>
-        /// <param name="serviceKeyTypes">The service key types.</param>
-        public SimpleServiceContainer(CastleFactoryType type, IDictionary serviceKeyTypes)
-        {
-            Init(type, serviceKeyTypes);
+            Init(type);
         }
 
         #endregion
@@ -109,12 +142,13 @@ namespace MySoft.IoC
         /// <summary>
         /// Registers the component.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="serviceType">Type of the service.</param>
-        /// <param name="classType">Type of the service.</param>
+        /// <param name="key"></param>
+        /// <param name="serviceType"></param>
+        /// <param name="classType"></param>
         public void RegisterComponent(string key, Type serviceType, Type classType)
         {
-            container.Register(Component.For(serviceType).Named(key).ImplementedBy(classType).LifeStyle.Singleton);
+            if (!container.Kernel.HasComponent(key))
+                container.Register(Component.For(serviceType).Named(key).ImplementedBy(classType).LifeStyle.Singleton);
         }
 
         /// <summary>
@@ -125,27 +159,20 @@ namespace MySoft.IoC
         /// <param name="instance"></param>
         public void RegisterComponent(string key, Type serviceType, object instance)
         {
-            container.Register(Component.For(serviceType).Named(key).Instance(instance).LifeStyle.Singleton);
+            if (!container.Kernel.HasComponent(key))
+                container.Register(Component.For(serviceType).Named(key).Instance(instance).LifeStyle.Singleton);
         }
 
         /// <summary>
         /// Registers the components.
         /// </summary>
         /// <param name="serviceKeyTypes">The service key types.</param>
-        public void RegisterComponents(IDictionary serviceKeyTypes)
+        public void RegisterComponents(IDictionary<Type, object> serviceKeyTypes)
         {
-            System.Collections.IDictionaryEnumerator en = serviceKeyTypes.GetEnumerator();
-            while (en.MoveNext())
+            foreach (var kvp in serviceKeyTypes)
             {
-                if (en.Value != null)
-                {
-                    IService service = new DynamicService(this, (Type)en.Key, en.Value);
-                    if (en.Value is Castle.Core.IStartable)
-                    {
-                        RegisterComponent("Startable_" + service.ServiceName, (Type)en.Key, en.Value.GetType());
-                    }
-                    RegisterComponent("Service_" + service.ServiceName, (Type)en.Key, service);
-                }
+                //注册服务
+                RegisterComponent(kvp.Key.FullName, kvp.Key, kvp.Value);
             }
         }
 
@@ -208,9 +235,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            IService service = container.ResolveAll<IService>()
-              .SingleOrDefault(model => model.ServiceName == reqMsg.ServiceName);
-
+            var service = container.Resolve<IService>("Service_" + reqMsg.ServiceName);
             if (service == null)
             {
                 string body = string.Format("The server not find matching service ({0}).", reqMsg.ServiceName);
@@ -236,42 +261,15 @@ namespace MySoft.IoC
             return nodes.Cast<ComponentModel>().Any(model =>
               {
                   bool markedWithServiceContract = false;
-                  var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Service);
+                  var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Services.First());
                   if (attr != null)
                   {
                       markedWithServiceContract = true;
                   }
 
                   return markedWithServiceContract
-                      && model.Service.FullName == serviceName;
+                      && model.Services.First().FullName == serviceName;
               });
-        }
-
-        /// <summary>
-        /// 获取约束的实现
-        /// </summary>
-        /// <typeparam name="ContractType"></typeparam>
-        /// <returns></returns>
-        private ComponentModel[] GetComponentModels<ContractType>()
-        {
-            var typelist = new List<ComponentModel>();
-            var nodes = this.Kernel.GraphNodes;
-            nodes.Cast<ComponentModel>().ForEach(model =>
-            {
-                bool markedWithServiceContract = false;
-                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Service);
-                if (attr != null)
-                {
-                    markedWithServiceContract = true;
-                }
-
-                if (markedWithServiceContract)
-                {
-                    typelist.Add(model);
-                }
-            });
-
-            return typelist.ToArray();
         }
 
         /// <summary>
@@ -285,7 +283,7 @@ namespace MySoft.IoC
             nodes.Cast<ComponentModel>().ForEach(model =>
             {
                 bool markedWithServiceContract = false;
-                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Service);
+                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Services.First());
                 if (attr != null)
                 {
                     markedWithServiceContract = true;
@@ -293,7 +291,7 @@ namespace MySoft.IoC
 
                 if (markedWithServiceContract)
                 {
-                    typelist.Add(model.Service);
+                    typelist.Add(model.Services.First());
                 }
             });
 
