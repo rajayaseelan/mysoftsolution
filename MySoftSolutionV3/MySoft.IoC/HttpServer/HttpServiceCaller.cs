@@ -29,6 +29,9 @@ namespace MySoft.IoC.HttpServer
             //初始化字典
             foreach (var serviceType in container.GetServiceTypes<ServiceContractAttribute>())
             {
+                //状态服务跳过
+                if (serviceType == typeof(IStatusService)) continue;
+
                 //添加方法
                 foreach (var methodInfo in CoreHelper.GetMethodsFromType(serviceType))
                 {
