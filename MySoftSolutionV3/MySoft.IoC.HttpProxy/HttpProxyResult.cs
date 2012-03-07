@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MySoft.IoC.HttpServer
+namespace MySoft.IoC.HttpProxy
 {
     /// <summary>
-    /// http服务异常
+    /// http代理结果
     /// </summary>
     [Serializable]
-    public class HttpServiceException
+    public class HttpProxyResult
     {
         /// <summary>
         /// 代码

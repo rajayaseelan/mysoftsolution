@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
+using System.Net;
 
 namespace MySoft.RESTful.Utils
 {
@@ -60,7 +61,7 @@ namespace MySoft.RESTful.Utils
             }
             catch (Exception ex)
             {
-                throw new RESTfulException("Parameter type did not match. " + ex.Message);
+                throw new RESTfulException((int)HttpStatusCode.BadRequest, "Parameter type did not match. " + ex.Message);
             }
         }
 

@@ -53,11 +53,18 @@ namespace MySoft.IoC
             this.container.OnLog += (log, type) => { if (OnLog != null) OnLog(log, type); };
 
             //加载cacheType
-            if (!string.IsNullOrEmpty(config.AssemblyName))
+            if (!string.IsNullOrEmpty(config.CacheType))
             {
-                Type type = Type.GetType(config.AssemblyName);
-                object instance = Activator.CreateInstance(type);
-                this.container.ServiceCache = instance as IServiceCache;
+                try
+                {
+                    Type type = Type.GetType(config.CacheType);
+                    object instance = Activator.CreateInstance(type);
+                    this.container.ServiceCache = instance as IServiceCache;
+                }
+                catch (Exception ex)
+                {
+                    Instance_OnError(ex);
+                }
             }
 
             //实例化调用者

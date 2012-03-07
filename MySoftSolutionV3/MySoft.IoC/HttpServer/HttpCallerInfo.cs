@@ -13,14 +13,24 @@ namespace MySoft.IoC.HttpServer
     public class HttpCallerInfo
     {
         /// <summary>
+        /// 调用名称
+        /// </summary>
+        public string CallerName { get; set; }
+
+        /// <summary>
         /// 服务名称
         /// </summary>
-        public string ServiceName { get; set; }
+        public Type Service { get; set; }
 
         /// <summary>
         /// 调用方法
         /// </summary>
         public MethodInfo Method { get; set; }
+
+        /// <summary>
+        /// 参数信息
+        /// </summary>
+        public ParameterInfo[] Parameters { get; set; }
 
         /// <summary>
         /// 方法描述

@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.ServiceModel.Activation;
-using System.ServiceModel;
-using System.IO;
-using System.ServiceModel.Web;
-using System.Net;
-using System.Text.RegularExpressions;
-using MySoft.Security;
-using System.Collections.Specialized;
 using System.Configuration;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.ServiceModel;
+using System.ServiceModel.Activation;
+using System.ServiceModel.Web;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using MySoft.Auth;
+using MySoft.Security;
 
 namespace MySoft.IoC.HttpProxy
 {
@@ -64,68 +62,78 @@ namespace MySoft.IoC.HttpProxy
             var response = WebOperationContext.Current.OutgoingResponse;
             var query = request.UriTemplateMatch.QueryParameters;
 
+            //响应格式
+            response.ContentType = "application/json;charset=utf-8";
+
             //认证用户信息
+            ServiceItem service;
             var header = new WebHeaderCollection();
-            var stream = AuthorizeData(name, header);
-            if (stream != null) return stream;
+            var jsonString = AuthorizeMethod(name, header, out service);
 
-            var buffer = new byte[0];
-
-            try
+            //如果jsonString为null，则继续处理
+            if (string.IsNullOrEmpty(jsonString))
             {
-                //数据缓存5秒
-                var jsonString = helper.Get(name, query.ToString(), 5, header);
-
-                //如果无值，则置为null
-                if (string.IsNullOrEmpty(jsonString)) jsonString = null;
-
-                //判断是否需要回调
-                var callback = query["callback"];
-
-                if (string.IsNullOrEmpty(callback))
+                try
                 {
-                    jsonString = jsonString ?? "{}";
-
-                    buffer = Encoding.UTF8.GetBytes(jsonString);
-                    string etagToken = MD5.HexHash(buffer);
-                    response.ETag = etagToken;
-                    var IfNoneMatch = request.Headers["If-None-Match"];
-                    if (IfNoneMatch != null && IfNoneMatch == etagToken)
+                    //数据缓存5秒
+                    jsonString = helper.Get(name, query.ToString(), 5, header);
+                    if (service != null && service.TypeString)
                     {
-                        response.StatusCode = HttpStatusCode.NotModified;
-                        //request.IfModifiedSince.HasValue ? request.IfModifiedSince.Value : 
-                        var IfModifiedSince = request.Headers["If-Modified-Since"];
-                        response.LastModified = IfModifiedSince == null ? DateTime.Now : Convert.ToDateTime(IfModifiedSince);
-                        return new MemoryStream();
+                        //如果返回是字符串类型，则设置为文本返回
+                        response.ContentType = "text/plain;charset=utf-8";
+                    }
+
+                    //判断是否需要回调
+                    var callback = query["callback"];
+
+                    if (string.IsNullOrEmpty(callback))
+                    {
+                        //如果值为空或null
+                        if (string.IsNullOrEmpty(jsonString))
+                        {
+                            return new MemoryStream();
+                        }
+
+                        var bytes = Encoding.UTF8.GetBytes(jsonString);
+                        string etagToken = MD5.HexHash(bytes);
+                        response.ETag = etagToken;
+                        var IfNoneMatch = request.Headers["If-None-Match"];
+                        if (IfNoneMatch != null && IfNoneMatch == etagToken)
+                        {
+                            response.StatusCode = HttpStatusCode.NotModified;
+                            //request.IfModifiedSince.HasValue ? request.IfModifiedSince.Value : 
+                            var IfModifiedSince = request.Headers["If-Modified-Since"];
+                            response.LastModified = IfModifiedSince == null ? DateTime.Now : Convert.ToDateTime(IfModifiedSince);
+                            return new MemoryStream();
+                        }
+                        else
+                        {
+                            response.LastModified = DateTime.Now;
+                        }
                     }
                     else
                     {
-                        response.LastModified = DateTime.Now;
+                        //输出为javascript格式数据
+                        response.ContentType = "application/javascript;charset=utf-8";
+                        jsonString = string.Format("{0}({1});", callback, jsonString ?? "{}");
                     }
                 }
-                else
+                catch (WebException ex)
                 {
-                    //输出为javascript格式数据
-                    response.ContentType = "application/javascript;charset=utf-8";
-                    jsonString = string.Format("{0}({1});", callback, jsonString ?? "{}");
-                    buffer = Encoding.UTF8.GetBytes(jsonString);
-                }
-            }
-            catch (WebException ex)
-            {
-                var rep = (ex.Response as HttpWebResponse);
-                stream = rep.GetResponseStream();
-                using (var sr = new StreamReader(stream))
-                {
-                    var jsonString = sr.ReadToEnd();
-                    buffer = Encoding.UTF8.GetBytes(jsonString);
-                }
+                    var rep = (ex.Response as HttpWebResponse);
+                    var stream = rep.GetResponseStream();
+                    using (var sr = new StreamReader(stream))
+                    {
+                        jsonString = sr.ReadToEnd();
+                    }
 
-                response.StatusCode = rep.StatusCode;
-                response.StatusDescription = rep.StatusDescription;
+                    response.StatusCode = rep.StatusCode;
+                    response.StatusDescription = rep.StatusDescription;
+                }
             }
 
             //转换成utf8返回
+            var buffer = Encoding.UTF8.GetBytes(jsonString);
             return new MemoryStream(buffer);
         }
 
@@ -140,39 +148,48 @@ namespace MySoft.IoC.HttpProxy
             var response = WebOperationContext.Current.OutgoingResponse;
             var query = request.UriTemplateMatch.QueryParameters;
 
+            //响应格式
+            response.ContentType = "application/json;charset=utf-8";
+
             //认证用户信息
+            ServiceItem service;
             var header = new WebHeaderCollection();
-            var stream = AuthorizeData(name, header);
-            if (stream != null) return stream;
+            var jsonString = AuthorizeMethod(name, header, out service);
 
-            var buffer = new byte[0];
-
-            try
+            //如果jsonString为null，则继续处理
+            if (string.IsNullOrEmpty(jsonString))
             {
-                var postValue = string.Empty;
-                using (var sr = new StreamReader(parameters))
+                try
                 {
-                    postValue = sr.ReadToEnd();
-                }
+                    var postValue = string.Empty;
+                    using (var sr = new StreamReader(parameters))
+                    {
+                        postValue = sr.ReadToEnd();
+                    }
 
-                var jsonString = helper.Post(name, query.ToString(), postValue, header);
-                buffer = Encoding.UTF8.GetBytes(jsonString);
-            }
-            catch (WebException ex)
-            {
-                var rep = (ex.Response as HttpWebResponse);
-                stream = rep.GetResponseStream();
-                using (var sr = new StreamReader(stream))
+                    jsonString = helper.Post(name, query.ToString(), postValue, header);
+                    if (service != null && service.TypeString)
+                    {
+                        //如果返回是字符串类型，则设置为文本返回
+                        response.ContentType = "text/plain;charset=utf-8";
+                    }
+                }
+                catch (WebException ex)
                 {
-                    var jsonString = sr.ReadToEnd();
-                    buffer = Encoding.UTF8.GetBytes(jsonString);
-                }
+                    var rep = (ex.Response as HttpWebResponse);
+                    var stream = rep.GetResponseStream();
+                    using (var sr = new StreamReader(stream))
+                    {
+                        jsonString = sr.ReadToEnd();
+                    }
 
-                response.StatusCode = rep.StatusCode;
-                response.StatusDescription = rep.StatusDescription;
+                    response.StatusCode = rep.StatusCode;
+                    response.StatusDescription = rep.StatusDescription;
+                }
             }
 
             //转换成utf8返回
+            var buffer = Encoding.UTF8.GetBytes(jsonString);
             return new MemoryStream(buffer);
         }
 
@@ -212,73 +229,80 @@ namespace MySoft.IoC.HttpProxy
             return new MemoryStream(Encoding.UTF8.GetBytes(html));
         }
 
-        private Stream AuthorizeData(string name, WebHeaderCollection header)
+        private string AuthorizeMethod(string name, WebHeaderCollection header, out ServiceItem service)
         {
-            var request = WebOperationContext.Current.IncomingRequest;
+            service = null;
             var response = WebOperationContext.Current.OutgoingResponse;
-            response.ContentType = "application/json;charset=utf-8";
 
             //检测服务名称
             if (name == "favicon.ico")
             {
                 response.StatusCode = HttpStatusCode.NotFound;
-                response.ContentType = "text/html;charset=utf-8";
-                return new MemoryStream();
+                var item = new HttpProxyResult { Code = (int)response.StatusCode, Message = "Service 【" + name + "】 not found." };
+                return SerializeJson(item);
             }
             else if (!services.Any(p => string.Compare(p.Name, name, true) == 0))
             {
                 response.StatusCode = HttpStatusCode.NotFound;
-                var item = new { Code = (int)response.StatusCode, Message = "Method 【" + name + "】 not found." };
-                return new MemoryStream(SerializeJson(item));
+                var item = new HttpProxyResult { Code = (int)response.StatusCode, Message = "Method 【" + name + "】 not found." };
+                return SerializeJson(item);
             }
             else
             {
                 #region 进行认证处理
 
-                var service = services.Single(p => string.Compare(p.Name, name, true) == 0);
-                if (service.TypeString)
-                {
-                    //如果返回是字符串类型，则设置为文本返回
-                    response.ContentType = "text/plain;charset=utf-8";
-                }
+                service = services.Single(p => string.Compare(p.Name, name, true) == 0);
 
+                //认证处理
                 if (service.Authorized)
                 {
-                    var token = new AuthorizeToken
-                    {
-                        RequestUri = request.UriTemplateMatch.RequestUri,
-                        Method = request.Method,
-                        Headers = request.Headers,
-                        Parameters = request.UriTemplateMatch.QueryParameters,
-                        Cookies = GetCookies()
-                    };
-
-                    try
-                    {
-                        var result = Authorize(token);
-                        if (result.Succeed && !string.IsNullOrEmpty(result.Name))
-                        {
-                            header["Set-Authorize"] = result.Name;
-                        }
-                        else
-                        {
-                            response.StatusCode = HttpStatusCode.Unauthorized;
-                            var item = new { Code = (int)response.StatusCode, Message = "Unauthorized or authorize name is empty." };
-                            return new MemoryStream(SerializeJson(item));
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        response.StatusCode = HttpStatusCode.Unauthorized;
-                        var item = new { Code = (int)response.StatusCode, Message = "Unauthorized - " + ex.Message };
-                        return new MemoryStream(SerializeJson(item));
-                    }
+                    var result = AuthorizeHeader(header);
+                    if (result.Code == (int)HttpStatusCode.OK)
+                        return null;
+                    else
+                        return SerializeJson(result);
                 }
 
                 #endregion
             }
 
             return null;
+        }
+
+        private HttpProxyResult AuthorizeHeader(WebHeaderCollection header)
+        {
+            var request = WebOperationContext.Current.IncomingRequest;
+            var response = WebOperationContext.Current.OutgoingResponse;
+
+            var token = new AuthorizeToken
+            {
+                RequestUri = request.UriTemplateMatch.RequestUri,
+                Method = request.Method,
+                Headers = request.Headers,
+                Parameters = request.UriTemplateMatch.QueryParameters,
+                Cookies = GetCookies()
+            };
+
+            try
+            {
+                var result = Authorize(token);
+                if (result.Succeed && !string.IsNullOrEmpty(result.Name))
+                {
+                    header["Set-Authorize"] = result.Name;
+                    response.StatusCode = HttpStatusCode.OK;
+                    return new HttpProxyResult { Code = (int)response.StatusCode };
+                }
+                else
+                {
+                    response.StatusCode = HttpStatusCode.Unauthorized;
+                    return new HttpProxyResult { Code = (int)response.StatusCode, Message = "Unauthorized or authorize name is empty." };
+                }
+            }
+            catch (Exception ex)
+            {
+                response.StatusCode = HttpStatusCode.Unauthorized;
+                return new HttpProxyResult { Code = (int)response.StatusCode, Message = "Unauthorized - " + ex.Message };
+            }
         }
 
         /// <summary>
@@ -322,10 +346,9 @@ namespace MySoft.IoC.HttpProxy
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        private byte[] SerializeJson(object item)
+        private string SerializeJson(object item)
         {
-            var jsonString = SerializationManager.SerializeJson(item);
-            return Encoding.UTF8.GetBytes(jsonString);
+            return SerializationManager.SerializeJson(item);
         }
 
         /// <summary>

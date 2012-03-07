@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MySoft.RESTful.Utils;
+using System.Net;
 
 namespace MySoft.RESTful.Business.Pool
 {
@@ -117,14 +118,14 @@ namespace MySoft.RESTful.Business.Pool
             BusinessMethodModel method = null;
             if (kind == null)
             {
-                throw new RESTfulException(businessKindName + ", did not found!");
+                throw new RESTfulException((int)HttpStatusCode.NotFound, businessKindName + ", did not found!");
             }
             else
             {
                 method = kind.MethodModels.Where(e => e.Key.Equals(businessMethodName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
                 if (method == null)
                 {
-                    throw new RESTfulException(businessMethodName + ", did not found!");
+                    throw new RESTfulException((int)HttpStatusCode.NotFound, businessMethodName + ", did not found!");
                 }
             }
 

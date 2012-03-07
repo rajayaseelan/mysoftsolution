@@ -10,7 +10,7 @@ namespace MySoft.RESTful.Business.Register
     /// <summary>
     /// 业务注册器
     /// </summary>
-    public interface IBusinessRegister
+    public interface IBusinessRegister : IContainer
     {
         /// <summary>
         /// 注册业务

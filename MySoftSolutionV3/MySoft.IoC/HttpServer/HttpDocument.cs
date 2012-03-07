@@ -12,9 +12,9 @@ namespace MySoft.IoC.HttpServer
     /// </summary>
     internal class HttpDocument
     {
-        private IDictionary<string, HttpCallerInfo> callers;
+        private HttpCallerInfoCollection callers;
         private int port;
-        public HttpDocument(IDictionary<string, HttpCallerInfo> callers, int port)
+        public HttpDocument(HttpCallerInfoCollection callers, int port)
         {
             this.callers = callers;
             this.port = port;
@@ -46,7 +46,7 @@ namespace MySoft.IoC.HttpServer
             StringBuilder sbUrl = new StringBuilder();
             foreach (var kv in callers)
             {
-                sbUrl.Append(GetItemDocument(kv, item, name));
+                sbUrl.Append(GetItemDocument(kv.Value, item, name));
             }
 
             html = html.Replace("${body}", sbUrl.ToString());
@@ -56,43 +56,44 @@ namespace MySoft.IoC.HttpServer
         /// <summary>
         /// 获取Item文档
         /// </summary>
-        /// <param name="kv"></param>
+        /// <param name="caller"></param>
         /// <param name="item"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        private string GetItemDocument(KeyValuePair<string, HttpCallerInfo> kv, string item, string name)
+        private string GetItemDocument(HttpCallerInfo caller, string item, string name)
         {
             var template = item;
             var plist = new List<string>();
-            foreach (var p in kv.Value.Method.GetParameters())
+            foreach (var p in caller.Method.GetParameters())
             {
-                if (kv.Value.Authorized && string.Compare(p.Name, kv.Value.AuthParameter, true) == 0)
+                if (caller.Authorized && string.Compare(p.Name, caller.AuthParameter, true) == 0)
                     continue;
 
-                plist.Add(string.Format("{0}=[{0}]", p.Name.ToLower()).Replace('[', '{').Replace(']', '}'));
+                plist.Add(string.Format("{0}=[{0}]", p.Name).Replace('[', '{').Replace(']', '}'));
             }
 
             string uri = string.Empty;
-            if (kv.Value.HttpMethod == HttpMethod.GET && plist.Count > 0)
-                uri = string.Format("/{0}?{1}", kv.Key, string.Join("&", plist.ToArray()));
+            if (caller.HttpMethod == HttpMethod.GET && plist.Count > 0)
+                uri = string.Format("/{0}?{1}", caller.CallerName, string.Join("&", plist.ToArray()));
             else
-                uri = string.Format("/{0}", kv.Key);
+                uri = string.Format("/{0}", caller.CallerName);
 
-            var url = string.Format("<a rel=\"operation\" target=\"_blank\" title=\"{0}\" href=\"{0}\">{0}</a> 处的服务", uri);
+            var url = string.Format("<a rel=\"operation\" target=\"_blank\" title=\"{0}\" href=\"{0}\">{0}</a> 处的服务", uri.ToLower());
 
-            var serviceInfo = string.Format("【{0}】\r\n【{1}】", kv.Value.ServiceName, kv.Value.Method.ToString());
+            var serviceInfo = string.Format("【{0}】\r\n【{1}】", caller.Service.FullName, caller.Method.ToString());
             template = template.Replace("${method}", string.Format("<p title=\"分布式服务接口:\r\n{2}\"><b><a href='/help/{0}'>{0}</a></b><br/>{1}</p>",
-                kv.Key, kv.Value.Description, serviceInfo));
+                caller.CallerName, caller.Description, serviceInfo));
 
-            var strParameter = GetMethodParameter(kv.Value.Method, kv.Value.Authorized, kv.Value.AuthParameter, name);
+            var strParameter = GetMethodParameter(caller.Method, caller.Authorized, caller.AuthParameter, name);
             if (string.IsNullOrEmpty(strParameter))
                 template = template.Replace("${parameter}", "&nbsp;");
             else
                 template = template.Replace("${parameter}", strParameter);
 
-            template = template.Replace("${type}", kv.Value.HttpMethod == HttpMethod.GET ? "GET<br/>POST" : "<font color='red'>POST</font>");
-            template = template.Replace("${auth}", kv.Value.Authorized ? "<font color='red'>是</font>" : "&nbsp;");
-            if (kv.Value.Authorized)
-                template = template.Replace("${authparameter}", kv.Value.AuthParameter);
+            template = template.Replace("${type}", caller.HttpMethod == HttpMethod.GET ? "GET<br/>POST" : "<font color='red'>POST</font>");
+            template = template.Replace("${auth}", caller.Authorized ? "<font color='red'>是</font>" : "&nbsp;");
+            if (caller.Authorized)
+                template = template.Replace("${authparameter}", caller.AuthParameter);
             else
                 template = template.Replace("${authparameter}", "&nbsp;");
             template = template.Replace("${uri}", url.ToString());

@@ -12,20 +12,19 @@ namespace MySoft.IoC.HttpServer
     public class HttpServiceCaller
     {
         private IServiceContainer container;
-        private Dictionary<string, HttpCallerInfo> callers;
+        private HttpCallerInfoCollection callers;
         private int port;
 
         /// <summary>
         /// HttpServiceCaller初始化
         /// </summary>
         /// <param name="container"></param>
-        /// <param name="httpAuth"></param>
         /// <param name="port"></param>
         public HttpServiceCaller(IServiceContainer container, int port)
         {
             this.container = container;
             this.port = port;
-            this.callers = new Dictionary<string, HttpCallerInfo>();
+            this.callers = new HttpCallerInfoCollection();
 
             //初始化字典
             foreach (var serviceType in container.GetServiceTypes<ServiceContractAttribute>())
@@ -47,7 +46,7 @@ namespace MySoft.IoC.HttpServer
             //将方法添加到字典
             var callerInfo = new HttpCallerInfo
             {
-                ServiceName = serviceType.FullName,
+                Service = serviceType,
                 Method = methodInfo,
                 TypeString = methodInfo.ReturnType == typeof(string),
                 Description = invoke.Description,
@@ -77,6 +76,7 @@ namespace MySoft.IoC.HttpServer
                 }
             }
 
+            callerInfo.CallerName = fullName;
             callers[fullName] = callerInfo;
         }
 
@@ -86,7 +86,7 @@ namespace MySoft.IoC.HttpServer
         /// <returns></returns>
         public string GetDocument(string name)
         {
-            var dicCaller = new Dictionary<string, HttpCallerInfo>();
+            var dicCaller = new HttpCallerInfoCollection();
             if (!string.IsNullOrEmpty(name))
             {
                 if (callers.ContainsKey(name))
@@ -110,7 +110,7 @@ namespace MySoft.IoC.HttpServer
             {
                 array.Add(new
                 {
-                    Name = kvp.Key,
+                    Name = kvp.Value.CallerName,
                     Authorized = kvp.Value.Authorized,
                     TypeString = kvp.Value.TypeString
                 });
@@ -156,7 +156,7 @@ namespace MySoft.IoC.HttpServer
                 var caller = callers[name];
                 var message = new InvokeMessage
                 {
-                    ServiceName = caller.ServiceName,
+                    ServiceName = caller.Service.FullName,
                     MethodName = caller.Method.ToString(),
                     Parameters = parameters
                 };
@@ -181,7 +181,7 @@ namespace MySoft.IoC.HttpServer
                 };
 
                 //处理数据返回InvokeData
-                var service = container.Resolve<IService>("Service_" + caller.ServiceName);
+                var service = container.Resolve<IService>("Service_" + caller.Service.FullName);
                 var invoke = new InvokeCaller(client, service);
                 var invokeData = invoke.CallMethod(message);
                 if (invokeData != null)

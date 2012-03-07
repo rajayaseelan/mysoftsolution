@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.ServiceModel.Web;
 using System.Text;
@@ -28,11 +29,6 @@ namespace MySoft.RESTful.Business
         /// 业务注册
         /// </summary>
         private IBusinessRegister register;
-
-        /// <summary>
-        /// 容器
-        /// </summary>
-        private IContainer container;
 
         /// <summary>
         /// 实例化BusinessRESTfulContext
@@ -102,7 +98,7 @@ namespace MySoft.RESTful.Business
             {
                 if (metadata.HttpMethod == HttpMethod.POST && context.IncomingRequest.Method.ToUpper() == "GET")
                 {
-                    throw new RESTfulException("Resources can only by the [" + metadata.HttpMethod + "] way to acquire!");
+                    throw new RESTfulException((int)HttpStatusCode.MethodNotAllowed, "Resources can only by the [" + metadata.HttpMethod + "] way to acquire!");
                 }
 
                 if (!string.IsNullOrEmpty(parameters))
@@ -124,19 +120,21 @@ namespace MySoft.RESTful.Business
             }
             catch (Exception e)
             {
-                throw new RESTfulException(string.Format("Fault parameters: {0}!", parameters));
+                throw new RESTfulException((int)HttpStatusCode.BadRequest, string.Format("Fault parameters: {0}!", parameters));
             }
 
-            object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj);
-            var instance = metadata.Container.Resolve();
+            //实例对象
+            object instance = null;
 
             try
             {
+                object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj);
+                instance = register.Resolve(metadata.Service);
                 return DynamicCalls.GetMethodInvoker(metadata.Method)(instance, arguments);
             }
             finally
             {
-                metadata.Container.Release(instance);
+                register.Release(instance);
             }
         }
 

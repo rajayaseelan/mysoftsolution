@@ -11,9 +11,9 @@ namespace MySoft.IoC.Configuration
     {
         private string host = "any";
         private int port = 8888;
-        private int httpport = 8080;
-        private bool httpenabled = false;
-        private string assembly;
+        private int httpPort = 8080;
+        private bool httpEnabled = false;
+        private string cacheType;
         private bool encrypt = false;
         private bool compress = false;
         private int minuteCalls = ServiceConfig.DEFAULT_MINUTE_CALL_NUMBER;         //默认为每分钟调用1000次，超过报异常
@@ -72,13 +72,13 @@ namespace MySoft.IoC.Configuration
                 XmlAttributeCollection childnode = child.Attributes;
                 if (child.Name == "httpServer")
                 {
-                    httpport = Convert.ToInt32(childnode["port"].Value);
-                    httpenabled = Convert.ToBoolean(childnode["enabled"].Value);
+                    httpPort = Convert.ToInt32(childnode["port"].Value);
+                    httpEnabled = Convert.ToBoolean(childnode["enabled"].Value);
                 }
                 else if (child.Name == "serverCache")
                 {
-                    if (childnode["asselbly"] != null && childnode["assembly"].Value.Trim() != string.Empty)
-                        assembly = childnode["assembly"].Value;
+                    if (childnode["cacheType"] != null && childnode["cacheType"].Value.Trim() != string.Empty)
+                        cacheType = childnode["cacheType"].Value;
                 }
             }
         }
@@ -90,8 +90,8 @@ namespace MySoft.IoC.Configuration
         /// </summary>
         public int HttpPort
         {
-            get { return httpport; }
-            set { httpport = value; }
+            get { return httpPort; }
+            set { httpPort = value; }
         }
 
         /// <summary>
@@ -99,19 +99,19 @@ namespace MySoft.IoC.Configuration
         /// </summary>
         public bool HttpEnabled
         {
-            get { return httpenabled; }
-            set { httpenabled = value; }
+            get { return httpEnabled; }
+            set { httpEnabled = value; }
         }
 
         #endregion
 
         /// <summary>
-        /// Gets or sets the assembly
+        /// Gets or sets the cacheType
         /// </summary>
-        public string AssemblyName
+        public string CacheType
         {
-            get { return assembly; }
-            set { assembly = value; }
+            get { return cacheType; }
+            set { cacheType = value; }
         }
 
         /// <summary>

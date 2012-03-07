@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
-using MySoft.RESTful.Business.Register;
 
 namespace MySoft.RESTful.Business
 {
@@ -23,7 +22,7 @@ namespace MySoft.RESTful.Business
         /// <summary>
         /// 业务执行对象
         /// </summary>
-        public IContainer Container { get; set; }
+        public Type Service { get; set; }
         /// <summary>
         /// 执行的业务实例方法
         /// </summary>

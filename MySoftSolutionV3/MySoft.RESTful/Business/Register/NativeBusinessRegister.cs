@@ -20,6 +20,10 @@ namespace MySoft.RESTful.Business.Register
     /// </summary>
     public class NativeBusinessRegister : IBusinessRegister
     {
+        /// <summary>
+        /// 容器对象
+        /// </summary>
+        private IContainer container;
         private IBusinessPool pool;
 
         /// <summary>
@@ -60,6 +64,9 @@ namespace MySoft.RESTful.Business.Register
                 var container = new WindsorContainer();
                 if (ConfigurationManager.GetSection("mysoft.framework/restful") != null)
                     container = new WindsorContainer(new XmlInterpreter(new ConfigResource("mysoft.framework/restful")));
+
+                //给当前容器赋值
+                this.container = new ServiceContainer(container);
 
                 foreach (var type in GetInterfaceServices<PublishKindAttribute>(container))
                 {
@@ -117,7 +124,7 @@ namespace MySoft.RESTful.Business.Register
                                 Method = info,
                                 Parameters = info.GetParameters(),
                                 ParametersCount = info.GetParameters().Count(),
-                                Container = new ServiceContainer(container, type)
+                                Service = type
                             };
 
                             var types = info.GetParameters().Select(p => p.ParameterType).ToArray();
@@ -136,5 +143,28 @@ namespace MySoft.RESTful.Business.Register
                 SimpleLog.Instance.WriteLog(ex);
             }
         }
+
+        #region IContainer 成员
+
+        /// <summary>
+        /// 解析服务
+        /// </summary>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        public object Resolve(Type service)
+        {
+            return container.Resolve(service);
+        }
+
+        /// <summary>
+        /// 释放对象
+        /// </summary>
+        /// <param name="instance"></param>
+        public void Release(object instance)
+        {
+            container.Release(instance);
+        }
+
+        #endregion
     }
 }

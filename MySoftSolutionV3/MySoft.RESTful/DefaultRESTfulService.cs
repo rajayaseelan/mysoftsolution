@@ -101,7 +101,7 @@ namespace MySoft.RESTful
             {
                 var ret = new RESTfulResult { Code = (int)HttpStatusCode.OK, Message = "Not found [callback] parameter!" };
                 //throw new WebFaultException<RESTfulResult>(ret, HttpStatusCode.Forbidden);
-                response.StatusCode = HttpStatusCode.Forbidden;
+                response.StatusCode = HttpStatusCode.BadRequest;
                 response.ContentType = "application/json;charset=utf-8";
                 result = SerializationManager.SerializeJson(ret);
             }
@@ -247,6 +247,9 @@ namespace MySoft.RESTful
                     Type retType;
                     result = Context.Invoke(kind, method, parameters, out retType);
 
+                    //设置返回成功
+                    response.StatusCode = HttpStatusCode.OK;
+
                     //如果值为null，以对象方式返回
                     if (result == null || retType == typeof(string))
                     {
@@ -258,9 +261,6 @@ namespace MySoft.RESTful
                     {
                         result = new RESTfulResponse { Value = result };
                     }
-
-                    //设置返回成功
-                    response.StatusCode = HttpStatusCode.OK;
                 }
                 catch (Exception e)
                 {
@@ -285,23 +285,20 @@ namespace MySoft.RESTful
         private RESTfulResult GetResultWriteErrorLog(string parameter, Exception exception)
         {
             var response = WebOperationContext.Current.OutgoingResponse;
-            var result = new RESTfulResult();
-            if (exception is BusinessException)
+            var result = new RESTfulResult { Code = (int)HttpStatusCode.BadRequest };
+
+            if (exception is RESTfulException)
             {
-                response.StatusCode = HttpStatusCode.BadRequest;
-                result.Code = (exception as BusinessException).Code;
-            }
-            else
-            {
-                response.StatusCode = HttpStatusCode.ExpectationFailed;
-                result.Code = (int)response.StatusCode;
+                var error = exception as RESTfulException;
+                result.Code = error.Code;
+                response.StatusCode = (HttpStatusCode)Enum.ToObject(typeof(HttpStatusCode), error.Code);
             }
 
             //重新定义一个异常
-            var error = new Exception(string.Format("{0} - {1}", result.Code, exception.Message), exception);
+            var ex = new Exception(string.Format("{0} - {1}", result.Code, exception.Message), exception);
 
             //记录错误日志
-            SimpleLog.Instance.WriteLog(error);
+            SimpleLog.Instance.WriteLog(ex);
 
             //返回结果
             return result;

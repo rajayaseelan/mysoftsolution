@@ -73,13 +73,14 @@ namespace MySoft.IoC.HttpServer
             else
             {
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_ACCEPTABLE;
-                var error = new HttpServiceException { Message = response.Reason };
+                var error = new HttpServiceResult { Message = response.Reason };
                 SendResponse(response, error);
             }
         }
 
         private void HandleResponse(HTTPServerRequest request, HTTPServerResponse response)
         {
+            //响应格式
             response.ContentType = "application/json;charset=utf-8";
 
             var pathAndQuery = request.URI.TrimStart('/');
@@ -91,22 +92,16 @@ namespace MySoft.IoC.HttpServer
             if (callMethod == null)
             {
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_NOT_FOUND;
-                var error = new HttpServiceException { Message = string.Format("{0}【{1}】", response.Reason, methodName) };
+                var error = new HttpServiceResult { Message = string.Format("{0}【{1}】", response.Reason, methodName) };
                 SendResponse(response, error);
                 return;
             }
             else if (callMethod.HttpMethod == HttpMethod.POST && request.Method.ToUpper() == "GET")
             {
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_METHOD_NOT_ALLOWED;
-                var error = new HttpServiceException { Message = response.Reason };
+                var error = new HttpServiceResult { Message = response.Reason };
                 SendResponse(response, error);
                 return;
-            }
-
-            if (callMethod.TypeString)
-            {
-                //如果返回是字符串类型，则设置为文本返回
-                response.ContentType = "text/plain;charset=utf-8";
             }
 
             try
@@ -141,19 +136,25 @@ namespace MySoft.IoC.HttpServer
                 }
 
                 string responseString = caller.CallMethod(methodName, collection.ToString());
+                if (callMethod.TypeString)
+                {
+                    //如果返回是字符串类型，则设置为文本返回
+                    response.ContentType = "text/plain;charset=utf-8";
+                }
+
                 SendResponse(response, responseString);
             }
             catch (HTTPMessageException ex)
             {
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_EXPECTATION_FAILED;
-                var error = new HttpServiceException { Message = string.Format("{0} - {1}", response.Reason, ex.Message) };
+                var error = new HttpServiceResult { Message = string.Format("{0} - {1}", response.Reason, ex.Message) };
                 SendResponse(response, error);
             }
             catch (Exception ex)
             {
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_BAD_REQUEST;
                 var e = ErrorHelper.GetInnerException(ex);
-                var error = new HttpServiceException { Message = string.Format("{0} - {1}", e.GetType().Name, e.Message) };
+                var error = new HttpServiceResult { Message = string.Format("{0} - {1}", e.GetType().Name, e.Message) };
                 SendResponse(response, error);
             }
         }
@@ -166,7 +167,7 @@ namespace MySoft.IoC.HttpServer
             }
         }
 
-        private void SendResponse(HTTPServerResponse response, HttpServiceException error)
+        private void SendResponse(HTTPServerResponse response, HttpServiceResult error)
         {
             error.Code = (int)response.Status;
 

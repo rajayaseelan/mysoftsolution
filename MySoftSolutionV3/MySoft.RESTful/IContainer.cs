@@ -14,8 +14,9 @@ namespace MySoft.RESTful
         /// <summary>
         /// 解析服务
         /// </summary>
+        /// <param name="service"></param>
         /// <returns></returns>
-        object Resolve();
+        object Resolve(Type service);
 
         /// <summary>
         /// 释放资源
@@ -30,11 +31,9 @@ namespace MySoft.RESTful
     public sealed class ServiceContainer : IContainer
     {
         private IWindsorContainer container;
-        private Type service;
-        public ServiceContainer(IWindsorContainer container, Type service)
+        public ServiceContainer(IWindsorContainer container)
         {
             this.container = container;
-            this.service = service;
         }
 
         #region IContainer 成员
@@ -42,8 +41,9 @@ namespace MySoft.RESTful
         /// <summary>
         /// 解析服务
         /// </summary>
+        /// <param name="service"></param>
         /// <returns></returns>
-        public object Resolve()
+        public object Resolve(Type service)
         {
             return container.Resolve(service);
         }
