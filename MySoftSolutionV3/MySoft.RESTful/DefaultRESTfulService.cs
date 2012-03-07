@@ -262,10 +262,19 @@ namespace MySoft.RESTful
                         result = new RESTfulResponse { Value = result };
                     }
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
                     //记录错误日志
-                    result = GetResultWriteErrorLog(parameters, e);
+                    result = GetResult(parameters, ex);
+
+                    //转换结果
+                    var ret = result as RESTfulResult;
+
+                    //重新定义一个异常
+                    var error = new Exception(string.Format("{0} - {1}", ret.Code, ret.Message), ex);
+
+                    //记录错误日志
+                    SimpleLog.Instance.WriteLog(ex);
                 }
             }
             else
@@ -282,7 +291,7 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="parameter"></param>
         /// <param name="exception"></param>
-        private RESTfulResult GetResultWriteErrorLog(string parameter, Exception exception)
+        private RESTfulResult GetResult(string parameter, Exception exception)
         {
             var response = WebOperationContext.Current.OutgoingResponse;
             var result = new RESTfulResult { Code = (int)HttpStatusCode.BadRequest };
@@ -293,12 +302,6 @@ namespace MySoft.RESTful
                 result.Code = error.Code;
                 response.StatusCode = (HttpStatusCode)Enum.ToObject(typeof(HttpStatusCode), error.Code);
             }
-
-            //重新定义一个异常
-            var ex = new Exception(string.Format("{0} - {1}", result.Code, exception.Message), exception);
-
-            //记录错误日志
-            SimpleLog.Instance.WriteLog(ex);
 
             //返回结果
             return result;
