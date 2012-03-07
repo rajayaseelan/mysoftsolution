@@ -35,17 +35,7 @@ namespace MySoft.IoC
         private IScsServerClient client;
         private EndPoint endPoint;
         private IContainer container;
-        private ICache cache;
         private AppCaller caller;
-
-        /// <summary>
-        /// 服务缓存
-        /// </summary>
-        public ICache Cache
-        {
-            get { return cache; }
-            internal set { cache = value; }
-        }
 
         /// <summary>
         /// 容器对象
@@ -92,50 +82,6 @@ namespace MySoft.IoC
                 this.endPoint = new IPEndPoint(IPAddress.Parse(ep.IpAddress), ep.TcpPort);
             }
         }
-
-        #region 缓存处理
-
-        /// <summary>
-        /// 移除缓存
-        /// </summary>
-        /// <param name="cacheKey"></param>
-        public void RemoveCache(string cacheKey)
-        {
-            if (cache != null)
-                cache.Remove(cacheKey);
-            else
-                CacheHelper.Remove(cacheKey);
-        }
-
-        /// <summary>
-        /// 添加缓存
-        /// </summary>
-        /// <param name="cacheKey"></param>
-        /// <param name="cacheObject"></param>
-        /// <param name="timeSpan"></param>
-        public void AddCache(string cacheKey, object cacheObject, TimeSpan timeSpan)
-        {
-            if (cache != null)
-                cache.Insert(cacheKey, cacheObject, (int)timeSpan.TotalSeconds);
-            else
-                CacheHelper.Insert(cacheKey, cacheObject, (int)timeSpan.TotalSeconds);
-        }
-
-        /// <summary>
-        /// 获取缓存
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="cacheKey"></param>
-        /// <returns></returns>
-        public T GetCache<T>(string cacheKey)
-        {
-            if (cache != null)
-                return cache.Get<T>(cacheKey);
-            else
-                return CacheHelper.Get<T>(cacheKey);
-        }
-
-        #endregion
 
         /// <summary>
         /// 获取回调代理服务

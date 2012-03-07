@@ -20,8 +20,8 @@ namespace MySoft.IoC.Services
         /// Initializes a new instance of the <see cref="DynamicService"/> class.
         /// </summary>
         /// <param name="serviceType">Type of the service interface.</param>
-        public DynamicService(IServiceContainer container, Type serviceType)
-            : base(container, serviceType)
+        public DynamicService(IServiceContainer container, IServiceCache cache, Type serviceType)
+            : base(container, cache, serviceType)
         {
             this.container = container;
             this.serviceType = serviceType;

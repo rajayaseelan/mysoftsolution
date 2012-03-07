@@ -27,6 +27,7 @@ namespace MySoft.IoC.Configuration
     {
         private IDictionary<string, RemoteNode> nodes;
         private CastleFactoryType type = CastleFactoryType.Local;
+        private string cacheType;
         private string defaultKey;                                  //默认服务
         private string appname;                                     //host名称
         private bool throwError = true;                             //抛出异常
@@ -88,7 +89,7 @@ namespace MySoft.IoC.Configuration
                 if (child.NodeType == XmlNodeType.Comment) continue;
 
                 XmlAttributeCollection childnode = child.Attributes;
-                if (child.Name == "node")
+                if (child.Name == "serverNode")
                 {
                     RemoteNode remoteNode = new RemoteNode();
                     remoteNode.Key = childnode["key"].Value;
@@ -116,6 +117,11 @@ namespace MySoft.IoC.Configuration
                     }
 
                     nodes.Add(remoteNode.Key, remoteNode);
+                }
+                else if (child.Name == "clientCache")
+                {
+                    if (childnode["cacheType"] != null && childnode["cacheType"].Value.Trim() != string.Empty)
+                        cacheType = childnode["cacheType"].Value;
                 }
             }
 
@@ -189,6 +195,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return format; }
             set { format = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the cacheType
+        /// </summary>
+        public string CacheType
+        {
+            get { return cacheType; }
+            set { cacheType = value; }
         }
 
         /// <summary>

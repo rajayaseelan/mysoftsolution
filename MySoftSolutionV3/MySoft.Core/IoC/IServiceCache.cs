@@ -8,7 +8,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务缓存
     /// </summary>
-    public interface ICache
+    public interface IServiceCache
     {
         /// <summary>
         /// 添加缓存

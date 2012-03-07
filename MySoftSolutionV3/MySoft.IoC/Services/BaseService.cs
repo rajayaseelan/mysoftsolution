@@ -14,6 +14,7 @@ namespace MySoft.IoC.Services
         ///  The service logger
         /// </summary>
         private IServiceContainer container;
+        private IServiceCache cache;
         private Type serviceType;
         private IDictionary<string, OperationContractAttribute> opContracts;
 
@@ -35,9 +36,10 @@ namespace MySoft.IoC.Services
         /// Initializes a new instance of the <see cref="BaseService"/> class.
         /// </summary>
         /// <param name="serviceName">Name of the service.</param>
-        public BaseService(IServiceContainer container, Type serviceType)
+        public BaseService(IServiceContainer container, IServiceCache cache, Type serviceType)
         {
             this.container = container;
+            this.cache = cache;
             this.serviceType = serviceType;
             this.serviceName = serviceType.FullName;
 
@@ -83,10 +85,8 @@ namespace MySoft.IoC.Services
 
             if (serverCacheTime > 0)
             {
-                if (container.Cache == null)
-                    resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
-                else
-                    resMsg = container.Cache.Get<ResponseMessage>(cacheKey);
+                //从缓存获取数据
+                resMsg = cache.Get<ResponseMessage>(cacheKey);
             }
 
             //运行请求获得结果
@@ -113,10 +113,7 @@ namespace MySoft.IoC.Services
                 else if (serverCacheTime > 0) //判断是否需要缓存
                 {
                     //加入缓存
-                    if (container.Cache == null)
-                        CacheHelper.Insert(cacheKey, resMsg, serverCacheTime);
-                    else
-                        container.Cache.Insert(cacheKey, resMsg, serverCacheTime);
+                    cache.Insert(cacheKey, resMsg, serverCacheTime);
                 }
             }
             else

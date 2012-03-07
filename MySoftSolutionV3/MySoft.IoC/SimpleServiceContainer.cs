@@ -26,7 +26,7 @@ namespace MySoft.IoC
         #region Private Members
 
         private IWindsorContainer container;
-        private void Init(CastleFactoryType type)
+        private void Init(CastleFactoryType type, IServiceCache cache)
         {
             this.container = new WindsorContainer();
 
@@ -36,7 +36,7 @@ namespace MySoft.IoC
                 this.container.AddFacility(new StartableFacility());
 
                 //加载服务解析
-                this.container.AddFacility(new ServiceDiscoverFacility(this));
+                this.container.AddFacility(new ServiceDiscoverFacility(this, cache));
 
                 //如果不是远程模式，则加载配置节
                 var sectionKey = "mysoft.framework/castle";
@@ -44,7 +44,7 @@ namespace MySoft.IoC
                 if (castle != null)
                 {
                     //只解析本地服务
-                    if (type == CastleFactoryType.Local)
+                    if (type != CastleFactoryType.Remote)
                     {
                         //解析服务
                         this.DiscoverServices(sectionKey);
@@ -115,9 +115,9 @@ namespace MySoft.IoC
         /// Initializes a new instance of the <see cref="SimpleServiceContainer"/> class.
         /// </summary>
         /// <param name="config"></param>
-        public SimpleServiceContainer(CastleFactoryType type)
+        public SimpleServiceContainer(CastleFactoryType type, IServiceCache cache)
         {
-            Init(type);
+            Init(type, cache);
         }
 
         #endregion
@@ -131,16 +131,6 @@ namespace MySoft.IoC
         public IKernel Kernel
         {
             get { return container.Kernel; }
-        }
-
-        private ICache cache;
-        /// <summary>
-        /// Get the cache
-        /// </summary>
-        public ICache Cache
-        {
-            get { return cache; }
-            set { cache = value; }
         }
 
         /// <summary>

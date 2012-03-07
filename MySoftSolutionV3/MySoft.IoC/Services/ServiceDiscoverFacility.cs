@@ -16,6 +16,7 @@ namespace MySoft.IoC.Services
 
         private ArrayList waitList;
         private IServiceContainer container;
+        private IServiceCache cache;
 
         private bool CheckIfComponentImplementsIService(ComponentModel model)
         {
@@ -51,7 +52,7 @@ namespace MySoft.IoC.Services
 
         private void RegisterService(ComponentModel model)
         {
-            DynamicService service = new DynamicService(container, model.Services.First());
+            DynamicService service = new DynamicService(container, cache, model.Services.First());
             container.RegisterComponent("Service_" + service.ServiceName, typeof(IService), service);
         }
 
@@ -83,10 +84,12 @@ namespace MySoft.IoC.Services
         /// Initializes a new instance of the <see cref="ServiceDiscoverFacility"/> class.
         /// </summary>
         /// <param name="container">The container.</param>
-        public ServiceDiscoverFacility(IServiceContainer container)
+        /// <param name="cache">The cache.</param>
+        public ServiceDiscoverFacility(IServiceContainer container, IServiceCache cache)
         {
             this.waitList = new ArrayList();
             this.container = container;
+            this.cache = cache;
         }
 
         /// <summary>

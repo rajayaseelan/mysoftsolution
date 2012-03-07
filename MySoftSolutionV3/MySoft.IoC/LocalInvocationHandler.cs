@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
@@ -155,7 +156,6 @@ namespace MySoft.IoC
             //初始化上下文
             OperationContext.Current = new OperationContext
             {
-                Cache = container.Cache,
                 Container = container,
                 Caller = caller
             };

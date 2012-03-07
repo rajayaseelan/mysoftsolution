@@ -86,32 +86,41 @@ namespace MySoft.IoC
         /// Creates this instance. Used in a multithreaded environment
         /// </summary>
         /// <param name="config"></param>
-        /// <param name="name">service name</param>
         /// <returns>The service factoru new instance.</returns>
         private static CastleFactory CreateNew(CastleFactoryConfiguration config)
         {
-            CastleFactory instance = null;
+            CastleFactory factory = null;
+
+            //加载cacheType
+            IServiceCache cache = null;
+            if (!string.IsNullOrEmpty(config.CacheType))
+            {
+                Type type = Type.GetType(config.CacheType);
+                object instance = Activator.CreateInstance(type);
+                cache = instance as IServiceCache;
+            }
 
             //本地匹配节
             if (config == null || config.Type == CastleFactoryType.Local)
             {
-                instance = new CastleFactory(config, new SimpleServiceContainer(CastleFactoryType.Local));
+                var sContainer = new SimpleServiceContainer(CastleFactoryType.Local, new ServiceCache(cache));
+                factory = new CastleFactory(config, sContainer);
             }
             else
             {
-                var sContainer = new SimpleServiceContainer(config.Type);
+                var sContainer = new SimpleServiceContainer(config.Type, new ServiceCache(cache));
                 sContainer.OnLog += (log, type) =>
                 {
-                    if (instance != null && instance.OnLog != null)
-                        instance.OnLog(log, type);
+                    if (factory != null && factory.OnLog != null)
+                        factory.OnLog(log, type);
                 };
                 sContainer.OnError += error =>
                 {
-                    if (instance != null && instance.OnError != null)
-                        instance.OnError(error);
+                    if (factory != null && factory.OnError != null)
+                        factory.OnError(error);
                 };
 
-                instance = new CastleFactory(config, sContainer);
+                factory = new CastleFactory(config, sContainer);
 
                 if (config.Nodes.Count > 0)
                 {
@@ -121,12 +130,12 @@ namespace MySoft.IoC
                         if (node.Value.MaxPool > 1000) throw new WarningException("Maximum pool size 1000！");
 
                         var proxy = new RemoteProxy(node.Value, sContainer);
-                        instance.proxies[node.Key.ToLower()] = proxy;
+                        factory.proxies[node.Key.ToLower()] = proxy;
                     }
                 }
             }
 
-            return instance;
+            return factory;
         }
 
         #endregion
@@ -396,7 +405,7 @@ namespace MySoft.IoC
             }
 
             //如果是本地配置，则抛出异常
-            if (config.Type == CastleFactoryType.Local || config.Type == CastleFactoryType.LocalRemote)
+            if (config.Type != CastleFactoryType.Remote)
             {
                 //本地服务
                 if (container.Kernel.HasComponent(serviceType))
@@ -478,7 +487,7 @@ namespace MySoft.IoC
         {
             IService service = null;
             string serviceKey = "Service_" + message.ServiceName;
-            if (config.Type == CastleFactoryType.Local || config.Type == CastleFactoryType.LocalRemote)
+            if (config.Type != CastleFactoryType.Remote)
             {
                 if (container.Kernel.HasComponent(serviceKey))
                 {

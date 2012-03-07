@@ -8,6 +8,7 @@ using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
@@ -48,24 +49,26 @@ namespace MySoft.IoC
             this.server.ClientDisconnected += server_ClientDisconnected;
             this.server.WireProtocolFactory = new CustomWireProtocolFactory(config.Compress, config.Encrypt);
 
-            this.container = new SimpleServiceContainer(CastleFactoryType.Local);
-            this.container.OnError += error => { if (OnError != null) OnError(error); };
-            this.container.OnLog += (log, type) => { if (OnLog != null) OnLog(log, type); };
-
             //加载cacheType
+            IServiceCache cache = null;
             if (!string.IsNullOrEmpty(config.CacheType))
             {
                 try
                 {
                     Type type = Type.GetType(config.CacheType);
                     object instance = Activator.CreateInstance(type);
-                    this.container.Cache = instance as ICache;
+                    cache = instance as IServiceCache;
                 }
                 catch (Exception ex)
                 {
                     Instance_OnError(ex);
                 }
             }
+
+            //服务端注入内存处理
+            this.container = new SimpleServiceContainer(CastleFactoryType.Local, new ServiceCache(cache));
+            this.container.OnError += error => { if (OnError != null) OnError(error); };
+            this.container.OnLog += (log, type) => { if (OnLog != null) OnLog(log, type); };
 
             //实例化调用者
             var service = new ServerStatusService(config, server, container);

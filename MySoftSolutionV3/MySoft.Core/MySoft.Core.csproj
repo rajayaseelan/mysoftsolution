@@ -95,7 +95,7 @@
     <Compile Include="Auth\AuthorizeToken.cs" />
     <Compile Include="Common\HttpMethod.cs" />
     <Compile Include="IoC\HttpInvoke.cs" />
-    <Compile Include="IoC\ICache.cs" />
+    <Compile Include="IoC\IServiceCache.cs" />
     <Compile Include="Net\CountingOutputStream.cs" />
     <Compile Include="Net\Http\HTTPException.cs" />
     <Compile Include="Net\Http\HTTPFixedLengthInputStream.cs" />

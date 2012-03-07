@@ -127,7 +127,6 @@ namespace MySoft.IoC
 
             OperationContext.Current = new OperationContext(client, callbackType)
             {
-                Cache = container.Cache,
                 Container = container,
                 Caller = caller
             };

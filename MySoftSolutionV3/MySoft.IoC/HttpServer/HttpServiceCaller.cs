@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using MySoft.IoC.Messages;
-using System.Collections;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -19,6 +19,7 @@ namespace MySoft.IoC.HttpServer
         /// HttpServiceCaller初始化
         /// </summary>
         /// <param name="container"></param>
+        /// <param name="cache"></param>
         /// <param name="port"></param>
         public HttpServiceCaller(IServiceContainer container, int port)
         {
@@ -178,7 +179,6 @@ namespace MySoft.IoC.HttpServer
                 //初始化上下文
                 OperationContext.Current = new OperationContext
                 {
-                    Cache = container.Cache,
                     Container = container,
                     Caller = appCaller
                 };

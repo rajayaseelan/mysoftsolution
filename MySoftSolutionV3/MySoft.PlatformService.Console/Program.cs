@@ -12,7 +12,7 @@ using System.Collections.Specialized;
 
 namespace MySoft.PlatformService.Console
 {
-    public class ServiceCache : ICache
+    public class ServiceCache : IServiceCache
     {
         #region IServiceCache ≥…‘±
 
