@@ -133,14 +133,14 @@ namespace MySoft.IoC
             get { return container.Kernel; }
         }
 
-        private IServiceCache serviceCache;
+        private ICache cache;
         /// <summary>
         /// Get the cache
         /// </summary>
-        public IServiceCache ServiceCache
+        public ICache Cache
         {
-            get { return serviceCache; }
-            set { serviceCache = value; }
+            get { return cache; }
+            set { cache = value; }
         }
 
         /// <summary>

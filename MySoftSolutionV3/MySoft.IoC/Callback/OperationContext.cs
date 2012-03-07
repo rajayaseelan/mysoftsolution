@@ -35,16 +35,16 @@ namespace MySoft.IoC
         private IScsServerClient client;
         private EndPoint endPoint;
         private IContainer container;
+        private ICache cache;
         private AppCaller caller;
-        private IServiceCache serviceCache;
 
         /// <summary>
         /// 服务缓存
         /// </summary>
-        public IServiceCache ServiceCache
+        public ICache Cache
         {
-            get { return serviceCache; }
-            internal set { serviceCache = value; }
+            get { return cache; }
+            internal set { cache = value; }
         }
 
         /// <summary>
@@ -98,21 +98,11 @@ namespace MySoft.IoC
         /// <summary>
         /// 移除缓存
         /// </summary>
-        /// <typeparam name="TService"></typeparam>
-        /// <param name="cacheKey"></param>
-        public void RemoveCache<TService>(string cacheKey)
-        {
-            RemoveCache(string.Format("{0}_{1}", typeof(TService).FullName, cacheKey));
-        }
-
-        /// <summary>
-        /// 移除缓存
-        /// </summary>
         /// <param name="cacheKey"></param>
         public void RemoveCache(string cacheKey)
         {
-            if (serviceCache != null)
-                serviceCache.RemoveCache(cacheKey);
+            if (cache != null)
+                cache.Remove(cacheKey);
             else
                 CacheHelper.Remove(cacheKey);
         }
@@ -125,8 +115,8 @@ namespace MySoft.IoC
         /// <param name="timeSpan"></param>
         public void AddCache(string cacheKey, object cacheObject, TimeSpan timeSpan)
         {
-            if (serviceCache != null)
-                serviceCache.AddCache(cacheKey, cacheObject, (int)timeSpan.TotalSeconds);
+            if (cache != null)
+                cache.Insert(cacheKey, cacheObject, (int)timeSpan.TotalSeconds);
             else
                 CacheHelper.Insert(cacheKey, cacheObject, (int)timeSpan.TotalSeconds);
         }
@@ -139,8 +129,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public T GetCache<T>(string cacheKey)
         {
-            if (serviceCache != null)
-                return serviceCache.GetCache<T>(cacheKey);
+            if (cache != null)
+                return cache.Get<T>(cacheKey);
             else
                 return CacheHelper.Get<T>(cacheKey);
         }

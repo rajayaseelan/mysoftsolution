@@ -8,7 +8,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务缓存
     /// </summary>
-    public interface IServiceCache
+    public interface ICache
     {
         /// <summary>
         /// 添加缓存
@@ -16,7 +16,7 @@ namespace MySoft.IoC
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="seconds"></param>
-        void AddCache(string key, object value, int seconds);
+        void Insert(string key, object value, int seconds);
 
         /// <summary>
         /// 获取缓存
@@ -24,12 +24,12 @@ namespace MySoft.IoC
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        T GetCache<T>(string key);
+        T Get<T>(string key);
 
         /// <summary>
         /// 移除缓存
         /// </summary>
         /// <param name="key"></param>
-        void RemoveCache(string key);
+        void Remove(string key);
     }
 }

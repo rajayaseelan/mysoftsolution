@@ -83,10 +83,10 @@ namespace MySoft.IoC.Services
 
             if (serverCacheTime > 0)
             {
-                if (container.ServiceCache == null)
+                if (container.Cache == null)
                     resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
                 else
-                    resMsg = container.ServiceCache.GetCache<ResponseMessage>(cacheKey);
+                    resMsg = container.Cache.Get<ResponseMessage>(cacheKey);
             }
 
             //运行请求获得结果
@@ -113,10 +113,10 @@ namespace MySoft.IoC.Services
                 else if (serverCacheTime > 0) //判断是否需要缓存
                 {
                     //加入缓存
-                    if (container.ServiceCache == null)
+                    if (container.Cache == null)
                         CacheHelper.Insert(cacheKey, resMsg, serverCacheTime);
                     else
-                        container.ServiceCache.AddCache(cacheKey, resMsg, serverCacheTime);
+                        container.Cache.Insert(cacheKey, resMsg, serverCacheTime);
                 }
             }
             else

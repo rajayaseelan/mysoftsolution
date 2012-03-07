@@ -155,7 +155,7 @@ namespace MySoft.IoC
             //初始化上下文
             OperationContext.Current = new OperationContext
             {
-                ServiceCache = container.ServiceCache,
+                Cache = container.Cache,
                 Container = container,
                 Caller = caller
             };

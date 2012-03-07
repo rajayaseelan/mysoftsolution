@@ -59,7 +59,7 @@ namespace MySoft.IoC
                 {
                     Type type = Type.GetType(config.CacheType);
                     object instance = Activator.CreateInstance(type);
-                    this.container.ServiceCache = instance as IServiceCache;
+                    this.container.Cache = instance as ICache;
                 }
                 catch (Exception ex)
                 {
