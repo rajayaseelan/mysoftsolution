@@ -339,6 +339,13 @@ namespace MySoft.RESTful
                     //认证成功
                     restResult.Code = (int)response.StatusCode;
                     restResult.Message = "Authentication request success.";
+
+                    //认证成功，设置上下文
+                    AuthorizeContext.Current = new AuthorizeContext
+                    {
+                        Result = result,
+                        Token = token
+                    };
                 }
                 else
                 {
