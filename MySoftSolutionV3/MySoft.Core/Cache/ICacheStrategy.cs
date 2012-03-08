@@ -6,7 +6,7 @@ namespace MySoft.Cache
     /// <summary>
     /// MemoryCache策略接口
     /// </summary>
-    public interface IMemoryCacheStrategy : ICacheStrategy
+    public interface ILocalCacheStrategy : ICacheStrategy
     {
         #region 不指定过期时间
 

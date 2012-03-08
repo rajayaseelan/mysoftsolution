@@ -4,6 +4,11 @@ using System.Data.Common;
 
 namespace MySoft.Data
 {
+    /// <summary>
+    /// Á¬½Ó×Ö·û´®½âÃÜ
+    /// </summary>
+    /// <param name="connectionString"></param>
+    /// <returns></returns>
     public delegate string DecryptEventHandler(string connectionString);
 
     /// <summary>

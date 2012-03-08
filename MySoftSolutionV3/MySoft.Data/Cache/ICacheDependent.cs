@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MySoft.Cache
+namespace MySoft.Data.Cache
 {
     /// <summary>
     /// 缓存依赖
     /// </summary>
-    public interface ICacheDependent
+    interface ICacheDependent
     {
         /// <summary>
         /// 添加缓存

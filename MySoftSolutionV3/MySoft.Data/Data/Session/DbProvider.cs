@@ -7,6 +7,7 @@ using MySoft.Data.Design;
 using MySoft.Logger;
 using MySoft.Cache;
 using System.Diagnostics;
+using MySoft.Data.Cache;
 
 namespace MySoft.Data
 {
@@ -16,12 +17,12 @@ namespace MySoft.Data
         private char leftToken;
         private char rightToken;
         private char paramPrefixToken;
-        private IExcutingLog logger;
+        private IExecuteLog logger;
 
         /// <summary>
         /// 日志依赖
         /// </summary>
-        internal IExcutingLog Logger
+        internal IExecuteLog Logger
         {
             set
             {
@@ -219,7 +220,7 @@ namespace MySoft.Data
             PrepareCommand(cmd);
 
             //执行命令前的事件
-            if (!BeginExcuteCommand(cmd))
+            if (!BeginExecuteCommand(cmd))
             {
                 throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
             }
@@ -248,7 +249,7 @@ namespace MySoft.Data
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExcuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
             }
 
             return retVal;
@@ -260,7 +261,7 @@ namespace MySoft.Data
             PrepareCommand(cmd);
 
             //执行命令前的事件
-            if (!BeginExcuteCommand(cmd))
+            if (!BeginExecuteCommand(cmd))
             {
                 throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
             }
@@ -291,7 +292,7 @@ namespace MySoft.Data
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExcuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
             }
 
             return retVal;
@@ -303,7 +304,7 @@ namespace MySoft.Data
             PrepareCommand(cmd);
 
             //执行命令前的事件
-            if (!BeginExcuteCommand(cmd))
+            if (!BeginExecuteCommand(cmd))
                 return null;
 
             DataSet retVal = null;
@@ -330,7 +331,7 @@ namespace MySoft.Data
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExcuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
             }
 
             return retVal;
@@ -342,7 +343,7 @@ namespace MySoft.Data
             PrepareCommand(cmd);
 
             //执行命令前的事件
-            if (!BeginExcuteCommand(cmd))
+            if (!BeginExecuteCommand(cmd))
             {
                 throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
             }
@@ -371,7 +372,7 @@ namespace MySoft.Data
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExcuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
             }
 
             return retVal;
@@ -383,7 +384,7 @@ namespace MySoft.Data
             PrepareCommand(cmd);
 
             //执行命令前的事件
-            if (!BeginExcuteCommand(cmd))
+            if (!BeginExecuteCommand(cmd))
             {
                 throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
             }
@@ -412,7 +413,7 @@ namespace MySoft.Data
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExcuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
             }
 
             return retVal;
@@ -797,7 +798,7 @@ namespace MySoft.Data
         /// Writes the log.
         /// </summary>
         /// <param name="command">The command.</param>
-        private bool BeginExcuteCommand(DbCommand command)
+        private bool BeginExecuteCommand(DbCommand command)
         {
             if (logger != null)
             {
@@ -812,7 +813,7 @@ namespace MySoft.Data
                     {
                         parameters.Add(new SQLParameter(p));
                     }
-                    return logger.BeginExcute(cmdText, parameters.ToArray());
+                    return logger.Begin(cmdText, parameters.ToArray());
                 }
                 catch { }
             }
@@ -824,7 +825,7 @@ namespace MySoft.Data
         /// 结束时执行的操作
         /// </summary>
         /// <param name="command"></param>
-        private void EndExcuteCommand(DbCommand command, object result, int elapsedTime)
+        private void EndExecuteCommand(DbCommand command, object result, int elapsedTime)
         {
             if (logger != null)
             {
@@ -836,7 +837,7 @@ namespace MySoft.Data
                     {
                         parameters.Add(new SQLParameter(p));
                     }
-                    logger.EndExcute(cmdText, parameters.ToArray(), result, elapsedTime);
+                    logger.End(cmdText, parameters.ToArray(), result, elapsedTime);
                 }
                 catch { }
             }

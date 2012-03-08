@@ -28,19 +28,19 @@ namespace MySoft.Data
         /// 注册解密的Handler
         /// </summary>
         /// <param name="handler"></param>
-        void RegisterDecryptHandler(DecryptEventHandler handler);
+        void RegisterDecryptor(DecryptEventHandler handler);
 
         /// <summary>
         /// 注册日志依赖
         /// </summary>
         /// <param name="logger"></param>
-        void RegisterExcutingLog(IExcutingLog logger);
+        void RegisterLogger(IExecuteLog logger);
 
         /// <summary>
         /// 注册缓存依赖
         /// </summary>
         /// <param name="cache"></param>
-        void RegisterCacheDependent(ICacheDependent cache);
+        void RegisterCache(ICacheStrategy cache);
 
         /// <summary>
         /// 设置命令超时时间

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MySoft.IoC
+namespace MySoft.Cache
 {
     /// <summary>
     /// 服务缓存

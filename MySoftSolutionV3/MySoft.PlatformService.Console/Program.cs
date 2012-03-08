@@ -1,14 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
+using MySoft.Cache;
 using MySoft.IoC;
-using System.Collections;
-using MySoft.Remoting;
 using MySoft.IoC.Configuration;
-using MySoft.Logger;
 using MySoft.IoC.HttpServer;
+using MySoft.Logger;
 using MySoft.Net.Http;
-using System.Collections.Specialized;
 
 namespace MySoft.PlatformService.Console
 {

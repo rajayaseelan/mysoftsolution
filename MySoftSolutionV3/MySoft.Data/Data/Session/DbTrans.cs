@@ -838,7 +838,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="creator"></param>
         /// <returns></returns>
-        public int Excute(InsertCreator creator)
+        public int Execute(InsertCreator creator)
         {
             if (creator.Table == null)
             {
@@ -856,7 +856,7 @@ namespace MySoft.Data
         /// <param name="creator"></param>
         /// <param name="identityValue"></param>
         /// <returns></returns>
-        public int Excute<TResult>(InsertCreator creator, out TResult identityValue)
+        public int Execute<TResult>(InsertCreator creator, out TResult identityValue)
         {
             identityValue = default(TResult);
 
@@ -882,7 +882,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="creator"></param>
         /// <returns></returns>
-        public int Excute(DeleteCreator creator)
+        public int Execute(DeleteCreator creator)
         {
             if (creator.Table == null)
             {
@@ -902,7 +902,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="creator"></param>
         /// <returns></returns>
-        public int Excute(UpdateCreator creator)
+        public int Execute(UpdateCreator creator)
         {
             if (creator.Table == null)
             {

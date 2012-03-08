@@ -4,6 +4,7 @@ using Castle.Facilities.Startable;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Facilities;
 using System.Linq;
+using MySoft.Cache;
 
 namespace MySoft.IoC.Services
 {

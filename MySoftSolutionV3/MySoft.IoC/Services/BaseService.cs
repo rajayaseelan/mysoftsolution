@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MySoft.IoC.Messages;
+using MySoft.Cache;
 
 namespace MySoft.IoC.Services
 {

@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using MySoft.Logger;
 using MySoft.Cache;
+using MySoft.Data.Cache;
 
 namespace MySoft.Data
 {
@@ -667,9 +668,9 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="creator"></param>
         /// <returns></returns>
-        public int Excute(InsertCreator creator)
+        public int Execute(InsertCreator creator)
         {
-            return dbTrans.Excute(creator);
+            return dbTrans.Execute(creator);
         }
 
         /// <summary>
@@ -679,9 +680,9 @@ namespace MySoft.Data
         /// <param name="creator"></param>
         /// <param name="identityValue"></param>
         /// <returns></returns>
-        public int Excute<TResult>(InsertCreator creator, out TResult identityValue)
+        public int Execute<TResult>(InsertCreator creator, out TResult identityValue)
         {
-            return dbTrans.Excute(creator, out identityValue);
+            return dbTrans.Execute(creator, out identityValue);
         }
 
         /// <summary>
@@ -690,9 +691,9 @@ namespace MySoft.Data
         /// <typeparam name="T"></typeparam>
         /// <param name="creator"></param>
         /// <returns></returns>
-        public int Excute(DeleteCreator creator)
+        public int Execute(DeleteCreator creator)
         {
-            return dbTrans.Excute(creator);
+            return dbTrans.Execute(creator);
         }
 
         /// <summary>
@@ -700,9 +701,9 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="creator"></param>
         /// <returns></returns>
-        public int Excute(UpdateCreator creator)
+        public int Execute(UpdateCreator creator)
         {
-            return dbTrans.Excute(creator);
+            return dbTrans.Execute(creator);
         }
 
         /// <summary>
@@ -1034,7 +1035,7 @@ namespace MySoft.Data
         /// ◊¢≤·Ω‚√‹µƒHandler
         /// </summary>
         /// <param name="handler"></param>
-        public void RegisterDecryptHandler(DecryptEventHandler handler)
+        public void RegisterDecryptor(DecryptEventHandler handler)
         {
             this.dbProvider.SetDecryptHandler(handler);
         }
@@ -1043,7 +1044,7 @@ namespace MySoft.Data
         /// ◊¢≤·»’÷æ“¿¿µ
         /// </summary>
         /// <param name="logger"></param>
-        public void RegisterExcutingLog(IExcutingLog logger)
+        public void RegisterLogger(IExecuteLog logger)
         {
             this.dbProvider.Logger = logger;
         }
@@ -1052,9 +1053,9 @@ namespace MySoft.Data
         /// ◊¢≤·ª∫¥Ê“¿¿µ
         /// </summary>
         /// <param name="cache"></param>
-        public void RegisterCacheDependent(ICacheDependent cache)
+        public void RegisterCache(ICacheStrategy cache)
         {
-            this.dbProvider.Cache = cache;
+            this.dbProvider.Cache = new DataCacheDependent(cache);
         }
 
         /// <summary>

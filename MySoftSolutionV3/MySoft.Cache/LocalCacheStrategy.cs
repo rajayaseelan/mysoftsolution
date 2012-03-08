@@ -11,7 +11,7 @@ namespace MySoft.Cache
     /// <summary>
     /// 内存缓存管理类
     /// </summary>
-    public class MemoryCacheStrategy : CacheStrategyBase, IMemoryCacheStrategy
+    public class LocalCacheStrategy : CacheStrategyBase, ILocalCacheStrategy
     {
         /// <summary>
         /// 移除对象
@@ -70,7 +70,7 @@ namespace MySoft.Cache
         /// <summary>
         /// 内存缓存单例
         /// </summary>
-        public static readonly MemoryCacheStrategy Default = new MemoryCacheStrategy("defaultCache");
+        public static readonly LocalCacheStrategy Default = new LocalCacheStrategy("defaultCache");
 
         private static volatile System.Web.Caching.Cache webCache = System.Web.HttpRuntime.Cache;
         private static readonly object lockObject = new object();
@@ -79,7 +79,7 @@ namespace MySoft.Cache
         /// 实例化本地缓存
         /// </summary>
         /// <param name="regionName"></param>
-        public MemoryCacheStrategy(string regionName) : base(regionName) { }
+        public LocalCacheStrategy(string regionName) : base(regionName) { }
 
         /// <summary>
         /// 缓存对象
@@ -102,7 +102,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId">对象的键值</param>
         /// <param name="o">缓存的对象</param>
-        public void AddObject(string objId, object o)
+        public override void AddObject(string objId, object o)
         {
             if (objId == null || objId.Length == 0 || o == null)
             {
@@ -129,7 +129,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId">对象的键值</param>
         /// <param name="o">缓存的对象</param>
-        public void AddObject(string objId, object o, TimeSpan expires)
+        public override void AddObject(string objId, object o, TimeSpan expires)
         {
             AddObject(objId, o, DateTime.Now.Add(expires));
         }
@@ -139,7 +139,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId">对象的键值</param>
         /// <param name="o">缓存的对象</param>
-        public void AddObject(string objId, object o, DateTime datetime)
+        public override void AddObject(string objId, object o, DateTime datetime)
         {
             if (objId == null || objId.Length == 0 || o == null)
             {
@@ -291,11 +291,13 @@ namespace MySoft.Cache
             //MemoryManager.FlushMemory();
         }
 
+        #region ICacheStrategy 成员
+
         /// <summary>
         /// 删除缓存对象
         /// </summary>
         /// <param name="objId">对象的关键字</param>
-        public void RemoveObject(string objId)
+        public override void RemoveObject(string objId)
         {
             if (objId == null || objId.Length == 0)
             {
@@ -313,7 +315,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId">对象的关键字</param>
         /// <returns>对象</returns>
-        public object GetObject(string objId)
+        public override object GetObject(string objId)
         {
             if (objId == null || objId.Length == 0)
             {
@@ -331,7 +333,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId"></param>
         /// <returns></returns>
-        public T GetObject<T>(string objId)
+        public override T GetObject<T>(string objId)
         {
             if (objId == null || objId.Length == 0)
             {
@@ -349,7 +351,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId"></param>
         /// <returns></returns>
-        public object GetMatchObject(string regularExpression)
+        public override object GetMatchObject(string regularExpression)
         {
             lock (lockObject)
             {
@@ -363,7 +365,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId"></param>
         /// <returns></returns>
-        public T GetMatchObject<T>(string regularExpression)
+        public override T GetMatchObject<T>(string regularExpression)
         {
             lock (lockObject)
             {
@@ -372,12 +374,10 @@ namespace MySoft.Cache
             }
         }
 
-        #region ICacheStrategy 成员
-
         /// <summary>
         /// 移除所有缓存对象
         /// </summary>
-        public void RemoveAllObjects()
+        public override void RemoveAllObjects()
         {
             lock (lockObject)
             {
@@ -390,7 +390,7 @@ namespace MySoft.Cache
         /// 获取所有的Key值
         /// </summary>
         /// <returns></returns>
-        public IList<string> GetAllKeys()
+        public override IList<string> GetAllKeys()
         {
             lock (lockObject)
             {
@@ -411,7 +411,7 @@ namespace MySoft.Cache
         /// 获取缓存数
         /// </summary>
         /// <returns></returns>
-        public int GetCacheCount()
+        public override int GetCacheCount()
         {
             lock (lockObject)
             {
@@ -423,7 +423,7 @@ namespace MySoft.Cache
         /// 获取所有对象
         /// </summary>
         /// <returns></returns>
-        public IDictionary<string, object> GetAllObjects()
+        public override IDictionary<string, object> GetAllObjects()
         {
             lock (lockObject)
             {
@@ -436,7 +436,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public IDictionary<string, T> GetAllObjects<T>()
+        public override IDictionary<string, T> GetAllObjects<T>()
         {
             lock (lockObject)
             {
@@ -449,7 +449,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="regularExpression"></param>
         /// <returns></returns>
-        public IList<string> GetKeys(string regularExpression)
+        public override IList<string> GetKeys(string regularExpression)
         {
             lock (lockObject)
             {
@@ -474,7 +474,7 @@ namespace MySoft.Cache
         /// 添加多个对象到缓存
         /// </summary>
         /// <param name="data"></param>
-        public void AddObjects(IDictionary<string, object> data)
+        public override void AddObjects(IDictionary<string, object> data)
         {
             lock (lockObject)
             {
@@ -489,7 +489,7 @@ namespace MySoft.Cache
         /// 添加多个对象到缓存
         /// </summary>
         /// <param name="data"></param>
-        public void AddObjects<T>(IDictionary<string, T> data)
+        public override void AddObjects<T>(IDictionary<string, T> data)
         {
             lock (lockObject)
             {
@@ -504,7 +504,7 @@ namespace MySoft.Cache
         /// 正则表达式方式移除对象
         /// </summary>
         /// <param name="regularExpression">匹配KEY正则表示式</param>
-        public void RemoveMatchObjects(string regularExpression)
+        public override void RemoveMatchObjects(string regularExpression)
         {
             lock (lockObject)
             {
@@ -517,7 +517,7 @@ namespace MySoft.Cache
         /// 移除多个对象
         /// </summary>
         /// <param name="objIds"></param>
-        public void RemoveObjects(IList<string> objIds)
+        public override void RemoveObjects(IList<string> objIds)
         {
             lock (lockObject)
             {
@@ -533,7 +533,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objIds"></param>
         /// <returns></returns>
-        public IDictionary<string, object> GetObjects(IList<string> objIds)
+        public override IDictionary<string, object> GetObjects(IList<string> objIds)
         {
             lock (lockObject)
             {
@@ -557,7 +557,7 @@ namespace MySoft.Cache
         /// <typeparam name="T"></typeparam>
         /// <param name="objIds"></param>
         /// <returns></returns>
-        public IDictionary<string, T> GetObjects<T>(IList<string> objIds)
+        public override IDictionary<string, T> GetObjects<T>(IList<string> objIds)
         {
             lock (lockObject)
             {
@@ -580,7 +580,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="regularExpression"></param>
         /// <returns></returns>
-        public IDictionary<string, object> GetMatchObjects(string regularExpression)
+        public override IDictionary<string, object> GetMatchObjects(string regularExpression)
         {
             lock (lockObject)
             {
@@ -593,7 +593,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="regularExpression"></param>
         /// <returns></returns>
-        public IDictionary<string, T> GetMatchObjects<T>(string regularExpression)
+        public override IDictionary<string, T> GetMatchObjects<T>(string regularExpression)
         {
             lock (lockObject)
             {

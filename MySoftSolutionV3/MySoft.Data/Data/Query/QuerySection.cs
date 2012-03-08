@@ -741,7 +741,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual ArrayList<object> ToListResult()
         {
-            return ExcuteDataListResult<object>(this);
+            return ExecuteDataListResult<object>(this);
         }
 
         /// <summary>
@@ -765,7 +765,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual ArrayList<TResult> ToListResult<TResult>()
         {
-            return ExcuteDataListResult<TResult>(this);
+            return ExecuteDataListResult<TResult>(this);
         }
 
         #endregion
@@ -778,7 +778,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual SourceList<T> ToList()
         {
-            return ExcuteDataList<T>(this);
+            return ExecuteDataList<T>(this);
         }
 
         /// <summary>
@@ -813,7 +813,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual SourceReader ToReader()
         {
-            return ExcuteDataReader(this);
+            return ExecuteDataReader(this);
         }
 
         /// <summary>
@@ -835,7 +835,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual DataSet ToDataSet()
         {
-            return ExcuteDataSet(this);
+            return ExecuteDataSet(this);
         }
 
         /// <summary>
@@ -857,7 +857,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual SourceTable ToTable()
         {
-            return ExcuteDataTable(this);
+            return ExecuteDataTable(this);
         }
 
         /// <summary>
@@ -877,7 +877,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public object ToScalar()
         {
-            return ExcuteScalar(this);
+            return ExecuteScalar(this);
         }
 
         /// <summary>
@@ -910,35 +910,35 @@ namespace MySoft.Data
         {
             var tempQuery = CloneNewQuery<TResult>(query);
             tempQuery = dbProvider.CreatePageQuery<TResult>(tempQuery, itemCount, skipCount);
-            return ExcuteDataList<TResult>(tempQuery);
+            return ExecuteDataList<TResult>(tempQuery);
         }
 
         private ArrayList<TResult> GetListResult<TResult>(QuerySection<T> query, int itemCount, int skipCount)
         {
             var tempQuery = CloneNewQuery<T>(query);
             tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
-            return ExcuteDataListResult<TResult>(tempQuery);
+            return ExecuteDataListResult<TResult>(tempQuery);
         }
 
         private SourceReader GetDataReader(QuerySection<T> query, int itemCount, int skipCount)
         {
             var tempQuery = CloneNewQuery<T>(query);
             tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
-            return ExcuteDataReader(tempQuery);
+            return ExecuteDataReader(tempQuery);
         }
 
         private SourceTable GetDataTable(QuerySection<T> query, int itemCount, int skipCount)
         {
             var tempQuery = CloneNewQuery<T>(query);
             tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
-            return ExcuteDataTable(tempQuery);
+            return ExecuteDataTable(tempQuery);
         }
 
         private DataSet GetDataSet(QuerySection<T> query, int itemCount, int skipCount)
         {
             var tempQuery = CloneNewQuery<T>(query);
             tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
-            return ExcuteDataSet(tempQuery);
+            return ExecuteDataSet(tempQuery);
         }
 
         private int GetCount(QuerySection<T> query)
@@ -972,7 +972,7 @@ namespace MySoft.Data
 
         #region Ë½ÓÐ·½·¨
 
-        private ArrayList<TResult> ExcuteDataListResult<TResult>(QuerySection<T> query)
+        private ArrayList<TResult> ExecuteDataListResult<TResult>(QuerySection<T> query)
         {
             try
             {
@@ -984,7 +984,7 @@ namespace MySoft.Data
                     return (SourceList<TResult>)obj;
                 }
 
-                using (SourceReader reader = ExcuteDataReader(query))
+                using (SourceReader reader = ExecuteDataReader(query))
                 {
                     ArrayList<TResult> list = new ArrayList<TResult>();
 
@@ -1023,7 +1023,7 @@ namespace MySoft.Data
             }
         }
 
-        private SourceList<TResult> ExcuteDataList<TResult>(QuerySection<TResult> query)
+        private SourceList<TResult> ExecuteDataList<TResult>(QuerySection<TResult> query)
             where TResult : Entity
         {
             try
@@ -1036,7 +1036,7 @@ namespace MySoft.Data
                     return (SourceList<TResult>)obj;
                 }
 
-                using (SourceReader reader = ExcuteDataReader(query))
+                using (SourceReader reader = ExecuteDataReader(query))
                 {
                     SourceList<TResult> list = new SourceList<TResult>();
 
@@ -1063,7 +1063,7 @@ namespace MySoft.Data
             }
         }
 
-        private SourceReader ExcuteDataReader<TResult>(QuerySection<TResult> query)
+        private SourceReader ExecuteDataReader<TResult>(QuerySection<TResult> query)
             where TResult : Entity
         {
             try
@@ -1081,7 +1081,7 @@ namespace MySoft.Data
             }
         }
 
-        private DataSet ExcuteDataSet<TResult>(QuerySection<TResult> query)
+        private DataSet ExecuteDataSet<TResult>(QuerySection<TResult> query)
             where TResult : Entity
         {
             try
@@ -1110,7 +1110,7 @@ namespace MySoft.Data
             }
         }
 
-        private SourceTable ExcuteDataTable<TResult>(QuerySection<TResult> query)
+        private SourceTable ExecuteDataTable<TResult>(QuerySection<TResult> query)
             where TResult : Entity
         {
             try
@@ -1142,7 +1142,7 @@ namespace MySoft.Data
             }
         }
 
-        private object ExcuteScalar<TResult>(QuerySection<TResult> query)
+        private object ExecuteScalar<TResult>(QuerySection<TResult> query)
             where TResult : Entity
         {
             try

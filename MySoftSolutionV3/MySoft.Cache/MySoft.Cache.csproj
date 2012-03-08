@@ -63,11 +63,13 @@
   <ItemGroup>
     <Compile Include="CacheFactory.cs" />
     <Compile Include="CacheStrategyBase.cs" />
-    <Compile Include="DefaultCacheDependent.cs" />
-    <Compile Include="ICacheStrategy.cs" />
-    <Compile Include="MemoryCacheStrategy.cs" />
+    <Compile Include="CacheType.cs" />
+    <Compile Include="LocalServiceCache.cs" />
+    <Compile Include="LocalCacheStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceCacheBase.cs" />
     <Compile Include="SharedCacheStrategy.cs" />
+    <Compile Include="SharedServiceCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MySoft.Core\MySoft.Core.csproj">

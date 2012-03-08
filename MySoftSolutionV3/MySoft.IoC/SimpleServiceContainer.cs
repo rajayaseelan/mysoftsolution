@@ -15,6 +15,7 @@ using Castle.Windsor.Configuration.Interpreters;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using MySoft.Cache;
 
 namespace MySoft.IoC
 {

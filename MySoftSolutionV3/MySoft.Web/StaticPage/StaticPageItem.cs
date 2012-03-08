@@ -48,12 +48,12 @@ namespace MySoft.Web
         /// <summary>
         /// 开始处理
         /// </summary>
-        event ExcutingEventHandler OnStart;
+        event ExecuteEventHandler OnStart;
 
         /// <summary>
         /// 结束处理
         /// </summary>
-        event ExcutingEventHandler OnComplete;
+        event ExecuteEventHandler OnComplete;
 
         /// <summary>
         /// 生成时的回调
@@ -87,7 +87,7 @@ namespace MySoft.Web
     /// <param name="createTime"></param>
     /// <param name="dynamicurl"></param>
     /// <param name="staticurl"></param>
-    public delegate void ExcutingEventHandler(DateTime createTime, string dynamicurl, string staticurl);
+    public delegate void ExecuteEventHandler(DateTime createTime, string dynamicurl, string staticurl);
 
     /// <summary>
     /// 生成页面时委托
@@ -116,12 +116,12 @@ namespace MySoft.Web
         /// <summary>
         /// 回调
         /// </summary>
-        public event ExcutingEventHandler OnStart;
+        public event ExecuteEventHandler OnStart;
 
         /// <summary>
         /// 结束处理
         /// </summary>
-        public event ExcutingEventHandler OnComplete;
+        public event ExecuteEventHandler OnComplete;
 
         /// <summary>
         /// 生成时的回调
@@ -500,12 +500,12 @@ namespace MySoft.Web
         /// <summary>
         /// 回调
         /// </summary>
-        public event ExcutingEventHandler OnStart;
+        public event ExecuteEventHandler OnStart;
 
         /// <summary>
         /// 结束处理
         /// </summary>
-        public event ExcutingEventHandler OnComplete;
+        public event ExecuteEventHandler OnComplete;
 
         /// <summary>
         /// 生成时的回调

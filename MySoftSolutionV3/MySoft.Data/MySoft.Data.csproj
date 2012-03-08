@@ -84,6 +84,8 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cache\DataCacheDependent.cs" />
+    <Compile Include="Cache\ICacheDependent.cs" />
     <Compile Include="Common\EntityConfig.cs" />
     <Compile Include="Common\EntityMapping.cs" />
     <Compile Include="Common\IValidator.cs" />

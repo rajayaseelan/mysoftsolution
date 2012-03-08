@@ -5,6 +5,7 @@ using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using MySoft.Cache;
 
 namespace MySoft.IoC.Services
 {

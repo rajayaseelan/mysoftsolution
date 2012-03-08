@@ -3,21 +3,6 @@
 namespace MySoft.Cache
 {
     /// <summary>
-    /// 缓存类型
-    /// </summary>
-    public enum CacheType
-    {
-        /// <summary>
-        /// 本地的
-        /// </summary>
-        Local,
-        /// <summary>
-        /// 分布的
-        /// </summary>
-        Distributed
-    }
-
-    /// <summary>
     /// 缓存工厂类
     /// </summary>
     public static class CacheFactory
@@ -74,11 +59,11 @@ namespace MySoft.Cache
             switch (type)
             {
                 case CacheType.Local:
-                    return new MemoryCacheStrategy(regionName);
+                    return new LocalCacheStrategy(regionName);
                 case CacheType.Distributed:
                     return new SharedCacheStrategy(regionName);
                 default:
-                    return new MemoryCacheStrategy(regionName);
+                    return new LocalCacheStrategy(regionName);
             }
         }
     }

@@ -70,10 +70,10 @@ namespace MySoft.Data
 
         #region ´´½¨Æ÷²Ù×÷
 
-        int Excute<TResult>(InsertCreator creator, out TResult identityValue);
-        int Excute(InsertCreator creator);
-        int Excute(DeleteCreator creator);
-        int Excute(UpdateCreator creator);
+        int Execute<TResult>(InsertCreator creator, out TResult identityValue);
+        int Execute(InsertCreator creator);
+        int Execute(DeleteCreator creator);
+        int Execute(UpdateCreator creator);
 
         QuerySection From(QueryCreator creator);
 

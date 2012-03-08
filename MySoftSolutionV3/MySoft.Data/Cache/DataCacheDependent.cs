@@ -1,31 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MySoft.Cache;
 
-namespace MySoft.Cache
+namespace MySoft.Data.Cache
 {
     /// <summary>
     /// 默认缓存依赖
     /// </summary>
-    public class DefaultCacheDependent : ICacheDependent
+    internal class DataCacheDependent : ICacheDependent
     {
         private ICacheStrategy strategy;
         /// <summary>
         /// 实例化默认缓存依赖
         /// </summary>
         /// <param name="strategy"></param>
-        public DefaultCacheDependent(ICacheStrategy strategy)
+        public DataCacheDependent(ICacheStrategy strategy)
         {
             this.strategy = strategy;
-        }
-
-        /// <summary>
-        /// 实例化默认缓存依赖
-        /// </summary>
-        /// <param name="type"></param>
-        public DefaultCacheDependent(CacheType type)
-        {
-            this.strategy = CacheFactory.CreateCache("DefaultCacheDependent", type);
         }
 
         #region ICacheDependent 成员
