@@ -87,6 +87,23 @@
             内容对象
             </summary>
         </member>
+        <member name="T:MySoft.RESTful.RESTfulException">
+            <summary>
+            RESTful异常
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.RESTfulException.#ctor(System.Int32,System.String)">
+            <summary>
+            实例 化RESTfulException
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+        </member>
+        <member name="P:MySoft.RESTful.RESTfulException.Code">
+            <summary>
+            状态码
+            </summary>
+        </member>
         <member name="T:MySoft.RESTful.Business.Pool.IBusinessPool">
             <summary>
             业务池接口
@@ -143,6 +160,24 @@
             业务注册器
             </summary>
         </member>
+        <member name="T:MySoft.RESTful.IContainer">
+            <summary>
+            容器对象
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.IContainer.Resolve(System.Type)">
+            <summary>
+            解析服务
+            </summary>
+            <param name="service"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.IContainer.Release(System.Object)">
+            <summary>
+            释放资源
+            </summary>
+            <param name="instance"></param>
+        </member>
         <member name="M:MySoft.RESTful.Business.Register.IBusinessRegister.Register(MySoft.RESTful.Business.Pool.IBusinessPool)">
             <summary>
             注册业务
@@ -188,7 +223,7 @@
             方法调用类型
             </summary>
         </member>
-        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.Container">
+        <member name="P:MySoft.RESTful.Business.BusinessMethodModel.Service">
             <summary>
             业务执行对象
             </summary>
@@ -322,7 +357,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetResultWriteErrorLog(System.String,System.Exception)">
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetResult(System.String,System.Exception)">
             <summary>
             写错误日志
             </summary>
@@ -444,11 +479,47 @@
             本地业务注册器,读取本地配置文件,加载程序集,反射获取需要绑定的业务接口对象和业务方法
             </summary>
         </member>
+        <member name="F:MySoft.RESTful.Business.Register.NativeBusinessRegister.container">
+            <summary>
+            容器对象
+            </summary>
+        </member>
         <member name="M:MySoft.RESTful.Business.Register.NativeBusinessRegister.GetInterfaceServices``1(Castle.Windsor.IWindsorContainer)">
             <summary>
             获取约束的接口
             </summary>
             <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Register.NativeBusinessRegister.Resolve(System.Type)">
+            <summary>
+            解析服务
+            </summary>
+            <param name="service"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.Business.Register.NativeBusinessRegister.Release(System.Object)">
+            <summary>
+            释放对象
+            </summary>
+            <param name="instance"></param>
+        </member>
+        <member name="T:MySoft.RESTful.ServiceContainer">
+            <summary>
+            简单容器
+            </summary>
+        </member>
+        <member name="M:MySoft.RESTful.ServiceContainer.Resolve(System.Type)">
+            <summary>
+            解析服务
+            </summary>
+            <param name="service"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.RESTful.ServiceContainer.Release(System.Object)">
+            <summary>
+            释放资源
+            </summary>
+            <param name="instance"></param>
         </member>
         <member name="T:MySoft.RESTful.Utils.ParameterFormat">
             <summary>
@@ -493,11 +564,6 @@
         <member name="F:MySoft.RESTful.Business.BusinessRESTfulContext.register">
             <summary>
             业务注册
-            </summary>
-        </member>
-        <member name="F:MySoft.RESTful.Business.BusinessRESTfulContext.container">
-            <summary>
-            容器
             </summary>
         </member>
         <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.#ctor">
@@ -547,6 +613,26 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:MySoft.RESTful.RESTfulResult">
+            <summary>
+            RESTful结果
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.RESTfulResult.Code">
+            <summary>
+            代码
+            </summary>
+        </member>
+        <member name="P:MySoft.RESTful.RESTfulResult.Message">
+            <summary>
+            消息
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.RESTfulResponse">
+            <summary>
+            RESTful响应
+            </summary>
+        </member>
         <member name="T:MySoft.RESTful.SerializerFactory">
             <summary>
             系列化工厂
@@ -567,71 +653,6 @@
         <member name="P:MySoft.RESTful.Business.BusinessKindModel.MethodModels">
             <summary>
             业务元数据集合,封装了该类别下所有的业务方法和业务对象
-            </summary>
-        </member>
-        <member name="T:MySoft.RESTful.IContainer">
-            <summary>
-            容器对象
-            </summary>
-        </member>
-        <member name="M:MySoft.RESTful.IContainer.Resolve">
-            <summary>
-            解析服务
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.RESTful.IContainer.Release(System.Object)">
-            <summary>
-            释放资源
-            </summary>
-            <param name="instance"></param>
-        </member>
-        <member name="T:MySoft.RESTful.ServiceContainer">
-            <summary>
-            简单容器
-            </summary>
-        </member>
-        <member name="M:MySoft.RESTful.ServiceContainer.Resolve">
-            <summary>
-            解析服务
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.RESTful.ServiceContainer.Release(System.Object)">
-            <summary>
-            释放资源
-            </summary>
-            <param name="instance"></param>
-        </member>
-        <member name="T:MySoft.RESTful.RESTfulException">
-            <summary>
-            RESTful异常
-            </summary>
-        </member>
-        <member name="M:MySoft.RESTful.RESTfulException.#ctor(System.String)">
-            <summary>
-            实例 化RESTfulException
-            </summary>
-            <param name="message"></param>
-        </member>
-        <member name="T:MySoft.RESTful.RESTfulResult">
-            <summary>
-            RESTful结果
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.RESTfulResult.Code">
-            <summary>
-            代码
-            </summary>
-        </member>
-        <member name="P:MySoft.RESTful.RESTfulResult.Message">
-            <summary>
-            消息
-            </summary>
-        </member>
-        <member name="T:MySoft.RESTful.RESTfulResponse">
-            <summary>
-            RESTful响应
             </summary>
         </member>
     </members>

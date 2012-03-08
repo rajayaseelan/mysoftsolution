@@ -772,7 +772,6 @@
             Creates this instance. Used in a multithreaded environment
             </summary>
             <param name="config"></param>
-            <param name="name">service name</param>
             <returns>The service factoru new instance.</returns>
         </member>
         <member name="M:MySoft.IoC.CastleFactory.GetDefaultNode">
@@ -1319,21 +1318,6 @@
             <param name="message"></param>
             <returns></returns>
         </member>
-        <member name="T:MySoft.IoC.HttpServer.HttpServiceException">
-            <summary>
-            http服务异常
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HttpServer.HttpServiceException.Code">
-            <summary>
-            代码
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HttpServer.HttpServiceException.Message">
-            <summary>
-            消息
-            </summary>
-        </member>
         <member name="T:MySoft.IoC.Messages.ServerStatus">
             <summary>
             服务器状态信息
@@ -1759,9 +1743,29 @@
             总耗时
             </summary>
         </member>
+        <member name="T:MySoft.IoC.Configuration.DataType">
+            <summary>
+            数据格式
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Configuration.DataType.Binary">
+            <summary>
+            二进制
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.Configuration.DataType.Json">
+            <summary>
+            Json格式
+            </summary>
+        </member>
         <member name="T:MySoft.IoC.Configuration.CastleFactoryConfiguration">
             <summary>
             The service factory configuration.
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Configuration.CastleFactoryConfiguration.#ctor">
+            <summary>
+            实例化CastleFactoryConfiguration
             </summary>
         </member>
         <member name="M:MySoft.IoC.Configuration.CastleFactoryConfiguration.GetConfig">
@@ -1796,15 +1800,20 @@
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.ThrowError">
             <summary>
-            Gets or sets the throwerror
+            Gets or sets the throwError
             </summary>
-            <value>The throwerror.</value>
+            <value>The throwError.</value>
         </member>
-        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.Json">
+        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.DataType">
             <summary>
-            Gets or sets the json
+            Gets or sets the format
             </summary>
-            <value>The throwerror.</value>
+            <value>The throwError.</value>
+        </member>
+        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.CacheType">
+            <summary>
+            Gets or sets the cacheType
+            </summary>
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.Nodes">
             <summary>
@@ -1840,6 +1849,21 @@
             <param name="message">Exception message</param>
             <param name="innerException">Inner exception</param>
         </member>
+        <member name="T:MySoft.IoC.HttpServer.HttpServiceResult">
+            <summary>
+            http服务结果
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpServiceResult.Code">
+            <summary>
+            代码
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpServiceResult.Message">
+            <summary>
+            消息
+            </summary>
+        </member>
         <member name="T:MySoft.IoC.HttpServer.HttpDocument">
             <summary>
             API文档类
@@ -1851,12 +1875,13 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.HttpServer.HttpDocument.GetItemDocument(System.Collections.Generic.KeyValuePair{System.String,MySoft.IoC.HttpServer.HttpCallerInfo},System.String,System.String)">
+        <member name="M:MySoft.IoC.HttpServer.HttpDocument.GetItemDocument(MySoft.IoC.HttpServer.HttpCallerInfo,System.String,System.String)">
             <summary>
             获取Item文档
             </summary>
-            <param name="kv"></param>
+            <param name="caller"></param>
             <param name="item"></param>
+            <param name="name"></param>
             <returns></returns>
         </member>
         <member name="T:MySoft.IoC.Aspect.InnerInvocation">
@@ -1955,7 +1980,7 @@
             The service name.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Services.BaseService.#ctor(MySoft.IoC.IServiceContainer,System.Type)">
+        <member name="M:MySoft.IoC.Services.BaseService.#ctor(MySoft.IoC.IServiceContainer,MySoft.Cache.IServiceCache,System.Type)">
             <summary>
             Initializes a new instance of the <see cref="T:MySoft.IoC.Services.BaseService"/> class.
             </summary>
@@ -2206,11 +2231,6 @@
             </summary>
             <value>The kernel.</value>
         </member>
-        <member name="P:MySoft.IoC.IServiceContainer.ServiceCache">
-            <summary>
-            Get service cache.
-            </summary>
-        </member>
         <member name="M:MySoft.IoC.SimpleServiceContainer.GetComponentModels``1(Castle.Windsor.WindsorContainer)">
             <summary>
             获取约束的实现
@@ -2219,7 +2239,7 @@
             <param name="container"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.SimpleServiceContainer.#ctor(MySoft.IoC.CastleFactoryType)">
+        <member name="M:MySoft.IoC.SimpleServiceContainer.#ctor(MySoft.IoC.CastleFactoryType,MySoft.Cache.IServiceCache)">
             <summary>
             Initializes a new instance of the <see cref="T:MySoft.IoC.SimpleServiceContainer"/> class.
             </summary>
@@ -2324,11 +2344,6 @@
             Gets the kernel.
             </summary>
             <value>The kernel.</value>
-        </member>
-        <member name="P:MySoft.IoC.SimpleServiceContainer.ServiceCache">
-            <summary>
-            Get the cache
-            </summary>
         </member>
         <member name="P:MySoft.IoC.SimpleServiceContainer.ServiceName">
             <summary>
@@ -2841,6 +2856,42 @@
             Gets the types of the model.
             </summary>
             <value>The types of the model.</value>
+        </member>
+        <member name="T:MySoft.IoC.HttpServer.HttpCallerInfoCollection">
+            <summary>
+            CallInfo集合
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpCallerInfoCollection.#ctor">
+            <summary>
+            实例化HttpCallerInfoCollection
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpCallerInfoCollection.ContainsKey(System.String)">
+            <summary>
+            判断是否存在
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpCallerInfoCollection.GetEnumerator">
+            <summary>
+            获取集合枚举
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpCallerInfoCollection.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            获取集合枚举
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfoCollection.Item(System.String)">
+            <summary>
+            获取集合中的数据
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
         </member>
         <member name="T:MySoft.IoC.IStartable">
             <summary>
@@ -3714,9 +3765,9 @@
             Gets or sets the httpenabled
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.AssemblyName">
+        <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.CacheType">
             <summary>
-            Gets or sets the assembly
+            Gets or sets the cacheType
             </summary>
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.Host">
@@ -3745,13 +3796,13 @@
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.RecordNums">
             <summary>
-            Gets or sets the recordnums
+            Gets or sets the recordNums
             </summary>
-            <value>The recordnums.</value>
+            <value>The recordNums.</value>
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleServiceConfiguration.MinuteCalls">
             <summary>
-            Gets or sets the minutecalls
+            Gets or sets the minuteCalls
             </summary>
         </member>
         <member name="T:MySoft.IoC.CastleFactoryType">
@@ -4172,6 +4223,39 @@
             <param name="endpointAddress">End point address of the server to connect it</param>
             <returns>Created TCP client</returns>
         </member>
+        <member name="T:MySoft.IoC.Services.ServiceCache">
+            <summary>
+            服务缓存
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Services.ServiceCache.#ctor(MySoft.Cache.IServiceCache)">
+            <summary>
+            实例化ServiceCache
+            </summary>
+            <param name="cache"></param>
+        </member>
+        <member name="M:MySoft.IoC.Services.ServiceCache.Insert(System.String,System.Object,System.Int32)">
+            <summary>
+            插入缓存数据
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="seconds"></param>
+        </member>
+        <member name="M:MySoft.IoC.Services.ServiceCache.Get``1(System.String)">
+            <summary>
+            获取缓存数据
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.ServiceCache.Remove(System.String)">
+            <summary>
+            移除缓存数据
+            </summary>
+            <param name="key"></param>
+        </member>
         <member name="T:MySoft.IoC.JsonInvocationHandler">
             <summary>
             Json处理句柄
@@ -4276,35 +4360,6 @@
             回调类型
             </summary>
         </member>
-        <member name="M:MySoft.IoC.OperationContext.RemoveCache``1(System.String)">
-            <summary>
-            移除缓存
-            </summary>
-            <typeparam name="TService"></typeparam>
-            <param name="cacheKey"></param>
-        </member>
-        <member name="M:MySoft.IoC.OperationContext.RemoveCache(System.String)">
-            <summary>
-            移除缓存
-            </summary>
-            <param name="cacheKey"></param>
-        </member>
-        <member name="M:MySoft.IoC.OperationContext.AddCache(System.String,System.Object,System.TimeSpan)">
-            <summary>
-            添加缓存
-            </summary>
-            <param name="cacheKey"></param>
-            <param name="cacheObject"></param>
-            <param name="timeSpan"></param>
-        </member>
-        <member name="M:MySoft.IoC.OperationContext.GetCache``1(System.String)">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-            <returns></returns>
-        </member>
         <member name="M:MySoft.IoC.OperationContext.GetCallbackChannel``1">
             <summary>
             获取回调代理服务
@@ -4315,11 +4370,6 @@
         <member name="P:MySoft.IoC.OperationContext.Current">
             <summary>
             当前上下文对象
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.OperationContext.ServiceCache">
-            <summary>
-            服务缓存
             </summary>
         </member>
         <member name="P:MySoft.IoC.OperationContext.Container">
@@ -4411,11 +4461,12 @@
             state may have became valid, so we check them
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Services.ServiceDiscoverFacility.#ctor(MySoft.IoC.IServiceContainer)">
+        <member name="M:MySoft.IoC.Services.ServiceDiscoverFacility.#ctor(MySoft.IoC.IServiceContainer,MySoft.Cache.IServiceCache)">
             <summary>
             Initializes a new instance of the <see cref="T:MySoft.IoC.Services.ServiceDiscoverFacility"/> class.
             </summary>
             <param name="container">The container.</param>
+            <param name="cache">The cache.</param>
         </member>
         <member name="M:MySoft.IoC.Services.ServiceDiscoverFacility.Init">
             <summary>
@@ -4427,7 +4478,12 @@
             调用信息
             </summary>
         </member>
-        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.ServiceName">
+        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.CallerName">
+            <summary>
+            调用名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.Service">
             <summary>
             服务名称
             </summary>
@@ -4435,6 +4491,11 @@
         <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.Method">
             <summary>
             调用方法
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.Parameters">
+            <summary>
+            参数信息
             </summary>
         </member>
         <member name="P:MySoft.IoC.HttpServer.HttpCallerInfo.Description">
@@ -4643,7 +4704,7 @@
             HttpServiceCaller初始化
             </summary>
             <param name="container"></param>
-            <param name="httpAuth"></param>
+            <param name="cache"></param>
             <param name="port"></param>
         </member>
         <member name="M:MySoft.IoC.HttpServer.HttpServiceCaller.GetDocument(System.String)">
@@ -4823,6 +4884,48 @@
             参数信息
             </summary>
         </member>
+        <member name="T:MySoft.IoC.Messages.CounterInfoCollection">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Messages.CounterInfoCollection.#ctor(System.Int32)">
+            <summary>
+            实例化CounterInfoCollection
+            </summary>
+            <param name="maxCount"></param>
+        </member>
+        <member name="M:MySoft.IoC.Messages.CounterInfoCollection.Call(MySoft.IoC.Messages.CallEventArgs)">
+            <summary>
+            调用方法
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:MySoft.IoC.Messages.CounterInfoCollection.Reset">
+            <summary>
+            重置计数器
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Messages.CounterInfo">
+            <summary>
+            调用计数器
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CounterInfo.ServiceName">
+            <summary>
+            服务名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CounterInfo.MethodName">
+            <summary>
+            方法名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Messages.CounterInfo.Count">
+            <summary>
+            调用次数
+            </summary>
+        </member>
         <member name="T:MySoft.IoC.LocalInvocationHandler">
             <summary>
             本地拦截器
@@ -4928,7 +5031,7 @@
             The dynamic service.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.Services.DynamicService.#ctor(MySoft.IoC.IServiceContainer,System.Type)">
+        <member name="M:MySoft.IoC.Services.DynamicService.#ctor(MySoft.IoC.IServiceContainer,MySoft.Cache.IServiceCache,System.Type)">
             <summary>
             Initializes a new instance of the <see cref="T:MySoft.IoC.Services.DynamicService"/> class.
             </summary>
@@ -5211,48 +5314,6 @@
             </summary>
             <param name="request"></param>
             <param name="response"></param>
-        </member>
-        <member name="T:MySoft.IoC.Messages.CounterInfoCollection">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Messages.CounterInfoCollection.#ctor(System.Int32)">
-            <summary>
-            实例化CounterInfoCollection
-            </summary>
-            <param name="maxCount"></param>
-        </member>
-        <member name="M:MySoft.IoC.Messages.CounterInfoCollection.Call(MySoft.IoC.Messages.CallEventArgs)">
-            <summary>
-            调用方法
-            </summary>
-            <param name="args"></param>
-        </member>
-        <member name="M:MySoft.IoC.Messages.CounterInfoCollection.Reset">
-            <summary>
-            重置计数器
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.Messages.CounterInfo">
-            <summary>
-            调用计数器
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Messages.CounterInfo.ServiceName">
-            <summary>
-            服务名称
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Messages.CounterInfo.MethodName">
-            <summary>
-            方法名称
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Messages.CounterInfo.Count">
-            <summary>
-            调用次数
-            </summary>
         </member>
     </members>
 </doc>

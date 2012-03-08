@@ -1008,17 +1008,38 @@
             <param name="key"></param>
             <returns></returns>
         </member>
-        <member name="F:MySoft.Web.UI.AjaxMethodAttribute.name">
+        <member name="M:MySoft.Web.UI.AjaxMethodAttribute.#ctor">
             <summary>
-            自定义方法名称
+            实例化AjaxMethodAttribute
             </summary>
         </member>
-        <member name="F:MySoft.Web.UI.AjaxMethodInfo.name">
+        <member name="M:MySoft.Web.UI.AjaxMethodAttribute.#ctor(System.String)">
             <summary>
-            函数名称
+            实例化AjaxMethodAttribute
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="P:MySoft.Web.UI.AjaxMethodAttribute.Name">
+            <summary>
+            方法名称
             </summary>
         </member>
-        <member name="F:MySoft.Web.UI.AjaxMethodInfo.paramters">
+        <member name="P:MySoft.Web.UI.AjaxMethodAttribute.Async">
+            <summary>
+            是否异步
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UI.AjaxMethodInfo.Name">
+            <summary>
+            方法名称
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UI.AjaxMethodInfo.Async">
+            <summary>
+            是否异步
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UI.AjaxMethodInfo.Paramters">
             <summary>
             参数列表
             </summary>
@@ -2033,6 +2054,16 @@
             <param name="ci">The ci.</param>
             <returns>The resource value.</returns>
         </member>
+        <member name="P:MySoft.Web.UI.AsyncMethodInfo.Async">
+            <summary>
+            是否异步
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UI.AsyncMethodInfo.Method">
+            <summary>
+            调用方法
+            </summary>
+        </member>
         <member name="M:MySoft.Web.UI.AjaxMethodHelper.GetAjaxMethods(System.Type)">
             <summary>
             获取方法列表
@@ -2110,7 +2141,7 @@
             是否为远程页面
             </summary>
         </member>
-        <member name="T:MySoft.Web.ExcutingEventHandler">
+        <member name="T:MySoft.Web.ExecuteEventHandler">
             <summary>
             执行生成时的委托
             </summary>

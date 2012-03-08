@@ -313,13 +313,13 @@
             <param name="procName"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbProvider.BeginExcuteCommand(System.Data.Common.DbCommand)">
+        <member name="M:MySoft.Data.DbProvider.BeginExecuteCommand(System.Data.Common.DbCommand)">
             <summary>
             Writes the log.
             </summary>
             <param name="command">The command.</param>
         </member>
-        <member name="M:MySoft.Data.DbProvider.EndExcuteCommand(System.Data.Common.DbCommand,System.Object,System.Int32)">
+        <member name="M:MySoft.Data.DbProvider.EndExecuteCommand(System.Data.Common.DbCommand,System.Object,System.Int32)">
             <summary>
             结束时执行的操作
             </summary>
@@ -1700,19 +1700,19 @@
             会话操作对象
             </summary>
         </member>
-        <member name="M:MySoft.Data.IDbSession.RegisterDecryptHandler(MySoft.Data.DecryptEventHandler)">
+        <member name="M:MySoft.Data.IDbSession.RegisterDecryptor(MySoft.Data.DecryptEventHandler)">
             <summary>
             注册解密的Handler
             </summary>
             <param name="handler"></param>
         </member>
-        <member name="M:MySoft.Data.IDbSession.RegisterExcutingLog(MySoft.Data.IExcutingLog)">
+        <member name="M:MySoft.Data.IDbSession.RegisterLogger(MySoft.Data.IExecuteLog)">
             <summary>
             注册日志依赖
             </summary>
             <param name="logger"></param>
         </member>
-        <member name="M:MySoft.Data.IDbSession.RegisterCacheDependent(MySoft.Cache.ICacheDependent)">
+        <member name="M:MySoft.Data.IDbSession.RegisterCache(MySoft.Cache.ICacheStrategy)">
             <summary>
             注册缓存依赖
             </summary>
@@ -2136,14 +2136,14 @@
             <param name="procName"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbSession.Excute(MySoft.Data.InsertCreator)">
+        <member name="M:MySoft.Data.DbSession.Execute(MySoft.Data.InsertCreator)">
             <summary>
             插入数据
             </summary>
             <param name="creator"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbSession.Excute``1(MySoft.Data.InsertCreator,``0@)">
+        <member name="M:MySoft.Data.DbSession.Execute``1(MySoft.Data.InsertCreator,``0@)">
             <summary>
              插入数据
             </summary>
@@ -2152,7 +2152,7 @@
             <param name="identityValue"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbSession.Excute(MySoft.Data.DeleteCreator)">
+        <member name="M:MySoft.Data.DbSession.Execute(MySoft.Data.DeleteCreator)">
             <summary>
             按条件删除指定记录
             </summary>
@@ -2160,7 +2160,7 @@
             <param name="creator"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbSession.Excute(MySoft.Data.UpdateCreator)">
+        <member name="M:MySoft.Data.DbSession.Execute(MySoft.Data.UpdateCreator)">
             <summary>
             更新数据
             </summary>
@@ -2376,19 +2376,19 @@
             <param name="order"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbSession.RegisterDecryptHandler(MySoft.Data.DecryptEventHandler)">
+        <member name="M:MySoft.Data.DbSession.RegisterDecryptor(MySoft.Data.DecryptEventHandler)">
             <summary>
             注册解密的Handler
             </summary>
             <param name="handler"></param>
         </member>
-        <member name="M:MySoft.Data.DbSession.RegisterExcutingLog(MySoft.Data.IExcutingLog)">
+        <member name="M:MySoft.Data.DbSession.RegisterLogger(MySoft.Data.IExecuteLog)">
             <summary>
             注册日志依赖
             </summary>
             <param name="logger"></param>
         </member>
-        <member name="M:MySoft.Data.DbSession.RegisterCacheDependent(MySoft.Cache.ICacheDependent)">
+        <member name="M:MySoft.Data.DbSession.RegisterCache(MySoft.Cache.ICacheStrategy)">
             <summary>
             注册缓存依赖
             </summary>
@@ -6528,14 +6528,14 @@
             <param name="procName"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbTrans.Excute(MySoft.Data.InsertCreator)">
+        <member name="M:MySoft.Data.DbTrans.Execute(MySoft.Data.InsertCreator)">
             <summary>
             插入数据
             </summary>
             <param name="creator"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbTrans.Excute``1(MySoft.Data.InsertCreator,``0@)">
+        <member name="M:MySoft.Data.DbTrans.Execute``1(MySoft.Data.InsertCreator,``0@)">
             <summary>
              插入数据
             </summary>
@@ -6544,14 +6544,14 @@
             <param name="identityValue"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbTrans.Excute(MySoft.Data.DeleteCreator)">
+        <member name="M:MySoft.Data.DbTrans.Execute(MySoft.Data.DeleteCreator)">
             <summary>
             按条件删除指定记录
             </summary>
             <param name="creator"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbTrans.Excute(MySoft.Data.UpdateCreator)">
+        <member name="M:MySoft.Data.DbTrans.Execute(MySoft.Data.UpdateCreator)">
             <summary>
             更新数据
             </summary>
@@ -11243,19 +11243,19 @@
             </summary>
             <param name="table"></param>
         </member>
-        <member name="T:MySoft.Data.IExcutingLog">
+        <member name="T:MySoft.Data.IExecuteLog">
             <summary>
             执行并输出日志的接口
             </summary>
         </member>
-        <member name="M:MySoft.Data.IExcutingLog.BeginExcute(System.String,MySoft.Data.SQLParameter[])">
+        <member name="M:MySoft.Data.IExecuteLog.Begin(System.String,MySoft.Data.SQLParameter[])">
             <summary>
             开始执行命令，返回是否需要执行
             </summary>
             <param name="cmdText"></param>
             <param name="parameter"></param>
         </member>
-        <member name="M:MySoft.Data.IExcutingLog.EndExcute(System.String,MySoft.Data.SQLParameter[],System.Object,System.Int32)">
+        <member name="M:MySoft.Data.IExecuteLog.End(System.String,MySoft.Data.SQLParameter[],System.Object,System.Int32)">
             <summary>
             结束执行命令
             </summary>
@@ -12302,6 +12302,13 @@
             <summary>
             获取返回值
             </summary>
+        </member>
+        <member name="T:MySoft.Data.DecryptEventHandler">
+            <summary>
+            连接字符串解密
+            </summary>
+            <param name="connectionString"></param>
+            <returns></returns>
         </member>
         <member name="T:MySoft.Data.DbHelper">
             <summary>
@@ -13978,6 +13985,97 @@
             </summary>
             <param name="pageSize"></param>
             <param name="pageIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.Data.Cache.ICacheDependent">
+            <summary>
+            缓存依赖
+            </summary>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.AddCache``1(System.String,``0,System.Int32)">
+            <summary>
+            添加缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <param name="cacheValue"></param>
+            <param name="cacheTime"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.RemoveCache``1(System.String)">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.GetCache``1(System.String)">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.RemoveCache``1">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.GetCache``1">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.Data.Cache.DataCacheDependent">
+            <summary>
+            默认缓存依赖
+            </summary>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.#ctor(MySoft.Cache.ICacheStrategy)">
+            <summary>
+            实例化默认缓存依赖
+            </summary>
+            <param name="strategy"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.AddCache``1(System.String,``0,System.Int32)">
+            <summary>
+            添加缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <param name="cacheValue"></param>
+            <param name="cacheTime"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.RemoveCache``1(System.String)">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.GetCache``1(System.String)">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="?"></param>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.RemoveCache``1">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.GetCache``1">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
     </members>

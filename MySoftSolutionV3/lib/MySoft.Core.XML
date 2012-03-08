@@ -1784,33 +1784,6 @@
             based on the the request.
             </summary>
         </member>
-        <member name="T:MySoft.IoC.IServiceCache">
-            <summary>
-            服务缓存
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.IServiceCache.AddCache(System.String,System.Object,System.Int32)">
-            <summary>
-            添加缓存
-            </summary>
-            <param name="key"></param>
-            <param name="value"></param>
-            <param name="seconds"></param>
-        </member>
-        <member name="M:MySoft.IoC.IServiceCache.GetCache``1(System.String)">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="key"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.IServiceCache.RemoveCache(System.String)">
-            <summary>
-            移除缓存
-            </summary>
-            <param name="key"></param>
-        </member>
         <member name="T:MySoft.Aop.IAopOperator">
             <summary>
             IAopOperator AOP操作符接口，包括前处理和后处理
@@ -8196,6 +8169,26 @@
             POST方式
             </summary>
         </member>
+        <member name="T:MySoft.Auth.AuthorizeResult">
+            <summary>
+            认证结果
+            </summary>
+        </member>
+        <member name="M:MySoft.Auth.AuthorizeResult.#ctor">
+            <summary>
+            实例化AuthorizeResult
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeResult.Succeed">
+            <summary>
+            认证是否成功
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeResult.Name">
+            <summary>
+            认证名称
+            </summary>
+        </member>
         <member name="T:MySoft.Aop.IAopProxyFactory">
             <summary>
             IAopProxyFactory 用于创建特定的Aop代理的实例，IAopProxyFactory的作用是使AopProxyAttribute独立于具体的AOP代理类。
@@ -9183,48 +9176,6 @@
             </summary>
             <value><c>true</c> if null items are allowed in the collection; otherwise, <c>false</c>.</value>
         </member>
-        <member name="T:MySoft.Cache.ICacheDependent">
-            <summary>
-            缓存依赖
-            </summary>
-        </member>
-        <member name="M:MySoft.Cache.ICacheDependent.AddCache``1(System.String,``0,System.Int32)">
-            <summary>
-            添加缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-            <param name="cacheValue"></param>
-            <param name="cacheTime"></param>
-        </member>
-        <member name="M:MySoft.Cache.ICacheDependent.RemoveCache``1(System.String)">
-            <summary>
-            移除缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-        </member>
-        <member name="M:MySoft.Cache.ICacheDependent.GetCache``1(System.String)">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.ICacheDependent.RemoveCache``1">
-            <summary>
-            移除缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:MySoft.Cache.ICacheDependent.GetCache``1">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
         <member name="T:SharpZip.Zip.Compression.Streams.InflaterInputBuffer">
             <summary>
             An input buffer customised for use by <see cref="T:SharpZip.Zip.Compression.Streams.InflaterInputStream"/>
@@ -10207,6 +10158,87 @@
             <exception cref="T:SevenZip.DataErrorException">
             if input stream is not valid
             </exception>
+        </member>
+        <member name="T:MySoft.Auth.AuthorizeException">
+            <summary>
+            认证异常信息
+            </summary>
+        </member>
+        <member name="T:MySoft.MySoftException">
+            <summary>
+            MySoft异常类
+            </summary>
+        </member>
+        <member name="M:MySoft.MySoftException.#ctor(System.String)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="msg"></param>
+        </member>
+        <member name="M:MySoft.MySoftException.#ctor(System.String,System.Exception)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="msg"></param>
+            <param name="inner"></param>
+        </member>
+        <member name="M:MySoft.MySoftException.#ctor(MySoft.ExceptionType)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="t">异常类型</param>
+        </member>
+        <member name="M:MySoft.MySoftException.#ctor(MySoft.ExceptionType,System.String)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="t">异常类型</param>
+            <param name="msg">异常消息</param>
+        </member>
+        <member name="M:MySoft.MySoftException.#ctor(MySoft.ExceptionType,System.String,System.Exception)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="t">异常类型</param>
+            <param name="msg">异常消息</param>
+            <param name="inner">内部异常</param>
+        </member>
+        <member name="M:MySoft.MySoftException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="info">存储对象序列化和反序列化所需的全部数据</param>
+            <param name="context">描述给定的序列化流的源和目标，并提供一个由调用方定义的附加上下文</param>
+        </member>
+        <member name="M:MySoft.MySoftException.GetObjectData(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            重载GetObjectData方法
+            </summary>
+            <param name="info"></param>
+            <param name="context"></param>
+        </member>
+        <member name="P:MySoft.MySoftException.ExceptionType">
+            <summary>
+            异常类型
+            </summary>
+        </member>
+        <member name="M:MySoft.Auth.AuthorizeException.#ctor(System.Int32,System.String)">
+            <summary>
+            实例化AuthorizeException
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+        </member>
+        <member name="M:MySoft.Auth.AuthorizeException.#ctor(System.String)">
+            <summary>
+            实例化AuthenticationException
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeException.Code">
+            <summary>
+            错误Code
+            </summary>
         </member>
         <member name="T:MySoft.ProxyFactory">
             <summary>
@@ -21901,6 +21933,41 @@
             <param name="state"></param>
             <param name="isTimeout"></param>
         </member>
+        <member name="T:MySoft.Auth.AuthorizeToken">
+            <summary>
+            认证的Token信息
+            </summary>
+        </member>
+        <member name="M:MySoft.Auth.AuthorizeToken.#ctor">
+            <summary>
+            实例化AuthorizeToken
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeToken.RequestUri">
+            <summary>
+            请求的uri
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeToken.Method">
+            <summary>
+            提交方法 （Post or Get）
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeToken.Headers">
+            <summary>
+            头信息
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeToken.Parameters">
+            <summary>
+            参数信息
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeToken.Cookies">
+            <summary>
+            Cookie信息
+            </summary>
+        </member>
         <member name="T:MySoft.Task.Job">
             <summary>
             任务实体
@@ -22074,64 +22141,6 @@
         <member name="T:MySoft.Remoting.RemotingException">
             <summary>
             Remoting异常
-            </summary>
-        </member>
-        <member name="T:MySoft.MySoftException">
-            <summary>
-            MySoft异常类
-            </summary>
-        </member>
-        <member name="M:MySoft.MySoftException.#ctor(System.String)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="msg"></param>
-        </member>
-        <member name="M:MySoft.MySoftException.#ctor(System.String,System.Exception)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="msg"></param>
-            <param name="inner"></param>
-        </member>
-        <member name="M:MySoft.MySoftException.#ctor(MySoft.ExceptionType)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="t">异常类型</param>
-        </member>
-        <member name="M:MySoft.MySoftException.#ctor(MySoft.ExceptionType,System.String)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="t">异常类型</param>
-            <param name="msg">异常消息</param>
-        </member>
-        <member name="M:MySoft.MySoftException.#ctor(MySoft.ExceptionType,System.String,System.Exception)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="t">异常类型</param>
-            <param name="msg">异常消息</param>
-            <param name="inner">内部异常</param>
-        </member>
-        <member name="M:MySoft.MySoftException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="info">存储对象序列化和反序列化所需的全部数据</param>
-            <param name="context">描述给定的序列化流的源和目标，并提供一个由调用方定义的附加上下文</param>
-        </member>
-        <member name="M:MySoft.MySoftException.GetObjectData(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
-            <summary>
-            重载GetObjectData方法
-            </summary>
-            <param name="info"></param>
-            <param name="context"></param>
-        </member>
-        <member name="P:MySoft.MySoftException.ExceptionType">
-            <summary>
-            异常类型
             </summary>
         </member>
         <member name="M:MySoft.Remoting.RemotingException.#ctor(System.String)">
@@ -23396,6 +23405,26 @@
             Specifies mode with end marker.
             </summary>
         </member>
+        <member name="T:MySoft.Auth.AuthorizeContext">
+            <summary>
+            认证的当前上下文对象
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeContext.Result">
+            <summary>
+            认证结果信息
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeContext.Token">
+            <summary>
+            认证的token信息
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeContext.Current">
+            <summary>
+            认证的当前上下文
+            </summary>
+        </member>
         <member name="M:Newtonsoft.Json.Utilities.EnumUtils.Parse``1(System.String)">
             <summary>
             Parses the specified enum member name, returning it's value.
@@ -23867,98 +23896,236 @@
             session will close the connection after each completed request.
             </summary>
         </member>
-        <member name="T:MySoft.Auth.AuthorizeToken">
+        <member name="T:MySoft.Cache.IServiceCache">
             <summary>
-            认证的Token信息
+            服务缓存
             </summary>
         </member>
-        <member name="M:MySoft.Auth.AuthorizeToken.#ctor">
+        <member name="M:MySoft.Cache.IServiceCache.Insert(System.String,System.Object,System.Int32)">
             <summary>
-            实例化AuthorizeToken
+            添加缓存
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="seconds"></param>
+        </member>
+        <member name="M:MySoft.Cache.IServiceCache.Get``1(System.String)">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.IServiceCache.Remove(System.String)">
+            <summary>
+            移除缓存
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="T:MySoft.Cache.ILocalCacheStrategy">
+            <summary>
+            MemoryCache策略接口
             </summary>
         </member>
-        <member name="P:MySoft.Auth.AuthorizeToken.RequestUri">
+        <member name="T:MySoft.Cache.ICacheStrategy">
             <summary>
-            请求的uri
+            公共缓存策略接口
             </summary>
         </member>
-        <member name="P:MySoft.Auth.AuthorizeToken.Method">
+        <member name="M:MySoft.Cache.ICacheStrategy.AddObject(System.String,System.Object)">
             <summary>
-            提交方法 （Post or Get）
+            添加指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <param name="o"></param>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.AddObject(System.String,System.Object,System.TimeSpan)">
+            <summary>
+            添加指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <param name="o"></param>
+            <param name="expires"></param>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.AddObject(System.String,System.Object,System.DateTime)">
+            <summary>
+            添加指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <param name="o"></param>
+            <param name="datetime"></param>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.RemoveObject(System.String)">
+            <summary>
+            移除指定ID的对象
+            </summary>
+            <param name="objId"></param>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetObject(System.String)">
+            <summary>
+            返回指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetObject``1(System.String)">
+            <summary>
+            返回指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetMatchObject(System.String)">
+            <summary>
+            返回指定ID的对象
+            </summary>
+            <param name="regularExpression"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetMatchObject``1(System.String)">
+            <summary>
+            返回指定ID的对象
+            </summary>
+            <param name="regularExpression"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.RemoveAllObjects">
+            <summary>
+            移除所有缓存对象
             </summary>
         </member>
-        <member name="P:MySoft.Auth.AuthorizeToken.Parameters">
+        <member name="M:MySoft.Cache.ICacheStrategy.GetAllKeys">
             <summary>
-            参数信息
+            获取所有的CacheKey值
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetCacheCount">
+            <summary>
+            获取缓存数
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetAllObjects">
+            <summary>
+            获取所有对象
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetAllObjects``1">
+            <summary>
+            获取所有对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetKeys(System.String)">
+            <summary>
+            通过正则获取对应的Key列表
+            </summary>
+            <param name="regularExpression"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.AddObjects``1(System.Collections.Generic.IDictionary{System.String,``0})">
+            <summary>
+            添加多个对象
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.AddObjects(System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            添加多个对象
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.RemoveMatchObjects(System.String)">
+            <summary>
+            正则表达式方式移除对象
+            </summary>
+            <param name="regularExpression">匹配KEY正则表示式</param>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.RemoveObjects(System.Collections.Generic.IList{System.String})">
+            <summary>
+            移除指定Key的对象
+            </summary>
+            <param name="objIds"></param>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetObjects(System.Collections.Generic.IList{System.String})">
+            <summary>
+            返回指定Key的对象
+            </summary>
+            <param name="objIds"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetObjects``1(System.Collections.Generic.IList{System.String})">
+            <summary>
+            返回指定Key的对象
+            </summary>
+            <param name="objIds"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetMatchObjects(System.String)">
+            <summary>
+            返回指定正则表达式的对象
+            </summary>
+            <param name="regularExpression"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.ICacheStrategy.GetMatchObjects``1(System.String)">
+            <summary>
+            返回指定正则表达的对象
+            </summary>
+            <param name="regularExpression"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.Cache.ICacheStrategy.Timeout">
+            <summary>
+            到期时间
             </summary>
         </member>
-        <member name="P:MySoft.Auth.AuthorizeToken.Cookies">
+        <member name="M:MySoft.Cache.ILocalCacheStrategy.AddObjectWithFileChange(System.String,System.Object,System.String[])">
             <summary>
-            Cookie信息
+            添加指定ID的对象(关联指定文件组)
+            </summary>
+            <param name="objId"></param>
+            <param name="o"></param>
+            <param name="files"></param>
+        </member>
+        <member name="M:MySoft.Cache.ILocalCacheStrategy.AddObjectWithDepend(System.String,System.Object,System.String[])">
+            <summary>
+            添加指定ID的对象(关联指定键值组)
+            </summary>
+            <param name="objId"></param>
+            <param name="o"></param>
+            <param name="dependKey"></param>
+        </member>
+        <member name="M:MySoft.Cache.ILocalCacheStrategy.AddObjectWithFileChange(System.String,System.Object,System.TimeSpan,System.String[])">
+            <summary>
+            添加指定ID的对象(关联指定文件组)
+            </summary>
+            <param name="objId"></param>
+            <param name="o"></param>
+            <param name="files"></param>
+        </member>
+        <member name="M:MySoft.Cache.ILocalCacheStrategy.AddObjectWithDepend(System.String,System.Object,System.TimeSpan,System.String[])">
+            <summary>
+            添加指定ID的对象(关联指定键值组)
+            </summary>
+            <param name="objId"></param>
+            <param name="o"></param>
+            <param name="dependKey"></param>
+        </member>
+        <member name="T:MySoft.Cache.ISharedCacheStrategy">
+            <summary>
+            SharedCache策略接口
             </summary>
         </member>
-        <member name="T:MySoft.Auth.AuthorizeResult">
+        <member name="M:MySoft.Cache.ISharedCacheStrategy.SetLocalCacheTimeout(System.Int32)">
             <summary>
-            认证结果
+            设置本地缓存超时时间
             </summary>
-        </member>
-        <member name="M:MySoft.Auth.AuthorizeResult.#ctor">
-            <summary>
-            实例化AuthorizeResult
-            </summary>
-        </member>
-        <member name="P:MySoft.Auth.AuthorizeResult.Succeed">
-            <summary>
-            认证是否成功
-            </summary>
-        </member>
-        <member name="P:MySoft.Auth.AuthorizeResult.Name">
-            <summary>
-            认证名称
-            </summary>
-        </member>
-        <member name="T:MySoft.Auth.AuthorizeException">
-            <summary>
-            认证异常信息
-            </summary>
-        </member>
-        <member name="M:MySoft.Auth.AuthorizeException.#ctor(System.Int32,System.String)">
-            <summary>
-            实例化AuthorizeException
-            </summary>
-            <param name="code"></param>
-            <param name="message"></param>
-        </member>
-        <member name="M:MySoft.Auth.AuthorizeException.#ctor(System.String)">
-            <summary>
-            实例化AuthenticationException
-            </summary>
-            <param name="message"></param>
-        </member>
-        <member name="P:MySoft.Auth.AuthorizeException.Code">
-            <summary>
-            错误Code
-            </summary>
-        </member>
-        <member name="T:MySoft.Auth.AuthorizeContext">
-            <summary>
-            认证的当前上下文对象
-            </summary>
-        </member>
-        <member name="P:MySoft.Auth.AuthorizeContext.Result">
-            <summary>
-            认证结果信息
-            </summary>
-        </member>
-        <member name="P:MySoft.Auth.AuthorizeContext.Token">
-            <summary>
-            认证的token信息
-            </summary>
-        </member>
-        <member name="P:MySoft.Auth.AuthorizeContext.Current">
-            <summary>
-            认证的当前上下文
-            </summary>
+            <param name="timeout"></param>
         </member>
     </members>
 </doc>
