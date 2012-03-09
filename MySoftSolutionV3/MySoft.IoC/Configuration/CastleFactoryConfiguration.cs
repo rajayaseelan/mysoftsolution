@@ -116,7 +116,10 @@ namespace MySoft.IoC.Configuration
                         defaultKey = remoteNode.Key;
                     }
 
-                    nodes.Add(remoteNode.Key, remoteNode);
+                    if (nodes.ContainsKey(remoteNode.Key))
+                        throw new WarningException("Already exists server node ¡¾" + remoteNode.Key + "¡¿.");
+
+                    nodes[remoteNode.Key] = remoteNode;
                 }
                 else if (child.Name == "clientCache")
                 {

@@ -45,30 +45,33 @@ namespace MySoft.IoC
 
             try
             {
-                //服务参数信息
-                var caller = new AppCaller
-                {
-                    AppName = reqMsg.AppName,
-                    IPAddress = reqMsg.IPAddress,
-                    HostName = reqMsg.HostName,
-                    ServiceName = reqMsg.ServiceName,
-                    MethodName = reqMsg.MethodName,
-                    Parameters = reqMsg.Parameters.ToString()
-                };
-
                 //判断是否为状态服务
                 if (IsStatusService(reqMsg))
                 {
                     //调用方法
-                    resMsg = CallMethod(client, reqMsg, caller);
+                    resMsg = container.CallService(reqMsg);
                 }
                 else
                 {
                     //启动计时
                     var watch = Stopwatch.StartNew();
 
+                    //服务参数信息
+                    var caller = new AppCaller
+                    {
+                        AppName = reqMsg.AppName,
+                        IPAddress = reqMsg.IPAddress,
+                        HostName = reqMsg.HostName,
+                        ServiceName = reqMsg.ServiceName,
+                        MethodName = reqMsg.MethodName,
+                        Parameters = reqMsg.Parameters.ToString()
+                    };
+
+                    //设置上下文
+                    SetOperationContext(client, reqMsg, caller);
+
                     //调用方法
-                    resMsg = CallMethod(client, reqMsg, caller);
+                    resMsg = container.CallService(reqMsg);
 
                     //停止计时
                     watch.Stop();
@@ -99,48 +102,6 @@ namespace MySoft.IoC
                 //输出错误
                 container.WriteError(ex);
 
-                resMsg = new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = ex.GetType(),
-                    Error = ex
-                };
-            }
-
-            return resMsg;
-        }
-
-        /// <summary>
-        /// 调用方法
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="caller"></param>
-        /// <returns></returns>
-        private ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg, AppCaller caller)
-        {
-            //实例化当前上下文
-            Type callbackType = null;
-            if (callbackTypes.ContainsKey(reqMsg.ServiceName))
-                callbackType = callbackTypes[reqMsg.ServiceName];
-
-            OperationContext.Current = new OperationContext(client, callbackType)
-            {
-                Container = container,
-                Caller = caller
-            };
-
-            ResponseMessage resMsg = null;
-
-            try
-            {
-                //获取返回结果
-                resMsg = container.CallService(reqMsg);
-            }
-            catch (Exception ex)
-            {
-                container.WriteError(ex);
-
                 //处理异常
                 resMsg = new ResponseMessage
                 {
@@ -154,6 +115,27 @@ namespace MySoft.IoC
             }
 
             return resMsg;
+        }
+
+        /// <summary>
+        /// 设置上下文
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="caller"></param>
+        /// <returns></returns>
+        private void SetOperationContext(IScsServerClient client, RequestMessage reqMsg, AppCaller caller)
+        {
+            //实例化当前上下文
+            Type callbackType = null;
+            if (callbackTypes.ContainsKey(reqMsg.ServiceName))
+                callbackType = callbackTypes[reqMsg.ServiceName];
+
+            OperationContext.Current = new OperationContext(client, callbackType)
+            {
+                Container = container,
+                Caller = caller
+            };
         }
 
         private IDictionary<string, Type> GetCallbackTypes(IServiceContainer container)

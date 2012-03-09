@@ -12,6 +12,10 @@ namespace MySoft.Web.UI
     {
         protected WebHelper.ClientScriptFactoryHelper ClientScriptFactory = new WebHelper.ClientScriptFactoryHelper();
 
+        //// <summary>  
+        ///  重写默认的HtmlTextWriter方法，修改form标记中的value属性，使其值为重写的URL而不是真实URL。  
+        /// </summary>  
+        /// <param name="writer"></param>  
         protected override void Render(HtmlTextWriter writer)
         {
             if (writer is System.Web.UI.Html32TextWriter)

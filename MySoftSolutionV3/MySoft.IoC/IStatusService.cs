@@ -14,7 +14,7 @@ namespace MySoft.IoC
         /// 获取所有应用客户端
         /// </summary>
         /// <returns></returns>
-        [OperationContract(ClientCacheTime = 5)]
+        [OperationContract(ServerCacheTime = 5)]
         IList<AppClient> GetAppClients();
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace MySoft.IoC
         /// 获取订阅的类型
         /// </summary>
         /// <returns></returns>
-        [OperationContract(ClientCacheTime = 1)]
+        [OperationContract(ServerCacheTime = 1)]
         IList<string> GetSubscribeTypes();
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace MySoft.IoC
         /// 获取订阅的应用
         /// </summary>
         /// <returns></returns>
-        [OperationContract(ClientCacheTime = 1)]
+        [OperationContract(ServerCacheTime = 1)]
         IList<string> GetSubscribeApps();
 
         /// <summary>
@@ -95,21 +95,21 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="serviceName"></param>
         /// <returns></returns>
-        [OperationContract(ClientCacheTime = 5)]
+        [OperationContract(ServerCacheTime = 5)]
         bool ContainsService(string serviceName);
 
         /// <summary>
         /// 获取服务信息列表
         /// </summary>
         /// <returns></returns>
-        [OperationContract(ClientCacheTime = 5)]
+        [OperationContract(ServerCacheTime = 5)]
         IList<ServiceInfo> GetServiceList();
 
         /// <summary>
         /// 获取服务状态信息（包括SummaryStatus，HighestStatus，TimeStatus）
         /// </summary>
         /// <returns></returns>
-        [OperationContract(ClientCacheTime = 1)]
+        [OperationContract(ServerCacheTime = 1)]
         ServerStatus GetServerStatus();
 
         /// <summary>
@@ -121,14 +121,14 @@ namespace MySoft.IoC
         /// 获取时段的服务状态信息
         /// </summary>
         /// <returns></returns>
-        [OperationContract(ClientCacheTime = 1)]
+        [OperationContract(ServerCacheTime = 1)]
         IList<TimeStatus> GetTimeStatusList();
 
         /// <summary>
         /// 获取所有的客户端信息
         /// </summary>
         /// <returns></returns>
-        [OperationContract(ClientCacheTime = 5)]
+        [OperationContract(ServerCacheTime = 5)]
         IList<ClientInfo> GetClientList();
     }
 }

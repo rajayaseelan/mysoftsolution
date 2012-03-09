@@ -107,7 +107,8 @@ namespace MySoft.IoC
                     //如果数据为null,则返回null
                     if (resMsg == null)
                     {
-                        throw new WarningException("Request to return to service the data is empty!");
+                        var errMsg = string.Format("Request to return to service ({0}, {1}) the data is empty!", reqMsg.ServiceName, reqMsg.MethodName);
+                        throw new WarningException(errMsg);
                     }
 
                     //如果有异常，向外抛出

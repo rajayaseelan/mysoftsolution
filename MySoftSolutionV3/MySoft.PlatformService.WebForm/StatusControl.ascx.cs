@@ -37,11 +37,9 @@ namespace MySoft.PlatformService.WebForm
                 nodelist = CastleFactory.Create().GetRemoteNodes();
                 foreach (var node in nodelist)
                 {
-                    var status = CastleFactory.Create().GetChannel<IStatusService>(node).GetServerStatus();
-                    statuslist[node.Key] = status;
-
-                    var clients = CastleFactory.Create().GetChannel<IStatusService>(node).GetClientList();
-                    clientlist[node.Key] = clients;
+                    var service = CastleFactory.Create().GetChannel<IStatusService>(node);
+                    statuslist[node.Key] = service.GetServerStatus();
+                    clientlist[node.Key] = service.GetClientList();
                 }
             }
             catch (Exception ex)

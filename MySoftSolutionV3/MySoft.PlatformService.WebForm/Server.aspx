@@ -43,7 +43,7 @@
                     div.style.display = '';
                     document.getElementById('currentIndex').value = i;
 
-                    timer();
+                    refreshServerStatus();
                 }
                 else {
                     div.style.display = 'none';
@@ -56,7 +56,7 @@
     <form id="form1" runat="server">
     <input type="hidden" id="currentIndex" value="0" />
     <div style="cursor: pointer; text-align: center; width: 150px; background: #f90;
-        border: 3px solid #ccc; margin: 5px; padding: 5px; float: left;" onclick="if(confirm('确定重置服务端的所有状态吗?')) { AjaxMethods.ClearServerStatus(); }">
+        border: 3px solid #ccc; margin: 5px; padding: 5px; float: left;" onclick="clearServerStatus();">
         重置状态信息
     </div>
     <% foreach (var node in nodelist)
@@ -76,7 +76,17 @@
     </form>
     <script type="text/javascript">
 
-        var tupdate = function () {
+        function clearServerStatus() {
+            if (confirm('确定重置服务端的所有状态吗?')) {
+                var success = AjaxMethods.ClearServerStatus();
+                if(success) {
+                    refreshServerStatus();
+                    alert('清除服务端状态成功！');
+                }
+            }
+        }
+
+        var refreshServerStatus = function () {
             var value = document.getElementById('currentIndex').value;
             Ajax.updatePanel('divContainer', '~/StatusControl.ascx', { CurrentIndex: value });
         };
@@ -84,10 +94,10 @@
         var timer = <% = timer %>;
         if(timer > 0) {        
             setInterval(function () {
-                tupdate();
+                refreshServerStatus();
             }, timer * 1000);
         }else{
-            tupdate();
+            refreshServerStatus();
         }
 
     </script>
