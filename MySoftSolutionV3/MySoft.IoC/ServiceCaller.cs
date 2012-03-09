@@ -45,6 +45,9 @@ namespace MySoft.IoC
 
             try
             {
+                //设置上下文
+                SetOperationContext(client, reqMsg);
+
                 //判断是否为状态服务
                 if (IsStatusService(reqMsg))
                 {
@@ -56,20 +59,6 @@ namespace MySoft.IoC
                     //启动计时
                     var watch = Stopwatch.StartNew();
 
-                    //服务参数信息
-                    var caller = new AppCaller
-                    {
-                        AppName = reqMsg.AppName,
-                        IPAddress = reqMsg.IPAddress,
-                        HostName = reqMsg.HostName,
-                        ServiceName = reqMsg.ServiceName,
-                        MethodName = reqMsg.MethodName,
-                        Parameters = reqMsg.Parameters.ToString()
-                    };
-
-                    //设置上下文
-                    SetOperationContext(client, reqMsg, caller);
-
                     //调用方法
                     resMsg = container.CallService(reqMsg);
 
@@ -79,7 +68,7 @@ namespace MySoft.IoC
                     var args = new CallEventArgs
                     {
                         CallTime = DateTime.Now,
-                        Caller = caller,
+                        Caller = OperationContext.Current.Caller,
                         Error = resMsg.Error,
                         ElapsedTime = watch.ElapsedMilliseconds,
                         Count = resMsg.Count,
@@ -122,14 +111,24 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="client"></param>
         /// <param name="reqMsg"></param>
-        /// <param name="caller"></param>
         /// <returns></returns>
-        private void SetOperationContext(IScsServerClient client, RequestMessage reqMsg, AppCaller caller)
+        private void SetOperationContext(IScsServerClient client, RequestMessage reqMsg)
         {
             //实例化当前上下文
             Type callbackType = null;
             if (callbackTypes.ContainsKey(reqMsg.ServiceName))
                 callbackType = callbackTypes[reqMsg.ServiceName];
+
+            //服务参数信息
+            var caller = new AppCaller
+            {
+                AppName = reqMsg.AppName,
+                IPAddress = reqMsg.IPAddress,
+                HostName = reqMsg.HostName,
+                ServiceName = reqMsg.ServiceName,
+                MethodName = reqMsg.MethodName,
+                Parameters = reqMsg.Parameters.ToString()
+            };
 
             OperationContext.Current = new OperationContext(client, callbackType)
             {
