@@ -54,8 +54,11 @@ namespace MySoft.IoC.Messages
                     //如果调用次数超过最大允许数，则提示警告
                     if (counter.Count >= maxCount)
                     {
-                        var error = new WarningException(string.Format("One minute call method ({0}, {1}) {2} times more than {3} times.",
+                        var warning = new WarningException(string.Format("One minute call method ({0}, {1}) {2} times more than {3} times.",
                             counter.ServiceName, counter.MethodName, counter.Count, maxCount));
+
+                        //内部异常
+                        var error = new IoCException("One minute call method " + counter.Count + " times.", warning);
 
                         //写错误日志
                         logger.WriteError(error);
