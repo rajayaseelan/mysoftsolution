@@ -194,31 +194,34 @@ namespace MySoft.PlatformService.Client
             var node = CastleFactory.Create().GetDefaultNode();
             var service = CastleFactory.Create().GetChannel<IUserService>();
             var service1 = CastleFactory.Create().GetChannel<IStatusService>(node);
+            int counter = 0;
 
             while (true)
             {
                 try
                 {
-                    //Stopwatch watch = Stopwatch.StartNew();
+                    Stopwatch watch = Stopwatch.StartNew();
 
-                    //int length = 1;
-                    //UserInfo user;
-                    //service.GetUserInfo("maoyong", ref length, out user);
+                    int length = 1;
+                    UserInfo user;
 
-                    //watch.Stop();
+                    counter++;
+                    service.GetUserInfo("maoyong", ref length, out user);
 
-                    //Console.WriteLine(user.Description + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    watch.Stop();
 
-                    var clients = service1.GetClientList();
+                    Console.WriteLine(counter + "times => " + user.Description + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
-                    Console.WriteLine("{0} => {1}", DateTime.Now, clients.Count);
+                    //var clients = service1.GetClientList();
+
+                    //Console.WriteLine("{0} => {1}", DateTime.Now, clients.Count);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
 
-                Thread.Sleep(100);
+                Thread.Sleep(10);
             }
         }
 

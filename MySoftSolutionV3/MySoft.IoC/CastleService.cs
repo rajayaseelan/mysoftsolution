@@ -73,7 +73,7 @@ namespace MySoft.IoC
 
             //实例化调用者
             var service = new ServerStatusService(config, server, container);
-            this.caller = new ServiceCaller(container, service);
+            this.caller = new ServiceCaller(service, container, config.Timeout);
 
             //绑定事件
             MessageCenter.Instance.OnError += Instance_OnError;

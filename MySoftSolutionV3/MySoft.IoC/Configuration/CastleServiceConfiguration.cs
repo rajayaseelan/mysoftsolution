@@ -16,7 +16,8 @@ namespace MySoft.IoC.Configuration
         private string cacheType;
         private bool encrypt = false;
         private bool compress = false;
-        private int minuteCalls = ServiceConfig.DEFAULT_MINUTE_CALL_NUMBER;         //默认为每分钟调用1000次，超过报异常
+        private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;
+        private int minuteCalls = ServiceConfig.DEFAULT_MINUTE_CALL_NUMBER;        //默认为每分钟调用1000次，超过报异常
         private int recordNums = ServiceConfig.DEFAULT_RECORD_NUMBER;              //默认记录3600次   //记录条数，默认为3600条，1小时记录
 
         /// <summary>
@@ -58,6 +59,9 @@ namespace MySoft.IoC.Configuration
 
             if (xmlnode["compress"] != null && xmlnode["compress"].Value.Trim() != string.Empty)
                 compress = Convert.ToBoolean(xmlnode["compress"].Value);
+
+            if (xmlnode["timeout"] != null && xmlnode["timeout"].Value.Trim() != string.Empty)
+                timeout = Convert.ToInt32(xmlnode["timeout"].Value);
 
             if (xmlnode["recordNums"] != null && xmlnode["recordNums"].Value.Trim() != string.Empty)
                 recordNums = Convert.ToInt32(xmlnode["recordNums"].Value);
@@ -152,6 +156,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return compress; }
             set { compress = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the timeout.
+        /// </summary>
+        public int Timeout
+        {
+            get { return timeout; }
+            set { timeout = value; }
         }
 
         /// <summary>

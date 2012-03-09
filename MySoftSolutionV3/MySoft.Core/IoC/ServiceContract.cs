@@ -17,5 +17,15 @@ namespace MySoft.IoC
             get { return callbackType; }
             set { callbackType = value; }
         }
+
+        private int timeout = -1;
+        /// <summary>
+        /// 超时时间
+        /// </summary>
+        public int Timeout
+        {
+            get { return timeout; }
+            set { timeout = value; }
+        }
     }
 }

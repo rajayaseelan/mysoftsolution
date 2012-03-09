@@ -44,15 +44,15 @@ namespace MySoft.PlatformService.UserService
         //[AspectSwitcher(true)]
         public virtual UserInfo GetUserInfo(string name, ref int length, out UserInfo user, params int[] ids)
         {
-            var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
-            if (count % 5 == 0)
-            {
-                throw new UserException("Error Count: " + count);
-            }
-            else if (count % 6 == 0)
-            {
-                Thread.Sleep(new Random().Next(1, 10) * 1000);
-            }
+            //var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
+            //if (count % 5 == 0)
+            //{
+            //    throw new UserException("Error Count: " + count);
+            //}
+            //else if (count % 6 == 0)
+            //{
+            //    Thread.Sleep(new Random().Next(1, 10) * 1000);
+            //}
 
             user = new UserInfo()
             {
@@ -62,7 +62,7 @@ namespace MySoft.PlatformService.UserService
 
             length = user.Description.Length;
 
-            Thread.Sleep(2000);
+            Thread.Sleep(100);
 
             return user;
         }

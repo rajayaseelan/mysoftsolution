@@ -31,7 +31,7 @@ namespace MySoft.IoC.Messages
     /// 时间状态集合
     /// </summary>
     [Serializable]
-    public class TimeStatusCollection
+    internal class TimeStatusCollection
     {
         private int maxCount;
         private IDictionary<string, TimeStatus> dictStatus;

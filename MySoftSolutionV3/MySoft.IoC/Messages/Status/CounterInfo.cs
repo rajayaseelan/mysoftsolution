@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MySoft.Logger;
 
 namespace MySoft.IoC.Messages
 {
     /// <summary>
-    /// 
+    /// 计数器集合
     /// </summary>
     [Serializable]
-    public class CounterInfoCollection
+    internal class CounterInfoCollection
     {
+        private ILog logger;
         private int maxCount;
         private IDictionary<string, CounterInfo> dictCounter;
 
@@ -18,9 +20,10 @@ namespace MySoft.IoC.Messages
         /// 实例化CounterInfoCollection
         /// </summary>
         /// <param name="maxCount"></param>
-        public CounterInfoCollection(int maxCount)
+        public CounterInfoCollection(ILog logger, int maxCount)
         {
             this.dictCounter = new Dictionary<string, CounterInfo>();
+            this.logger = logger;
             this.maxCount = maxCount;
         }
 
@@ -51,8 +54,14 @@ namespace MySoft.IoC.Messages
                     //如果调用次数超过最大允许数，则提示警告
                     if (counter.Count >= maxCount)
                     {
-                        args.Error = new WarningException(string.Format("One minute call method ({0}, {1}) {2} times more than {3} times.",
+                        var error = new WarningException(string.Format("One minute call method ({0}, {1}) {2} times more than {3} times.",
                             counter.ServiceName, counter.MethodName, counter.Count, maxCount));
+
+                        //写错误日志
+                        logger.WriteError(error);
+
+                        //抛出异常
+                        args.Error = error;
                     }
 
                     //重置计数器

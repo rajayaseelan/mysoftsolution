@@ -35,7 +35,7 @@ namespace MySoft.IoC
             this.container = container;
             this.startTime = DateTime.Now;
             this.statuslist = new TimeStatusCollection(config.RecordNums);
-            this.counterlist = new CounterInfoCollection(config.MinuteCalls);
+            this.counterlist = new CounterInfoCollection(container, config.MinuteCalls);
 
             //启动定义推送线程
             ThreadPool.QueueUserWorkItem(DoPushWork);
