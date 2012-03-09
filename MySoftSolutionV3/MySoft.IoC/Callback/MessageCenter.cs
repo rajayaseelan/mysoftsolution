@@ -174,15 +174,15 @@ namespace MySoft.IoC
                             //业务异常不进行推送
                             if (!callArgs.IsBusinessError)
                             {
-                                var error = ErrorHelper.GetInnerException(callArgs.Error);
                                 var callError = new CallError
                                 {
                                     Caller = callArgs.Caller,
                                     CallTime = callArgs.CallTime,
-                                    Message = error.Message,
+                                    Message = callArgs.Error.Message,
                                     Error = ErrorHelper.GetErrorWithoutHtml(callArgs.Error),
                                     HtmlError = ErrorHelper.GetHtmlError(callArgs.Error)
                                 };
+
                                 lstn.Notify(callError);
                             }
                         }
