@@ -41,16 +41,26 @@ namespace MySoft.IoC.Messages
                         MethodName = args.Caller.MethodName
                     };
                 }
+            }
 
-                var counter = dictCounter[callKey];
-                counter.Count++;
-
-                //如果调用次数超过最大允许数，则提示警告
-                if (counter.Count > maxCount)
+            var counter = dictCounter[callKey];
+            lock (counter)
+            {
+                if (counter.NeedReset)
                 {
-                    args.Error = new WarningException(string.Format("One minute call method ({0}, {1}) more than {2} times.",
-                        counter.ServiceName, counter.MethodName, maxCount));
+                    //如果调用次数超过最大允许数，则提示警告
+                    if (counter.Count >= maxCount)
+                    {
+                        args.Error = new WarningException(string.Format("One minute call method ({0}, {1}) {2} times more than {3} times.",
+                            counter.ServiceName, counter.MethodName, counter.Count, maxCount));
+                    }
+
+                    //重置计数器
+                    counter.Reset();
                 }
+
+                //计数器加1
+                counter.Count++;
             }
         }
 
@@ -64,7 +74,7 @@ namespace MySoft.IoC.Messages
                 //将计数清零
                 foreach (var kvp in dictCounter)
                 {
-                    kvp.Value.Count = 0;
+                    kvp.Value.NeedReset = true;
                 }
             }
         }
@@ -90,5 +100,22 @@ namespace MySoft.IoC.Messages
         /// 调用次数
         /// </summary>
         public int Count { get; set; }
+
+        /// <summary>
+        /// 是否重置状态
+        /// </summary>
+        public bool NeedReset { get; set; }
+
+        /// <summary>
+        /// 重置状态
+        /// </summary>
+        public void Reset()
+        {
+            lock (this)
+            {
+                this.NeedReset = false;
+                this.Count = 0;
+            }
+        }
     }
 }
