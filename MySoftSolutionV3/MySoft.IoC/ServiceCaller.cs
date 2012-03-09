@@ -87,7 +87,7 @@ namespace MySoft.IoC
                 if (IsStatusService(reqMsg))
                 {
                     //调用方法
-                    resMsg = container.CallService(reqMsg);
+                    resMsg = AsyncCallMethod(reqMsg);
                 }
                 else
                 {

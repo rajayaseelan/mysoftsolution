@@ -63,6 +63,8 @@ namespace MySoft.PlatformService.Client
         //}
 
         private static readonly object syncobj = new object();
+        private static int counter = 0;
+
         static void Main(string[] args)
         {
             //CastleFactoryConfiguration config = CastleFactoryConfiguration.GetConfig();
@@ -132,7 +134,7 @@ namespace MySoft.PlatformService.Client
             //}
 
             ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
@@ -194,7 +196,6 @@ namespace MySoft.PlatformService.Client
             var node = CastleFactory.Create().GetDefaultNode();
             var service = CastleFactory.Create().GetChannel<IUserService>();
             var service1 = CastleFactory.Create().GetChannel<IStatusService>(node);
-            int counter = 0;
 
             while (true)
             {
@@ -205,12 +206,13 @@ namespace MySoft.PlatformService.Client
                     int length = 1;
                     UserInfo user;
 
-                    counter++;
                     service.GetUserInfo("maoyong", ref length, out user);
 
                     watch.Stop();
 
-                    Console.WriteLine(counter + "times => " + user.Description + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Interlocked.Increment(ref counter);
+
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + user.Description + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //var clients = service1.GetClientList();
 
