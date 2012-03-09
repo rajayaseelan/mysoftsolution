@@ -86,6 +86,8 @@
             }
         }
 
+        Ajax.showErrorMessage = false;
+
         var refreshServerStatus = function () {
             var value = document.getElementById('currentIndex').value;
             Ajax.updatePanel('divContainer', '~/StatusControl.ascx', { CurrentIndex: value });

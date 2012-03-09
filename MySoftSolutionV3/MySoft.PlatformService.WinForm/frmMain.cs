@@ -17,6 +17,7 @@ namespace MySoft.PlatformService.WinForm
     {
         private RemoteNode defaultNode;
         private WebBrowser webBrowser1, webBrowser2;
+        private System.Windows.Forms.Timer formTimer;
 
         public frmMain()
         {
@@ -32,22 +33,17 @@ namespace MySoft.PlatformService.WinForm
                 //未连接状态，自动断开为SocketError.ConnectionReset
                 if ((error as SocketException).SocketErrorCode == SocketError.NotConnected)
                 {
-                    var ar = this.BeginInvoke(new Action(() =>
-                    {
-                        button1_Click(null, EventArgs.Empty);
+                    button1_Click(null, EventArgs.Empty);
 
-                        listConnect.Items.Insert(0,
-                            new ParseMessageEventArgs
-                            {
-                                MessageType = ParseMessageType.Error,
-                                LineHeader = string.Format("【{0}】 当前网络已经从服务器断开...", DateTime.Now),
-                                MessageText = string.Format("({0}){1}", (error as SocketException).ErrorCode, (error as SocketException).Message)
-                            });
+                    listConnect.Items.Insert(0,
+                        new ParseMessageEventArgs
+                        {
+                            MessageType = ParseMessageType.Error,
+                            LineHeader = string.Format("【{0}】 当前网络已经从服务器断开...", DateTime.Now),
+                            MessageText = string.Format("({0}){1}", (error as SocketException).ErrorCode, (error as SocketException).Message)
+                        });
 
-                        listConnect.Invalidate();
-                    }));
-
-                    this.EndInvoke(ar);
+                    listConnect.Invalidate();
 
                     //发送错误邮件
                     var socketError = (error as SocketException);
@@ -164,7 +160,7 @@ namespace MySoft.PlatformService.WinForm
 
                     try
                     {
-                        if (sender != null) service.Unsubscribe();
+                        service.Unsubscribe();
                     }
                     catch (Exception ex)
                     {
@@ -343,15 +339,15 @@ namespace MySoft.PlatformService.WinForm
 
             //解析邮件地址
             var receivedEmail = ConfigurationManager.AppSettings["ReceivedEmail"];
-            if (string.IsNullOrEmpty(receivedEmail)) receivedEmail = "maoyong@fund123.cn";
+            if (string.IsNullOrEmpty(receivedEmail)) receivedEmail = "test@163.com";
             emails = receivedEmail.Split('|', ',', ';');
 
-            InitBrowser();
+            formTimer = new System.Windows.Forms.Timer();
+            formTimer.Interval = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
+            formTimer.Tick += new EventHandler(timer_Tick);
+            formTimer.Start();
 
-            var timer = new System.Windows.Forms.Timer();
-            timer.Interval = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
-            timer.Tick += new EventHandler(timer_Tick);
-            timer.Start();
+            InitBrowser();
 
             if (comboBox1.Items.Count > 0)
             {
@@ -542,6 +538,7 @@ namespace MySoft.PlatformService.WinForm
 
             webBrowser2 = new WebBrowser();
             webBrowser2.Dock = DockStyle.Fill;
+            webBrowser2.Navigating += new WebBrowserNavigatingEventHandler(webBrowser2_Navigating);
             panel3.Controls.Add(webBrowser2);
 
             webBrowser1.Navigate("about:blank");
@@ -558,26 +555,31 @@ namespace MySoft.PlatformService.WinForm
             //webBrowser2.IsWebBrowserContextMenuEnabled = false;
         }
 
+        void webBrowser2_Navigating(object sender, WebBrowserNavigatingEventArgs e)
+        {
+            formTimer.Tag = e.Url;
+        }
+
         void timer_Tick(object sender, EventArgs e)
         {
-            var timer = sender as System.Windows.Forms.Timer;
-            timer.Stop();
+            formTimer.Stop();
 
+            var webBrowser = new WebBrowser();
+            webBrowser.Dock = DockStyle.Fill;
+            webBrowser.Navigating += new WebBrowserNavigatingEventHandler(webBrowser2_Navigating);
+            webBrowser.Navigated += new WebBrowserNavigatedEventHandler(webBrowser2_Navigated);
+            webBrowser.Navigate(formTimer.Tag as Uri);
+
+            formTimer.Start();
+        }
+
+        void webBrowser2_Navigated(object sender, WebBrowserNavigatedEventArgs e)
+        {
             webBrowser2.Dispose();
-            webBrowser2 = null;
-
-            webBrowser2 = new WebBrowser();
-            webBrowser2.Dock = DockStyle.Fill;
-            var url = ConfigurationManager.AppSettings["ServerMonitorUrl"];
-            if (!string.IsNullOrEmpty(url))
-                webBrowser2.Url = new Uri(url);
-            else
-                webBrowser2.Url = new Uri("about:blank");
+            webBrowser2 = sender as WebBrowser;
 
             panel3.Controls.Clear();
             panel3.Controls.Add(webBrowser2);
-
-            timer.Start();
         }
 
         /// <summary>
