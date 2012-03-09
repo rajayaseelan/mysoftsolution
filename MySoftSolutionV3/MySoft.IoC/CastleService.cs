@@ -214,7 +214,10 @@ namespace MySoft.IoC
                 //获取client发送端
                 var client = sender as IScsServerClient;
                 var message = e.Message as ScsResultMessage;
-                var resMsg = caller.CallMethod(client, message);
+                var reqMsg = message.MessageValue as RequestMessage;
+
+                //调用方法
+                var resMsg = caller.CallMethod(client, reqMsg);
 
                 //发送数据到服务端
                 SendMessage(client, new ScsResultMessage(resMsg, message.RepliedMessageId));

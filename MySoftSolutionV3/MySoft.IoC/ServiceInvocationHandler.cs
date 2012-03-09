@@ -107,7 +107,7 @@ namespace MySoft.IoC
                     //如果数据为null,则返回null
                     if (resMsg == null)
                     {
-                        return CoreHelper.GetTypeDefaultValue(methodInfo.ReturnType);
+                        throw new WarningException("Request to return to service the data is empty!");
                     }
 
                     //如果有异常，向外抛出

@@ -190,24 +190,28 @@ namespace MySoft.PlatformService.Client
         {
             ManualResetEvent are = state as ManualResetEvent;
             are.WaitOne();
+
+            var node = CastleFactory.Create().GetDefaultNode();
             var service = CastleFactory.Create().GetChannel<IUserService>();
+            var service1 = CastleFactory.Create().GetChannel<IStatusService>(node);
 
             while (true)
             {
                 try
                 {
-                    //var users = CastleFactory.Create().DiscoverChannel<IUserService>().GetUsers();
-                    //Console.WriteLine(users[0].Description);
+                    //Stopwatch watch = Stopwatch.StartNew();
 
-                    Stopwatch watch = Stopwatch.StartNew();
+                    //int length = 1;
+                    //UserInfo user;
+                    //service.GetUserInfo("maoyong", ref length, out user);
 
-                    int length = 1;
-                    UserInfo user;
-                    service.GetUserInfo("maoyong", ref length, out user);
+                    //watch.Stop();
 
-                    watch.Stop();
+                    //Console.WriteLine(user.Description + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
-                    Console.WriteLine(user.Description + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    var clients = service1.GetClientList();
+
+                    Console.WriteLine("{0} => {1}", DateTime.Now, clients.Count);
                 }
                 catch (Exception ex)
                 {

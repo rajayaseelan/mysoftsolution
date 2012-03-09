@@ -89,7 +89,7 @@ namespace MySoft.IoC
                 status.SuccessCount++;
 
             //计算统计
-            counterlist.Call(args);
+            counterlist.CallCounter(args);
 
             //响应错误信息
             MessageCenter.Instance.Notify(args);
@@ -127,54 +127,59 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<ClientInfo> GetClientList()
         {
+            //统计客户端数量
+            var clients = new List<ClientInfo>();
             try
             {
                 var epServer = server.EndPoint as ScsTcpEndPoint;
                 var items = server.Clients.GetAllItems();
 
-                //统计客户端数量
-                var list = items.Where(p => p.State != null)
-                     .Select(p => p.State as AppClient)
-                     .GroupBy(p => new
-                     {
-                         AppName = p.AppName,
-                         IPAddress = p.IPAddress,
-                         HostName = p.HostName
-                     }).Select(p => new ClientInfo
-                     {
-                         AppName = p.Key.AppName,
-                         IPAddress = p.Key.IPAddress,
-                         HostName = p.Key.HostName,
-                         ServerIPAddress = epServer.IpAddress,
-                         ServerPort = epServer.TcpPort,
-                         Count = p.Count()
-                     }).ToList();
+                var list1 = items.Where(p => p.State != null).ToList();
+                var list2 = items.Where(p => p.State == null).ToList();
 
-                if (items.Any(p => p.State == null))
+                //如果list不为0
+                if (list1.Count > 0)
                 {
-                    var ls = items.Where(p => p.State == null)
-                        .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
-                        .GroupBy(p => p.IpAddress)
-                        .Select(g => new ClientInfo
-                        {
-                            AppName = "Unknown",
-                            IPAddress = g.Key,
-                            ServerIPAddress = epServer.IpAddress,
-                            ServerPort = epServer.TcpPort,
-                            HostName = "Unknown",
-                            Count = g.Count()
-                        }).ToList();
+                    var ls = list1.Select(p => p.State as AppClient)
+                             .GroupBy(p => new { AppName = p.AppName, HostName = p.HostName, IPAddress = p.IPAddress })
+                             .Select(p => new ClientInfo
+                             {
+                                 AppName = p.Key.AppName,
+                                 IPAddress = p.Key.IPAddress,
+                                 HostName = p.Key.HostName,
+                                 ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                                 ServerPort = epServer.TcpPort,
+                                 Count = p.Count()
+                             }).ToList();
 
-                    list.AddRange(ls);
+                    clients.AddRange(ls);
                 }
 
-                return list;
+                //如果list不为0
+                if (list2.Count > 0)
+                {
+                    var ls = list2.Where(p => p.State == null)
+                            .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
+                            .GroupBy(p => p.IpAddress)
+                            .Select(g => new ClientInfo
+                            {
+                                AppName = "Unknown",
+                                IPAddress = g.Key,
+                                ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                                ServerPort = epServer.TcpPort,
+                                HostName = "Unknown",
+                                Count = g.Count()
+                            }).ToList();
+
+                    clients.AddRange(ls);
+                }
             }
             catch (Exception ex)
             {
                 container.WriteError(ex);
-                return new List<ClientInfo>();
             }
+
+            return clients;
         }
 
         #endregion

@@ -28,32 +28,29 @@ namespace MySoft.IoC.Messages
         /// 调用方法
         /// </summary>
         /// <param name="args"></param>
-        public void Call(CallEventArgs args)
+        public void CallCounter(CallEventArgs args)
         {
             string callKey = string.Format("Call_{0}_{1}", args.Caller.ServiceName, args.Caller.MethodName);
-            if (dictCounter.ContainsKey(callKey))
+            lock (dictCounter)
             {
-                lock (dictCounter)
+                if (!dictCounter.ContainsKey(callKey))
                 {
-                    var counter = dictCounter[callKey];
-                    counter.Count++;
-
-                    //如果调用次数超过最大允许数，则提示警告
-                    if (counter.Count > maxCount)
+                    dictCounter[callKey] = new CounterInfo
                     {
-                        args.Error = new WarningException(string.Format("One minute call method ({0}, {1}) more than {2} times.",
-                            counter.ServiceName, counter.MethodName, maxCount));
-                    }
+                        ServiceName = args.Caller.ServiceName,
+                        MethodName = args.Caller.MethodName
+                    };
                 }
-            }
-            else
-            {
-                dictCounter[callKey] = new CounterInfo
+
+                var counter = dictCounter[callKey];
+                counter.Count++;
+
+                //如果调用次数超过最大允许数，则提示警告
+                if (counter.Count > maxCount)
                 {
-                    ServiceName = args.Caller.ServiceName,
-                    MethodName = args.Caller.MethodName,
-                    Count = 1
-                };
+                    args.Error = new WarningException(string.Format("One minute call method ({0}, {1}) more than {2} times.",
+                        counter.ServiceName, counter.MethodName, maxCount));
+                }
             }
         }
 

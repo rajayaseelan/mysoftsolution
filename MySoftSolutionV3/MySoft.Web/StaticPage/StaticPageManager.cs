@@ -290,7 +290,14 @@ namespace MySoft.Web
             using (StringWriter sw = new StringWriter(sb))
             {
                 string path = templatePath.TrimStart('/');
-                HttpRuntime.ProcessRequest(new EncodingWorkerRequest(path, query, sw, encoding));
+                try
+                {
+                    HttpRuntime.ProcessRequest(new EncodingWorkerRequest(path, query, sw, encoding));
+                }
+                catch (ThreadAbortException)
+                {
+                    //线程异常，则跳过
+                }
             }
 
             string content = sb.ToString();
@@ -318,6 +325,12 @@ namespace MySoft.Web
         {
             WebClient wc = new WebClient();
             wc.Encoding = encoding;
+
+            //判断是否有http://
+            if (!templatePath.ToLower().StartsWith("http://"))
+            {
+                templatePath = "http://" + templatePath;
+            }
 
             //下载内容
             string result = wc.DownloadString(templatePath);

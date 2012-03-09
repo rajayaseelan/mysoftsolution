@@ -37,16 +37,14 @@ namespace MySoft.IoC
         /// 调用方法
         /// </summary>
         /// <param name="client"></param>
-        /// <param name="message"></param>
+        /// <param name="reqMsg"></param>
         /// <returns></returns>
-        public ResponseMessage CallMethod(IScsServerClient client, ScsResultMessage message)
+        public ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg)
         {
             ResponseMessage resMsg = null;
 
             try
             {
-                var reqMsg = message.MessageValue as RequestMessage;
-
                 //服务参数信息
                 var caller = new AppCaller
                 {
@@ -98,11 +96,12 @@ namespace MySoft.IoC
             }
             catch (Exception ex)
             {
+                //输出错误
                 container.WriteError(ex);
 
                 resMsg = new ResponseMessage
                 {
-                    TransactionId = new Guid(message.RepliedMessageId),
+                    TransactionId = reqMsg.TransactionId,
                     ReturnType = ex.GetType(),
                     Error = ex
                 };

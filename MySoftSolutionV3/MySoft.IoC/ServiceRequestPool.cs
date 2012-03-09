@@ -27,7 +27,13 @@ namespace MySoft.IoC
         /// </summary>
         internal Int32 Count
         {
-            get { return this.pool.Count; }
+            get
+            {
+                lock (this.pool)
+                {
+                    return this.pool.Count;
+                }
+            }
         }
 
         /// <summary>
@@ -55,6 +61,7 @@ namespace MySoft.IoC
             {
                 throw new ArgumentNullException("Items added to a ServiceRequestPool cannot be null");
             }
+
             lock (this.pool)
             {
                 this.pool.Push(item);

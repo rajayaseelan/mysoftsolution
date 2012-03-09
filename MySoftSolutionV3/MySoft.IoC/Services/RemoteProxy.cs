@@ -105,14 +105,14 @@ namespace MySoft.IoC.Services
             //如果池为空，则判断是否达到最大池
             ServiceRequest reqProxy = null;
 
-            lock (this.reqPool)
+            //堆栈为空时，抛出异常
+            if (this.reqPool.Count == 0)
             {
-                //获取一个服务请求
-                reqProxy = reqPool.Pop();
-
-                if (reqProxy == null)
-                    throw new WarningException("Proxy service pool is null or empty！");
+                throw new WarningException("Proxy service pool is null or empty！");
             }
+
+            //获取一个服务请求
+            reqProxy = reqPool.Pop();
 
             try
             {
