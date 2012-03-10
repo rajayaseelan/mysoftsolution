@@ -112,7 +112,12 @@ namespace MySoft.IoC
         /// </summary>
         public int ServiceCount
         {
-            get { return container.GetServiceTypes<ServiceContractAttribute>().Count(); }
+            get
+            {
+                //获取拥有ServiceContract约束的服务
+                var types = container.GetServiceTypes<ServiceContractAttribute>();
+                return types.Where(type => type != typeof(IStatusService)).Count();
+            }
         }
 
         /// <summary>

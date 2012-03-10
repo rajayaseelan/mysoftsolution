@@ -211,6 +211,9 @@ namespace MySoft.IoC
                 services = new List<ServiceInfo>();
                 foreach (var type in types)
                 {
+                    //状态服务跳过
+                    if (type == typeof(IStatusService)) continue;
+
                     var contract1 = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(type);
                     var s = new ServiceInfo
                     {

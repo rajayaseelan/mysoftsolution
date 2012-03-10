@@ -27,20 +27,23 @@ namespace MySoft.IoC.HttpServer
             this.port = port;
             this.callers = new HttpCallerInfoCollection();
 
+            //获取拥有ServiceContract约束的服务
+            var types = container.GetServiceTypes<ServiceContractAttribute>();
+
             //初始化字典
-            foreach (var serviceType in container.GetServiceTypes<ServiceContractAttribute>())
+            foreach (var type in types)
             {
                 //状态服务跳过
-                if (serviceType == typeof(IStatusService)) continue;
+                if (type == typeof(IStatusService)) continue;
 
                 //添加方法
-                foreach (var methodInfo in CoreHelper.GetMethodsFromType(serviceType))
+                foreach (var method in CoreHelper.GetMethodsFromType(type))
                 {
-                    var httpInvoke = CoreHelper.GetMemberAttribute<HttpInvokeAttribute>(methodInfo);
+                    var httpInvoke = CoreHelper.GetMemberAttribute<HttpInvokeAttribute>(method);
                     if (httpInvoke == null) continue;
 
                     //创建一个新的Caller
-                    CreateNewCaller(serviceType, methodInfo, httpInvoke);
+                    CreateNewCaller(type, method, httpInvoke);
                 }
             }
         }
