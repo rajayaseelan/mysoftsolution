@@ -33,13 +33,15 @@ namespace MySoft.IoC.Messages
         /// <param name="args"></param>
         public void CallCounter(CallEventArgs args)
         {
-            string callKey = string.Format("Call_{0}_{1}", args.Caller.ServiceName, args.Caller.MethodName);
+            //计数按应用走
+            string callKey = string.Format("Call_{0}_{1}_{2}", args.Caller.AppName, args.Caller.ServiceName, args.Caller.MethodName);
             lock (dictCounter)
             {
                 if (!dictCounter.ContainsKey(callKey))
                 {
                     dictCounter[callKey] = new CounterInfo
                     {
+                        AppName = args.Caller.AppName,
                         ServiceName = args.Caller.ServiceName,
                         MethodName = args.Caller.MethodName
                     };
@@ -54,11 +56,12 @@ namespace MySoft.IoC.Messages
                     //如果调用次数超过最大允许数，则提示警告
                     if (counter.Count >= maxCount)
                     {
-                        var warning = new WarningException(string.Format("One minute call method ({0}, {1}) {2} times more than {3} times.",
-                            counter.ServiceName, counter.MethodName, counter.Count, maxCount));
+                        var warning = new WarningException(string.Format("【{0}】 One minute call service ({1}, {2}) {3} times more than {4} times.",
+                          counter.AppName, counter.ServiceName, counter.MethodName, counter.Count, maxCount));
 
                         //内部异常
-                        var error = new IoCException("One minute call method " + counter.Count + " times.", warning);
+                        var error = new IoCException(string.Format("【{0}】 One minute call service ({1}) {2} times.",
+                            counter.AppName, counter.ServiceName, counter.Count), warning);
 
                         //写错误日志
                         logger.WriteError(error);
@@ -98,6 +101,11 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public class CounterInfo
     {
+        /// <summary>
+        /// 应用名称
+        /// </summary>
+        public string AppName { get; set; }
+
         /// <summary>
         /// 服务名称
         /// </summary>

@@ -10,14 +10,14 @@ namespace MySoft.IoC
         #region Const Members
 
         /// <summary>
-        /// The default record number.
+        /// The default record hour
         /// </summary>
-        public const int DEFAULT_RECORD_NUMBER = 3600; //3600次
+        public const int DEFAULT_RECORD_HOUR = 12 ; //12小时
 
         /// <summary>
         /// The default minute call number.
         /// </summary>
-        public const int DEFAULT_MINUTE_CALL_NUMBER = 1000; //1000次
+        public const int DEFAULT_MINUTE_CALL = 1000; //1000次
 
         /// <summary>
         /// The default client timeout number. 
@@ -27,12 +27,12 @@ namespace MySoft.IoC
         /// <summary>
         /// The default server timeout number. 
         /// </summary>
-        public const int DEFAULT_SERVER_TIMEOUT = 60; //60秒
+        public const int DEFAULT_SERVER_TIMEOUT = 30; //30秒
 
         /// <summary>
         /// The default pool number.
         /// </summary>
-        public const int DEFAULT_CLIENTPOOL_MAXNUMBER = 100; //默认为100
+        public const int DEFAULT_CLIENT_MAXPOOL = 100; //默认为100
 
         #endregion
 

@@ -14,7 +14,7 @@ namespace MySoft.IoC
         private bool encrypt = false;
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
-        private int maxpool = ServiceConfig.DEFAULT_CLIENTPOOL_MAXNUMBER;
+        private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
 
         /// <summary>
         /// Gets or sets the key.

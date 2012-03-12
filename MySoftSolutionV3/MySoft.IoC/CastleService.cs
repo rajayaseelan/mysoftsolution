@@ -122,7 +122,7 @@ namespace MySoft.IoC
 
         /// <summary>
         /// 停止服务
-        /// </summary>1
+        /// </summary>
         public void Stop()
         {
             this.Dispose();

@@ -20,29 +20,23 @@ namespace MySoft.IoC.Messages
             }
             set
             {
-                lock (this)
-                {
-                    startDate = value;
-                }
+                startDate = value;
             }
         }
 
-        private int totalSeconds;
+        private int totalHours;
         /// <summary>
-        /// 汇总时间
+        /// 统计小时数
         /// </summary>
-        public int TotalSeconds
+        public int TotalHours
         {
             get
             {
-                return totalSeconds;
+                return totalHours;
             }
             set
             {
-                lock (this)
-                {
-                    totalSeconds = value;
-                }
+                totalHours = value;
             }
         }
 

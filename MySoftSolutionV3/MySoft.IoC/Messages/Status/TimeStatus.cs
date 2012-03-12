@@ -48,10 +48,10 @@ namespace MySoft.IoC.Messages
         /// <returns></returns>
         public TimeStatus GetOrCreate(DateTime value)
         {
-            lock (dictStatus)
+            string key = value.ToString("yyyyMMddHHmmss");
+            if (!dictStatus.ContainsKey(key))
             {
-                string key = value.ToString("yyyyMMddHHmmss");
-                if (!dictStatus.ContainsKey(key))
+                lock (dictStatus)
                 {
                     //如果总数大于传入的总数
                     if (dictStatus.Count >= maxCount)
@@ -62,9 +62,9 @@ namespace MySoft.IoC.Messages
 
                     dictStatus[key] = new TimeStatus { CounterTime = value };
                 }
-
-                return dictStatus[key];
             }
+
+            return dictStatus[key];
         }
 
         /// <summary>

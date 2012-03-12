@@ -34,7 +34,7 @@ namespace MySoft.IoC
             this.server = server;
             this.container = container;
             this.startTime = DateTime.Now;
-            this.statuslist = new TimeStatusCollection(config.RecordNums);
+            this.statuslist = new TimeStatusCollection(config.RecordHours * 3600);
             this.counterlist = new CounterInfoCollection(container, config.MinuteCalls);
 
             //启动定义推送线程
@@ -346,7 +346,7 @@ namespace MySoft.IoC
             ServerStatus status = new ServerStatus
             {
                 StartDate = startTime,
-                TotalSeconds = (int)DateTime.Now.Subtract(startTime).TotalSeconds,
+                TotalHours = config.RecordHours,
                 Highest = GetHighestStatus(),
                 Latest = GetLatestStatus(),
                 Summary = GetSummaryStatus()
@@ -362,6 +362,9 @@ namespace MySoft.IoC
         {
             lock (statuslist)
             {
+                //重置统计时间
+                startTime = DateTime.Now;
+
                 statuslist.Clear();
             }
         }
@@ -384,9 +387,9 @@ namespace MySoft.IoC
             var highest = new HighestStatus();
             var list = statuslist.ToList();
 
-            //处理最高值 
             #region 处理最高值
 
+            //处理最高值 
             if (list.Count > 0)
             {
                 //成功

@@ -17,8 +17,8 @@ namespace MySoft.IoC.Configuration
         private bool encrypt = false;
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;
-        private int minuteCalls = ServiceConfig.DEFAULT_MINUTE_CALL_NUMBER;        //默认为每分钟调用1000次，超过报异常
-        private int recordNums = ServiceConfig.DEFAULT_RECORD_NUMBER;              //默认记录3600次   //记录条数，默认为3600条，1小时记录
+        private int minuteCalls = ServiceConfig.DEFAULT_MINUTE_CALL;        //默认为每分钟调用1000次，超过报异常
+        private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;        //默认记录1小时
 
         /// <summary>
         /// 获取远程对象配置
@@ -63,8 +63,8 @@ namespace MySoft.IoC.Configuration
             if (xmlnode["timeout"] != null && xmlnode["timeout"].Value.Trim() != string.Empty)
                 timeout = Convert.ToInt32(xmlnode["timeout"].Value);
 
-            if (xmlnode["recordNums"] != null && xmlnode["recordNums"].Value.Trim() != string.Empty)
-                recordNums = Convert.ToInt32(xmlnode["recordNums"].Value);
+            if (xmlnode["recordHours"] != null && xmlnode["recordHours"].Value.Trim() != string.Empty)
+                recordHours = Convert.ToInt32(xmlnode["recordHours"].Value);
 
             if (xmlnode["minuteCalls"] != null && xmlnode["minuteCalls"].Value.Trim() != string.Empty)
                 minuteCalls = Convert.ToInt32(xmlnode["minuteCalls"].Value);
@@ -168,13 +168,13 @@ namespace MySoft.IoC.Configuration
         }
 
         /// <summary>
-        /// Gets or sets the recordNums
+        /// Gets or sets the recordHours
         /// </summary>
-        /// <value>The recordNums.</value>
-        public int RecordNums
+        /// <value>The recordHours.</value>
+        public int RecordHours
         {
-            get { return recordNums; }
-            set { recordNums = value; }
+            get { return recordHours; }
+            set { recordHours = value; }
         }
 
         /// <summary>

@@ -16,9 +16,9 @@
     <hr />
     <div style="float: left; width: 25%; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
         <ul>
-            <li><b>汇总状态信息</b></li>
+            <li><b>汇总状态信息【最近<% =status.TotalHours %>小时】</b></li>
             <li>运行总时间：
-                <%=status.TotalSeconds%>
+                <%=(int)DateTime.Now.Subtract(status.StartDate).TotalSeconds%>
                 秒</li>
             <li>请求数:
                 <%=status.Summary.RequestCount%>
