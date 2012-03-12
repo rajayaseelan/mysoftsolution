@@ -15,12 +15,13 @@ namespace MySoft.IoC.Services
         protected ILog logger;
         protected RemoteNode node;
         protected ServiceRequestPool reqPool;
-        private IDictionary<Guid, WaitResult> hashtable = new Dictionary<Guid, WaitResult>();
+        private WaitResultCollection hashtable;
 
         public RemoteProxy(RemoteNode node, ILog logger)
         {
             this.node = node;
             this.logger = logger;
+            this.hashtable = new WaitResultCollection();
 
             InitRequest();
         }
@@ -102,17 +103,8 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            //如果池为空，则判断是否达到最大池
-            ServiceRequest reqProxy = null;
-
-            //堆栈为空时，抛出异常
-            if (this.reqPool.Count == 0)
-            {
-                throw new WarningException("Proxy service pool is null or empty！");
-            }
-
-            //获取一个服务请求
-            reqProxy = reqPool.Pop();
+            //获取一个请求
+            var reqProxy = reqPool.Pop();
 
             try
             {
@@ -120,27 +112,21 @@ namespace MySoft.IoC.Services
                 reqProxy.SendMessage(reqMsg);
 
                 //处理数据
-                var autoEvent = new AutoResetEvent(false);
-                lock (hashtable)
-                {
-                    hashtable[reqMsg.TransactionId] = new WaitResult { Reset = autoEvent };
-                }
+                var waitResult = new WaitResult();
+                hashtable[reqMsg.TransactionId] = waitResult;
 
                 var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
                 ResponseMessage resMsg = null;
 
-                //启动线程来
-                if (autoEvent.WaitOne(elapsedTime))
+                //等待信号响应
+                if (waitResult.Reset.WaitOne(elapsedTime))
                 {
                     var value = hashtable[reqMsg.TransactionId];
                     resMsg = value.Message;
                 }
 
                 //用完后移除
-                lock (hashtable)
-                {
-                    hashtable.Remove(reqMsg.TransactionId);
-                }
+                hashtable.Remove(reqMsg.TransactionId);
 
                 return resMsg;
             }

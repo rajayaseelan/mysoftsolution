@@ -44,10 +44,10 @@ namespace MySoft.IoC
         {
             lock (this.pool)
             {
-                if (this.Count > 0)
-                    return this.pool.Pop();
+                if (this.Count == 0)
+                    throw new WarningException("Proxy service pool is null or empty！");
                 else
-                    return null;
+                    return this.pool.Pop();
             }
         }
 
