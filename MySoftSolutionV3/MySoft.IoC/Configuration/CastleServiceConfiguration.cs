@@ -13,7 +13,6 @@ namespace MySoft.IoC.Configuration
         private int port = 8888;
         private int httpPort = 8080;
         private bool httpEnabled = false;
-        private string cacheType;
         private bool encrypt = false;
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;
@@ -79,11 +78,6 @@ namespace MySoft.IoC.Configuration
                     httpPort = Convert.ToInt32(childnode["port"].Value);
                     httpEnabled = Convert.ToBoolean(childnode["enabled"].Value);
                 }
-                else if (child.Name == "serverCache")
-                {
-                    if (childnode["cacheType"] != null && childnode["cacheType"].Value.Trim() != string.Empty)
-                        cacheType = childnode["cacheType"].Value;
-                }
             }
         }
 
@@ -108,15 +102,6 @@ namespace MySoft.IoC.Configuration
         }
 
         #endregion
-
-        /// <summary>
-        /// Gets or sets the cacheType
-        /// </summary>
-        public string CacheType
-        {
-            get { return cacheType; }
-            set { cacheType = value; }
-        }
 
         /// <summary>
         /// Gets or sets the host.

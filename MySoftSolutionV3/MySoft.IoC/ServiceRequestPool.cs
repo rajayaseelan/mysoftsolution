@@ -45,7 +45,7 @@ namespace MySoft.IoC
             lock (this.pool)
             {
                 if (this.Count == 0)
-                    throw new WarningException("Proxy service pool is null or empty！");
+                    throw new WarningException("Proxy service pool is empty！");
                 else
                     return this.pool.Pop();
             }

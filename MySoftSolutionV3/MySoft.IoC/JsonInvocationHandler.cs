@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MySoft.IoC.Messages;
-using MySoft.IoC.Configuration;
 using System.Collections;
+using MySoft.IoC.Configuration;
+using MySoft.IoC.Messages;
+using MySoft.IoC.Cache;
 
 namespace MySoft.IoC
 {
@@ -16,11 +14,12 @@ namespace MySoft.IoC
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceInvocationHandler"/> class.
         /// </summary>
-        /// <param name="container">config.</param>
+        /// <param name="config">config.</param>
         /// <param name="container">The container.</param>
-        /// <param name="serviceInterfaceType">Type of the service interface.</param>
-        public JsonInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IService service, Type serviceType)
-            : base(config, container, service, serviceType)
+        /// <param name="serviceType">Type of the service interface.</param>
+        /// <param name="cache"></param>
+        public JsonInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IService service, Type serviceType, IServiceCache cache)
+            : base(config, container, service, serviceType, cache)
         {
             //构造方法
         }
@@ -70,7 +69,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        private static Type GetElementType(Type type)
+        private Type GetElementType(Type type)
         {
             if (type.IsByRef) type = type.GetElementType();
             return type;

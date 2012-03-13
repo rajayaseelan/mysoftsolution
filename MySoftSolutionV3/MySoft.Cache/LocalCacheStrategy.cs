@@ -70,7 +70,7 @@ namespace MySoft.Cache
         /// <summary>
         /// 内存缓存单例
         /// </summary>
-        public static readonly LocalCacheStrategy Default = new LocalCacheStrategy("defaultCache");
+        public static readonly LocalCacheStrategy Default = new LocalCacheStrategy(null);
 
         private static volatile System.Web.Caching.Cache webCache = System.Web.HttpRuntime.Cache;
         private static readonly object lockObject = new object();

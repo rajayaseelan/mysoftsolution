@@ -19,7 +19,6 @@ namespace MySoft.IoC.HttpServer
         /// HttpServiceCaller初始化
         /// </summary>
         /// <param name="container"></param>
-        /// <param name="cache"></param>
         /// <param name="port"></param>
         public HttpServiceCaller(IServiceContainer container, int port)
         {

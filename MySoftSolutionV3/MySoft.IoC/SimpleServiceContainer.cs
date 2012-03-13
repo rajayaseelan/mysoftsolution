@@ -15,7 +15,6 @@ using Castle.Windsor.Configuration.Interpreters;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using MySoft.Cache;
 
 namespace MySoft.IoC
 {
@@ -27,7 +26,7 @@ namespace MySoft.IoC
         #region Private Members
 
         private IWindsorContainer container;
-        private void Init(CastleFactoryType type, IServiceCache cache)
+        private void Init(CastleFactoryType type)
         {
             this.container = new WindsorContainer();
 
@@ -37,7 +36,7 @@ namespace MySoft.IoC
                 this.container.AddFacility(new StartableFacility());
 
                 //加载服务解析
-                this.container.AddFacility(new ServiceDiscoverFacility(this, cache));
+                this.container.AddFacility(new ServiceDiscoverFacility(this));
 
                 //如果不是远程模式，则加载配置节
                 var sectionKey = "mysoft.framework/castle";
@@ -116,9 +115,9 @@ namespace MySoft.IoC
         /// Initializes a new instance of the <see cref="SimpleServiceContainer"/> class.
         /// </summary>
         /// <param name="config"></param>
-        public SimpleServiceContainer(CastleFactoryType type, IServiceCache cache)
+        public SimpleServiceContainer(CastleFactoryType type)
         {
-            Init(type, cache);
+            Init(type);
         }
 
         #endregion

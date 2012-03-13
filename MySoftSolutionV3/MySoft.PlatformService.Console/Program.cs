@@ -8,30 +8,6 @@ using MySoft.Net.Http;
 
 namespace MySoft.PlatformService.Console
 {
-    public class ServiceCache : IServiceCache
-    {
-        #region IServiceCache ≥…‘±
-
-        public void Insert(string key, object value, int seconds)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T Get<T>(string key)
-        {
-            //throw new NotImplementedException();
-
-            return default(T);
-        }
-
-        public void Remove(string key)
-        {
-            //throw new NotImplementedException();
-        }
-
-        #endregion
-    }
-
     class Program
     {
         private static readonly object syncobj = new object();

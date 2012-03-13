@@ -8,7 +8,7 @@ namespace MySoft.Data.Cache
     /// <summary>
     /// 缓存依赖
     /// </summary>
-    interface ICacheDependent
+    public interface ICacheDependent
     {
         /// <summary>
         /// 添加缓存

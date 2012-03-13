@@ -853,13 +853,13 @@ namespace MySoft
             {
                 if (type.IsArray)
                 {
-                    jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
+                    jsonString = string.Format("[{0}]", jsonString.TrimStart('[').TrimEnd(']').Replace(",", "\",\""));
                 }
                 else if (type.IsGenericType)
                 {
                     var t = type.GetGenericTypeDefinition();
                     if (typeof(IList<>).IsAssignableFrom(t))
-                        jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
+                        jsonString = string.Format("[{0}]", jsonString.TrimStart('[').TrimEnd(']').Replace(",", "\",\""));
                 }
 
                 if (jsonString.Contains("new Date"))

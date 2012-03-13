@@ -51,7 +51,11 @@ namespace MySoft.IoC
             var resMsg = service.CallService(reqMsg);
 
             //如果数据为null,则返回null
-            if (resMsg == null) return null;
+            if (resMsg == null)
+            {
+                var errMsg = string.Format("Request to return to service ({0}, {1}) the data is empty!", reqMsg.ServiceName, reqMsg.MethodName);
+                throw new WarningException(errMsg);
+            }
 
             //如果有异常，向外抛出
             if (resMsg.IsError) throw resMsg.Error;

@@ -67,6 +67,12 @@ namespace MySoft.Cache
     public interface ICacheStrategy
     {
         /// <summary>
+        /// 设置区域名称
+        /// </summary>
+        /// <param name="regionName"></param>
+        void SetRegionName(string regionName);
+
+        /// <summary>
         /// 到期时间
         /// </summary>
         int Timeout { set; get; }

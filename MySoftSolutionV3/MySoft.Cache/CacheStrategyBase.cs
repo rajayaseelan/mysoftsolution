@@ -12,12 +12,12 @@ namespace MySoft.Cache
         protected string prefix;
         public CacheStrategyBase(string regionName)
         {
+            this.regionName = regionName;
+
             if (string.IsNullOrEmpty(regionName))
-                throw new ArgumentNullException("缓存分区名称不能为null！");
+                this.prefix = "{DEFAULT}|";
             else
                 this.prefix = "{" + regionName.ToUpper() + "}|";
-
-            this.regionName = regionName;
         }
 
         // 默认缓存存活期为1440分钟(24小时)
@@ -59,6 +59,24 @@ namespace MySoft.Cache
         }
 
         #region ICacheStrategy 成员
+
+        /// <summary>
+        /// 设置区域名称，只能应用于区域名称为空时
+        /// </summary>
+        /// <param name="regionName"></param>
+        public void SetRegionName(string regionName)
+        {
+            //针对区域名称为空
+            if (string.IsNullOrEmpty(this.regionName))
+            {
+                this.regionName = regionName;
+
+                if (string.IsNullOrEmpty(regionName))
+                    this.prefix = "{DEFAULT}|";
+                else
+                    this.prefix = "{" + regionName.ToUpper() + "}|";
+            }
+        }
 
         /// <summary>
         /// 添加指定ID的对象

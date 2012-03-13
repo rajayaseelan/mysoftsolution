@@ -27,7 +27,6 @@ namespace MySoft.IoC.Configuration
     {
         private IDictionary<string, RemoteNode> nodes;
         private CastleFactoryType type = CastleFactoryType.Local;
-        private string cacheType;
         private string defaultKey;                                  //默认服务
         private string appname;                                     //host名称
         private bool throwError = true;                             //抛出异常
@@ -121,11 +120,6 @@ namespace MySoft.IoC.Configuration
 
                     nodes[remoteNode.Key] = remoteNode;
                 }
-                else if (child.Name == "clientCache")
-                {
-                    if (childnode["cacheType"] != null && childnode["cacheType"].Value.Trim() != string.Empty)
-                        cacheType = childnode["cacheType"].Value;
-                }
             }
 
             if (type != CastleFactoryType.Local)
@@ -198,15 +192,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return format; }
             set { format = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the cacheType
-        /// </summary>
-        public string CacheType
-        {
-            get { return cacheType; }
-            set { cacheType = value; }
         }
 
         /// <summary>

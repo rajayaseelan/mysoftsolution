@@ -77,7 +77,7 @@ namespace MySoft.Cache
         /// <summary>
         /// 分布式缓存单例
         /// </summary>
-        public static readonly SharedCacheStrategy Default = new SharedCacheStrategy("defaultCache");
+        public static readonly SharedCacheStrategy Default = new SharedCacheStrategy(null);
 
         private static volatile IndexusProviderBase dataCache = IndexusDistributionCache.SharedCache;
         private static readonly object lockObject = new object();

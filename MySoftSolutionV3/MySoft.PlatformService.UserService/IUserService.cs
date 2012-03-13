@@ -43,7 +43,7 @@ namespace MySoft.PlatformService.UserService
     public interface IUserService
     {
         //[OperationContract(ClientCacheTime = 10, ServerCacheTime = 20, CacheKey = "User_{name}")]
-        //[OperationContract(ServerCacheTime = 10)]
+        [OperationContract(CacheTime = 10)]
         UserInfo GetUserInfo(string name, ref int length, out UserInfo user, params int[] ids);
 
         string GetUser(NameValueCollection nv);
@@ -60,6 +60,7 @@ namespace MySoft.PlatformService.UserService
         IList<UserInfo> GetUsers();
 
         [HttpInvoke(Name = "user.getuser", Description = "获取用户", Authorized = true, AuthParameter = "name")]
+        [OperationContract(CacheTime = 10)]
         UserInfo GetUser(int id, string name, IList<string> list, int[] values);
 
         [HttpInvoke(Name = "user.getuser", Description = "获取用户")]

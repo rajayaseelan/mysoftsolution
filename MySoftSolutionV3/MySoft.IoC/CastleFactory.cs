@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MySoft.IoC.Aspect;
+using MySoft.Cache;
+using MySoft.IoC.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using MySoft.Cache;
 
 namespace MySoft.IoC
 {
@@ -23,7 +23,8 @@ namespace MySoft.IoC
         private CastleFactoryConfiguration config;
         private IServiceContainer container;
         private DiscoverProxy discoverProxy;
-        private IDictionary<string, IService> proxies = new Dictionary<string, IService>();
+        private IDictionary<string, IService> proxies;
+        private ICacheStrategy cache;
 
         /// <summary>
         /// 所有代理信息
@@ -54,10 +55,13 @@ namespace MySoft.IoC
         /// <param name="container">The container.</param>
         protected CastleFactory(CastleFactoryConfiguration config, IServiceContainer container)
         {
-            if (config == null) config = new CastleFactoryConfiguration();
-            this.config = config;
+            if (config == null)
+                this.config = new CastleFactoryConfiguration();
+            else
+                this.config = config;
             this.container = container;
             this.discoverProxy = new DiscoverProxy(this, container);
+            this.proxies = new Dictionary<string, IService>();
         }
 
         #region 创建单例
@@ -92,24 +96,15 @@ namespace MySoft.IoC
         {
             CastleFactory factory = null;
 
-            //加载cacheType
-            IServiceCache cache = null;
-            if (!string.IsNullOrEmpty(config.CacheType))
-            {
-                Type type = Type.GetType(config.CacheType);
-                object instance = Activator.CreateInstance(type);
-                cache = instance as IServiceCache;
-            }
-
             //本地匹配节
             if (config == null || config.Type == CastleFactoryType.Local)
             {
-                var sContainer = new SimpleServiceContainer(CastleFactoryType.Local, new ServiceCache(cache));
+                var sContainer = new SimpleServiceContainer(CastleFactoryType.Local);
                 factory = new CastleFactory(config, sContainer);
             }
             else
             {
-                var sContainer = new SimpleServiceContainer(config.Type, new ServiceCache(cache));
+                var sContainer = new SimpleServiceContainer(config.Type);
                 sContainer.OnLog += (log, type) =>
                 {
                     if (factory != null && factory.OnLog != null)
@@ -174,6 +169,18 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 注册缓存
+        /// </summary>
+        /// <param name="cache"></param>
+        public void RegisterCache(ICacheStrategy cache)
+        {
+            //设置区域名称为应用名称
+            cache.SetRegionName(config.AppName);
+
+            this.cache = cache;
+        }
+
+        /// <summary>
         /// Create service channel.
         /// </summary>
         /// <returns>The service implemetation instance.</returns>
@@ -209,8 +216,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(RemoteNode node)
         {
-            var service = GetLocalService<IServiceInterfaceType>();
-            if (service != null) return service;
+            if (node == null)
+                throw new WarningException("Remote node can't for empty!");
 
             IService proxy = null;
             var isCacheService = true;
@@ -241,10 +248,11 @@ namespace MySoft.IoC
                 lock (lockObject)
                 {
                     IProxyInvocationHandler handler = null;
+                    var serviceCache = new CastleServiceCache(cache);
                     if (config.DataType == DataType.Json)
-                        handler = new JsonInvocationHandler(this.config, this.container, proxy, serviceType);
+                        handler = new JsonInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache);
                     else
-                        handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType);
+                        handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache);
                     var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                     service = (IServiceInterfaceType)dynamicProxy;
@@ -300,6 +308,9 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IPublishService GetChannel<IPublishService>(RemoteNode node, object callback)
         {
+            if (node == null)
+                throw new WarningException("Remote node can't for empty!");
+
             if (callback == null) throw new IoCException("Callback cannot be the null!");
             var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(typeof(IPublishService));
             if (contract != null && contract.CallbackType != null)
@@ -357,16 +368,14 @@ namespace MySoft.IoC
 
         public InvokeData Invoke(RemoteNode node, InvokeMessage message)
         {
-            IService service = GetLocalService(message);
-            if (service == null)
-            {
-                if (singleton.proxies.ContainsKey(node.Key.ToLower()))
-                    service = singleton.proxies[node.Key.ToLower()];
-                else
-                {
-                    service = new RemoteProxy(node, container);
-                }
-            }
+            if (node == null)
+                throw new WarningException("Remote node can't for empty!");
+
+            IService service = null;
+            if (singleton.proxies.ContainsKey(node.Key.ToLower()))
+                service = singleton.proxies[node.Key.ToLower()];
+            else
+                service = new RemoteProxy(node, container);
 
             return GetInvokeData(message, service);
         }
@@ -414,7 +423,8 @@ namespace MySoft.IoC
                     lock (lockObject)
                     {
                         //返回本地服务
-                        var handler = new LocalInvocationHandler(config, container, serviceType);
+                        var serviceCache = new CastleServiceCache(cache);
+                        var handler = new LocalInvocationHandler(config, container, serviceType, serviceCache);
                         var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                         return (IServiceInterfaceType)dynamicProxy;

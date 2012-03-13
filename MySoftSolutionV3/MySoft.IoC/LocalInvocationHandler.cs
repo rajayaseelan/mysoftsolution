@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using MySoft.IoC.Aspect;
+using MySoft.IoC.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
@@ -17,6 +17,7 @@ namespace MySoft.IoC
         private IServiceContainer container;
         private Type serviceType;
         private IDictionary<string, int> cacheTimes;
+        private IServiceCache cache;
         private string hostName;
         private string ipAddress;
 
@@ -26,11 +27,13 @@ namespace MySoft.IoC
         /// <param name="config"></param>
         /// <param name="container"></param>
         /// <param name="serviceType"></param>
-        public LocalInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, Type serviceType)
+        /// <param name="cache"></param>
+        public LocalInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, Type serviceType, IServiceCache cache)
         {
             this.config = config;
             this.container = container;
             this.serviceType = serviceType;
+            this.cache = cache;
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -40,8 +43,8 @@ namespace MySoft.IoC
             foreach (var method in methods)
             {
                 var contract = CoreHelper.GetMemberAttribute<OperationContractAttribute>(method);
-                if (contract != null && contract.ServerCacheTime > 0)
-                    cacheTimes[method.ToString()] = contract.ServerCacheTime;
+                if (contract != null && contract.CacheTime > 0)
+                    cacheTimes[method.ToString()] = contract.CacheTime;
             }
         }
 
@@ -54,66 +57,32 @@ namespace MySoft.IoC
         /// <returns></returns>
         private object InvokeMethod(System.Reflection.MethodInfo method, object[] parameters, string jsonString)
         {
-            object returnValue = null;
-            string cacheKey = string.Format("LocalCache_{0}_{1}", method, jsonString);
-            var cacheValue = CacheHelper.Get<CacheObject>(cacheKey);
+            //容器实例对象
+            object instance = null;
 
-            //缓存无值
-            if (cacheValue == null)
+            try
             {
-                //容器实例对象
-                object instance = null;
+                //从容器中获取对象
+                instance = container.Resolve(serviceType);
 
-                try
-                {
-                    //从容器中获取对象
-                    instance = container.Resolve(serviceType);
+                //返回拦截服务
+                var service = AspectFactory.CreateProxyService(serviceType, instance);
 
-                    //返回拦截服务
-                    var service = AspectFactory.CreateProxyService(serviceType, instance);
+                //设置上下文
+                SetOperationContext(serviceType.FullName, method.ToString(), jsonString);
 
-                    //设置上下文
-                    SetOperationContext(serviceType.FullName, method.ToString(), jsonString);
-
-                    //动态调用方法
-                    returnValue = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
-
-                    //如果需要缓存，则存入本地缓存
-                    if (cacheTimes.ContainsKey(method.ToString()))
-                    {
-                        int cacheTime = cacheTimes[method.ToString()];
-                        cacheValue = new CacheObject
-                        {
-                            Value = returnValue,
-                            Arguments = parameters
-                        };
-
-                        CacheHelper.Insert(cacheKey, cacheValue, cacheTime);
-                    }
-                }
-                finally
-                {
-                    //释放资源
-                    container.Release(instance);
-
-                    //初始化上下文
-                    OperationContext.Current = null;
-                }
+                //动态调用方法
+                return DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
             }
-            else
+            finally
             {
-                returnValue = cacheValue.Value;
-                var index = 0;
-                foreach (var p in method.GetParameters())
-                {
-                    if (p.ParameterType.IsByRef)
-                        parameters[index] = cacheValue.Arguments[index];
+                //释放资源
+                container.Release(instance);
 
-                    index++;
-                }
+                //初始化上下文
+                OperationContext.Current = null;
             }
 
-            return returnValue;
         }
 
         #region IProxyInvocationHandler 成员
@@ -127,11 +96,44 @@ namespace MySoft.IoC
         /// <returns></returns>
         public object Invoke(object proxy, System.Reflection.MethodInfo method, object[] parameters)
         {
-            var hashtable = CreateHashtable(method, parameters);
-            var jsonString = SerializationManager.SerializeJson(hashtable);
+            //定义返回值
+            object returnValue = null;
 
-            //调用方法
-            return InvokeMethod(method, parameters, jsonString);
+            var hashtable = ServiceConfig.CreateParameters(method, parameters);
+            string cacheKey = ServiceConfig.GetCacheKey(serviceType, method, hashtable);
+            var cacheValue = cache.Get<CacheObject>(cacheKey);
+
+            //缓存无值
+            if (cacheValue == null)
+            {
+                //调用方法
+                var jsonString = hashtable.ToString();
+                returnValue = InvokeMethod(method, parameters, jsonString);
+
+                //如果需要缓存，则存入本地缓存
+                if (returnValue != null && cacheTimes.ContainsKey(method.ToString()))
+                {
+                    int cacheTime = cacheTimes[method.ToString()];
+                    cacheValue = new CacheObject
+                    {
+                        Value = returnValue,
+                        Parameters = hashtable
+                    };
+
+                    cache.Insert(cacheKey, cacheValue, cacheTime);
+                }
+            }
+            else
+            {
+                //处理返回值
+                returnValue = cacheValue.Value;
+
+                //处理参数
+                ServiceConfig.SetParameterValue(method, parameters, cacheValue.Parameters);
+            }
+
+            //返回结果
+            return returnValue;
         }
 
         /// <summary>
@@ -161,38 +163,6 @@ namespace MySoft.IoC
             };
         }
 
-        /// <summary>
-        /// 创建一个Hashtable
-        /// </summary>
-        /// <param name="method"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        private Hashtable CreateHashtable(System.Reflection.MethodInfo method, object[] parameters)
-        {
-            var hashtable = new Hashtable();
-            int index = 0;
-            foreach (var p in method.GetParameters())
-            {
-                hashtable[p.Name] = parameters[index];
-                index++;
-            }
-
-            return hashtable;
-        }
-
         #endregion
-
-        private class CacheObject
-        {
-            /// <summary>
-            /// 值
-            /// </summary>
-            public object Value { get; set; }
-
-            /// <summary>
-            /// 参数
-            /// </summary>
-            public object[] Arguments { get; set; }
-        }
     }
 }

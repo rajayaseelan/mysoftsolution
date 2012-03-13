@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Cache;
 
 namespace MySoft.IoC
 {
@@ -9,135 +11,84 @@ namespace MySoft.IoC
     /// </summary>
     public class ServiceInvocationHandler : IProxyInvocationHandler
     {
-        protected CastleFactoryConfiguration config;
+        private CastleFactoryConfiguration config;
+        private IDictionary<string, int> cacheTimes;
         private IServiceContainer container;
         private IService service;
         private Type serviceType;
+        private IServiceCache cache;
         private string hostName;
         private string ipAddress;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceInvocationHandler"/> class.
+        ///  Initializes a new instance of the <see cref="ServiceInvocationHandler"/> class.
         /// </summary>
-        /// <param name="container">config.</param>
-        /// <param name="container">The container.</param>
-        /// <param name="serviceInterfaceType">Type of the service interface.</param>
-        public ServiceInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IService service, Type serviceType)
+        /// <param name="config"></param>
+        /// <param name="container"></param>
+        /// <param name="service"></param>
+        /// <param name="serviceType"></param>
+        /// <param name="cache"></param>
+        public ServiceInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IService service, Type serviceType, IServiceCache cache)
         {
             this.config = config;
             this.container = container;
             this.serviceType = serviceType;
             this.service = service;
+            this.cache = cache;
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
+
+            this.cacheTimes = new Dictionary<string, int>();
+            var methods = CoreHelper.GetMethodsFromType(serviceType);
+            foreach (var method in methods)
+            {
+                var contract = CoreHelper.GetMemberAttribute<OperationContractAttribute>(method);
+                if (contract != null && contract.CacheTime > 0)
+                    cacheTimes[method.ToString()] = contract.CacheTime;
+            }
         }
 
         /// <summary>
         /// Calls the service.
         /// </summary>
-        /// <param name="methodInfo">Name of the sub service.</param>
-        /// <param name="paramValues">The param values.</param>
+        /// <param name="reqMsg">Name of the sub service.</param>
+        /// <param name="method">The param values.</param>
         /// <returns>The result.</returns>
-        private object CallService(System.Reflection.MethodInfo methodInfo, object[] paramValues)
+        private ResponseMessage CallService(RequestMessage reqMsg, System.Reflection.MethodInfo method)
         {
-            #region 设置请求信息
-
-            RequestMessage reqMsg = new RequestMessage();
-            reqMsg.AppName = config.AppName;                                //应用名称
-            reqMsg.HostName = hostName;                                     //客户端名称
-            reqMsg.IPAddress = ipAddress;                                   //客户端IP地址
-            reqMsg.ServiceName = serviceType.FullName;                      //服务名称
-            reqMsg.MethodName = methodInfo.ToString();                      //方法名称
-            reqMsg.ReturnType = methodInfo.ReturnType;                      //返回类型
-            reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
-
-            #endregion
-
-            #region 处理参数
-
-            var pis = methodInfo.GetParameters();
-            if (paramValues != null && pis.Length != paramValues.Length)
-            {
-                //参数不正确直接返回异常
-                string title = string.Format("Invalid parameters ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
-                string body = string.Format("{0}\r\nParameters ==> {1}", title, reqMsg.Parameters);
-                throw new WarningException(body)
-                {
-                    ApplicationName = reqMsg.AppName,
-                    ServiceName = reqMsg.ServiceName,
-                    ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                };
-            }
-
-            if (pis.Length > 0)
-            {
-                for (int i = 0; i < paramValues.Length; i++)
-                {
-                    //处理默认值
-                    reqMsg.Parameters[pis[i].Name] = paramValues[i] ?? CoreHelper.GetTypeDefaultValue(pis[i].ParameterType);
-                }
-
-                //处理参数
-                if (config.DataType == DataType.Json)
-                    JsonInParameter(reqMsg);
-            }
-
-            #endregion
-
-            //获取约束信息
-            var opContract = CoreHelper.GetMemberAttribute<OperationContractAttribute>(methodInfo);
-            int clientCacheTime = -1;
-            if (opContract != null)
-            {
-                if (opContract.ClientCacheTime > 0) clientCacheTime = opContract.ClientCacheTime;
-            }
+            ResponseMessage resMsg = null;
 
             try
             {
-                string cacheKey = ServiceConfig.GetCacheKey(reqMsg, opContract);
-                var resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
+                var pis = method.GetParameters();
+
+                //处理参数
+                if (pis.Length > 0)
+                {
+                    if (config.DataType == DataType.Json)
+                        JsonInParameter(reqMsg);
+                }
 
                 //调用服务
+                resMsg = service.CallService(reqMsg);
+
+                //如果数据为null,则返回null
                 if (resMsg == null)
                 {
-                    //调用服务
-                    resMsg = service.CallService(reqMsg);
+                    var errMsg = string.Format("Request to return to service ({0}, {1}) the data is empty!", reqMsg.ServiceName, reqMsg.MethodName);
+                    throw new WarningException(errMsg);
+                }
 
-                    //如果数据为null,则返回null
-                    if (resMsg == null)
-                    {
-                        var errMsg = string.Format("Request to return to service ({0}, {1}) the data is empty!", reqMsg.ServiceName, reqMsg.MethodName);
-                        throw new WarningException(errMsg);
-                    }
+                //如果有异常，向外抛出
+                if (resMsg.IsError) throw resMsg.Error;
 
-                    //如果有异常，向外抛出
-                    if (resMsg.IsError) throw resMsg.Error;
-
-                    //处理参数
+                //处理参数
+                if (pis.Length > 0)
+                {
                     if (config.DataType == DataType.Json)
                         JsonOutParameter(pis, resMsg);
-
-                    //如果客户端缓存时间大于0
-                    if (clientCacheTime > 0)
-                    {
-                        //没有异常，则缓存数据
-                        CacheHelper.Insert(cacheKey, resMsg, clientCacheTime);
-                    }
                 }
-
-                //给引用的参数赋值
-                for (int i = 0; i < pis.Length; i++)
-                {
-                    if (pis[i].ParameterType.IsByRef)
-                    {
-                        //给参数赋值
-                        paramValues[i] = resMsg.Parameters[pis[i].Name];
-                    }
-                }
-
-                //返回数据
-                return resMsg.Value;
             }
             catch (BusinessException ex)
             {
@@ -151,8 +102,7 @@ namespace MySoft.IoC
                     container.WriteError(ex);
             }
 
-            //返回默认值
-            return CoreHelper.GetTypeDefaultValue(methodInfo.ReturnType);
+            return resMsg;
         }
 
         /// <summary>
@@ -181,11 +131,65 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="proxy"></param>
         /// <param name="method"></param>
-        /// <param name="args"></param>
+        /// <param name="parameters"></param>
         /// <returns></returns>
-        public object Invoke(object proxy, System.Reflection.MethodInfo method, object[] args)
+        public object Invoke(object proxy, System.Reflection.MethodInfo method, object[] parameters)
         {
-            return CallService(method, args);
+            object returnValue = null;
+
+            #region 设置请求信息
+
+            RequestMessage reqMsg = new RequestMessage();
+            reqMsg.AppName = config.AppName;                                //应用名称
+            reqMsg.HostName = hostName;                                     //客户端名称
+            reqMsg.IPAddress = ipAddress;                                   //客户端IP地址
+            reqMsg.ServiceName = serviceType.FullName;                      //服务名称
+            reqMsg.MethodName = method.ToString();                      //方法名称
+            reqMsg.ReturnType = method.ReturnType;                      //返回类型
+            reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
+
+            #endregion
+
+            reqMsg.Parameters = ServiceConfig.CreateParameters(method, parameters);
+            string cacheKey = ServiceConfig.GetCacheKey(serviceType, method, reqMsg.Parameters);
+            var cacheValue = cache.Get<CacheObject>(cacheKey);
+
+            //缓存无值
+            if (cacheValue == null)
+            {
+                var resMsg = CallService(reqMsg, method);
+                if (resMsg != null)
+                {
+                    returnValue = resMsg.Value;
+
+                    //处理参数
+                    ServiceConfig.SetParameterValue(method, parameters, resMsg.Parameters);
+
+                    //如果需要缓存，则存入本地缓存
+                    if (returnValue != null && cacheTimes.ContainsKey(method.ToString()))
+                    {
+                        int cacheTime = cacheTimes[method.ToString()];
+                        cacheValue = new CacheObject
+                        {
+                            Value = resMsg.Value,
+                            Parameters = resMsg.Parameters
+                        };
+
+                        cache.Insert(cacheKey, cacheValue, cacheTime);
+                    }
+                }
+            }
+            else
+            {
+                //处理返回值
+                returnValue = cacheValue.Value;
+
+                //处理参数
+                ServiceConfig.SetParameterValue(method, parameters, cacheValue.Parameters);
+            }
+
+            //返回结果
+            return returnValue;
         }
 
         #endregion

@@ -4,8 +4,6 @@ using System.Linq;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using MySoft.Cache;
 
 namespace MySoft.IoC.Services
 {
@@ -21,8 +19,8 @@ namespace MySoft.IoC.Services
         /// Initializes a new instance of the <see cref="DynamicService"/> class.
         /// </summary>
         /// <param name="serviceType">Type of the service interface.</param>
-        public DynamicService(IServiceContainer container, IServiceCache cache, Type serviceType)
-            : base(container, cache, serviceType)
+        public DynamicService(IServiceContainer container, Type serviceType)
+            : base(container, serviceType)
         {
             this.container = container;
             this.serviceType = serviceType;
@@ -90,24 +88,28 @@ namespace MySoft.IoC.Services
                 }
 
                 //参数赋值
-                object[] paramValues = new object[pis.Length];
-                for (int i = 0; i < pis.Length; i++)
+                object[] parameters = new object[pis.Length];
+                int index = 0;
+                foreach (var p in pis)
                 {
                     //处理默认值
-                    paramValues[i] = resMsg.Parameters[pis[i].Name] ?? CoreHelper.GetTypeDefaultValue(pis[i].ParameterType);
+                    parameters[index] = resMsg.Parameters[p.Name] ?? CoreHelper.GetTypeDefaultValue(p.ParameterType);
+                    index++;
                 }
 
                 //调用对应的服务
-                object returnValue = DynamicCalls.GetMethodInvoker(method).Invoke(service, paramValues);
+                object returnValue = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
 
                 var outValues = new Hashtable();
-                for (int i = 0; i < pis.Length; i++)
+                index = 0;
+                foreach (var p in pis)
                 {
-                    if (pis[i].ParameterType.IsByRef)
+                    if (p.ParameterType.IsByRef)
                     {
-                        resMsg.Parameters[pis[i].Name] = paramValues[i];
-                        outValues[pis[i].Name] = paramValues[i];
+                        resMsg.Parameters[p.Name] = parameters[index];
+                        outValues[p.Name] = parameters[index];
                     }
+                    index++;
                 }
 
                 //返回结果数据

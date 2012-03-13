@@ -11,35 +11,19 @@ namespace MySoft.IoC
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class OperationContractAttribute : Attribute
     {
-        private int clientCacheTime = -1;
+        private int cacheTime = -1;
         /// <summary>
-        /// 客户端缓存时间（单位：秒）
+        /// 数据缓存时间（单位：秒）
         /// </summary>
-        public int ClientCacheTime
+        public int CacheTime
         {
             get
             {
-                return clientCacheTime;
+                return cacheTime;
             }
             set
             {
-                clientCacheTime = value;
-            }
-        }
-
-        private int serverCacheTime = -1;
-        /// <summary>
-        /// 服务端缓存时间（单位：秒）
-        /// </summary>
-        public int ServerCacheTime
-        {
-            get
-            {
-                return serverCacheTime;
-            }
-            set
-            {
-                serverCacheTime = value;
+                cacheTime = value;
             }
         }
 

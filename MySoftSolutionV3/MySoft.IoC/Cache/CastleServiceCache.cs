@@ -2,56 +2,66 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MySoft.Cache;
 
-namespace MySoft.Cache
+namespace MySoft.IoC.Cache
 {
     /// <summary>
-    /// 服务缓存基类
+    /// 服务缓存
     /// </summary>
-    public abstract class ServiceCacheBase : IServiceCache
+    internal class CastleServiceCache : IServiceCache
     {
         private ICacheStrategy cache;
 
         /// <summary>
-        /// 实例化ServiceCacheBase
+        /// 实例化ServiceCache
         /// </summary>
         /// <param name="cache"></param>
-        public ServiceCacheBase(ICacheStrategy cache)
+        public CastleServiceCache(ICacheStrategy cache)
         {
             this.cache = cache;
         }
 
-        #region IServiceCache 成员
+        #region ICache 成员
 
         /// <summary>
-        /// 插入缓存
+        /// 插入缓存数据
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="seconds"></param>
         public void Insert(string key, object value, int seconds)
         {
-            cache.AddObject(key, value, TimeSpan.FromSeconds(seconds));
+            if (cache == null)
+                CacheHelper.Insert(key, value, seconds);
+            else
+                cache.AddObject(key, value, TimeSpan.FromSeconds(seconds));
         }
 
         /// <summary>
-        /// 获取缓存
+        /// 获取缓存数据
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
         public T Get<T>(string key)
         {
-            return cache.GetObject<T>(key);
+            if (cache == null)
+                return CacheHelper.Get<T>(key);
+            else
+                return cache.GetObject<T>(key);
         }
 
         /// <summary>
-        /// 移除缓存
+        /// 移除缓存数据
         /// </summary>
         /// <param name="key"></param>
         public void Remove(string key)
         {
-            cache.RemoveObject(key);
+            if (cache == null)
+                CacheHelper.Remove(key);
+            else
+                cache.RemoveObject(key);
         }
 
         #endregion
