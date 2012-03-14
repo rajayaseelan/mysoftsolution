@@ -134,7 +134,7 @@ namespace MySoft.PlatformService.Client
             //}
 
             ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
@@ -203,16 +203,19 @@ namespace MySoft.PlatformService.Client
                 {
                     Stopwatch watch = Stopwatch.StartNew();
 
-                    int length = 1;
-                    UserInfo user;
+                    //int length = 1;
+                    //UserInfo user;
 
-                    service.GetUserInfo("maoyong", ref length, out user);
+                    //service.GetUserInfo("maoyong", ref length, out user);
+
+                    var users = service.GetUsers();
+                    var str = service.GetUsersString();
 
                     watch.Stop();
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + user.Description + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + users.Count + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //var clients = service1.GetClientList();
 
@@ -223,7 +226,7 @@ namespace MySoft.PlatformService.Client
                     Console.WriteLine(ex.Message);
                 }
 
-                Thread.Sleep(10);
+                Thread.Sleep(1);
             }
         }
 

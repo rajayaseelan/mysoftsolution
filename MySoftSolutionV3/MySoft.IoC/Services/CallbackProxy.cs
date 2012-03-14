@@ -54,7 +54,8 @@ namespace MySoft.IoC.Services
         {
             if (args.Result is ResponseMessage)
             {
-                base.QueueMessage(args.Result as ResponseMessage);
+                var resMsg = args.Result as ResponseMessage;
+                base.QueueMessage(resMsg);
             }
             else if (args.Result is CallbackMessage)
             {
@@ -72,8 +73,6 @@ namespace MySoft.IoC.Services
                     }
                 }
             }
-
-            args = null;
         }
 
         public override string ServiceName

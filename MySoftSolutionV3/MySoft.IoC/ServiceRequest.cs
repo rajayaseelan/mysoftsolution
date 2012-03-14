@@ -136,6 +136,7 @@ namespace MySoft.IoC
                 if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs
                 {
                     Client = client,
+                    Request = request,
                     Result = data.MessageValue
                 });
             }
@@ -150,6 +151,7 @@ namespace MySoft.IoC
                     if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs
                     {
                         Client = client,
+                        Request = request,
                         Result = data.MessageValue as ResponseMessage
                     });
                 }
@@ -165,7 +167,12 @@ namespace MySoft.IoC
                     };
 
                     //把数据发送到客户端
-                    if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs { Client = client, Result = resMsg });
+                    if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs
+                    {
+                        Client = client,
+                        Request = request,
+                        Result = resMsg
+                    });
                 }
             }
         }
@@ -177,10 +184,8 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
+            client.Disconnect();
             client.Dispose();
-
-            logger = null;
-            client = null;
         }
     }
 }

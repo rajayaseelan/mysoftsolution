@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MySoft.IoC;
 using MySoft.PlatformService.UserService;
+using System.Threading;
 
 namespace MySoft20.IoC.Client
 {
@@ -10,10 +11,20 @@ namespace MySoft20.IoC.Client
     {
         static void Main(string[] args)
         {
-            int length = 10;
-            UserInfo user;
-            var user1 = CastleFactory.Create().GetChannel<IUserService>().GetUserInfo("maoyong", ref length, out user);
-            Console.WriteLine(user1.Description);
+            while (true)
+            {
+                try
+                {
+                    var user1 = CastleFactory.Create().GetChannel<IUserService>().GetUsers();
+                    Console.WriteLine(user1.Count + "," + user1[0].Description);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+                Thread.Sleep(1000);
+            }
             Console.ReadLine();
         }
     }
@@ -23,7 +34,7 @@ namespace MySoft.PlatformService.UserService
 {
     public interface IUserService
     {
-        UserInfo GetUserInfo(string name, ref int length, out UserInfo user);
+        IList<UserInfo> GetUsers();
     }
 
     /// <summary>

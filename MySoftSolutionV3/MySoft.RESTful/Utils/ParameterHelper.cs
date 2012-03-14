@@ -46,7 +46,7 @@ namespace MySoft.RESTful.Utils
                     {
                         //获取Json值
                         string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
-                        object jsonValue = CoreHelper.ConvertJsonToObject(info, value);
+                        object jsonValue = CoreHelper.ConvertValue(info.ParameterType, value);
                         args.Add(jsonValue);
                     }
                     else

@@ -144,7 +144,6 @@ namespace MySoft.IoC
                 }
                 catch (Exception ex)
                 {
-                    //Console.WriteLine(ex.Message);
                     if (OnError != null) OnError(ex);
                 }
             }
@@ -212,7 +211,6 @@ namespace MySoft.IoC
                 }
                 catch (Exception ex)
                 {
-                    //Console.WriteLine(ex.Message);
                     if (OnError != null) OnError(ex);
                 }
             }
@@ -243,7 +241,6 @@ namespace MySoft.IoC
                 }
                 catch (Exception ex)
                 {
-                    //Console.WriteLine(ex.Message);
                     if (OnError != null) OnError(ex);
                 }
             }
@@ -276,7 +273,6 @@ namespace MySoft.IoC
                 }
                 catch (Exception ex)
                 {
-                    //Console.WriteLine(ex.Message);
                     if (OnError != null) OnError(ex);
                 }
             }
@@ -307,7 +303,6 @@ namespace MySoft.IoC
                 }
                 catch (Exception ex)
                 {
-                    //Console.WriteLine(ex.Message);
                     if (OnError != null) OnError(ex);
                 }
             }

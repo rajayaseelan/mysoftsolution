@@ -199,18 +199,21 @@ namespace MySoft.IoC
             var ar = caller.BeginInvoke(OperationContext.Current, reqMsg, p => { }, caller);
 
             //等待超时
-            var timeSpan = TimeSpan.FromSeconds(timeout);
+            var elapsedTime = TimeSpan.FromSeconds(timeout);
             if (callTimeouts.ContainsKey(reqMsg.ServiceName))
             {
-                timeSpan = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
+                elapsedTime = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
             }
 
             //信号等待
-            if (!ar.AsyncWaitHandle.WaitOne())
+            if (!ar.AsyncWaitHandle.WaitOne(elapsedTime))
             {
                 throw new WarningException(string.Format("Call service ({0}, {1}) timeout ({2}) ms."
-                    , reqMsg.ServiceName, reqMsg.MethodName, timeSpan));
+                    , reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds));
             }
+
+            //关闭
+            ar.AsyncWaitHandle.Close();
 
             //释放资源
             return caller.EndInvoke(ar);

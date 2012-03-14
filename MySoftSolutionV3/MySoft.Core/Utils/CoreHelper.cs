@@ -353,6 +353,45 @@ namespace MySoft
             }
         }
 
+        /// <summary>
+        /// 转换成JSON值
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="jsonString"></param>
+        /// <returns></returns>
+        public static object ConvertValue(Type type, string jsonString)
+        {
+            object jsonValue = null;
+            if (type.IsByRef) type = type.GetElementType();
+
+            if (!string.IsNullOrEmpty(jsonString))
+            {
+                if (type.IsArray)
+                {
+                    if (!(jsonString.StartsWith("[") && jsonString.EndsWith("]")))
+                        jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
+                }
+                else if (type.IsGenericType)
+                {
+                    var t = type.GetGenericTypeDefinition();
+                    if (typeof(IList<>).IsAssignableFrom(t))
+                    {
+                        if (!(jsonString.StartsWith("[") && jsonString.EndsWith("]")))
+                            jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
+                    }
+                }
+
+                if (jsonString.Contains("new Date"))
+                    jsonValue = SerializationManager.DeserializeJson(type, jsonString, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+                else
+                    jsonValue = SerializationManager.DeserializeJson(type, jsonString);
+            }
+
+            //如果为null，获取默认值
+            if (jsonValue == null) jsonValue = GetTypeDefaultValue(type);
+            return jsonValue;
+        }
+
         #endregion
 
         #region 属性操作
@@ -835,43 +874,6 @@ namespace MySoft
             }
 
             return type;
-        }
-
-        /// <summary>
-        /// 转换成JSON值
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="jsonString"></param>
-        /// <returns></returns>
-        public static object ConvertJsonToObject(ParameterInfo info, string jsonString)
-        {
-            object jsonValue = null;
-            var type = info.ParameterType;
-            if (type.IsByRef) type = type.GetElementType();
-
-            if (!(string.IsNullOrEmpty(jsonString) || jsonString == "{}"))
-            {
-                if (type.IsArray)
-                {
-                    jsonString = string.Format("[{0}]", jsonString.TrimStart('[').TrimEnd(']').Replace(",", "\",\""));
-                }
-                else if (type.IsGenericType)
-                {
-                    var t = type.GetGenericTypeDefinition();
-                    if (typeof(IList<>).IsAssignableFrom(t))
-                        jsonString = string.Format("[{0}]", jsonString.TrimStart('[').TrimEnd(']').Replace(",", "\",\""));
-                }
-
-                if (jsonString.Contains("new Date"))
-                    jsonValue = SerializationManager.DeserializeJson(type, jsonString, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
-                else
-                    jsonValue = SerializationManager.DeserializeJson(type, jsonString);
-            }
-
-            //如果为null，获取默认值
-            if (jsonValue == null) jsonValue = GetTypeDefaultValue(type);
-
-            return jsonValue;
         }
     }
 }

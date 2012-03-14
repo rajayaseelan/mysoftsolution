@@ -52,16 +52,16 @@ namespace MySoft.IoC.Services
             QueueError(e.Request, e.Error);
         }
 
-        protected void QueueError(RequestMessage request, Exception error)
+        protected void QueueError(RequestMessage reqMsg, Exception error)
         {
-            if (request != null)
+            if (reqMsg != null)
             {
                 var resMsg = new ResponseMessage
                 {
-                    TransactionId = request.TransactionId,
-                    ServiceName = request.ServiceName,
-                    MethodName = request.Message,
-                    ReturnType = request.ReturnType,
+                    TransactionId = reqMsg.TransactionId,
+                    ServiceName = reqMsg.ServiceName,
+                    MethodName = reqMsg.Message,
+                    ReturnType = reqMsg.ReturnType,
                     Error = error
                 };
 
@@ -92,8 +92,6 @@ namespace MySoft.IoC.Services
                 var resMsg = args.Result as ResponseMessage;
                 QueueMessage(resMsg);
             }
-
-            args = null;
         }
 
         /// <summary>
@@ -108,30 +106,29 @@ namespace MySoft.IoC.Services
 
             try
             {
-                //发送消息
-                reqProxy.SendMessage(reqMsg);
-
                 //处理数据
                 var waitResult = new WaitResult();
                 hashtable[reqMsg.TransactionId] = waitResult;
 
-                var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
-                ResponseMessage resMsg = null;
+                //发送消息
+                reqProxy.SendMessage(reqMsg);
 
                 //等待信号响应
-                if (waitResult.Reset.WaitOne(elapsedTime))
+                var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
+                if (!waitResult.Reset.WaitOne(elapsedTime))
                 {
-                    var value = hashtable[reqMsg.TransactionId];
-                    resMsg = value.Message;
+                    throw new WarningException(string.Format("【{0}:{1}】 => Call service ({2}, {3}) timeout ({4}) ms."
+                       , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds));
                 }
 
-                //用完后移除
-                hashtable.Remove(reqMsg.TransactionId);
-
-                return resMsg;
+                return waitResult.Message;
             }
             finally
             {
+                //用完后移除
+                hashtable.Remove(reqMsg.TransactionId);
+
+                //加入队列
                 this.reqPool.Push(reqProxy);
             }
         }

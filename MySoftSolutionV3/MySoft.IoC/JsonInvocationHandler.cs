@@ -25,13 +25,37 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 重载调用服务方法
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        protected override ResponseMessage CallMethod(RequestMessage reqMsg, System.Reflection.MethodInfo method)
+        {
+            var pis = method.GetParameters();
+            reqMsg.InvokeMethod = true;
+
+            //处理参数
+            if (pis.Length > 0) HandleInParameter(reqMsg);
+
+            //调用服务
+            var resMsg = base.CallMethod(reqMsg, method);
+
+            //处理参数
+            if (pis.Length > 0) HandleOutParameter(pis, resMsg);
+
+            //处理返回值
+            HandleReturnValue(method, resMsg);
+
+            return resMsg;
+        }
+
+        /// <summary>
         /// 处理输入参数
         /// </summary>
         /// <param name="reqMsg"></param>
-        protected override void JsonInParameter(RequestMessage reqMsg)
+        private void HandleInParameter(RequestMessage reqMsg)
         {
-            reqMsg.InvokeMethod = true;
-
             if (reqMsg.Parameters.Count > 0)
             {
                 string jsonString = reqMsg.Parameters.ToString();
@@ -45,23 +69,45 @@ namespace MySoft.IoC
         /// <summary>
         /// 处理输出参数
         /// </summary>
+        /// <param name="parameters"></param>
         /// <param name="resMsg"></param>
-        protected override void JsonOutParameter(System.Reflection.ParameterInfo[] parameters, ResponseMessage resMsg)
+        private void HandleOutParameter(System.Reflection.ParameterInfo[] parameters, ResponseMessage resMsg)
         {
+            if (resMsg.IsError) return;
+
             var value = resMsg.Value as InvokeData;
-            var hashtable = SerializationManager.DeserializeJson<Hashtable>(value.OutParameters);
-            foreach (var parameter in parameters)
+            if (!string.IsNullOrEmpty(value.OutParameters))
             {
-                if (hashtable.ContainsKey(parameter.Name))
+                var hashtable = SerializationManager.DeserializeJson<Hashtable>(value.OutParameters);
+                if (hashtable != null && hashtable.Count > 0)
                 {
-                    var type = GetElementType(parameter.ParameterType);
-                    var obj = SerializationManager.DeserializeJson(type, hashtable[parameter.Name].ToString());
-                    resMsg.Parameters[parameter.Name] = obj;
+                    foreach (var parameter in parameters)
+                    {
+                        if (hashtable.ContainsKey(parameter.Name))
+                        {
+                            var type = GetElementType(parameter.ParameterType);
+                            var obj = SerializationManager.DeserializeJson(type, hashtable[parameter.Name].ToString());
+                            resMsg.Parameters[parameter.Name] = obj;
+                        }
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// 处理返回值
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="resMsg"></param>
+        private void HandleReturnValue(System.Reflection.MethodInfo method, ResponseMessage resMsg)
+        {
+            if (resMsg.IsError) return;
+
+            var value = resMsg.Value as InvokeData;
 
             //处理返回值
-            resMsg.Value = SerializationManager.DeserializeJson(GetElementType(resMsg.ReturnType), value.Value);
+            var returnType = GetElementType(method.ReturnType);
+            resMsg.Value = SerializationManager.DeserializeJson(returnType, value.Value);
         }
 
         /// <summary>

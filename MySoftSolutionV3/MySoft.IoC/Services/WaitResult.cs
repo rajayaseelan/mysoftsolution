@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using MySoft.IoC.Messages;
 using System.Threading;
+using System.Collections;
 
 namespace MySoft.IoC.Services
 {
@@ -12,14 +13,14 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class WaitResultCollection
     {
-        private IDictionary<Guid, WaitResult> hashtable;
+        private Hashtable hashtable;
 
         /// <summary>
         /// 实例化WaitResultCollection
         /// </summary>
         public WaitResultCollection()
         {
-            this.hashtable = new Dictionary<Guid, WaitResult>();
+            this.hashtable = Hashtable.Synchronized(new Hashtable());
         }
 
         /// <summary>
@@ -31,14 +32,11 @@ namespace MySoft.IoC.Services
         {
             get
             {
-                return hashtable[key];
+                return hashtable[key] as WaitResult;
             }
             set
             {
-                lock (hashtable)
-                {
-                    hashtable[key] = value;
-                }
+                hashtable[key] = value;
             }
         }
 
@@ -57,12 +55,9 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool Remove(Guid key)
+        public void Remove(Guid key)
         {
-            lock (hashtable)
-            {
-                return hashtable.Remove(key);
-            }
+            hashtable.Remove(key);
         }
     }
 

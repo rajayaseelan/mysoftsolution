@@ -50,6 +50,18 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 调用方法
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        protected virtual ResponseMessage CallMethod(RequestMessage reqMsg, System.Reflection.MethodInfo method)
+        {
+            //调用服务
+            return service.CallService(reqMsg);
+        }
+
+        /// <summary>
         /// Calls the service.
         /// </summary>
         /// <param name="reqMsg">Name of the sub service.</param>
@@ -61,34 +73,10 @@ namespace MySoft.IoC
 
             try
             {
-                var pis = method.GetParameters();
-
-                //处理参数
-                if (pis.Length > 0)
-                {
-                    if (config.DataType == DataType.Json)
-                        JsonInParameter(reqMsg);
-                }
-
-                //调用服务
-                resMsg = service.CallService(reqMsg);
-
-                //如果数据为null,则返回null
-                if (resMsg == null)
-                {
-                    var errMsg = string.Format("Request to return to service ({0}, {1}) the data is empty!", reqMsg.ServiceName, reqMsg.MethodName);
-                    throw new WarningException(errMsg);
-                }
+                resMsg = CallMethod(reqMsg, method);
 
                 //如果有异常，向外抛出
                 if (resMsg.IsError) throw resMsg.Error;
-
-                //处理参数
-                if (pis.Length > 0)
-                {
-                    if (config.DataType == DataType.Json)
-                        JsonOutParameter(pis, resMsg);
-                }
             }
             catch (BusinessException ex)
             {
@@ -103,25 +91,6 @@ namespace MySoft.IoC
             }
 
             return resMsg;
-        }
-
-        /// <summary>
-        /// Json输入处理
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        protected virtual void JsonInParameter(RequestMessage reqMsg)
-        {
-            //Json输入参数
-        }
-
-        /// <summary>
-        /// Json输出处理
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// <param name="resMsg"></param>
-        protected virtual void JsonOutParameter(System.Reflection.ParameterInfo[] parameters, ResponseMessage resMsg)
-        {
-            //Json输出参数
         }
 
         #region IInvocationHandler 成员

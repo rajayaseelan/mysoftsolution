@@ -9,6 +9,7 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using System.Threading;
 
 namespace MySoft.IoC
 {

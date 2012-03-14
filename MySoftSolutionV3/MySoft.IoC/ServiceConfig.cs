@@ -1,6 +1,8 @@
-﻿
+﻿using System;
+using System.Linq;
 using MySoft.IoC.Messages;
-using System;
+using Newtonsoft.Json.Linq;
+
 namespace MySoft.IoC
 {
     /// <summary>
@@ -23,12 +25,12 @@ namespace MySoft.IoC
         /// <summary>
         /// The default client timeout number. 
         /// </summary>
-        public const int DEFAULT_CLIENT_TIMEOUT = 60; //60秒
+        public const int DEFAULT_CLIENT_TIMEOUT = 5 * 60; //60秒
 
         /// <summary>
         /// The default server timeout number. 
         /// </summary>
-        public const int DEFAULT_SERVER_TIMEOUT = 30; //30秒
+        public const int DEFAULT_SERVER_TIMEOUT = 60; //60秒
 
         /// <summary>
         /// The default pool number.
@@ -107,6 +109,34 @@ namespace MySoft.IoC
             //返回默认的缓存key
             var methodKey = string.Format("{0}_{1}_{2}", serviceType.FullName, method.ToString(), collection.ToString());
             return string.Format("CastleCache_{0}", methodKey).ToLower();
+        }
+
+        /// <summary>
+        /// 解析参数
+        /// </summary>
+        /// <param name="jsonString"></param>
+        /// <param name="resMsg"></param>
+        /// <param name="pis"></param>
+        internal static void ParseParameter(string jsonString, ResponseMessage resMsg, System.Reflection.ParameterInfo[] pis)
+        {
+            if (!string.IsNullOrEmpty(jsonString))
+            {
+                JObject obj = JObject.Parse(jsonString);
+                if (obj.Count > 0)
+                {
+                    foreach (var info in pis)
+                    {
+                        var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
+                        if (property != null)
+                        {
+                            //获取Json值
+                            string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
+                            object jsonValue = CoreHelper.ConvertValue(info.ParameterType, value);
+                            resMsg.Parameters[info.Name] = jsonValue;
+                        }
+                    }
+                }
+            }
         }
     }
 }

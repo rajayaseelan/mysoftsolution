@@ -110,10 +110,12 @@ namespace MySoft.IoC
                 var items = server.Clients.GetAllItems();
 
                 //统计客户端数量
-                return items.Where(p => p.State != null)
+                var list = items.Where(p => p.State != null)
                       .Select(p => p.State as AppClient)
                       .Distinct(new AppClientComparer())
                       .ToList();
+
+                return list;
             }
             catch
             {

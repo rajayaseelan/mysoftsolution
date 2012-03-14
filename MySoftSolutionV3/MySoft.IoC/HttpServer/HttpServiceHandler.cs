@@ -135,14 +135,17 @@ namespace MySoft.IoC.HttpServer
                     }
                 }
 
-                string responseString = caller.CallMethod(methodName, collection.ToString());
+                string jsonString = caller.CallMethod(methodName, collection.ToString());
                 if (callMethod.TypeString)
                 {
                     //如果返回是字符串类型，则设置为文本返回
                     response.ContentType = "text/plain;charset=utf-8";
+
+                    //转换成string类型
+                    jsonString = SerializationManager.DeserializeJson<string>(jsonString);
                 }
 
-                SendResponse(response, responseString);
+                SendResponse(response, jsonString);
             }
             catch (HTTPMessageException ex)
             {

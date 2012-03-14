@@ -62,7 +62,8 @@ namespace MySoft.PlatformService.UserService
 
             length = user.Description.Length;
 
-            Thread.Sleep(100);
+            int value = new Random().Next(10, 60);
+            Thread.Sleep(value * 1000);
 
             return user;
         }
@@ -70,6 +71,11 @@ namespace MySoft.PlatformService.UserService
         public string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex)
         {
             return string.Format("{0} => {1}", guid, DateTime.Now);
+        }
+
+        public string GetUsersString()
+        {
+            return "asdfadfasdfasdf";
         }
 
         public IList<UserInfo> GetUsers()
@@ -81,6 +87,9 @@ namespace MySoft.PlatformService.UserService
                 var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
                 list.Add(new UserInfo { Name = "test_" + count, Description = "test_" + count + "_" + Thread.CurrentThread.ManagedThreadId });
             }
+
+            //int value = new Random().Next(10, 60);
+            //Thread.Sleep(value * 1000);
 
             return list;
         }

@@ -14,6 +14,11 @@ namespace MySoft.IoC.Messages
         public object Result { get; set; }
 
         /// <summary>
+        /// 请求消息
+        /// </summary>
+        public RequestMessage Request { get; set; }
+
+        /// <summary>
         /// 返回通讯的Client对象
         /// </summary>
         public IScsClient Client { get; set; }
