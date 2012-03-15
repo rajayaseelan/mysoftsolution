@@ -52,6 +52,7 @@ namespace MySoft.IoC.HttpServer
             //将方法添加到字典
             var callerInfo = new HttpCallerInfo
             {
+                CacheTime = invoke.CacheTime,
                 Service = serviceType,
                 Method = methodInfo,
                 TypeString = methodInfo.ReturnType == typeof(string),
@@ -151,44 +152,60 @@ namespace MySoft.IoC.HttpServer
         {
             if (callers.ContainsKey(name))
             {
-                //获取当前调用者信息
-                var client = new AppClient
-                {
-                    AppName = "HttpServer",
-                    HostName = DnsHelper.GetHostName(),
-                    IPAddress = DnsHelper.GetIPAddress()
-                };
-
                 var caller = callers[name];
                 var message = new InvokeMessage
                 {
                     ServiceName = caller.Service.FullName,
                     MethodName = caller.Method.ToString(),
                     Parameters = parameters
+
                 };
 
-                //初始化调用者
-                var appCaller = new AppCaller
+                string cacheKey = string.Format("HttpServiceCaller_{0}_{1}_{2}", message.ServiceName,
+                    message.MethodName, message.Parameters);
+
+                var invokeData = CacheHelper.Get<InvokeData>(cacheKey);
+                if (invokeData == null)
                 {
-                    AppName = client.AppName,
-                    HostName = client.HostName,
-                    IPAddress = client.IPAddress,
-                    ServiceName = message.ServiceName,
-                    MethodName = message.MethodName,
-                    Parameters = message.Parameters
-                };
+                    //获取当前调用者信息
+                    var client = new AppClient
+                    {
+                        AppName = "HttpServer",
+                        HostName = DnsHelper.GetHostName(),
+                        IPAddress = DnsHelper.GetIPAddress()
+                    };
 
-                //初始化上下文
-                OperationContext.Current = new OperationContext
-                {
-                    Container = container,
-                    Caller = appCaller
-                };
+                    //初始化调用者
+                    var appCaller = new AppCaller
+                    {
+                        AppName = client.AppName,
+                        HostName = client.HostName,
+                        IPAddress = client.IPAddress,
+                        ServiceName = message.ServiceName,
+                        MethodName = message.MethodName,
+                        Parameters = message.Parameters
+                    };
 
-                //处理数据返回InvokeData
-                var service = container.Resolve<IService>("Service_" + caller.Service.FullName);
-                var invoke = new InvokeCaller(client, service);
-                var invokeData = invoke.CallMethod(message);
+                    //初始化上下文
+                    OperationContext.Current = new OperationContext
+                    {
+                        Container = container,
+                        Caller = appCaller
+                    };
+
+                    //处理数据返回InvokeData
+                    var service = container.Resolve<IService>("Service_" + caller.Service.FullName);
+                    var invoke = new InvokeCaller(client, service);
+                    invokeData = invoke.CallMethod(message);
+
+                    //插入缓存
+                    if (invokeData != null && caller.CacheTime > 0)
+                    {
+                        CacheHelper.Insert(cacheKey, invokeData, caller.CacheTime);
+                    }
+                }
+
+                //如果缓存不为null，则返回缓存数据
                 if (invokeData != null)
                     return invokeData.Value;
             }

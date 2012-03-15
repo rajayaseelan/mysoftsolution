@@ -11,6 +11,22 @@ namespace MySoft.IoC
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class HttpInvokeAttribute : Attribute
     {
+        private int cacheTime = -1;
+        /// <summary>
+        /// 数据缓存时间（单位：秒）
+        /// </summary>
+        public int CacheTime
+        {
+            get
+            {
+                return cacheTime;
+            }
+            set
+            {
+                cacheTime = value;
+            }
+        }
+
         private string name;
         /// <summary>
         /// 名称

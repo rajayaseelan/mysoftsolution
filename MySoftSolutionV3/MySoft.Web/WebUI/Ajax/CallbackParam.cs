@@ -96,7 +96,7 @@ namespace MySoft.Web.UI
         {
             if (Contains(key))
             {
-                throw new Exception("已经存在Key为（" + key + "）的值");
+                throw new WebException("已经存在Key为（" + key + "）的值");
             }
             dictValues.Add(key, new CallbackParam(value));
         }

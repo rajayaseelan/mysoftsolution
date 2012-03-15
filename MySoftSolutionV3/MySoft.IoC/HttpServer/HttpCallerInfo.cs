@@ -18,6 +18,11 @@ namespace MySoft.IoC.HttpServer
         public string CallerName { get; set; }
 
         /// <summary>
+        /// 缓存时间，单位（秒）
+        /// </summary>
+        public int CacheTime { get; set; }
+
+        /// <summary>
         /// 服务名称
         /// </summary>
         public Type Service { get; set; }

@@ -23,6 +23,8 @@ namespace MySoft.Web
 
         public static event ErrorLogEventHandler OnError;
 
+        private static bool isRunning = false;
+
         //静态页生成项
         private static List<IStaticPageItem> staticPageItems = new List<IStaticPageItem>();
 
@@ -59,21 +61,33 @@ namespace MySoft.Web
         /// <param name="interval">检测间隔时间：单位（秒）</param>
         public static void Start(int interval, bool isStartUpdate)
         {
+            if (isRunning) return;
+
+            isRunning = true;
+
             if (isStartUpdate)
             {
-                ThreadPool.QueueUserWorkItem(StartUpdate);
+                //启动一个临时线程生成
+                ThreadPool.QueueUserWorkItem(state => RunUpdate(DateTime.MaxValue));
             }
 
-            Thread thread = new Thread(DoWork);
+            //启动一个循环线程生成
+            Thread thread = new Thread(state =>
+            {
+                if (state == null) return;
+
+                var timeSpan = TimeSpan.FromSeconds(Convert.ToInt32(state));
+                while (true)
+                {
+                    RunUpdate(DateTime.Now);
+
+                    //休眠间隔
+                    Thread.Sleep(timeSpan);
+                }
+            });
 
             //单位：秒
-            thread.Start(interval * 1000);
-        }
-
-        //开始生成
-        static void StartUpdate(object value)
-        {
-            RunUpdate(DateTime.MaxValue);
+            thread.Start(interval);
         }
 
         static void RunUpdate(DateTime updateTime)
@@ -87,15 +101,18 @@ namespace MySoft.Web
                         //需要生成才启动线程
                         if (sti.NeedUpdate(updateTime))
                         {
-                            System.Threading.ThreadPool.QueueUserWorkItem(obj =>
+                            Thread thread = new Thread(state =>
                             {
-                                if (obj == null) return;
+                                if (state == null) return;
 
-                                ArrayList arr = obj as ArrayList;
+                                ArrayList arr = state as ArrayList;
                                 IStaticPageItem item = arr[0] as IStaticPageItem;
                                 DateTime time = (DateTime)arr[1];
                                 item.Update(time);
-                            }, new ArrayList { sti, updateTime });
+                            });
+
+                            //启动生成线程
+                            thread.Start(new ArrayList { sti, updateTime });
                         }
                     }
                     catch (Exception ex)
@@ -103,23 +120,14 @@ namespace MySoft.Web
                         var exception = new StaticPageException("执行页面生成出现异常：" + ex.Message, ex);
                         if (OnError != null)
                         {
-                            try { OnError(exception); }
+                            try
+                            {
+                                OnError(exception);
+                            }
                             catch { }
                         }
                     }
                 }
-            }
-        }
-
-        //执行生成事件
-        static void DoWork(object value)
-        {
-            while (true)
-            {
-                RunUpdate(DateTime.Now);
-
-                //休眠间隔
-                Thread.Sleep(Convert.ToInt32(value));
             }
         }
 
@@ -289,10 +297,10 @@ namespace MySoft.Web
             StringBuilder sb = new StringBuilder();
             using (StringWriter sw = new StringWriter(sb))
             {
-                string path = templatePath.TrimStart('/');
                 try
                 {
-                    HttpRuntime.ProcessRequest(new EncodingWorkerRequest(path, query, sw, encoding));
+                    var page = templatePath.Replace("/", "\\").TrimStart('\\');
+                    HttpRuntime.ProcessRequest(new EncodingWorkerRequest(page, query, sw, encoding));
                 }
                 catch (ThreadAbortException)
                 {
@@ -305,13 +313,14 @@ namespace MySoft.Web
             //验证字符串
             if (string.IsNullOrEmpty(validateString))
             {
-                throw new Exception("执行本地页面" + templatePath + (query == null ? "" : "?" + query) + "出错，验证字符串不能为空。");
+                throw new WebException("执行本地页面" + templatePath + (query == null ? "" : "?" + query) + "出错，验证字符串不能为空。");
             }
-            else
+            else if (content.IndexOf(validateString) < 0)
             {
-                if (content.IndexOf(validateString) >= 0) return content;
-                throw new Exception("执行本地页面" + templatePath + (query == null ? "" : "?" + query) + "出错，页面内容和验证字符串匹配失败。");
+                throw new WebException("执行本地页面" + templatePath + (query == null ? "" : "?" + query) + "出错，页面内容和验证字符串匹配失败。");
             }
+
+            return content;
         }
 
         /// <summary>
@@ -323,9 +332,6 @@ namespace MySoft.Web
         /// <returns></returns>
         internal static string GetRemotePageString(string templatePath, Encoding encoding, string validateString)
         {
-            WebClient wc = new WebClient();
-            wc.Encoding = encoding;
-
             //判断是否有http://
             if (!templatePath.ToLower().StartsWith("http://"))
             {
@@ -333,18 +339,21 @@ namespace MySoft.Web
             }
 
             //下载内容
-            string result = wc.DownloadString(templatePath);
+            WebClient wc = new WebClient();
+            wc.Encoding = encoding;
+            string content = wc.DownloadString(templatePath);
 
             //验证字符串
             if (string.IsNullOrEmpty(validateString))
             {
-                throw new Exception("执行远程页面" + templatePath + "出错，验证字符串不能为空。");
+                throw new WebException("执行远程页面" + templatePath + "出错，验证字符串不能为空。");
             }
-            else
+            else if (content.IndexOf(validateString) < 0)
             {
-                if (result.IndexOf(validateString) >= 0) return result;
-                throw new Exception("执行远程页面" + templatePath + "出错，页面内容和验证字符串匹配失败。");
+                throw new WebException("执行远程页面" + templatePath + "出错，页面内容和验证字符串匹配失败。");
             }
+
+            return content;
         }
 
         /// <summary>
@@ -355,34 +364,25 @@ namespace MySoft.Web
         /// <param name="outEncoding">文件保存页面编码</param>
         internal static void SaveFile(string content, string savePath, Encoding outEncoding)
         {
+            //将内容写入文件
+            string dir = Path.GetDirectoryName(savePath);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+            //将内容写入文件中
             try
             {
-                //将内容写入文件
-                string dir = Path.GetDirectoryName(savePath);
-                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
-                //创建一个写文件流
-                using (StreamWriter sw = new StreamWriter(File.Create(savePath), outEncoding))
-                {
-                    if (sw.BaseStream.CanWrite)
-                    {
-                        sw.Write(content);
-                        sw.Flush();
-                    }
-
-                    sw.Close();
-                }
-
-                //生成文件成功写日志
-                SaveLog(string.Format("生成文件【{0}】成功！", savePath), LogType.Information);
+                File.WriteAllText(savePath, content, outEncoding);
             }
             catch (IOException ex)
             {
-                string logText = string.Format("{0}\r\n生成文件【{1}】失败！", ex.Message, savePath);
+                //等待5秒，重新生成
+                Thread.Sleep(5000);
 
-                //将日志写入文件
-                SimpleLog.Instance.WriteLog(new StaticPageException(logText, ex));
+                File.WriteAllText(savePath, content, outEncoding);
             }
+
+            //生成文件成功写日志
+            SaveLog(string.Format("生成文件【{0}】成功！", savePath), LogType.Information);
         }
 
         /// <summary>

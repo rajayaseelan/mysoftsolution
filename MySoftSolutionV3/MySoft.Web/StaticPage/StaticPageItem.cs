@@ -100,13 +100,7 @@ namespace MySoft.Web
     /// 返回值数组的委托
     /// </summary>
     /// <returns></returns>
-    public delegate object[] GetResultEventHandler(object[] arguments);
-
-    /// <summary>
-    /// 获取开始结束值的委托
-    /// </summary>
-    /// <returns></returns>
-    public delegate int BeginEndValueEventHandler();
+    public delegate object[] GetResultEventHandler(object state);
 
     /// <summary>
     /// 通用静态页子项
@@ -298,20 +292,19 @@ namespace MySoft.Web
 
             string dynamicurl = templatePath;
             string staticurl = savePath;
+            if (!string.IsNullOrEmpty(query))
+                dynamicurl = string.Format("{0}?{1}", dynamicurl, query);
+
+            var item = new UpdateItem { DynamicUrl = dynamicurl, StaticPath = staticurl };
 
             try
             {
                 string content = null;
 
                 if (isRemote)
-                    content = StaticPageManager.GetRemotePageString(dynamicurl, inEncoding, validateString);
+                    content = StaticPageManager.GetRemotePageString(item.DynamicUrl, inEncoding, validateString);
                 else
-                {
-                    content = StaticPageManager.GetLocalPageString(dynamicurl, query, inEncoding, validateString);
-
-                    if (!string.IsNullOrEmpty(query))
-                        dynamicurl = string.Format("{0}?{1}", dynamicurl, query);
-                }
+                    content = StaticPageManager.GetLocalPageString(item.Path, item.Query, inEncoding, validateString);
 
                 DateTime createTime = DateTime.Now;
 
@@ -320,7 +313,7 @@ namespace MySoft.Web
                 {
                     try
                     {
-                        OnStart(createTime, dynamicurl, RemoveRootPath(staticurl));
+                        OnStart(createTime, item.DynamicUrl, item.StaticUrl);
                     }
                     catch (Exception ex)
                     {
@@ -339,59 +332,60 @@ namespace MySoft.Web
                     };
                 }
 
-                string extension = Path.GetExtension(staticurl);
+                string extension = Path.GetExtension(item.StaticPath);
                 if (extension != null && extension.ToLower() == ".js")
                 {
                     //加入静态页生成元素
                     content = string.Format("{3}\r\n\r\n//<!-- 生成方式：主动生成 -->\r\n//<!-- 更新时间：{0} -->\r\n//<!-- 动态URL：{1} -->\r\n//<!-- 静态URL：{2} -->",
-                                        createTime.ToString("yyyy-MM-dd HH:mm:ss"), dynamicurl, RemoveRootPath(staticurl), content.Trim());
+                                        createTime.ToString("yyyy-MM-dd HH:mm:ss"), item.DynamicUrl, item.StaticUrl, content.Trim());
                 }
                 else
                 {
                     //加入静态页生成元素
                     content = string.Format("{3}\r\n\r\n<!-- 生成方式：主动生成 -->\r\n<!-- 更新时间：{0} -->\r\n<!-- 动态URL：{1} -->\r\n<!-- 静态URL：{2} -->",
-                                        createTime.ToString("yyyy-MM-dd HH:mm:ss"), dynamicurl, RemoveRootPath(staticurl), content.Trim());
+                                        createTime.ToString("yyyy-MM-dd HH:mm:ss"), item.DynamicUrl, item.StaticUrl, content.Trim());
                 }
 
-                StaticPageManager.SaveFile(content, staticurl, outEncoding);
+                StaticPageManager.SaveFile(content, item.StaticPath, outEncoding);
 
                 //结束生成
                 if (OnComplete != null)
                 {
                     try
                     {
-                        OnComplete(createTime, dynamicurl, RemoveRootPath(staticurl));
+                        OnComplete(createTime, item.DynamicUrl, item.StaticUrl);
                     }
                     catch (Exception ex)
                     {
                     };
                 }
 
-                //全部生成成功才设置最后更新时间
-                if (updateTime == DateTime.MaxValue)
-                    staticPageDependency.LastUpdateTime = DateTime.Now;
-                else
-                    staticPageDependency.LastUpdateTime = updateTime;
-
                 staticPageDependency.UpdateSuccess = true;
             }
-            catch (Exception ex)
+            catch
             {
-                StaticPageManager.SaveError(new StaticPageException(string.Format("生成静态文件{0}失败！", RemoveRootPath(staticurl)), ex));
+                StaticPageManager.SaveError(new StaticPageException(string.Format("单个生成静态文件失败，【{2}】分钟后重新生成！\r\n{0} => {1}",
+                    item.DynamicUrl, item.StaticUrl, retryInterval)));
+
                 //如果出错，则继续往下执行
-
-                //全部生成成功才设置最后更新时间,否则往后推10分钟重新生成
-                if (updateTime == DateTime.MaxValue)
-                    staticPageDependency.LastUpdateTime = DateTime.Now.AddMinutes(retryInterval);
-                else
-                    staticPageDependency.LastUpdateTime = updateTime.AddMinutes(retryInterval);
-
                 staticPageDependency.UpdateSuccess = false;
             }
             finally
             {
                 //设置最后更新时间
                 //staticPageDependency.LastUpdateTime = updateTime;
+            }
+
+            //全部生成成功才设置最后更新时间
+            if (updateTime == DateTime.MaxValue)
+                staticPageDependency.LastUpdateTime = DateTime.Now;
+            else
+                staticPageDependency.LastUpdateTime = updateTime;
+
+            if (!staticPageDependency.UpdateSuccess)
+            {
+                //全部生成成功才设置最后更新时间,否则往后推5分钟重新生成
+                staticPageDependency.LastUpdateTime = staticPageDependency.LastUpdateTime.AddMinutes(retryInterval);
             }
 
             updateComplete = true;
@@ -412,23 +406,6 @@ namespace MySoft.Web
                 item.Update();
             }, new ArrayList { this, timeSpan });
         }
-
-        /// <summary>
-        /// 去除根目录
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        private string RemoveRootPath(string path)
-        {
-            try
-            {
-                return path.Replace(AppDomain.CurrentDomain.BaseDirectory, "/").Replace("\\", "/").Replace("//", "/");
-            }
-            catch
-            {
-                return path;
-            }
-        }
     }
 
     /// <summary>
@@ -436,7 +413,7 @@ namespace MySoft.Web
     /// </summary>
     public sealed class StaticPageParamInfo
     {
-        private object[] arguments;
+        private object state;
         private string paramName;
         /// <summary>
         /// 参数名
@@ -450,45 +427,30 @@ namespace MySoft.Web
         /// <summary>
         /// 获取值委托
         /// </summary>
-        public GetResultEventHandler GetResult
+        internal object[] GetResult()
         {
-            get { return getResult; }
+            if (getResult != null)
+                return getResult(state);
+            else
+                return new object[0];
         }
-
-        /// <summary>
-        /// 委托参数
-        /// </summary>
-        public object[] Arguments
-        {
-            get { return arguments; }
-        }
-
-        public StaticPageParamInfo(string paramName, int startPage, int endPage)
-        {
-            this.paramName = paramName;
-            List<object> list = new List<object>();
-            for (int index = startPage; index <= endPage; index++)
-            {
-                list.Add(index);
-            }
-            this.getResult = delegate(object[] args) { return list.ToArray(); };
-        }
-
-        public StaticPageParamInfo(string paramName, BeginEndValueEventHandler beginValue, BeginEndValueEventHandler endValue)
-            : this(paramName, beginValue(), endValue())
-        { }
 
         public StaticPageParamInfo(string paramName, object[] values)
         {
             this.paramName = paramName;
-            this.getResult = delegate(object[] args) { return values; };
+            this.getResult = delegate(object state) { return values; };
         }
 
-        public StaticPageParamInfo(string paramName, GetResultEventHandler getResult, params object[] arguments)
+        public StaticPageParamInfo(string paramName, GetResultEventHandler getResult)
         {
             this.paramName = paramName;
             this.getResult = getResult;
-            this.arguments = arguments;
+        }
+
+        public StaticPageParamInfo(string paramName, GetResultEventHandler getResult, object state)
+            : this(paramName, getResult)
+        {
+            this.state = state;
         }
     }
 
@@ -519,8 +481,7 @@ namespace MySoft.Web
         private string query;
         private string validateString;
         private bool updateComplete;
-        private IList<string> updateErrorList;
-
+        private List<UpdateItem> updateErrorList;
         private IUpdateDependency staticPageDependency;
         /// <summary>
         /// 静态页生成依赖
@@ -591,6 +552,23 @@ namespace MySoft.Web
             set { inMinutes = value; }
         }
 
+        private int threadCount = 1;
+        /// <summary>
+        /// 生成页面的线程数，默认为1
+        /// </summary>
+        public int ThreadCount
+        {
+            get { return threadCount; }
+            set
+            {
+                if (threadCount > 50) throw new WebException("生成线程数不能大于50！");
+                if (value <= 0)
+                    threadCount = 1;
+                else
+                    threadCount = value;
+            }
+        }
+
         /// <summary>
         /// 当前是否可以更新
         /// </summary>
@@ -617,7 +595,7 @@ namespace MySoft.Web
             this.staticPageDependency = new SlidingUpdateTime(new TimeSpan(1, 0, 0));
             this.isRemote = false;
             this.updateComplete = true;
-            this.updateErrorList = new List<string>();
+            this.updateErrorList = new List<UpdateItem>();
         }
 
         /// <summary>
@@ -655,10 +633,6 @@ namespace MySoft.Web
 
         #endregion
 
-        //保存用于更新的字典信息
-        private Dictionary<string, IList<object>> dict;
-        private Dictionary<string, int> dictPosition;
-
         /// <summary>
         /// 立即更新页面
         /// </summary>
@@ -673,65 +647,200 @@ namespace MySoft.Web
         void IUpdateItem.Update(DateTime updateTime)
         {
             updateComplete = false;
-            if (updateTime == DateTime.MaxValue)
-            {
-                updateErrorList.Clear();
-            }
 
-            try
+            //如果未能全部生成成功，则生成失败列表
+            if (updateTime != DateTime.MaxValue && !staticPageDependency.UpdateSuccess)
             {
-                dict = new Dictionary<string, IList<object>>();
-                dictPosition = new Dictionary<string, int>();
+                var errors = Update(updateTime, updateErrorList);
 
-                foreach (StaticPageParamInfo paramInfo in paramInfos)
+                //添加到异常列表
+                if (errors.Count > 0)
                 {
-                    if (!dict.ContainsKey(paramInfo.ParamName))
+                    updateErrorList.AddRange(errors);
+                }
+            }
+            else
+            {
+                var dictPosition = new Dictionary<string, int>();
+                var dictValues = new Dictionary<string, IList<object>>();
+                foreach (var paramInfo in paramInfos)
+                {
+                    try
                     {
-                        List<object> objlist = null;
-                        try
+                        if (!dictValues.ContainsKey(paramInfo.ParamName))
                         {
-                            objlist = new List<object>(paramInfo.GetResult(paramInfo.Arguments));
+                            var objlist = new List<object>(paramInfo.GetResult());
+                            dictValues[paramInfo.ParamName] = objlist;
+                            dictPosition[paramInfo.ParamName] = 0;
                         }
-                        catch (Exception ex)
-                        {
-                            StaticPageManager.SaveError(new StaticPageException(string.Format("获取参数{0}的值出错，URL：{1}！", paramInfo.ParamName, templatePath), ex));
-                            return;
-                        }
-
-                        dict.Add(paramInfo.ParamName, objlist);
-                        dictPosition.Add(paramInfo.ParamName, 0);
+                    }
+                    catch (Exception ex)
+                    {
+                        StaticPageManager.SaveError(new StaticPageException(string.Format("获取参数{0}的值出错，URL：{1}！", paramInfo.ParamName, templatePath), ex));
+                        return;
                     }
                 }
 
-                int count = GetPageCount(dict);
-                bool allUpdateSuccess = true;
-
-                for (int index = 0; index < count; index++)
+                try
                 {
-                    string dynamicurl = templatePath;
-                    string staticurl = GetRealPath(savePath);
-                    string queryURL = dynamicurl;
-                    string queryurl = GetRealPath(query);
-                    if (!string.IsNullOrEmpty(queryurl))
-                        queryURL = string.Format("{0}?{1}", dynamicurl, queryurl);
-
-                    if (updateTime != DateTime.MaxValue && updateErrorList.Count > 0)
+                    int count = GetPageCount(dictValues);
+                    var items = new List<UpdateItem>();
+                    for (int index = 0; index < count; index++)
                     {
-                        //判断更新失败的url
-                        if (!staticPageDependency.UpdateSuccess && !updateErrorList.Contains(queryURL))
+                        string dynamicurl = templatePath;
+                        string staticurl = savePath;
+                        if (!string.IsNullOrEmpty(query))
+                            dynamicurl = string.Format("{0}?{1}", dynamicurl, query);
+
+                        //生成对应的url
+                        foreach (string key in dictValues.Keys)
                         {
-                            SetPosition(dict.Keys.Count - 1);
-                            continue;
+                            var value = dictValues[key][dictPosition[key]].ToString();
+
+                            //动态地址
+                            dynamicurl = dynamicurl.Replace(key, value);
+
+                            //静态地址
+                            staticurl = staticurl.Replace(key, value);
                         }
+
+                        //添加到队列中
+                        items.Add(new UpdateItem { DynamicUrl = dynamicurl, StaticPath = staticurl });
+
+                        //定位处理
+                        SetPosition(dictPosition, dictValues, dictPosition.Keys.Count - 1);
                     }
 
+                    if (items.Count > 0)
+                    {
+                        //更新页面, 只有一个线程时
+                        if (threadCount == 1)
+                        {
+                            var errors = Update(updateTime, items);
+
+                            //添加到异常列表
+                            if (errors.Count > 0)
+                            {
+                                updateErrorList.AddRange(errors);
+                            }
+                        }
+                        else
+                        {
+                            int pageSize = (int)Math.Ceiling(items.Count / (threadCount * 1.0));
+                            var threads = new List<Thread>();
+
+                            //分页生成静态页
+                            for (int index = 0; index < threadCount; index++)
+                            {
+                                var updateItems = new List<UpdateItem>();
+                                if (items.Count >= (index + 1) * pageSize)
+                                    updateItems = items.GetRange(index * pageSize, pageSize);
+                                else
+                                    updateItems = items.GetRange(index * pageSize, items.Count - (index * pageSize));
+
+                                Thread thread = new Thread(state =>
+                                {
+                                    if (state == null) return;
+
+                                    var list = state as List<UpdateItem>;
+                                    var errors = Update(updateTime, list);
+                                    lock (updateErrorList)
+                                    {
+                                        //添加到异常列表
+                                        if (errors.Count > 0)
+                                        {
+                                            updateErrorList.AddRange(errors);
+                                        }
+                                    }
+                                });
+
+                                threads.Add(thread);
+                                thread.Start(updateItems);
+                            }
+
+                            //阻塞，直到所有完成
+                            foreach (var thread in threads)
+                            {
+                                thread.Join();
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    StaticPageManager.SaveError(new StaticPageException("创建URL列表出错！ Error => " + ex.Message, ex));
+                }
+            }
+
+            //全部生成成功才设置最后更新时间
+            if (updateTime == DateTime.MaxValue)
+                staticPageDependency.LastUpdateTime = DateTime.Now;
+            else
+                staticPageDependency.LastUpdateTime = updateTime;
+
+            if (!staticPageDependency.UpdateSuccess)
+            {
+                //全部生成成功才设置最后更新时间,否则往后推5分钟重新生成
+                staticPageDependency.LastUpdateTime = staticPageDependency.LastUpdateTime.AddMinutes(retryInterval);
+            }
+
+            //更新完成
+            updateComplete = true;
+        }
+
+        /// <summary>
+        /// 获取总循环次数
+        /// </summary>
+        /// <returns></returns>
+        private int GetPageCount(IDictionary<string, IList<object>> dictValues)
+        {
+            int count = 1;
+            foreach (string paramName in dictValues.Keys)
+            {
+                count *= dictValues[paramName].Count;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// 设置对应的坐标值
+        /// </summary>
+        /// <param name="positions"></param>
+        /// <param name="values"></param>
+        /// <param name="index"></param>
+        private void SetPosition(IDictionary<string, int> positions, IDictionary<string, IList<object>> values, int index)
+        {
+            if (index < 0) return;
+            string key = new List<string>(positions.Keys)[index];
+            if (positions[key] < values[key].Count - 1)
+            {
+                positions[key]++;
+            }
+            else
+            {
+                positions[key] = 0;
+                SetPosition(positions, values, --index);
+            }
+        }
+
+        /// <summary>
+        /// 对页面进行更新
+        /// </summary>
+        private IList<UpdateItem> Update(DateTime updateTime, IList<UpdateItem> items)
+        {
+            var errorList = new List<UpdateItem>();
+
+            try
+            {
+                foreach (var item in items)
+                {
                     try
                     {
                         string content = null;
                         if (isRemote)
-                            content = StaticPageManager.GetRemotePageString(dynamicurl, inEncoding, validateString);
+                            content = StaticPageManager.GetRemotePageString(item.DynamicUrl, inEncoding, validateString);
                         else
-                            content = StaticPageManager.GetLocalPageString(dynamicurl, queryurl, inEncoding, validateString);
+                            content = StaticPageManager.GetLocalPageString(item.Path, item.Query, inEncoding, validateString);
 
                         DateTime createTime = DateTime.Now;
 
@@ -740,7 +849,7 @@ namespace MySoft.Web
                         {
                             try
                             {
-                                OnStart(createTime, dynamicurl, RemoveRootPath(staticurl));
+                                OnStart(createTime, item.DynamicUrl, item.StaticUrl);
                             }
                             catch { };
                         }
@@ -755,69 +864,50 @@ namespace MySoft.Web
                             catch { };
                         }
 
-                        string extension = Path.GetExtension(staticurl);
+                        string extension = Path.GetExtension(item.StaticPath);
                         if (extension != null && extension.ToLower() == ".js")
                         {
                             //加入静态页生成元素
                             content = string.Format("{3}\r\n\r\n//<!-- 生成方式：主动生成 -->\r\n//<!-- 更新时间：{0} -->\r\n//<!-- 动态URL：{1} -->\r\n//<!-- 静态URL：{2} -->",
-                                                createTime.ToString("yyyy-MM-dd HH:mm:ss"), dynamicurl, RemoveRootPath(staticurl), content.Trim());
+                                                createTime.ToString("yyyy-MM-dd HH:mm:ss"), item.DynamicUrl, item.StaticUrl, content.Trim());
                         }
                         else
                         {
                             //加入静态页生成元素
                             content = string.Format("{3}\r\n\r\n<!-- 生成方式：主动生成 -->\r\n<!-- 更新时间：{0} -->\r\n<!-- 动态URL：{1} -->\r\n<!-- 静态URL：{2} -->",
-                                                createTime.ToString("yyyy-MM-dd HH:mm:ss"), dynamicurl, RemoveRootPath(staticurl), content.Trim());
+                                                createTime.ToString("yyyy-MM-dd HH:mm:ss"), item.DynamicUrl, item.StaticUrl, content.Trim());
                         }
 
-                        StaticPageManager.SaveFile(content, staticurl, outEncoding);
+                        StaticPageManager.SaveFile(content, item.StaticPath, outEncoding);
 
                         //结束生成
                         if (OnComplete != null)
                         {
                             try
                             {
-                                OnComplete(createTime, dynamicurl, RemoveRootPath(staticurl));
+                                OnComplete(createTime, item.DynamicUrl, item.StaticUrl);
                             }
                             catch { };
                         }
 
-                        //把生成成功的url移出列表
-                        if (updateErrorList.Contains(queryURL))
-                        {
-                            updateErrorList.Remove(queryURL);
-                        }
+                        //置状态为生成成功
+                        item.UpdateSuccess = true;
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        StaticPageManager.SaveError(new StaticPageException(string.Format("生成静态文件{0}失败！", RemoveRootPath(staticurl)), ex));
-                        //如果出错，则继续往下执行
-
-                        //把生成出错的url加入列表
-                        if (!updateErrorList.Contains(queryURL))
-                        {
-                            updateErrorList.Add(queryURL);
-                        }
-
-                        allUpdateSuccess = false;
-                    }
-                    finally
-                    {
-                        SetPosition(dict.Keys.Count - 1);
+                        //置状态为生成失败
+                        item.UpdateSuccess = false;
                     }
                 }
 
                 //未全部更新成功
-                if (!allUpdateSuccess)
+                if (items.Any(p => !p.UpdateSuccess))
                 {
-                    string html = string.Join("\r\n", updateErrorList.ToArray());
-                    throw new StaticPageException("【" + updateErrorList.Count + "】个静态页未生成成功，需要延迟重新生成！" + "\r\n" + html);
+                    errorList = items.Where(p => !p.UpdateSuccess).ToList();
+                    string html = string.Join("\r\n", errorList.Select(p => string.Format("{0} => {1}", p.DynamicUrl, p.StaticUrl)).ToArray());
+                    throw new StaticPageException(string.Format("批量生成【{0}】个静态页失败，【{1}】分钟后重新生成！\r\n{2}",
+                        errorList.Count, retryInterval, html));
                 }
-
-                //全部生成成功才设置最后更新时间
-                if (updateTime == DateTime.MaxValue)
-                    staticPageDependency.LastUpdateTime = DateTime.Now;
-                else
-                    staticPageDependency.LastUpdateTime = updateTime;
 
                 staticPageDependency.UpdateSuccess = true;
             }
@@ -826,14 +916,6 @@ namespace MySoft.Web
                 //如果出错，则继续往下执行
                 if (ex is StaticPageException)
                     StaticPageManager.SaveError(ex as StaticPageException);
-                else
-                    StaticPageManager.SaveError(new StaticPageException("调用静态页生成方法Update时发生异常：" + ex.Message, ex));
-
-                //全部生成成功才设置最后更新时间,否则往后推10分钟重新生成
-                if (updateTime == DateTime.MaxValue)
-                    staticPageDependency.LastUpdateTime = DateTime.Now.AddMinutes(retryInterval);
-                else
-                    staticPageDependency.LastUpdateTime = updateTime.AddMinutes(retryInterval);
 
                 staticPageDependency.UpdateSuccess = false;
             }
@@ -843,7 +925,7 @@ namespace MySoft.Web
                 //staticPageDependency.LastUpdateTime = updateTime;
             }
 
-            updateComplete = true;
+            return errorList;
         }
 
         /// <summary>
@@ -858,71 +940,6 @@ namespace MySoft.Web
 
                 (this as IUpdateItem).Update(DateTime.MaxValue);
             }, timeSpan);
-        }
-
-        /// <summary>
-        /// 获取总循环次数
-        /// </summary>
-        /// <returns></returns>
-        private int GetPageCount(Dictionary<string, IList<object>> dict)
-        {
-            int count = 1;
-            foreach (string paramName in dict.Keys)
-            {
-                count *= dict[paramName].Count;
-            }
-            return count;
-        }
-
-        /// <summary>
-        /// 获取查询字符串
-        /// </summary>
-        /// <param name="query"></param>
-        /// <returns></returns>
-        private string GetRealPath(string query)
-        {
-            foreach (string key in dict.Keys)
-            {
-                query = query.Replace(key, dict[key][dictPosition[key]].ToString());
-            }
-
-            return query;
-        }
-
-        /// <summary>
-        /// 设置对应的坐标值
-        /// </summary>
-        /// <param name="index"></param>
-        private void SetPosition(int index)
-        {
-            if (index < 0) return;
-            string key = new List<string>(dict.Keys)[index];
-            if (dictPosition[key] < dict[key].Count - 1)
-            {
-                dictPosition[key]++;
-            }
-            else
-            {
-                dictPosition[key] = 0;
-                SetPosition(--index);
-            }
-        }
-
-        /// <summary>
-        /// 去除根目录
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        private string RemoveRootPath(string path)
-        {
-            try
-            {
-                return path.Replace(AppDomain.CurrentDomain.BaseDirectory, "/").Replace("\\", "/").Replace("//", "/");
-            }
-            catch
-            {
-                return path;
-            }
         }
     }
 }

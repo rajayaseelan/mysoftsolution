@@ -66,7 +66,7 @@ namespace MySoft.Web.UI.Controls
                 if (value is DataTable || value is DataSet)
                     _dataSource = value;
                 else
-                    throw new Exception("The DataSource property of the DataCalendar control" +
+                    throw new WebException("The DataSource property of the DataCalendar control" +
                                         " must be a DataTable or DataSet object");
             }
         }
@@ -214,7 +214,7 @@ namespace MySoft.Web.UI.Controls
                 }
                 // throw an exception if there is a problem with the data source
                 if (_dtSource == null)
-                    throw new Exception("Error finding the DataSource.  Please check " +
+                    throw new WebException("Error finding the DataSource.  Please check " +
                                         " the DataSource and DataMember properties.");
             }
 

@@ -96,6 +96,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="StaticPage\StaticPageException.cs" />
+    <Compile Include="StaticPage\UpdateItem.cs" />
     <Compile Include="URLRewriter\BaseModuleRewriter.cs" />
     <Compile Include="URLRewriter\Configuration\RewriterConfiguration.cs" />
     <Compile Include="URLRewriter\Configuration\RewriterConfigurationHandler.cs" />
