@@ -16,7 +16,7 @@ namespace MySoft.IoC
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
         private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
-        private MessageType format = MessageType.Binary;                //数据格式，默认为binary格式
+        private bool invoked = false;
 
         /// <summary>
         /// Gets or sets the key.
@@ -89,13 +89,13 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Gets or sets the format
+        /// Gets or sets the invoked
         /// </summary>
-        /// <value>The throwError.</value>
-        public MessageType MessageType
+        /// <value>The invoked.</value>
+        public bool Invoked
         {
-            get { return format; }
-            set { format = value; }
+            get { return invoked; }
+            set { invoked = value; }
         }
 
         /// <summary>

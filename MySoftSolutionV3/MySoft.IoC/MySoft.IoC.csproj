@@ -91,14 +91,15 @@
     <Compile Include="HttpServer\HttpServiceHandler.cs" />
     <Compile Include="HttpServer\UrlUtility.cs" />
     <Compile Include="InvokeCaller.cs" />
-    <Compile Include="JsonInvocationHandler.cs" />
     <Compile Include="Cache\CastleServiceCache.cs" />
     <Compile Include="LocalInvocationHandler.cs" />
     <Compile Include="Messages\InvokeMessage.cs" />
-    <Compile Include="Messages\MessageType.cs" />
     <Compile Include="Messages\Status\CounterInfo.cs" />
     <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
+    <Compile Include="Services\InvokeProxy.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Services\ServiceDiscoverFacility.cs" />
     <Compile Include="Services\DiscoverProxy.cs" />
     <Compile Include="Messages\Status\AppCaller.cs" />

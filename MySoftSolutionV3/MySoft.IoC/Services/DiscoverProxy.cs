@@ -11,7 +11,7 @@ namespace MySoft.IoC.Services
     public class DiscoverProxy : IService, IDisposable
     {
         private CastleFactory factory;
-        private IDictionary<string, IList<RemoteProxy>> services;
+        private IDictionary<string, IList<IService>> services;
 
         /// <summary>
         /// 实例化DiscoverProxy
@@ -21,7 +21,7 @@ namespace MySoft.IoC.Services
         public DiscoverProxy(CastleFactory factory, ILog logger)
         {
             this.factory = factory;
-            this.services = new Dictionary<string, IList<RemoteProxy>>();
+            this.services = new Dictionary<string, IList<IService>>();
         }
 
         #region IService 成员
@@ -44,7 +44,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            IList<RemoteProxy> proxies = new List<RemoteProxy>();
+            IList<IService> proxies = new List<IService>();
 
             //判断是否为StatusService服务
             if (reqMsg.ServiceName == typeof(IStatusService).FullName)

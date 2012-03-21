@@ -50,30 +50,17 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 调用方法
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        protected virtual ResponseMessage CallMethod(RequestMessage reqMsg, System.Reflection.MethodInfo method)
-        {
-            //调用服务
-            return service.CallService(reqMsg);
-        }
-
-        /// <summary>
         /// Calls the service.
         /// </summary>
         /// <param name="reqMsg">Name of the sub service.</param>
-        /// <param name="method">The param values.</param>
         /// <returns>The result.</returns>
-        private ResponseMessage CallService(RequestMessage reqMsg, System.Reflection.MethodInfo method)
+        private ResponseMessage CallService(RequestMessage reqMsg)
         {
             ResponseMessage resMsg = null;
 
             try
             {
-                resMsg = CallMethod(reqMsg, method);
+                resMsg = service.CallService(reqMsg);
 
                 //如果有异常，向外抛出
                 if (resMsg.IsError) throw resMsg.Error;
@@ -113,9 +100,10 @@ namespace MySoft.IoC
             reqMsg.HostName = hostName;                                     //客户端名称
             reqMsg.IPAddress = ipAddress;                                   //客户端IP地址
             reqMsg.ServiceName = serviceType.FullName;                      //服务名称
-            reqMsg.MethodName = method.ToString();                      //方法名称
-            reqMsg.ReturnType = method.ReturnType;                      //返回类型
+            reqMsg.MethodName = method.ToString();                          //方法名称
+            reqMsg.ReturnType = method.ReturnType;                          //返回类型
             reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
+            reqMsg.Method = method;                                         //调用方法
 
             #endregion
 
@@ -126,7 +114,7 @@ namespace MySoft.IoC
             //缓存无值
             if (cacheValue == null)
             {
-                var resMsg = CallService(reqMsg, method);
+                var resMsg = CallService(reqMsg);
                 if (resMsg != null)
                 {
                     returnValue = resMsg.Value;

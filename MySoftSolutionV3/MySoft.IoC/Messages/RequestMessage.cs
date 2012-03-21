@@ -165,7 +165,7 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// invoke method
         /// </summary>
-        public bool InvokeMethod
+        public bool Invoked
         {
             get
             {
@@ -174,6 +174,24 @@ namespace MySoft.IoC.Messages
             set
             {
                 invokeMethod = value;
+            }
+        }
+
+        [NonSerialized]
+        private System.Reflection.MethodInfo method;
+
+        /// <summary>
+        /// 响应的方法
+        /// </summary>
+        internal System.Reflection.MethodInfo Method
+        {
+            get
+            {
+                return method;
+            }
+            set
+            {
+                method = value;
             }
         }
 

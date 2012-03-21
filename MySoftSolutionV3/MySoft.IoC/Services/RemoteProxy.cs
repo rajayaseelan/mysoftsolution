@@ -99,7 +99,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        public ResponseMessage CallService(RequestMessage reqMsg)
+        public virtual ResponseMessage CallService(RequestMessage reqMsg)
         {
             //获取一个请求
             var reqProxy = reqPool.Pop();

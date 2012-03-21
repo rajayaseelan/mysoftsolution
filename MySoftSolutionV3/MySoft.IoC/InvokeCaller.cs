@@ -33,7 +33,7 @@ namespace MySoft.IoC
             #region 设置请求信息
 
             RequestMessage reqMsg = new RequestMessage();
-            reqMsg.InvokeMethod = true;
+            reqMsg.Invoked = true;
             reqMsg.AppName = client.AppName;                                //应用名称
             reqMsg.HostName = client.HostName;                              //客户端名称
             reqMsg.IPAddress = client.IPAddress;                            //客户端IP地址

@@ -11,7 +11,7 @@ namespace MySoft.PlatformService.WebForm
 {
     public partial class StatusControl : System.Web.UI.UserControl, MySoft.Web.UI.IAjaxProcessHandler
     {
-        protected IList<RemoteNode> nodelist = new List<RemoteNode>();
+        protected IList<ServerNode> nodelist = new List<ServerNode>();
         protected IDictionary<string, ServerStatus> statuslist = new Dictionary<string, ServerStatus>();
         protected IDictionary<string, IList<ClientInfo>> clientlist = new Dictionary<string, IList<ClientInfo>>();
 
@@ -34,7 +34,7 @@ namespace MySoft.PlatformService.WebForm
         {
             try
             {
-                nodelist = CastleFactory.Create().GetRemoteNodes();
+                nodelist = CastleFactory.Create().GetServerNodes();
                 foreach (var node in nodelist)
                 {
                     var service = CastleFactory.Create().GetChannel<IStatusService>(node);

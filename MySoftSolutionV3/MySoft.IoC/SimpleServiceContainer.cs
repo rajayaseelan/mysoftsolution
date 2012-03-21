@@ -223,28 +223,6 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Calls the service.
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        public ResponseMessage CallService(RequestMessage reqMsg)
-        {
-            var service = container.Resolve<IService>("Service_" + reqMsg.ServiceName);
-            if (service == null)
-            {
-                string body = string.Format("The server not find matching service ({0}).", reqMsg.ServiceName);
-                throw new WarningException(body)
-                {
-                    ApplicationName = reqMsg.AppName,
-                    ServiceName = reqMsg.ServiceName,
-                    ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                };
-            }
-
-            return service.CallService(reqMsg);
-        }
-
-        /// <summary>
         /// 是否包含服务
         /// </summary>
         /// <param name="serviceName"></param>

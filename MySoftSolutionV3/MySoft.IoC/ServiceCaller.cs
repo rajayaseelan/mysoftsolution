@@ -111,7 +111,7 @@ namespace MySoft.IoC
                     };
 
                     //如果是Json方式调用，则需要处理异常
-                    if (resMsg.IsError && reqMsg.InvokeMethod)
+                    if (resMsg.IsError && reqMsg.Invoked)
                     {
                         resMsg.Parameters.Clear();
                         resMsg.Error = new ApplicationException(callArgs.Error.Message);
@@ -191,8 +191,11 @@ namespace MySoft.IoC
                 //设置上下文
                 OperationContext.Current = context;
 
+                //解析服务
+                var service = ParseService(reqMsg);
+
                 //返回调用值
-                return container.CallService(req);
+                return service.CallService(req);
             });
 
             //异常调用
@@ -217,6 +220,28 @@ namespace MySoft.IoC
 
             //释放资源
             return caller.EndInvoke(ar);
+        }
+
+        /// <summary>
+        /// Gets the service.
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private IService ParseService(RequestMessage reqMsg)
+        {
+            var service = container.Resolve<IService>("Service_" + reqMsg.ServiceName);
+            if (service == null)
+            {
+                string body = string.Format("The server not find matching service ({0}).", reqMsg.ServiceName);
+                throw new WarningException(body)
+                {
+                    ApplicationName = reqMsg.AppName,
+                    ServiceName = reqMsg.ServiceName,
+                    ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                };
+            }
+
+            return service;
         }
 
         /// <summary>

@@ -47,6 +47,7 @@ namespace MySoft.IoC.Services
         /// Calls the service.
         /// </summary>
         /// <param name="reqMsg">The MSG.</param>
+        /// <param name="method"></param>
         /// <returns>The msg.</returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {

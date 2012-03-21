@@ -17,12 +17,12 @@ namespace MySoft.PlatformService.WinForm
     {
         private string serviceName;
         private string methodName;
-        private RemoteNode node;
+        private ServerNode node;
         private IList<ParameterInfo> parameters;
         private IDictionary<string, TextBox> txtParameters;
         private string paramValue;
 
-        public frmInvoke(RemoteNode node, string serviceName, string methodName, IList<ParameterInfo> parameters)
+        public frmInvoke(ServerNode node, string serviceName, string methodName, IList<ParameterInfo> parameters)
         {
             InitializeComponent();
 
@@ -33,7 +33,7 @@ namespace MySoft.PlatformService.WinForm
             this.txtParameters = new Dictionary<string, TextBox>();
         }
 
-        public frmInvoke(RemoteNode node, string serviceName, string methodName, IList<ParameterInfo> parameters, string paramValue)
+        public frmInvoke(ServerNode node, string serviceName, string methodName, IList<ParameterInfo> parameters, string paramValue)
             : this(node, serviceName, methodName, parameters)
         {
             this.paramValue = paramValue;

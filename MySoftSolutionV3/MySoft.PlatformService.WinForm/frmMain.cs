@@ -15,7 +15,7 @@ namespace MySoft.PlatformService.WinForm
 {
     public partial class frmMain : Form
     {
-        private RemoteNode defaultNode;
+        private ServerNode defaultNode;
         private WebBrowser webBrowser1, webBrowser2;
         private System.Windows.Forms.Timer formTimer;
 
@@ -335,7 +335,7 @@ namespace MySoft.PlatformService.WinForm
             checkedListBox2.Items.Clear();
 
             comboBox1.DisplayMember = "Key";
-            comboBox1.DataSource = CastleFactory.Create().GetRemoteNodes();
+            comboBox1.DataSource = CastleFactory.Create().GetServerNodes();
 
             //解析邮件地址
             var receivedEmail = ConfigurationManager.AppSettings["ReceivedEmail"];
@@ -351,7 +351,7 @@ namespace MySoft.PlatformService.WinForm
 
             if (comboBox1.Items.Count > 0)
             {
-                defaultNode = comboBox1.Items[0] as RemoteNode;
+                defaultNode = comboBox1.Items[0] as ServerNode;
                 InitService();
             }
         }
@@ -901,7 +901,7 @@ namespace MySoft.PlatformService.WinForm
         private void comboBox1_Click(object sender, EventArgs e)
         {
             if (comboBox1.SelectedIndex < 0) return;
-            defaultNode = comboBox1.SelectedItem as RemoteNode;
+            defaultNode = comboBox1.SelectedItem as ServerNode;
         }
 
         private void 全选AToolStripMenuItem_Click(object sender, EventArgs e)

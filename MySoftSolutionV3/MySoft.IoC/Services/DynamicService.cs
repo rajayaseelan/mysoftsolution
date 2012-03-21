@@ -59,7 +59,7 @@ namespace MySoft.IoC.Services
             #endregion
 
             //获取服务及方法名称
-            if (reqMsg.InvokeMethod)
+            if (reqMsg.Invoked)
                 resMsg.ReturnType = reqMsg.ReturnType;
             else
                 resMsg.ReturnType = method.ReturnType;
@@ -76,7 +76,7 @@ namespace MySoft.IoC.Services
                 var service = AspectFactory.CreateProxyService(serviceType, instance);
 
                 var pis = method.GetParameters();
-                if (reqMsg.InvokeMethod)
+                if (reqMsg.Invoked)
                 {
                     var objValue = reqMsg.Parameters["InvokeParameter"];
                     var jsonString = string.Empty;
@@ -116,7 +116,7 @@ namespace MySoft.IoC.Services
                 }
 
                 //返回结果数据
-                if (reqMsg.InvokeMethod)
+                if (reqMsg.Invoked)
                 {
                     resMsg.Parameters.Clear();
                     resMsg.Value = returnValue;

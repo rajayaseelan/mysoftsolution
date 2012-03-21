@@ -120,13 +120,18 @@ namespace MySoft.IoC
 
                 if (config.Nodes.Count > 0)
                 {
-                    foreach (var node in config.Nodes)
+                    foreach (var p in config.Nodes)
                     {
-                        if (node.Value.MaxPool < 1) throw new WarningException("Minimum pool size 1£¡");
-                        if (node.Value.MaxPool > 1000) throw new WarningException("Maximum pool size 1000£¡");
+                        if (p.Value.MaxPool < 1) throw new WarningException("Minimum pool size 1£¡");
+                        if (p.Value.MaxPool > 1000) throw new WarningException("Maximum pool size 1000£¡");
 
-                        var proxy = new RemoteProxy(node.Value, sContainer);
-                        factory.proxies[node.Key.ToLower()] = proxy;
+                        IService proxy = null;
+                        if (p.Value.Invoked)
+                            proxy = new InvokeProxy(p.Value, sContainer);
+                        else
+                            proxy = new RemoteProxy(p.Value, sContainer);
+
+                        factory.proxies[p.Key.ToLower()] = proxy;
                     }
                 }
             }
@@ -225,7 +230,11 @@ namespace MySoft.IoC
                 proxy = singleton.proxies[node.Key.ToLower()];
             else
             {
-                proxy = new RemoteProxy(node, container);
+                if (node.Invoked)
+                    proxy = new InvokeProxy(node, container);
+                else
+                    proxy = new RemoteProxy(node, container);
+
                 isCacheService = false;
             }
 
@@ -247,12 +256,8 @@ namespace MySoft.IoC
             {
                 lock (lockObject)
                 {
-                    IProxyInvocationHandler handler = null;
                     var serviceCache = new CastleServiceCache(cache);
-                    if (config.DataType == DataType.Json)
-                        handler = new JsonInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache);
-                    else
-                        handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache);
+                    var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache);
                     var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                     service = (IServiceInterfaceType)dynamicProxy;
@@ -375,7 +380,12 @@ namespace MySoft.IoC
             if (singleton.proxies.ContainsKey(node.Key.ToLower()))
                 service = singleton.proxies[node.Key.ToLower()];
             else
-                service = new RemoteProxy(node, container);
+            {
+                if (node.Invoked)
+                    service = new InvokeProxy(node, container);
+                else
+                    service = new RemoteProxy(node, container);
+            }
 
             return GetInvokeData(message, service);
         }
