@@ -13,11 +13,11 @@ namespace MySoft.IoC.Services
     public class RemoteProxy : IService, IDisposable
     {
         protected ILog logger;
-        protected RemoteNode node;
+        protected ServerNode node;
         protected ServiceRequestPool reqPool;
         private WaitResultCollection hashtable;
 
-        public RemoteProxy(RemoteNode node, ILog logger)
+        public RemoteProxy(ServerNode node, ILog logger)
         {
             this.node = node;
             this.logger = logger;
@@ -138,7 +138,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// Ô¶³Ì½Úµã
         /// </summary>
-        public RemoteNode Node
+        public ServerNode Node
         {
             get { return node; }
         }

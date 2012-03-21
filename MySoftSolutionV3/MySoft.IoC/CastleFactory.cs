@@ -144,9 +144,9 @@ namespace MySoft.IoC
         /// 获取默认的节点
         /// </summary>
         /// <returns></returns>
-        public RemoteNode GetDefaultNode()
+        public ServerNode GetDefaultNode()
         {
-            return GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, config.Default, true) == 0);
+            return GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, config.Default, true) == 0);
         }
 
         /// <summary>
@@ -154,16 +154,16 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="nodeKey"></param>
         /// <returns></returns>
-        public RemoteNode GetRemoteNode(string nodeKey)
+        public ServerNode GetServerNode(string nodeKey)
         {
-            return GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            return GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
         }
 
         /// <summary>
         /// 获取所有远程节点
         /// </summary>
         /// <returns></returns>
-        public IList<RemoteNode> GetRemoteNodes()
+        public IList<ServerNode> GetServerNodes()
         {
             return this.Proxies.Select(p => p.Node).ToList();
         }
@@ -200,7 +200,7 @@ namespace MySoft.IoC
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey)
         {
             nodeKey = GetNodeKey(nodeKey);
-            var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            var node = GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
             if (node == null)
             {
                 throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
@@ -214,10 +214,10 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node">The node name.</param>
         /// <returns></returns>
-        public IServiceInterfaceType GetChannel<IServiceInterfaceType>(RemoteNode node)
+        public IServiceInterfaceType GetChannel<IServiceInterfaceType>(ServerNode node)
         {
             if (node == null)
-                throw new WarningException("Remote node can't for empty!");
+                throw new WarningException("Server node can't for empty!");
 
             IService proxy = null;
             var isCacheService = true;
@@ -291,7 +291,7 @@ namespace MySoft.IoC
         public IPublishService GetChannel<IPublishService>(string nodeKey, object callback)
         {
             nodeKey = GetNodeKey(nodeKey);
-            var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            var node = GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
             if (node == null)
             {
                 throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
@@ -306,10 +306,10 @@ namespace MySoft.IoC
         /// <param name="node"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public IPublishService GetChannel<IPublishService>(RemoteNode node, object callback)
+        public IPublishService GetChannel<IPublishService>(ServerNode node, object callback)
         {
             if (node == null)
-                throw new WarningException("Remote node can't for empty!");
+                throw new WarningException("Server node can't for empty!");
 
             if (callback == null) throw new IoCException("Callback cannot be the null!");
             var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(typeof(IPublishService));
@@ -357,7 +357,7 @@ namespace MySoft.IoC
         public InvokeData Invoke(string nodeKey, InvokeMessage message)
         {
             nodeKey = GetNodeKey(nodeKey);
-            var node = GetRemoteNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            var node = GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
             if (node == null)
             {
                 throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
@@ -366,10 +366,10 @@ namespace MySoft.IoC
             return Invoke(node, message);
         }
 
-        public InvokeData Invoke(RemoteNode node, InvokeMessage message)
+        public InvokeData Invoke(ServerNode node, InvokeMessage message)
         {
             if (node == null)
-                throw new WarningException("Remote node can't for empty!");
+                throw new WarningException("Server node can't for empty!");
 
             IService service = null;
             if (singleton.proxies.ContainsKey(node.Key.ToLower()))

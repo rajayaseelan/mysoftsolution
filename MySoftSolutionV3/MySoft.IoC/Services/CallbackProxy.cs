@@ -11,7 +11,7 @@ namespace MySoft.IoC.Services
     public class CallbackProxy : RemoteProxy
     {
         private object callback;
-        public CallbackProxy(object callback, RemoteNode node, ILog logger)
+        public CallbackProxy(object callback, ServerNode node, ILog logger)
             : base(node, logger)
         {
             this.callback = callback;

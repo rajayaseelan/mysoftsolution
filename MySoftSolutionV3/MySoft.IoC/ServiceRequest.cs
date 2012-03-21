@@ -40,7 +40,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node"></param>
         /// <param name="logger"></param>
-        public ServiceRequest(RemoteNode node, ILog logger, bool autoDisconnect)
+        public ServiceRequest(ServerNode node, ILog logger, bool autoDisconnect)
         {
             this.logger = logger;
             this.node = node.Key;
@@ -110,7 +110,7 @@ namespace MySoft.IoC
                 }
                 catch (Exception e)
                 {
-                    throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Remote node : {2} -> {3}", ip, port, node, e.Message));
+                    throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", ip, port, node, e.Message));
                 }
             }
 

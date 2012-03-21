@@ -40,43 +40,43 @@ namespace MySoft.IoC.Configuration
         /// <summary>
         /// 从配置文件加载配置值
         /// </summary>
-        /// <param name="node"></param>
-        public void LoadValuesFromConfigurationXml(XmlNode node)
+        /// <param name="xmlnode"></param>
+        public void LoadValuesFromConfigurationXml(XmlNode xmlnode)
         {
-            if (node == null) return;
+            if (xmlnode == null) return;
 
-            XmlAttributeCollection xmlnode = node.Attributes;
+            XmlAttributeCollection attribute = xmlnode.Attributes;
 
-            if (xmlnode["host"] != null && xmlnode["host"].Value.Trim() != string.Empty)
-                host = xmlnode["host"].Value;
+            if (attribute["host"] != null && attribute["host"].Value.Trim() != string.Empty)
+                host = attribute["host"].Value;
 
-            if (xmlnode["port"] != null && xmlnode["port"].Value.Trim() != string.Empty)
-                port = Convert.ToInt32(xmlnode["port"].Value);
+            if (attribute["port"] != null && attribute["port"].Value.Trim() != string.Empty)
+                port = Convert.ToInt32(attribute["port"].Value);
 
-            if (xmlnode["encrypt"] != null && xmlnode["encrypt"].Value.Trim() != string.Empty)
-                encrypt = Convert.ToBoolean(xmlnode["encrypt"].Value);
+            if (attribute["encrypt"] != null && attribute["encrypt"].Value.Trim() != string.Empty)
+                encrypt = Convert.ToBoolean(attribute["encrypt"].Value);
 
-            if (xmlnode["compress"] != null && xmlnode["compress"].Value.Trim() != string.Empty)
-                compress = Convert.ToBoolean(xmlnode["compress"].Value);
+            if (attribute["compress"] != null && attribute["compress"].Value.Trim() != string.Empty)
+                compress = Convert.ToBoolean(attribute["compress"].Value);
 
-            if (xmlnode["timeout"] != null && xmlnode["timeout"].Value.Trim() != string.Empty)
-                timeout = Convert.ToInt32(xmlnode["timeout"].Value);
+            if (attribute["timeout"] != null && attribute["timeout"].Value.Trim() != string.Empty)
+                timeout = Convert.ToInt32(attribute["timeout"].Value);
 
-            if (xmlnode["recordHours"] != null && xmlnode["recordHours"].Value.Trim() != string.Empty)
-                recordHours = Convert.ToInt32(xmlnode["recordHours"].Value);
+            if (attribute["recordHours"] != null && attribute["recordHours"].Value.Trim() != string.Empty)
+                recordHours = Convert.ToInt32(attribute["recordHours"].Value);
 
-            if (xmlnode["minuteCalls"] != null && xmlnode["minuteCalls"].Value.Trim() != string.Empty)
-                minuteCalls = Convert.ToInt32(xmlnode["minuteCalls"].Value);
+            if (attribute["minuteCalls"] != null && attribute["minuteCalls"].Value.Trim() != string.Empty)
+                minuteCalls = Convert.ToInt32(attribute["minuteCalls"].Value);
 
-            foreach (XmlNode child in node.ChildNodes)
+            foreach (XmlNode child in xmlnode.ChildNodes)
             {
                 if (child.NodeType == XmlNodeType.Comment) continue;
 
-                XmlAttributeCollection childnode = child.Attributes;
+                XmlAttributeCollection childattribute = child.Attributes;
                 if (child.Name == "httpServer")
                 {
-                    httpPort = Convert.ToInt32(childnode["port"].Value);
-                    httpEnabled = Convert.ToBoolean(childnode["enabled"].Value);
+                    httpPort = Convert.ToInt32(childattribute["port"].Value);
+                    httpEnabled = Convert.ToBoolean(childattribute["enabled"].Value);
                 }
             }
         }

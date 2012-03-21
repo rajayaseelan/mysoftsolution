@@ -1,12 +1,13 @@
 ﻿using System;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {
     /// <summary>
-    /// 远程节点
+    /// 服务器节点
     /// </summary>
     [Serializable]
-    public class RemoteNode
+    public class ServerNode
     {
         private string ip;
         private int port;
@@ -15,6 +16,7 @@ namespace MySoft.IoC
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
         private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
+        private MessageType format = MessageType.Binary;                //数据格式，默认为binary格式
 
         /// <summary>
         /// Gets or sets the key.
@@ -87,14 +89,24 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// Gets or sets the format
+        /// </summary>
+        /// <value>The throwError.</value>
+        public MessageType MessageType
+        {
+            get { return format; }
+            set { format = value; }
+        }
+
+        /// <summary>
         /// 返回一个远程节点
         /// </summary>
         /// <param name="ip"></param>
         /// <param name="port"></param>
         /// <returns></returns>
-        public static RemoteNode Parse(string ip, int port)
+        public static ServerNode Parse(string ip, int port)
         {
-            return new RemoteNode { Key = string.Format("{0}:{1}", ip, port), IP = ip, Port = port };
+            return new ServerNode { Key = string.Format("{0}:{1}", ip, port), IP = ip, Port = port };
         }
 
         /// <summary>
@@ -102,7 +114,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static RemoteNode Parse(string value)
+        public static ServerNode Parse(string value)
         {
             var strs = value.Split(':');
             return Parse(strs[0], Convert.ToInt32(strs[1]));

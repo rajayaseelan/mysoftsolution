@@ -74,8 +74,8 @@ namespace MySoft.IoC.Services
                         {
                             try
                             {
-                                //自定义实现一个RemoteNode
-                                var node = new RemoteNode
+                                //自定义实现一个ServerNode
+                                var node = new ServerNode
                                 {
                                     IP = proxy.Node.IP,
                                     Port = proxy.Node.Port,

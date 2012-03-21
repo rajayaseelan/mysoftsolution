@@ -2,42 +2,27 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Xml;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Configuration
 {
-    /// <summary>
-    /// 数据格式
-    /// </summary>
-    public enum DataType
-    {
-        /// <summary>
-        /// 二进制
-        /// </summary>
-        Binary,
-        /// <summary>
-        /// Json格式
-        /// </summary>
-        Json
-    }
-
     /// <summary>
     /// The service factory configuration.
     /// </summary>
     public class CastleFactoryConfiguration : ConfigurationBase
     {
-        private IDictionary<string, RemoteNode> nodes;
+        private IDictionary<string, ServerNode> nodes;
         private CastleFactoryType type = CastleFactoryType.Local;
         private string defaultKey;                                  //默认服务
         private string appname;                                     //host名称
         private bool throwError = true;                             //抛出异常
-        private DataType format = DataType.Binary;                //数据格式，默认为binary格式
 
         /// <summary>
         /// 实例化CastleFactoryConfiguration
         /// </summary>
         public CastleFactoryConfiguration()
         {
-            this.nodes = new Dictionary<string, RemoteNode>();
+            this.nodes = new Dictionary<string, ServerNode>();
         }
 
         /// <summary>
@@ -61,64 +46,64 @@ namespace MySoft.IoC.Configuration
         /// <summary>
         /// 从配置文件加载配置值
         /// </summary>
-        /// <param name="node"></param>
-        public void LoadValuesFromConfigurationXml(XmlNode node)
+        /// <param name="xmlnode"></param>
+        public void LoadValuesFromConfigurationXml(XmlNode xmlnode)
         {
-            if (node == null) return;
+            if (xmlnode == null) return;
 
-            XmlAttributeCollection xmlnode = node.Attributes;
+            XmlAttributeCollection attribute = xmlnode.Attributes;
 
-            if (xmlnode["type"] != null && xmlnode["type"].Value.Trim() != string.Empty)
-                type = (CastleFactoryType)Enum.Parse(typeof(CastleFactoryType), xmlnode["type"].Value, true);
+            if (attribute["type"] != null && attribute["type"].Value.Trim() != string.Empty)
+                type = (CastleFactoryType)Enum.Parse(typeof(CastleFactoryType), attribute["type"].Value, true);
 
-            if (xmlnode["throwError"] != null && xmlnode["throwError"].Value.Trim() != string.Empty)
-                throwError = Convert.ToBoolean(xmlnode["throwError"].Value);
+            if (attribute["throwError"] != null && attribute["throwError"].Value.Trim() != string.Empty)
+                throwError = Convert.ToBoolean(attribute["throwError"].Value);
 
-            if (xmlnode["format"] != null && xmlnode["format"].Value.Trim() != string.Empty)
-                format = (DataType)Enum.Parse(typeof(DataType), xmlnode["format"].Value, true);
+            if (attribute["default"] != null && attribute["default"].Value.Trim() != string.Empty)
+                defaultKey = attribute["default"].Value;
 
-            if (xmlnode["default"] != null && xmlnode["default"].Value.Trim() != string.Empty)
-                defaultKey = xmlnode["default"].Value;
+            if (attribute["appname"] != null && attribute["appname"].Value.Trim() != string.Empty)
+                appname = attribute["appname"].Value;
 
-            if (xmlnode["appname"] != null && xmlnode["appname"].Value.Trim() != string.Empty)
-                appname = xmlnode["appname"].Value;
-
-            foreach (XmlNode child in node.ChildNodes)
+            foreach (XmlNode child in xmlnode.ChildNodes)
             {
                 if (child.NodeType == XmlNodeType.Comment) continue;
 
-                XmlAttributeCollection childnode = child.Attributes;
+                XmlAttributeCollection childattribute = child.Attributes;
                 if (child.Name == "serverNode")
                 {
-                    RemoteNode remoteNode = new RemoteNode();
-                    remoteNode.Key = childnode["key"].Value;
-                    remoteNode.IP = childnode["ip"].Value;
-                    remoteNode.Port = Convert.ToInt32(childnode["port"].Value);
+                    var node = new ServerNode();
+                    node.Key = childattribute["key"].Value;
+                    node.IP = childattribute["ip"].Value;
+                    node.Port = Convert.ToInt32(childattribute["port"].Value);
 
                     //超时时间，默认为1分钟
-                    if (childnode["timeout"] != null && childnode["timeout"].Value.Trim() != string.Empty)
-                        remoteNode.Timeout = Convert.ToInt32(childnode["timeout"].Value);
+                    if (childattribute["timeout"] != null && childattribute["timeout"].Value.Trim() != string.Empty)
+                        node.Timeout = Convert.ToInt32(childattribute["timeout"].Value);
 
                     //最大连接池
-                    if (childnode["maxpool"] != null && childnode["maxpool"].Value.Trim() != string.Empty)
-                        remoteNode.MaxPool = Convert.ToInt32(childnode["maxpool"].Value);
+                    if (childattribute["maxpool"] != null && childattribute["maxpool"].Value.Trim() != string.Empty)
+                        node.MaxPool = Convert.ToInt32(childattribute["maxpool"].Value);
 
-                    if (childnode["encrypt"] != null && childnode["encrypt"].Value.Trim() != string.Empty)
-                        remoteNode.Encrypt = Convert.ToBoolean(childnode["encrypt"].Value);
+                    if (childattribute["encrypt"] != null && childattribute["encrypt"].Value.Trim() != string.Empty)
+                        node.Encrypt = Convert.ToBoolean(childattribute["encrypt"].Value);
 
-                    if (childnode["compress"] != null && childnode["compress"].Value.Trim() != string.Empty)
-                        remoteNode.Compress = Convert.ToBoolean(childnode["compress"].Value);
+                    if (childattribute["compress"] != null && childattribute["compress"].Value.Trim() != string.Empty)
+                        node.Compress = Convert.ToBoolean(childattribute["compress"].Value);
+
+                    if (childattribute["format"] != null && childattribute["format"].Value.Trim() != string.Empty)
+                        node.MessageType = (MessageType)Enum.Parse(typeof(MessageType), childattribute["format"].Value, true);
 
                     //处理默认的服务
                     if (string.IsNullOrEmpty(defaultKey))
                     {
-                        defaultKey = remoteNode.Key;
+                        defaultKey = node.Key;
                     }
 
-                    if (nodes.ContainsKey(remoteNode.Key))
-                        throw new WarningException("Already exists server node 【" + remoteNode.Key + "】.");
+                    if (nodes.ContainsKey(node.Key))
+                        throw new WarningException("Already exists server node 【" + node.Key + "】.");
 
-                    nodes[remoteNode.Key] = remoteNode;
+                    nodes[node.Key] = node;
                 }
             }
 
@@ -185,20 +170,10 @@ namespace MySoft.IoC.Configuration
         }
 
         /// <summary>
-        /// Gets or sets the format
-        /// </summary>
-        /// <value>The throwError.</value>
-        public DataType DataType
-        {
-            get { return format; }
-            set { format = value; }
-        }
-
-        /// <summary>
         /// Gets or sets the nodes
         /// </summary>
         /// <value>The nodes.</value>
-        public IDictionary<string, RemoteNode> Nodes
+        public IDictionary<string, ServerNode> Nodes
         {
             get { return nodes; }
             set { nodes = value; }

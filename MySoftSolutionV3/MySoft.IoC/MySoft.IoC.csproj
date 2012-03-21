@@ -95,6 +95,7 @@
     <Compile Include="Cache\CastleServiceCache.cs" />
     <Compile Include="LocalInvocationHandler.cs" />
     <Compile Include="Messages\InvokeMessage.cs" />
+    <Compile Include="Messages\MessageType.cs" />
     <Compile Include="Messages\Status\CounterInfo.cs" />
     <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
@@ -172,7 +173,7 @@
     <Compile Include="CastleFactoryType.cs" />
     <Compile Include="Configuration\CastleServiceConfiguration.cs" />
     <Compile Include="Configuration\CastleServiceConfigurationHandler.cs" />
-    <Compile Include="RemoteNode.cs" />
+    <Compile Include="ServerNode.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="IServiceContainer.cs" />
     <Compile Include="Messages\ParameterCollection.cs" />
