@@ -158,7 +158,12 @@
         </member>
         <member name="T:FormFixerHtml32TextWriter">
             <summary>
-            FormHtmlTextWriter 的摘要说明
+            Html32TextWriter重写
+            </summary>
+        </member>
+        <member name="T:FormFixerHtmlTextWriter">
+            <summary>
+            HtmlTextWriter重写
             </summary>
         </member>
         <member name="M:MySoft.Web.UI.Controls.HtmlEditor.Render(System.Web.UI.HtmlTextWriter)">
@@ -1190,6 +1195,7 @@
             Page 的摘要说明
             </summary>
         </member>
+        <!-- 对于成员“M:MySoft.Web.UI.Page.Render(System.Web.UI.HtmlTextWriter)”忽略有格式错误的 XML 注释 -->
         <member name="M:MySoft.Web.UI.Page.RegisterPageJsFile(System.String[])">
             <summary>
             注册js文件到页面上
@@ -1761,6 +1767,41 @@
             <returns>A resolved URL.  If the input parameter <b>url</b> contains ~, it is replaced with the
             value of the <b>appPath</b> parameter.</returns>
         </member>
+        <member name="T:MySoft.Web.UpdateItem">
+            <summary>
+            更新项
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UpdateItem.UpdateSuccess">
+            <summary>
+            是否更新成功
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UpdateItem.DynamicUrl">
+            <summary>
+            动态Url
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UpdateItem.StaticPath">
+            <summary>
+            静态Url
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UpdateItem.StaticUrl">
+            <summary>
+            静态路径（不包含绝对路径）
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UpdateItem.Path">
+            <summary>
+            路径
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.UpdateItem.Query">
+            <summary>
+            查询
+            </summary>
+        </member>
         <member name="T:MySoft.Web.UI.IAjaxInitHandler">
             <summary>
             提供异步初始化处理的接口
@@ -2162,12 +2203,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:MySoft.Web.BeginEndValueEventHandler">
-            <summary>
-            获取开始结束值的委托
-            </summary>
-            <returns></returns>
-        </member>
         <member name="T:MySoft.Web.SingleStaticPageItem">
             <summary>
             通用静态页子项
@@ -2234,13 +2269,6 @@
             对页面进行更新
             </summary>
         </member>
-        <member name="M:MySoft.Web.SingleStaticPageItem.RemoveRootPath(System.String)">
-            <summary>
-            去除根目录
-            </summary>
-            <param name="path"></param>
-            <returns></returns>
-        </member>
         <member name="E:MySoft.Web.SingleStaticPageItem.OnStart">
             <summary>
             回调
@@ -2291,19 +2319,14 @@
             参数信息
             </summary>
         </member>
-        <member name="P:MySoft.Web.StaticPageParamInfo.ParamName">
-            <summary>
-            参数名
-            </summary>
-        </member>
-        <member name="P:MySoft.Web.StaticPageParamInfo.GetResult">
+        <member name="M:MySoft.Web.StaticPageParamInfo.GetResult">
             <summary>
             获取值委托
             </summary>
         </member>
-        <member name="P:MySoft.Web.StaticPageParamInfo.Arguments">
+        <member name="P:MySoft.Web.StaticPageParamInfo.ParamName">
             <summary>
-            委托参数
+            参数名
             </summary>
         </member>
         <member name="T:MySoft.Web.ParamStaticPageItem">
@@ -2351,36 +2374,29 @@
             对页面进行更新
             </summary>
         </member>
-        <member name="M:MySoft.Web.ParamStaticPageItem.Update(System.TimeSpan)">
-            <summary>
-            对页面进行更新
-            </summary>
-        </member>
-        <member name="M:MySoft.Web.ParamStaticPageItem.GetPageCount(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.IList{System.Object}})">
+        <member name="M:MySoft.Web.ParamStaticPageItem.GetPageCount(System.Collections.Generic.IDictionary{System.String,System.Collections.Generic.IList{System.Object}})">
             <summary>
             获取总循环次数
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Web.ParamStaticPageItem.GetRealPath(System.String)">
-            <summary>
-            获取查询字符串
-            </summary>
-            <param name="query"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Web.ParamStaticPageItem.SetPosition(System.Int32)">
+        <member name="M:MySoft.Web.ParamStaticPageItem.SetPosition(System.Collections.Generic.IDictionary{System.String,System.Int32},System.Collections.Generic.IDictionary{System.String,System.Collections.Generic.IList{System.Object}},System.Int32)">
             <summary>
             设置对应的坐标值
             </summary>
+            <param name="positions"></param>
+            <param name="values"></param>
             <param name="index"></param>
         </member>
-        <member name="M:MySoft.Web.ParamStaticPageItem.RemoveRootPath(System.String)">
+        <member name="M:MySoft.Web.ParamStaticPageItem.Update(System.DateTime,System.Collections.Generic.IList{MySoft.Web.UpdateItem})">
             <summary>
-            去除根目录
+            对页面进行更新
             </summary>
-            <param name="path"></param>
-            <returns></returns>
+        </member>
+        <member name="M:MySoft.Web.ParamStaticPageItem.Update(System.TimeSpan)">
+            <summary>
+            对页面进行更新
+            </summary>
         </member>
         <member name="E:MySoft.Web.ParamStaticPageItem.OnStart">
             <summary>
@@ -2430,6 +2446,11 @@
         <member name="P:MySoft.Web.ParamStaticPageItem.InMinutes">
             <summary>
             多少分钟之内才生成
+            </summary>
+        </member>
+        <member name="P:MySoft.Web.ParamStaticPageItem.ThreadCount">
+            <summary>
+            生成页面的线程数，默认为1
             </summary>
         </member>
         <member name="T:MySoft.Web.StaticPageManager">

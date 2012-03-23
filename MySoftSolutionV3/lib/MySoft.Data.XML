@@ -319,7 +319,7 @@
             </summary>
             <param name="command">The command.</param>
         </member>
-        <member name="M:MySoft.Data.DbProvider.EndExecuteCommand(System.Data.Common.DbCommand,System.Object,System.Int32)">
+        <member name="M:MySoft.Data.DbProvider.EndExecuteCommand(System.Data.Common.DbCommand,System.Object,System.Int64)">
             <summary>
             结束时执行的操作
             </summary>
@@ -1019,6 +1019,13 @@
             <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
+        <member name="M:MySoft.Data.Table.From``1(System.String)">
+            <summary>
+            返回一个表关系
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.Data.Table.From``1(MySoft.Data.Table)">
             <summary>
             返回一个表关系
@@ -1033,19 +1040,14 @@
             <param name="fieldName"></param>
             <returns></returns>
         </member>
+        <member name="P:MySoft.Data.Table.Alias">
+            <summary>
+            别名
+            </summary>
+        </member>
         <member name="P:MySoft.Data.Table.Name">
             <summary>
-            表名称
-            </summary>
-        </member>
-        <member name="P:MySoft.Data.Table.TableName">
-            <summary>
             设置表名
-            </summary>
-        </member>
-        <member name="P:MySoft.Data.Table.AliasName">
-            <summary>
-            表别名
             </summary>
         </member>
         <member name="P:MySoft.Data.Table.Prefix">
@@ -1330,14 +1332,6 @@
             <summary>
             实例化Field
             </summary>
-            <param name="tableName"></param>
-            <param name="fieldName"></param>
-        </member>
-        <member name="M:MySoft.Data.Field.#ctor(System.String,System.String,System.String)">
-            <summary>
-            实例化Field
-            </summary>
-            <param name="propertyName"></param>
             <param name="tableName"></param>
             <param name="fieldName"></param>
         </member>
@@ -3290,14 +3284,6 @@
             <param name="isUnionAll"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.QuerySection`1.CloneNewQuery``1(MySoft.Data.QuerySection{``0})">
-            <summary>
-            克隆一个Query
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <param name="query"></param>
-            <returns></returns>
-        </member>
         <member name="M:MySoft.Data.QuerySection`1.Having(MySoft.Data.WhereClip)">
             <summary>
             进行Having操作
@@ -3490,6 +3476,20 @@
             表名
             </summary>
         </member>
+        <member name="M:MySoft.Data.TopSection`1.CreateQuery``1">
+            <summary>
+            CreateQuery
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopSection`1.GetPage(System.Int32)">
+            <summary>
+            获取分页
+            </summary>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.Data.TopSection`1.ToListResult">
             <summary>
             返回结果列表
@@ -3533,6 +3533,39 @@
             返回数据集
             </summary>
             <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopSection`1.SubQuery">
+            <summary>
+            创建子查询
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopSection`1.SubQuery(System.String)">
+            <summary>
+            创建子查询
+            </summary>
+            <param name="aliasName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopSection`1.SubQuery``1">
+            <summary>
+            创建子查询
+            </summary>
+            <typeparam name="TSub"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopSection`1.SubQuery``1(System.String)">
+            <summary>
+            创建子查询
+            </summary>
+            <typeparam name="TSub"></typeparam>
+            <param name="aliasName"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.Data.TopSection`1.QueryString">
+            <summary>
+            QueryString
+            </summary>
         </member>
         <member name="T:MySoft.Data.FromSection`1">
             <summary>
@@ -3935,6 +3968,16 @@
             <param name="aliasName"></param>
             <param name="onWhere"></param>
             <returns></returns>
+        </member>
+        <member name="P:MySoft.Data.FromSection`1.Query">
+            <summary>
+            当前查询对象
+            </summary>
+        </member>
+        <member name="P:MySoft.Data.FromSection`1.TableEntities">
+            <summary>
+            当前实例列表
+            </summary>
         </member>
         <member name="T:MySoft.Data.Oracle.OracleProvider">
             <summary>
@@ -5087,7 +5130,7 @@
             实例化TableCreator
             </summary>
         </member>
-        <member name="M:MySoft.Data.TableCreator`1.#ctor(System.String)">
+        <member name="M:MySoft.Data.TableCreator`1.#ctor(System.String,System.String)">
             <summary>
             实例化TableCreator
             </summary>
@@ -5121,11 +5164,12 @@
             实例化BaseCreator
             </summary>
         </member>
-        <member name="M:MySoft.Data.WhereCreator`1.#ctor(System.String)">
+        <member name="M:MySoft.Data.WhereCreator`1.#ctor(System.String,System.String)">
             <summary>
             实例化BaseCreator
             </summary>
             <param name="tableName"></param>
+            <param name="aliasName"></param>
         </member>
         <member name="M:MySoft.Data.WhereCreator`1.#ctor(MySoft.Data.Table)">
             <summary>
@@ -5176,6 +5220,11 @@
             创建一个新的查询器（条件为全部，排序为默认)
             </summary>
         </member>
+        <member name="M:MySoft.Data.QueryCreator.NewCreator(System.String,System.String)">
+            <summary>
+            创建一个新的查询器（条件为全部，排序为默认)
+            </summary>
+        </member>
         <member name="M:MySoft.Data.QueryCreator.NewCreator(MySoft.Data.Table)">
             <summary>
             创建一个新的查询器（条件为全部，排序为默认)
@@ -5186,7 +5235,7 @@
             实例化QueryCreater
             </summary>
         </member>
-        <member name="M:MySoft.Data.QueryCreator.#ctor(System.String)">
+        <member name="M:MySoft.Data.QueryCreator.#ctor(System.String,System.String)">
             <summary>
             实例化QueryCreator
             </summary>
@@ -5207,6 +5256,16 @@
             <param name="parameters"></param>
             <returns></returns>
         </member>
+        <member name="M:MySoft.Data.QueryCreator.Join(System.String,System.String,System.String,MySoft.Data.SQLParameter[])">
+            <summary>
+            关联表信息
+            </summary>
+            <param name="tableName"></param>
+            <param name="aliasName"></param>
+            <param name="where"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.Data.QueryCreator.Join(MySoft.Data.Table,MySoft.Data.WhereClip)">
             <summary>
             关联表信息
@@ -5219,6 +5278,16 @@
             关联表信息
             </summary>
             <param name="tableName"></param>
+            <param name="where"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QueryCreator.Join(MySoft.Data.JoinType,System.String,System.String,System.String,MySoft.Data.SQLParameter[])">
+            <summary>
+            关联表信息
+            </summary>
+            <param name="tableName"></param>
+            <param name="aliasName"></param>
             <param name="where"></param>
             <param name="parameters"></param>
             <returns></returns>
@@ -6017,6 +6086,16 @@
             表关系类
             </summary>
             <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:MySoft.Data.TableEntity.Table">
+            <summary>
+            表名
+            </summary>
+        </member>
+        <member name="P:MySoft.Data.TableEntity.Entity">
+            <summary>
+            实体对象
+            </summary>
         </member>
         <member name="T:MySoft.Data.PageSection">
             <summary>
@@ -8658,6 +8737,12 @@
             关系表，可以用来存储关联信息
             </summary>
         </member>
+        <member name="M:MySoft.Data.TableRelation`1.GetFromSection">
+            <summary>
+            获取FromSection
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.Data.TableRelation`1.LeftJoin``1(MySoft.Data.Table,MySoft.Data.WhereClip)">
             <summary>
             左关联
@@ -8781,6 +8866,13 @@
             进行查询操作
             </summary>
             <param name="fields"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TableRelation`1.GetTop(System.Int32)">
+            <summary>
+            获取前n条数据
+            </summary>
+            <param name="topSize"></param>
             <returns></returns>
         </member>
         <member name="T:MySoft.Data.DbField">
@@ -10271,6 +10363,48 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:MySoft.Data.Cache.ICacheDependent">
+            <summary>
+            缓存依赖
+            </summary>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.AddCache``1(System.String,``0,System.Int32)">
+            <summary>
+            添加缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <param name="cacheValue"></param>
+            <param name="cacheTime"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.RemoveCache``1(System.String)">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.GetCache``1(System.String)">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.RemoveCache``1">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.GetCache``1">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
         <member name="T:MySoft.Data.JoinType">
             <summary>
             连接类型
@@ -11255,7 +11389,7 @@
             <param name="cmdText"></param>
             <param name="parameter"></param>
         </member>
-        <member name="M:MySoft.Data.IExecuteLog.End(System.String,MySoft.Data.SQLParameter[],System.Object,System.Int32)">
+        <member name="M:MySoft.Data.IExecuteLog.End(System.String,MySoft.Data.SQLParameter[],System.Object,System.Int64)">
             <summary>
             结束执行命令
             </summary>
@@ -12075,6 +12209,55 @@
             <param retval="value">
             The value.
             </param>
+        </member>
+        <member name="T:MySoft.Data.Cache.DataCacheDependent">
+            <summary>
+            默认缓存依赖
+            </summary>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.#ctor(MySoft.Cache.ICacheStrategy)">
+            <summary>
+            实例化默认缓存依赖
+            </summary>
+            <param name="strategy"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.AddCache``1(System.String,``0,System.Int32)">
+            <summary>
+            添加缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <param name="cacheValue"></param>
+            <param name="cacheTime"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.RemoveCache``1(System.String)">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.GetCache``1(System.String)">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="?"></param>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.RemoveCache``1">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.GetCache``1">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
         </member>
         <member name="T:MySoft.Data.ProcSection">
             <summary>
@@ -13985,97 +14168,6 @@
             </summary>
             <param name="pageSize"></param>
             <param name="pageIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="T:MySoft.Data.Cache.ICacheDependent">
-            <summary>
-            缓存依赖
-            </summary>
-        </member>
-        <member name="M:MySoft.Data.Cache.ICacheDependent.AddCache``1(System.String,``0,System.Int32)">
-            <summary>
-            添加缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-            <param name="cacheValue"></param>
-            <param name="cacheTime"></param>
-        </member>
-        <member name="M:MySoft.Data.Cache.ICacheDependent.RemoveCache``1(System.String)">
-            <summary>
-            移除缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-        </member>
-        <member name="M:MySoft.Data.Cache.ICacheDependent.GetCache``1(System.String)">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.Cache.ICacheDependent.RemoveCache``1">
-            <summary>
-            移除缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:MySoft.Data.Cache.ICacheDependent.GetCache``1">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="T:MySoft.Data.Cache.DataCacheDependent">
-            <summary>
-            默认缓存依赖
-            </summary>
-        </member>
-        <member name="M:MySoft.Data.Cache.DataCacheDependent.#ctor(MySoft.Cache.ICacheStrategy)">
-            <summary>
-            实例化默认缓存依赖
-            </summary>
-            <param name="strategy"></param>
-        </member>
-        <member name="M:MySoft.Data.Cache.DataCacheDependent.AddCache``1(System.String,``0,System.Int32)">
-            <summary>
-            添加缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-            <param name="cacheValue"></param>
-            <param name="cacheTime"></param>
-        </member>
-        <member name="M:MySoft.Data.Cache.DataCacheDependent.RemoveCache``1(System.String)">
-            <summary>
-            移除缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-        </member>
-        <member name="M:MySoft.Data.Cache.DataCacheDependent.GetCache``1(System.String)">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="?"></param>
-            <param name="cacheKey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.Cache.DataCacheDependent.RemoveCache``1">
-            <summary>
-            移除缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:MySoft.Data.Cache.DataCacheDependent.GetCache``1">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
     </members>

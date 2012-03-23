@@ -4,11 +4,6 @@
         <name>MySoft.Cache</name>
     </assembly>
     <members>
-        <member name="T:MySoft.Cache.SharedCacheStrategy">
-            <summary>
-            分布式缓存管理类
-            </summary>
-        </member>
         <member name="T:MySoft.Cache.CacheStrategyBase">
             <summary>
             缓存基类
@@ -27,6 +22,12 @@
             </summary>
             <param name="objId"></param>
             <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CacheStrategyBase.SetRegionName(System.String)">
+            <summary>
+            设置区域名称，只能应用于区域名称为空时
+            </summary>
+            <param name="regionName"></param>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.AddObject(System.String,System.Object)">
             <summary>
@@ -176,6 +177,61 @@
         <member name="P:MySoft.Cache.CacheStrategyBase.Timeout">
             <summary>
             设置到期相对时间[单位：秒] 
+            </summary>
+        </member>
+        <member name="T:MySoft.Cache.CacheFactory">
+            <summary>
+            缓存工厂类
+            </summary>
+        </member>
+        <member name="M:MySoft.Cache.CacheFactory.CreateCache(System.String)">
+            <summary>
+            创建一个缓存块
+            </summary>
+            <param name="configName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CacheFactory.CreateCache(MySoft.Cache.CacheType)">
+            <summary>
+            创建一个缓存块
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CacheFactory.CreateCache(System.String,System.String)">
+            <summary>
+            创建一个缓存块(用前缀区分)
+            </summary>
+            <param name="regionName"></param>
+            <param name="configName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CacheFactory.CreateCache(System.String,MySoft.Cache.CacheType)">
+            <summary>
+            创建一个缓存块(用前缀区分)
+            </summary>
+            <param name="regionName"></param>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MySoft.Cache.CacheType">
+            <summary>
+            缓存类型
+            </summary>
+        </member>
+        <member name="F:MySoft.Cache.CacheType.Local">
+            <summary>
+            本地的
+            </summary>
+        </member>
+        <member name="F:MySoft.Cache.CacheType.Distributed">
+            <summary>
+            分布的
+            </summary>
+        </member>
+        <member name="T:MySoft.Cache.SharedCacheStrategy">
+            <summary>
+            分布式缓存管理类
             </summary>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.SetLocalCacheTimeout(System.Int32)">
@@ -365,56 +421,6 @@
         <member name="P:MySoft.Cache.SharedCacheStrategy.CacheCount">
             <summary>
             缓存对象数
-            </summary>
-        </member>
-        <member name="T:MySoft.Cache.CacheFactory">
-            <summary>
-            缓存工厂类
-            </summary>
-        </member>
-        <member name="M:MySoft.Cache.CacheFactory.CreateCache(System.String)">
-            <summary>
-            创建一个缓存块
-            </summary>
-            <param name="configName"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.CacheFactory.CreateCache(MySoft.Cache.CacheType)">
-            <summary>
-            创建一个缓存块
-            </summary>
-            <param name="type"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.CacheFactory.CreateCache(System.String,System.String)">
-            <summary>
-            创建一个缓存块(用前缀区分)
-            </summary>
-            <param name="regionName"></param>
-            <param name="configName"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.CacheFactory.CreateCache(System.String,MySoft.Cache.CacheType)">
-            <summary>
-            创建一个缓存块(用前缀区分)
-            </summary>
-            <param name="regionName"></param>
-            <param name="type"></param>
-            <returns></returns>
-        </member>
-        <member name="T:MySoft.Cache.CacheType">
-            <summary>
-            缓存类型
-            </summary>
-        </member>
-        <member name="F:MySoft.Cache.CacheType.Local">
-            <summary>
-            本地的
-            </summary>
-        </member>
-        <member name="F:MySoft.Cache.CacheType.Distributed">
-            <summary>
-            分布的
             </summary>
         </member>
         <member name="T:MySoft.Cache.LocalCacheStrategy">
@@ -643,59 +649,6 @@
         <member name="P:MySoft.Cache.LocalCacheStrategy.CacheCount">
             <summary>
             缓存对象数
-            </summary>
-        </member>
-        <member name="T:MySoft.Cache.LocalServiceCache">
-            <summary>
-            本地缓存
-            </summary>
-        </member>
-        <member name="T:MySoft.Cache.ServiceCacheBase">
-            <summary>
-            服务缓存基类
-            </summary>
-        </member>
-        <member name="M:MySoft.Cache.ServiceCacheBase.#ctor(MySoft.Cache.ICacheStrategy)">
-            <summary>
-            实例化ServiceCacheBase
-            </summary>
-            <param name="cache"></param>
-        </member>
-        <member name="M:MySoft.Cache.ServiceCacheBase.Insert(System.String,System.Object,System.Int32)">
-            <summary>
-            插入缓存
-            </summary>
-            <param name="key"></param>
-            <param name="value"></param>
-            <param name="seconds"></param>
-        </member>
-        <member name="M:MySoft.Cache.ServiceCacheBase.Get``1(System.String)">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="key"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.ServiceCacheBase.Remove(System.String)">
-            <summary>
-            移除缓存
-            </summary>
-            <param name="key"></param>
-        </member>
-        <member name="M:MySoft.Cache.LocalServiceCache.#ctor">
-            <summary>
-            实例化LocalServiceCache
-            </summary>
-        </member>
-        <member name="T:MySoft.Cache.SharedServiceCache">
-            <summary>
-            分布式缓存
-            </summary>
-        </member>
-        <member name="M:MySoft.Cache.SharedServiceCache.#ctor">
-            <summary>
-            实例化SharedServiceCache
             </summary>
         </member>
     </members>
