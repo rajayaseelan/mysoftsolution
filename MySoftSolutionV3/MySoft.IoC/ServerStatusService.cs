@@ -143,9 +143,16 @@ namespace MySoft.IoC
                 if (list1.Count > 0)
                 {
                     var ls = list1.Select(p => p.State as AppClient)
-                             .GroupBy(p => new { AppName = p.AppName, HostName = p.HostName, IPAddress = p.IPAddress })
+                             .GroupBy(p => new
+                             {
+                                 AppPath = p.AppPath,
+                                 AppName = p.AppName,
+                                 HostName = p.HostName,
+                                 IPAddress = p.IPAddress
+                             })
                              .Select(p => new ClientInfo
                              {
+                                 AppPath = p.Key.AppPath,
                                  AppName = p.Key.AppName,
                                  IPAddress = p.Key.IPAddress,
                                  HostName = p.Key.HostName,
@@ -165,6 +172,7 @@ namespace MySoft.IoC
                             .GroupBy(p => p.IpAddress)
                             .Select(g => new ClientInfo
                             {
+                                AppPath = "Unknown Path",
                                 AppName = "Unknown",
                                 IPAddress = g.Key,
                                 ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),

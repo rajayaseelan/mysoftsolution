@@ -67,6 +67,7 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+
             //CastleFactoryConfiguration config = CastleFactoryConfiguration.GetConfig();
 
             //LogEventHandler logger = Console.WriteLine;

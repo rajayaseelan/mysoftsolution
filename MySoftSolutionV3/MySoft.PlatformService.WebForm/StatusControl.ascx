@@ -1,5 +1,5 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="StatusControl.ascx.cs" Inherits="MySoft.PlatformService.WebForm.StatusControl" %>
-
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="StatusControl.ascx.cs"
+    Inherits="MySoft.PlatformService.WebForm.StatusControl" %>
 <%@ Import Namespace="System.Linq" %>
 <% 
     int nodeIndex = 0;
@@ -94,26 +94,29 @@
     <div>
         <ul>
             <%
-                var clients = clientlist[node.Key];
+        var clients = clientlist[node.Key];
             %>
             <li><b>客户端连接信息 =>
                 <% =node.Key %>【<% = node.IP + ":" + node.Port %>】</b></li>
             <%
         int index = 0;
         var appclients = clients.GroupBy(p => p.AppName)
-            .Select(p => new { AppName = p.Key ,Clients = p.ToList()})
+            .Select(p => new { AppName = p.Key, Clients = p.ToList() })
             .OrderBy(p => p.Clients.Count)
             .ToList();
         foreach (var app in appclients)
         {
-            index ++;
+            index++;
             %>
             <li style="width: 240px; float: left; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
                 <% = index%>=>【<%= app.AppName%>】<br />
-                <% foreach(var client in app.Clients) 
+                <% foreach (var client in app.Clients)
                    {
                 %>
-                <%= client.IPAddress%>[<%=client.HostName%>](<font color="red"><%= client.Count%></font>)<br />
+                <span title="<% =string.Format("{0}\r\n{1}",client.FriendlyName, client.AppPath) %>">
+                    <%= client.IPAddress%>[<%=client.HostName%>](<font color="red"><%= client.Count%></font>)
+                </span>
+                <br />
                 <% } %>
             </li>
             <% } %>

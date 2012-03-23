@@ -490,6 +490,7 @@ namespace MySoft.IoC
             //调用分布式服务
             var appClient = new AppClient
             {
+                AppPath = AppDomain.CurrentDomain.BaseDirectory,
                 AppName = config.AppName,
                 HostName = DnsHelper.GetHostName(),
                 IPAddress = DnsHelper.GetIPAddress()

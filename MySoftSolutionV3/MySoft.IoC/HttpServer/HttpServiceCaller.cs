@@ -170,6 +170,7 @@ namespace MySoft.IoC.HttpServer
                     //获取当前调用者信息
                     var client = new AppClient
                     {
+                        AppPath = AppDomain.CurrentDomain.BaseDirectory,
                         AppName = "HttpServer",
                         HostName = DnsHelper.GetHostName(),
                         IPAddress = DnsHelper.GetIPAddress()

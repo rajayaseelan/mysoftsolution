@@ -101,9 +101,10 @@ namespace MySoft.IoC
                     //发送客户端信息到服务端
                     var clientInfo = new AppClient
                     {
+                        AppPath = AppDomain.CurrentDomain.BaseDirectory,
+                        AppName = reqMsg.AppName,
                         IPAddress = reqMsg.IPAddress,
-                        HostName = reqMsg.HostName,
-                        AppName = reqMsg.AppName
+                        HostName = reqMsg.HostName
                     };
 
                     client.SendMessage(new ScsClientMessage(clientInfo));
