@@ -1500,14 +1500,6 @@
             <param name="query"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.Field.In``1(MySoft.Data.TopSection{``0})">
-            <summary>
-            进行In操作,query为一个子查询
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="top"></param>
-            <returns></returns>
-        </member>
         <member name="M:MySoft.Data.Field.In``1(MySoft.Data.TableRelation{``0})">
             <summary>
             进行In操作,relation为一个关联查询
@@ -2067,16 +2059,8 @@
         </member>
         <member name="M:MySoft.Data.DbSession.From``1(MySoft.Data.TableRelation{``0})">
             <summary>
-            返回一个From节
+            返回一个Query节
             </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.DbSession.Query``2">
-            <summary>
-            返回一个查询
-            </summary>
-            <typeparam name="TResult"></typeparam>
             <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
@@ -6081,12 +6065,6 @@
             获取字段数
             </summary>
         </member>
-        <member name="T:MySoft.Data.ITableRelation`1">
-            <summary>
-            表关系类
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
         <member name="P:MySoft.Data.TableEntity.Table">
             <summary>
             表名
@@ -6549,21 +6527,6 @@
             <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbTrans.From``1(MySoft.Data.TableRelation{``0})">
-            <summary>
-            返回一个From节
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.DbTrans.Query``2">
-            <summary>
-            返回一个查询
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
         <member name="M:MySoft.Data.DbTrans.From``1(MySoft.Data.Table)">
             <summary>
             返回一个From节
@@ -6577,6 +6540,13 @@
             </summary>
             <typeparam name="T"></typeparam>
             <param name="aliasName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.DbTrans.From``1(MySoft.Data.TableRelation{``0})">
+            <summary>
+            返回一个Query节
+            </summary>
+            <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
         <member name="M:MySoft.Data.DbTrans.FromSql(System.String,MySoft.Data.SQLParameter[])">
@@ -7104,18 +7074,6 @@
             <summary>
             字段映射的名称
             </summary>
-        </member>
-        <member name="T:MySoft.Data.RelationEntity`1">
-            <summary>
-            关系实体
-            </summary>
-        </member>
-        <member name="M:MySoft.Data.RelationEntity`1.GetRelation">
-            <summary>
-            返回表关系
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
         </member>
         <member name="T:MySoft.Data.SqlServer9.SqlServer9Provider">
             <summary>
@@ -8736,6 +8694,12 @@
             <summary>
             关系表，可以用来存储关联信息
             </summary>
+        </member>
+        <member name="T:MySoft.Data.ITableRelation`1">
+            <summary>
+            表关系类
+            </summary>
+            <typeparam name="T"></typeparam>
         </member>
         <member name="M:MySoft.Data.TableRelation`1.GetFromSection">
             <summary>
@@ -12882,43 +12846,6 @@
             是否只读
             </summary>
         </member>
-        <member name="T:MySoft.Data.RelationPage`1">
-            <summary>
-            关系分页
-            </summary>
-        </member>
-        <member name="M:MySoft.Data.RelationPage`1.ToReader(System.Int32)">
-            <summary>
-            返回ISourceReader
-            </summary>
-            <param name="pageIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationPage`1.ToList(System.Int32)">
-            <summary>
-            返回IArrayList
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="pageIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationPage`1.ToTable(System.Int32)">
-            <summary>
-            返回DataTable
-            </summary>
-            <param name="pageIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="P:MySoft.Data.RelationPage`1.PageCount">
-            <summary>
-            返回页数
-            </summary>
-        </member>
-        <member name="P:MySoft.Data.RelationPage`1.RowCount">
-            <summary>
-            返回记录数
-            </summary>
-        </member>
         <member name="T:MySoft.Data.InvalidValue">
             <summary>
             无效的对象
@@ -13144,118 +13071,6 @@
         </member>
         <member name="M:Norm.PullAllOperation`1.#ctor(`0[])">
             <summary>TODO::Description.</summary>
-        </member>
-        <member name="T:MySoft.Data.RelationQuery`1">
-            <summary>
-            关系查询
-            </summary>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.SetPagingField(System.String)">
-            <summary>
-            设置分页字段
-            </summary>
-            <param name="pagingFieldName"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.SetPagingField(MySoft.Data.Field)">
-            <summary>
-            设置分页字段
-            </summary>
-            <param name="pagingField"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.GetPage(System.Int32)">
-            <summary>
-            获取分页
-            </summary>
-            <param name="pageSize"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToScalar">
-            <summary>
-            返回首行首列值
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToScalar``1">
-            <summary>
-            返回首行首列值
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.Count">
-            <summary>
-            返回记录数
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.Exists">
-            <summary>
-            记录是否存在
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToSingle">
-            <summary>
-            返回T
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToList">
-            <summary>
-            返回IList
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToReader">
-            <summary>
-            返回ISourceReader
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToTable">
-            <summary>
-            返回DataTable
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToReader(System.Int32)">
-            <summary>
-            返回ISourceReader
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToList(System.Int32)">
-            <summary>
-            返回IList
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToTable(System.Int32)">
-            <summary>
-            返回DataTable
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToListPage(System.Int32,System.Int32)">
-            <summary>
-            返回DataPage
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="pageSize"></param>
-            <param name="pageIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.RelationQuery`1.ToTablePage(System.Int32,System.Int32)">
-            <summary>
-            返回DataPage
-            </summary>
-            <param name="pageSize"></param>
-            <param name="pageIndex"></param>
-            <returns></returns>
         </member>
         <member name="T:Norm.Responses.SetProfileResponse">
             <summary>
