@@ -26,10 +26,10 @@ namespace MySoft.Data
         /// 实例化TableCreator
         /// </summary>
         /// <param name="tableName"></param>
-        protected TableCreator(string tableName)
+        protected TableCreator(string tableName, string aliasName)
             : this()
         {
-            this.table = new Table(tableName);
+            this.table = new Table(tableName).As(aliasName);
         }
 
         /// <summary>
@@ -99,8 +99,9 @@ namespace MySoft.Data
         /// 实例化BaseCreator
         /// </summary>
         /// <param name="tableName"></param>
-        protected WhereCreator(string tableName)
-            : base(tableName)
+        /// <param name="aliasName"></param>
+        protected WhereCreator(string tableName, string aliasName)
+            : base(tableName, aliasName)
         {
             this.whereList = new List<WhereClip>();
         }

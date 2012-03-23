@@ -49,7 +49,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="tableName"></param>
         private UpdateCreator(string tableName)
-            : base(tableName)
+            : base(tableName, null)
         {
             this.fvlist = new List<FieldValue>();
         }

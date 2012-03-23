@@ -46,7 +46,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="tableName"></param>
         private DeleteCreator(string tableName)
-            : base(tableName)
+            : base(tableName, null)
         {
         }
 

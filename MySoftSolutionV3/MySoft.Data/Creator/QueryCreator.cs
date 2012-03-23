@@ -33,7 +33,15 @@ namespace MySoft.Data
         /// </summary>
         public static QueryCreator NewCreator(string tableName)
         {
-            return new QueryCreator(tableName);
+            return new QueryCreator(tableName, null);
+        }
+
+        /// <summary>
+        /// 创建一个新的查询器（条件为全部，排序为默认)
+        /// </summary>
+        public static QueryCreator NewCreator(string tableName, string aliasName)
+        {
+            return new QueryCreator(tableName, aliasName);
         }
 
         /// <summary>
@@ -63,8 +71,8 @@ namespace MySoft.Data
         /// 实例化QueryCreator
         /// </summary>
         /// <param name="tableName"></param>
-        private QueryCreator(string tableName)
-            : base(tableName)
+        private QueryCreator(string tableName, string aliasName)
+            : base(tableName, aliasName)
         {
             this.orderList = new List<OrderByClip>();
             this.fieldList = new List<Field>();
@@ -151,7 +159,20 @@ namespace MySoft.Data
         /// <returns></returns>
         public QueryCreator Join(string tableName, string where, params SQLParameter[] parameters)
         {
-            return Join(JoinType.LeftJoin, tableName, where, parameters);
+            return Join(JoinType.LeftJoin, tableName, null, where, parameters);
+        }
+
+        /// <summary>
+        /// 关联表信息
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="aliasName"></param>
+        /// <param name="where"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public QueryCreator Join(string tableName, string aliasName, string where, params SQLParameter[] parameters)
+        {
+            return Join(JoinType.LeftJoin, tableName, aliasName, where, parameters);
         }
 
         /// <summary>
@@ -173,7 +194,21 @@ namespace MySoft.Data
         /// <returns></returns>
         public QueryCreator Join(JoinType joinType, string tableName, string where, params SQLParameter[] parameters)
         {
-            Table t = new Table(tableName);
+            return Join(joinType, tableName, null, where, parameters);
+        }
+
+        /// <summary>
+        /// 关联表信息
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="aliasName"></param>
+        /// <param name="where"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public QueryCreator Join(JoinType joinType, string tableName, string aliasName, string where, params SQLParameter[] parameters)
+        {
+            Table t = new Table(tableName).As(aliasName);
+
             if (!this.joinTables.ContainsKey(t.OriginalName))
             {
                 TableJoin join = new TableJoin()

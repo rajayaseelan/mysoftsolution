@@ -24,6 +24,7 @@ namespace MySoft.Data
         TableRelation<T> SubQuery(string aliasName);
         TableRelation<TSub> SubQuery<TSub>() where TSub : Entity;
         TableRelation<TSub> SubQuery<TSub>(string aliasName) where TSub : Entity;
+        TableRelation<T> GetTop(int topSize);
         TableRelation<T> Where(WhereClip where);
     }
 }

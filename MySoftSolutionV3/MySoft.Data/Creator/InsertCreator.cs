@@ -51,7 +51,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="tableName"></param>
         private InsertCreator(string tableName)
-            : base(tableName)
+            : base(tableName, null)
         {
             this.fvlist = new List<FieldValue>();
         }
