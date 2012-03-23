@@ -863,18 +863,6 @@ namespace MySoft.Data
         }
 
         /// <summary>
-        /// 进行In操作,query为一个子查询
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="top"></param>
-        /// <returns></returns>
-        public WhereClip In<T>(TopSection<T> top)
-            where T : Entity
-        {
-            return new WhereClip(this.Name + " in (" + top.QueryString + ") ", top.Parameters);
-        }
-
-        /// <summary>
         /// 进行In操作,relation为一个关联查询
         /// </summary>
         /// <typeparam name="T"></typeparam>

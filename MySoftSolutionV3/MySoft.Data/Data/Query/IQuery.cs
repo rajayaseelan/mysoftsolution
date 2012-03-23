@@ -106,7 +106,7 @@ namespace MySoft.Data
         QuerySection<T> SetPagingField(Field pagingField);
         QuerySection<T> Distinct();
         QuerySection<T> OrderBy(OrderByClip orderBy);
-        TopSection<T> GetTop(int topSize);
+        QuerySection<T> GetTop(int topSize);
         PageSection<T> GetPage(int pageSize);
 
         TResult ToSingle<TResult>() where TResult : class;

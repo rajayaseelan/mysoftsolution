@@ -562,7 +562,7 @@ namespace MySoft.Data
         #region 进行连接操作
 
         /// <summary>
-        /// 返回一个From节
+        /// 返回一个Query节
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -570,19 +570,6 @@ namespace MySoft.Data
             where T : Entity
         {
             return dbTrans.From<T>(relation);
-        }
-
-        /// <summary>
-        /// 返回一个查询
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public RelationQuery<TResult> Query<TResult, T>()
-            where TResult : RelationEntity<T>
-            where T : Entity
-        {
-            return dbTrans.Query<TResult, T>();
         }
 
         /// <summary>

@@ -18,7 +18,6 @@ namespace MySoft.Data.Design
         WhereClip In<T>(Field field, WhereClip where) where T : Entity;
         WhereClip In<T>(Table table, Field field, WhereClip where) where T : Entity;
         WhereClip In<T>(QuerySection<T> query) where T : Entity;
-        WhereClip In<T>(TopSection<T> top) where T : Entity;
         WhereClip In<T>(TableRelation<T> relation) where T : Entity;
         WhereClip In(params object[] values);
         WhereClip In(QueryCreator creator);

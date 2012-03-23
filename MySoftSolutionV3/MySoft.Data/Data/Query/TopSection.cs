@@ -6,7 +6,7 @@ namespace MySoft.Data
     /// Top对应的Query查询
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class TopSection<T> : QuerySection<T>
+    internal class TopSection<T> : QuerySection<T>
         where T : Entity
     {
         private QuerySection<T> query;

@@ -497,7 +497,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="topSize"></param>
         /// <returns></returns>
-        public TopSection<T> GetTop(int topSize)
+        public QuerySection<T> GetTop(int topSize)
         {
             if (topSize <= 0) throw new DataException("选取前N条数据值不能小于等于0！");
 

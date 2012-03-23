@@ -225,7 +225,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="topSize"></param>
         /// <returns></returns>
-        public TopSection<T> GetTop(int topSize)
+        public QuerySection<T> GetTop(int topSize)
         {
             return query.GetTop(topSize);
         }

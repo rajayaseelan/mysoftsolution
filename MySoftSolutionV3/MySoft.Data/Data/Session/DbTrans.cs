@@ -723,53 +723,6 @@ namespace MySoft.Data
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public QuerySection<T> From<T>(TableRelation<T> relation)
-            where T : Entity
-        {
-            var query = new QuerySection<T>(relation.GetFromSection());
-
-            //给查询设置驱动与事务
-            query.SetDbProvider(dbProvider, this);
-
-            return query;
-        }
-
-        /// <summary>
-        /// 返回一个查询
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public RelationQuery<TResult> Query<TResult, T>()
-            where TResult : RelationEntity<T>
-            where T : Entity
-        {
-            //判断是否存在关系
-            var entity = CoreHelper.CreateInstance<TResult>();
-            var relation = entity.GetRelation();
-            var query = relation.GetFromSection().Query;
-
-            //给查询设置驱动与事务
-            query.SetDbProvider(dbProvider, this);
-
-            //处理前n条
-            if (relation.GetTopSize() > 0)
-            {
-                query = query.GetTop(relation.GetTopSize());
-            }
-
-            //返回结果的查询
-            var newquery = query.CreateQuery<ViewEntity>();
-
-            //返回关系查询
-            return new RelationQuery<TResult>(newquery);
-        }
-
-        /// <summary>
-        /// 返回一个From节
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public FromSection<T> From<T>(Table table)
             where T : Entity
         {
@@ -786,6 +739,26 @@ namespace MySoft.Data
             where T : Entity
         {
             return new FromSection<T>(dbProvider, this, null, aliasName);
+        }
+
+        /// <summary>
+        /// 返回一个Query节
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public QuerySection<T> From<T>(TableRelation<T> relation)
+            where T : Entity
+        {
+            //重新实例化一个Query
+            var query = new QuerySection<T>(relation.GetFromSection(), dbProvider, this);
+
+            //处理前n条
+            if (relation.GetTopSize() > 0)
+            {
+                query = query.GetTop(relation.GetTopSize());
+            }
+
+            return query;
         }
 
         /// <summary>
