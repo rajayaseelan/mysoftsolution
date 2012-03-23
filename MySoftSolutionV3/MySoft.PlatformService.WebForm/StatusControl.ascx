@@ -113,9 +113,8 @@
                 <% foreach (var client in app.Clients)
                    {
                 %>
-                <span title="<% =string.Format("{0}\r\n{1}",client.FriendlyName, client.AppPath) %>">
-                    <%= client.IPAddress%>[<%=client.HostName%>](<font color="red"><%= client.Count%></font>)
-                </span>
+                <span title="<% = client.AppPath %>" <%= client.AppPath?? "style=\"color: blue;\"" %>>
+                    <%= client.IPAddress%>[<%=client.HostName%>]</span>(<font color="red"><%= client.Count%></font>)
                 <br />
                 <% } %>
             </li>
