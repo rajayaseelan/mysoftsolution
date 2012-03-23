@@ -18,7 +18,7 @@ namespace MySoft.Data
         { }
 
         public Field(string propertyName, string fieldName)
-            : base(propertyName, null, fieldName)
+            : base(propertyName, null, fieldName, null)
         {
             this.tableName = Table.GetTable<T>().OriginalName;
 
@@ -128,7 +128,7 @@ namespace MySoft.Data
                 {
                     return this.Name;
                 }
-                return this.Name + " as __[" + aliasName + "]__";
+                return string.Format("{0} as __[{1}]__", this.Name, aliasName);
             }
         }
 
@@ -244,22 +244,11 @@ namespace MySoft.Data
         /// <param name="propertyName"></param>
         /// <param name="tableName"></param>
         /// <param name="fieldName"></param>
-        internal Field(string propertyName, string tableName, string fieldName)
+        /// <param name="aliasName"></param>
+        internal Field(string propertyName, string tableName, string fieldName, string aliasName)
             : this(tableName, fieldName)
         {
             this.propertyName = propertyName;
-        }
-
-        /// <summary>
-        /// 实例化Field
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <param name="tableName"></param>
-        /// <param name="fieldName"></param>
-        /// <param name="aliasName"></param>
-        internal Field(string propertyName, string tableName, string fieldName, string aliasName)
-            : this(propertyName, tableName, fieldName)
-        {
             this.aliasName = string.IsNullOrEmpty(aliasName) ? null : aliasName;
         }
 
@@ -677,7 +666,7 @@ namespace MySoft.Data
             if (fieldName.Contains("(") || fieldName.Contains(")"))
                 return this;
             else
-                return new Field(this.propertyName, tableName, this.fieldName);
+                return new Field(this.propertyName, tableName, this.fieldName, aliasName);
         }
 
         /// <summary>
@@ -688,10 +677,12 @@ namespace MySoft.Data
         public Field At(Table table)
         {
             if (table == null) return this;
-            if (fieldName.Contains("(") || fieldName.Contains(")"))
-                return this;
+
+            //判断别名
+            if (table.Alias != null)
+                return At(table.Alias);
             else
-                return new Field(this.propertyName, table.Name, this.fieldName);
+                return At(table.Name);
         }
 
         #region 函数处理
@@ -856,7 +847,7 @@ namespace MySoft.Data
         public WhereClip In<T>(Table table, Field field, WhereClip where)
             where T : Entity
         {
-            return In<T>(new FromSection<T>(table).Select(field).Where(where));
+            return In<T>(new FromSection<T>(table, null).Select(field).Where(where));
         }
 
         /// <summary>
@@ -892,7 +883,7 @@ namespace MySoft.Data
         public WhereClip In<T>(TableRelation<T> relation)
             where T : Entity
         {
-            QuerySection<T> q = relation.Section.Query;
+            QuerySection<T> q = relation.GetFromSection().Query;
             return new WhereClip(this.Name + " in (" + q.QueryString + ") ", q.Parameters);
         }
 
@@ -954,7 +945,7 @@ namespace MySoft.Data
                 throw new DataException("用创建器操作时，表不能为null！");
             }
 
-            FromSection<ViewEntity> f = new FromSection<ViewEntity>(creator.Table);
+            FromSection<ViewEntity> f = new FromSection<ViewEntity>(creator.Table, null);
             if (creator.IsRelation)
             {
                 foreach (TableJoin join in creator.Relations.Values)

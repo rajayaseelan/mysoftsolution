@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Runtime.Remoting.Messaging;
 using System.Threading;
-using System.Runtime.Remoting.Messaging;
 
 namespace MySoft.Auth
 {
@@ -51,11 +47,13 @@ namespace MySoft.Auth
         {
             get
             {
-                return CallContext.HostContext as AuthorizeContext;
+                string name = string.Format("AuthorizeContext_{0}", Thread.CurrentThread.ManagedThreadId);
+                return CallContext.GetData(name) as AuthorizeContext;
             }
             set
             {
-                CallContext.HostContext = value;
+                string name = string.Format("AuthorizeContext_{0}", Thread.CurrentThread.ManagedThreadId);
+                CallContext.SetData(name, value);
             }
         }
     }

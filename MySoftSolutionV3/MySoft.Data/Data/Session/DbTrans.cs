@@ -723,18 +723,15 @@ namespace MySoft.Data
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public QuerySection From<T>(TableRelation<T> relation)
+        public QuerySection<T> From<T>(TableRelation<T> relation)
             where T : Entity
         {
-            var query = relation.Section.Query;
+            var query = new QuerySection<T>(relation.GetFromSection());
 
             //给查询设置驱动与事务
             query.SetDbProvider(dbProvider, this);
 
-            //返回结果的查询
-            var newquery = query.CreateQuery<ViewEntity>();
-
-            return new QuerySection(newquery);
+            return query;
         }
 
         /// <summary>
@@ -750,10 +747,16 @@ namespace MySoft.Data
             //判断是否存在关系
             var entity = CoreHelper.CreateInstance<TResult>();
             var relation = entity.GetRelation();
-            var query = relation.Section.Query;
+            var query = relation.GetFromSection().Query;
 
             //给查询设置驱动与事务
             query.SetDbProvider(dbProvider, this);
+
+            //处理前n条
+            if (relation.GetTopSize() > 0)
+            {
+                query = query.GetTop(relation.GetTopSize());
+            }
 
             //返回结果的查询
             var newquery = query.CreateQuery<ViewEntity>();
@@ -770,7 +773,7 @@ namespace MySoft.Data
         public FromSection<T> From<T>(Table table)
             where T : Entity
         {
-            return new FromSection<T>(dbProvider, this, table);
+            return new FromSection<T>(dbProvider, this, table, null);
         }
 
         /// <summary>
@@ -782,7 +785,7 @@ namespace MySoft.Data
         public FromSection<T> From<T>(string aliasName)
             where T : Entity
         {
-            return new FromSection<T>(dbProvider, this, aliasName);
+            return new FromSection<T>(dbProvider, this, null, aliasName);
         }
 
         /// <summary>

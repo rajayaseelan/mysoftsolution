@@ -44,7 +44,7 @@ namespace MySoft.Data
         /// <summary>
         /// All实例化
         /// </summary>
-        public AllField() : base("All", null, "*") { }
+        public AllField() : base("All", null, "*", null) { }
 
         /// <summary>
         /// 选择被排除的列

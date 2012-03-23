@@ -106,6 +106,7 @@
     <Compile Include="Creator\Query\ViewEntity.cs" />
     <Compile Include="Creator\UpdateCreator.cs" />
     <Compile Include="Data\Expression\SQLParameter.cs" />
+    <Compile Include="Data\Query\TableEntity.cs" />
     <Compile Include="Data\Query\TopSection.cs" />
     <Compile Include="Data\Relation\RelationPage.cs" />
     <Compile Include="Data\Session\AllField.cs" />
@@ -348,12 +349,6 @@
     <Content Include="update.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MySoft.Core\MySoft.Core.csproj">
-      <Project>{1DF7ED40-1747-4114-A8E4-6B3B85034883}</Project>
-      <Name>MySoft.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
       <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
@@ -369,6 +364,12 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MySoft.Core\MySoft.Core.csproj">
+      <Project>{1DF7ED40-1747-4114-A8E4-6B3B85034883}</Project>
+      <Name>MySoft.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

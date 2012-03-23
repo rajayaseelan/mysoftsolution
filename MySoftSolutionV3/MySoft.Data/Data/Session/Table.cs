@@ -39,7 +39,7 @@ namespace MySoft.Data
         /// <param name="tableName"></param>
         public Table(string tableName)
         {
-            this.name = tableName.Replace("__[", "").Replace("]__", "");
+            this.tableName = tableName.Replace("__[", "").Replace("]__", "");
             this.prefix = null;
             this.suffix = null;
         }
@@ -51,7 +51,9 @@ namespace MySoft.Data
         /// <returns></returns>
         public Table As(string aliasName)
         {
-            this.aliasName = aliasName;
+            if (!string.IsNullOrEmpty(aliasName))
+                this.aliasName = aliasName;
+
             return this;
         }
 
@@ -68,8 +70,29 @@ namespace MySoft.Data
             }
         }
 
+        private string aliasName;
         /// <summary>
-        /// 表名称
+        /// 别名
+        /// </summary>
+        internal string Alias
+        {
+            get { return aliasName; }
+        }
+
+        internal string FullName
+        {
+            get
+            {
+                if (aliasName == null)
+                    return this.Name;
+                else
+                    return string.Format("{0} __[{1}]__", this.Name, aliasName);
+            }
+        }
+
+        private string tableName;
+        /// <summary>
+        /// 设置表名
         /// </summary>
         internal string Name
         {
@@ -79,23 +102,10 @@ namespace MySoft.Data
             }
         }
 
-        private string name;
-        /// <summary>
-        /// 设置表名
-        /// </summary>
         internal string TableName
         {
-            get { return name; }
-            set { name = value; }
-        }
-
-        private string aliasName;
-        /// <summary>
-        /// 表别名
-        /// </summary>
-        internal string AliasName
-        {
-            get { return aliasName; }
+            get { return tableName; }
+            set { tableName = value; }
         }
 
         private string prefix;
@@ -125,7 +135,7 @@ namespace MySoft.Data
         {
             get
             {
-                return string.Format("{0}{1}{2}", prefix, name, suffix);
+                return string.Format("{0}{1}{2}", prefix, tableName, suffix);
             }
         }
 
@@ -190,7 +200,18 @@ namespace MySoft.Data
         public static TableRelation<T> From<T>()
             where T : Entity
         {
-            return From<T>(null);
+            return From<T>((Table)null);
+        }
+
+        /// <summary>
+        /// 返回一个表关系
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static TableRelation<T> From<T>(string aliasName)
+            where T : Entity
+        {
+            return new TableRelation<T>(null, aliasName);
         }
 
         /// <summary>
@@ -201,7 +222,7 @@ namespace MySoft.Data
         public static TableRelation<T> From<T>(Table table)
             where T : Entity
         {
-            return new TableRelation<T>(table);
+            return new TableRelation<T>(table, null);
         }
     }
 }

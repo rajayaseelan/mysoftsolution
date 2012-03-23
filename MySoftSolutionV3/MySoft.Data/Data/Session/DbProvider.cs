@@ -249,7 +249,7 @@ namespace MySoft.Data
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExecuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, retVal, watch.ElapsedMilliseconds);
             }
 
             return retVal;
@@ -292,7 +292,7 @@ namespace MySoft.Data
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExecuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, retVal, watch.ElapsedMilliseconds);
             }
 
             return retVal;
@@ -331,7 +331,7 @@ namespace MySoft.Data
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExecuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, retVal, watch.ElapsedMilliseconds);
             }
 
             return retVal;
@@ -372,7 +372,7 @@ namespace MySoft.Data
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExecuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, retVal, watch.ElapsedMilliseconds);
             }
 
             return retVal;
@@ -386,7 +386,7 @@ namespace MySoft.Data
             //执行命令前的事件
             if (!BeginExecuteCommand(cmd))
             {
-                throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
+                throw new DataException("当前执行命令被拒绝 ==> " + GetLog(cmd));
             }
 
             object retVal = null;
@@ -413,7 +413,7 @@ namespace MySoft.Data
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExecuteCommand(cmd, retVal, (int)watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, retVal, watch.ElapsedMilliseconds);
             }
 
             return retVal;
@@ -825,7 +825,7 @@ namespace MySoft.Data
         /// 结束时执行的操作
         /// </summary>
         /// <param name="command"></param>
-        private void EndExecuteCommand(DbCommand command, object result, int elapsedTime)
+        private void EndExecuteCommand(DbCommand command, object result, long elapsedTime)
         {
             if (logger != null)
             {

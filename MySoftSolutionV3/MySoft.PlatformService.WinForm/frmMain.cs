@@ -588,6 +588,11 @@ namespace MySoft.PlatformService.WinForm
         private IList<ServiceInfo> services = new List<ServiceInfo>();
         private void InitService()
         {
+            if (defaultNode != null)
+            {
+                this.Text = string.Format("分布式服务监控 v1.0 【当前服务器节点({0}:{1})】", defaultNode.IP, defaultNode.Port);
+            }
+
             listAssembly.Items.Clear();
             listService.Items.Clear();
             listMethod.Items.Clear();

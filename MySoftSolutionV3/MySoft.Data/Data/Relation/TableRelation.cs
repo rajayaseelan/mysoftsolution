@@ -6,20 +6,27 @@
     public class TableRelation<T> : ITableRelation<T>
         where T : Entity
     {
+        private int topSize = -1;
         private FromSection<T> section;
-        internal FromSection<T> Section
+
+        //获取topSize大小
+        internal int GetTopSize()
         {
-            get { return section; }
+            return topSize;
         }
 
-        internal TableRelation(Table table)
+        /// <summary>
+        /// 获取FromSection
+        /// </summary>
+        /// <returns></returns>
+        internal FromSection<T> GetFromSection()
         {
-            if (table == null)
-                this.section = new FromSection<T>(null, null, Table.GetTable<T>());
-            else
-                this.section = new FromSection<T>(null, null, table);
+            return section;
+        }
 
-            this.section.EntityList.Add(CoreHelper.CreateInstance<T>());
+        internal TableRelation(Table table, string aliasName)
+        {
+            this.section = new FromSection<T>(table, aliasName);
         }
 
         #region 不带别名
@@ -159,7 +166,7 @@
         /// <returns></returns>
         public TableRelation<T> SubQuery()
         {
-            section.SetQuery(section.SubQuery());
+            section.Query = section.SubQuery();
             return this;
         }
 
@@ -169,7 +176,7 @@
         /// <returns></returns>
         public TableRelation<T> SubQuery(string aliasName)
         {
-            section.SetQuery(section.SubQuery(aliasName));
+            section.Query = section.SubQuery(aliasName);
             return this;
         }
 
@@ -180,8 +187,8 @@
         public TableRelation<TSub> SubQuery<TSub>()
             where TSub : Entity
         {
-            TableRelation<TSub> tr = new TableRelation<TSub>(null);
-            tr.section.SetQuery(section.SubQuery<TSub>());
+            TableRelation<TSub> tr = new TableRelation<TSub>(null, null);
+            tr.GetFromSection().Query = section.SubQuery<TSub>();
             return tr;
         }
 
@@ -193,8 +200,8 @@
         public TableRelation<TSub> SubQuery<TSub>(string aliasName)
             where TSub : Entity
         {
-            TableRelation<TSub> tr = new TableRelation<TSub>(null);
-            tr.section.SetQuery(section.SubQuery<TSub>(aliasName));
+            TableRelation<TSub> tr = new TableRelation<TSub>(null, aliasName);
+            tr.section.Query = section.SubQuery<TSub>(aliasName);
             return tr;
         }
 
@@ -241,6 +248,17 @@
         public TableRelation<T> Select(params Field[] fields)
         {
             section.Select(fields);
+            return this;
+        }
+
+        /// <summary>
+        /// 获取前n条数据
+        /// </summary>
+        /// <param name="topSize"></param>
+        /// <returns></returns>
+        public TableRelation<T> GetTop(int topSize)
+        {
+            this.topSize = topSize;
             return this;
         }
     }

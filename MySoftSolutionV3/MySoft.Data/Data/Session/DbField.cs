@@ -71,7 +71,7 @@ namespace MySoft.Data
             {
                 if (string.IsNullOrEmpty(qString))
                 {
-                    throw new DataException("需要设置DbProvider及DbTrans才能处理SysField！");
+                    throw new DataException("需要设置DbProvider及DbTrans才能处理CustomField！");
                 }
                 return string.Format("({1}) as {0}", base.Name, qString);
             }
@@ -108,7 +108,7 @@ namespace MySoft.Data
         {
             if (string.IsNullOrEmpty(qString) && relation != null)
             {
-                var query = relation.Section.Query;
+                var query = relation.GetFromSection().Query;
                 query.SetDbProvider(dbProvider, dbTran);
                 qString = query.GetTop(1).QueryString;
             }
@@ -123,7 +123,7 @@ namespace MySoft.Data
             {
                 if (string.IsNullOrEmpty(qString))
                 {
-                    throw new DataException("需要设置DbProvider及DbTrans才能处理SysField！");
+                    throw new DataException("需要设置DbProvider及DbTrans才能处理CustomField！");
                 }
                 return string.Format("({1}) as {0}", base.Name, qString);
             }

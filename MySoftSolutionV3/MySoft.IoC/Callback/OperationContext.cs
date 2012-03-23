@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Runtime.Remoting.Messaging;
+using System.Threading;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
-using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
@@ -20,11 +20,13 @@ namespace MySoft.IoC
         {
             get
             {
-                return CallContext.HostContext as OperationContext;
+                string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
+                return CallContext.GetData(name) as OperationContext;
             }
-            internal set
+            set
             {
-                CallContext.HostContext = value;
+                string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
+                CallContext.SetData(name, value);
             }
         }
 

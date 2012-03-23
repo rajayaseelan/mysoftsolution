@@ -140,7 +140,7 @@ namespace MySoft.IoC
                 }
                 catch (SocketException ex)
                 {
-                    _listeners.Remove(lstn);
+                    RemoveListener(lstn);
                 }
                 catch (Exception ex)
                 {
@@ -207,7 +207,7 @@ namespace MySoft.IoC
                 }
                 catch (SocketException ex)
                 {
-                    _listeners.Remove(lstn);
+                    RemoveListener(lstn);
                 }
                 catch (Exception ex)
                 {
@@ -237,7 +237,7 @@ namespace MySoft.IoC
                 }
                 catch (SocketException ex)
                 {
-                    _listeners.Remove(lstn);
+                    RemoveListener(lstn);
                 }
                 catch (Exception ex)
                 {
@@ -269,7 +269,7 @@ namespace MySoft.IoC
                 }
                 catch (SocketException ex)
                 {
-                    _listeners.Remove(lstn);
+                    RemoveListener(lstn);
                 }
                 catch (Exception ex)
                 {
@@ -299,7 +299,7 @@ namespace MySoft.IoC
                 }
                 catch (SocketException ex)
                 {
-                    _listeners.Remove(lstn);
+                    RemoveListener(lstn);
                 }
                 catch (Exception ex)
                 {

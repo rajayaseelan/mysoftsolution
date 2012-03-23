@@ -55,7 +55,7 @@ namespace MySoft.Data
         FromSection<T> From<T>(Table table) where T : Entity;
         FromSection<T> From<T>(string aliasName) where T : Entity;
 
-        QuerySection From<T>(TableRelation<T> relation) where T : Entity;
+        QuerySection<T> From<T>(TableRelation<T> relation) where T : Entity;
         RelationQuery<TResult> Query<TResult, T>()
             where TResult : RelationEntity<T>
             where T : Entity;

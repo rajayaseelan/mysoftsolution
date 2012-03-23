@@ -444,7 +444,7 @@ namespace MySoft.Data
                 throw new DataException("在判断记录是否存在时出现异常，条件为null或WhereClip.None！");
             }
 
-            FromSection<T> fs = new FromSection<T>(dbProvider, dbTrans, table);
+            FromSection<T> fs = new FromSection<T>(dbProvider, dbTrans, table, null);
             return fs.Where(where).Count() > 0;
         }
     }

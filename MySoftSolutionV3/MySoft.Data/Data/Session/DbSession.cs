@@ -566,7 +566,7 @@ namespace MySoft.Data
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public QuerySection From<T>(TableRelation<T> relation)
+        public QuerySection<T> From<T>(TableRelation<T> relation)
             where T : Entity
         {
             return dbTrans.From<T>(relation);

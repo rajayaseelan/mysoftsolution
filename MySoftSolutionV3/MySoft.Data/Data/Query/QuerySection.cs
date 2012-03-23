@@ -12,6 +12,9 @@ namespace MySoft.Data
     public class QuerySection<T> : IQuerySection<T>, IPaging
         where T : Entity
     {
+        protected DbProvider dbProvider;
+        protected DbTrans dbTran;
+
         private string formatString = " SELECT {0} {1} {2} {3} FROM {4} {5} {6} {7} {8} {9}";
         private string distinctString;
         private string prefixString;
@@ -22,7 +25,6 @@ namespace MySoft.Data
         private string countString;
         private bool fieldSelect;
         private bool unionQuery;
-        private DbProvider dbProvider;
         private Field pagingField;
         private List<Field> fieldList = new List<Field>();
         private List<SQLParameter> parameterList = new List<SQLParameter>();
@@ -33,7 +35,6 @@ namespace MySoft.Data
         private GroupByClip groupBy;
         private OrderByClip orderBy;
         private DbCommand queryCommand;
-        private DbTrans dbTran;
         private bool isAddParameter;
 
         #region 内部成员
@@ -254,7 +255,7 @@ namespace MySoft.Data
             this.endString = end;
         }
 
-        internal string QueryString
+        internal virtual string QueryString
         {
             get
             {
@@ -317,11 +318,12 @@ namespace MySoft.Data
         {
             get
             {
+                if ((IField)pagingField == null)
+                {
+                    pagingField = fromSection.GetPagingField();
+                }
+
                 return pagingField;
-            }
-            set
-            {
-                pagingField = value;
             }
         }
 
@@ -329,12 +331,11 @@ namespace MySoft.Data
 
         #region QuerySection 初始化
 
-        internal QuerySection(FromSection<T> fromSection, DbProvider dbProvider, DbTrans dbTran, Field pagingField)
+        internal QuerySection(FromSection<T> fromSection, DbProvider dbProvider, DbTrans dbTran)
         {
             this.fromSection = fromSection;
             this.dbProvider = dbProvider;
             this.dbTran = dbTran;
-            this.pagingField = pagingField;
         }
 
         internal QuerySection(FromSection<T> fromSection)
@@ -396,7 +397,7 @@ namespace MySoft.Data
         /// 生成一个子查询
         /// </summary>
         /// <returns></returns>
-        public QuerySection<T> SubQuery()
+        public virtual QuerySection<T> SubQuery()
         {
             return SubQuery<T>();
         }
@@ -405,7 +406,7 @@ namespace MySoft.Data
         /// 生成一个子查询
         /// </summary>
         /// <returns></returns>
-        public QuerySection<T> SubQuery(string aliasName)
+        public virtual QuerySection<T> SubQuery(string aliasName)
         {
             return SubQuery<T>(aliasName);
         }
@@ -414,7 +415,7 @@ namespace MySoft.Data
         /// 生成一个子查询
         /// </summary>
         /// <returns></returns>
-        public QuerySection<TSub> SubQuery<TSub>()
+        public virtual QuerySection<TSub> SubQuery<TSub>()
             where TSub : Entity
         {
             return SubQuery<TSub>(null);
@@ -424,49 +425,17 @@ namespace MySoft.Data
         /// 生成一个子查询
         /// </summary>
         /// <returns></returns>
-        public QuerySection<TSub> SubQuery<TSub>(string aliasName)
+        public virtual QuerySection<TSub> SubQuery<TSub>(string aliasName)
             where TSub : Entity
         {
             TSub entity = CoreHelper.CreateInstance<TSub>();
-            string tableName = entity.GetTable().Name;
-            QuerySection<TSub> query = new QuerySection<TSub>(new FromSection<TSub>(tableName, aliasName), dbProvider, dbTran, pagingField);
-            query.SqlString = "(" + QueryString + ") " + (aliasName != null ? "__[" + aliasName + "]__" : tableName);
+            var tableName = entity.GetTable().Name;
+            if (aliasName != null) tableName = string.Format("__[{0}]__", aliasName);
+
+            QuerySection<TSub> query = new QuerySection<TSub>(new FromSection<TSub>(entity.GetTable(), aliasName), dbProvider, dbTran);
+            query.SqlString = string.Format("({0}) {1}", QueryString, tableName);
             query.Parameters = this.Parameters;
-
-            if ((IField)this.pagingField == null)
-                query.pagingField = entity.PagingField;
-
-            List<Field> flist = new List<Field>();
-            if (aliasName != null)
-            {
-                if ((IField)query.pagingField != null)
-                {
-                    query.pagingField = query.pagingField.At(aliasName);
-                }
-
-                fieldList.ForEach(field =>
-                {
-                    flist.Add(field.At(aliasName));
-                });
-            }
-            else
-            {
-                if ((IField)query.pagingField != null)
-                {
-                    query.pagingField = query.pagingField.At(tableName);
-                }
-
-                fieldList.ForEach(field =>
-                {
-                    flist.Add(field.At(tableName));
-                });
-            }
-
-            //如果当前子查询与上一级子查询类型相同，则直接使用上一级的字段列表
-            if (typeof(TSub) == typeof(T))
-            {
-                query.Select(flist.ToArray());
-            }
+            query.Select(Field.All.At(entity.GetTable().As(aliasName)));
 
             return query;
         }
@@ -476,16 +445,25 @@ namespace MySoft.Data
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <returns></returns>
-        internal QuerySection<TResult> CreateQuery<TResult>()
+        internal virtual QuerySection<TResult> CreateQuery<TResult>()
             where TResult : Entity
         {
-            QuerySection<TResult> query = new QuerySection<TResult>(new FromSection<TResult>(fromSection.TableName, fromSection.Relation, fromSection.EntityList), dbProvider, dbTran, pagingField);
-            query.Where(queryWhere).OrderBy(orderBy).GroupBy(groupBy).Having(havingWhere);
-            query.PageWhere = this.PageWhere;
-            query.Parameters = this.Parameters;
+            QuerySection<TResult> newquery = new QuerySection<TResult>(new FromSection<TResult>(null, null), dbProvider, dbTran);
 
-            if (fieldSelect) query.Select(fieldList.ToArray());
-            return query;
+            var section = this.FromSection;
+            var newsection = newquery.FromSection;
+            newsection.TableEntities = section.TableEntities;
+            newsection.TableName = section.TableName;
+            newsection.Relation = section.Relation;
+            newsection.SetPagingField(section.GetPagingField());
+
+            newquery.Where(queryWhere).OrderBy(orderBy).GroupBy(groupBy).Having(havingWhere);
+            newquery.SqlString = this.SqlString;
+            newquery.PageWhere = this.PageWhere;
+            newquery.Parameters = this.Parameters;
+
+            if (fieldSelect) newquery.Select(fieldList.ToArray());
+            return newquery;
         }
 
         #endregion
@@ -523,14 +501,10 @@ namespace MySoft.Data
         {
             if (topSize <= 0) throw new DataException("选取前N条数据值不能小于等于0！");
 
-            var tempQuery = CloneNewQuery<T>(this);
-            String topString = dbProvider.CreatePageQuery<T>(tempQuery, topSize, 0).QueryString;
-            TopSection<T> top = new TopSection<T>(topString, fromSection, dbProvider, dbTran, pagingField, topSize);
-            top.Where(queryWhere).OrderBy(orderBy).GroupBy(groupBy).Having(havingWhere);
-            top.PageWhere = tempQuery.PageWhere;
-            top.Parameters = tempQuery.Parameters;
+            var tempQuery = this.SubQuery("SUB_TOP_TABLE");
+            var query = dbProvider.CreatePageQuery<T>(tempQuery, topSize, 0);
+            TopSection<T> top = new TopSection<T>(query, dbProvider, dbTran, topSize);
 
-            if (fieldSelect) top.Select(fieldList.ToArray());
             return top;
         }
 
@@ -638,25 +612,6 @@ namespace MySoft.Data
             return tempQuery.OrderBy(order);
         }
 
-        /// <summary>
-        /// 克隆一个Query
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="query"></param>
-        /// <returns></returns>
-        private QuerySection<TResult> CloneNewQuery<TResult>(QuerySection<TResult> query)
-            where TResult : Entity
-        {
-            QuerySection<TResult> tempQuery = CreateQuery<TResult>();
-            if (query.unionQuery)
-            {
-                tempQuery.QueryString = query.QueryString;
-                tempQuery.CountString = query.CountString;
-            }
-
-            return tempQuery;
-        }
-
         #endregion
 
         /// <summary>
@@ -690,15 +645,12 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        public PageSection<T> GetPage(int pageSize)
+        public virtual PageSection<T> GetPage(int pageSize)
         {
-            QuerySection<T> query = this;
-            if (this.unionQuery)
-            {
-                query = SubQuery();
-                query.OrderBy(this.orderBy);
-            }
-            return new PageSection<T>(query, pageSize);
+            if (unionQuery)
+                return new PageSection<T>(this.SubQuery("SUB_PAGE_TABLE"), pageSize);
+            else
+                return new PageSection<T>(this, pageSize);
         }
 
         /// <summary>
@@ -731,6 +683,7 @@ namespace MySoft.Data
         {
             if (startIndex <= 0) startIndex = 1;
             int topItem = endIndex - startIndex + 1;
+
             return GetListResult<object>(this, topItem, endIndex - topItem);
         }
 
@@ -755,6 +708,7 @@ namespace MySoft.Data
         {
             if (startIndex <= 0) startIndex = 1;
             int topItem = endIndex - startIndex + 1;
+
             return GetListResult<TResult>(this, topItem, endIndex - topItem);
         }
 
@@ -789,6 +743,7 @@ namespace MySoft.Data
         {
             if (startIndex <= 0) startIndex = 1;
             int topItem = endIndex - startIndex + 1;
+
             return GetList<T>(this, topItem, endIndex - topItem);
         }
 
@@ -804,6 +759,7 @@ namespace MySoft.Data
         {
             if (startIndex <= 0) startIndex = 1;
             int topItem = endIndex - startIndex + 1;
+
             return GetDataReader(this, topItem, endIndex - topItem);
         }
 
@@ -826,6 +782,7 @@ namespace MySoft.Data
         {
             if (startIndex <= 0) startIndex = 1;
             int topItem = endIndex - startIndex + 1;
+
             return GetDataSet(this, topItem, endIndex - topItem);
         }
 
@@ -848,6 +805,7 @@ namespace MySoft.Data
         {
             if (startIndex <= 0) startIndex = 1;
             int topItem = endIndex - startIndex + 1;
+
             return GetDataTable(this, topItem, endIndex - topItem);
         }
 
@@ -908,47 +866,72 @@ namespace MySoft.Data
         private SourceList<TResult> GetList<TResult>(QuerySection<TResult> query, int itemCount, int skipCount)
             where TResult : Entity
         {
-            var tempQuery = CloneNewQuery<TResult>(query);
+            QuerySection<TResult> tempQuery = null;
+            if (query.UnionQuery)
+                tempQuery = query.SubQuery("SUB_UNION_TABLE");
+            else
+                tempQuery = query.SubQuery("SUB_TMP_TABLE");
+
             tempQuery = dbProvider.CreatePageQuery<TResult>(tempQuery, itemCount, skipCount);
             return ExecuteDataList<TResult>(tempQuery);
         }
 
         private ArrayList<TResult> GetListResult<TResult>(QuerySection<T> query, int itemCount, int skipCount)
         {
-            var tempQuery = CloneNewQuery<T>(query);
+            QuerySection<T> tempQuery = null;
+            if (query.UnionQuery)
+                tempQuery = query.SubQuery("SUB_UNION_TABLE");
+            else
+                tempQuery = query.SubQuery("SUB_TMP_TABLE");
+
             tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
             return ExecuteDataListResult<TResult>(tempQuery);
         }
 
         private SourceReader GetDataReader(QuerySection<T> query, int itemCount, int skipCount)
         {
-            var tempQuery = CloneNewQuery<T>(query);
+            QuerySection<T> tempQuery = null;
+            if (query.UnionQuery)
+                tempQuery = query.SubQuery("SUB_UNION_TABLE");
+            else
+                tempQuery = query.SubQuery("SUB_TMP_TABLE");
+
             tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
             return ExecuteDataReader(tempQuery);
         }
 
         private SourceTable GetDataTable(QuerySection<T> query, int itemCount, int skipCount)
         {
-            var tempQuery = CloneNewQuery<T>(query);
+            QuerySection<T> tempQuery = null;
+            if (query.UnionQuery)
+                tempQuery = query.SubQuery("SUB_UNION_TABLE");
+            else
+                tempQuery = query.SubQuery("SUB_TMP_TABLE");
+
             tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
             return ExecuteDataTable(tempQuery);
         }
 
         private DataSet GetDataSet(QuerySection<T> query, int itemCount, int skipCount)
         {
-            var tempQuery = CloneNewQuery<T>(query);
+            QuerySection<T> tempQuery = null;
+            if (query.UnionQuery)
+                tempQuery = query.SubQuery("SUB_UNION_TABLE");
+            else
+                tempQuery = query.SubQuery("SUB_TMP_TABLE");
+
             tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
             return ExecuteDataSet(tempQuery);
         }
 
         private int GetCount(QuerySection<T> query)
         {
-            string countString = query.CountString;
             if (query.unionQuery)
             {
-                countString = "SELECT SUM(ROW_COUNT) AS TOTAL_ROW_COUNT FROM (" + countString + ") TMP_TABLE";
+                query = query.SubQuery("SUB_COUNT_TABLE");
             }
 
+            string countString = query.CountString;
             string cacheKey = GetCacheKey(countString, this.Parameters);
             object obj = GetCache<T>("Count", cacheKey);
             if (obj != null)
@@ -984,7 +967,7 @@ namespace MySoft.Data
                     return (SourceList<TResult>)obj;
                 }
 
-                using (SourceReader reader = ExecuteDataReader(query))
+                using (SourceReader reader = ExecuteDataReader(queryString, query.Parameters))
                 {
                     ArrayList<TResult> list = new ArrayList<TResult>();
 
@@ -1036,7 +1019,7 @@ namespace MySoft.Data
                     return (SourceList<TResult>)obj;
                 }
 
-                using (SourceReader reader = ExecuteDataReader(query))
+                using (SourceReader reader = ExecuteDataReader(queryString, query.Parameters))
                 {
                     SourceList<TResult> list = new SourceList<TResult>();
 
@@ -1056,6 +1039,21 @@ namespace MySoft.Data
 
                     return list;
                 }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        private SourceReader ExecuteDataReader(string queryString, SQLParameter[] parameters)
+        {
+            try
+            {
+                //添加参数到Command中
+                queryCommand = dbProvider.CreateSqlCommand(queryString, parameters);
+
+                return dbProvider.ExecuteReader(queryCommand, dbTran);
             }
             catch
             {

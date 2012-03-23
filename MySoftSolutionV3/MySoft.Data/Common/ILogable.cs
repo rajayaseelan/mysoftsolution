@@ -23,6 +23,6 @@ namespace MySoft.Data
         /// <param name="parameter"></param>
         /// <param name="result"></param>
         /// <param name="elapsedTime"></param>
-        void End(string cmdText, SQLParameter[] parameter, object result, int elapsedTime);
+        void End(string cmdText, SQLParameter[] parameter, object result, long elapsedTime);
     }
 }

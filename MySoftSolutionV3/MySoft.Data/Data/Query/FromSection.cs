@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using MySoft.Data.Design;
 
 namespace MySoft.Data
@@ -12,91 +13,57 @@ namespace MySoft.Data
     public class FromSection<T> : IQuerySection<T>
         where T : Entity
     {
-        private Entity fromEntity;
-        private Table fromTable;
         private QuerySection<T> query;
+        /// <summary>
+        /// 当前查询对象
+        /// </summary>
         internal QuerySection<T> Query
         {
             get { return query; }
+            set { query = value; }
         }
-        private List<Entity> entityList = new List<Entity>();
-        internal List<Entity> EntityList
+
+        private List<TableEntity> entities = new List<TableEntity>();
+        /// <summary>
+        /// 当前实例列表
+        /// </summary>
+        internal List<TableEntity> TableEntities
         {
-            get { return entityList; }
-            set { entityList = value; }
+            get { return entities; }
+            set { entities = value; }
         }
 
         #region 初始化FromSection
 
-        internal FromSection()
+        internal FromSection(DbProvider dbProvider, DbTrans dbTran, Table table, string aliasName)
         {
-            this.fromEntity = CoreHelper.CreateInstance<T>();
-            this.fromTable = this.fromEntity.GetTable();
+            InitForm(table, aliasName);
+
+            this.query = new QuerySection<T>(this, dbProvider, dbTran);
         }
 
-        internal FromSection(DbProvider dbProvider, DbTrans dbTran, Table table)
-            : this()
+        internal FromSection(Table table, string aliasName)
         {
-            this.entityList.Add(this.fromEntity);
-            //从传入的表信息中获取表名
-            this.tableName = table == null ? fromTable.Name : table.Name;
-            fromTable.As(this.tableName);
-            Field pagingField = fromEntity.PagingField;
-            this.query = new QuerySection<T>(this, dbProvider, dbTran, pagingField);
-        }
+            InitForm(table, aliasName);
 
-        internal FromSection(DbProvider dbProvider, DbTrans dbTran, string aliasName)
-            : this()
-        {
-            fromTable.As(aliasName);
-            this.entityList.Add(this.fromEntity);
-            this.tableName = fromTable.Name;
-            Field pagingField = fromEntity.PagingField;
-            if (aliasName != null)
-            {
-                if ((IField)pagingField != null)
-                {
-                    pagingField = pagingField.At(aliasName);
-                }
-
-                this.tableName += " __[" + aliasName + "]__ ";
-            }
-
-            this.query = new QuerySection<T>(this, dbProvider, dbTran, pagingField);
-        }
-
-        internal FromSection(string tableName, string relation, IList<Entity> list)
-        {
-            this.tableName = tableName;
-            this.relation = relation;
-            this.entityList.AddRange(list);
             this.query = new QuerySection<T>(this);
         }
 
-        internal FromSection(string tableName, string aliasName)
-            : this()
+        internal void InitForm(Table table, string aliasName)
         {
-            fromTable.As(aliasName);
-            this.entityList.Add(this.fromEntity);
-            this.tableName = tableName;
-            if (aliasName != null)
-            {
-                this.tableName += " __[" + aliasName + "]__ ";
-            }
-            this.query = new QuerySection<T>(this);
+            var entity = CoreHelper.CreateInstance<T>();
+            table = table ?? entity.GetTable();
+
+            table.As(aliasName);
+            var tableEntity = new TableEntity { Table = table, Entity = entity };
+            this.entities.Add(tableEntity);
+
+            SetTableName(table);
         }
 
-        internal FromSection(Table table)
-            : this()
+        internal void SetTableName(Table table)
         {
-            this.tableName = table == null ? fromTable.Name : table.Name;
-            fromTable.As(this.tableName);
-            if (table != null && table.AliasName != null)
-            {
-                this.tableName += " __[" + table.AliasName + "]__ ";
-            }
-
-            this.query = new QuerySection<T>(this);
+            this.tableName = table.FullName;
         }
 
         #endregion
@@ -160,12 +127,6 @@ namespace MySoft.Data
         }
 
         #endregion
-
-        //设置查询节
-        internal void SetQuery(QuerySection<T> query)
-        {
-            this.query = query;
-        }
 
         #region 排序分组操作
 
@@ -550,7 +511,7 @@ namespace MySoft.Data
         public FromSection<T> InnerJoin<TJoin>(Table table, WhereClip onWhere)
             where TJoin : Entity
         {
-            return Join<TJoin>(table, onWhere, JoinType.InnerJoin);
+            return Join<TJoin>(table, null, onWhere, JoinType.InnerJoin);
         }
 
         /// <summary>
@@ -563,7 +524,7 @@ namespace MySoft.Data
         public FromSection<T> InnerJoin<TJoin>(string aliasName, WhereClip onWhere)
             where TJoin : Entity
         {
-            return Join<TJoin>(aliasName, onWhere, JoinType.InnerJoin);
+            return Join<TJoin>((Table)null, aliasName, onWhere, JoinType.InnerJoin);
         }
 
         /// <summary>
@@ -619,7 +580,7 @@ namespace MySoft.Data
         public FromSection<T> LeftJoin<TJoin>(Table table, WhereClip onWhere)
             where TJoin : Entity
         {
-            return Join<TJoin>(table, onWhere, JoinType.LeftJoin);
+            return Join<TJoin>(table, null, onWhere, JoinType.LeftJoin);
         }
 
         /// <summary>
@@ -632,7 +593,7 @@ namespace MySoft.Data
         public FromSection<T> LeftJoin<TJoin>(string aliasName, WhereClip onWhere)
             where TJoin : Entity
         {
-            return Join<TJoin>(aliasName, onWhere, JoinType.LeftJoin);
+            return Join<TJoin>((Table)null, aliasName, onWhere, JoinType.LeftJoin);
         }
 
         /// <summary>
@@ -688,7 +649,7 @@ namespace MySoft.Data
         public FromSection<T> RightJoin<TJoin>(Table table, WhereClip onWhere)
             where TJoin : Entity
         {
-            return Join<TJoin>(table, onWhere, JoinType.RightJoin);
+            return Join<TJoin>(table, null, onWhere, JoinType.RightJoin);
         }
 
         /// <summary>
@@ -701,7 +662,7 @@ namespace MySoft.Data
         public FromSection<T> RightJoin<TJoin>(string aliasName, WhereClip onWhere)
             where TJoin : Entity
         {
-            return Join<TJoin>(aliasName, onWhere, JoinType.RightJoin);
+            return Join<TJoin>((Table)null, aliasName, onWhere, JoinType.RightJoin);
         }
 
         /// <summary>
@@ -738,29 +699,32 @@ namespace MySoft.Data
         private FromSection<T> Join<TJoin>(TableRelation<TJoin> relation, string aliasName, WhereClip onWhere, JoinType joinType)
             where TJoin : Entity
         {
+            //将TableRelation的对象添加到当前节
+            this.entities.AddRange(relation.GetFromSection().TableEntities);
+
             TJoin entity = CoreHelper.CreateInstance<TJoin>();
-            //entity.GetTable().As(aliasName);
-            this.entityList.AddRange(relation.Section.entityList);
+            var table = entity.GetTable().As(aliasName);
 
             if ((IField)query.PagingField == null)
             {
                 //标识列和主键优先,包含ID的列被抛弃
-                query.PagingField = entity.PagingField;
+                query.SetPagingField(entity.PagingField);
             }
-
-            FromSection<TJoin> from = new FromSection<TJoin>(null);
 
             string tableName = entity.GetTable().Name;
             if (aliasName != null) tableName = aliasName;
 
-            from.tableName = "(" + relation.Section.query.QueryString + ") " + tableName;
-            from.query.Parameters = relation.Section.query.Parameters;
+            //处理tableRelation关系
+            string joinString = "(" + relation.GetFromSection().Query.QueryString + ") " + tableName;
+            this.query.Parameters = relation.GetFromSection().Query.Parameters;
+
             string strJoin = string.Empty;
             if (onWhere != null)
             {
                 strJoin = " ON " + onWhere.ToString();
             }
 
+            //获取关联方式
             string join = GetJoinEnumString(joinType);
 
             if (this.relation != null)
@@ -768,30 +732,40 @@ namespace MySoft.Data
                 this.tableName = " __[[ " + this.tableName;
                 this.relation += " ]]__ ";
             }
-            this.relation += join + from.TableName + strJoin;
+            this.relation += join + joinString + strJoin;
 
             return this;
         }
 
-        private FromSection<T> Join<TJoin>(Table table, WhereClip onWhere, JoinType joinType)
+        private FromSection<T> Join<TJoin>(Table table, string aliasName, WhereClip onWhere, JoinType joinType)
             where TJoin : Entity
         {
             TJoin entity = CoreHelper.CreateInstance<TJoin>();
-            this.entityList.Add(entity);
+            table = table ?? entity.GetTable();
+            table.As(aliasName);
+
+            //创建一个TableEntity
+            var tableEntity = new TableEntity
+            {
+                Table = table,
+                Entity = entity
+            };
+
+            this.entities.Add(tableEntity);
 
             if ((IField)query.PagingField == null)
             {
                 //标识列和主键优先,包含ID的列被抛弃
-                query.PagingField = entity.PagingField;
+                query.SetPagingField(entity.PagingField);
             }
 
-            FromSection<TJoin> from = new FromSection<TJoin>(table);
             string strJoin = string.Empty;
             if (onWhere != null)
             {
                 strJoin = " ON " + onWhere.ToString();
             }
 
+            //获取关联方式
             string join = GetJoinEnumString(joinType);
 
             if (this.relation != null)
@@ -799,47 +773,7 @@ namespace MySoft.Data
                 this.tableName = " __[[ " + this.tableName;
                 this.relation += " ]]__ ";
             }
-            this.relation += join + from.TableName + strJoin;
-
-            return this;
-        }
-
-        private FromSection<T> Join<TJoin>(string aliasName, WhereClip onWhere, JoinType joinType)
-            where TJoin : Entity
-        {
-
-            TJoin entity = CoreHelper.CreateInstance<TJoin>();
-            entity.GetTable().As(aliasName);
-            this.entityList.Add(entity);
-
-            if ((IField)query.PagingField == null)
-            {
-                //标识列和主键优先,包含ID的列被抛弃
-                query.PagingField = entity.PagingField;
-            }
-
-            FromSection<TJoin> from = new FromSection<TJoin>(null);
-            if (aliasName != null)
-            {
-                if ((IField)query.PagingField != null)
-                    query.PagingField = query.PagingField.At(aliasName);
-
-                from.tableName += " __[" + aliasName + "]__ ";
-            }
-            string strJoin = string.Empty;
-            if (onWhere != null)
-            {
-                strJoin = " on " + onWhere.ToString();
-            }
-
-            string join = GetJoinEnumString(joinType);
-
-            if (this.relation != null)
-            {
-                this.tableName = " __[[ " + this.tableName;
-                this.relation += " ]]__ ";
-            }
-            this.relation += join + from.TableName + strJoin;
+            this.relation += join + table.FullName + strJoin;
 
             return this;
         }
@@ -865,15 +799,27 @@ namespace MySoft.Data
 
         #region 公有方法
 
+        internal Field GetPagingField()
+        {
+            foreach (TableEntity entity in this.entities)
+            {
+                var field = entity.Entity.PagingField;
+                if ((IField)field != null)
+                {
+                    return field.At(entity.Table);
+                }
+            }
+
+            return null;
+        }
+
         internal Field[] GetSelectFields()
         {
-            IDictionary<string, Field> dictfields = new Dictionary<string, Field>();
-            List<Field> fieldlist = new List<Field>();
-
-            foreach (Entity entity in this.entityList)
+            var dictfields = new Dictionary<string, Field>();
+            foreach (TableEntity entity in this.entities)
             {
-                Table table = entity.GetTable();
-                Field[] fields = entity.GetFields();
+                Table table = entity.Table;
+                Field[] fields = entity.Entity.GetFields();
                 if (fields == null || fields.Length == 0)
                 {
                     throw new DataException("没有任何被选中的字段列表！");
@@ -882,29 +828,17 @@ namespace MySoft.Data
                 {
                     foreach (Field field in fields)
                     {
+                        //去除重复的字段
                         if (!dictfields.ContainsKey(field.OriginalName))
                         {
-                            if (table.AliasName != null)
-                            {
-                                dictfields.Add(field.OriginalName, field.At(table.AliasName));
-                            }
-                            else
-                            {
-                                dictfields.Add(field.OriginalName, field);
-                            }
+                            dictfields[field.OriginalName] = field.At(table);
                         }
                     }
                 }
             }
 
-            //遍历字典，将Field取出
-            foreach (KeyValuePair<string, Field> kv in dictfields)
-            {
-                fieldlist.Add(kv.Value);
-            }
-
-            return fieldlist.ToArray();
-
+            //返回选中的字段
+            return dictfields.Select(p => p.Value).ToArray();
         }
 
         #endregion
