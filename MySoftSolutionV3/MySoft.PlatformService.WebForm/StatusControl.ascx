@@ -14,7 +14,7 @@
         <span style="margin-left: 100px;"><b>当前时间：</b><%=DateTime.Now %></span>
     </div>
     <hr />
-    <div style="float: left; width: 25%; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
+    <div style="float: left; width: 30%; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
         <ul>
             <li><b>汇总状态信息【最近<% =status.TotalHours %>小时】</b></li>
             <li>运行总时间：
@@ -49,7 +49,7 @@
                 毫秒</li>
         </ul>
     </div>
-    <div style="float: left; width: 25%; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
+    <div style="float: left; width: 30%; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
         <ul>
             <li><b>当前状态信息</b></li>
             <li>时间:
@@ -71,7 +71,7 @@
                 毫秒</li>
         </ul>
     </div>
-    <div style="float: left; width: 35%; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
+    <div style="float: left; width: 30%; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
         <ul>
             <li><b>最高状态信息</b></li>
             <li>最大请求数:
@@ -108,14 +108,14 @@
         {
             index++;
             %>
-            <li style="width: 240px; float: left; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
+            <li style="width: 30%; float: left; border: 3px dotted #ccc; margin: 5px; padding: 5px;">
                 <% = index%>=>【<%= app.AppName%>】<br />
                 <% foreach (var client in app.Clients)
                    {
                 %>
-                <span title="<% = client.AppPath %>" <%= client.AppPath != null ? "" : "style=\"color: blue;\"" %>>
-                    <%= client.IPAddress%>[<%=client.HostName%>]</span>(<font color="red"><%= client.Count%></font>)
-                <br />
+                <span title="<% = client.AppPath %>" style="cursor: pointer; <%= client.AppPath != null ? "": "color: red;" %>">
+                    ■</span>
+                <%= client.IPAddress%>[<%=client.HostName%>](<font color="blue"><%= client.Count%></font>)
                 <% } %>
             </li>
             <% } %>
