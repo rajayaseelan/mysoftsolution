@@ -145,17 +145,16 @@ namespace MySoft.IoC
                     var ls = list1.Select(p => p.State as AppClient)
                              .GroupBy(p => new
                              {
-                                 AppPath = p.AppPath,
                                  AppName = p.AppName,
-                                 HostName = p.HostName,
-                                 IPAddress = p.IPAddress
+                                 IPAddress = p.IPAddress,
+                                 AppPath = p.AppPath,
                              })
                              .Select(p => new ClientInfo
                              {
                                  AppPath = p.Key.AppPath,
                                  AppName = p.Key.AppName,
                                  IPAddress = p.Key.IPAddress,
-                                 HostName = p.Key.HostName,
+                                 HostName = p.Max(c => c.HostName),
                                  ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
                                  ServerPort = epServer.TcpPort,
                                  Count = p.Count()

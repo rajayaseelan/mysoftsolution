@@ -22,7 +22,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public bool Equals(AppClient x, AppClient y)
         {
-            return x.AppName == y.AppName && x.IPAddress == y.IPAddress;
+            return x.AppName == y.AppName && x.IPAddress == y.IPAddress && x.AppPath == y.AppPath;
         }
 
         /// <summary>
@@ -32,7 +32,10 @@ namespace MySoft.IoC
         /// <returns></returns>
         public int GetHashCode(AppClient obj)
         {
-            return obj.AppName.GetHashCode() + obj.IPAddress.GetHashCode();
+            var hashCode = obj.AppName.GetHashCode() + obj.IPAddress.GetHashCode();
+            if (!string.IsNullOrEmpty(obj.AppPath)) hashCode += obj.AppPath.GetHashCode();
+
+            return hashCode;
         }
 
         #endregion
