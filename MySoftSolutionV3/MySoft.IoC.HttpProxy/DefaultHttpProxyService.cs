@@ -76,7 +76,9 @@ namespace MySoft.IoC.HttpProxy
                 try
                 {
                     //数据缓存5秒
-                    jsonString = helper.Get(name, query.ToString(), 5, header);
+                    var parameters = HttpUtility.UrlDecode(query.ToString());
+                    jsonString = helper.Get(name, parameters, 5, header);
+
                     if (service != null && service.TypeString)
                     {
                         //如果返回是字符串类型，则设置为文本返回

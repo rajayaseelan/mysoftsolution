@@ -7,6 +7,7 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Communication.Scs.Communication.Messages;
+using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -123,8 +124,12 @@ namespace MySoft.IoC
                         resMsg.Error = new ApplicationException(callArgs.Error.Message);
                     }
 
-                    //调用计数
-                    status.CounterNotify(callArgs);
+                    //调用计数（采用异步调用）
+                    ThreadPool.QueueUserWorkItem(state =>
+                    {
+                        if (state == null) return;
+                        status.CounterNotify(state as CallEventArgs);
+                    }, callArgs);
                 }
             }
             catch (Exception ex)
