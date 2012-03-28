@@ -25,7 +25,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default client timeout number. 
         /// </summary>
-        public const int DEFAULT_CLIENT_TIMEOUT = 5 * 60; //60秒
+        public const int DEFAULT_CLIENT_TIMEOUT = 2 * 60; //60秒
 
         /// <summary>
         /// The default server timeout number. 

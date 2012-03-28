@@ -8,7 +8,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 发现服务代理
     /// </summary>
-    public class DiscoverProxy : IService, IDisposable
+    public class DiscoverProxy : IService
     {
         private CastleFactory factory;
         private IDictionary<string, IList<IService>> services;

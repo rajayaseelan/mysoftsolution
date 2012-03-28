@@ -56,8 +56,7 @@ namespace MySoft.IoC
             this.container.OnLog += (log, type) => { if (OnLog != null) OnLog(log, type); };
 
             //实例化调用者
-            var service = new ServerStatusService(config, server, container);
-            this.caller = new ServiceCaller(service, container, config.Timeout);
+            this.caller = new ServiceCaller(server, container, config);
 
             //绑定事件
             MessageCenter.Instance.OnError += Instance_OnError;

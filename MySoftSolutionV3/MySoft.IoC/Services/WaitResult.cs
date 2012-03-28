@@ -68,14 +68,6 @@ namespace MySoft.IoC.Services
     public sealed class WaitResult
     {
         private AutoResetEvent reset;
-        /// <summary>
-        /// 信号量对象
-        /// </summary>
-        public AutoResetEvent Reset
-        {
-            get { return reset; }
-        }
-
         private ResponseMessage message;
         /// <summary>
         /// 消息对象
@@ -92,6 +84,25 @@ namespace MySoft.IoC.Services
         public WaitResult()
         {
             this.reset = new AutoResetEvent(false);
+        }
+
+        /// <summary>
+        /// 等待信号
+        /// </summary>
+        /// <param name="timeSpan"></param>
+        /// <returns></returns>
+        public bool Wait(TimeSpan timeSpan)
+        {
+            return reset.WaitOne(timeSpan);
+        }
+
+        /// <summary>
+        /// 响应信号
+        /// </summary>
+        /// <returns></returns>
+        public bool Set()
+        {
+            return reset.Set();
         }
     }
 }

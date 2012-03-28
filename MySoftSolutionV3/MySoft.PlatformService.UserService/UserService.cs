@@ -88,8 +88,9 @@ namespace MySoft.PlatformService.UserService
                 list.Add(new UserInfo { Name = "test_" + count, Description = "test_" + count + "_" + Thread.CurrentThread.ManagedThreadId });
             }
 
-            //int value = new Random().Next(10, 60);
-            //Thread.Sleep(value * 1000);
+            Console.WriteLine("{0} => {1}", DateTime.Now, Thread.CurrentThread.ManagedThreadId);
+            int value = new Random().Next(1, 10);
+            Thread.Sleep(value * 1000);
 
             return list;
         }

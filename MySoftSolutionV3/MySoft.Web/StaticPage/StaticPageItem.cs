@@ -685,12 +685,16 @@ namespace MySoft.Web
                 {
                     int count = GetPageCount(dictValues);
                     var items = new List<UpdateItem>();
+
+                    string dynamicurl = templatePath;
+                    string staticurl = savePath;
+                    if (!string.IsNullOrEmpty(query))
+                        dynamicurl = string.Format("{0}?{1}", dynamicurl, query);
+
                     for (int index = 0; index < count; index++)
                     {
-                        string dynamicurl = templatePath;
-                        string staticurl = savePath;
-                        if (!string.IsNullOrEmpty(query))
-                            dynamicurl = string.Format("{0}?{1}", dynamicurl, query);
+                        var tmpDynamicUrl = dynamicurl;
+                        var tmpStaticUrl = staticurl;
 
                         //生成对应的url
                         foreach (string key in dictValues.Keys)
@@ -698,14 +702,14 @@ namespace MySoft.Web
                             var value = dictValues[key][dictPosition[key]].ToString();
 
                             //动态地址
-                            dynamicurl = dynamicurl.Replace(key, value);
+                            tmpDynamicUrl = tmpDynamicUrl.Replace(key, value);
 
                             //静态地址
-                            staticurl = staticurl.Replace(key, value);
+                            tmpStaticUrl = tmpStaticUrl.Replace(key, value);
                         }
 
                         //添加到队列中
-                        items.Add(new UpdateItem { DynamicUrl = dynamicurl, StaticPath = staticurl });
+                        items.Add(new UpdateItem { DynamicUrl = tmpDynamicUrl, StaticPath = tmpStaticUrl });
 
                         //定位处理
                         SetPosition(dictPosition, dictValues, dictPosition.Keys.Count - 1);

@@ -1,18 +1,21 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using MySoft.Communication.Scs.Server;
+using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Services;
+using MySoft.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC
 {
     /// <summary>
-    /// 异步调用委托
+    /// 异步发送消息
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="reqMsg"></param>
-    /// <returns></returns>
-    public delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
+    /// <param name="client"></param>
+    /// <param name="message"></param>
+    public delegate void AsyncSendMessage(IScsServerClient client, IScsMessage message);
 
     /// <summary>
     /// 服务调用者
@@ -20,22 +23,22 @@ namespace MySoft.IoC
     public class ServiceCaller : IDisposable
     {
         private IServiceContainer container;
-        private int timeout;
+        private CastleServiceConfiguration config;
         private IDictionary<string, Type> callbackTypes;
         private IDictionary<string, int> callTimeouts;
-        private ServerStatusService service;
+        private ServerStatusService status;
 
         /// <summary>
         /// 初始化ServiceCaller
         /// </summary>
+        /// <param name="server"></param>
         /// <param name="container"></param>
-        /// <param name="service"></param>
-        /// <param name="timeout"></param>
-        public ServiceCaller(ServerStatusService service, IServiceContainer container, int timeout)
+        /// <param name="config"></param>
+        public ServiceCaller(IScsServer server, IServiceContainer container, CastleServiceConfiguration config)
         {
+            this.status = new ServerStatusService(server, container, config);
+            this.config = config;
             this.container = container;
-            this.timeout = timeout;
-            this.service = service;
             this.callbackTypes = new Dictionary<string, Type>();
             this.callTimeouts = new Dictionary<string, int>();
 
@@ -44,7 +47,7 @@ namespace MySoft.IoC
 
             //注册状态服务
             var hashtable = new Dictionary<Type, object>();
-            hashtable[typeof(IStatusService)] = service;
+            hashtable[typeof(IStatusService)] = status;
 
             this.container.RegisterComponents(hashtable);
         }
@@ -86,8 +89,11 @@ namespace MySoft.IoC
                 //判断是否为状态服务
                 if (IsStatusService(reqMsg))
                 {
+                    //解析服务
+                    var service = ParseService(reqMsg);
+
                     //调用方法
-                    resMsg = AsyncCallMethod(reqMsg);
+                    resMsg = service.CallService(reqMsg);
                 }
                 else
                 {
@@ -95,7 +101,7 @@ namespace MySoft.IoC
                     var watch = Stopwatch.StartNew();
 
                     //调用方法
-                    resMsg = AsyncCallMethod(reqMsg);
+                    resMsg = CallQueueMethod(reqMsg);
 
                     //停止计时
                     watch.Stop();
@@ -118,7 +124,7 @@ namespace MySoft.IoC
                     }
 
                     //调用计数
-                    service.CounterNotify(callArgs);
+                    status.CounterNotify(callArgs);
                 }
             }
             catch (Exception ex)
@@ -144,6 +150,50 @@ namespace MySoft.IoC
             }
 
             return resMsg;
+        }
+
+        /// <summary>
+        /// 服务集合
+        /// </summary>
+        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+
+        /// <summary>
+        /// 调用异步方法
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage CallQueueMethod(RequestMessage reqMsg)
+        {
+            //调用方法
+            string key = string.Format("{0}_{1}_{2}", reqMsg.ServiceName,
+                reqMsg.MethodName, reqMsg.Parameters).ToLower();
+
+            if (!hashtable.ContainsKey(key))
+            {
+                //等待超时
+                var time = TimeSpan.FromSeconds(config.Timeout);
+                if (callTimeouts.ContainsKey(reqMsg.ServiceName))
+                {
+                    time = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
+                }
+
+                //解析服务
+                var s = ParseService(reqMsg);
+                hashtable[key] = new QueueService(s, time, key);
+            }
+
+            try
+            {
+                //定义服务
+                IService service = hashtable[key] as IService;
+
+                //调用服务
+                return service.CallService(reqMsg);
+            }
+            finally
+            {
+                hashtable.Remove(key);
+            }
         }
 
         /// <summary>
@@ -177,49 +227,6 @@ namespace MySoft.IoC
                 Container = container,
                 Caller = caller
             };
-        }
-
-        /// <summary>
-        /// 异步调用方法
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        public ResponseMessage AsyncCallMethod(RequestMessage reqMsg)
-        {
-            //实例化异步调用委托
-            var caller = new AsyncMethodCaller((context, req) =>
-            {
-                //设置上下文
-                OperationContext.Current = context;
-
-                //解析服务
-                var service = ParseService(reqMsg);
-
-                //返回调用值
-                return service.CallService(req);
-            });
-
-            //异常调用
-            var ar = caller.BeginInvoke(OperationContext.Current, reqMsg, p => { }, caller);
-
-            //等待超时
-            var elapsedTime = TimeSpan.FromSeconds(timeout);
-            if (callTimeouts.ContainsKey(reqMsg.ServiceName))
-            {
-                elapsedTime = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
-            }
-
-            //信号等待
-            if (!ar.AsyncWaitHandle.WaitOne(elapsedTime))
-            {
-                throw new WarningException(string.Format("Call service ({0}, {1}) timeout ({2}) ms."
-                    , reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds));
-            }
-
-            //关闭
-            ar.AsyncWaitHandle.Close();
-
-            //释放资源
-            return caller.EndInvoke(ar);
         }
 
         /// <summary>
@@ -259,7 +266,7 @@ namespace MySoft.IoC
         {
             callbackTypes.Clear();
             callTimeouts.Clear();
-            service = null;
+            status = null;
         }
 
         #endregion

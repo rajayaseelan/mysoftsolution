@@ -10,7 +10,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 服务代理
     /// </summary>
-    public class RemoteProxy : IService, IDisposable
+    public class RemoteProxy : IService
     {
         protected ILog logger;
         protected ServerNode node;
@@ -77,11 +77,11 @@ namespace MySoft.IoC.Services
         {
             if (hashtable.ContainsKey(resMsg.TransactionId))
             {
-                var value = hashtable[resMsg.TransactionId];
-                value.Message = resMsg;
+                var waitResult = hashtable[resMsg.TransactionId];
+                waitResult.Message = resMsg;
 
                 //数据响应
-                value.Reset.Set();
+                waitResult.Set();
             }
         }
 
@@ -115,7 +115,7 @@ namespace MySoft.IoC.Services
 
                 //等待信号响应
                 var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
-                if (!waitResult.Reset.WaitOne(elapsedTime))
+                if (!waitResult.Wait(elapsedTime))
                 {
                     throw new WarningException(string.Format("【{0}:{1}】 => Call service ({2}, {3}) timeout ({4}) ms."
                        , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds));

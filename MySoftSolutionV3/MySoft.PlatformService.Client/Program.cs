@@ -135,7 +135,7 @@ namespace MySoft.PlatformService.Client
             //}
 
             ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
@@ -210,7 +210,7 @@ namespace MySoft.PlatformService.Client
                     //service.GetUserInfo("maoyong", ref length, out user);
 
                     var users = service.GetUsers();
-                    var str = service.GetUsersString();
+                    //var str = service.GetUsersString();
 
                     watch.Stop();
 
@@ -226,8 +226,6 @@ namespace MySoft.PlatformService.Client
                 {
                     Console.WriteLine(ex.Message);
                 }
-
-                Thread.Sleep(1);
             }
         }
 

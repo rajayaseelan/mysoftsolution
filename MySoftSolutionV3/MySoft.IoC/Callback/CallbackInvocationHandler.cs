@@ -13,12 +13,11 @@ namespace MySoft.IoC
     {
         private Type callType;
         private IScsServerClient client;
-        private int timeout = 60;
-        public CallbackInvocationHandler(Type callType, IScsServerClient client, int timeout)
+        private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;
+        public CallbackInvocationHandler(Type callType, IScsServerClient client)
         {
             this.callType = callType;
             this.client = client;
-            this.timeout = timeout;
         }
 
         #region IProxyInvocationHandler 成员
@@ -37,7 +36,21 @@ namespace MySoft.IoC
                 var message = new CallbackMessage { ServiceType = callType, MethodName = method.ToString(), Parameters = parameters };
 
                 //发送i回调消息
-                client.SendMessage(new ScsCallbackMessage(message));
+                var caller = new AsyncSendMessage((c, m) => c.SendMessage(m));
+
+                //异步调用
+                var ar = caller.BeginInvoke(client, new ScsCallbackMessage(message), callback => { }, caller);
+                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(timeout)))
+                {
+                    //发送超时
+                    throw new SocketException((int)SocketError.TimedOut);
+                }
+
+                //关闭
+                ar.AsyncWaitHandle.Close();
+
+                //释放资源
+                caller.EndInvoke(ar);
 
                 //返回null
                 return null;

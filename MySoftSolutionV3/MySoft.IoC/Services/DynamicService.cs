@@ -10,6 +10,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class DynamicService : BaseService
     {
+        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         private IServiceContainer container;
         private Type serviceType;
 
@@ -38,25 +39,25 @@ namespace MySoft.IoC.Services
 
             #region 获取相应的方法
 
-            string methodKey = string.Format("Method_{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
-            var method = CacheHelper.Get<System.Reflection.MethodInfo>(methodKey);
-            if (method == null)
+            var methodKey = string.Format("{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
+            if (!hashtable.ContainsKey(methodKey))
             {
-                method = CoreHelper.GetMethodFromType(serviceType, reqMsg.MethodName);
-                if (method == null)
+                var m = CoreHelper.GetMethodFromType(serviceType, reqMsg.MethodName);
+                if (m == null)
                 {
                     string message = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
                     resMsg.Error = new WarningException(message);
 
                     return resMsg;
                 }
-                else
-                {
-                    CacheHelper.Permanent(methodKey, method);
-                }
+
+                hashtable[methodKey] = m;
             }
 
             #endregion
+
+            //定义Method
+            var method = hashtable[methodKey] as System.Reflection.MethodInfo;
 
             //获取服务及方法名称
             if (reqMsg.Invoked)
@@ -149,6 +150,14 @@ namespace MySoft.IoC.Services
             }
 
             return resMsg;
+        }
+
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        public override void Dispose()
+        {
+            hashtable.Clear();
         }
     }
 }

@@ -25,10 +25,10 @@ namespace MySoft.IoC
         /// <summary>
         /// 实例化ServerStatusService
         /// </summary>
-        /// <param name="config"></param>
         /// <param name="server"></param>
         /// <param name="container"></param>
-        public ServerStatusService(CastleServiceConfiguration config, IScsServer server, IServiceContainer container)
+        /// <param name="config"></param>
+        public ServerStatusService(IScsServer server, IServiceContainer container, CastleServiceConfiguration config)
         {
             this.config = config;
             this.server = server;

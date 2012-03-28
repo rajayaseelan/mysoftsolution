@@ -98,7 +98,7 @@ namespace MySoft.IoC
             }
             else
             {
-                var callback = new CallbackInvocationHandler(callbackType, client, 60);
+                var callback = new CallbackInvocationHandler(callbackType, client);
                 var instance = ProxyFactory.GetInstance().Create(callback, typeof(ICallbackService), true);
                 return (ICallbackService)instance;
             }
