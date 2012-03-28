@@ -36,6 +36,7 @@ namespace MySoft.IoC.Services
             resMsg.TransactionId = reqMsg.TransactionId;
             resMsg.ServiceName = reqMsg.ServiceName;
             resMsg.MethodName = reqMsg.MethodName;
+            resMsg.ReturnType = reqMsg.ReturnType;
 
             #region 获取相应的方法
 
@@ -56,20 +57,14 @@ namespace MySoft.IoC.Services
 
             #endregion
 
-            //定义Method
-            var method = hashtable[methodKey] as System.Reflection.MethodInfo;
-
-            //获取服务及方法名称
-            if (reqMsg.Invoked)
-                resMsg.ReturnType = reqMsg.ReturnType;
-            else
-                resMsg.ReturnType = method.ReturnType;
-
             //容器实例对象
             object instance = null;
 
             try
             {
+                //定义Method
+                var method = hashtable[methodKey] as System.Reflection.MethodInfo;
+
                 //解析服务
                 instance = container.Resolve(serviceType);
 
