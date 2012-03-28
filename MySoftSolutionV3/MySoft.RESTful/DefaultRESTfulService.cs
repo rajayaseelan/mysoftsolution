@@ -227,7 +227,6 @@ namespace MySoft.RESTful
                 response.ContentType = "text/html;charset=utf-8";
 
             //从缓存读取
-            var cacheKey = string.Format("{0}_{1}_{2}_{3}", format, kind, method, parameters);
             object result = null;
 
             //进行认证处理
