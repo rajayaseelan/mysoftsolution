@@ -17,7 +17,7 @@ namespace MySoft.PlatformService.UserService
         }
     }
 
-    //[AspectProxy(typeof(AspectLog))]
+    [AspectProxy(typeof(AspectLog))]
     public class UserService : IUserService, IInitializable, IStartable
     {
         //private DateTime startTime;

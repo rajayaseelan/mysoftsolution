@@ -13,23 +13,16 @@ namespace MySoft.IoC.Aspect
 
         public Castle.DynamicProxy.IInterceptor[] SelectInterceptors(Type type, MethodInfo method, Castle.DynamicProxy.IInterceptor[] interceptors)
         {
-            if (interceptors == null) return interceptors;
+            if (interceptors == null || interceptors.Length == 0)
+                return interceptors;
 
             var att = CoreHelper.GetMemberAttribute<AspectSwitcherAttribute>(method);
-            if (att == null)
-            {
-                return interceptors;
-            }
-            else if (att.UseAspect)
+            if (att != null && att.UseAspect)
             {
                 if (att.InterceptorTypes == null)
-                {
                     return interceptors;
-                }
                 else
-                {
                     return interceptors.Where(p => att.InterceptorTypes.Contains(p.GetType())).ToArray();
-                }
             }
             else
             {

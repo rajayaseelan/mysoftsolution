@@ -61,7 +61,10 @@ namespace MySoft.IoC.Services
             var resMsg = service.CallService(reqMsg);
 
             //响应请求
-            this.SetResponse(resMsg);
+            if (queue.Count > 0)
+            {
+                this.SetResponse(resMsg);
+            }
 
             //重置状态
             this.isRunning = false;
@@ -74,10 +77,7 @@ namespace MySoft.IoC.Services
         /// <param name="resMsg"></param>
         private void SetResponse(ResponseMessage resMsg)
         {
-            if (queue.Count > 0)
-            {
-                Console.WriteLine("Queue Length: {0}\r\n=> Queue Key: {1}", queue.Count, queueKey);
-            }
+            Console.WriteLine("Queue Length: {0}\r\n=> Queue Key: {1}", queue.Count, queueKey);
 
             //响应数据
             while (queue.Count > 0)
