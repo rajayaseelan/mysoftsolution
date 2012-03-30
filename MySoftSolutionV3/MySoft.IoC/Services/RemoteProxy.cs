@@ -124,11 +124,11 @@ namespace MySoft.IoC.Services
             }
             finally
             {
+                //加入队列
+                reqPool.Push(reqProxy);
+
                 //用完后移除
                 hashtable.Remove(reqMsg.TransactionId);
-
-                //加入队列
-                this.reqPool.Push(reqProxy);
             }
         }
 

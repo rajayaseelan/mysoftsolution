@@ -11,8 +11,9 @@ namespace MySoft.IoC.Services
     public sealed class QueueResult
     {
         private AutoResetEvent reset;
-        private Guid transactionId;
+        private RequestMessage request;
         private ResponseMessage message;
+        private OperationContext context;
 
         /// <summary>
         /// 消息对象
@@ -23,13 +24,31 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// 请求对象
+        /// </summary>
+        public RequestMessage Request
+        {
+            get { return request; }
+        }
+
+        /// <summary>
+        /// 上下文对象
+        /// </summary>
+        public OperationContext Context
+        {
+            get { return context; }
+        }
+
+        /// <summary>
         /// 实例化QueueResult
         /// </summary>
+        /// <param name="context"></param>
         /// <param name="reqMsg"></param>
-        public QueueResult(RequestMessage reqMsg)
+        public QueueResult(OperationContext context, RequestMessage reqMsg)
         {
             this.reset = new AutoResetEvent(false);
-            this.transactionId = reqMsg.TransactionId;
+            this.context = context;
+            this.request = reqMsg;
         }
 
         /// <summary>
@@ -49,22 +68,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Set(ResponseMessage resMsg)
         {
-            if (resMsg != null)
-            {
-                var tmpMsg = new ResponseMessage
-                {
-                    TransactionId = transactionId,
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ReturnType = resMsg.ReturnType,
-                    Error = resMsg.Error,
-                    Value = resMsg.Value
-                };
-
-                this.message = tmpMsg;
-            }
-
+            this.message = resMsg;
             return reset.Set();
         }
     }

@@ -153,11 +153,6 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 服务集合
-        /// </summary>
-        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
-
-        /// <summary>
         /// 调用异步方法
         /// </summary>
         /// <param name="reqMsg"></param>
@@ -176,24 +171,16 @@ namespace MySoft.IoC
             }
             else
             {
-                var queueKey = string.Format("{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
-
-                //同一方法使用同一Queue处理
-                if (!hashtable.ContainsKey(queueKey))
+                //等待超时
+                var time = TimeSpan.FromSeconds(config.Timeout);
+                if (callTimeouts.ContainsKey(reqMsg.ServiceName))
                 {
-                    //等待超时
-                    var time = TimeSpan.FromSeconds(config.Timeout);
-                    if (callTimeouts.ContainsKey(reqMsg.ServiceName))
-                    {
-                        time = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
-                    }
-
-                    //解析服务
-                    var s = ParseService(reqMsg);
-                    hashtable[queueKey] = new QueueService(s, container, time);
+                    time = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
                 }
 
-                service = hashtable[queueKey] as IService;
+                //解析服务
+                var s = ParseService(reqMsg);
+                service = new QueueService(s, time);
             }
 
             //调用服务
@@ -266,11 +253,13 @@ namespace MySoft.IoC
 
         #region IDisposable 成员
 
+        /// <summary>
+        /// 清理资源
+        /// </summary>
         public void Dispose()
         {
             callbackTypes.Clear();
             callTimeouts.Clear();
-            status = null;
         }
 
         #endregion

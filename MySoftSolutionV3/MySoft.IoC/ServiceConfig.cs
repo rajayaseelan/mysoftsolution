@@ -61,7 +61,7 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 创建一个Hashtable
+        /// 创建一个ParameterCollection
         /// </summary>
         /// <param name="method"></param>
         /// <param name="parameters"></param>

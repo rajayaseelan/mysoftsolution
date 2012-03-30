@@ -561,7 +561,7 @@ namespace MySoft.Web
             get { return threadCount; }
             set
             {
-                if (threadCount > 50) throw new WebException("生成线程数不能大于50！");
+                if (threadCount > 5) throw new WebException("生成线程数不能大于5！");
                 if (value <= 0)
                     threadCount = 1;
                 else

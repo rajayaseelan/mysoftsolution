@@ -82,14 +82,10 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 发送数据包
+        /// 连接服务器
         /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        public void SendMessage(RequestMessage reqMsg)
+        private void ConnectServer(RequestMessage reqMsg)
         {
-            this.request = reqMsg;
-
             //如果连接断开，直接抛出异常
             if (!IsConnected)
             {
@@ -114,6 +110,19 @@ namespace MySoft.IoC
                     throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", ip, port, node, e.Message));
                 }
             }
+        }
+
+        /// <summary>
+        /// 发送数据包
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        public void SendMessage(RequestMessage reqMsg)
+        {
+            this.request = reqMsg;
+
+            //如果未连接上服务
+            if (!IsConnected) ConnectServer(reqMsg);
 
             client.SendMessage(new ScsResultMessage(reqMsg, reqMsg.TransactionId.ToString()));
         }

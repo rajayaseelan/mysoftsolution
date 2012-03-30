@@ -113,13 +113,14 @@ namespace MySoft.Remoting
             string serverUrl = RemotingHostCheck.Instance.GetUsableServerUrl(host);
             string key = string.Format("{0}${1}${2}", host.Name, serverUrl, remoteObjectName);
 
-            if (!_RemoteObjects.ContainsKey(key))
+            lock (_RemoteObjects)
             {
-                string objectUrl = _RemotingConfiguration.GetRemoteObjectUrl(serverUrl, remoteObjectName);
-                T instance = (T)Activator.GetObject(typeof(T), objectUrl);
-                _RemoteObjects[key] = instance;
-
-                return instance;
+                if (!_RemoteObjects.ContainsKey(key))
+                {
+                    string objectUrl = _RemotingConfiguration.GetRemoteObjectUrl(serverUrl, remoteObjectName);
+                    T instance = (T)Activator.GetObject(typeof(T), objectUrl);
+                    _RemoteObjects[key] = instance;
+                }
             }
 
             return _RemoteObjects[key];
