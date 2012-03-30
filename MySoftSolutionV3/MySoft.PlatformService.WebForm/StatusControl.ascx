@@ -113,9 +113,11 @@
                 <% foreach (var client in app.Clients)
                    {
                 %>
-                <span title="<% = client.AppPath %>" style="cursor: pointer; <%= client.AppPath != null ? "": "color: red;" %>">
-                    ■</span>
-                <%= client.IPAddress%>[<%=client.HostName%>](<font color="blue"><%= client.Count%></font>)
+                <div>
+                    <span title="<% = client.AppPath %>" style="cursor: pointer; <%= client.AppPath != null ? "": "color: red;" %>">
+                        ■</span>
+                    <%= client.IPAddress%>[<%=client.HostName%>](<font color="blue"><%= client.Count%></font>)
+                </div>
                 <% } %>
             </li>
             <% } %>

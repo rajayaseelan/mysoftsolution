@@ -731,42 +731,45 @@ namespace MySoft.Web
                         else
                         {
                             int pageSize = (int)Math.Ceiling(items.Count / (threadCount * 1.0));
-                            var threads = new List<Thread>();
 
                             //分页生成静态页
+                            var events = new AutoResetEvent[threadCount];
+
                             for (int index = 0; index < threadCount; index++)
                             {
+                                events[index] = new AutoResetEvent(false);
+
                                 var updateItems = new List<UpdateItem>();
                                 if (items.Count >= (index + 1) * pageSize)
                                     updateItems = items.GetRange(index * pageSize, pageSize);
                                 else
                                     updateItems = items.GetRange(index * pageSize, items.Count - (index * pageSize));
 
-                                Thread thread = new Thread(state =>
+                                ThreadPool.QueueUserWorkItem(state =>
                                 {
                                     if (state == null) return;
 
-                                    var list = state as List<UpdateItem>;
+                                    var arr = state as ArrayList;
+                                    var list = arr[0] as List<UpdateItem>;
+                                    var reset = arr[1] as AutoResetEvent;
+
                                     var errors = Update(updateTime, list);
-                                    lock (updateErrorList)
+
+                                    //添加到异常列表
+                                    if (errors.Count > 0)
                                     {
-                                        //添加到异常列表
-                                        if (errors.Count > 0)
+                                        lock (updateErrorList)
                                         {
                                             updateErrorList.AddRange(errors);
                                         }
                                     }
-                                });
 
-                                threads.Add(thread);
-                                thread.Start(updateItems);
+                                    reset.Set();
+                                }, new ArrayList { updateItems, events[index] });
                             }
 
-                            //阻塞，直到所有完成
-                            foreach (var thread in threads)
-                            {
-                                thread.Join();
-                            }
+                            //等待所有响应
+                            WaitHandle.WaitAll(events);
                         }
                     }
                 }

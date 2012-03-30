@@ -466,7 +466,7 @@ namespace MySoft.IoC
             //如果不存在当前配置节，则使用默认配置节
             if (string.IsNullOrEmpty(nodeKey) || !singleton.proxies.ContainsKey(nodeKey.ToLower()))
             {
-                nodeKey = "default";
+                nodeKey = config.Default;
             }
 
             if (!singleton.proxies.ContainsKey(nodeKey.ToLower()))

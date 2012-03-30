@@ -456,14 +456,16 @@ namespace MySoft.Web
         {
             if (finalFlush)
             {
-                StreamReader sr = new StreamReader(stream, encoding);
-                stream.Position = 0;
-                stream.Flush();
+                using (var sr = new StreamReader(stream, encoding))
+                {
+                    stream.Position = 0;
+                    stream.Flush();
 
-                string content = sr.ReadToEnd();
+                    string content = sr.ReadToEnd();
 
-                //把内容写入输出流中
-                output.Write(content);
+                    //把内容写入输出流中
+                    output.Write(content);
+                }
             }
         }
     }
