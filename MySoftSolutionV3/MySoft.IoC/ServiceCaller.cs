@@ -6,18 +6,10 @@ using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
-using MySoft.Communication.Scs.Communication.Messages;
 using System.Threading;
 
 namespace MySoft.IoC
 {
-    /// <summary>
-    /// 异步发送消息
-    /// </summary>
-    /// <param name="client"></param>
-    /// <param name="message"></param>
-    public delegate void AsyncSendMessage(IScsServerClient client, IScsMessage message);
-
     /// <summary>
     /// 服务调用者
     /// </summary>
@@ -80,8 +72,6 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg)
         {
-            ResponseMessage resMsg = null;
-
             try
             {
                 //设置上下文
@@ -90,11 +80,8 @@ namespace MySoft.IoC
                 //判断是否为状态服务
                 if (IsStatusService(reqMsg))
                 {
-                    //解析服务
-                    var service = ParseService(reqMsg);
-
                     //调用方法
-                    resMsg = service.CallService(reqMsg);
+                    return CallMethod(reqMsg, false);
                 }
                 else
                 {
@@ -102,7 +89,7 @@ namespace MySoft.IoC
                     var watch = Stopwatch.StartNew();
 
                     //调用方法
-                    resMsg = CallQueueMethod(reqMsg);
+                    var resMsg = CallMethod(reqMsg, true);
 
                     //停止计时
                     watch.Stop();
@@ -124,12 +111,22 @@ namespace MySoft.IoC
                         resMsg.Error = new ApplicationException(callArgs.Error.Message);
                     }
 
-                    //调用计数（采用异步调用）
+                    //调用计数
                     ThreadPool.QueueUserWorkItem(state =>
                     {
-                        if (state == null) return;
-                        status.CounterNotify(state as CallEventArgs);
+                        try
+                        {
+                            var eventArgs = state as CallEventArgs;
+                            status.CounterNotify(eventArgs);
+                        }
+                        catch (Exception ex)
+                        {
+                            container.WriteError(ex);
+                            //To Do
+                        }
                     }, callArgs);
+
+                    return resMsg;
                 }
             }
             catch (Exception ex)
@@ -138,7 +135,7 @@ namespace MySoft.IoC
                 container.WriteError(ex);
 
                 //处理异常
-                resMsg = new ResponseMessage
+                return new ResponseMessage
                 {
                     TransactionId = reqMsg.TransactionId,
                     ServiceName = reqMsg.ServiceName,
@@ -153,8 +150,6 @@ namespace MySoft.IoC
                 //初始化上下文
                 OperationContext.Current = null;
             }
-
-            return resMsg;
         }
 
         /// <summary>
@@ -166,39 +161,43 @@ namespace MySoft.IoC
         /// 调用异步方法
         /// </summary>
         /// <param name="reqMsg"></param>
+        /// <param name="isAsync"></param>
         /// <returns></returns>
-        private ResponseMessage CallQueueMethod(RequestMessage reqMsg)
+        private ResponseMessage CallMethod(RequestMessage reqMsg, bool isAsync)
         {
-            //调用方法
-            string key = string.Format("{0}_{1}_{2}", reqMsg.ServiceName,
-                reqMsg.MethodName, reqMsg.Parameters).ToLower();
+            //定义服务
+            IService service = null;
 
-            if (!hashtable.ContainsKey(key))
+            //判断是否是异步服务
+            if (!isAsync)
             {
-                //等待超时
-                var time = TimeSpan.FromSeconds(config.Timeout);
-                if (callTimeouts.ContainsKey(reqMsg.ServiceName))
+                //解析服务
+                service = ParseService(reqMsg);
+            }
+            else
+            {
+                var queueKey = string.Format("{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
+
+                //同一方法使用同一Queue处理
+                if (!hashtable.ContainsKey(queueKey))
                 {
-                    time = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
+                    //等待超时
+                    var time = TimeSpan.FromSeconds(config.Timeout);
+                    if (callTimeouts.ContainsKey(reqMsg.ServiceName))
+                    {
+                        time = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
+                    }
+
+                    //解析服务
+                    var s = ParseService(reqMsg);
+                    hashtable[queueKey] = new QueueService(s, container, time);
                 }
 
-                //解析服务
-                var s = ParseService(reqMsg);
-                hashtable[key] = new QueueService(s, time, key);
+                service = hashtable[queueKey] as IService;
             }
 
-            try
-            {
-                //定义服务
-                IService service = hashtable[key] as IService;
-
-                //调用服务
-                return service.CallService(reqMsg);
-            }
-            finally
-            {
-                hashtable.Remove(key);
-            }
+            //调用服务
+            return service.CallService(reqMsg);
         }
 
         /// <summary>

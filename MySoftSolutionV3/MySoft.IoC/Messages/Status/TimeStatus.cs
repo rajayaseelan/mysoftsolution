@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
 
 namespace MySoft.IoC.Messages
 {
@@ -34,11 +35,10 @@ namespace MySoft.IoC.Messages
     internal class TimeStatusCollection
     {
         private int maxCount;
-        private IDictionary<string, TimeStatus> dictStatus;
+        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         public TimeStatusCollection(int maxCount)
         {
             this.maxCount = maxCount;
-            this.dictStatus = new Dictionary<string, TimeStatus>();
         }
 
         /// <summary>
@@ -49,22 +49,22 @@ namespace MySoft.IoC.Messages
         public TimeStatus GetOrCreate(DateTime value)
         {
             string key = value.ToString("yyyyMMddHHmmss");
-            if (!dictStatus.ContainsKey(key))
+            if (!hashtable.ContainsKey(key))
             {
-                lock (dictStatus)
+                //如果总数大于传入的总数
+                if (hashtable.Count >= maxCount)
                 {
-                    //如果总数大于传入的总数
-                    if (dictStatus.Count >= maxCount)
+                    lock (hashtable.SyncRoot)
                     {
-                        var firstKey = dictStatus.Min(p => p.Key);
-                        if (firstKey != null) dictStatus.Remove(firstKey);
+                        var firstKey = hashtable.Keys.Cast<string>().First();
+                        if (firstKey != null) hashtable.Remove(firstKey);
                     }
-
-                    dictStatus[key] = new TimeStatus { CounterTime = value };
                 }
+
+                hashtable[key] = new TimeStatus { CounterTime = value };
             }
 
-            return dictStatus[key];
+            return hashtable[key] as TimeStatus;
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace MySoft.IoC.Messages
         /// </summary>
         public int Count
         {
-            get { return dictStatus.Count; }
+            get { return hashtable.Count; }
         }
 
         /// <summary>
@@ -81,9 +81,9 @@ namespace MySoft.IoC.Messages
         /// <returns></returns>
         public IList<TimeStatus> ToList()
         {
-            lock (dictStatus)
+            lock (hashtable.SyncRoot)
             {
-                return dictStatus.Values.ToList();
+                return hashtable.Values.Cast<TimeStatus>().ToList();
             }
         }
 
@@ -93,16 +93,16 @@ namespace MySoft.IoC.Messages
         /// <returns></returns>
         public TimeStatus GetNewest()
         {
-            lock (dictStatus)
+            if (hashtable.Count > 0)
             {
-                if (dictStatus.Count > 0)
+                lock (hashtable.SyncRoot)
                 {
-                    var key = dictStatus.Max(p => p.Key);
-                    return dictStatus.FirstOrDefault(p => p.Key == key).Value;
+                    var key = hashtable.Keys.Cast<string>().Last();
+                    return hashtable[key] as TimeStatus;
                 }
-
-                return new TimeStatus { CounterTime = DateTime.Now };
             }
+
+            return new TimeStatus { CounterTime = DateTime.Now };
         }
 
         /// <summary>
@@ -110,10 +110,7 @@ namespace MySoft.IoC.Messages
         /// </summary>
         public void Clear()
         {
-            lock (dictStatus)
-            {
-                dictStatus.Clear();
-            }
+            hashtable.Clear();
         }
     }
 }

@@ -43,12 +43,8 @@ namespace MySoft.IoC
 
         void DoPushWork(object state)
         {
-            int counter = 0;
             while (true)
             {
-                if (statuslist == null)
-                    break;
-
                 //响应定时信息
                 if (statuslist.Count > 0)
                 {
@@ -56,14 +52,11 @@ namespace MySoft.IoC
                     MessageCenter.Instance.Notify(status);
                 }
 
-                counter++;
-
                 //每分钟进行一次计数
-                if (counter >= 60)
-                {
-                    counter = 0;
+                if (counterlist.Count >= 60)
                     counterlist.Reset();
-                }
+                else
+                    counterlist.Count++;
 
                 //每秒推送一次
                 Thread.Sleep(1000);
@@ -91,7 +84,7 @@ namespace MySoft.IoC
             //计算统计
             counterlist.CallCounter(args);
 
-            //响应错误信息
+            //响应消息
             MessageCenter.Instance.Notify(args);
         }
 

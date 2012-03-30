@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Collections;
 using System.Threading;
 using MySoft.IoC.Messages;
 
@@ -24,24 +20,6 @@ namespace MySoft.IoC.Services
         public ResponseMessage Message
         {
             get { return message; }
-            set
-            {
-                if (value != null)
-                {
-                    var tmpMsg = new ResponseMessage
-                    {
-                        TransactionId = transactionId,
-                        ServiceName = value.ServiceName,
-                        MethodName = value.MethodName,
-                        Parameters = value.Parameters,
-                        ReturnType = value.ReturnType,
-                        Error = value.Error,
-                        Value = value.Value
-                    };
-
-                    message = tmpMsg;
-                }
-            }
         }
 
         /// <summary>
@@ -67,9 +45,26 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 响应信号
         /// </summary>
+        /// <param name="resMsg"></param>
         /// <returns></returns>
-        public bool Set()
+        public bool Set(ResponseMessage resMsg)
         {
+            if (resMsg != null)
+            {
+                var tmpMsg = new ResponseMessage
+                {
+                    TransactionId = transactionId,
+                    ServiceName = resMsg.ServiceName,
+                    MethodName = resMsg.MethodName,
+                    Parameters = resMsg.Parameters,
+                    ReturnType = resMsg.ReturnType,
+                    Error = resMsg.Error,
+                    Value = resMsg.Value
+                };
+
+                this.message = tmpMsg;
+            }
+
             return reset.Set();
         }
     }

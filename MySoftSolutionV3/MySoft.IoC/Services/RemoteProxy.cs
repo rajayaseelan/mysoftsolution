@@ -78,10 +78,9 @@ namespace MySoft.IoC.Services
             if (hashtable.ContainsKey(resMsg.TransactionId))
             {
                 var waitResult = hashtable[resMsg.TransactionId];
-                waitResult.Message = resMsg;
 
                 //Êý¾ÝÏìÓ¦
-                waitResult.Set();
+                waitResult.Set(resMsg);
             }
         }
 
@@ -117,8 +116,8 @@ namespace MySoft.IoC.Services
                 var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
                 if (!waitResult.Wait(elapsedTime))
                 {
-                    throw new WarningException(string.Format("¡¾{0}:{1}¡¿ => Call service ({2}, {3}) timeout ({4}) ms."
-                       , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds));
+                    throw new WarningException(string.Format("¡¾{0}:{1}¡¿ => Call service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
+                       , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()));
                 }
 
                 return waitResult.Message;

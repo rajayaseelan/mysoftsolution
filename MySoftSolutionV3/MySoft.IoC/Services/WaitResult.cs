@@ -75,7 +75,6 @@ namespace MySoft.IoC.Services
         public ResponseMessage Message
         {
             get { return message; }
-            set { message = value; }
         }
 
         /// <summary>
@@ -99,9 +98,14 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 响应信号
         /// </summary>
+        /// <param name="resMsg"></param>
         /// <returns></returns>
-        public bool Set()
+        public bool Set(ResponseMessage resMsg)
         {
+            if (resMsg != null)
+            {
+                this.message = resMsg;
+            }
             return reset.Set();
         }
     }

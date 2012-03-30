@@ -43,16 +43,22 @@ namespace MySoft.IoC.Services
             var methodKey = string.Format("{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
             if (!hashtable.ContainsKey(methodKey))
             {
-                var m = CoreHelper.GetMethodFromType(serviceType, reqMsg.MethodName);
-                if (m == null)
+                lock (hashtable.SyncRoot)
                 {
-                    string message = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
-                    resMsg.Error = new WarningException(message);
+                    if (!hashtable.ContainsKey(methodKey))
+                    {
+                        var m = CoreHelper.GetMethodFromType(serviceType, reqMsg.MethodName);
+                        if (m == null)
+                        {
+                            string message = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
+                            resMsg.Error = new WarningException(message);
 
-                    return resMsg;
+                            return resMsg;
+                        }
+
+                        hashtable[methodKey] = m;
+                    }
                 }
-
-                hashtable[methodKey] = m;
             }
 
             #endregion

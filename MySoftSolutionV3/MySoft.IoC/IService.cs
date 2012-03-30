@@ -1,8 +1,18 @@
 using MySoft.IoC.Messages;
 using System;
+using MySoft.Communication.Scs.Server;
+using MySoft.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
+    /// <summary>
+    /// 异步发送消息
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="message"></param>
+    public delegate void AsyncSendMessage(IScsServerClient client, IScsMessage message);
+
     /// <summary>
     /// interface of all services.
     /// </summary>

@@ -158,11 +158,10 @@ namespace MySoft.IoC.HttpServer
                     ServiceName = caller.Service.FullName,
                     MethodName = caller.Method.ToString(),
                     Parameters = parameters
-
                 };
 
-                string cacheKey = string.Format("HttpServiceCaller_{0}_{1}_{2}", message.ServiceName,
-                    message.MethodName, message.Parameters);
+                var jsonString = ServiceConfig.FormatJson(message.Parameters);
+                string cacheKey = string.Format("HttpServiceCaller_{0}_{1}_{2}", message.ServiceName, message.MethodName, jsonString);
 
                 var invokeData = CacheHelper.Get<InvokeData>(cacheKey);
                 if (invokeData == null)

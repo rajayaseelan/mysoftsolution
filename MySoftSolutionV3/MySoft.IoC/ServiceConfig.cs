@@ -20,17 +20,17 @@ namespace MySoft.IoC
         /// <summary>
         /// The default minute call number.
         /// </summary>
-        public const int DEFAULT_MINUTE_CALL = 1000; //1000次
+        public const int DEFAULT_MINUTE_CALL = 100; //100次
 
         /// <summary>
         /// The default client timeout number. 
         /// </summary>
-        public const int DEFAULT_CLIENT_TIMEOUT = 2 * 60; //60秒
+        public const int DEFAULT_CLIENT_TIMEOUT = 5 * 60; //60秒
 
         /// <summary>
         /// The default server timeout number. 
         /// </summary>
-        public const int DEFAULT_SERVER_TIMEOUT = 60; //60秒
+        public const int DEFAULT_SERVER_TIMEOUT = 2 * 60; //60秒
 
         /// <summary>
         /// The default pool number.
@@ -107,7 +107,8 @@ namespace MySoft.IoC
             }
 
             //返回默认的缓存key
-            var methodKey = string.Format("{0}_{1}_{2}", serviceType.FullName, method.ToString(), collection.ToString());
+            var jsonString = ServiceConfig.FormatJson(collection.ToString());
+            var methodKey = string.Format("{0}_{1}_{2}", serviceType.FullName, method.ToString(), jsonString);
             return string.Format("CastleCache_{0}", methodKey).ToLower();
         }
 
@@ -137,6 +138,19 @@ namespace MySoft.IoC
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 格式化Json
+        /// </summary>
+        /// <param name="jsonString"></param>
+        /// <returns></returns>
+        internal static string FormatJson(string jsonString)
+        {
+            if (string.IsNullOrEmpty(jsonString))
+                return jsonString;
+
+            return jsonString.Replace(" ", "").Replace("\r\n", "");
         }
     }
 }

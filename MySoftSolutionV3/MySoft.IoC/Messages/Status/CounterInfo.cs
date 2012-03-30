@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Collections;
 using MySoft.Logger;
 
 namespace MySoft.IoC.Messages
@@ -14,7 +13,8 @@ namespace MySoft.IoC.Messages
     {
         private ILog logger;
         private int maxCount;
-        private IDictionary<string, CounterInfo> dictCounter;
+        private int count;
+        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
         /// <summary>
         /// 实例化CounterInfoCollection
@@ -22,7 +22,6 @@ namespace MySoft.IoC.Messages
         /// <param name="maxCount"></param>
         public CounterInfoCollection(ILog logger, int maxCount)
         {
-            this.dictCounter = new Dictionary<string, CounterInfo>();
             this.logger = logger;
             this.maxCount = maxCount;
         }
@@ -33,22 +32,22 @@ namespace MySoft.IoC.Messages
         /// <param name="args"></param>
         public void CallCounter(CallEventArgs args)
         {
-            //计数按应用走
-            string callKey = string.Format("Call_{0}_{1}_{2}", args.Caller.AppName, args.Caller.ServiceName, args.Caller.MethodName);
-            lock (dictCounter)
+            //计数按方法
+            var jsonString = ServiceConfig.FormatJson(args.Caller.Parameters);
+            string callKey = string.Format("Counter_{0}_{1}_{2}_{3}", args.Caller.AppName, args.Caller.ServiceName, args.Caller.MethodName, jsonString);
+
+            if (!hashtable.ContainsKey(callKey))
             {
-                if (!dictCounter.ContainsKey(callKey))
+                hashtable[callKey] = new CounterInfo
                 {
-                    dictCounter[callKey] = new CounterInfo
-                    {
-                        AppName = args.Caller.AppName,
-                        ServiceName = args.Caller.ServiceName,
-                        MethodName = args.Caller.MethodName
-                    };
-                }
+                    AppName = args.Caller.AppName,
+                    ServiceName = args.Caller.ServiceName,
+                    MethodName = args.Caller.MethodName,
+                    Parameters = args.Caller.Parameters
+                };
             }
 
-            var counter = dictCounter[callKey];
+            var counter = hashtable[callKey] as CounterInfo;
             lock (counter)
             {
                 if (counter.NeedReset)
@@ -56,8 +55,8 @@ namespace MySoft.IoC.Messages
                     //如果调用次数超过最大允许数，则提示警告
                     if (counter.Count >= maxCount)
                     {
-                        var warning = new WarningException(string.Format("【{0}】 One minute call service ({1}, {2}) {3} times more than {4} times.",
-                          counter.AppName, counter.ServiceName, counter.MethodName, counter.Count, maxCount));
+                        var warning = new WarningException(string.Format("【{0}】 One minute call service ({1}, {2}) {3} times more than {4} times.\r\nParameters => {5}",
+                          counter.AppName, counter.ServiceName, counter.MethodName, counter.Count, maxCount, counter.Parameters));
 
                         //内部异常
                         var error = new IoCException(string.Format("【{0}】 One minute call service ({1}) {2} times.",
@@ -71,12 +70,23 @@ namespace MySoft.IoC.Messages
                     }
 
                     //重置计数器
-                    counter.Reset();
+                    hashtable.Remove(callKey);
                 }
-
-                //计数器加1
-                counter.Count++;
+                else
+                {
+                    //计数器加1
+                    counter.Count++;
+                }
             }
+        }
+
+        /// <summary>
+        /// 计数器加一
+        /// </summary>
+        public int Count
+        {
+            get { return count; }
+            set { count = value; }
         }
 
         /// <summary>
@@ -84,12 +94,16 @@ namespace MySoft.IoC.Messages
         /// </summary>
         public void Reset()
         {
-            lock (dictCounter)
+            //将计数清零
+            lock (hashtable.SyncRoot)
             {
-                //将计数清零
-                foreach (var kvp in dictCounter)
+                this.count = 0;
+
+                var keys = hashtable.Keys.Cast<string>().ToArray();
+                foreach (var key in keys)
                 {
-                    kvp.Value.NeedReset = true;
+                    var counter = hashtable[key] as CounterInfo;
+                    counter.NeedReset = true;
                 }
             }
         }
@@ -117,6 +131,11 @@ namespace MySoft.IoC.Messages
         public string MethodName { get; set; }
 
         /// <summary>
+        /// 参数信息
+        /// </summary>
+        public string Parameters { get; set; }
+
+        /// <summary>
         /// 调用次数
         /// </summary>
         public int Count { get; set; }
@@ -125,17 +144,5 @@ namespace MySoft.IoC.Messages
         /// 是否重置状态
         /// </summary>
         public bool NeedReset { get; set; }
-
-        /// <summary>
-        /// 重置状态
-        /// </summary>
-        public void Reset()
-        {
-            lock (this)
-            {
-                this.NeedReset = false;
-                this.Count = 0;
-            }
-        }
     }
 }
