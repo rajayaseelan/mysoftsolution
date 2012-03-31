@@ -63,11 +63,19 @@ namespace MySoft.IoC.Services
             //设置上下文
             OperationContext.Current = waitResult.Context;
 
-            //调用方法
-            var resMsg = service.CallService(waitResult.Request);
+            try
+            {
+                //调用方法
+                var resMsg = service.CallService(waitResult.Request);
 
-            //响应信号
-            waitResult.Set(resMsg);
+                //响应信号
+                waitResult.Set(resMsg);
+            }
+            finally
+            {
+                //初始化上下文
+                OperationContext.Current = null;
+            }
         }
 
         #region IService 成员

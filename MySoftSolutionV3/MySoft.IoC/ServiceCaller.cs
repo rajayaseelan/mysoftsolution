@@ -74,8 +74,11 @@ namespace MySoft.IoC
         {
             try
             {
+                //创建Caller;
+                var caller = CreateCaller(reqMsg);
+
                 //设置上下文
-                SetOperationContext(client, reqMsg);
+                SetOperationContext(client, caller);
 
                 //判断是否为状态服务
                 if (IsStatusService(reqMsg))
@@ -94,10 +97,11 @@ namespace MySoft.IoC
                     //停止计时
                     watch.Stop();
 
+                    //调用参数
                     var callArgs = new CallEventArgs
                     {
                         CallTime = DateTime.Now,
-                        Caller = OperationContext.Current.Caller,
+                        Caller = caller,
                         Error = resMsg.Error,
                         ElapsedTime = watch.ElapsedMilliseconds,
                         Count = resMsg.Count,
@@ -116,6 +120,8 @@ namespace MySoft.IoC
                     {
                         try
                         {
+                            if (state == null) return;
+
                             var eventArgs = state as CallEventArgs;
                             status.CounterNotify(eventArgs);
                         }
@@ -188,20 +194,12 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 设置上下文
+        /// 获取AppCaller
         /// </summary>
-        /// <param name="client"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private void SetOperationContext(IScsServerClient client, RequestMessage reqMsg)
+        private AppCaller CreateCaller(RequestMessage reqMsg)
         {
-            //实例化当前上下文
-            Type callbackType = null;
-            if (callbackTypes.ContainsKey(reqMsg.ServiceName))
-            {
-                callbackType = callbackTypes[reqMsg.ServiceName];
-            }
-
             //服务参数信息
             var caller = new AppCaller
             {
@@ -212,6 +210,23 @@ namespace MySoft.IoC
                 MethodName = reqMsg.MethodName,
                 Parameters = reqMsg.Parameters.ToString()
             };
+
+            return caller;
+        }
+
+        /// <summary>
+        /// 设置上下文
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="caller"></param>
+        private void SetOperationContext(IScsServerClient client, AppCaller caller)
+        {
+            //实例化当前上下文
+            Type callbackType = null;
+            if (callbackTypes.ContainsKey(caller.ServiceName))
+            {
+                callbackType = callbackTypes[caller.ServiceName];
+            }
 
             OperationContext.Current = new OperationContext(client, callbackType)
             {
