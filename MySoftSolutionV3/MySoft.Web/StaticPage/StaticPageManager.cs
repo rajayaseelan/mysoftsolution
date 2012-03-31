@@ -96,36 +96,34 @@ namespace MySoft.Web
             {
                 foreach (IStaticPageItem sti in staticPageItems)
                 {
-                    try
+                    //需要生成才启动线程
+                    if (sti.NeedUpdate(updateTime))
                     {
-                        //需要生成才启动线程
-                        if (sti.NeedUpdate(updateTime))
+                        ThreadPool.QueueUserWorkItem(state =>
                         {
-                            Thread thread = new Thread(state =>
-                            {
-                                if (state == null) return;
+                            if (state == null) return;
 
-                                ArrayList arr = state as ArrayList;
-                                IStaticPageItem item = arr[0] as IStaticPageItem;
-                                DateTime time = (DateTime)arr[1];
-                                item.Update(time);
-                            });
+                            ArrayList arr = state as ArrayList;
+                            IStaticPageItem item = arr[0] as IStaticPageItem;
+                            DateTime time = (DateTime)arr[1];
 
-                            //启动生成线程
-                            thread.Start(new ArrayList { sti, updateTime });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        var exception = new StaticPageException("执行页面生成出现异常：" + ex.Message, ex);
-                        if (OnError != null)
-                        {
                             try
                             {
-                                OnError(exception);
+                                item.Update(time);
                             }
-                            catch { }
-                        }
+                            catch (Exception ex)
+                            {
+                                var exception = new StaticPageException("执行页面生成出现异常：" + ex.Message, ex);
+                                if (OnError != null)
+                                {
+                                    try
+                                    {
+                                        OnError(exception);
+                                    }
+                                    catch { }
+                                }
+                            }
+                        }, new ArrayList { sti, updateTime });
                     }
                 }
             }
@@ -143,6 +141,23 @@ namespace MySoft.Web
                 {
                     if (!staticPageItems.Contains(item))
                         staticPageItems.Add(item);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 设置统一远程请求与域名信息
+        /// </summary>
+        /// <param name="domainUri"></param>
+        public static void SetRemote(string domainUri)
+        {
+            lock (staticPageItems)
+            {
+                foreach (IStaticPageItem item in staticPageItems)
+                {
+                    if (item.IsRemote) continue;
+
+                    item.SetDomain(domainUri);
                 }
             }
         }
@@ -426,14 +441,12 @@ namespace MySoft.Web
     {
         private TextWriter output;
         private Encoding encoding;
-        private MemoryStream stream;
 
         public EncodingWorkerRequest(string page, string query, TextWriter output)
             : base(page, query, output)
         {
             this.output = output;
             this.encoding = Encoding.UTF8;
-            this.stream = new MemoryStream();
         }
 
         public EncodingWorkerRequest(string page, string query, TextWriter output, Encoding encoding)
@@ -441,32 +454,11 @@ namespace MySoft.Web
         {
             this.output = output;
             this.encoding = encoding;
-            this.stream = new MemoryStream();
         }
 
         public override void SendResponseFromMemory(byte[] data, int length)
         {
-            if (length > 0 && data != null)
-            {
-                stream.Write(data, 0, data.Length);
-            }
-        }
-
-        public override void FlushResponse(bool finalFlush)
-        {
-            if (finalFlush)
-            {
-                using (var sr = new StreamReader(stream, encoding))
-                {
-                    stream.Position = 0;
-                    stream.Flush();
-
-                    string content = sr.ReadToEnd();
-
-                    //把内容写入输出流中
-                    output.Write(content);
-                }
-            }
+            output.Write(encoding.GetString(data));
         }
     }
 }

@@ -38,6 +38,12 @@ namespace MySoft.Web
         /// 当前是否可以更新
         /// </summary>
         bool NeedUpdate(DateTime updateTime);
+
+        /// <summary>
+        /// 设置域名
+        /// </summary>
+        /// <param name="domainUri"></param>
+        void SetDomain(string domainUri);
     }
 
     /// <summary>
@@ -276,6 +282,19 @@ namespace MySoft.Web
         #endregion
 
         /// <summary>
+        /// 设置域名
+        /// </summary>
+        /// <param name="domainUri"></param>
+        public void SetDomain(string domainUri)
+        {
+            //如果是远程请求，则跳过
+            if (isRemote) return;
+
+            isRemote = true;
+            templatePath = string.Concat(domainUri.TrimEnd('/'), "/", templatePath.TrimStart(new char[] { '~', '/' }));
+        }
+
+        /// <summary>
         /// 立即更新页面
         /// </summary>
         public void Update()
@@ -362,10 +381,10 @@ namespace MySoft.Web
 
                 staticPageDependency.UpdateSuccess = true;
             }
-            catch
+            catch (Exception ex)
             {
                 StaticPageManager.SaveError(new StaticPageException(string.Format("单个生成静态文件失败，【{2}】分钟后重新生成！\r\n{0} => {1}",
-                    item.DynamicUrl, item.StaticUrl, retryInterval)));
+                    item.DynamicUrl, item.StaticUrl, retryInterval), ex));
 
                 //如果出错，则继续往下执行
                 staticPageDependency.UpdateSuccess = false;
@@ -552,7 +571,22 @@ namespace MySoft.Web
             set { inMinutes = value; }
         }
 
-        private int threadCount = 1;
+        /// <summary>
+        /// 默认线程数
+        /// </summary>
+        private const int DEFAULT_THREAD = 1;
+
+        /// <summary>
+        /// 最小线程数
+        /// </summary>
+        private const int MIN_THREAD = 1;
+
+        /// <summary>
+        /// 最大线程数
+        /// </summary>
+        private const int MAX_THREAD = 10;
+
+        private int threadCount = DEFAULT_THREAD;
         /// <summary>
         /// 生成页面的线程数，默认为1
         /// </summary>
@@ -561,11 +595,13 @@ namespace MySoft.Web
             get { return threadCount; }
             set
             {
-                if (threadCount > 5) throw new WebException("生成线程数不能大于5！");
-                if (value <= 0)
-                    threadCount = 1;
-                else
-                    threadCount = value;
+                if (threadCount > MAX_THREAD)
+                    throw new WebException(string.Format("生成线程数不能大于{0}！", MAX_THREAD));
+
+                if (threadCount < MIN_THREAD)
+                    throw new WebException(string.Format("生成线程数不能小于{0}！", MIN_THREAD));
+
+                threadCount = value;
             }
         }
 
@@ -632,6 +668,19 @@ namespace MySoft.Web
         }
 
         #endregion
+
+        /// <summary>
+        /// 设置域名
+        /// </summary>
+        /// <param name="domainUri"></param>
+        public void SetDomain(string domainUri)
+        {
+            //如果是远程请求，则跳过
+            if (isRemote) return;
+
+            isRemote = true;
+            templatePath = string.Concat(domainUri.TrimEnd('/'), "/", templatePath.TrimStart(new char[] { '~', '/' }));
+        }
 
         /// <summary>
         /// 立即更新页面
@@ -900,10 +949,13 @@ namespace MySoft.Web
                         //置状态为生成成功
                         item.UpdateSuccess = true;
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         //置状态为生成失败
                         item.UpdateSuccess = false;
+
+                        StaticPageManager.SaveError(new StaticPageException(string.Format("单个生成静态文件失败，等待重新生成！\r\n{0} => {1}",
+                                item.DynamicUrl, item.StaticUrl), ex));
                     }
                 }
 

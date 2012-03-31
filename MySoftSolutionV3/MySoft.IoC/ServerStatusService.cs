@@ -82,7 +82,7 @@ namespace MySoft.IoC
                 status.SuccessCount++;
 
             //计算统计
-            counterlist.CallCounter(args);
+            counterlist.Call(args);
 
             //响应消息
             MessageCenter.Instance.Notify(args);

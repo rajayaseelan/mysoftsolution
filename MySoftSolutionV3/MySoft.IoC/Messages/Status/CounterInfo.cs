@@ -30,7 +30,7 @@ namespace MySoft.IoC.Messages
         /// 调用方法
         /// </summary>
         /// <param name="args"></param>
-        public void CallCounter(CallEventArgs args)
+        public void Call(CallEventArgs args)
         {
             //计数按方法
             var jsonString = ServiceConfig.FormatJson(args.Caller.Parameters);
@@ -43,40 +43,41 @@ namespace MySoft.IoC.Messages
                     AppName = args.Caller.AppName,
                     ServiceName = args.Caller.ServiceName,
                     MethodName = args.Caller.MethodName,
-                    Parameters = args.Caller.Parameters
+                    Parameters = args.Caller.Parameters,
+                    NeedReset = false,
+                    Count = 1
                 };
+
+                return;
             }
 
             var counter = hashtable[callKey] as CounterInfo;
-            lock (counter)
+            if (counter.NeedReset)
             {
-                if (counter.NeedReset)
+                //重置计数器
+                hashtable.Remove(callKey);
+
+                //如果调用次数超过最大允许数，则提示警告
+                if (counter.Count >= maxCount)
                 {
-                    //如果调用次数超过最大允许数，则提示警告
-                    if (counter.Count >= maxCount)
-                    {
-                        var warning = new WarningException(string.Format("【{0}】 One minute call service ({1}, {2}) {3} times more than {4} times.\r\nParameters => {5}",
-                          counter.AppName, counter.ServiceName, counter.MethodName, counter.Count, maxCount, counter.Parameters));
+                    var warning = new WarningException(string.Format("【{0}】 One minute call service ({1}, {2}) {3} times more than {4} times.\r\nParameters => {5}",
+                      counter.AppName, counter.ServiceName, counter.MethodName, counter.Count, maxCount, counter.Parameters));
 
-                        //内部异常
-                        var error = new IoCException(string.Format("【{0}】 One minute call service ({1}) {2} times.",
-                            counter.AppName, counter.ServiceName, counter.Count), warning);
+                    //内部异常
+                    var error = new IoCException(string.Format("【{0}】 One minute call service ({1}) {2} times.",
+                        counter.AppName, counter.ServiceName, counter.Count), warning);
 
-                        //写错误日志
-                        logger.WriteError(error);
+                    //写错误日志
+                    logger.WriteError(error);
 
-                        //抛出异常
-                        args.Error = error;
-                    }
-
-                    //重置计数器
-                    hashtable.Remove(callKey);
+                    //抛出异常
+                    args.Error = error;
                 }
-                else
-                {
-                    //计数器加1
-                    counter.Count++;
-                }
+            }
+            else
+            {
+                //计数器加1
+                counter.Count++;
             }
         }
 
