@@ -92,7 +92,7 @@ namespace MySoft.IoC
         /// Gets or sets the invoked
         /// </summary>
         /// <value>The invoked.</value>
-        public bool Invoked
+        public bool Invoke
         {
             get { return invoked; }
             set { invoked = value; }

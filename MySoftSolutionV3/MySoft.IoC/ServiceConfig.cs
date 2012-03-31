@@ -15,7 +15,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default record hour
         /// </summary>
-        public const int DEFAULT_RECORD_HOUR = 12; //12小时
+        public const int DEFAULT_RECORD_HOUR = 6; //6小时
 
         /// <summary>
         /// The default minute call number.
@@ -35,7 +35,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default pool number.
         /// </summary>
-        public const int DEFAULT_CLIENT_MAXPOOL = 100; //默认为100
+        public const int DEFAULT_CLIENT_MAXPOOL = 50; //默认为50，一般情况下50足矣
 
         #endregion
 

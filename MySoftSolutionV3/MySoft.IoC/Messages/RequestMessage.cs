@@ -101,10 +101,26 @@ namespace MySoft.IoC.Messages
     }
 
     /// <summary>
+    /// Invoke接口
+    /// </summary>
+    public interface IInvoking
+    {
+        /// <summary>
+        /// Invoke方式调用
+        /// </summary>
+        bool InvokeMethod { get; set; }
+
+        /// <summary>
+        /// 方法
+        /// </summary>
+        System.Reflection.MethodInfo MethodInfo { get; set; }
+    }
+
+    /// <summary>
     /// The request msg.
     /// </summary>
     [Serializable]
-    public class RequestMessage : MessageBase
+    public class RequestMessage : MessageBase, IInvoking
     {
         #region Private Members
 
@@ -165,7 +181,7 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// invoke method
         /// </summary>
-        public bool Invoked
+        public bool InvokeMethod
         {
             get
             {
@@ -183,7 +199,7 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// 响应的方法
         /// </summary>
-        internal System.Reflection.MethodInfo Method
+        System.Reflection.MethodInfo IInvoking.MethodInfo
         {
             get
             {

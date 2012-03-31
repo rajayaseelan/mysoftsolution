@@ -26,13 +26,13 @@ namespace MySoft.IoC.Services
         public override ResponseMessage CallService(RequestMessage reqMsg)
         {
             //如果已经是Invoke调用，则直接返回
-            if (reqMsg.Invoked)
+            if (reqMsg.InvokeMethod)
             {
                 return base.CallService(reqMsg);
             }
             else
             {
-                var method = reqMsg.Method;
+                var method = GetInvokeMethod(reqMsg);
 
                 //处理开始
                 HandleBegin(reqMsg, method);
@@ -48,6 +48,20 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// 获取Invoke方法
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private System.Reflection.MethodInfo GetInvokeMethod(RequestMessage reqMsg)
+        {
+            var invoke = reqMsg as IInvoking;
+            var method = invoke.MethodInfo;
+            invoke.MethodInfo = null;
+
+            return method;
+        }
+
+        /// <summary>
         /// 处理输入参数
         /// </summary>
         /// <param name="reqMsg"></param>
@@ -55,8 +69,7 @@ namespace MySoft.IoC.Services
         private void HandleBegin(RequestMessage reqMsg, System.Reflection.MethodInfo method)
         {
             //设置Invoke方式
-            reqMsg.Invoked = true;
-            reqMsg.Method = null;
+            reqMsg.InvokeMethod = true;
 
             var parameters = method.GetParameters();
             if (parameters.Length > 0)

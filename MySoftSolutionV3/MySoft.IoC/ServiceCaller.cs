@@ -105,7 +105,7 @@ namespace MySoft.IoC
                     };
 
                     //如果是Json方式调用，则需要处理异常
-                    if (resMsg.IsError && reqMsg.Invoked)
+                    if (resMsg.IsError && reqMsg.InvokeMethod)
                     {
                         resMsg.Parameters.Clear();
                         resMsg.Error = new ApplicationException(callArgs.Error.Message);
@@ -180,7 +180,7 @@ namespace MySoft.IoC
 
                 //解析服务
                 var s = ParseService(reqMsg);
-                service = new QueueService(s, time);
+                service = new AsyncService(s, time);
             }
 
             //调用服务

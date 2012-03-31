@@ -109,6 +109,13 @@ namespace MySoft.IoC.Services
                 var waitResult = new WaitResult();
                 hashtable[reqMsg.TransactionId] = waitResult;
 
+                //参数值
+                var jsonString = reqMsg.Parameters.ToString();
+                string queueKey = string.Format("{0}${1}${2}", reqMsg.ServiceName, reqMsg.MethodName, jsonString);
+                queueKey = ServiceConfig.FormatJson(queueKey);
+
+                //处理Queue
+
                 //发送消息
                 reqProxy.SendMessage(reqMsg);
 
@@ -117,7 +124,7 @@ namespace MySoft.IoC.Services
                 if (!waitResult.Wait(elapsedTime))
                 {
                     throw new WarningException(string.Format("【{0}:{1}】 => Call service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
-                       , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()));
+                       , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, jsonString));
                 }
 
                 return waitResult.Message;

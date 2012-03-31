@@ -91,8 +91,8 @@ namespace MySoft.IoC.Configuration
                     if (childattribute["compress"] != null && childattribute["compress"].Value.Trim() != string.Empty)
                         node.Compress = Convert.ToBoolean(childattribute["compress"].Value);
 
-                    if (childattribute["invoked"] != null && childattribute["invoked"].Value.Trim() != string.Empty)
-                        node.Invoked = Convert.ToBoolean(childattribute["invoked"].Value);
+                    if (childattribute["invoke"] != null && childattribute["invoke"].Value.Trim() != string.Empty)
+                        node.Invoke = Convert.ToBoolean(childattribute["invoke"].Value);
 
                     //处理默认的服务
                     if (string.IsNullOrEmpty(defaultKey))

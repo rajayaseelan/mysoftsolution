@@ -78,7 +78,7 @@ namespace MySoft.IoC.Services
                 var service = AspectFactory.CreateProxyService(serviceType, instance);
 
                 var pis = method.GetParameters();
-                if (reqMsg.Invoked)
+                if (reqMsg.InvokeMethod)
                 {
                     var objValue = reqMsg.Parameters["InvokeParameter"];
                     var jsonString = string.Empty;
@@ -118,7 +118,7 @@ namespace MySoft.IoC.Services
                 }
 
                 //返回结果数据
-                if (reqMsg.Invoked)
+                if (reqMsg.InvokeMethod)
                 {
                     resMsg.Parameters.Clear();
                     resMsg.Value = returnValue;

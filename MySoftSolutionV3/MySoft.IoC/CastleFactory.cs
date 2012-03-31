@@ -126,7 +126,7 @@ namespace MySoft.IoC
                         if (p.Value.MaxPool > 1000) throw new WarningException("Maximum pool size 1000！");
 
                         IService proxy = null;
-                        if (p.Value.Invoked)
+                        if (p.Value.Invoke)
                             proxy = new InvokeProxy(p.Value, sContainer);
                         else
                             proxy = new RemoteProxy(p.Value, sContainer);
@@ -230,7 +230,7 @@ namespace MySoft.IoC
                 proxy = singleton.proxies[node.Key.ToLower()];
             else
             {
-                if (node.Invoked)
+                if (node.Invoke)
                     proxy = new InvokeProxy(node, container);
                 else
                     proxy = new RemoteProxy(node, container);
@@ -381,7 +381,7 @@ namespace MySoft.IoC
                 service = singleton.proxies[node.Key.ToLower()];
             else
             {
-                if (node.Invoked)
+                if (node.Invoke)
                     service = new InvokeProxy(node, container);
                 else
                     service = new RemoteProxy(node, container);
@@ -460,22 +460,12 @@ namespace MySoft.IoC
                 throw new WarningException("Not find any service node！");
             }
 
-            if (string.IsNullOrEmpty(nodeKey)) nodeKey = config.Default;
-            string oldNodeKey = nodeKey;
-
             //如果不存在当前配置节，则使用默认配置节
             if (string.IsNullOrEmpty(nodeKey) || !singleton.proxies.ContainsKey(nodeKey.ToLower()))
             {
                 nodeKey = config.Default;
             }
 
-            if (!singleton.proxies.ContainsKey(nodeKey.ToLower()))
-            {
-                if (oldNodeKey == nodeKey)
-                    throw new WarningException("Not find the service node [" + nodeKey + "]！");
-                else
-                    throw new WarningException("Not find the service node [" + oldNodeKey + "] or [" + nodeKey + "]！");
-            }
             return nodeKey;
         }
 

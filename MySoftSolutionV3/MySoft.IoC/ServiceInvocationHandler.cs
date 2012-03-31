@@ -103,7 +103,9 @@ namespace MySoft.IoC
             reqMsg.MethodName = method.ToString();                          //方法名称
             reqMsg.ReturnType = method.ReturnType;                          //返回类型
             reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
-            reqMsg.Method = method;                                         //调用方法
+
+            //设置调用方法
+            (reqMsg as IInvoking).MethodInfo = method;
 
             #endregion
 

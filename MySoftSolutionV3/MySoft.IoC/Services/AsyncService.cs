@@ -11,7 +11,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 队列服务
     /// </summary>
-    public class QueueService : IService
+    public class AsyncService : IService
     {
         private IService service;
         private TimeSpan elapsedTime;
@@ -21,7 +21,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="service"></param>
         /// <param name="elapsedTime"></param>
-        public QueueService(IService service, TimeSpan elapsedTime)
+        public AsyncService(IService service, TimeSpan elapsedTime)
         {
             this.service = service;
             this.elapsedTime = elapsedTime;
@@ -37,7 +37,7 @@ namespace MySoft.IoC.Services
             var context = OperationContext.Current;
 
             //实例化等待对象
-            var waitResult = new QueueResult(context, reqMsg);
+            var waitResult = new AsyncResult(context, reqMsg);
 
             //异步调用
             ThreadPool.QueueUserWorkItem(GetResponse, waitResult);
@@ -58,7 +58,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         private void GetResponse(object state)
         {
-            var waitResult = state as QueueResult;
+            var waitResult = state as AsyncResult;
 
             //设置上下文
             OperationContext.Current = waitResult.Context;
