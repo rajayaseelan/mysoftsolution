@@ -33,7 +33,6 @@ namespace MySoft.Security
             cStream.Write(inputByteArray, 0, inputByteArray.Length);
             cStream.FlushFinalBlock();
             return Convert.ToBase64String(mStream.ToArray());
-
         }
 
         /// <summary>
@@ -44,25 +43,18 @@ namespace MySoft.Security
         /// <returns>解密成功返回解密后的字符串,失败返源串</returns>
         public static string Decrypt(string decryptString, string decryptKey)
         {
-            try
-            {
-                decryptKey = CoreHelper.GetSubString(decryptKey, 8, "");
-                decryptKey = decryptKey.PadRight(8, ' ');
-                byte[] rgbKey = Encoding.UTF8.GetBytes(decryptKey);
-                byte[] rgbIV = Keys;
-                byte[] inputByteArray = Convert.FromBase64String(decryptString);
-                DESCryptoServiceProvider DCSP = new DESCryptoServiceProvider();
+            decryptKey = CoreHelper.GetSubString(decryptKey, 8, "");
+            decryptKey = decryptKey.PadRight(8, ' ');
+            byte[] rgbKey = Encoding.UTF8.GetBytes(decryptKey);
+            byte[] rgbIV = Keys;
+            byte[] inputByteArray = Convert.FromBase64String(decryptString);
+            DESCryptoServiceProvider DCSP = new DESCryptoServiceProvider();
 
-                MemoryStream mStream = new MemoryStream();
-                CryptoStream cStream = new CryptoStream(mStream, DCSP.CreateDecryptor(rgbKey, rgbIV), CryptoStreamMode.Write);
-                cStream.Write(inputByteArray, 0, inputByteArray.Length);
-                cStream.FlushFinalBlock();
-                return Encoding.UTF8.GetString(mStream.ToArray());
-            }
-            catch
-            {
-                return null;
-            }
+            MemoryStream mStream = new MemoryStream();
+            CryptoStream cStream = new CryptoStream(mStream, DCSP.CreateDecryptor(rgbKey, rgbIV), CryptoStreamMode.Write);
+            cStream.Write(inputByteArray, 0, inputByteArray.Length);
+            cStream.FlushFinalBlock();
+            return Encoding.UTF8.GetString(mStream.ToArray());
         }
 
         #region DES加密解密
@@ -74,22 +66,17 @@ namespace MySoft.Security
         /// <returns>加密成功返回加密后的字符串，失败返回源串</returns>
         public static byte[] Encrypt(byte[] data, byte[] iv, string encryptKey)
         {
-            try
-            {
-                byte[] rgbKey = Encoding.UTF8.GetBytes(encryptKey.Substring(0, 8));
-                byte[] rgbIV = iv;
-                byte[] inputByteArray = data;
-                DESCryptoServiceProvider dCSP = new DESCryptoServiceProvider();
-                MemoryStream mStream = new MemoryStream();
-                CryptoStream cStream = new CryptoStream(mStream, dCSP.CreateEncryptor(rgbKey, rgbIV), CryptoStreamMode.Write);
-                cStream.Write(inputByteArray, 0, inputByteArray.Length);
-                cStream.FlushFinalBlock();
-                return mStream.ToArray();
-            }
-            catch
-            {
-                return data;
-            }
+            byte[] rgbKey = Encoding.UTF8.GetBytes(encryptKey.Substring(0, 8));
+            byte[] rgbIV = iv;
+            byte[] inputByteArray = data;
+
+            DESCryptoServiceProvider dCSP = new DESCryptoServiceProvider();
+            MemoryStream mStream = new MemoryStream();
+            CryptoStream cStream = new CryptoStream(mStream, dCSP.CreateEncryptor(rgbKey, rgbIV), CryptoStreamMode.Write);
+            cStream.Write(inputByteArray, 0, inputByteArray.Length);
+            cStream.FlushFinalBlock();
+
+            return mStream.ToArray();
         }
 
         /// DES解密
@@ -98,23 +85,17 @@ namespace MySoft.Security
         /// <returns>解密成功返回解密后的字符串，失败返源串</returns>      
         public static byte[] Decrypt(byte[] data, byte[] iv, string decryptKey)
         {
-            try
-            {
-                byte[] rgbKey = Encoding.UTF8.GetBytes(decryptKey.Substring(0, 8));
-                byte[] rgbIV = iv;
-                byte[] inputByteArray = data;
-                DESCryptoServiceProvider DCSP = new DESCryptoServiceProvider();
-                MemoryStream mStream = new MemoryStream();
-                CryptoStream cStream = new CryptoStream(mStream, DCSP.CreateDecryptor(rgbKey, rgbIV), CryptoStreamMode.Write);
-                cStream.Write(inputByteArray, 0, inputByteArray.Length);
-                cStream.FlushFinalBlock();
-                return mStream.ToArray();
-            }
-            catch
-            {
-                //return decryptString;
-                return data;
-            }
+            byte[] rgbKey = Encoding.UTF8.GetBytes(decryptKey.Substring(0, 8));
+            byte[] rgbIV = iv;
+            byte[] inputByteArray = data;
+
+            DESCryptoServiceProvider DCSP = new DESCryptoServiceProvider();
+            MemoryStream mStream = new MemoryStream();
+            CryptoStream cStream = new CryptoStream(mStream, DCSP.CreateDecryptor(rgbKey, rgbIV), CryptoStreamMode.Write);
+            cStream.Write(inputByteArray, 0, inputByteArray.Length);
+            cStream.FlushFinalBlock();
+
+            return mStream.ToArray();
         }
 
         #endregion

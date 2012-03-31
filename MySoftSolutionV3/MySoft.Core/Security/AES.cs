@@ -42,25 +42,18 @@ namespace MySoft.Security
         /// <returns></returns>
         public static string Decrypt(string decryptString, string decryptKey)
         {
-            try
-            {
-                decryptKey = CoreHelper.GetSubString(decryptKey, 32, "");
-                decryptKey = decryptKey.PadRight(32, ' ');
+            decryptKey = CoreHelper.GetSubString(decryptKey, 32, "");
+            decryptKey = decryptKey.PadRight(32, ' ');
 
-                RijndaelManaged rijndaelProvider = new RijndaelManaged();
-                rijndaelProvider.Key = Encoding.UTF8.GetBytes(decryptKey);
-                rijndaelProvider.IV = Keys;
-                ICryptoTransform rijndaelDecrypt = rijndaelProvider.CreateDecryptor();
+            RijndaelManaged rijndaelProvider = new RijndaelManaged();
+            rijndaelProvider.Key = Encoding.UTF8.GetBytes(decryptKey);
+            rijndaelProvider.IV = Keys;
+            ICryptoTransform rijndaelDecrypt = rijndaelProvider.CreateDecryptor();
 
-                byte[] inputData = Convert.FromBase64String(decryptString);
-                byte[] decryptedData = rijndaelDecrypt.TransformFinalBlock(inputData, 0, inputData.Length);
+            byte[] inputData = Convert.FromBase64String(decryptString);
+            byte[] decryptedData = rijndaelDecrypt.TransformFinalBlock(inputData, 0, inputData.Length);
 
-                return Encoding.UTF8.GetString(decryptedData);
-            }
-            catch
-            {
-                return "";
-            }
+            return Encoding.UTF8.GetString(decryptedData);
         }
 
         #region 加密解密
