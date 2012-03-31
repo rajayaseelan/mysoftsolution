@@ -170,20 +170,16 @@ namespace MySoft.IoC
                         var options = lstn.Options;
                         if (options.PushCallError && callArgs.IsError)
                         {
-                            //业务异常不进行推送
-                            if (!callArgs.IsBusinessError)
+                            var callError = new CallError
                             {
-                                var callError = new CallError
-                                {
-                                    Caller = callArgs.Caller,
-                                    CallTime = callArgs.CallTime,
-                                    Message = callArgs.Error.Message,
-                                    Error = ErrorHelper.GetErrorWithoutHtml(callArgs.Error),
-                                    HtmlError = ErrorHelper.GetHtmlError(callArgs.Error)
-                                };
+                                Caller = callArgs.Caller,
+                                CallTime = callArgs.CallTime,
+                                Message = callArgs.Error.Message,
+                                Error = ErrorHelper.GetErrorWithoutHtml(callArgs.Error),
+                                HtmlError = ErrorHelper.GetHtmlError(callArgs.Error)
+                            };
 
-                                lstn.Notify(callError);
-                            }
+                            lstn.Notify(callError);
                         }
 
                         if (options.PushCallTimeout && !callArgs.IsError)
