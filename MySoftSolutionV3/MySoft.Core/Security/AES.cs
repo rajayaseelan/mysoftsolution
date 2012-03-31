@@ -74,16 +74,12 @@ namespace MySoft.Security
             des.Key = Encoding.UTF8.GetBytes(strKey.Substring(0, 32));
             des.IV = iv;
             using (MemoryStream ms = new MemoryStream())
+            using (CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(), CryptoStreamMode.Write))
             {
-                using (CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(), CryptoStreamMode.Write))
-                {
-                    cs.Write(inputByteArray, 0, inputByteArray.Length);
-                    cs.FlushFinalBlock();
-                    byte[] cipherBytes = ms.ToArray();//得到加密后的字节数组   
-                    cs.Close();
-                    ms.Close();
-                    return cipherBytes;
-                }
+                cs.Write(inputByteArray, 0, inputByteArray.Length);
+                cs.FlushFinalBlock();
+                byte[] cipherBytes = ms.ToArray();//得到加密后的字节数组   
+                return cipherBytes;
             }
         }
 
@@ -101,15 +97,11 @@ namespace MySoft.Security
             des.IV = iv;
             byte[] decryptBytes = new byte[inputdata.Length];
             using (MemoryStream ms = new MemoryStream(inputdata))
+            using (CryptoStream cs = new CryptoStream(ms, des.CreateDecryptor(), CryptoStreamMode.Read))
             {
-                using (CryptoStream cs = new CryptoStream(ms, des.CreateDecryptor(), CryptoStreamMode.Read))
-                {
-                    cs.Read(decryptBytes, 0, decryptBytes.Length);
-                    cs.Close();
-                    ms.Close();
-                }
+                cs.Read(decryptBytes, 0, decryptBytes.Length);
+                return decryptBytes;
             }
-            return decryptBytes;
         }
 
 
