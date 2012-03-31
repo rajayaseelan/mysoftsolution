@@ -136,55 +136,28 @@ namespace MySoft.IoC
 
         void client_MessageReceived(object sender, MessageEventArgs e)
         {
+            var message = new ServiceMessageEventArgs
+            {
+                Client = client,
+                Request = request
+            };
+
             //不是指定消息不处理
             if (e.Message is ScsCallbackMessage)
             {
                 //消息类型转换
                 var data = e.Message as ScsCallbackMessage;
-
-                //把数据发送到客户端
-                if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs
-                {
-                    Client = client,
-                    Request = request,
-                    Result = data.MessageValue
-                });
+                message.Result = data.MessageValue;
             }
             else if (e.Message is ScsResultMessage)
             {
-                try
-                {
-                    //消息类型转换
-                    var data = e.Message as ScsResultMessage;
-
-                    //把数据发送到客户端
-                    if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs
-                    {
-                        Client = client,
-                        Request = request,
-                        Result = data.MessageValue as ResponseMessage
-                    });
-                }
-                catch (Exception ex)
-                {
-                    logger.WriteError(ex);
-
-                    var resMsg = new ResponseMessage
-                    {
-                        TransactionId = new Guid(e.Message.RepliedMessageId),
-                        ReturnType = ex.GetType(),
-                        Error = ex
-                    };
-
-                    //把数据发送到客户端
-                    if (OnCallback != null) OnCallback(this, new ServiceMessageEventArgs
-                    {
-                        Client = client,
-                        Request = request,
-                        Result = resMsg
-                    });
-                }
+                //消息类型转换
+                var data = e.Message as ScsResultMessage;
+                message.Result = data.MessageValue;
             }
+
+            //把数据发送到客户端
+            if (OnCallback != null) OnCallback(this, message);
         }
 
         #endregion

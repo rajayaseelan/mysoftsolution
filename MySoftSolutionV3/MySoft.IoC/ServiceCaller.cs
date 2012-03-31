@@ -138,10 +138,10 @@ namespace MySoft.IoC
                 return new ResponseMessage
                 {
                     TransactionId = reqMsg.TransactionId,
+                    ReturnType = reqMsg.ReturnType,
                     ServiceName = reqMsg.ServiceName,
                     MethodName = reqMsg.MethodName,
                     Parameters = reqMsg.Parameters,
-                    ReturnType = reqMsg.ReturnType,
                     Error = ex
                 };
             }

@@ -15,13 +15,17 @@ namespace MySoft.IoC.Services
         protected ILog logger;
         protected ServerNode node;
         protected ServiceRequestPool reqPool;
-        private WaitResultCollection hashtable;
+        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
+        /// <summary>
+        /// 实例化RemoteProxy
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="logger"></param>
         public RemoteProxy(ServerNode node, ILog logger)
         {
             this.node = node;
             this.logger = logger;
-            this.hashtable = new WaitResultCollection();
 
             InitRequest();
         }
@@ -59,9 +63,9 @@ namespace MySoft.IoC.Services
                 var resMsg = new ResponseMessage
                 {
                     TransactionId = reqMsg.TransactionId,
+                    ReturnType = reqMsg.ReturnType,
                     ServiceName = reqMsg.ServiceName,
                     MethodName = reqMsg.Message,
-                    ReturnType = reqMsg.ReturnType,
                     Error = error
                 };
 
@@ -77,7 +81,10 @@ namespace MySoft.IoC.Services
         {
             if (hashtable.ContainsKey(resMsg.TransactionId))
             {
-                var waitResult = hashtable[resMsg.TransactionId];
+                var waitResult = hashtable[resMsg.TransactionId] as QueueResult;
+
+                //响应数据
+                QueueManager.Instance.Set(waitResult, resMsg);
 
                 //数据响应
                 waitResult.Set(resMsg);
@@ -89,6 +96,7 @@ namespace MySoft.IoC.Services
             if (args.Result is ResponseMessage)
             {
                 var resMsg = args.Result as ResponseMessage;
+
                 QueueMessage(resMsg);
             }
         }
@@ -101,30 +109,31 @@ namespace MySoft.IoC.Services
         public virtual ResponseMessage CallService(RequestMessage reqMsg)
         {
             //获取一个请求
-            var reqProxy = reqPool.Pop();
+            ServiceRequest reqProxy = null;
 
             try
             {
                 //处理数据
-                var waitResult = new WaitResult();
-                hashtable[reqMsg.TransactionId] = waitResult;
+                var waitResult = new QueueResult(reqMsg);
 
-                //参数值
-                var jsonString = reqMsg.Parameters.ToString();
-                string queueKey = string.Format("{0}${1}${2}", reqMsg.ServiceName, reqMsg.MethodName, jsonString);
-                queueKey = ServiceConfig.FormatJson(queueKey);
+                //如果需要缓存，才使用Queue服务
+                if (!QueueManager.Instance.Add(waitResult))
+                {
+                    hashtable[reqMsg.TransactionId] = waitResult;
 
-                //处理Queue
+                    reqProxy = reqPool.Pop();
 
-                //发送消息
-                reqProxy.SendMessage(reqMsg);
+                    //发送消息
+                    reqProxy.SendMessage(reqMsg);
+                }
 
                 //等待信号响应
                 var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
+
                 if (!waitResult.Wait(elapsedTime))
                 {
                     throw new WarningException(string.Format("【{0}:{1}】 => Call service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
-                       , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, jsonString));
+                       , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()));
                 }
 
                 return waitResult.Message;
@@ -132,7 +141,10 @@ namespace MySoft.IoC.Services
             finally
             {
                 //加入队列
-                reqPool.Push(reqProxy);
+                if (reqProxy != null)
+                {
+                    reqPool.Push(reqProxy);
+                }
 
                 //用完后移除
                 hashtable.Remove(reqMsg.TransactionId);

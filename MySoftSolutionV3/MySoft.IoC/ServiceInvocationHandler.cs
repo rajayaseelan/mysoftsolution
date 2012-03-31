@@ -95,17 +95,25 @@ namespace MySoft.IoC
 
             #region 设置请求信息
 
-            RequestMessage reqMsg = new RequestMessage();
-            reqMsg.AppName = config.AppName;                                //应用名称
-            reqMsg.HostName = hostName;                                     //客户端名称
-            reqMsg.IPAddress = ipAddress;                                   //客户端IP地址
-            reqMsg.ServiceName = serviceType.FullName;                      //服务名称
-            reqMsg.MethodName = method.ToString();                          //方法名称
-            reqMsg.ReturnType = method.ReturnType;                          //返回类型
-            reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
+            var reqMsg = new RequestMessage
+            {
+                AppName = config.AppName,                       //应用名称
+                HostName = hostName,                            //客户端名称
+                IPAddress = ipAddress,                          //客户端IP地址
+                ReturnType = method.ReturnType,                 //返回类型
+                ServiceName = serviceType.FullName,             //服务名称
+                MethodName = method.ToString(),                 //方法名称
+                TransactionId = Guid.NewGuid()                  //传输ID号
+            };
 
             //设置调用方法
             (reqMsg as IInvoking).MethodInfo = method;
+
+            //设置是否缓存
+            if (cacheTimes.ContainsKey(method.ToString()))
+            {
+                reqMsg.IsCaching = true;
+            }
 
             #endregion
 

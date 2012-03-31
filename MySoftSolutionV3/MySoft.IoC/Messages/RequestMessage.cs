@@ -128,6 +128,7 @@ namespace MySoft.IoC.Messages
         private string hostName;
         private string requestAddress;
         private bool invokeMethod;
+        private bool isCaching;
 
         #endregion
 
@@ -190,6 +191,21 @@ namespace MySoft.IoC.Messages
             set
             {
                 invokeMethod = value;
+            }
+        }
+
+        /// <summary>
+        /// ÊÇ·ñ»º´æ
+        /// </summary>
+        public bool IsCaching
+        {
+            get
+            {
+                return isCaching;
+            }
+            set
+            {
+                isCaching = value;
             }
         }
 

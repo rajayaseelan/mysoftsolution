@@ -226,6 +226,8 @@ namespace MySoft.PlatformService.Client
                 {
                     Console.WriteLine(ex.Message);
                 }
+
+                Thread.Sleep(1000);
             }
         }
 

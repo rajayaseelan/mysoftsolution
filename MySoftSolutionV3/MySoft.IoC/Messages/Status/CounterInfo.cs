@@ -34,7 +34,7 @@ namespace MySoft.IoC.Messages
         {
             //计数按方法
             var jsonString = ServiceConfig.FormatJson(args.Caller.Parameters);
-            string callKey = string.Format("Counter_{0}_{1}_{2}_{3}", args.Caller.AppName, args.Caller.ServiceName, args.Caller.MethodName, jsonString);
+            string callKey = string.Format("{0}${1}${2}${3}", args.Caller.AppName, args.Caller.ServiceName, args.Caller.MethodName, jsonString);
 
             if (!hashtable.ContainsKey(callKey))
             {

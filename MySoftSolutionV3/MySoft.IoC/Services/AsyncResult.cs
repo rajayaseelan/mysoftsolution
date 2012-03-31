@@ -8,7 +8,7 @@ namespace MySoft.IoC.Services
     /// 返回值对象
     /// </summary>
     [Serializable]
-    public sealed class AsyncResult
+    internal sealed class AsyncResult
     {
         private AutoResetEvent reset;
         private RequestMessage request;
@@ -40,7 +40,7 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 实例化QueueResult
+        /// 实例化AsyncResult
         /// </summary>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>

@@ -32,33 +32,29 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         protected override ResponseMessage Run(RequestMessage reqMsg)
         {
-            ResponseMessage resMsg = new ResponseMessage();
-            resMsg.TransactionId = reqMsg.TransactionId;
-            resMsg.ServiceName = reqMsg.ServiceName;
-            resMsg.MethodName = reqMsg.MethodName;
-            resMsg.ReturnType = reqMsg.ReturnType;
+            var resMsg = new ResponseMessage
+            {
+                TransactionId = reqMsg.TransactionId,
+                ReturnType = reqMsg.ReturnType,
+                ServiceName = reqMsg.ServiceName,
+                MethodName = reqMsg.MethodName
+            };
 
             #region 获取相应的方法
 
-            var methodKey = string.Format("{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
+            var methodKey = string.Format("{0}${1}", reqMsg.ServiceName, reqMsg.MethodName);
             if (!hashtable.ContainsKey(methodKey))
             {
-                lock (hashtable.SyncRoot)
+                var m = CoreHelper.GetMethodFromType(serviceType, reqMsg.MethodName);
+                if (m == null)
                 {
-                    if (!hashtable.ContainsKey(methodKey))
-                    {
-                        var m = CoreHelper.GetMethodFromType(serviceType, reqMsg.MethodName);
-                        if (m == null)
-                        {
-                            string message = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
-                            resMsg.Error = new WarningException(message);
+                    string message = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
+                    resMsg.Error = new WarningException(message);
 
-                            return resMsg;
-                        }
-
-                        hashtable[methodKey] = m;
-                    }
+                    return resMsg;
                 }
+
+                hashtable[methodKey] = m;
             }
 
             #endregion
