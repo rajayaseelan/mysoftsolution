@@ -64,7 +64,9 @@ namespace MySoft.IoC.Services
                 if (callback != null)
                 {
                     var callbackType = callback.GetType();
-                    if (resMsg.ServiceType.IsAssignableFrom(callbackType))
+
+                    //判断类型是否相同
+                    if (string.Compare(resMsg.ServiceName, callbackType.FullName, true) == 0)
                     {
                         var method = CoreHelper.GetMethodFromType(callbackType, resMsg.MethodName);
 

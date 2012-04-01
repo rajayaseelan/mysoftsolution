@@ -323,6 +323,7 @@ namespace MySoft.PlatformService.WinForm
             rich.SelectionColor = Color.Black;
             rich.SelectionIndent = 20;
             rich.AppendText(caller.Parameters);
+            rich.AppendText("\r\n\r\n");
 
             rich.SelectionIndent = 0;
             rich.SelectionColor = Color.Blue;
@@ -330,7 +331,6 @@ namespace MySoft.PlatformService.WinForm
             rich.SelectionColor = Color.Black;
             rich.SelectionIndent = 20;
             rich.AppendText("【" + caller.CallTime + "】");
-            rich.AppendText("\r\n\r\n");
         }
 
         private string[] emails;

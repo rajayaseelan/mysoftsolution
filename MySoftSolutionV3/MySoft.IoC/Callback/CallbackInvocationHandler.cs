@@ -33,24 +33,16 @@ namespace MySoft.IoC
         {
             if (client.CommunicationState == CommunicationStates.Connected)
             {
-                var message = new CallbackMessage { ServiceType = callType, MethodName = method.ToString(), Parameters = parameters };
-
-                //发送i回调消息
-                var caller = new AsyncSendMessage((c, m) => c.SendMessage(m));
-
-                //异步调用
-                var ar = caller.BeginInvoke(client, new ScsCallbackMessage(message), callback => { }, caller);
-                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(timeout)))
+                //定义回调的消息
+                var message = new CallbackMessage
                 {
-                    //发送超时
-                    throw new SocketException((int)SocketError.TimedOut);
-                }
+                    ServiceName = callType.FullName,
+                    MethodName = method.ToString(),
+                    Parameters = parameters
+                };
 
-                //关闭
-                ar.AsyncWaitHandle.Close();
-
-                //释放资源
-                caller.EndInvoke(ar);
+                //发送消息
+                client.SendMessage(new ScsCallbackMessage(message));
 
                 //返回null
                 return null;

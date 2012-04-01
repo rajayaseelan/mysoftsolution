@@ -11,7 +11,7 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// 服务名称
         /// </summary>
-        public Type ServiceType { get; set; }
+        public string ServiceName { get; set; }
 
         /// <summary>
         /// 方法名称
