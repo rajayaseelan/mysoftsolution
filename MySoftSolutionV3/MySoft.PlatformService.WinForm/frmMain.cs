@@ -279,7 +279,15 @@ namespace MySoft.PlatformService.WinForm
 
             rich.SelectionIndent = 0;
             rich.SelectionColor = Color.Blue;
-            rich.AppendText("ApplicationName:\r\n");
+            rich.AppendText("AppPath:\r\n");
+            rich.SelectionColor = Color.Black;
+            rich.SelectionIndent = 20;
+            rich.AppendText("【" + caller.AppPath + "】");
+            rich.AppendText("\r\n\r\n");
+
+            rich.SelectionIndent = 0;
+            rich.SelectionColor = Color.Blue;
+            rich.AppendText("AppName:\r\n");
             rich.SelectionColor = Color.Black;
             rich.SelectionIndent = 20;
             rich.AppendText("【" + caller.AppName + "】");
@@ -315,6 +323,14 @@ namespace MySoft.PlatformService.WinForm
             rich.SelectionColor = Color.Black;
             rich.SelectionIndent = 20;
             rich.AppendText(caller.Parameters);
+
+            rich.SelectionIndent = 0;
+            rich.SelectionColor = Color.Blue;
+            rich.AppendText("CallTime:\r\n");
+            rich.SelectionColor = Color.Black;
+            rich.SelectionIndent = 20;
+            rich.AppendText("【" + caller.CallTime + "】");
+            rich.AppendText("\r\n\r\n");
         }
 
         private string[] emails;
@@ -1216,7 +1232,7 @@ namespace MySoft.PlatformService.WinForm
                     new ParseMessageEventArgs
                     {
                         MessageType = msgType,
-                        LineHeader = string.Format("【{0}】 [{3}] Timeout => ({1} rows)：{2} ms.", callTimeout.CallTime, callTimeout.Count, callTimeout.ElapsedTime, callTimeout.Caller.AppName),
+                        LineHeader = string.Format("【{0}】 [{3}] Timeout => ({1} rows)：{2} ms.", callTimeout.Caller.CallTime, callTimeout.Count, callTimeout.ElapsedTime, callTimeout.Caller.AppName),
                         MessageText = string.Format("{0},{1}", callTimeout.Caller.ServiceName, callTimeout.Caller.MethodName),
                         // + "\r\n" + callTimeout.Caller.Parameters
                         Source = callTimeout
@@ -1255,7 +1271,7 @@ namespace MySoft.PlatformService.WinForm
                     new ParseMessageEventArgs
                     {
                         MessageType = ParseMessageType.Error,
-                        LineHeader = string.Format("【{0}】 [{2}] Error => {1}", callError.CallTime, callError.Message, callError.Caller.AppName),
+                        LineHeader = string.Format("【{0}】 [{2}] Error => {1}", callError.Caller.CallTime, callError.Message, callError.Caller.AppName),
                         MessageText = string.Format("{0},{1}", callError.Caller.ServiceName, callError.Caller.MethodName),
                         //+ "\r\n" + callError.Caller.Parameters
                         Source = callError

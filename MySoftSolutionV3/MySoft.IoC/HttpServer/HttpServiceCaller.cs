@@ -178,12 +178,14 @@ namespace MySoft.IoC.HttpServer
                     //初始化调用者
                     var appCaller = new AppCaller
                     {
+                        AppPath = client.AppPath,
                         AppName = client.AppName,
                         HostName = client.HostName,
                         IPAddress = client.IPAddress,
                         ServiceName = message.ServiceName,
                         MethodName = message.MethodName,
-                        Parameters = message.Parameters
+                        Parameters = message.Parameters,
+                        CallTime = DateTime.Now
                     };
 
                     //初始化上下文

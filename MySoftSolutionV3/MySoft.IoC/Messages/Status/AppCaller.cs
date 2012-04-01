@@ -9,6 +9,11 @@ namespace MySoft.IoC.Messages
     public class AppCaller : AppClient
     {
         /// <summary>
+        /// 调用时间
+        /// </summary>
+        public DateTime CallTime { get; set; }
+
+        /// <summary>
         /// 服务名称
         /// </summary>
         public string ServiceName { get; set; }

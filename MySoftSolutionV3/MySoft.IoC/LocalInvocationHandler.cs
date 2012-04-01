@@ -147,12 +147,14 @@ namespace MySoft.IoC
             //创建AppCaller对象
             var caller = new AppCaller
             {
+                AppPath = AppDomain.CurrentDomain.BaseDirectory,
                 AppName = config.AppName,
                 HostName = hostName,
                 IPAddress = ipAddress,
                 ServiceName = serviceName,
                 MethodName = methodName,
-                Parameters = parameters
+                Parameters = parameters,
+                CallTime = DateTime.Now
             };
 
             //初始化上下文

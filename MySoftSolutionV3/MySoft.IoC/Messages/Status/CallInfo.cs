@@ -60,11 +60,6 @@ namespace MySoft.IoC.Messages
         /// </summary>
         public string HtmlError { get; set; }
 
-        /// <summary>
-        /// 调用时间
-        /// </summary>
-        public DateTime CallTime { get; set; }
-
         public CallError()
         {
             this.Caller = new AppCaller();
@@ -83,19 +78,14 @@ namespace MySoft.IoC.Messages
         public AppCaller Caller { get; set; }
 
         /// <summary>
-        /// 调用时间
+        /// 总耗时
         /// </summary>
-        public DateTime CallTime { get; set; }
+        public long ElapsedTime { get; set; }
 
         /// <summary>
         /// 数据数
         /// </summary>
         public int Count { get; set; }
-
-        /// <summary>
-        /// 总耗时
-        /// </summary>
-        public long ElapsedTime { get; set; }
 
         public CallTimeout()
         {

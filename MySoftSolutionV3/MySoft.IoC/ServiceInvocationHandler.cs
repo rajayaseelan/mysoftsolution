@@ -124,7 +124,9 @@ namespace MySoft.IoC
             //缓存无值
             if (cacheValue == null)
             {
+                //调用服务
                 var resMsg = CallService(reqMsg);
+
                 if (resMsg != null)
                 {
                     returnValue = resMsg.Value;

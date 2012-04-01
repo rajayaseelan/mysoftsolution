@@ -173,7 +173,6 @@ namespace MySoft.IoC
                             var callError = new CallError
                             {
                                 Caller = callArgs.Caller,
-                                CallTime = callArgs.CallTime,
                                 Message = callArgs.Error.Message,
                                 Error = ErrorHelper.GetErrorWithoutHtml(callArgs.Error),
                                 HtmlError = ErrorHelper.GetHtmlError(callArgs.Error)
@@ -192,7 +191,6 @@ namespace MySoft.IoC
                                 var callTimeout = new CallTimeout
                                 {
                                     Caller = callArgs.Caller,
-                                    CallTime = callArgs.CallTime,
                                     Count = callArgs.Count,
                                     ElapsedTime = callArgs.ElapsedTime
                                 };

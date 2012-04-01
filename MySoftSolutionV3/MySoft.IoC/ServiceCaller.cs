@@ -75,7 +75,7 @@ namespace MySoft.IoC
             try
             {
                 //创建Caller;
-                var caller = CreateCaller(reqMsg);
+                var caller = CreateCaller(client, reqMsg);
 
                 //设置上下文
                 SetOperationContext(client, caller);
@@ -100,7 +100,6 @@ namespace MySoft.IoC
                     //调用参数
                     var callArgs = new CallEventArgs
                     {
-                        CallTime = DateTime.Now,
                         Caller = caller,
                         Error = resMsg.Error,
                         ElapsedTime = watch.ElapsedMilliseconds,
@@ -196,19 +195,25 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取AppCaller
         /// </summary>
+        /// <param name="client"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private AppCaller CreateCaller(RequestMessage reqMsg)
+        private AppCaller CreateCaller(IScsServerClient client, RequestMessage reqMsg)
         {
+            //获取AppPath
+            var appPath = (client.State == null) ? null : (client.State as AppClient).AppPath;
+
             //服务参数信息
             var caller = new AppCaller
             {
+                AppPath = appPath,
                 AppName = reqMsg.AppName,
                 IPAddress = reqMsg.IPAddress,
                 HostName = reqMsg.HostName,
                 ServiceName = reqMsg.ServiceName,
                 MethodName = reqMsg.MethodName,
-                Parameters = reqMsg.Parameters.ToString()
+                Parameters = reqMsg.Parameters.ToString(),
+                CallTime = DateTime.Now
             };
 
             return caller;
@@ -246,12 +251,24 @@ namespace MySoft.IoC
             if (service == null)
             {
                 string body = string.Format("The server not find matching service ({0}).", reqMsg.ServiceName);
-                throw new WarningException(body)
+                var exception = new WarningException(body)
                 {
                     ApplicationName = reqMsg.AppName,
                     ServiceName = reqMsg.ServiceName,
                     ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
                 };
+
+                //上下文不为null
+                if (OperationContext.Current != null && OperationContext.Current.Caller != null)
+                {
+                    var caller = OperationContext.Current.Caller;
+                    if (!string.IsNullOrEmpty(caller.AppPath))
+                    {
+                        exception.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", exception.ErrorHeader, caller.AppPath);
+                    }
+                }
+
+                throw exception;
             }
 
             return service;

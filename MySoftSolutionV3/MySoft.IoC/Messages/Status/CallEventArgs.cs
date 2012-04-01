@@ -14,11 +14,6 @@ namespace MySoft.IoC.Messages
         public AppCaller Caller { get; set; }
 
         /// <summary>
-        /// 调用时间
-        /// </summary>
-        public DateTime CallTime { get; set; }
-
-        /// <summary>
         /// 耗时时间
         /// </summary>
         public long ElapsedTime { get; set; }

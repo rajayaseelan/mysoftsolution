@@ -32,25 +32,28 @@ namespace MySoft.IoC.Services
             //如果不缓存，返回false
             if (!result.IsQueuing) return false;
 
-            //队列Key
-            string queueKey = result.QueueKey;
-
-            if (!hashtable.ContainsKey(queueKey))
+            lock (hashtable.SyncRoot)
             {
-                hashtable[queueKey] = new Queue<QueueResult>();
+                //队列Key
+                string queueKey = result.QueueKey;
 
-                return false;
-            }
-            else
-            {
-                //加入列表
-                var queue = hashtable[queueKey] as Queue<QueueResult>;
-                lock (queue)
+                if (!hashtable.ContainsKey(queueKey))
                 {
-                    queue.Enqueue(result);
-                }
+                    hashtable[queueKey] = new Queue<QueueResult>();
 
-                return true;
+                    return false;
+                }
+                else
+                {
+                    //加入列表
+                    var queue = hashtable[queueKey] as Queue<QueueResult>;
+                    lock (queue)
+                    {
+                        queue.Enqueue(result);
+                    }
+
+                    return true;
+                }
             }
         }
 
@@ -63,23 +66,26 @@ namespace MySoft.IoC.Services
         {
             if (!result.IsQueuing) return;
 
-            //队列Key
-            string queueKey = result.QueueKey;
-
-            if (hashtable.ContainsKey(queueKey))
+            lock (hashtable.SyncRoot)
             {
-                var queue = hashtable[queueKey] as Queue<QueueResult>;
-                hashtable.Remove(queueKey);
+                //队列Key
+                string queueKey = result.QueueKey;
 
-                if (queue.Count > 0)
+                if (hashtable.ContainsKey(queueKey))
                 {
-                    Console.WriteLine("Queue Count => {0}\tQueue Key : {1}", queue.Count, queueKey);
+                    var queue = hashtable[queueKey] as Queue<QueueResult>;
+                    hashtable.Remove(queueKey);
 
-                    //响应消息
-                    while (queue.Count > 0)
+                    if (queue.Count > 0)
                     {
-                        var waitResult = queue.Dequeue();
-                        waitResult.Set(resMsg);
+                        Console.WriteLine("Queue Count => {0}\tQueue Key : {1}", queue.Count, queueKey);
+
+                        //响应消息
+                        while (queue.Count > 0)
+                        {
+                            var waitResult = queue.Dequeue();
+                            waitResult.Set(resMsg);
+                        }
                     }
                 }
             }

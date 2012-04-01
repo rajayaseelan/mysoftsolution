@@ -70,7 +70,7 @@ namespace MySoft.IoC
         internal void CounterNotify(CallEventArgs args)
         {
             //获取或创建一个对象
-            var status = statuslist.GetOrCreate(args.CallTime);
+            var status = statuslist.GetOrCreate(args.Caller.CallTime);
 
             //处理时间
             status.ElapsedTime += args.ElapsedTime;
