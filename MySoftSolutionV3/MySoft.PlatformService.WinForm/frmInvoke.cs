@@ -175,9 +175,12 @@ namespace MySoft.PlatformService.WinForm
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("请确认参数是否全部填写正确！", "系统提示",
-                MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
-                return;
+            if (txtParameters.Count > 0)
+            {
+                if (MessageBox.Show("请确认参数是否全部填写正确！", "系统提示",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
+                    return;
+            }
 
             Stopwatch watch = Stopwatch.StartNew();
             try
@@ -185,16 +188,16 @@ namespace MySoft.PlatformService.WinForm
                 label5.Text = "正在调用服务，请稍候...";
 
                 var jValue = new JObject();
-                foreach (var p in txtParameters)
+
+                if (txtParameters.Count > 0)
                 {
-                    var text = p.Value.Text.Trim();
-                    if (!string.IsNullOrEmpty(text))
+                    foreach (var p in txtParameters)
                     {
-                        //var pInfo = parameters.First(pi => pi.Name == p.Key);
-                        //if (pInfo.IsPrimitive)
-                        //    jValue[p.Key] = text;
-                        //else
-                        jValue[p.Key] = JToken.Parse(text);
+                        var text = p.Value.Text.Trim();
+                        if (!string.IsNullOrEmpty(text))
+                        {
+                            jValue[p.Key] = JToken.Parse(text);
+                        }
                     }
                 }
 
