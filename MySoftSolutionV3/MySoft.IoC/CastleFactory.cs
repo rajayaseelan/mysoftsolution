@@ -7,6 +7,7 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using System.Collections;
 
 namespace MySoft.IoC
 {
@@ -15,7 +16,7 @@ namespace MySoft.IoC
     /// </summary>
     public class CastleFactory : ILogable, IErrorLogable
     {
-        private static object lockObject = new object();
+        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         private static CastleFactory singleton = null;
 
         #region Create Service Factory
@@ -74,7 +75,7 @@ namespace MySoft.IoC
         {
             if (singleton == null)
             {
-                lock (lockObject)
+                lock (hashtable.SyncRoot)
                 {
                     if (singleton == null)
                     {
@@ -244,28 +245,28 @@ namespace MySoft.IoC
         /// <summary>
         /// Create service channel.
         /// </summary>
-        /// <param name="node">The node name.</param>
+        /// <typeparam name="IServiceInterfaceType"></typeparam>
+        /// <param name="proxy"></param>
+        /// <param name="isCacheService"></param>
         /// <returns></returns>
         private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService proxy, bool isCacheService)
         {
             Type serviceType = typeof(IServiceInterfaceType);
-            string serviceKey = string.Format("CastleFactory_{0}_{1}", proxy.ServiceName, serviceType.FullName);
-            var service = CacheHelper.Get<IServiceInterfaceType>(serviceKey);
 
-            if (service == null)
+            lock (hashtable.SyncRoot)
             {
-                lock (lockObject)
+                if (!hashtable.ContainsKey(serviceType))
                 {
                     var serviceCache = new CastleServiceCache(cache);
                     var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache);
                     var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
-                    service = (IServiceInterfaceType)dynamicProxy;
-                    if (isCacheService) CacheHelper.Permanent(serviceKey, service);
+                    var service = (IServiceInterfaceType)dynamicProxy;
+                    hashtable[serviceType] = service;
                 }
             }
 
-            return service;
+            return (IServiceInterfaceType)hashtable[serviceType];
         }
 
         #endregion
@@ -430,7 +431,7 @@ namespace MySoft.IoC
                 //本地服务
                 if (container.Kernel.HasComponent(serviceType))
                 {
-                    lock (lockObject)
+                    lock (hashtable.SyncRoot)
                     {
                         //返回本地服务
                         var serviceCache = new CastleServiceCache(cache);

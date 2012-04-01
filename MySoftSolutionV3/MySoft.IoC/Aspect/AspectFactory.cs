@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace MySoft.IoC.Aspect
 {
@@ -9,6 +10,8 @@ namespace MySoft.IoC.Aspect
     /// </summary>
     public static class AspectFactory
     {
+        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+
         /// <summary>
         /// 创建一个实例方式的拦截器（支持Aspect方式）
         /// </summary>
@@ -17,59 +20,60 @@ namespace MySoft.IoC.Aspect
         /// <returns></returns>
         internal static object CreateProxyService(Type serviceType, object target)
         {
-            var cacheKey = string.Format("AspectCache_{0}", serviceType);
-            var interceptors = CacheHelper.Get<List<Castle.DynamicProxy.IInterceptor>>(cacheKey);
-
-            if (interceptors == null)
+            lock (hashtable.SyncRoot)
             {
-                interceptors = new List<Castle.DynamicProxy.IInterceptor>();
-                var classType = target.GetType();
-                var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(classType);
-
-                if (attributes != null && attributes.Length > 0)
+                if (!hashtable.ContainsKey(serviceType))
                 {
-                    foreach (var attribute in attributes)
-                    {
-                        if (typeof(Castle.DynamicProxy.IInterceptor).IsAssignableFrom(attribute.InterceptorType))
-                        {
-                            object value = null;
-                            if (attribute.Arguments == null)
-                                value = Activator.CreateInstance(attribute.InterceptorType);
-                            else
-                            {
-                                if (attribute.Arguments.GetType().IsClass)
-                                {
-                                    var arg = Activator.CreateInstance(attribute.Arguments.GetType());
-                                    value = Activator.CreateInstance(attribute.InterceptorType, arg);
-                                }
-                                else
-                                    value = Activator.CreateInstance(attribute.InterceptorType, attribute.Arguments);
-                            }
+                    var interceptors = new List<Castle.DynamicProxy.IInterceptor>();
+                    var classType = target.GetType();
+                    var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(classType);
 
-                            interceptors.Add(value as Castle.DynamicProxy.IInterceptor);
+                    if (attributes != null && attributes.Length > 0)
+                    {
+                        foreach (var attribute in attributes)
+                        {
+                            if (typeof(Castle.DynamicProxy.IInterceptor).IsAssignableFrom(attribute.InterceptorType))
+                            {
+                                object value = null;
+                                if (attribute.Arguments == null)
+                                    value = Activator.CreateInstance(attribute.InterceptorType);
+                                else
+                                {
+                                    if (attribute.Arguments.GetType().IsClass)
+                                    {
+                                        var arg = Activator.CreateInstance(attribute.Arguments.GetType());
+                                        value = Activator.CreateInstance(attribute.InterceptorType, arg);
+                                    }
+                                    else
+                                        value = Activator.CreateInstance(attribute.InterceptorType, attribute.Arguments);
+                                }
+
+                                interceptors.Add(value as Castle.DynamicProxy.IInterceptor);
+                            }
                         }
                     }
 
-                    //将拦截器进行缓存
-                    CacheHelper.Permanent(cacheKey, interceptors);
+                    //不管有没有，都插入缓存中
+                    hashtable[serviceType] = interceptors;
                 }
             }
 
-            if (interceptors.Count > 0)
-                return AspectFactory.CreateProxy(serviceType, target, interceptors.ToArray());
-            else
-                return target;
+            var tmplist = hashtable[serviceType] as List<Castle.DynamicProxy.IInterceptor>;
+            return CreateProxy(serviceType, target, tmplist.ToArray());
         }
 
         /// <summary>
         /// 创建一个实例方式的拦截器
         /// </summary>
-        /// <typeparam name="TInterface"></typeparam>
+        /// <param name="proxyType"></param>
         /// <param name="target"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
         public static object CreateProxy(Type proxyType, object target, params Castle.DynamicProxy.IInterceptor[] interceptors)
         {
+            //如果拦截器为0
+            if (interceptors.Length == 0) return target;
+
             Castle.DynamicProxy.ProxyGenerator proxy = new Castle.DynamicProxy.ProxyGenerator();
             Castle.DynamicProxy.ProxyGenerationOptions options = new Castle.DynamicProxy.ProxyGenerationOptions(new ProxyGenerationHook())
             {
