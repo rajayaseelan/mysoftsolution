@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Sockets;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
@@ -65,13 +66,18 @@ namespace MySoft.IoC.Services
                 {
                     var callbackType = callback.GetType();
 
-                    //判断类型是否相同
-                    if (string.Compare(resMsg.ServiceName, callbackType.FullName, true) == 0)
+                    //获取接口的类型
+                    var interfaces = callbackType.GetInterfaces();
+                    if (interfaces.Length > 0)
                     {
-                        var method = CoreHelper.GetMethodFromType(callbackType, resMsg.MethodName);
+                        //判断类型是否相同
+                        if (interfaces.Any(type => type.FullName == resMsg.ServiceName))
+                        {
+                            var method = CoreHelper.GetMethodFromType(callbackType, resMsg.MethodName);
 
-                        //执行委托
-                        DynamicCalls.GetMethodInvoker(method).Invoke(callback, resMsg.Parameters);
+                            //执行委托
+                            DynamicCalls.GetMethodInvoker(method).Invoke(callback, resMsg.Parameters);
+                        }
                     }
                 }
             }
