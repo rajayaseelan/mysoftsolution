@@ -261,8 +261,7 @@ namespace MySoft.IoC
                     var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache);
                     var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
-                    var service = (IServiceInterfaceType)dynamicProxy;
-                    hashtable[serviceType] = service;
+                    hashtable[serviceType] = dynamicProxy;
                 }
             }
 
@@ -433,13 +432,18 @@ namespace MySoft.IoC
                 {
                     lock (hashtable.SyncRoot)
                     {
-                        //返回本地服务
-                        var serviceCache = new CastleServiceCache(cache);
-                        var handler = new LocalInvocationHandler(config, container, serviceType, serviceCache);
-                        var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
+                        if (!hashtable.ContainsKey(serviceType))
+                        {
+                            //返回本地服务
+                            var serviceCache = new CastleServiceCache(cache);
+                            var handler = new LocalInvocationHandler(config, container, serviceType, serviceCache);
+                            var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
-                        return (IServiceInterfaceType)dynamicProxy;
+                            hashtable[serviceType] = dynamicProxy;
+                        }
                     }
+
+                    return (IServiceInterfaceType)hashtable[serviceType];
                 }
 
                 if (config.Type == CastleFactoryType.Local)
