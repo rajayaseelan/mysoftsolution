@@ -36,19 +36,24 @@ namespace MySoft.IoC.Messages
             var jsonString = ServiceConfig.FormatJson(args.Caller.Parameters);
             string callKey = string.Format("{0}${1}${2}${3}", args.Caller.AppName, args.Caller.ServiceName, args.Caller.MethodName, jsonString);
 
-            if (!hashtable.ContainsKey(callKey))
+            lock (hashtable.SyncRoot)
             {
-                hashtable[callKey] = new CounterInfo
+                if (!hashtable.ContainsKey(callKey))
                 {
-                    AppName = args.Caller.AppName,
-                    ServiceName = args.Caller.ServiceName,
-                    MethodName = args.Caller.MethodName,
-                    Parameters = args.Caller.Parameters,
-                    NeedReset = false,
-                    Count = 1
-                };
+                    var counterInfo = new CounterInfo
+                    {
+                        AppName = args.Caller.AppName,
+                        ServiceName = args.Caller.ServiceName,
+                        MethodName = args.Caller.MethodName,
+                        Parameters = args.Caller.Parameters,
+                        NeedReset = false,
+                        Count = 1
+                    };
 
-                return;
+                    hashtable[callKey] = counterInfo;
+
+                    return;
+                }
             }
 
             var counter = hashtable[callKey] as CounterInfo;
@@ -98,14 +103,10 @@ namespace MySoft.IoC.Messages
             //将计数清零
             lock (hashtable.SyncRoot)
             {
-                this.count = 0;
+                var list = hashtable.Values.Cast<CounterInfo>().ToList();
+                list.ForEach(counter => counter.NeedReset = true);
 
-                var keys = hashtable.Keys.Cast<string>().ToArray();
-                foreach (var key in keys)
-                {
-                    var counter = hashtable[key] as CounterInfo;
-                    counter.NeedReset = true;
-                }
+                this.count = 0;
             }
         }
     }

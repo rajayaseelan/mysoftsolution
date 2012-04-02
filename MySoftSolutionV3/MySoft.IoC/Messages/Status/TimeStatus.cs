@@ -49,19 +49,20 @@ namespace MySoft.IoC.Messages
         public TimeStatus GetOrCreate(DateTime value)
         {
             string key = value.ToString("yyyyMMddHHmmss");
-            if (!hashtable.ContainsKey(key))
+
+            lock (hashtable.SyncRoot)
             {
-                //如果总数大于传入的总数
-                if (hashtable.Count >= maxCount)
+                if (!hashtable.ContainsKey(key))
                 {
-                    lock (hashtable.SyncRoot)
+                    //如果总数大于传入的总数
+                    if (hashtable.Count > 0 && hashtable.Count >= maxCount)
                     {
-                        var firstKey = hashtable.Keys.Cast<string>().First();
+                        var firstKey = hashtable.Keys.Cast<string>().Min();
                         if (firstKey != null) hashtable.Remove(firstKey);
                     }
-                }
 
-                hashtable[key] = new TimeStatus { CounterTime = value };
+                    hashtable[key] = new TimeStatus { CounterTime = value };
+                }
             }
 
             return hashtable[key] as TimeStatus;
@@ -93,12 +94,12 @@ namespace MySoft.IoC.Messages
         /// <returns></returns>
         public TimeStatus GetNewest()
         {
-            if (hashtable.Count > 0)
+            lock (hashtable.SyncRoot)
             {
-                lock (hashtable.SyncRoot)
+                if (hashtable.Count > 0)
                 {
-                    var key = hashtable.Keys.Cast<string>().Last();
-                    return hashtable[key] as TimeStatus;
+                    var lastKey = hashtable.Keys.Cast<string>().Max();
+                    if (lastKey != null) return hashtable[lastKey] as TimeStatus;
                 }
             }
 
@@ -110,7 +111,10 @@ namespace MySoft.IoC.Messages
         /// </summary>
         public void Clear()
         {
-            hashtable.Clear();
+            lock (hashtable.SyncRoot)
+            {
+                hashtable.Clear();
+            }
         }
     }
 }

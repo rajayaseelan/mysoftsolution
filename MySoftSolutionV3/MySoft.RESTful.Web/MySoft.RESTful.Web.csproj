@@ -92,7 +92,7 @@
     </ProjectReference>
     <ProjectReference Include="..\MySoft.RESTful\MySoft.RESTful.csproj">
       <Project>{7F20D991-BAA3-42DD-AAA9-D72810DE02DF}</Project>
-      <Name>MySoft.RESTful %28Component\MySoft.RESTful%29</Name>
+      <Name>MySoft.RESTful %28Component\RESTful\MySoft.RESTful%29</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

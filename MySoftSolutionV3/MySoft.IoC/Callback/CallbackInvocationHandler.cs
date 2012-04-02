@@ -13,7 +13,6 @@ namespace MySoft.IoC
     {
         private Type callType;
         private IScsServerClient client;
-        private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;
         public CallbackInvocationHandler(Type callType, IScsServerClient client)
         {
             this.callType = callType;

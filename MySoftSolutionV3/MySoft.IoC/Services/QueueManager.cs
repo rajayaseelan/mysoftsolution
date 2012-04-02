@@ -80,10 +80,11 @@ namespace MySoft.IoC.Services
                     {
                         Console.WriteLine("Queue Count => {0}\tQueue Key : {1}", queue.Count, queueKey);
 
-                        //响应消息
                         while (queue.Count > 0)
                         {
                             var waitResult = queue.Dequeue();
+
+                            //响应消息
                             waitResult.Set(resMsg);
                         }
                     }
