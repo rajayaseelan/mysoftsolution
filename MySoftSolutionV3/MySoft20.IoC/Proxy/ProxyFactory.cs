@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
 
-namespace MySoft20.DynamicProxy
+namespace MySoft.IoC.DynamicProxy
 {
     /// <summary>
     /// </summary>

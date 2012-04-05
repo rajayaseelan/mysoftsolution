@@ -8,7 +8,7 @@
     <ProjectGuid>{7F6585D5-9A1C-4865-98AE-E5BA0FE875F0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MySoft20.IoC</RootNamespace>
+    <RootNamespace>MySoft.IoC</RootNamespace>
     <AssemblyName>MySoft20.IoC</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -49,11 +49,9 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheHelper.cs" />
     <Compile Include="CastleFactory.cs" />
     <Compile Include="DynamicCalls.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

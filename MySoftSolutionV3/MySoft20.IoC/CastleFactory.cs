@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
-using MySoft20.DynamicProxy;
 using System.Collections;
-using MySoft20;
+using MySoft.IoC.DynamicProxy;
 
 namespace MySoft.IoC
 {
@@ -17,6 +16,7 @@ namespace MySoft.IoC
         private Type factoryType, invokeType, valueType, managerType;
         private object instance;
         private static CastleFactory singleton;
+        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
         private CastleFactory()
         {
@@ -41,7 +41,13 @@ namespace MySoft.IoC
         {
             if (singleton == null)
             {
-                singleton = new CastleFactory();
+                lock (hashtable.SyncRoot)
+                {
+                    if (singleton == null)
+                    {
+                        singleton = new CastleFactory();
+                    }
+                }
             }
 
             return singleton;
@@ -54,16 +60,32 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
+            return GetChannel<IServiceInterfaceType>(null);
+        }
+
+        /// <summary>
+        /// 获取服务对象
+        /// </summary>
+        /// <typeparam name="IServiceInterfaceType"></typeparam>
+        /// <param name="nodeKey"></param>
+        /// <returns></returns>
+        public IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey)
+        {
             var serviceType = typeof(IServiceInterfaceType);
-            var serviceKey = string.Format("CastleFactory_2.0_{0}", serviceType.FullName);
-            var service = CacheHelper.Get(serviceKey);
-            if (service == null)
+
+            lock (hashtable.SyncRoot)
             {
-                var handler = new ServiceProxyInvocationHandler(assembly, serviceType, factoryType, invokeType, valueType, managerType, instance);
-                service = ProxyFactory.GetInstance().Create(handler, serviceType, true);
+                //如果不存在
+                if (!hashtable.ContainsKey(serviceType))
+                {
+                    var handler = new ServiceProxyInvocationHandler(assembly, serviceType, factoryType, invokeType, valueType, managerType, instance, nodeKey);
+                    var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
+
+                    hashtable[serviceType] = dynamicProxy;
+                }
             }
 
-            return (IServiceInterfaceType)service;
+            return (IServiceInterfaceType)hashtable[serviceType];
         }
     }
 
@@ -78,6 +100,7 @@ namespace MySoft.IoC
         private PropertyInfo serviceProperty, methodProperty, parametersProperty, valueProperty, outProperty;
         private object instance;
         private MethodInfo serializeMethod, deserializeMethod, invokeMethod;
+        private string nodeKey;
 
         /// <summary>
         /// 实例化ServiceProxyInvocationHandler
@@ -88,7 +111,7 @@ namespace MySoft.IoC
         /// <param name="invokeType"></param>
         /// <param name="valueType"></param>
         /// <param name="managerType"></param>
-        public ServiceProxyInvocationHandler(Assembly assembly, Type serviceType, Type factoryType, Type invokeType, Type valueType, Type managerType, object instance)
+        public ServiceProxyInvocationHandler(Assembly assembly, Type serviceType, Type factoryType, Type invokeType, Type valueType, Type managerType, object instance, string nodeKey)
         {
             this.assembly = assembly;
             this.serviceType = serviceType;
@@ -97,6 +120,7 @@ namespace MySoft.IoC
             this.valueType = valueType;
             this.managerType = managerType;
             this.instance = instance;
+            this.nodeKey = nodeKey;
 
             this.serviceProperty = invokeType.GetProperty("ServiceName");
             this.methodProperty = invokeType.GetProperty("MethodName");
@@ -116,7 +140,10 @@ namespace MySoft.IoC
                     assembly.GetType("Newtonsoft.Json.JsonConverter[]")
             });
 
-            this.invokeMethod = factoryType.GetMethod("Invoke", new Type[] { invokeType });
+            if (string.IsNullOrEmpty(nodeKey))
+                this.invokeMethod = factoryType.GetMethod("Invoke", new Type[] { invokeType });
+            else
+                this.invokeMethod = factoryType.GetMethod("Invoke", new Type[] { typeof(string), invokeType });
         }
 
         #region IProxyInvocationHandler 成员
@@ -160,7 +187,12 @@ namespace MySoft.IoC
 
                 DynamicCalls.GetPropertySetter(parametersProperty).Invoke(invoke, paramString);
 
-                var value = DynamicCalls.GetMethodInvoker(invokeMethod).Invoke(instance, new object[] { invoke });
+                object value = null;
+                if (string.IsNullOrEmpty(nodeKey))
+                    value = DynamicCalls.GetMethodInvoker(invokeMethod).Invoke(instance, new object[] { invoke });
+                else
+                    value = DynamicCalls.GetMethodInvoker(invokeMethod).Invoke(instance, new object[] { nodeKey, invoke });
+
                 var json = DynamicCalls.GetPropertyGetter(valueProperty).Invoke(value);
                 var retValue = DynamicCalls.GetMethodInvoker(deserializeMethod).Invoke(null, new object[] { GetElementType(method.ReturnType), json, null });
 

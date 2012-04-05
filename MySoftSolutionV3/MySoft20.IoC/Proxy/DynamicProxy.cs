@@ -31,7 +31,7 @@
  */
 
 #if !(PocketPC || Smartphone || WindowsCE)
-namespace MySoft20.DynamicProxy
+namespace MySoft.IoC.DynamicProxy
 {
     using System;
     using System.Reflection;

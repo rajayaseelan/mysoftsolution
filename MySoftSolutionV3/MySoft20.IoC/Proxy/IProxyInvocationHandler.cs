@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace MySoft20.DynamicProxy
+namespace MySoft.IoC.DynamicProxy
 {
     /// <summary>
     /// Interface that a user defined proxy handler needs to implement.  This interface 
