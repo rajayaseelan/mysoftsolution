@@ -326,7 +326,7 @@ namespace MySoft.RESTful
             };
 
             //实例化一个结果
-            RESTfulResult restResult = new RESTfulResult { Code = (int)response.StatusCode };
+            var restResult = new RESTfulResult { Code = (int)response.StatusCode };
 
             try
             {
