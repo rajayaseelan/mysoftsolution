@@ -99,7 +99,7 @@ namespace MySoft.Web
                     //需要生成才启动线程
                     if (sti.NeedUpdate(updateTime))
                     {
-                        ThreadPool.QueueUserWorkItem(state =>
+                        var thread = new Thread(state =>
                         {
                             if (state == null) return;
 
@@ -123,7 +123,10 @@ namespace MySoft.Web
                                     catch { }
                                 }
                             }
-                        }, new ArrayList { sti, updateTime });
+                        });
+
+                        //启动线程
+                        thread.Start(new ArrayList { sti, updateTime });
                     }
                 }
             }

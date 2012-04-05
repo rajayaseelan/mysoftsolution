@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 
@@ -12,19 +14,21 @@ namespace MySoft.IoC.HttpServer
     public class HttpServiceCaller
     {
         private IServiceContainer container;
+        private CastleServiceConfiguration config;
         private HttpCallerInfoCollection callers;
-        private int port;
+        private IDictionary<string, int> callTimeouts;
 
         /// <summary>
         /// HttpServiceCaller初始化
         /// </summary>
+        /// <param name="config"></param>
         /// <param name="container"></param>
-        /// <param name="port"></param>
-        public HttpServiceCaller(IServiceContainer container, int port)
+        public HttpServiceCaller(CastleServiceConfiguration config, IServiceContainer container)
         {
+            this.config = config;
             this.container = container;
-            this.port = port;
             this.callers = new HttpCallerInfoCollection();
+            this.callTimeouts = new Dictionary<string, int>();
 
             //获取拥有ServiceContract约束的服务
             var types = container.GetServiceTypes<ServiceContractAttribute>();
@@ -34,6 +38,13 @@ namespace MySoft.IoC.HttpServer
             {
                 //状态服务跳过
                 if (type == typeof(IStatusService)) continue;
+
+                var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(type);
+                if (contract != null)
+                {
+                    if (contract.Timeout > 0)
+                        callTimeouts[type.FullName] = contract.Timeout;
+                }
 
                 //添加方法
                 foreach (var method in CoreHelper.GetMethodsFromType(type))
@@ -59,7 +70,7 @@ namespace MySoft.IoC.HttpServer
                 Description = invoke.Description,
                 Authorized = invoke.Authorized,
                 AuthParameter = invoke.AuthParameter,
-                HttpMethod = HttpMethod.GET //默认为GET方式
+                HttpMethod = HttpMethod.GET                             //默认为GET方式
             };
 
             var types = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
@@ -102,7 +113,7 @@ namespace MySoft.IoC.HttpServer
             else
                 dicCaller = callers;
 
-            var doc = new HttpDocument(dicCaller, port);
+            var doc = new HttpDocument(dicCaller, config.HttpPort);
             return doc.MakeDocument(name);
         }
 
@@ -167,21 +178,12 @@ namespace MySoft.IoC.HttpServer
                 if (invokeData == null)
                 {
                     //获取当前调用者信息
-                    var client = new AppClient
+                    var appCaller = new AppCaller
                     {
                         AppPath = AppDomain.CurrentDomain.BaseDirectory,
                         AppName = "HttpServer",
                         HostName = DnsHelper.GetHostName(),
-                        IPAddress = DnsHelper.GetIPAddress()
-                    };
-
-                    //初始化调用者
-                    var appCaller = new AppCaller
-                    {
-                        AppPath = client.AppPath,
-                        AppName = client.AppName,
-                        HostName = client.HostName,
-                        IPAddress = client.IPAddress,
+                        IPAddress = DnsHelper.GetIPAddress(),
                         ServiceName = message.ServiceName,
                         MethodName = message.MethodName,
                         Parameters = message.Parameters,
@@ -196,8 +198,20 @@ namespace MySoft.IoC.HttpServer
                     };
 
                     //处理数据返回InvokeData
-                    var service = container.Resolve<IService>("Service_" + caller.Service.FullName);
-                    var invoke = new InvokeCaller(client, service);
+                    var service = container.Resolve<IService>("Service_" + appCaller.ServiceName);
+
+                    //等待超时
+                    var time = TimeSpan.FromSeconds(config.Timeout);
+                    if (callTimeouts.ContainsKey(appCaller.ServiceName))
+                    {
+                        time = TimeSpan.FromSeconds(callTimeouts[appCaller.ServiceName]);
+                    }
+
+                    //启用异步调用服务
+                    service = new AsyncService(service, time);
+
+                    //使用Invoke方式调用
+                    var invoke = new InvokeCaller(appCaller.AppName, service);
                     invokeData = invoke.CallMethod(message);
 
                     //插入缓存

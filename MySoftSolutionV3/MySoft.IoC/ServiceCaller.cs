@@ -13,7 +13,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务调用者
     /// </summary>
-    public class ServiceCaller : IDisposable
+    public class ServiceCaller
     {
         private IServiceContainer container;
         private CastleServiceConfiguration config;
@@ -119,17 +119,21 @@ namespace MySoft.IoC
                     {
                         try
                         {
-                            if (state == null) return;
+                            var arr = state as ArrayList;
+                            var statusService = arr[0] as ServerStatusService;
+                            var eventArgs = arr[1] as CallEventArgs;
 
-                            var eventArgs = state as CallEventArgs;
-                            status.CounterNotify(eventArgs);
+                            //调用计数服务
+                            statusService.Counter(eventArgs);
+
+                            //响应消息
+                            MessageCenter.Instance.Notify(eventArgs);
                         }
                         catch (Exception ex)
                         {
-                            container.WriteError(ex);
                             //To Do
                         }
-                    }, callArgs);
+                    }, new ArrayList { status, callArgs });
 
                     return resMsg;
                 }
@@ -282,18 +286,5 @@ namespace MySoft.IoC
         {
             return reqMsg.ServiceName == typeof(IStatusService).FullName;
         }
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        public void Dispose()
-        {
-            callbackTypes.Clear();
-            callTimeouts.Clear();
-        }
-
-        #endregion
     }
 }

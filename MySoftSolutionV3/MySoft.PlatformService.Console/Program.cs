@@ -26,7 +26,7 @@ namespace MySoft.PlatformService.Console
 
             if (config.HttpEnabled)
             {
-                var caller = new HttpServiceCaller(server.Container, config.HttpPort);
+                var caller = new HttpServiceCaller(config, server.Container);
                 var factory = new HttpRequestHandlerFactory(caller);
                 var httpServer = new HTTPServer(factory, config.HttpPort);
                 httpServer.OnServerStart += () => { System.Console.WriteLine("Http server started. http://{0}:{1}/", DnsHelper.GetIPAddress(), config.HttpPort); };

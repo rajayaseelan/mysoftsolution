@@ -11,7 +11,6 @@ namespace MySoft.IoC.Messages
     [Serializable]
     internal class CounterInfoCollection
     {
-        private ILog logger;
         private int maxCount;
         private int count;
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
@@ -20,9 +19,8 @@ namespace MySoft.IoC.Messages
         /// 实例化CounterInfoCollection
         /// </summary>
         /// <param name="maxCount"></param>
-        public CounterInfoCollection(ILog logger, int maxCount)
+        public CounterInfoCollection(int maxCount)
         {
-            this.logger = logger;
             this.maxCount = maxCount;
         }
 
@@ -71,9 +69,6 @@ namespace MySoft.IoC.Messages
                     //内部异常
                     var error = new IoCException(string.Format("【{0}】 One minute call service ({1}) {2} times.",
                         counter.AppName, counter.ServiceName, counter.Count), warning);
-
-                    //写错误日志
-                    logger.WriteError(error);
 
                     //抛出异常
                     args.Error = error;

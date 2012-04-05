@@ -794,7 +794,7 @@ namespace MySoft.Web
                                 else
                                     updateItems = items.GetRange(index * pageSize, items.Count - (index * pageSize));
 
-                                ThreadPool.QueueUserWorkItem(state =>
+                                var thread = new Thread(state =>
                                 {
                                     if (state == null) return;
 
@@ -814,7 +814,10 @@ namespace MySoft.Web
                                     }
 
                                     reset.Set();
-                                }, new ArrayList { updateItems, events[index] });
+                                });
+
+                                //启动线程
+                                thread.Start(new ArrayList { updateItems, events[index] });
                             }
 
                             //等待所有响应

@@ -118,7 +118,6 @@ namespace MySoft.IoC
         {
             server.Stop();
             server.Clients.ClearAll();
-            caller.Dispose();
             container.Dispose();
         }
 

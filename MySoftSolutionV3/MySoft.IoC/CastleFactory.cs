@@ -356,7 +356,7 @@ namespace MySoft.IoC
         /// <summary>
         /// 调用分布式服务
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="nodeKey"></param>
         /// <param name="message"></param>
         /// <returns></returns>
         public InvokeData Invoke(string nodeKey, InvokeMessage message)
@@ -371,6 +371,12 @@ namespace MySoft.IoC
             return Invoke(node, message);
         }
 
+        /// <summary>
+        /// 调用分布式服务
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public InvokeData Invoke(ServerNode node, InvokeMessage message)
         {
             if (node == null)
@@ -390,7 +396,22 @@ namespace MySoft.IoC
             return GetInvokeData(message, service);
         }
 
+        #endregion
+
         #region Private Service
+
+        /// <summary>
+        /// 获取调用的数据
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        private InvokeData GetInvokeData(InvokeMessage message, IService service)
+        {
+            //调用分布式服务
+            var caller = new InvokeCaller(config.AppName, service);
+            return caller.CallMethod(message);
+        }
 
         /// <summary>
         /// 获取本地服务
@@ -475,27 +496,6 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 获取调用的数据
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="service"></param>
-        /// <returns></returns>
-        private InvokeData GetInvokeData(InvokeMessage message, IService service)
-        {
-            //调用分布式服务
-            var appClient = new AppClient
-            {
-                AppPath = AppDomain.CurrentDomain.BaseDirectory,
-                AppName = config.AppName,
-                HostName = DnsHelper.GetHostName(),
-                IPAddress = DnsHelper.GetIPAddress()
-            };
-
-            var caller = new InvokeCaller(appClient, service);
-            return caller.CallMethod(message);
-        }
-
-        /// <summary>
         /// 获取本地服务
         /// </summary>
         /// <param name="message"></param>
@@ -517,8 +517,6 @@ namespace MySoft.IoC
 
             return service;
         }
-
-        #endregion
 
         #endregion
     }

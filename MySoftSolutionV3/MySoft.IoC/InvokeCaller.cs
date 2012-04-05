@@ -9,18 +9,23 @@ namespace MySoft.IoC
     /// </summary>
     public class InvokeCaller
     {
+        private string appName;
         private IService service;
-        private AppClient client;
+        private string hostName;
+        private string ipAddress;
 
         /// <summary>
         /// 实例化InvokeCaller
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="appName"></param>
         /// <param name="service"></param>
-        public InvokeCaller(AppClient client, IService service)
+        public InvokeCaller(string appName, IService service)
         {
+            this.appName = appName;
             this.service = service;
-            this.client = client;
+
+            this.hostName = DnsHelper.GetHostName();
+            this.ipAddress = DnsHelper.GetIPAddress();
         }
 
         /// <summary>
@@ -34,9 +39,9 @@ namespace MySoft.IoC
 
             RequestMessage reqMsg = new RequestMessage();
             reqMsg.InvokeMethod = true;
-            reqMsg.AppName = client.AppName;                                //应用名称
-            reqMsg.HostName = client.HostName;                              //客户端名称
-            reqMsg.IPAddress = client.IPAddress;                            //客户端IP地址
+            reqMsg.AppName = appName;                                       //应用名称
+            reqMsg.HostName = hostName;                                     //客户端名称
+            reqMsg.IPAddress = ipAddress;                                   //客户端IP地址
             reqMsg.ServiceName = message.ServiceName;                       //服务名称
             reqMsg.MethodName = message.MethodName;                         //方法名称
             reqMsg.ReturnType = typeof(string);                             //返回类型

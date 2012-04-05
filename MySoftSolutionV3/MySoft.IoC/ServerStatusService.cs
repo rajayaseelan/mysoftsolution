@@ -35,7 +35,7 @@ namespace MySoft.IoC
             this.container = container;
             this.startTime = DateTime.Now;
             this.statuslist = new TimeStatusCollection(config.RecordHours * 3600);
-            this.counterlist = new CounterInfoCollection(container, config.MinuteCalls);
+            this.counterlist = new CounterInfoCollection(config.MinuteCalls);
 
             //启动定义推送线程
             ThreadPool.QueueUserWorkItem(DoPushWork);
@@ -67,7 +67,7 @@ namespace MySoft.IoC
         /// 进行计数处理并响应
         /// </summary>
         /// <param name="args"></param>
-        internal void CounterNotify(CallEventArgs args)
+        internal void Counter(CallEventArgs args)
         {
             //获取或创建一个对象
             var status = statuslist.GetOrCreate(args.Caller.CallTime);
@@ -83,9 +83,6 @@ namespace MySoft.IoC
 
             //计算统计
             counterlist.Call(args);
-
-            //响应消息
-            MessageCenter.Instance.Notify(args);
         }
 
         #region IStatusService 成员
