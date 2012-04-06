@@ -604,11 +604,6 @@ namespace MySoft.PlatformService.WinForm
         private IList<ServiceInfo> services = new List<ServiceInfo>();
         private void InitService()
         {
-            if (defaultNode != null)
-            {
-                this.Text = string.Format("分布式服务监控 v1.0 【当前服务器节点({0}:{1})】", defaultNode.IP, defaultNode.Port);
-            }
-
             listAssembly.Items.Clear();
             listService.Items.Clear();
             listMethod.Items.Clear();
@@ -628,6 +623,9 @@ namespace MySoft.PlatformService.WinForm
             {
                 services = CastleFactory.Create().GetChannel<IStatusService>(defaultNode)
                     .GetServiceList().OrderBy(p => p.Name).ToList();
+
+                this.Text = string.Format("分布式服务监控 v1.0 【当前服务器节点({0}:{1}) 服务数:{2} 接口数:{3}】",
+                    defaultNode.IP, defaultNode.Port, services.Count, services.Sum(p => p.Methods.Count));
             }
             catch (Exception ex)
             {
