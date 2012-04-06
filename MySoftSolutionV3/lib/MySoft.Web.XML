@@ -2137,6 +2137,12 @@
             当前是否可以更新
             </summary>
         </member>
+        <member name="M:MySoft.Web.IUpdateItem.SetDomain(System.String)">
+            <summary>
+            设置域名
+            </summary>
+            <param name="domainUri"></param>
+        </member>
         <member name="P:MySoft.Web.IUpdateItem.RetryInterval">
             <summary>
             重试间隔(单位:分钟)
@@ -2254,6 +2260,12 @@
             <param name="createSpan">生成间隔时间</param>
             <param name="validateString">验证字符</param>
         </member>
+        <member name="M:MySoft.Web.SingleStaticPageItem.SetDomain(System.String)">
+            <summary>
+            设置域名
+            </summary>
+            <param name="domainUri"></param>
+        </member>
         <member name="M:MySoft.Web.SingleStaticPageItem.Update">
             <summary>
             立即更新页面
@@ -2334,6 +2346,21 @@
             分页静态页子项
             </summary>
         </member>
+        <member name="F:MySoft.Web.ParamStaticPageItem.DEFAULT_THREAD">
+            <summary>
+            默认线程数
+            </summary>
+        </member>
+        <member name="F:MySoft.Web.ParamStaticPageItem.MIN_THREAD">
+            <summary>
+            最小线程数
+            </summary>
+        </member>
+        <member name="F:MySoft.Web.ParamStaticPageItem.MAX_THREAD">
+            <summary>
+            最大线程数
+            </summary>
+        </member>
         <member name="M:MySoft.Web.ParamStaticPageItem.MySoft#Web#IUpdateItem#NeedUpdate(System.DateTime)">
             <summary>
             当前是否可以更新
@@ -2363,6 +2390,12 @@
             <param name="savePath">生成文件路径</param>
             <param name="createSpan">生成间隔时间</param>
             <param name="validateString">验证字符</param>
+        </member>
+        <member name="M:MySoft.Web.ParamStaticPageItem.SetDomain(System.String)">
+            <summary>
+            设置域名
+            </summary>
+            <param name="domainUri"></param>
         </member>
         <member name="M:MySoft.Web.ParamStaticPageItem.Update">
             <summary>
@@ -2485,6 +2518,12 @@
             成批添加静态页生成项
             </summary>
             <param name="items">静态生成项</param>
+        </member>
+        <member name="M:MySoft.Web.StaticPageManager.SetRemote(System.String)">
+            <summary>
+            设置统一远程请求与域名信息
+            </summary>
+            <param name="domainUri"></param>
         </member>
         <member name="M:MySoft.Web.StaticPageManager.CreateRemotePage(System.String,System.String,System.String,System.Text.Encoding,System.Text.Encoding)">
             <summary>

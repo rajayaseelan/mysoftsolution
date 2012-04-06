@@ -6065,6 +6065,12 @@
             获取字段数
             </summary>
         </member>
+        <member name="T:MySoft.Data.ITableRelation`1">
+            <summary>
+            表关系类
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
         <member name="P:MySoft.Data.TableEntity.Table">
             <summary>
             表名
@@ -8694,12 +8700,6 @@
             <summary>
             关系表，可以用来存储关联信息
             </summary>
-        </member>
-        <member name="T:MySoft.Data.ITableRelation`1">
-            <summary>
-            表关系类
-            </summary>
-            <typeparam name="T"></typeparam>
         </member>
         <member name="M:MySoft.Data.TableRelation`1.GetFromSection">
             <summary>
