@@ -282,7 +282,7 @@ namespace MySoft.PlatformService.WinForm
             rich.AppendText("AppPath:\r\n");
             rich.SelectionColor = Color.Black;
             rich.SelectionIndent = 20;
-            rich.AppendText(caller.AppPath);
+            rich.AppendText(caller.AppPath ?? "未知路径");
             rich.AppendText("\r\n\r\n");
 
             rich.SelectionIndent = 0;
@@ -298,7 +298,7 @@ namespace MySoft.PlatformService.WinForm
             rich.AppendText("AppName:\r\n");
             rich.SelectionColor = Color.Black;
             rich.SelectionIndent = 20;
-            rich.AppendText(caller.AppName);
+            rich.AppendText(caller.AppName ?? "未知应用");
             rich.AppendText("\r\n\r\n");
 
             rich.SelectionIndent = 0;

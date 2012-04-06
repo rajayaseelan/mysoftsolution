@@ -80,6 +80,10 @@ namespace MySoft.IoC
                     if (singleton == null)
                     {
                         var config = CastleFactoryConfiguration.GetConfig();
+
+                        if (config == null)
+                            throw new WarningException("Not find configuration section castleFactory£¡");
+
                         singleton = CreateNew(config);
                     }
                 }
@@ -98,7 +102,7 @@ namespace MySoft.IoC
             CastleFactory factory = null;
 
             //±¾µØÆ¥Åä½Ú
-            if (config == null || config.Type == CastleFactoryType.Local)
+            if (config.Type == CastleFactoryType.Local)
             {
                 var sContainer = new SimpleServiceContainer(CastleFactoryType.Local);
                 factory = new CastleFactory(config, sContainer);
