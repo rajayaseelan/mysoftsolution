@@ -4,10 +4,9 @@ using System.Threading;
 using MySoft.Installer;
 using MySoft.IoC;
 using MySoft.IoC.Configuration;
-using MySoft.Logger;
 using MySoft.IoC.HttpServer;
+using MySoft.Logger;
 using MySoft.Net.Http;
-using System.Net.Sockets;
 
 namespace MySoft.PlatformService.IoC
 {
@@ -176,13 +175,7 @@ namespace MySoft.PlatformService.IoC
             }
             else
             {
-                //如果Socket异常，则不发送邮件
-                if (error is SocketException)
-                {
-                    SimpleLog.Instance.WriteLog(error);
-                    return;
-                }
-
+                //如果是以下异常，则不发送邮件
                 SimpleLog.Instance.WriteLogWithSendMail(error, mailTo);
             }
         }

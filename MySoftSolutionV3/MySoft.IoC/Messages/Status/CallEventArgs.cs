@@ -42,17 +42,6 @@ namespace MySoft.IoC.Messages
         }
 
         /// <summary>
-        /// 是否业务异常
-        /// </summary>
-        public bool IsBusinessError
-        {
-            get
-            {
-                return this.Error is BusinessException;
-            }
-        }
-
-        /// <summary>
         /// 实例化CallEventArgs
         /// </summary>
         public CallEventArgs()

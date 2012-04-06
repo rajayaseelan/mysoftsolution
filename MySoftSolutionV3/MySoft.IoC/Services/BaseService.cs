@@ -62,32 +62,28 @@ namespace MySoft.IoC.Services
             //如果出错，通知客户端
             if (resMsg.IsError)
             {
-                //如果是业务异常，则不抛出错误
-                if (!resMsg.IsBusinessError)
+                var ex = resMsg.Error;
+                string body = string.Format("【{5}】Dynamic ({0}) service ({1},{2}) error. \r\nMessage ==> {4}\r\nParameters ==> {3}",
+                    reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message, resMsg.TransactionId);
+
+                var exception = new IoCException(body, ex)
                 {
-                    var ex = resMsg.Error;
-                    string body = string.Format("【{5}】Dynamic ({0}) service ({1},{2}) error. \r\nMessage ==> {4}\r\nParameters ==> {3}",
-                        reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message, resMsg.TransactionId);
+                    ApplicationName = reqMsg.AppName,
+                    ServiceName = reqMsg.ServiceName,
+                    ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                };
 
-                    var exception = new IoCException(body, ex)
+                //上下文不为null
+                if (OperationContext.Current != null && OperationContext.Current.Caller != null)
+                {
+                    var caller = OperationContext.Current.Caller;
+                    if (!string.IsNullOrEmpty(caller.AppPath))
                     {
-                        ApplicationName = reqMsg.AppName,
-                        ServiceName = reqMsg.ServiceName,
-                        ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                    };
-
-                    //上下文不为null
-                    if (OperationContext.Current != null && OperationContext.Current.Caller != null)
-                    {
-                        var caller = OperationContext.Current.Caller;
-                        if (!string.IsNullOrEmpty(caller.AppPath))
-                        {
-                            exception.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", exception.ErrorHeader, caller.AppPath);
-                        }
+                        exception.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", exception.ErrorHeader, caller.AppPath);
                     }
-
-                    container.WriteError(exception);
                 }
+
+                container.WriteError(exception);
             }
 
             return resMsg;

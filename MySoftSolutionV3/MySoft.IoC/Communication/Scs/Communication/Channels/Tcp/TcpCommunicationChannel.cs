@@ -206,6 +206,10 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
             {
                 Disconnect();
             }
+            catch (CommunicationStateException ex)
+            {
+                Disconnect();
+            }
             catch (Exception ex)
             {
                 OnErrorReceived(ex);

@@ -44,7 +44,15 @@ namespace MySoft.Logger
                             logqueue.Clear();
                         }
 
-                        list.ForEach(loginfo =>
+                        //对日志按路径进行分组
+                        var logs = list.GroupBy(p => p.FilePath).Select(p => new LogInfo
+                        {
+                            FilePath = p.Key,
+                            Log = string.Concat(p.Select(l => l.Log).ToArray())
+                        }).ToList();
+
+                        //批量写日志
+                        logs.ForEach(loginfo =>
                         {
                             try
                             {
@@ -81,6 +89,8 @@ namespace MySoft.Logger
         /// <param name="ex"></param>
         public void WriteLogForDir(string dir, Exception ex)
         {
+            if (ex == null) return;
+
             string filePath = Path.Combine(Path.Combine(basedir, "ErrorLogs"), dir);
             filePath = Path.Combine(filePath, DateTime.Now.ToString("yyyy-MM-dd"));
 
@@ -99,15 +109,13 @@ namespace MySoft.Logger
         /// <returns></returns>
         private string GetServiceFile(Exception ex)
         {
-            var serviceName = GetServiceName(ex);
-            var errorName = ErrorHelper.GetInnerException(ex).GetType().Name;
+            var errorName = ex.GetType().Name;
 
-            string[] files = new string[] { errorName, serviceName };
-            //去除为空或null的项
-            files = files.Where(p => !string.IsNullOrEmpty(p)).ToArray();
-            string fileName = string.Join("_", files);
+            //获取内部异常
+            if (ex.InnerException != null)
+                errorName = ex.InnerException.GetType().Name;
 
-            return fileName.Replace(" ", "");
+            return errorName;
         }
 
         /// <summary>
@@ -123,6 +131,8 @@ namespace MySoft.Logger
         /// </summary>
         public void WriteLogForDir(string dir, string log)
         {
+            if (string.IsNullOrEmpty(log)) return;
+
             string filePath = Path.Combine(Path.Combine(basedir, "Logs"), dir);
             filePath = Path.Combine(filePath, string.Format("{0}.log", DateTime.Now.ToString("yyyy-MM-dd")));
 
@@ -297,7 +307,11 @@ namespace MySoft.Logger
         private string GetServiceTitle(Exception ex)
         {
             var serviceName = GetServiceName(ex);
-            var errorName = ErrorHelper.GetInnerException(ex).GetType().Name;
+            var errorName = ex.GetType().Name;
+
+            //获取内部异常
+            if (ex.InnerException != null)
+                errorName = ex.InnerException.GetType().Name;
 
             return string.IsNullOrEmpty(serviceName) ? errorName : errorName + " : " + serviceName;
         }

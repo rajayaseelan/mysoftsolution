@@ -60,17 +60,6 @@ namespace MySoft.IoC.Messages
         }
 
         /// <summary>
-        /// 是否是业务异常
-        /// </summary>
-        public bool IsBusinessError
-        {
-            get
-            {
-                return this._error is BusinessException;
-            }
-        }
-
-        /// <summary>
         /// 记录数
         /// </summary>
         public int Count
