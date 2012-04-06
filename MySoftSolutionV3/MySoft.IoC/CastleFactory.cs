@@ -255,12 +255,15 @@ namespace MySoft.IoC
 
             lock (hashtable.SyncRoot)
             {
+                var serviceCache = new CastleServiceCache(cache);
+                var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache);
+                var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
+
+                if (!isCacheService) //不缓存，直接返回服务
+                    return (IServiceInterfaceType)dynamicProxy;
+
                 if (!hashtable.ContainsKey(serviceType))
                 {
-                    var serviceCache = new CastleServiceCache(cache);
-                    var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache);
-                    var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
-
                     hashtable[serviceType] = dynamicProxy;
                 }
             }
