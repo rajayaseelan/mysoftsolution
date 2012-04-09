@@ -194,6 +194,7 @@ namespace MySoft.IoC
                                     Count = callArgs.Count,
                                     ElapsedTime = callArgs.ElapsedTime
                                 };
+
                                 lstn.Notify(callTimeout);
                             }
                         }

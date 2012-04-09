@@ -490,6 +490,7 @@
     <Compile Include="Common\IDataPage.cs" />
     <Compile Include="Logger\IErrorLogable.cs" />
     <Compile Include="Logger\ILogable.cs" />
+    <Compile Include="Utils\Parallel.cs" />
     <Compile Include="Utils\SerializationManager.cs" />
     <Compile Include="Logger\SimpleLog.cs" />
     <Compile Include="Utils\ValidateHelper.cs" />
