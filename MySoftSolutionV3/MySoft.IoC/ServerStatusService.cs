@@ -471,44 +471,6 @@ namespace MySoft.IoC
         /// <summary>
         /// 订阅服务
         /// </summary>
-        /// <param name="callTimeout">调用超时时间</param>
-        public void Subscribe(double callTimeout, params string[] subscribeTypes)
-        {
-            Subscribe(new SubscribeOptions
-            {
-                CallTimeout = callTimeout
-            }, subscribeTypes);
-        }
-
-        /// <summary>
-        /// 订阅服务
-        /// </summary>
-        /// <param name="statusTimer">定时推送时间</param>
-        public void Subscribe(int statusTimer, params string[] subscribeTypes)
-        {
-            Subscribe(new SubscribeOptions
-            {
-                StatusTimer = statusTimer
-            }, subscribeTypes);
-        }
-
-        /// <summary>
-        /// 订阅服务
-        /// </summary>
-        /// <param name="callTimeout">调用超时时间</param>
-        /// <param name="statusTimer">定时推送时间</param>
-        public void Subscribe(double callTimeout, int statusTimer, params string[] subscribeTypes)
-        {
-            Subscribe(new SubscribeOptions
-            {
-                CallTimeout = callTimeout,
-                StatusTimer = statusTimer
-            }, subscribeTypes);
-        }
-
-        /// <summary>
-        /// 订阅服务
-        /// </summary>
         /// <param name="options">订阅选项</param>
         public void Subscribe(SubscribeOptions options, params string[] subscribeTypes)
         {

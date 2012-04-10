@@ -204,7 +204,7 @@
             this.numericUpDown1.Size = new System.Drawing.Size(60, 21);
             this.numericUpDown1.TabIndex = 5;
             this.numericUpDown1.Value = new decimal(new int[] {
-            500,
+            1000,
             0,
             0,
             0});
@@ -558,7 +558,7 @@
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Size = new System.Drawing.Size(887, 489);
             this.tabPage2.TabIndex = 2;
-            this.tabPage2.Text = "超时信息";
+            this.tabPage2.Text = "警告信息";
             // 
             // splitContainer3
             // 

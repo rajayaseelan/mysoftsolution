@@ -13,8 +13,6 @@ using System.Configuration;
 
 namespace MySoft.PlatformService.WinForm
 {
-    public delegate void CallbackEventHandler(params string[] apps);
-
     public partial class frmMain : Form
     {
         private ServerNode defaultNode;
@@ -121,8 +119,10 @@ namespace MySoft.PlatformService.WinForm
                         PushCallError = checkBox1.Checked,
                         PushCallTimeout = checkBox2.Checked,
                         PushServerStatus = checkBox3.Checked,
+                        PushClientConnect = true,
                         CallTimeout = Convert.ToDouble(numericUpDown1.Value) / 1000,
-                        StatusTimer = Convert.ToInt32(numericUpDown2.Value)
+                        CallRowCount = Convert.ToInt32(numericUpDown5.Value),
+                        ServerStatusTimer = Convert.ToInt32(numericUpDown2.Value)
                     };
 
                     try
@@ -185,7 +185,7 @@ namespace MySoft.PlatformService.WinForm
                     //listTimeout.Invalidate();
 
                     tabPage1.Text = "连接信息";
-                    tabPage2.Text = "超时信息";
+                    tabPage2.Text = "警告信息";
                     tabPage3.Text = "异常信息";
 
                     checkBox1.Enabled = true;
@@ -819,7 +819,7 @@ namespace MySoft.PlatformService.WinForm
                 TimeoutItems_OnItemInserted(0);
 
                 tabPage1.Text = "连接信息";
-                tabPage2.Text = "超时信息";
+                tabPage2.Text = "警告信息";
                 tabPage3.Text = "异常信息";
             }
         }
@@ -1240,7 +1240,7 @@ namespace MySoft.PlatformService.WinForm
                     });
 
                 box2.Invalidate();
-                control.TabPages[2].Text = "超时信息(" + box2.Items.Count + ")";
+                control.TabPages[2].Text = "警告信息(" + box2.Items.Count + ")";
 
                 if (writeLog && (msgType == ParseMessageType.Error || callTimeout.Count >= outCount))
                 {

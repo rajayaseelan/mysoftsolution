@@ -12,6 +12,7 @@ using System.Net;
 using System.IO;
 using System.Collections.Specialized;
 using MySoft.IoC.Messages;
+using System.Collections;
 
 namespace MySoft.PlatformService.Client
 {
@@ -134,6 +135,16 @@ namespace MySoft.PlatformService.Client
             //    }
             //}
 
+            var watch = Stopwatch.StartNew();
+
+            GetRequestString();
+
+            var dd = watch.ElapsedMilliseconds;
+
+            Console.WriteLine("ºÄÊ±: {0} ms", dd);
+            Console.ReadLine();
+            return;
+
             ManualResetEvent are = new ManualResetEvent(false);
             for (int i = 0; i < 1; i++)
             {
@@ -187,6 +198,51 @@ namespace MySoft.PlatformService.Client
             //}
 
             Console.ReadKey();
+        }
+
+        static void GetRequestString()
+        {
+            var url = "http://192.168.1.230:7004/fundapi/restful/system/session";
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.Method = "POST";
+
+            var hashtable = new Dictionary<string, string>();
+            hashtable.Add("merid", "FUND123");
+            hashtable.Add("usertype", "");
+            hashtable.Add("signmode", "md5");
+            hashtable.Add("format", "json");
+            hashtable.Add("version", "1.0");
+            hashtable.Add("timestamp", "20120410164433");
+            hashtable.Add("sessionkey", "");
+            hashtable.Add("function", "P005");
+            hashtable.Add("channel", "3");
+            hashtable.Add("signmsg", "fc5885c9a346c65e67ec5d364616508a");
+
+            var list = new List<string>();
+            foreach (var kv in hashtable)
+            {
+                list.Add(string.Format("{0}={1}", kv.Key, kv.Value));
+            }
+
+            var buffer = Encoding.UTF8.GetBytes(string.Join("&", list.ToArray()));
+            request.ContentLength = buffer.Length;
+
+            using (var stream = request.GetRequestStream())
+            {
+                stream.Write(buffer, 0, buffer.Length);
+                stream.Flush();
+            }
+
+            var response = (HttpWebResponse)request.GetResponse();
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                using (var sr = new StreamReader(response.GetResponseStream()))
+                {
+                    var result = sr.ReadToEnd();
+                    Console.WriteLine(result);
+                }
+            }
         }
 
         static void DoWork1(object state)

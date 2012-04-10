@@ -129,11 +129,11 @@ namespace MySoft.IoC
                     var options = lstn.Options;
 
                     //如果设定的时间不正确，不进行推送
-                    if (options.StatusTimer <= 0) continue;
+                    if (options.ServerStatusTimer <= 0) continue;
 
                     //如果推送时间大于设定的时间，则进行推送
                     if (options.PushServerStatus
-                        && DateTime.Now.Subtract(lstn.PushTime).TotalSeconds >= options.StatusTimer)
+                        && DateTime.Now.Subtract(lstn.PushTime).TotalSeconds >= options.ServerStatusTimer)
                     {
                         lstn.Notify(status);
                     }
@@ -162,9 +162,8 @@ namespace MySoft.IoC
             {
                 try
                 {
-                    if (lstn.Apps.Any(p => string.Compare(p, callArgs.Caller.AppName, true) == 0)
-                        && (lstn.Types.Count == 0 ||
-                        lstn.Types.Any(p => string.Compare(p, callArgs.Caller.ServiceName, true) == 0)))
+                    if ((lstn.Apps.Count == 0 || lstn.Apps.Any(p => string.Compare(p, callArgs.Caller.AppName, true) == 0)) &&
+                        (lstn.Types.Count == 0 || lstn.Types.Any(p => string.Compare(p, callArgs.Caller.ServiceName, true) == 0)))
                     {
                         var options = lstn.Options;
                         if (options.PushCallError && callArgs.IsError)
@@ -183,9 +182,11 @@ namespace MySoft.IoC
                         if (options.PushCallTimeout && !callArgs.IsError)
                         {
                             //如果设定的时间不正确，不进行推送
-                            if (options.CallTimeout <= 0) continue;
+                            if (options.CallTimeout <= 0
+                                && options.CallRowCount <= 0) continue;
 
-                            if (callArgs.ElapsedTime > options.CallTimeout * 1000)
+                            if (callArgs.ElapsedTime > options.CallTimeout * 1000
+                                || callArgs.Count > options.CallRowCount)
                             {
                                 var callTimeout = new CallTimeout
                                 {
