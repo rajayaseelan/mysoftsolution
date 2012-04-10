@@ -11,8 +11,6 @@ using MySoft.IoC.Messages;
 
 namespace MySoft.PlatformService.WinForm
 {
-    public delegate void CallbackEventHandler(string[] apps);
-
     public partial class frmClient : Form
     {
         public event CallbackEventHandler OnCallback;

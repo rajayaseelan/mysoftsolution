@@ -13,6 +13,8 @@ using System.Configuration;
 
 namespace MySoft.PlatformService.WinForm
 {
+    public delegate void CallbackEventHandler(params string[] apps);
+
     public partial class frmMain : Form
     {
         private ServerNode defaultNode;
@@ -108,7 +110,7 @@ namespace MySoft.PlatformService.WinForm
 
                     var listener = new StatusListener(tabControl1, listConnect, listTimeout, listError,
                         Convert.ToInt32(numericUpDown3.Value), Convert.ToInt32(numericUpDown5.Value),
-                        Convert.ToInt32(numericUpDown4.Value), checkBox4.Checked);
+                        Convert.ToInt32(numericUpDown1.Value), Convert.ToInt32(numericUpDown4.Value), checkBox4.Checked);
 
                     service = CastleFactory.Create().GetChannel<IStatusService>(defaultNode, listener);
 
@@ -423,7 +425,7 @@ namespace MySoft.PlatformService.WinForm
                     ParseMessageType msgType = ParseMessageType.None;
                     if (item.ElapsedTime > timeout * item.Times)
                         msgType = ParseMessageType.Error;
-                    if (item.ElapsedTime > warningTimeout * item.Times)
+                    else if (item.ElapsedTime > warningTimeout * item.Times)
                         msgType = ParseMessageType.Warning;
                     else if (item.Count > count * item.Times)
                         msgType = ParseMessageType.Question;
@@ -1118,9 +1120,10 @@ namespace MySoft.PlatformService.WinForm
         private MessageListBox box3;
         private int rowCount;
         private int outCount;
+        private int warningTimeout;
         private int timeout;
         private bool writeLog;
-        public StatusListener(TabControl control, MessageListBox box1, MessageListBox box2, MessageListBox box3, int rowCount, int outCount, int timeout, bool writeLog)
+        public StatusListener(TabControl control, MessageListBox box1, MessageListBox box2, MessageListBox box3, int rowCount, int outCount, int warningTimeout, int timeout, bool writeLog)
         {
             this.control = control;
             this.box1 = box1;
@@ -1128,6 +1131,7 @@ namespace MySoft.PlatformService.WinForm
             this.box3 = box3;
             this.rowCount = rowCount;
             this.outCount = outCount;
+            this.warningTimeout = warningTimeout;
             this.timeout = timeout;
             this.writeLog = writeLog;
         }
@@ -1217,15 +1221,13 @@ namespace MySoft.PlatformService.WinForm
                     box2.Items.RemoveAt(box2.Items.Count - 1);
                 }
 
-                var msgType = ParseMessageType.Warning;
+                var msgType = ParseMessageType.None;
                 if (callTimeout.ElapsedTime >= timeout)
-                {
                     msgType = ParseMessageType.Error;
-                }
+                else if (callTimeout.ElapsedTime >= warningTimeout)
+                    msgType = ParseMessageType.Warning;
                 else if (callTimeout.Count >= outCount)
-                {
                     msgType = ParseMessageType.Question;
-                }
 
                 box2.Items.Insert(0,
                     new ParseMessageEventArgs

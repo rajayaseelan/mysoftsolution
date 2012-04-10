@@ -172,6 +172,9 @@ namespace MySoft.RESTful.SDK
                     var buffer = encoding.GetBytes(input);
                     using (var stream = request.GetRequestStream())
                     {
+                        //设置流的长度
+                        request.ContentLength = buffer.Length;
+
                         stream.Write(buffer, 0, buffer.Length);
                         stream.Flush();
                     }
