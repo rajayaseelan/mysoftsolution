@@ -408,11 +408,12 @@ namespace MySoft.PlatformService.WinForm
                 listTotal.Items.Clear();
                 var items = groups.OrderByDescending(p => new OrderTotalInfo
                 {
-                    ElapsedTime = p.ElapsedTime,
                     Times = p.Times,
+                    ElapsedTime = p.ElapsedTime,
                     Count = p.Count
                 });
 
+                var warningTimeout = Convert.ToInt32(numericUpDown1.Value);
                 var timeout = Convert.ToInt32(numericUpDown4.Value);
                 var count = Convert.ToInt32(numericUpDown5.Value);
                 //var total = Convert.ToInt32(numericUpDown6.Value);
@@ -420,11 +421,11 @@ namespace MySoft.PlatformService.WinForm
                 foreach (var item in items)
                 {
                     ParseMessageType msgType = ParseMessageType.None;
-                    if (item.ElapsedTime > timeout)
+                    if (item.ElapsedTime > timeout * item.Times)
                         msgType = ParseMessageType.Error;
-                    else if (item.Times > 5)
+                    if (item.ElapsedTime > warningTimeout * item.Times)
                         msgType = ParseMessageType.Warning;
-                    else if (item.Count > count)
+                    else if (item.Count > count * item.Times)
                         msgType = ParseMessageType.Question;
 
                     if (msgType != ParseMessageType.None)
