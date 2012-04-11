@@ -214,12 +214,8 @@ namespace MySoft.PlatformService.WinForm
 
                 if (data != null)
                 {
-                    if (string.IsNullOrEmpty(data.OutParameters))
-                        richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}",
-                            data.Count, data.Value);
-                    else
-                        richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
-                            data.Count, data.Value, data.OutParameters);
+                    richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
+                        data.Count, data.Value, data.OutParameters);
                 }
             }
             catch (Exception ex)
