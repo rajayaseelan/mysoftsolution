@@ -70,7 +70,7 @@ namespace MySoft.Common
                 WebRequest req = WebRequest.Create(PostUrl);
                 req.Method = "POST";
                 req.ContentType = "application/x-www-form-urlencoded";
-
+                (req as HttpWebRequest).ServicePoint.Expect100Continue = false;
 
                 byte[] bytes = Encoding.UTF8.GetBytes(Content);
                 req.ContentLength = bytes.Length;
@@ -105,7 +105,7 @@ namespace MySoft.Common
                 WebRequest req = WebRequest.Create(PostUrl);
                 req.Method = "POST";
                 req.ContentType = "application/x-www-form-urlencoded";
-
+                (req as HttpWebRequest).ServicePoint.Expect100Continue = false;
 
                 byte[] bytes = Content;
                 req.ContentLength = bytes.Length;
@@ -141,6 +141,7 @@ namespace MySoft.Common
                 WebRequest req = WebRequest.Create(PostUrl);
                 req.Method = "POST";
                 req.ContentType = "application/x-www-form-urlencoded";
+                (req as HttpWebRequest).ServicePoint.Expect100Continue = false;
 
                 // 添加数据到Header中
                 IDictionaryEnumerator myEnumerator = headerCollection.GetEnumerator();
@@ -185,6 +186,7 @@ namespace MySoft.Common
                 WebRequest req = WebRequest.Create(PostUrl);
                 req.Method = "POST";
                 req.ContentType = "application/x-www-form-urlencoded";
+                (req as HttpWebRequest).ServicePoint.Expect100Continue = false;
 
                 // 添加数据到Header中
                 IDictionaryEnumerator myEnumerator = headerCollection.GetEnumerator();

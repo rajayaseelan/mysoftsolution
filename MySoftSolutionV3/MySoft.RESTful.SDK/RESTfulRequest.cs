@@ -165,8 +165,8 @@ namespace MySoft.RESTful.SDK
                 if (parameter.DataObject != null && parameter.HttpMethod == HttpMethod.POST)
                 {
                     request.ContentType = "application/x-www-form-urlencoded";
-                    //request.ContentType = "application/json";
                     request.Method = parameter.HttpMethod.ToString();
+                    request.ServicePoint.Expect100Continue = false;
 
                     string input = SerializationManager.SerializeJson(parameter.DataObject);
                     var buffer = encoding.GetBytes(input);

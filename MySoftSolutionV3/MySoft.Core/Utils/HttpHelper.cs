@@ -104,6 +104,8 @@ namespace MySoft
             {
                 request.ContentType = "application/x-www-form-urlencoded";
                 request.Method = "POST";
+                request.ServicePoint.Expect100Continue = false;
+
                 using (var stream = request.GetRequestStream())
                 {
                     var buffer = Encoding.UTF8.GetBytes(value);

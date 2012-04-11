@@ -206,6 +206,7 @@ namespace MySoft.PlatformService.Client
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.ContentType = "application/x-www-form-urlencoded";
             request.Method = "POST";
+            request.ServicePoint.Expect100Continue = false;
 
             var hashtable = new Dictionary<string, string>();
             hashtable.Add("merid", "FUND123");
