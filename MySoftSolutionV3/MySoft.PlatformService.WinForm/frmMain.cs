@@ -184,9 +184,9 @@ namespace MySoft.PlatformService.WinForm
                     //listError.Invalidate();
                     //listTimeout.Invalidate();
 
-                    tabPage1.Text = "连接信息(" + listConnect.Items.Count + ")";
-                    tabPage2.Text = "警告信息(" + listTimeout.Items.Count + ")";
-                    tabPage3.Text = "异常信息(" + listError.Items.Count + ")";
+                    tabPage1.Text = "连接信息" + (listConnect.Items.Count == 0 ? "" : "(" + listConnect.Items.Count + ")");
+                    tabPage2.Text = "警告信息" + (listTimeout.Items.Count == 0 ? "" : "(" + listTimeout.Items.Count + ")");
+                    tabPage3.Text = "异常信息" + (listError.Items.Count == 0 ? "" : "(" + listError.Items.Count + ")");
 
                     checkBox1.Enabled = true;
                     checkBox2.Enabled = true;
