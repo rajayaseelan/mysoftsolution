@@ -608,7 +608,6 @@ namespace MySoft.Mail
             string log = string.Format("SyncSendMail from ({0}) to ({1}), {2}.", mMailFrom, String.Join("|", mMailTo), result.Message);
             //写邮件发送日志
             SimpleLog.Instance.WriteLog("Mail", string.Format("{0} subject: {1}", log, mMailSubject));
-            Console.WriteLine(log);
 
             return result;
         }
@@ -628,82 +627,82 @@ namespace MySoft.Mail
         /// <returns></returns>
         private SendResult SendMail(bool isAsync)
         {
-            #region 设置属性值
-
-            string[] mailTos = mMailTo;
-            string[] mailCcs = mMailCc;
-            string[] mailBccs = mMailBcc;
-            string[] attachments = mMailAttachments;
-
-            // build the email message
-            MailMessage Email = new MailMessage();
-            MailAddress MailFrom = new MailAddress(mMailFrom, mMailDisplyName);
-            Email.From = MailFrom;
-            Email.Subject = mMailSubject;
-            Email.Body = mMailBody;
-            Email.Priority = mPriority;
-            Email.IsBodyHtml = mIsBodyHtml;
-            Email.SubjectEncoding = Encoding.UTF8;
-            Email.BodyEncoding = Encoding.UTF8;
-
-            if (mailTos != null)
-            {
-                foreach (string mailto in mailTos)
-                {
-                    if (!string.IsNullOrEmpty(mailto))
-                    {
-                        Email.To.Add(mailto);
-                    }
-                }
-            }
-
-            if (mailCcs != null)
-            {
-                foreach (string cc in mailCcs)
-                {
-                    if (!string.IsNullOrEmpty(cc))
-                    {
-                        Email.CC.Add(cc);
-                    }
-                }
-            }
-
-            if (mailBccs != null)
-            {
-                foreach (string bcc in mailBccs)
-                {
-                    if (!string.IsNullOrEmpty(bcc))
-                    {
-                        Email.Bcc.Add(bcc);
-                    }
-                }
-            }
-
-            if (attachments != null)
-            {
-                foreach (string file in attachments)
-                {
-                    if (!string.IsNullOrEmpty(file))
-                    {
-                        Attachment att = new Attachment(file);
-                        Email.Attachments.Add(att);
-                    }
-                }
-            }
-
-            // Smtp Client
-            SmtpClient SmtpMail = new SmtpClient(mSMTPServer, mSMTPPort);
-            SmtpMail.Credentials = new NetworkCredential(mSMTPUsername, mSMTPPassword);
-            SmtpMail.EnableSsl = mSMTPSSL;
-            //SmtpMail.UseDefaultCredentials = false;
-
-            #endregion
-
             //状态码为0表示成功
             var result = new SendResult { Success = true, Message = "邮件发送成功！" };
 
             try
             {
+                #region 设置属性值
+
+                string[] mailTos = mMailTo;
+                string[] mailCcs = mMailCc;
+                string[] mailBccs = mMailBcc;
+                string[] attachments = mMailAttachments;
+
+                // build the email message
+                MailMessage Email = new MailMessage();
+                MailAddress MailFrom = new MailAddress(mMailFrom, mMailDisplyName);
+                Email.From = MailFrom;
+                Email.Subject = mMailSubject;
+                Email.Body = mMailBody;
+                Email.Priority = mPriority;
+                Email.IsBodyHtml = mIsBodyHtml;
+                Email.SubjectEncoding = Encoding.UTF8;
+                Email.BodyEncoding = Encoding.UTF8;
+
+                if (mailTos != null)
+                {
+                    foreach (string mailto in mailTos)
+                    {
+                        if (!string.IsNullOrEmpty(mailto))
+                        {
+                            Email.To.Add(mailto);
+                        }
+                    }
+                }
+
+                if (mailCcs != null)
+                {
+                    foreach (string cc in mailCcs)
+                    {
+                        if (!string.IsNullOrEmpty(cc))
+                        {
+                            Email.CC.Add(cc);
+                        }
+                    }
+                }
+
+                if (mailBccs != null)
+                {
+                    foreach (string bcc in mailBccs)
+                    {
+                        if (!string.IsNullOrEmpty(bcc))
+                        {
+                            Email.Bcc.Add(bcc);
+                        }
+                    }
+                }
+
+                if (attachments != null)
+                {
+                    foreach (string file in attachments)
+                    {
+                        if (!string.IsNullOrEmpty(file))
+                        {
+                            Attachment att = new Attachment(file);
+                            Email.Attachments.Add(att);
+                        }
+                    }
+                }
+
+                // Smtp Client
+                SmtpClient SmtpMail = new SmtpClient(mSMTPServer, mSMTPPort);
+                SmtpMail.Credentials = new NetworkCredential(mSMTPUsername, mSMTPPassword);
+                SmtpMail.EnableSsl = mSMTPSSL;
+                //SmtpMail.UseDefaultCredentials = false;
+
+                #endregion
+
                 if (isAsync)
                 {
                     SmtpMail.SendCompleted += new SendCompletedEventHandler(SendCompletedCallback);
@@ -755,7 +754,6 @@ namespace MySoft.Mail
 
             //写邮件发送日志
             SimpleLog.Instance.WriteLogForDir("Mail", string.Format("{0} subject: {1}", log, mMailSubject));
-            Console.WriteLine(log);
         }
 
         #endregion
