@@ -18,6 +18,7 @@ namespace MySoft.PlatformService.WinForm
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new frmMain());
 
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Program_UnhandledException);
             Thread.GetDomain().UnhandledException += new UnhandledExceptionEventHandler(Program_UnhandledException);
         }
 

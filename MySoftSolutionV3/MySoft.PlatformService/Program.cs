@@ -10,6 +10,7 @@ namespace MySoft.PlatformService
         [STAThread]
         static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Program_UnhandledException);
             Thread.GetDomain().UnhandledException += new UnhandledExceptionEventHandler(Program_UnhandledException);
             InstallerServer server = new InstallerServer();
             string optionalArgs = string.Empty;

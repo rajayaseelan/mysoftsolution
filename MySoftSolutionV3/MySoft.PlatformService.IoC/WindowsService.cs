@@ -27,6 +27,7 @@ namespace MySoft.PlatformService.IoC
         /// </summary>
         public WindowsService()
         {
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(WindowsService_UnhandledException);
             Thread.GetDomain().UnhandledException += new UnhandledExceptionEventHandler(WindowsService_UnhandledException);
         }
 
