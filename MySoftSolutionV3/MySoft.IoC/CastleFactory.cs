@@ -256,6 +256,7 @@ namespace MySoft.IoC
         private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService proxy, bool isCacheService)
         {
             Type serviceType = typeof(IServiceInterfaceType);
+            string serviceKey = string.Format("{0}${1}", serviceType.FullName, proxy.ServiceName);
 
             lock (hashtable.SyncRoot)
             {
@@ -266,13 +267,13 @@ namespace MySoft.IoC
                 if (!isCacheService) //不缓存，直接返回服务
                     return (IServiceInterfaceType)dynamicProxy;
 
-                if (!hashtable.ContainsKey(serviceType))
+                if (!hashtable.ContainsKey(serviceKey))
                 {
-                    hashtable[serviceType] = dynamicProxy;
+                    hashtable[serviceKey] = dynamicProxy;
                 }
             }
 
-            return (IServiceInterfaceType)hashtable[serviceType];
+            return (IServiceInterfaceType)hashtable[serviceKey];
         }
 
         #endregion

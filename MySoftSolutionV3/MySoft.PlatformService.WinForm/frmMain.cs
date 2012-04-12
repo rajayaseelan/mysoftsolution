@@ -88,9 +88,6 @@ namespace MySoft.PlatformService.WinForm
                         return;
                     }
 
-                    if (listAssembly.Items.Count == 0)
-                        InitService();
-
                     if (checkBox3.Checked)
                     {
                         var timer = Convert.ToInt32(numericUpDown2.Value);
@@ -366,12 +363,6 @@ namespace MySoft.PlatformService.WinForm
             formTimer.Start();
 
             InitBrowser();
-
-            if (comboBox1.Items.Count > 0)
-            {
-                defaultNode = comboBox1.Items[0] as ServerNode;
-                InitService();
-            }
         }
 
         void Items_OnItemInserted(int index)
@@ -605,8 +596,15 @@ namespace MySoft.PlatformService.WinForm
         /// 服务信息
         /// </summary>
         private IList<ServiceInfo> services = new List<ServiceInfo>();
-        private void InitService()
+
+        private void InitService(ServerNode node, bool forceRefresh)
         {
+            if (!forceRefresh && defaultNode != null)
+            {
+                if (node.Key == defaultNode.Key && listAssembly.Items.Count > 0)
+                    return;
+            }
+
             listAssembly.Items.Clear();
             listService.Items.Clear();
             listMethod.Items.Clear();
@@ -624,11 +622,11 @@ namespace MySoft.PlatformService.WinForm
 
             try
             {
-                services = CastleFactory.Create().GetChannel<IStatusService>(defaultNode)
+                services = CastleFactory.Create().GetChannel<IStatusService>(node)
                     .GetServiceList().OrderBy(p => p.Name).ToList();
 
                 this.Text = string.Format("分布式服务监控 v1.0 【当前服务器节点({0}:{1}) 服务数:{2} 接口数:{3}】",
-                    defaultNode.IP, defaultNode.Port, services.Count, services.Sum(p => p.Methods.Count));
+                    node.IP, node.Port, services.Count, services.Sum(p => p.Methods.Count));
             }
             catch (Exception ex)
             {
@@ -654,6 +652,8 @@ namespace MySoft.PlatformService.WinForm
             }
 
             listAssembly.Invalidate();
+
+            defaultNode = node;
         }
 
         void InitAppTypes(IStatusService s)
@@ -832,7 +832,7 @@ namespace MySoft.PlatformService.WinForm
                 return;
             }
 
-            InitService();
+            InitService(defaultNode, true);
         }
 
         private void 调用此服务CToolStripMenuItem_Click(object sender, EventArgs e)
@@ -920,10 +920,12 @@ namespace MySoft.PlatformService.WinForm
             }
         }
 
-        private void comboBox1_Click(object sender, EventArgs e)
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBox1.SelectedIndex < 0) return;
-            defaultNode = comboBox1.SelectedItem as ServerNode;
+            var node = comboBox1.Items[comboBox1.SelectedIndex] as ServerNode;
+
+            InitService(node, false);
         }
 
         private void 全选AToolStripMenuItem_Click(object sender, EventArgs e)
