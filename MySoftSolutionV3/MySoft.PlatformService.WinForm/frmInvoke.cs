@@ -105,7 +105,9 @@ namespace MySoft.PlatformService.WinForm
                         }
                     }
 
+                    t.Tag = parameter;
                     p.Controls.Add(t);
+
                     l.SendToBack();
 
                     if (!parameter.IsPrimitive)
@@ -196,6 +198,10 @@ namespace MySoft.PlatformService.WinForm
                         var text = p.Value.Text.Trim();
                         if (!string.IsNullOrEmpty(text))
                         {
+                            var info = p.Value.Tag as ParameterInfo;
+                            if (info.IsPrimitive)
+                                text = string.Format("\"{0}\"", text);
+
                             jValue[p.Key] = JToken.Parse(text);
                         }
                     }
