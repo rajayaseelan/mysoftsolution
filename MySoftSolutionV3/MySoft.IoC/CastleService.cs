@@ -200,6 +200,15 @@ namespace MySoft.IoC
             {
                 //获取client发送端
                 var client = sender as IScsServerClient;
+
+                //如果状态为空的客户端，则不处理，直接断开！
+                if (client.State == null)
+                {
+                    client.Disconnect();
+                    return;
+                }
+
+                //解析消息
                 var message = e.Message as ScsResultMessage;
                 var reqMsg = message.MessageValue as RequestMessage;
 
@@ -222,14 +231,9 @@ namespace MySoft.IoC
             {
                 client.SendMessage(message);
             }
-            catch (SocketException ex)
+            catch
             {
-                //Socket异常，不处理
-            }
-            catch (Exception ex)
-            {
-                //发送失败
-                container.WriteError(ex);
+                //不做处理
             }
         }
 

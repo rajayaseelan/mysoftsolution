@@ -96,6 +96,7 @@
     <Compile Include="Cache\ICacheStrategy.cs" />
     <Compile Include="Common\HttpMethod.cs" />
     <Compile Include="IoC\HttpInvoke.cs" />
+    <Compile Include="IoC\IContainer.cs" />
     <Compile Include="Net\CountingOutputStream.cs" />
     <Compile Include="Net\Http\HTTPException.cs" />
     <Compile Include="Net\Http\HTTPFixedLengthInputStream.cs" />

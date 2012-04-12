@@ -80,7 +80,6 @@
     <Compile Include="CacheObject.cs" />
     <Compile Include="Cache\IServiceCache.cs" />
     <Compile Include="HttpServer\HttpCallerInfoCollection.cs" />
-    <Compile Include="IContainer.cs" />
     <Compile Include="Callback\MessageCenter.cs" />
     <Compile Include="Callback\MessageListener.cs" />
     <Compile Include="HttpServer\HttpCallerInfo.cs" />

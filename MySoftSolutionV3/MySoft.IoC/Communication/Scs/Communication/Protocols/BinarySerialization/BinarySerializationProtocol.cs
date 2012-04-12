@@ -28,7 +28,7 @@ namespace MySoft.Communication.Scs.Communication.Protocols.BinarySerialization
         /// <summary>
         /// Maximum length of a message.
         /// </summary>
-        private const int MaxMessageLength = 128 * 1024 * 1024; //128 Megabytes.
+        private const int MaxMessageLength = 1024 * 1024 * 1024; //1024 Megabytes.
 
         /// <summary>
         /// This MemoryStream object is used to collect receiving bytes to build messages.
@@ -196,7 +196,7 @@ namespace MySoft.Communication.Scs.Communication.Protocols.BinarySerialization
             var messageLength = ReadInt32(_receiveMemoryStream);
             if (messageLength > MaxMessageLength)
             {
-                throw new Exception("Message is too big (" + messageLength + " bytes). Max allowed length is " + MaxMessageLength + " bytes.");
+                throw new CommunicationException("Message is too big (" + messageLength + " bytes). Max allowed length is " + MaxMessageLength + " bytes.");
             }
 
             //If message is zero-length (It must not be but good approach to check it)

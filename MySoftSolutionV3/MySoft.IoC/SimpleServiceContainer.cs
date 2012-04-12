@@ -170,6 +170,54 @@ namespace MySoft.IoC
             }
         }
 
+        #region Register component
+
+        /// <summary>
+        /// Register ocal service
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <param name="classType"></param>
+        public void Register(Type serviceType, Type classType)
+        {
+            this.Register(serviceType.FullName, serviceType, classType);
+        }
+
+        /// <summary>
+        /// Register ocal service
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="serviceType"></param>
+        /// <param name="instance"></param>
+        public void Register(string key, Type serviceType, Type classType)
+        {
+            this.RegisterComponent(key, serviceType, classType);
+        }
+
+        /// <summary>
+        /// Register ocal service
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <param name="classType"></param>
+        public void Register(Type serviceType, object instance)
+        {
+            this.Register(serviceType.FullName, serviceType, instance);
+        }
+
+        /// <summary>
+        /// Register ocal service
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="serviceType"></param>
+        /// <param name="instance"></param>
+        public void Register(string key, Type serviceType, object instance)
+        {
+            this.RegisterComponent(key, serviceType, instance);
+        }
+
+        #endregion
+
+        #region Resolve component
+
         /// <summary>
         /// Releases the specified obj.
         /// </summary>
@@ -221,6 +269,8 @@ namespace MySoft.IoC
         {
             return container.Resolve<TService>(key);
         }
+
+        #endregion
 
         /// <summary>
         /// 是否包含服务

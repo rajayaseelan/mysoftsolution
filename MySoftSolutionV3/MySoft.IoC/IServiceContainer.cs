@@ -35,25 +35,6 @@ namespace MySoft.IoC
         /// <param name="serviceKeyTypes">The service key types.</param>
         void RegisterComponents(IDictionary<Type, object> serviceKeyTypes);
         /// <summary>
-        /// Releases the specified obj.
-        /// </summary>
-        /// <param name="obj">The obj.</param>
-        void Release(object obj);
-        /// <summary>
-        /// Gets the <see cref="System.Object"/> with the specified key.
-        /// <summary>
-        /// Resolve local service
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        object Resolve(Type type);
-        /// <summary>
-        /// Resolve local service
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        object Resolve(string key);
-        /// <summary>
         /// Get contract interface
         /// </summary>
         /// <returns></returns>
