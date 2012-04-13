@@ -33,12 +33,20 @@ namespace MySoft.Data
         /// <summary>
         /// 缓存依赖
         /// </summary>
-        internal ICacheDependent Cache { get; set; }
+        internal ICacheDependent Cache
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// 超时时间
         /// </summary>
-        internal int Timeout { get; set; }
+        internal int Timeout
+        {
+            get;
+            set;
+        }
 
         protected DbProvider(string connectionString, System.Data.Common.DbProviderFactory dbFactory, char leftToken, char rightToken, char paramPrefixToken)
         {
@@ -442,11 +450,19 @@ namespace MySoft.Data
                 if (cmd.CommandType == CommandType.Text)
                 {
                     if (oldName.Length >= 100)
+                    {
                         p.ParameterName = FormatParameter("p" + index++);
+                        cmd.CommandText = cmd.CommandText.Replace(oldName, p.ParameterName);
+                    }
                     else
+                    {
                         p.ParameterName = FormatParameter(oldName);
+                        if (oldName.StartsWith("$"))
+                        {
+                            cmd.CommandText = cmd.CommandText.Replace(oldName, p.ParameterName);
+                        }
+                    }
 
-                    cmd.CommandText = cmd.CommandText.Replace(oldName, p.ParameterName);
                 }
                 else
                 {
@@ -557,7 +573,8 @@ namespace MySoft.Data
             }
 
             //移除缓存
-            if (this.Cache != null) Cache.RemoveCache<T>();
+            if (this.Cache != null)
+                Cache.RemoveCache<T>();
 
             string tableName = table == null ? entity.GetTable().Name : table.Name;
 
@@ -655,7 +672,8 @@ namespace MySoft.Data
             }
 
             //移除缓存
-            if (this.Cache != null) Cache.RemoveCache<T>();
+            if (this.Cache != null)
+                Cache.RemoveCache<T>();
 
             StringBuilder sb = new StringBuilder();
             string tableName = table == null ? entity.GetTable().Name : table.Name;
@@ -677,7 +695,10 @@ namespace MySoft.Data
             where T : Entity
         {
             //如果没有设置更新的字段，抛出异常
-            if (fvlist.FindAll(fv => { return fv.IsChanged; }).Count == 0)
+            if (fvlist.FindAll(fv =>
+            {
+                return fv.IsChanged;
+            }).Count == 0)
             {
                 //throw new DataException("更新数据异常，没有需要更新的数据！");
                 return -1; //-1表示没有需要更新的列
@@ -703,7 +724,8 @@ namespace MySoft.Data
             }
 
             //移除缓存
-            if (this.Cache != null) Cache.RemoveCache<T>();
+            if (this.Cache != null)
+                Cache.RemoveCache<T>();
 
             string tableName = table == null ? entity.GetTable().Name : table.Name;
 
@@ -815,7 +837,9 @@ namespace MySoft.Data
                     }
                     return logger.Begin(cmdText, parameters.ToArray());
                 }
-                catch { }
+                catch
+                {
+                }
             }
 
             return true;
@@ -839,7 +863,9 @@ namespace MySoft.Data
                     }
                     logger.End(cmdText, parameters.ToArray(), result, elapsedTime);
                 }
-                catch { }
+                catch
+                {
+                }
             }
         }
 
@@ -860,7 +886,9 @@ namespace MySoft.Data
                     var exception = new DataException(GetLog(command), ex);
                     logger.WriteError(exception);
                 }
-                catch { }
+                catch
+                {
+                }
             }
         }
 
@@ -913,7 +941,10 @@ namespace MySoft.Data
         /// </summary>
         protected virtual bool AccessProvider
         {
-            get { return false; }
+            get
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -921,18 +952,27 @@ namespace MySoft.Data
         /// </summary>
         protected virtual bool AllowAutoIncrement
         {
-            get { return false; }
+            get
+            {
+                return false;
+            }
         }
 
         /// <summary>
         /// 是否支持批处理
         /// </summary>
-        protected internal abstract bool SupportBatch { get; }
+        protected internal abstract bool SupportBatch
+        {
+            get;
+        }
 
         /// <summary>
         /// 返回自动ID的sql语句
         /// </summary>
-        protected abstract string AutoIncrementValue { get; }
+        protected abstract string AutoIncrementValue
+        {
+            get;
+        }
 
         /// <summary>
         /// 获取参数类型
