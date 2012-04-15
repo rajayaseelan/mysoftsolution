@@ -23,7 +23,6 @@ namespace MySoft.IoC
 
         private CastleFactoryConfiguration config;
         private IServiceContainer container;
-        private DiscoverProxy discoverProxy;
         private IDictionary<string, IService> proxies;
         private ICacheStrategy cache;
 
@@ -61,7 +60,6 @@ namespace MySoft.IoC
             else
                 this.config = config;
             this.container = container;
-            this.discoverProxy = new DiscoverProxy(this, container);
             this.proxies = new Dictionary<string, IService>();
         }
 
@@ -196,10 +194,7 @@ namespace MySoft.IoC
         /// <returns>The service implemetation instance.</returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
-            var service = GetLocalService<IServiceInterfaceType>();
-            if (service != null) return service;
-
-            return GetChannel<IServiceInterfaceType>(discoverProxy, true);
+            return GetChannel<IServiceInterfaceType>(config.Default);
         }
 
         /// <summary>
@@ -228,6 +223,10 @@ namespace MySoft.IoC
         {
             if (node == null)
                 throw new WarningException("Server node can't for empty!");
+
+            //获取本地服务
+            var service = GetLocalService<IServiceInterfaceType>();
+            if (service != null) return service;
 
             IService proxy = null;
             var isCacheService = true;
@@ -351,14 +350,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public InvokeData Invoke(InvokeMessage message)
         {
-            IService service = GetLocalService(message);
-            if (service == null)
-            {
-                //本地服务为null，则使用发现服务调用
-                service = discoverProxy;
-            }
-
-            return GetInvokeData(message, service);
+            return Invoke(config.Default, message);
         }
 
         /// <summary>
@@ -390,7 +382,10 @@ namespace MySoft.IoC
             if (node == null)
                 throw new WarningException("Server node can't for empty!");
 
-            IService service = null;
+            //获取本地服务
+            IService service = GetLocalService(message);
+            if (service == null) return GetInvokeData(message, service);
+
             if (singleton.proxies.ContainsKey(node.Key.ToLower()))
                 service = singleton.proxies[node.Key.ToLower()];
             else
