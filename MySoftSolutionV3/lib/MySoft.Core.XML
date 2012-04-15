@@ -15831,6 +15831,184 @@
             The current zero based record number.
             </returns>
         </member>
+        <member name="T:MySoft.Task.Semaphore">
+            <summary>Implementation of Dijkstra's PV Semaphore based on the Monitor class.</summary>
+        </member>
+        <member name="F:MySoft.Task.Semaphore._count">
+            <summary>The number of units alloted by this semaphore.</summary>
+        </member>
+        <member name="F:MySoft.Task.Semaphore._semLock">
+            <summary>Lock for the semaphore.</summary>
+        </member>
+        <member name="M:MySoft.Task.Semaphore.#ctor">
+            <summary> Initialize the semaphore as a binary semaphore.</summary>
+        </member>
+        <member name="M:MySoft.Task.Semaphore.#ctor(System.Int32)">
+            <summary> Initialize the semaphore as a counting semaphore.</summary>
+            <param name="count">Initial number of threads that can take out units from this semaphore.</param>
+            <exception cref="T:System.ArgumentException">Throws if the count argument is less than 0.</exception>
+        </member>
+        <member name="M:MySoft.Task.Semaphore.AddOne">
+            <summary>V the semaphore (add 1 unit to it).</summary>
+        </member>
+        <member name="M:MySoft.Task.Semaphore.WaitOne">
+            <summary>P the semaphore (take out 1 unit from it).</summary>
+        </member>
+        <member name="M:MySoft.Task.Semaphore.P">
+            <summary>P the semaphore (take out 1 unit from it).</summary>
+        </member>
+        <member name="M:MySoft.Task.Semaphore.V">
+            <summary>V the semaphore (add 1 unit to it).</summary>
+        </member>
+        <member name="M:MySoft.Task.Semaphore.Reset(System.Int32)">
+            <summary>Resets the semaphore to the specified count.  Should be used cautiously.</summary>
+        </member>
+        <member name="T:MySoft.Task.ManagedThreadPool">
+            <summary>Managed thread pool.</summary>
+        </member>
+        <member name="F:MySoft.Task.ManagedThreadPool._maxWorkerThreads">
+            <summary>Maximum number of threads the thread pool has at its disposal.</summary>
+        </member>
+        <member name="F:MySoft.Task.ManagedThreadPool._waitingCallbacks">
+            <summary>Queue of all the callbacks waiting to be executed.</summary>
+        </member>
+        <member name="F:MySoft.Task.ManagedThreadPool._workerThreadNeeded">
+            <summary>
+            Used to signal that a worker thread is needed for processing.  Note that multiple
+            threads may be needed simultaneously and as such we use a semaphore instead of
+            an auto reset event.
+            </summary>
+        </member>
+        <member name="F:MySoft.Task.ManagedThreadPool._workerThreads">
+            <summary>List of all worker threads at the disposal of the thread pool.</summary>
+        </member>
+        <member name="F:MySoft.Task.ManagedThreadPool._inUseThreads">
+            <summary>Number of threads currently active.</summary>
+        </member>
+        <member name="F:MySoft.Task.ManagedThreadPool._poolLock">
+            <summary>Lockable object for the pool.</summary>
+        </member>
+        <member name="M:MySoft.Task.ManagedThreadPool.#cctor">
+            <summary>Initialize the thread pool.</summary>
+        </member>
+        <member name="M:MySoft.Task.ManagedThreadPool.Initialize">
+            <summary>Initializes the thread pool.</summary>
+        </member>
+        <member name="M:MySoft.Task.ManagedThreadPool.QueueUserWorkItem(System.Threading.WaitCallback)">
+            <summary>Queues a user work item to the thread pool.</summary>
+            <param name="callback">
+            A WaitCallback representing the delegate to invoke when the thread in the 
+            thread pool picks up the work item.
+            </param>
+        </member>
+        <member name="M:MySoft.Task.ManagedThreadPool.QueueUserWorkItem(System.Threading.WaitCallback,System.Object)">
+            <summary>Queues a user work item to the thread pool.</summary>
+            <param name="callback">
+            A WaitCallback representing the delegate to invoke when the thread in the 
+            thread pool picks up the work item.
+            </param>
+            <param name="state">
+            The object that is passed to the delegate when serviced from the thread pool.
+            </param>
+        </member>
+        <member name="M:MySoft.Task.ManagedThreadPool.Reset">
+            <summary>Empties the work queue of any queued work items.  Resets all threads in the pool.</summary>
+        </member>
+        <member name="M:MySoft.Task.ManagedThreadPool.ProcessQueuedItems">
+            <summary>A thread worker function that processes items from the work queue.</summary>
+        </member>
+        <member name="P:MySoft.Task.ManagedThreadPool.MaxThreads">
+            <summary>Gets the number of threads at the disposal of the thread pool.</summary>
+        </member>
+        <member name="P:MySoft.Task.ManagedThreadPool.ActiveThreads">
+            <summary>Gets the number of currently active threads in the thread pool.</summary>
+        </member>
+        <member name="P:MySoft.Task.ManagedThreadPool.WaitingCallbacks">
+            <summary>Gets the number of callback delegates currently waiting in the thread pool.</summary>
+        </member>
+        <member name="T:MySoft.Task.ManagedThreadPool.WaitingCallback">
+            <summary>Used to hold a callback delegate and the state for that delegate.</summary>
+        </member>
+        <member name="F:MySoft.Task.ManagedThreadPool.WaitingCallback._callback">
+            <summary>Callback delegate for the callback.</summary>
+        </member>
+        <member name="F:MySoft.Task.ManagedThreadPool.WaitingCallback._state">
+            <summary>State with which to call the callback delegate.</summary>
+        </member>
+        <member name="M:MySoft.Task.ManagedThreadPool.WaitingCallback.#ctor(System.Threading.WaitCallback,System.Object)">
+            <summary>Initialize the callback holding object.</summary>
+            <param name="callback">Callback delegate for the callback.</param>
+            <param name="state">State with which to call the callback delegate.</param>
+        </member>
+        <member name="P:MySoft.Task.ManagedThreadPool.WaitingCallback.Callback">
+            <summary>Gets the callback delegate for the callback.</summary>
+        </member>
+        <member name="P:MySoft.Task.ManagedThreadPool.WaitingCallback.State">
+            <summary>Gets the state with which to call the callback delegate.</summary>
+        </member>
+        <member name="T:MySoft.IoC.IContainer">
+            <summary>
+            容器接口
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.IContainer.Release(System.Object)">
+            <summary>
+            Releases the specified obj.
+            </summary>
+            <param name="obj">The obj.</param>
+        </member>
+        <!-- 对于成员“M:MySoft.IoC.IContainer.Resolve(System.Type)”忽略有格式错误的 XML 注释 -->
+        <member name="M:MySoft.IoC.IContainer.Resolve(System.String)">
+            <summary>
+            Resolve local service
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IContainer.Resolve``1">
+            <summary>
+            Resolve local service
+            </summary>
+            <typeparam name="TService"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IContainer.Resolve``1(System.String)">
+            <summary>
+            Resolve local service
+            </summary>
+            <typeparam name="TService"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IContainer.Register(System.Type,System.Type)">
+            <summary>
+            Register ocal service
+            </summary>
+            <param name="serviceType"></param>
+            <param name="classType"></param>
+        </member>
+        <member name="M:MySoft.IoC.IContainer.Register(System.String,System.Type,System.Type)">
+            <summary>
+            Register ocal service
+            </summary>
+            <param name="key"></param>
+            <param name="serviceType"></param>
+            <param name="instance"></param>
+        </member>
+        <member name="M:MySoft.IoC.IContainer.Register(System.Type,System.Object)">
+            <summary>
+            Register ocal service
+            </summary>
+            <param name="serviceType"></param>
+            <param name="classType"></param>
+        </member>
+        <member name="M:MySoft.IoC.IContainer.Register(System.String,System.Type,System.Object)">
+            <summary>
+            Register ocal service
+            </summary>
+            <param name="key"></param>
+            <param name="serviceType"></param>
+            <param name="instance"></param>
+        </member>
         <member name="T:MySoft.Task.JobState">
             <summary>
             任务状态
@@ -24168,121 +24346,6 @@
             设置本地缓存超时时间
             </summary>
             <param name="timeout"></param>
-        </member>
-        <member name="T:MySoft.Task.Semaphore">
-            <summary>Implementation of Dijkstra's PV Semaphore based on the Monitor class.</summary>
-        </member>
-        <member name="F:MySoft.Task.Semaphore._count">
-            <summary>The number of units alloted by this semaphore.</summary>
-        </member>
-        <member name="F:MySoft.Task.Semaphore._semLock">
-            <summary>Lock for the semaphore.</summary>
-        </member>
-        <member name="M:MySoft.Task.Semaphore.#ctor">
-            <summary> Initialize the semaphore as a binary semaphore.</summary>
-        </member>
-        <member name="M:MySoft.Task.Semaphore.#ctor(System.Int32)">
-            <summary> Initialize the semaphore as a counting semaphore.</summary>
-            <param name="count">Initial number of threads that can take out units from this semaphore.</param>
-            <exception cref="T:System.ArgumentException">Throws if the count argument is less than 0.</exception>
-        </member>
-        <member name="M:MySoft.Task.Semaphore.AddOne">
-            <summary>V the semaphore (add 1 unit to it).</summary>
-        </member>
-        <member name="M:MySoft.Task.Semaphore.WaitOne">
-            <summary>P the semaphore (take out 1 unit from it).</summary>
-        </member>
-        <member name="M:MySoft.Task.Semaphore.P">
-            <summary>P the semaphore (take out 1 unit from it).</summary>
-        </member>
-        <member name="M:MySoft.Task.Semaphore.V">
-            <summary>V the semaphore (add 1 unit to it).</summary>
-        </member>
-        <member name="M:MySoft.Task.Semaphore.Reset(System.Int32)">
-            <summary>Resets the semaphore to the specified count.  Should be used cautiously.</summary>
-        </member>
-        <member name="T:MySoft.Task.ManagedThreadPool">
-            <summary>Managed thread pool.</summary>
-        </member>
-        <member name="F:MySoft.Task.ManagedThreadPool._maxWorkerThreads">
-            <summary>Maximum number of threads the thread pool has at its disposal.</summary>
-        </member>
-        <member name="F:MySoft.Task.ManagedThreadPool._waitingCallbacks">
-            <summary>Queue of all the callbacks waiting to be executed.</summary>
-        </member>
-        <member name="F:MySoft.Task.ManagedThreadPool._workerThreadNeeded">
-            <summary>
-            Used to signal that a worker thread is needed for processing.  Note that multiple
-            threads may be needed simultaneously and as such we use a semaphore instead of
-            an auto reset event.
-            </summary>
-        </member>
-        <member name="F:MySoft.Task.ManagedThreadPool._workerThreads">
-            <summary>List of all worker threads at the disposal of the thread pool.</summary>
-        </member>
-        <member name="F:MySoft.Task.ManagedThreadPool._inUseThreads">
-            <summary>Number of threads currently active.</summary>
-        </member>
-        <member name="F:MySoft.Task.ManagedThreadPool._poolLock">
-            <summary>Lockable object for the pool.</summary>
-        </member>
-        <member name="M:MySoft.Task.ManagedThreadPool.#cctor">
-            <summary>Initialize the thread pool.</summary>
-        </member>
-        <member name="M:MySoft.Task.ManagedThreadPool.Initialize">
-            <summary>Initializes the thread pool.</summary>
-        </member>
-        <member name="M:MySoft.Task.ManagedThreadPool.QueueUserWorkItem(System.Threading.WaitCallback)">
-            <summary>Queues a user work item to the thread pool.</summary>
-            <param name="callback">
-            A WaitCallback representing the delegate to invoke when the thread in the 
-            thread pool picks up the work item.
-            </param>
-        </member>
-        <member name="M:MySoft.Task.ManagedThreadPool.QueueUserWorkItem(System.Threading.WaitCallback,System.Object)">
-            <summary>Queues a user work item to the thread pool.</summary>
-            <param name="callback">
-            A WaitCallback representing the delegate to invoke when the thread in the 
-            thread pool picks up the work item.
-            </param>
-            <param name="state">
-            The object that is passed to the delegate when serviced from the thread pool.
-            </param>
-        </member>
-        <member name="M:MySoft.Task.ManagedThreadPool.Reset">
-            <summary>Empties the work queue of any queued work items.  Resets all threads in the pool.</summary>
-        </member>
-        <member name="M:MySoft.Task.ManagedThreadPool.ProcessQueuedItems">
-            <summary>A thread worker function that processes items from the work queue.</summary>
-        </member>
-        <member name="P:MySoft.Task.ManagedThreadPool.MaxThreads">
-            <summary>Gets the number of threads at the disposal of the thread pool.</summary>
-        </member>
-        <member name="P:MySoft.Task.ManagedThreadPool.ActiveThreads">
-            <summary>Gets the number of currently active threads in the thread pool.</summary>
-        </member>
-        <member name="P:MySoft.Task.ManagedThreadPool.WaitingCallbacks">
-            <summary>Gets the number of callback delegates currently waiting in the thread pool.</summary>
-        </member>
-        <member name="T:MySoft.Task.ManagedThreadPool.WaitingCallback">
-            <summary>Used to hold a callback delegate and the state for that delegate.</summary>
-        </member>
-        <member name="F:MySoft.Task.ManagedThreadPool.WaitingCallback._callback">
-            <summary>Callback delegate for the callback.</summary>
-        </member>
-        <member name="F:MySoft.Task.ManagedThreadPool.WaitingCallback._state">
-            <summary>State with which to call the callback delegate.</summary>
-        </member>
-        <member name="M:MySoft.Task.ManagedThreadPool.WaitingCallback.#ctor(System.Threading.WaitCallback,System.Object)">
-            <summary>Initialize the callback holding object.</summary>
-            <param name="callback">Callback delegate for the callback.</param>
-            <param name="state">State with which to call the callback delegate.</param>
-        </member>
-        <member name="P:MySoft.Task.ManagedThreadPool.WaitingCallback.Callback">
-            <summary>Gets the callback delegate for the callback.</summary>
-        </member>
-        <member name="P:MySoft.Task.ManagedThreadPool.WaitingCallback.State">
-            <summary>Gets the state with which to call the callback delegate.</summary>
         </member>
     </members>
 </doc>

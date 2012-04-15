@@ -20,25 +20,6 @@
             订阅服务
             </summary>
         </member>
-        <member name="M:MySoft.IoC.IStatusService.Subscribe(System.Double,System.String[])">
-            <summary>
-            订阅服务
-            </summary>
-            <param name="callTimeout">调用超时时间</param>
-        </member>
-        <member name="M:MySoft.IoC.IStatusService.Subscribe(System.Int32,System.String[])">
-            <summary>
-            订阅服务
-            </summary>
-            <param name="statusTimer">定时推送时间</param>
-        </member>
-        <member name="M:MySoft.IoC.IStatusService.Subscribe(System.Double,System.Int32,System.String[])">
-            <summary>
-            订阅服务
-            </summary>
-            <param name="callTimeout">调用超时时间</param>
-            <param name="statusTimer">定时推送时间</param>
-        </member>
         <member name="M:MySoft.IoC.IStatusService.Subscribe(MySoft.IoC.SubscribeOptions,System.String[])">
             <summary>
             订阅服务
@@ -596,25 +577,6 @@
             a Reply message to a message.
             It may be null if this is not a reply message.
             </summary>
-        </member>
-        <member name="T:MySoft.IoC.IContainer">
-            <summary>
-            容器接口
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.IContainer.Resolve``1">
-            <summary>
-            Resolve local service
-            </summary>
-            <typeparam name="TService"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.IContainer.Resolve``1(System.String)">
-            <summary>
-            Resolve local service
-            </summary>
-            <typeparam name="TService"></typeparam>
-            <returns></returns>
         </member>
         <member name="T:MySoft.IoC.Cache.IServiceCache">
             <summary>
@@ -1312,25 +1274,6 @@
             <summary>
             订阅服务
             </summary>
-        </member>
-        <member name="M:MySoft.IoC.ServerStatusService.Subscribe(System.Double,System.String[])">
-            <summary>
-            订阅服务
-            </summary>
-            <param name="callTimeout">调用超时时间</param>
-        </member>
-        <member name="M:MySoft.IoC.ServerStatusService.Subscribe(System.Int32,System.String[])">
-            <summary>
-            订阅服务
-            </summary>
-            <param name="statusTimer">定时推送时间</param>
-        </member>
-        <member name="M:MySoft.IoC.ServerStatusService.Subscribe(System.Double,System.Int32,System.String[])">
-            <summary>
-            订阅服务
-            </summary>
-            <param name="callTimeout">调用超时时间</param>
-            <param name="statusTimer">定时推送时间</param>
         </member>
         <member name="M:MySoft.IoC.ServerStatusService.Subscribe(MySoft.IoC.SubscribeOptions,System.String[])">
             <summary>
@@ -2356,20 +2299,6 @@
             </summary>
             <param name="serviceKeyTypes">The service key types.</param>
         </member>
-        <member name="M:MySoft.IoC.IServiceContainer.Release(System.Object)">
-            <summary>
-            Releases the specified obj.
-            </summary>
-            <param name="obj">The obj.</param>
-        </member>
-        <!-- 对于成员“M:MySoft.IoC.IServiceContainer.Resolve(System.Type)”忽略有格式错误的 XML 注释 -->
-        <member name="M:MySoft.IoC.IServiceContainer.Resolve(System.String)">
-            <summary>
-            Resolve local service
-            </summary>
-            <param name="key"></param>
-            <returns></returns>
-        </member>
         <member name="M:MySoft.IoC.IServiceContainer.GetServiceTypes``1">
             <summary>
             Get contract interface
@@ -2424,6 +2353,36 @@
             Registers the components.
             </summary>
             <param name="serviceKeyTypes">The service key types.</param>
+        </member>
+        <member name="M:MySoft.IoC.SimpleServiceContainer.Register(System.Type,System.Type)">
+            <summary>
+            Register ocal service
+            </summary>
+            <param name="serviceType"></param>
+            <param name="classType"></param>
+        </member>
+        <member name="M:MySoft.IoC.SimpleServiceContainer.Register(System.String,System.Type,System.Type)">
+            <summary>
+            Register ocal service
+            </summary>
+            <param name="key"></param>
+            <param name="serviceType"></param>
+            <param name="instance"></param>
+        </member>
+        <member name="M:MySoft.IoC.SimpleServiceContainer.Register(System.Type,System.Object)">
+            <summary>
+            Register ocal service
+            </summary>
+            <param name="serviceType"></param>
+            <param name="classType"></param>
+        </member>
+        <member name="M:MySoft.IoC.SimpleServiceContainer.Register(System.String,System.Type,System.Object)">
+            <summary>
+            Register ocal service
+            </summary>
+            <param name="key"></param>
+            <param name="serviceType"></param>
+            <param name="instance"></param>
         </member>
         <member name="M:MySoft.IoC.SimpleServiceContainer.Release(System.Object)">
             <summary>
@@ -3862,6 +3821,11 @@
             超时时间，用于监控超时服务调用
             </summary>
         </member>
+        <member name="P:MySoft.IoC.SubscribeOptions.CallRowCount">
+            <summary>
+            调用记数超时行数
+            </summary>
+        </member>
         <member name="P:MySoft.IoC.SubscribeOptions.PushCallTimeout">
             <summary>
             推送调用超时
@@ -3877,7 +3841,7 @@
             推送服务状态信息
             </summary>
         </member>
-        <member name="P:MySoft.IoC.SubscribeOptions.StatusTimer">
+        <member name="P:MySoft.IoC.SubscribeOptions.ServerStatusTimer">
             <summary>
             定时推送状态定时：单位（秒）
             </summary>
@@ -4281,35 +4245,6 @@
         <member name="P:MySoft.IoC.Messages.AppCaller.Parameters">
             <summary>
             参数信息
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.Services.DiscoverProxy">
-            <summary>
-            发现服务代理
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.DiscoverProxy.#ctor(MySoft.IoC.CastleFactory,MySoft.Logger.ILog)">
-            <summary>
-            实例化DiscoverProxy
-            </summary>
-            <param name="factory"></param>
-            <param name="logger"></param>
-        </member>
-        <member name="M:MySoft.IoC.Services.DiscoverProxy.CallService(MySoft.IoC.Messages.RequestMessage)">
-            <summary>
-            调用服务
-            </summary>
-            <param name="reqMsg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.DiscoverProxy.Dispose">
-            <summary>
-            销毁资源
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Services.DiscoverProxy.ServiceName">
-            <summary>
-            服务名称
             </summary>
         </member>
         <member name="T:MySoft.IoC.HttpServer.HttpRequestHandlerFactory">
