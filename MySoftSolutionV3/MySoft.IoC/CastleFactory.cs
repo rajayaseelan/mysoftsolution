@@ -27,17 +27,6 @@ namespace MySoft.IoC
         private ICacheStrategy cache;
 
         /// <summary>
-        /// 所有代理信息
-        /// </summary>
-        internal IList<RemoteProxy> Proxies
-        {
-            get
-            {
-                return proxies.Values.Cast<RemoteProxy>().ToList();
-            }
-        }
-
-        /// <summary>
         /// Gets the service container.
         /// </summary>
         /// <value>The service container.</value>
@@ -173,7 +162,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<ServerNode> GetServerNodes()
         {
-            return this.Proxies.Select(p => p.Node).ToList();
+            return proxies.Values.Cast<RemoteProxy>().Select(p => p.Node).ToList();
         }
 
         /// <summary>
@@ -194,6 +183,15 @@ namespace MySoft.IoC
         /// <returns>The service implemetation instance.</returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
+            if (proxies.Count == 0)
+            {
+                //获取本地服务
+                var service = GetLocalService<IServiceInterfaceType>();
+                if (service != null) return service;
+
+                throw new WarningException(string.Format("Did not find the service {0}!", typeof(IServiceInterfaceType).FullName));
+            }
+
             return GetChannel<IServiceInterfaceType>(config.Default);
         }
 
@@ -226,23 +224,28 @@ namespace MySoft.IoC
 
             //获取本地服务
             var service = GetLocalService<IServiceInterfaceType>();
-            if (service != null) return service;
 
-            IService proxy = null;
-            var isCacheService = true;
-            if (singleton.proxies.ContainsKey(node.Key.ToLower()))
-                proxy = singleton.proxies[node.Key.ToLower()];
-            else
+            if (service == null)
             {
-                if (node.Invoke)
-                    proxy = new InvokeProxy(node, container);
+                IService proxy = null;
+                var isCacheService = true;
+                if (singleton.proxies.ContainsKey(node.Key.ToLower()))
+                    proxy = singleton.proxies[node.Key.ToLower()];
                 else
-                    proxy = new RemoteProxy(node, container);
+                {
+                    if (node.Invoke)
+                        proxy = new InvokeProxy(node, container);
+                    else
+                        proxy = new RemoteProxy(node, container);
 
-                isCacheService = false;
+                    isCacheService = false;
+                }
+
+                service = GetProxyChannel<IServiceInterfaceType>(proxy, isCacheService);
             }
 
-            return GetChannel<IServiceInterfaceType>(proxy, isCacheService);
+            //返回服务
+            return service;
         }
 
         /// <summary>
@@ -252,7 +255,7 @@ namespace MySoft.IoC
         /// <param name="proxy"></param>
         /// <param name="isCacheService"></param>
         /// <returns></returns>
-        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService proxy, bool isCacheService)
+        private IServiceInterfaceType GetProxyChannel<IServiceInterfaceType>(IService proxy, bool isCacheService)
         {
             Type serviceType = typeof(IServiceInterfaceType);
             string serviceKey = string.Format("{0}${1}", serviceType.FullName, proxy.ServiceName);
@@ -336,7 +339,7 @@ namespace MySoft.IoC
                 throw new IoCException("Callback type cannot be the null!");
 
             CallbackProxy proxy = new CallbackProxy(callback, node, this.ServiceContainer);
-            return GetChannel<IPublishService>(proxy, false);
+            return GetProxyChannel<IPublishService>(proxy, false);
         }
 
         #endregion
@@ -350,6 +353,15 @@ namespace MySoft.IoC
         /// <returns></returns>
         public InvokeData Invoke(InvokeMessage message)
         {
+            if (proxies.Count == 0)
+            {
+                //获取本地服务
+                IService service = GetLocalService(message);
+                if (service != null) return GetInvokeData(message, service);
+
+                throw new WarningException(string.Format("Did not find the service {0}!", message.ServiceName));
+            }
+
             return Invoke(config.Default, message);
         }
 
@@ -384,18 +396,21 @@ namespace MySoft.IoC
 
             //获取本地服务
             IService service = GetLocalService(message);
-            if (service == null) return GetInvokeData(message, service);
 
-            if (singleton.proxies.ContainsKey(node.Key.ToLower()))
-                service = singleton.proxies[node.Key.ToLower()];
-            else
+            if (service == null)
             {
-                if (node.Invoke)
-                    service = new InvokeProxy(node, container);
+                if (singleton.proxies.ContainsKey(node.Key.ToLower()))
+                    service = singleton.proxies[node.Key.ToLower()];
                 else
-                    service = new RemoteProxy(node, container);
+                {
+                    if (node.Invoke)
+                        service = new InvokeProxy(node, container);
+                    else
+                        service = new RemoteProxy(node, container);
+                }
             }
 
+            //获取服务内容
             return GetInvokeData(message, service);
         }
 
