@@ -135,15 +135,15 @@ namespace MySoft.PlatformService.Client
             //    }
             //}
 
-            var watch = Stopwatch.StartNew();
+            //var watch = Stopwatch.StartNew();
 
-            GetRequestString();
+            //GetRequestString();
 
-            var dd = watch.ElapsedMilliseconds;
+            //var dd = watch.ElapsedMilliseconds;
 
-            Console.WriteLine("ºÄÊ±: {0} ms", dd);
-            Console.ReadLine();
-            return;
+            //Console.WriteLine("ºÄÊ±: {0} ms", dd);
+            //Console.ReadLine();
+            //return;
 
             ManualResetEvent are = new ManualResetEvent(false);
             for (int i = 0; i < 1; i++)

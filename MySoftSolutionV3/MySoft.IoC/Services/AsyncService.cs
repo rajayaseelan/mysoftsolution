@@ -5,6 +5,7 @@ using MySoft.Logger;
 using System.Collections;
 using System.Text;
 using System.Collections.Generic;
+using MySoft.Task;
 
 namespace MySoft.IoC.Services
 {
@@ -37,37 +38,38 @@ namespace MySoft.IoC.Services
             var context = OperationContext.Current;
 
             //实例化等待对象
-            var waitResult = new AsyncResult(context, reqMsg);
-
-            //异步调用
-            ThreadPool.QueueUserWorkItem(GetResponse, waitResult);
-
-            //等待响应
-            if (!waitResult.Wait(elapsedTime))
+            using (var waitResult = new AsyncResult(context, reqMsg))
             {
-                var exception = new WarningException(string.Format("Call service ({0}, {1}) timeout ({2}) ms.\r\nParameters => {3}"
-                    , reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()))
-                {
-                    ApplicationName = reqMsg.AppName,
-                    ServiceName = reqMsg.ServiceName,
-                    ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                };
+                //异步调用
+                ThreadPoolLite.QueueUserWorkItem(GetResponse, waitResult);
 
-                //上下文不为null
-                if (OperationContext.Current != null && OperationContext.Current.Caller != null)
+                //等待响应
+                if (!waitResult.Wait(elapsedTime))
                 {
-                    var caller = OperationContext.Current.Caller;
-                    if (!string.IsNullOrEmpty(caller.AppPath))
+                    var exception = new WarningException(string.Format("Call service ({0}, {1}) timeout ({2}) ms.\r\nParameters => {3}"
+                        , reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()))
                     {
-                        exception.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", exception.ErrorHeader, caller.AppPath);
+                        ApplicationName = reqMsg.AppName,
+                        ServiceName = reqMsg.ServiceName,
+                        ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
+                    };
+
+                    //上下文不为null
+                    if (OperationContext.Current != null && OperationContext.Current.Caller != null)
+                    {
+                        var caller = OperationContext.Current.Caller;
+                        if (!string.IsNullOrEmpty(caller.AppPath))
+                        {
+                            exception.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", exception.ErrorHeader, caller.AppPath);
+                        }
                     }
+
+                    throw exception;
                 }
 
-                throw exception;
+                //返回响应的消息
+                return waitResult.Message;
             }
-
-            //返回响应的消息
-            return waitResult.Message;
         }
 
         /// <summary>

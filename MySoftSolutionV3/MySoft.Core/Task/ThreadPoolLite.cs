@@ -188,12 +188,12 @@ namespace MySoft.Task
             }
         }
 
-        public static bool QueueWorkItem(WaitCallback waitCallback)
+        public static bool QueueUserWorkItem(WaitCallback waitCallback)
         {
-            return QueueWorkItem(waitCallback, null);
+            return QueueUserWorkItem(waitCallback, null);
         }
 
-        public static bool QueueWorkItem(WaitCallback waitCallback, object state)
+        public static bool QueueUserWorkItem(WaitCallback waitCallback, object state)
         {
             if (waitCallback == null)
             {

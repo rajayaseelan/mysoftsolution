@@ -8,7 +8,7 @@ namespace MySoft.IoC.Services
     /// 返回值对象
     /// </summary>
     [Serializable]
-    internal sealed class AsyncResult
+    internal sealed class AsyncResult : IDisposable
     {
         private AutoResetEvent reset;
         private RequestMessage request;
@@ -71,5 +71,20 @@ namespace MySoft.IoC.Services
             this.message = resMsg;
             return reset.Set();
         }
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            this.reset = null;
+            this.request = null;
+            this.message = null;
+            this.context = null;
+        }
+
+        #endregion
     }
 }

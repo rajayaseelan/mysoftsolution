@@ -114,29 +114,30 @@ namespace MySoft.IoC.Services
             try
             {
                 //处理数据
-                var waitResult = new QueueResult(reqMsg);
-
-                //如果需要缓存，才使用Queue服务
-                if (!QueueManager.Instance.Add(waitResult))
+                using (var waitResult = new QueueResult(reqMsg))
                 {
-                    hashtable[reqMsg.TransactionId] = waitResult;
+                    //如果需要缓存，才使用Queue服务
+                    if (!QueueManager.Instance.Add(waitResult))
+                    {
+                        hashtable[reqMsg.TransactionId] = waitResult;
 
-                    reqProxy = reqPool.Pop();
+                        reqProxy = reqPool.Pop();
 
-                    //发送消息
-                    reqProxy.SendMessage(reqMsg);
+                        //发送消息
+                        reqProxy.SendMessage(reqMsg);
+                    }
+
+                    //等待信号响应
+                    var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
+
+                    if (!waitResult.Wait(elapsedTime))
+                    {
+                        throw new WarningException(string.Format("【{0}:{1}】 => Call service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
+                           , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()));
+                    }
+
+                    return waitResult.Message;
                 }
-
-                //等待信号响应
-                var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
-
-                if (!waitResult.Wait(elapsedTime))
-                {
-                    throw new WarningException(string.Format("【{0}:{1}】 => Call service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
-                       , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()));
-                }
-
-                return waitResult.Message;
             }
             finally
             {

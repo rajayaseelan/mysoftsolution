@@ -12,7 +12,7 @@ namespace MySoft.IoC.Services
     /// 返回值对象
     /// </summary>
     [Serializable]
-    internal sealed class QueueResult
+    internal sealed class QueueResult : IDisposable
     {
         private AutoResetEvent reset;
         private Guid transactionId;
@@ -104,5 +104,18 @@ namespace MySoft.IoC.Services
 
             return reset.Set();
         }
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            this.reset = null;
+            this.message = null;
+        }
+
+        #endregion
     }
 }
