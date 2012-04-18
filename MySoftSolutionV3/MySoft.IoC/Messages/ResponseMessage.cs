@@ -25,7 +25,6 @@ namespace MySoft.IoC.Messages
             set
             {
                 _value = value;
-                _error = null;
             }
         }
 
@@ -44,7 +43,6 @@ namespace MySoft.IoC.Messages
             set
             {
                 _error = value;
-                _value = null;
             }
         }
 

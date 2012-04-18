@@ -90,13 +90,10 @@ namespace MySoft.IoC.Services
                          ReturnType = resMsg.ReturnType,
                          ServiceName = resMsg.ServiceName,
                          MethodName = resMsg.MethodName,
-                         Parameters = resMsg.Parameters
+                         Parameters = resMsg.Parameters,
+                         Error = resMsg.Error,
+                         Value = resMsg.Value
                      };
-
-                    if (resMsg.IsError)
-                        tmpMsg.Error = resMsg.Error;
-                    else
-                        tmpMsg.Value = resMsg.Value;
 
                     this.message = tmpMsg;
                 }

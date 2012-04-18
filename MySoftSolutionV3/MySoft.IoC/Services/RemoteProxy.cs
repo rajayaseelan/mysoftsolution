@@ -65,7 +65,7 @@ namespace MySoft.IoC.Services
                     TransactionId = reqMsg.TransactionId,
                     ReturnType = reqMsg.ReturnType,
                     ServiceName = reqMsg.ServiceName,
-                    MethodName = reqMsg.Message,
+                    MethodName = reqMsg.MethodName,
                     Error = error
                 };
 

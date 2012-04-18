@@ -25,6 +25,7 @@ namespace MySoft.IoC
         private IServiceContainer container;
         private IDictionary<string, IService> proxies;
         private ICacheStrategy cache;
+        private IServiceLog logger;
 
         /// <summary>
         /// Gets the service container.
@@ -178,6 +179,15 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 注册日志依赖
+        /// </summary>
+        /// <param name="logger"></param>
+        public void RegisterLogger(IServiceLog logger)
+        {
+            this.logger = logger;
+        }
+
+        /// <summary>
         /// Create service channel.
         /// </summary>
         /// <returns>The service implemetation instance.</returns>
@@ -263,7 +273,7 @@ namespace MySoft.IoC
             lock (hashtable.SyncRoot)
             {
                 var serviceCache = new CastleServiceCache(cache);
-                var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache);
+                var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache, logger);
                 var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                 if (!isCacheService) //不缓存，直接返回服务
@@ -475,7 +485,9 @@ namespace MySoft.IoC
                         {
                             //返回本地服务
                             var serviceCache = new CastleServiceCache(cache);
-                            var handler = new LocalInvocationHandler(config, container, serviceType, serviceCache);
+
+                            var service = container.Resolve<IService>("Service_" + serviceType.FullName);
+                            var handler = new LocalInvocationHandler(config, container, service, serviceType, serviceCache, logger);
                             var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                             hashtable[serviceType] = dynamicProxy;

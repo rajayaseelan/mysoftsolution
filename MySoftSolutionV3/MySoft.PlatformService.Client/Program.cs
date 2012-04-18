@@ -16,6 +16,38 @@ using System.Collections;
 
 namespace MySoft.PlatformService.Client
 {
+    public class ServiceLog : IServiceLog
+    {
+
+        #region IServiceLog 成员
+
+        public void Begin(RequestMessage reqMsg)
+        {
+            //throw new NotImplementedException();
+        }
+
+        public void End(RequestMessage reqMsg, ResponseMessage resMsg, long elapsedTime)
+        {
+            //throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region ILog 成员
+
+        public void WriteLog(string log, LogType type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteError(Exception error)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+    }
+
     class Program
     {
         ////写线程将数据写入myData
@@ -144,6 +176,8 @@ namespace MySoft.PlatformService.Client
             //Console.WriteLine("耗时: {0} ms", dd);
             //Console.ReadLine();
             //return;
+
+            CastleFactory.Create().RegisterLogger(new ServiceLog());
 
             ManualResetEvent are = new ManualResetEvent(false);
             for (int i = 0; i < 1; i++)

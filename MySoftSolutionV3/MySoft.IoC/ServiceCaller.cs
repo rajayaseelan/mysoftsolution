@@ -101,9 +101,9 @@ namespace MySoft.IoC
                     var callArgs = new CallEventArgs
                     {
                         Caller = caller,
-                        Error = resMsg.Error,
                         ElapsedTime = watch.ElapsedMilliseconds,
                         Count = resMsg.Count,
+                        Error = resMsg.Error,
                         Value = resMsg.Value
                     };
 
