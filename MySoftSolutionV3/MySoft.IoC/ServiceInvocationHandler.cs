@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
-using MySoft.IoC.Configuration;
-using MySoft.IoC.Messages;
-using MySoft.IoC.Cache;
 using System.Diagnostics;
+using MySoft.Cache;
+using MySoft.IoC.Configuration;
+using MySoft.IoC.Logger;
+using MySoft.IoC.Messages;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
@@ -14,10 +16,10 @@ namespace MySoft.IoC
     {
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
-        protected IServiceContainer container;
+        private IServiceContainer container;
         private IService service;
         private Type serviceType;
-        private IServiceCache cache;
+        private ICacheStrategy cache;
         private IServiceLog logger;
         private string hostName;
         private string ipAddress;
@@ -30,7 +32,7 @@ namespace MySoft.IoC
         /// <param name="service"></param>
         /// <param name="serviceType"></param>
         /// <param name="cache"></param>
-        public ServiceInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IService service, Type serviceType, IServiceCache cache, IServiceLog logger)
+        public ServiceInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IService service, Type serviceType, ICacheStrategy cache, IServiceLog logger)
         {
             this.config = config;
             this.container = container;
@@ -65,15 +67,15 @@ namespace MySoft.IoC
         {
             object returnValue = null;
 
-            var hashtable = ServiceConfig.CreateParameters(method, parameters);
-            string cacheKey = ServiceConfig.GetCacheKey(serviceType, method, hashtable);
-            var cacheValue = cache.Get<CacheObject>(cacheKey);
+            var collection = ServiceConfig.CreateParameters(method, parameters, false);
+            string cacheKey = ServiceConfig.GetCacheKey(serviceType, method, collection);
+            var cacheValue = cache.GetCache<CacheObject>(cacheKey);
 
             //缓存无值
             if (cacheValue == null)
             {
                 //调用方法
-                var resMsg = InvokeMethod(method, hashtable);
+                var resMsg = InvokeMethod(method, collection);
 
                 if (resMsg != null)
                 {
@@ -92,7 +94,7 @@ namespace MySoft.IoC
                             Parameters = resMsg.Parameters
                         };
 
-                        cache.Insert(cacheKey, cacheValue, cacheTime);
+                        cache.InsertCache(cacheKey, cacheValue, cacheTime);
                     }
                 }
             }
@@ -158,26 +160,7 @@ namespace MySoft.IoC
             try
             {
                 //写日志开始
-                if (logger != null)
-                {
-                    try
-                    {
-                        var callMsg = new CallMessage
-                        {
-                            AppName = reqMsg.AppName,
-                            IPAddress = reqMsg.IPAddress,
-                            HostName = reqMsg.HostName,
-                            ServiceName = reqMsg.ServiceName,
-                            MethodName = reqMsg.MethodName
-                        };
-
-                        //开始调用
-                        logger.Begin(callMsg, reqMsg.Parameters);
-                    }
-                    catch
-                    {
-                    }
-                }
+                logger.BeginRequest(reqMsg);
 
                 //开始计时
                 var watch = Stopwatch.StartNew();
@@ -188,26 +171,7 @@ namespace MySoft.IoC
                 watch.Stop();
 
                 //写日志结束
-                if (logger != null)
-                {
-                    try
-                    {
-                        var returnMsg = new ReturnMessage
-                        {
-                            ServiceName = resMsg.ServiceName,
-                            MethodName = reqMsg.MethodName,
-                            Count = resMsg.Count,
-                            Error = resMsg.Error,
-                            Value = resMsg.Value
-                        };
-
-                        //结束调用
-                        logger.End(returnMsg, resMsg.Parameters, watch.ElapsedMilliseconds);
-                    }
-                    catch
-                    {
-                    }
-                }
+                logger.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
 
                 //如果有异常，向外抛出
                 if (resMsg.IsError) throw resMsg.Error;
@@ -221,7 +185,7 @@ namespace MySoft.IoC
                 if (config.ThrowError)
                     throw ex;
                 else
-                    container.WriteError(ex);
+                    container.Write(ex);
             }
 
             return resMsg;

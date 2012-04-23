@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections;
-using MySoft.IoC.Configuration;
+using System.Linq;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Cache;
 using MySoft.Logger;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace MySoft.IoC.Services
 {
@@ -12,6 +13,11 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class InvokeProxy : RemoteProxy
     {
+        /// <summary>
+        /// Invoke 代理
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="logger"></param>
         public InvokeProxy(ServerNode node, ILog logger)
             : base(node, logger)
         {
@@ -71,8 +77,8 @@ namespace MySoft.IoC.Services
             //设置Invoke方式
             reqMsg.InvokeMethod = true;
 
-            var parameters = method.GetParameters();
-            if (parameters.Length > 0)
+            var pis = method.GetParameters();
+            if (pis.Length > 0)
             {
                 if (reqMsg.Parameters.Count > 0)
                 {
@@ -81,7 +87,9 @@ namespace MySoft.IoC.Services
                     reqMsg.Parameters["InvokeParameter"] = jsonString;
                 }
                 else
+                {
                     reqMsg.Parameters["InvokeParameter"] = null;
+                }
             }
         }
 
@@ -94,23 +102,21 @@ namespace MySoft.IoC.Services
         {
             if (resMsg.IsError) return;
 
-            var parameters = method.GetParameters();
-            if (parameters.Length > 0)
+            var pis = method.GetParameters().Where(p => p.ParameterType.IsByRef);
+            if (pis.Count() > 0)
             {
                 var value = resMsg.Value as InvokeData;
                 if (!string.IsNullOrEmpty(value.OutParameters))
                 {
-                    var hashtable = SerializationManager.DeserializeJson<Hashtable>(value.OutParameters);
-                    if (hashtable != null && hashtable.Count > 0)
+                    var jobject = JObject.Parse(value.OutParameters);
+                    if (jobject != null && jobject.Count > 0)
                     {
-                        foreach (var parameter in parameters)
+                        foreach (var p in pis)
                         {
-                            if (hashtable.ContainsKey(parameter.Name))
-                            {
-                                var type = GetElementType(parameter.ParameterType);
-                                var obj = SerializationManager.DeserializeJson(type, hashtable[parameter.Name].ToString());
-                                resMsg.Parameters[parameter.Name] = obj;
-                            }
+                            var type = GetElementType(p.ParameterType);
+                            var jsonString = jobject[p.Name].ToString(Formatting.Indented);
+                            var obj = SerializationManager.DeserializeJson(type, jsonString);
+                            resMsg.Parameters[p.Name] = obj;
                         }
                     }
                 }

@@ -5,6 +5,8 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
 using MySoft.Logger;
 using MySoft.Net.Http;
+using MySoft.IoC.Logger;
+using MySoft.IoC.Messages;
 
 namespace MySoft.PlatformService.Console
 {
@@ -26,8 +28,7 @@ namespace MySoft.PlatformService.Console
 
             if (config.HttpEnabled)
             {
-                var caller = new HttpServiceCaller(config, server.Container);
-                var factory = new HttpRequestHandlerFactory(caller);
+                var factory = new HttpRequestHandlerFactory(config, server.Container);
                 var httpServer = new HTTPServer(factory, config.HttpPort);
                 httpServer.OnServerStart += () => { System.Console.WriteLine("Http server started. http://{0}:{1}/", DnsHelper.GetIPAddress(), config.HttpPort); };
                 httpServer.OnServerStop += () => { System.Console.WriteLine("Http server stoped."); };

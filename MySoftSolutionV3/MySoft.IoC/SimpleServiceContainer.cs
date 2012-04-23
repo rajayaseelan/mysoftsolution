@@ -15,6 +15,7 @@ using Castle.Windsor.Configuration.Interpreters;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -367,9 +368,9 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="log"></param>
         /// <param name="type"></param>
-        public void WriteLog(string log, LogType type)
+        public void Write(string log, LogType type)
         {
-            ThreadPool.QueueUserWorkItem(state =>
+            ManagedThreadPool.QueueUserWorkItem(state =>
             {
                 try
                 {
@@ -386,9 +387,9 @@ namespace MySoft.IoC
         /// Êä³ö´íÎó
         /// </summary>
         /// <param name="error"></param>
-        public void WriteError(Exception error)
+        public void Write(Exception error)
         {
-            ThreadPool.QueueUserWorkItem(state =>
+            ManagedThreadPool.QueueUserWorkItem(state =>
             {
                 try
                 {

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using MySoft.IoC.Aspect;
-using MySoft.IoC.Cache;
+using MySoft.Cache;
 using MySoft.IoC.Configuration;
+using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
@@ -13,6 +11,8 @@ namespace MySoft.IoC
     /// </summary>
     public class LocalInvocationHandler : ServiceInvocationHandler
     {
+        private IServiceContainer container;
+
         /// <summary>
         ///  Initializes a new instance of the <see cref="ServiceInvocationHandler"/> class.
         /// </summary>
@@ -21,9 +21,10 @@ namespace MySoft.IoC
         /// <param name="service"></param>
         /// <param name="serviceType"></param>
         /// <param name="cache"></param>
-        public LocalInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IService service, Type serviceType, IServiceCache cache, IServiceLog logger)
+        public LocalInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IService service, Type serviceType, ICacheStrategy cache, IServiceLog logger)
             : base(config, container, service, serviceType, cache, logger)
         {
+            this.container = container;
             //TO DO
         }
 

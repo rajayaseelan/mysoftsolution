@@ -20,6 +20,11 @@ namespace MySoft.IoC.Messages
         /// 方法名称
         /// </summary>
         public string MethodName { get; set; }
+
+        /// <summary>
+        /// 参数信息
+        /// </summary>
+        public ParameterCollection Parameters { get; set; }
     }
 
     /// <summary>

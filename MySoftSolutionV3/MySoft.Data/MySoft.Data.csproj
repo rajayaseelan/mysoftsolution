@@ -89,6 +89,7 @@
     <Compile Include="Common\EntityConfig.cs" />
     <Compile Include="Common\EntityMapping.cs" />
     <Compile Include="Common\IValidator.cs" />
+    <Compile Include="Common\ReturnValue.cs" />
     <Compile Include="Common\Validator.cs" />
     <Compile Include="Creator\IDeleteCreator.cs" />
     <Compile Include="Creator\BaseCreator.cs" />
@@ -323,7 +324,7 @@
     <Compile Include="Data\Session\DbHelper.cs" />
     <Compile Include="Data\Session\Entity.cs" />
     <Compile Include="Design\IField.cs" />
-    <Compile Include="Common\ILogable.cs" />
+    <Compile Include="Logger\IExecuteLog.cs" />
     <Compile Include="Data\Session\IDbProvider.cs" />
     <Compile Include="Data\Query\SqlSection.cs" />
     <Compile Include="Data\Query\PageSection.cs" />

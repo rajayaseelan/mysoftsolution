@@ -63,7 +63,7 @@ namespace MySoft.IoC
             if (Disconnected != null)
                 Disconnected(sender, e);
             else
-                this.logger.WriteError(new SocketException((int)SocketError.ConnectionReset));
+                this.logger.Write(new SocketException((int)SocketError.ConnectionReset));
         }
 
         void client_ErrorReceived(object sender, ErrorEventArgs e)

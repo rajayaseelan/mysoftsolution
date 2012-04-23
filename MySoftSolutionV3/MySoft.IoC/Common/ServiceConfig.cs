@@ -50,11 +50,11 @@ namespace MySoft.IoC
             var index = 0;
             foreach (var p in method.GetParameters())
             {
-                if (p.ParameterType.IsByRef)
-                {
-                    //给参数赋值
+                //给参数赋值
+                if (collection.ContainsKey(p.Name))
                     parameters[index] = collection[p.Name];
-                }
+                else
+                    parameters[index] = CoreHelper.GetTypeDefaultValue(p.ParameterType);
 
                 index++;
             }
@@ -65,15 +65,54 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="method"></param>
         /// <param name="parameters"></param>
+        /// <param name="isRef"></param>
         /// <returns></returns>
-        internal static ParameterCollection CreateParameters(System.Reflection.MethodInfo method, object[] parameters)
+        internal static ParameterCollection CreateParameters(System.Reflection.MethodInfo method, object[] parameters, bool isRef)
         {
             var collection = new ParameterCollection();
             int index = 0;
             foreach (var p in method.GetParameters())
             {
-                collection[p.Name] = parameters[index];
+                if (isRef)
+                {
+                    if (p.ParameterType.IsByRef)
+                        collection[p.Name] = parameters[index];
+                }
+                else
+                    collection[p.Name] = parameters[index];
+
                 index++;
+            }
+
+            return collection;
+        }
+
+        /// <summary>
+        /// 创建一个ParameterCollection
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="jsonString"></param>
+        /// <returns></returns>
+        internal static ParameterCollection CreateParameters(System.Reflection.MethodInfo method, string jsonString)
+        {
+            var collection = new ParameterCollection();
+            if (!string.IsNullOrEmpty(jsonString))
+            {
+                JObject obj = JObject.Parse(jsonString);
+                if (obj.Count > 0)
+                {
+                    foreach (var info in method.GetParameters())
+                    {
+                        var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
+                        if (property != null)
+                        {
+                            //获取Json值
+                            string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
+                            object jsonValue = CoreHelper.ConvertValue(info.ParameterType, value);
+                            collection[info.Name] = jsonValue;
+                        }
+                    }
+                }
             }
 
             return collection;
@@ -110,34 +149,6 @@ namespace MySoft.IoC
             var jsonString = ServiceConfig.FormatJson(collection.ToString());
             var methodKey = string.Format("{0}_{1}_{2}", serviceType.FullName, method.ToString(), jsonString);
             return string.Format("CastleCache_{0}", methodKey).ToLower();
-        }
-
-        /// <summary>
-        /// 解析参数
-        /// </summary>
-        /// <param name="jsonString"></param>
-        /// <param name="resMsg"></param>
-        /// <param name="pis"></param>
-        internal static void ParseParameter(string jsonString, ResponseMessage resMsg, System.Reflection.ParameterInfo[] pis)
-        {
-            if (!string.IsNullOrEmpty(jsonString))
-            {
-                JObject obj = JObject.Parse(jsonString);
-                if (obj.Count > 0)
-                {
-                    foreach (var info in pis)
-                    {
-                        var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
-                        if (property != null)
-                        {
-                            //获取Json值
-                            string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
-                            object jsonValue = CoreHelper.ConvertValue(info.ParameterType, value);
-                            resMsg.Parameters[info.Name] = jsonValue;
-                        }
-                    }
-                }
-            }
         }
 
         /// <summary>

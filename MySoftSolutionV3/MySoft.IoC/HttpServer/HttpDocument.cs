@@ -105,13 +105,13 @@ namespace MySoft.IoC.HttpServer
         {
             StringBuilder buider = new StringBuilder();
 
-            var parameters = method.GetParameters();
-            var parametersCount = parameters.Count();
+            var pis = method.GetParameters();
+            var parametersCount = pis.Count();
 
             if (authorized) parametersCount--;
             if (parametersCount > 0) buider.Append("<b>INPUT</b> -><br/>");
 
-            foreach (var p in parameters)
+            foreach (var p in pis)
             {
                 if (authorized && string.Compare(p.Name, authParameter, true) == 0)
                     continue;

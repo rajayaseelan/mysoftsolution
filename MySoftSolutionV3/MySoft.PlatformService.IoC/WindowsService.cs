@@ -98,8 +98,7 @@ namespace MySoft.PlatformService.IoC
 
             if (config.HttpEnabled)
             {
-                var caller = new HttpServiceCaller(config, server.Container);
-                var factory = new HttpRequestHandlerFactory(caller);
+                var factory = new HttpRequestHandlerFactory(config, server.Container);
                 httpServer = new HTTPServer(factory, config.HttpPort);
 
                 if (startMode == StartMode.Console)

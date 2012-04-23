@@ -1,13 +1,13 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MySoft.Cache;
-using MySoft.IoC.Cache;
 using MySoft.IoC.Configuration;
+using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using System.Collections;
 
 namespace MySoft.IoC
 {
@@ -42,15 +42,39 @@ namespace MySoft.IoC
         /// <summary>
         /// Initializes a new instance of the <see cref="CastleFactory"/> class.
         /// </summary>
-        /// <param name="container">The container.</param>
-        protected CastleFactory(CastleFactoryConfiguration config, IServiceContainer container)
+        /// <param name="config">The container.</param>
+        protected CastleFactory(CastleFactoryConfiguration config)
         {
-            if (config == null)
-                this.config = new CastleFactoryConfiguration();
-            else
-                this.config = config;
-            this.container = container;
+            this.config = config;
+            this.container = new SimpleServiceContainer(config.Type);
+
+            container.OnLog += (log, type) =>
+            {
+                if (this.OnLog != null) this.OnLog(log, type);
+            };
+            container.OnError += error =>
+            {
+                if (this.OnError != null) this.OnError(error);
+            };
+
             this.proxies = new Dictionary<string, IService>();
+
+            if (config.Nodes.Count > 0)
+            {
+                foreach (var p in config.Nodes)
+                {
+                    if (p.Value.MaxPool < 1) throw new WarningException("Minimum pool size 1！");
+                    if (p.Value.MaxPool > 100) throw new WarningException("Maximum pool size 100！");
+
+                    IService proxy = null;
+                    if (p.Value.Invoke)
+                        proxy = new InvokeProxy(p.Value, container);
+                    else
+                        proxy = new RemoteProxy(p.Value, container);
+
+                    this.proxies[p.Key.ToLower()] = proxy;
+                }
+            }
         }
 
         #region 创建单例
@@ -61,75 +85,20 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static CastleFactory Create()
         {
-            if (singleton == null)
+            lock (hashtable.SyncRoot)
             {
-                lock (hashtable.SyncRoot)
+                if (singleton == null)
                 {
-                    if (singleton == null)
-                    {
-                        var config = CastleFactoryConfiguration.GetConfig();
+                    var config = CastleFactoryConfiguration.GetConfig();
 
-                        if (config == null)
-                            throw new WarningException("Not find configuration section castleFactory！");
+                    if (config == null)
+                        throw new WarningException("Not find configuration section castleFactory！");
 
-                        singleton = CreateNew(config);
-                    }
+                    singleton = new CastleFactory(config);
                 }
             }
 
             return singleton;
-        }
-
-        /// <summary>
-        /// Creates this instance. Used in a multithreaded environment
-        /// </summary>
-        /// <param name="config"></param>
-        /// <returns>The service factoru new instance.</returns>
-        private static CastleFactory CreateNew(CastleFactoryConfiguration config)
-        {
-            CastleFactory factory = null;
-
-            //本地匹配节
-            if (config.Type == CastleFactoryType.Local)
-            {
-                var sContainer = new SimpleServiceContainer(CastleFactoryType.Local);
-                factory = new CastleFactory(config, sContainer);
-            }
-            else
-            {
-                var sContainer = new SimpleServiceContainer(config.Type);
-                sContainer.OnLog += (log, type) =>
-                {
-                    if (factory != null && factory.OnLog != null)
-                        factory.OnLog(log, type);
-                };
-                sContainer.OnError += error =>
-                {
-                    if (factory != null && factory.OnError != null)
-                        factory.OnError(error);
-                };
-
-                factory = new CastleFactory(config, sContainer);
-
-                if (config.Nodes.Count > 0)
-                {
-                    foreach (var p in config.Nodes)
-                    {
-                        if (p.Value.MaxPool < 1) throw new WarningException("Minimum pool size 1！");
-                        if (p.Value.MaxPool > 1000) throw new WarningException("Maximum pool size 1000！");
-
-                        IService proxy = null;
-                        if (p.Value.Invoke)
-                            proxy = new InvokeProxy(p.Value, sContainer);
-                        else
-                            proxy = new RemoteProxy(p.Value, sContainer);
-
-                        factory.proxies[p.Key.ToLower()] = proxy;
-                    }
-                }
-            }
-
-            return factory;
         }
 
         #endregion
@@ -272,8 +241,7 @@ namespace MySoft.IoC
 
             lock (hashtable.SyncRoot)
             {
-                var serviceCache = new CastleServiceCache(cache);
-                var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, serviceCache, logger);
+                var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, cache, logger);
                 var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                 if (!isCacheService) //不缓存，直接返回服务
@@ -484,10 +452,8 @@ namespace MySoft.IoC
                         if (!hashtable.ContainsKey(serviceType))
                         {
                             //返回本地服务
-                            var serviceCache = new CastleServiceCache(cache);
-
                             var service = container.Resolve<IService>("Service_" + serviceType.FullName);
-                            var handler = new LocalInvocationHandler(config, container, service, serviceType, serviceCache, logger);
+                            var handler = new LocalInvocationHandler(config, container, service, serviceType, cache, logger);
                             var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                             hashtable[serviceType] = dynamicProxy;

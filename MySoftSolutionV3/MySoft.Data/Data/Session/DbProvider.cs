@@ -1,13 +1,13 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Text;
-using MySoft.Data.Design;
-using MySoft.Logger;
-using MySoft.Cache;
 using System.Diagnostics;
+using System.Text;
 using MySoft.Data.Cache;
+using MySoft.Data.Design;
+using MySoft.Data.Logger;
 
 namespace MySoft.Data
 {
@@ -18,35 +18,33 @@ namespace MySoft.Data
         private char rightToken;
         private char paramPrefixToken;
         private IExecuteLog logger;
+        private bool throwError = true;
+
+        /// <summary>
+        /// 是否抛出异常
+        /// </summary>
+        internal bool ThrowError
+        {
+            set { throwError = value; }
+        }
 
         /// <summary>
         /// 日志依赖
         /// </summary>
         internal IExecuteLog Logger
         {
-            set
-            {
-                logger = value;
-            }
+            set { logger = value; }
         }
 
         /// <summary>
         /// 缓存依赖
         /// </summary>
-        internal ICacheDependent Cache
-        {
-            get;
-            set;
-        }
+        internal ICacheDependent Cache { get; set; }
 
         /// <summary>
         /// 超时时间
         /// </summary>
-        internal int Timeout
-        {
-            get;
-            set;
-        }
+        internal int Timeout { get; set; }
 
         protected DbProvider(string connectionString, System.Data.Common.DbProviderFactory dbFactory, char leftToken, char rightToken, char paramPrefixToken)
         {
@@ -227,12 +225,6 @@ namespace MySoft.Data
             //调整DbCommand;
             PrepareCommand(cmd);
 
-            //执行命令前的事件
-            if (!BeginExecuteCommand(cmd))
-            {
-                throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
-            }
-
             int retVal = -1;
             Stopwatch watch = Stopwatch.StartNew();
             try
@@ -245,19 +237,23 @@ namespace MySoft.Data
                 {
                     retVal = dbHelper.ExecuteNonQuery(cmd, trans);
                 }
+
+                watch.Stop();
+
+                //执行命令后的事件
+                EndExecuteCommand(cmd, retVal, null, watch.ElapsedMilliseconds);
             }
             catch (Exception ex)
-            {
-                WriteErrorCommand(ex, cmd);
-
-                throw ex;
-            }
-            finally
             {
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExecuteCommand(cmd, retVal, watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, null, ex, watch.ElapsedMilliseconds);
+
+                if (throwError)
+                    throw ex;
+                else
+                    retVal = default(int);
             }
 
             return retVal;
@@ -267,12 +263,6 @@ namespace MySoft.Data
         {
             //调整DbCommand;
             PrepareCommand(cmd);
-
-            //执行命令前的事件
-            if (!BeginExecuteCommand(cmd))
-            {
-                throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
-            }
 
             SourceReader retVal = null;
             Stopwatch watch = Stopwatch.StartNew();
@@ -288,19 +278,23 @@ namespace MySoft.Data
                     reader = dbHelper.ExecuteReader(cmd, trans);
                 }
                 retVal = new SourceReader(reader);
+
+                watch.Stop();
+
+                //执行命令后的事件
+                EndExecuteCommand(cmd, retVal, null, watch.ElapsedMilliseconds);
             }
             catch (Exception ex)
-            {
-                WriteErrorCommand(ex, cmd);
-
-                throw ex;
-            }
-            finally
             {
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExecuteCommand(cmd, retVal, watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, null, ex, watch.ElapsedMilliseconds);
+
+                if (throwError)
+                    throw ex;
+                else
+                    retVal = default(SourceReader);
             }
 
             return retVal;
@@ -310,10 +304,6 @@ namespace MySoft.Data
         {
             //调整DbCommand;
             PrepareCommand(cmd);
-
-            //执行命令前的事件
-            if (!BeginExecuteCommand(cmd))
-                return null;
 
             DataSet retVal = null;
             Stopwatch watch = Stopwatch.StartNew();
@@ -327,19 +317,23 @@ namespace MySoft.Data
                 {
                     retVal = dbHelper.ExecuteDataSet(cmd, trans);
                 }
+
+                watch.Stop();
+
+                //执行命令后的事件
+                EndExecuteCommand(cmd, retVal, null, watch.ElapsedMilliseconds);
             }
             catch (Exception ex)
-            {
-                WriteErrorCommand(ex, cmd);
-
-                throw ex;
-            }
-            finally
             {
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExecuteCommand(cmd, retVal, watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, null, ex, watch.ElapsedMilliseconds);
+
+                if (throwError)
+                    throw ex;
+                else
+                    retVal = default(DataSet);
             }
 
             return retVal;
@@ -349,12 +343,6 @@ namespace MySoft.Data
         {
             //调整DbCommand;
             PrepareCommand(cmd);
-
-            //执行命令前的事件
-            if (!BeginExecuteCommand(cmd))
-            {
-                throw new DataException("当前数据库操作被拦截 ==> " + GetLog(cmd));
-            }
 
             DataTable retVal = null;
             Stopwatch watch = Stopwatch.StartNew();
@@ -368,19 +356,23 @@ namespace MySoft.Data
                 {
                     retVal = dbHelper.ExecuteDataTable(cmd, trans);
                 }
+
+                watch.Stop();
+
+                //执行命令后的事件
+                EndExecuteCommand(cmd, retVal, null, watch.ElapsedMilliseconds);
             }
             catch (Exception ex)
-            {
-                WriteErrorCommand(ex, cmd);
-
-                throw ex;
-            }
-            finally
             {
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExecuteCommand(cmd, retVal, watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, null, ex, watch.ElapsedMilliseconds);
+
+                if (throwError)
+                    throw ex;
+                else
+                    retVal = default(DataTable);
             }
 
             return retVal;
@@ -390,12 +382,6 @@ namespace MySoft.Data
         {
             //调整DbCommand;
             PrepareCommand(cmd);
-
-            //执行命令前的事件
-            if (!BeginExecuteCommand(cmd))
-            {
-                throw new DataException("当前执行命令被拒绝 ==> " + GetLog(cmd));
-            }
 
             object retVal = null;
             Stopwatch watch = Stopwatch.StartNew();
@@ -409,19 +395,23 @@ namespace MySoft.Data
                 {
                     retVal = dbHelper.ExecuteScalar(cmd, trans);
                 }
+
+                watch.Stop();
+
+                //执行命令后的事件
+                EndExecuteCommand(cmd, retVal, null, watch.ElapsedMilliseconds);
             }
             catch (Exception ex)
-            {
-                WriteErrorCommand(ex, cmd);
-
-                throw ex;
-            }
-            finally
             {
                 watch.Stop();
 
                 //执行命令后的事件
-                EndExecuteCommand(cmd, retVal, watch.ElapsedMilliseconds);
+                EndExecuteCommand(cmd, null, ex, watch.ElapsedMilliseconds);
+
+                if (throwError)
+                    throw ex;
+                else
+                    retVal = default(object);
             }
 
             return retVal;
@@ -436,7 +426,9 @@ namespace MySoft.Data
         {
             //处理command命令
             cmd.CommandText = FormatCommandText(cmd.CommandText);
-            if (Timeout > 0) //如果超时时间设置大于0，则使用指定的超时时间
+
+            //如果超时时间设置大于0，则使用指定的超时时间
+            if (Timeout > 0)
             {
                 cmd.CommandTimeout = Timeout;
             }
@@ -820,71 +812,40 @@ namespace MySoft.Data
         /// Writes the log.
         /// </summary>
         /// <param name="command">The command.</param>
-        private bool BeginExecuteCommand(DbCommand command)
+        private void BeginExecuteCommand(DbCommand command)
         {
             if (logger != null)
             {
                 try
                 {
-                    //输出sql日志
-                    logger.WriteLog(GetLog(command), LogType.Information);
-
-                    string cmdText = command.CommandText;
-                    List<SQLParameter> parameters = new List<SQLParameter>();
-                    foreach (DbParameter p in command.Parameters)
-                    {
-                        parameters.Add(new SQLParameter(p));
-                    }
-                    return logger.Begin(cmdText, parameters.ToArray());
+                    logger.Begin(command);
                 }
                 catch
                 {
                 }
             }
-
-            return true;
         }
 
         /// <summary>
         /// 结束时执行的操作
         /// </summary>
         /// <param name="command"></param>
-        private void EndExecuteCommand(DbCommand command, object result, long elapsedTime)
-        {
-            if (logger != null)
-            {
-                try
-                {
-                    string cmdText = command.CommandText;
-                    List<SQLParameter> parameters = new List<SQLParameter>();
-                    foreach (DbParameter p in command.Parameters)
-                    {
-                        parameters.Add(new SQLParameter(p));
-                    }
-                    logger.End(cmdText, parameters.ToArray(), result, elapsedTime);
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        /// <summary>
-        /// Writes the exception log.
-        /// </summary>
+        /// <param name="result"></param>
         /// <param name="ex"></param>
-        /// <param name="command"></param>
-        private void WriteErrorCommand(Exception ex, DbCommand command)
+        /// <param name="elapsedTime"></param>
+        private void EndExecuteCommand(DbCommand command, object result, Exception ex, long elapsedTime)
         {
             if (logger != null)
             {
                 try
                 {
-                    //输出错误日志
-                    logger.WriteLog(GetLog(command) + " ==> Error: " + ex.Message, LogType.Error);
-
-                    var exception = new DataException(GetLog(command), ex);
-                    logger.WriteError(exception);
+                    var retMsg = new ReturnValue
+                    {
+                        Data = result,
+                        Error = ex,
+                        Count = GetCount(result)
+                    };
+                    logger.End(command, retMsg, elapsedTime);
                 }
                 catch
                 {
@@ -892,30 +853,37 @@ namespace MySoft.Data
             }
         }
 
-        /// <summary>
-        /// 获取输出的日志
-        /// </summary>
-        /// <param name="command"></param>
-        /// <returns></returns>
-        protected string GetLog(DbCommand command)
+        private int GetCount(object val)
         {
-            StringBuilder sb = new StringBuilder();
+            if (val == null) return 0;
 
-            sb.Append(string.Format("{0}\t{1}\t\r\n", command.CommandType, command.CommandText));
-            if (command.Parameters != null && command.Parameters.Count > 0)
+            if (val is ICollection)
             {
-                sb.Append("Parameters:\r\n");
-                foreach (DbParameter p in command.Parameters)
+                return (val as ICollection).Count;
+            }
+            else if (val is Array)
+            {
+                return (val as Array).Length;
+            }
+            else if (val is DataTable)
+            {
+                return (val as DataTable).Rows.Count;
+            }
+            else if (val is DataSet)
+            {
+                var ds = val as DataSet;
+                if (ds.Tables.Count > 0)
                 {
-                    if (p.Size > 0)
-                        sb.Append(string.Format("{0}[{1}][{2}({3})] = {4}\r\n", p.ParameterName, p.DbType, GetParameterType(p), p.Size, p.Value));
-                    else
-                        sb.Append(string.Format("{0}[{1}][{2}] = {3}\r\n", p.ParameterName, p.DbType, GetParameterType(p), p.Value));
+                    int count = 0;
+                    foreach (DataTable table in ds.Tables)
+                    {
+                        count += table.Rows.Count;
+                    }
+                    return count;
                 }
             }
-            sb.Append("\r\n");
 
-            return sb.ToString();
+            return 1;
         }
 
         #endregion
@@ -973,13 +941,6 @@ namespace MySoft.Data
         {
             get;
         }
-
-        /// <summary>
-        /// 获取参数类型
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <returns></returns>
-        protected abstract object GetParameterType(DbParameter parameter);
 
         /// <summary>
         /// 创建DbParameter

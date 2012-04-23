@@ -43,7 +43,7 @@ namespace MySoft.IoC.Services
 
         void reqService_Disconnected(object sender, EventArgs e)
         {
-            this.logger.WriteError(new SocketException((int)SocketError.NotConnected));
+            this.logger.Write(new SocketException((int)SocketError.NotConnected));
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace MySoft.IoC.Services
             }
             else if (args.Result is CallbackMessage)
             {
-                var resMsg = args.Result as CallbackMessage;
+                var callbackMsg = args.Result as CallbackMessage;
 
                 if (callback != null)
                 {
@@ -71,12 +71,12 @@ namespace MySoft.IoC.Services
                     if (interfaces.Length > 0)
                     {
                         //判断类型是否相同
-                        if (interfaces.Any(type => type.FullName == resMsg.ServiceName))
+                        if (interfaces.Any(type => type.FullName == callbackMsg.ServiceName))
                         {
-                            var method = CoreHelper.GetMethodFromType(callbackType, resMsg.MethodName);
+                            var method = CoreHelper.GetMethodFromType(callbackType, callbackMsg.MethodName);
 
                             //执行委托
-                            DynamicCalls.GetMethodInvoker(method).Invoke(callback, resMsg.Parameters);
+                            DynamicCalls.GetMethodInvoker(method).Invoke(callback, callbackMsg.Parameters);
                         }
                     }
                 }

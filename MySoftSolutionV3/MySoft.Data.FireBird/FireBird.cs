@@ -50,16 +50,6 @@ namespace MySoft.Data.FireBird
         }
 
         /// <summary>
-        /// 获取参数类型
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <returns></returns>
-        protected override object GetParameterType(DbParameter parameter)
-        {
-            return (parameter as FbParameter).FbDbType;
-        }
-
-        /// <summary>
         /// 创建DbParameter
         /// </summary>
         /// <param name="parameterName"></param>

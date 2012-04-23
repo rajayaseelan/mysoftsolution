@@ -23,6 +23,16 @@ namespace MySoft.IoC.Messages
         }
 
         /// <summary>
+        /// Get contains key
+        /// </summary>
+        /// <param name="paramName"></param>
+        /// <returns></returns>
+        public bool ContainsKey(string paramName)
+        {
+            return parmValues.ContainsKey(paramName);
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="System.String"/> with the specified param name.
         /// </summary>
         /// <value></value>

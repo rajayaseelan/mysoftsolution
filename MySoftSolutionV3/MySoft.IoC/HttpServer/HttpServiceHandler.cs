@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using System.Text;
 using MySoft.IoC.Messages;
 using MySoft.Auth;
+using MySoft.IoC.Configuration;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -18,10 +19,11 @@ namespace MySoft.IoC.HttpServer
         /// <summary>
         /// 初始化CastleServiceHandler
         /// </summary>
-        /// <param name="caller"></param>
-        public HttpServiceHandler(HttpServiceCaller caller)
+        /// <param name="config"></param>
+        /// <param name="container"></param>
+        public HttpServiceHandler(CastleServiceConfiguration config, IServiceContainer container)
         {
-            this.caller = caller;
+            this.caller = new HttpServiceCaller(config, container);
         }
 
         #region IHTTPRequestHandler 成员

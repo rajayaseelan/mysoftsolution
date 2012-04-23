@@ -20,11 +20,11 @@ namespace MySoft.IoC.Aspect
             }
         }
 
-        private object arguments;
+        private object[] arguments;
         /// <summary>
         /// 拦截器参数
         /// </summary>
-        public object Arguments
+        public object[] Arguments
         {
             get
             {

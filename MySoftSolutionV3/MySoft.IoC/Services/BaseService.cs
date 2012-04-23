@@ -1,5 +1,6 @@
 using System;
 using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.IoC.Services
 {
@@ -12,7 +13,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         ///  The service logger
         /// </summary>
-        private IServiceContainer container;
+        private ILog logger;
         private Type serviceType;
 
         /// <summary>
@@ -28,9 +29,9 @@ namespace MySoft.IoC.Services
         /// Initializes a new instance of the <see cref="BaseService"/> class.
         /// </summary>
         /// <param name="serviceName">Name of the service.</param>
-        public BaseService(IServiceContainer container, Type serviceType)
+        public BaseService(ILog logger, Type serviceType)
         {
-            this.container = container;
+            this.logger = logger;
             this.serviceType = serviceType;
         }
 
@@ -52,7 +53,6 @@ namespace MySoft.IoC.Services
         /// Calls the service.
         /// </summary>
         /// <param name="reqMsg">The MSG.</param>
-        /// <param name="method"></param>
         /// <returns>The msg.</returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
@@ -83,7 +83,7 @@ namespace MySoft.IoC.Services
                     }
                 }
 
-                container.WriteError(exception);
+                logger.Write(exception);
             }
 
             return resMsg;

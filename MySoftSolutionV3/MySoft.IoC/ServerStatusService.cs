@@ -7,6 +7,7 @@ using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
+using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -28,7 +29,7 @@ namespace MySoft.IoC
         /// <param name="server"></param>
         /// <param name="container"></param>
         /// <param name="config"></param>
-        public ServerStatusService(IScsServer server, IServiceContainer container, CastleServiceConfiguration config)
+        public ServerStatusService(IScsServer server, CastleServiceConfiguration config, IServiceContainer container)
         {
             this.config = config;
             this.server = server;
@@ -38,7 +39,7 @@ namespace MySoft.IoC
             this.counterlist = new CounterInfoCollection(config.MinuteCalls);
 
             //启动定义推送线程
-            ThreadPool.QueueUserWorkItem(DoPushWork);
+            ManagedThreadPool.QueueUserWorkItem(DoPushWork);
         }
 
         void DoPushWork(object state)
@@ -175,7 +176,7 @@ namespace MySoft.IoC
             }
             catch (Exception ex)
             {
-                container.WriteError(ex);
+                container.Write(ex);
             }
 
             return clients;
@@ -232,26 +233,26 @@ namespace MySoft.IoC
                         };
 
                         //读取参数
-                        foreach (var parameter in method.GetParameters())
+                        foreach (var p in method.GetParameters())
                         {
-                            var p = new ParameterInfo
+                            var pi = new ParameterInfo
                             {
-                                Name = parameter.Name,
-                                TypeName = CoreHelper.GetTypeName(parameter.ParameterType),
-                                TypeFullName = parameter.ParameterType.FullName,
-                                IsByRef = parameter.ParameterType.IsByRef,
-                                IsOut = parameter.IsOut,
-                                IsEnum = parameter.ParameterType.IsEnum,
-                                IsPrimitive = CheckPrimitive(parameter.ParameterType),
-                                SubParameters = GetSubParameters(parameter.ParameterType)
+                                Name = p.Name,
+                                TypeName = CoreHelper.GetTypeName(p.ParameterType),
+                                TypeFullName = p.ParameterType.FullName,
+                                IsByRef = p.ParameterType.IsByRef,
+                                IsOut = p.IsOut,
+                                IsEnum = p.ParameterType.IsEnum,
+                                IsPrimitive = CheckPrimitive(p.ParameterType),
+                                SubParameters = GetSubParameters(p.ParameterType)
                             };
 
-                            if (p.IsEnum)
+                            if (pi.IsEnum)
                             {
-                                p.EnumValue = GetEnumValue(parameter.ParameterType);
+                                pi.EnumValue = GetEnumValue(p.ParameterType);
                             }
 
-                            m.Parameters.Add(p);
+                            m.Parameters.Add(pi);
                         }
 
                         s.Methods.Add(m);

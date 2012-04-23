@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using MySoft.IoC.Messages;
+using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -36,7 +37,7 @@ namespace MySoft.IoC.Services
             using (var waitResult = new AsyncResult(context, reqMsg))
             {
                 //异步调用
-                ThreadPool.QueueUserWorkItem(GetResponse, waitResult);
+                ManagedThreadPool.QueueUserWorkItem(GetResponse, waitResult);
 
                 //等待响应
                 if (!waitResult.Wait(elapsedTime))
@@ -72,6 +73,9 @@ namespace MySoft.IoC.Services
         /// </summary>
         private void GetResponse(object state)
         {
+            //如果值为null则返回
+            if (state == null) return;
+
             var waitResult = state as AsyncResult;
 
             //设置上下文
@@ -84,6 +88,10 @@ namespace MySoft.IoC.Services
 
                 //响应信号
                 waitResult.Set(resMsg);
+            }
+            catch
+            {
+                //内部异常不做处理
             }
             finally
             {

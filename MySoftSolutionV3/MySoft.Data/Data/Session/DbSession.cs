@@ -5,6 +5,7 @@ using System.Data.Common;
 using MySoft.Logger;
 using MySoft.Cache;
 using MySoft.Data.Cache;
+using MySoft.Data.Logger;
 
 namespace MySoft.Data
 {
@@ -1052,6 +1053,15 @@ namespace MySoft.Data
         public void SetCommandTimeout(int timeout)
         {
             this.dbProvider.Timeout = timeout;
+        }
+
+        /// <summary>
+        /// 设置是否抛出异常
+        /// </summary>
+        /// <param name="throwError"></param>
+        public void SetThrowError(bool throwError)
+        {
+            this.dbProvider.ThrowError = throwError;
         }
 
         #endregion

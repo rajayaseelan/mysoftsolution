@@ -11,6 +11,7 @@ namespace MySoft.IoC.Aspect
     public static class AspectFactory
     {
         private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+        private static Hashtable instances = Hashtable.Synchronized(new Hashtable());
 
         /// <summary>
         /// 创建一个实例方式的拦截器（支持Aspect方式）
@@ -39,13 +40,29 @@ namespace MySoft.IoC.Aspect
                                     value = Activator.CreateInstance(attribute.InterceptorType);
                                 else
                                 {
-                                    if (attribute.Arguments.GetType().IsClass)
+
+                                    var arguments = new List<object>();
+                                    foreach (var argument in attribute.Arguments)
                                     {
-                                        var arg = Activator.CreateInstance(attribute.Arguments.GetType());
-                                        value = Activator.CreateInstance(attribute.InterceptorType, arg);
+                                        if (argument == null)
+                                        {
+                                            arguments.Add(argument);
+                                            continue;
+                                        }
+
+                                        //如果类，则创建实例
+                                        if (argument.GetType().IsClass)
+                                        {
+                                            var instance = Activator.CreateInstance(argument.GetType());
+                                            arguments.Add(instance);
+                                        }
+                                        else
+                                        {
+                                            arguments.Add(argument);
+                                        }
                                     }
-                                    else
-                                        value = Activator.CreateInstance(attribute.InterceptorType, attribute.Arguments);
+
+                                    value = Activator.CreateInstance(attribute.InterceptorType, arguments.ToArray());
                                 }
 
                                 interceptors.Add(value as Castle.DynamicProxy.IInterceptor);
@@ -59,7 +76,21 @@ namespace MySoft.IoC.Aspect
             }
 
             var tmplist = hashtable[serviceType] as List<Castle.DynamicProxy.IInterceptor>;
-            return CreateProxy(serviceType, target, tmplist.ToArray());
+            if (tmplist.Count == 0)
+            {
+                return target;
+            }
+
+            lock (instances.SyncRoot)
+            {
+                if (!instances.ContainsKey(serviceType))
+                {
+                    //创建代理服务
+                    instances[serviceType] = CreateProxy(serviceType, target, tmplist.ToArray());
+                }
+            }
+
+            return instances[serviceType];
         }
 
         /// <summary>
@@ -72,7 +103,10 @@ namespace MySoft.IoC.Aspect
         public static object CreateProxy(Type proxyType, object target, params Castle.DynamicProxy.IInterceptor[] interceptors)
         {
             //如果拦截器为0
-            if (interceptors.Length == 0) return target;
+            if (interceptors.Length == 0)
+            {
+                return target;
+            }
 
             Castle.DynamicProxy.ProxyGenerator proxy = new Castle.DynamicProxy.ProxyGenerator();
             Castle.DynamicProxy.ProxyGenerationOptions options = new Castle.DynamicProxy.ProxyGenerationOptions(new ProxyGenerationHook())
@@ -91,7 +125,7 @@ namespace MySoft.IoC.Aspect
         /// <returns></returns>
         public static object CreateProxy(Type classType, params Castle.DynamicProxy.IInterceptor[] interceptors)
         {
-            return CreateProxy(classType, null, interceptors);
+            return CreateProxy(classType, new object[0], interceptors);
         }
 
         /// <summary>
@@ -103,6 +137,12 @@ namespace MySoft.IoC.Aspect
         /// <returns></returns>
         public static object CreateProxy(Type classType, object[] arguments, params Castle.DynamicProxy.IInterceptor[] interceptors)
         {
+            //如果拦截器为0
+            if (interceptors.Length == 0)
+            {
+                return Activator.CreateInstance(classType, arguments);
+            }
+
             Castle.DynamicProxy.ProxyGenerator proxy = new Castle.DynamicProxy.ProxyGenerator();
             Castle.DynamicProxy.ProxyGenerationOptions options = new Castle.DynamicProxy.ProxyGenerationOptions(new ProxyGenerationHook())
             {

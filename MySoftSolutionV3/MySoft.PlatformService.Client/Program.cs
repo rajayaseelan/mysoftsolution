@@ -13,36 +13,22 @@ using System.IO;
 using System.Collections.Specialized;
 using MySoft.IoC.Messages;
 using System.Collections;
+using MySoft.IoC.Logger;
 
 namespace MySoft.PlatformService.Client
 {
     public class ServiceLog : IServiceLog
     {
-
         #region IServiceLog 成员
 
-        public void Begin(RequestMessage reqMsg)
+        public void Begin(CallMessage reqMsg)
         {
             //throw new NotImplementedException();
         }
 
-        public void End(RequestMessage reqMsg, ResponseMessage resMsg, long elapsedTime)
+        public void End(CallMessage reqMsg, ReturnMessage resMsg, long elapsedTime)
         {
             //throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #region ILog 成员
-
-        public void WriteLog(string log, LogType type)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void WriteError(Exception error)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
@@ -180,7 +166,7 @@ namespace MySoft.PlatformService.Client
             CastleFactory.Create().RegisterLogger(new ServiceLog());
 
             ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
@@ -300,14 +286,19 @@ namespace MySoft.PlatformService.Client
 
                     //service.GetUserInfo("maoyong", ref length, out user);
 
-                    var users = service.GetUsers();
+                    string userid;
+                    Guid guid;
+                    UserInfo user;
+                    UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
+
+                    //var users = service.GetUsers();
                     //var str = service.GetUsersString();
 
                     watch.Stop();
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("【" + counter + "】times => " + users.Count + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("【" + counter + "】times => " + userid + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //var clients = service1.GetClientList();
 
@@ -367,9 +358,8 @@ namespace MySoft.PlatformService.Client
                 Stopwatch watch = Stopwatch.StartNew();
                 try
                 {
-                    //int userid = service.GetUserID();
-                    //UserInfo info = service.GetUserInfo("maoyong_" + new Random().Next(10000000), out userid);
-                    //UserInfo info = service.GetUserInfo("maoyong", out userid);
+                    //string userid;
+                    //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid);
 
                     var users = service.GetUsers();
 

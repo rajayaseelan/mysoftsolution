@@ -1,15 +1,14 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using Castle.MicroKernel;
 using MySoft.Logger;
-using System.Collections.Generic;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// The service container interface.
     /// </summary>
-    public interface IServiceContainer : IContainer, IDisposable, ILog, ILogable, IErrorLogable
+    public interface IServiceContainer : IContainer, ILog, ILogable, IErrorLogable, IDisposable
     {
         /// <summary>
         /// Gets the kernel.

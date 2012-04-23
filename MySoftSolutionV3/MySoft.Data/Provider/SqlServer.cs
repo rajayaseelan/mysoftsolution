@@ -39,16 +39,6 @@ namespace MySoft.Data.SqlServer
         }
 
         /// <summary>
-        /// 获取参数类型
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <returns></returns>
-        protected override object GetParameterType(DbParameter parameter)
-        {
-            return (parameter as SqlParameter).SqlDbType;
-        }
-
-        /// <summary>
         /// 创建DbParameter
         /// </summary>
         /// <param name="parameterName"></param>

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Linq;
 using MySoft.Logger;
 using System.Collections;
+using MySoft.Threading;
 
 namespace MySoft.Web
 {
@@ -415,7 +416,7 @@ namespace MySoft.Web
         /// </summary>
         public void Update(TimeSpan timeSpan)
         {
-            ThreadPool.QueueUserWorkItem(obj =>
+            ManagedThreadPool.QueueUserWorkItem(obj =>
             {
                 ArrayList arr = obj as ArrayList;
                 IStaticPageItem item = (IStaticPageItem)arr[0];
@@ -995,7 +996,7 @@ namespace MySoft.Web
         /// </summary>
         public void Update(TimeSpan timeSpan)
         {
-            ThreadPool.QueueUserWorkItem(obj =>
+            ManagedThreadPool.QueueUserWorkItem(obj =>
             {
                 TimeSpan span = (TimeSpan)obj;
                 Thread.Sleep(span);

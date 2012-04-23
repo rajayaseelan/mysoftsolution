@@ -8,6 +8,7 @@ using System.Linq;
 using MySoft.Web.Configuration;
 using System.Threading;
 using System.Collections;
+using MySoft.Threading;
 
 namespace MySoft.Web
 {
@@ -43,7 +44,7 @@ namespace MySoft.Web
             string path = HttpContext.Current.Request.Url.PathAndQuery;
 
             //启动生成线程
-            ThreadPool.QueueUserWorkItem(WriteFile, new ArrayList { content, path });
+            ManagedThreadPool.QueueUserWorkItem(WriteFile, new ArrayList { content, path });
         }
 
         /// <summary>

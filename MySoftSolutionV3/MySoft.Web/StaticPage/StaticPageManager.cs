@@ -9,6 +9,7 @@ using System.Web;
 using System.Web.Hosting;
 using MySoft.Logger;
 using System.Text.RegularExpressions;
+using MySoft.Threading;
 
 namespace MySoft.Web
 {
@@ -68,7 +69,7 @@ namespace MySoft.Web
             if (isStartUpdate)
             {
                 //启动一个临时线程生成
-                ThreadPool.QueueUserWorkItem(state => RunUpdate(DateTime.MaxValue));
+                ManagedThreadPool.QueueUserWorkItem(state => RunUpdate(DateTime.MaxValue));
             }
 
             //启动一个循环线程生成

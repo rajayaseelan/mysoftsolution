@@ -5,6 +5,7 @@ using System.IO;
 using MySoft.Mail;
 using System.Threading;
 using System.Linq;
+using MySoft.Threading;
 
 namespace MySoft.Logger
 {
@@ -22,6 +23,15 @@ namespace MySoft.Logger
         private Queue<LogInfo> logqueue;
 
         /// <summary>
+        /// 设置基准路径
+        /// </summary>
+        /// <param name="basedir"></param>
+        public void SetBaseDir(string basedir)
+        {
+            this.basedir = basedir;
+        }
+
+        /// <summary>
         /// 实例化简单日志组件
         /// </summary>
         /// <param name="basedir">日志存储根目录，下面会自动创建Log与ErrorLog文件夹</param>
@@ -31,7 +41,7 @@ namespace MySoft.Logger
             this.logqueue = new Queue<LogInfo>();
 
             //启动生成文件线程
-            ThreadPool.QueueUserWorkItem((state) =>
+            ManagedThreadPool.QueueUserWorkItem((state) =>
             {
                 while (true)
                 {

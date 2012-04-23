@@ -51,7 +51,7 @@ namespace MySoft.Net.Http
                 HTTPServerParams p = new HTTPServerParams();
                 p.Timeout = 2000000;
                 p.KeepAliveTimeout = 5000000;
-                p.MaxRequests = 8;
+                p.MaxRequests = 100;
                 p.KeepAlive = true;
                 return p;
             }

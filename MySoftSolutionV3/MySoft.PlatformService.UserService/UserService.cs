@@ -42,7 +42,7 @@ namespace MySoft.PlatformService.UserService
         }
 
         //[AspectSwitcher(true)]
-        public virtual UserInfo GetUserInfo(string name, ref int length, out UserInfo user, params int[] ids)
+        public virtual UserInfo GetUserInfo(string name, out string userid, out Guid guid, out UserInfo user)
         {
             //var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
             //if (count % 5 == 0)
@@ -60,10 +60,11 @@ namespace MySoft.PlatformService.UserService
                 Description = string.Format("您的用户名为：{0}", name)
             };
 
-            length = user.Description.Length;
+            userid = user.Name;
+            guid = new Guid(userid.Split('_')[1]);
 
-            int value = new Random().Next(10, 60);
-            Thread.Sleep(value * 1000);
+            //int value = new Random().Next(1, 5);
+            //Thread.Sleep(value * 1000);
 
             return user;
         }

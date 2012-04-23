@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Common;
 using MySoft.Logger;
 using MySoft.Cache;
+using MySoft.Data.Logger;
 
 namespace MySoft.Data
 {

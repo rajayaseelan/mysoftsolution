@@ -7,6 +7,7 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using System.Threading;
+using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -27,9 +28,9 @@ namespace MySoft.IoC
         /// <param name="server"></param>
         /// <param name="container"></param>
         /// <param name="config"></param>
-        public ServiceCaller(IScsServer server, IServiceContainer container, CastleServiceConfiguration config)
+        public ServiceCaller(IScsServer server, CastleServiceConfiguration config, IServiceContainer container)
         {
-            this.status = new ServerStatusService(server, container, config);
+            this.status = new ServerStatusService(server, config, container);
             this.config = config;
             this.container = container;
             this.callbackTypes = new Dictionary<string, Type>();
@@ -110,12 +111,11 @@ namespace MySoft.IoC
                     //如果是Json方式调用，则需要处理异常
                     if (resMsg.IsError && reqMsg.InvokeMethod)
                     {
-                        resMsg.Parameters.Clear();
                         resMsg.Error = new ApplicationException(callArgs.Error.Message);
                     }
 
                     //调用计数
-                    ThreadPool.QueueUserWorkItem(state =>
+                    ManagedThreadPool.QueueUserWorkItem(state =>
                     {
                         try
                         {
@@ -141,7 +141,7 @@ namespace MySoft.IoC
             catch (Exception ex)
             {
                 //输出错误
-                container.WriteError(ex);
+                container.Write(ex);
 
                 //处理异常
                 return new ResponseMessage

@@ -5,6 +5,8 @@ using System.Collections.Specialized;
 using System.Data;
 using System.Reflection;
 using System.Linq;
+using System.Text;
+using System.Data.Common;
 
 namespace MySoft.Data
 {
@@ -361,5 +363,31 @@ namespace MySoft.Data
         }
 
         #endregion
+
+        /// <summary>
+        /// 获取输出的日志
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public static string GetCommandLog(IDbCommand command)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(string.Format("{0}\t{1}\t\r\n", command.CommandType, command.CommandText));
+            if (command.Parameters != null && command.Parameters.Count > 0)
+            {
+                sb.Append("Parameters:\r\n");
+                foreach (DbParameter p in command.Parameters)
+                {
+                    if (p.Size > 0)
+                        sb.Append(string.Format("{0}[{1}({2})] = {3}\r\n", p.ParameterName, p.DbType, p.Size, p.Value));
+                    else
+                        sb.Append(string.Format("{0}[{1}] = {2}\r\n", p.ParameterName, p.DbType, p.Value));
+                }
+            }
+            sb.Append("\r\n");
+
+            return sb.ToString();
+        }
     }
 }
