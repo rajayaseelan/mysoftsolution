@@ -6,10 +6,10 @@ using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Configuration;
+using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 using MySoft.Net.Http;
-using MySoft.IoC.HttpServer;
 
 namespace MySoft.IoC
 {
@@ -22,7 +22,7 @@ namespace MySoft.IoC
         private IServiceContainer container;
         private HTTPServer httpServer;
         private IScsServer server;
-        private ScsTcpEndPoint epServer = null;
+        private ScsTcpEndPoint epServer;
         private ServiceCaller caller;
 
         /// <summary>
@@ -81,9 +81,6 @@ namespace MySoft.IoC
         /// </summary>
         public void Start()
         {
-            //启动服务
-            server.Start();
-
             if (config.HttpEnabled)
             {
                 httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://{1}:{2}", DateTime.Now, DnsHelper.GetIPAddress(), config.HttpPort); };
@@ -92,6 +89,9 @@ namespace MySoft.IoC
                 httpServer.OnServerException += httpServer_OnServerException;
                 httpServer.Start();
             }
+
+            //启动服务
+            server.Start();
         }
 
         /// <summary>

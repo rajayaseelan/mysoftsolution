@@ -20,21 +20,11 @@ namespace MySoft.PlatformService.Console
             System.Console.ForegroundColor = ConsoleColor.White;
             System.Console.WriteLine("Service ready started...");
 
-            CastleServiceConfiguration config = CastleServiceConfiguration.GetConfig();
-            CastleService server = new CastleService(config);
+            var config = CastleServiceConfiguration.GetConfig();
+            var server = new CastleService(config);
             server.OnLog += new LogEventHandler(Program_OnLog);
             server.OnError += new ErrorLogEventHandler(Program_OnError);
             server.Start();
-
-            if (config.HttpEnabled)
-            {
-                var factory = new HttpRequestHandlerFactory(config, server.Container);
-                var httpServer = new HTTPServer(factory, config.HttpPort);
-                httpServer.OnServerStart += () => { System.Console.WriteLine("Http server started. http://{0}:{1}/", DnsHelper.GetIPAddress(), config.HttpPort); };
-                httpServer.OnServerStop += () => { System.Console.WriteLine("Http server stoped."); };
-                httpServer.OnServerException += ex => Program_OnError(ex);
-                httpServer.Start();
-            }
 
             System.Console.WriteLine("Tcp server started. {0}", server.ServerUrl);
             System.Console.WriteLine("Service count -> {0} services.", server.ServiceCount);
