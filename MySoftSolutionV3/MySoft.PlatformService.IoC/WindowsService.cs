@@ -4,9 +4,7 @@ using System.Threading;
 using MySoft.Installer;
 using MySoft.IoC;
 using MySoft.IoC.Configuration;
-using MySoft.IoC.HttpServer;
 using MySoft.Logger;
-using MySoft.Net.Http;
 
 namespace MySoft.PlatformService.IoC
 {
@@ -19,7 +17,6 @@ namespace MySoft.PlatformService.IoC
         private CastleServiceConfiguration config;
         private StartMode startMode = StartMode.Service;
         private CastleService server;
-        private HTTPServer httpServer;
         private string[] mailTo;
 
         /// <summary>
@@ -95,21 +92,6 @@ namespace MySoft.PlatformService.IoC
         private void StartService()
         {
             server.Start();
-
-            if (config.HttpEnabled)
-            {
-                var factory = new HttpRequestHandlerFactory(config, server.Container);
-                httpServer = new HTTPServer(factory, config.HttpPort);
-
-                if (startMode == StartMode.Console)
-                {
-                    httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://{1}:{2}", DateTime.Now, DnsHelper.GetIPAddress(), config.HttpPort); };
-                    httpServer.OnServerStop += () => { Console.WriteLine("[{0}] => Http server stoped.", DateTime.Now); };
-                }
-
-                httpServer.OnServerException += ex => server_OnError(ex);
-                httpServer.Start();
-            }
         }
 
         public void Stop()
@@ -119,7 +101,6 @@ namespace MySoft.PlatformService.IoC
                 Console.WriteLine("[{0}] => Service ready stopped...", DateTime.Now);
             }
 
-            if (httpServer != null) httpServer.Stop();
             server.Stop();
         }
 

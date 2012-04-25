@@ -116,6 +116,8 @@ namespace MySoft.IoC.Services
             {
                 //สอทลืสิด
                 container.Release(instance);
+
+                instance = null;
             }
 
             return resMsg;

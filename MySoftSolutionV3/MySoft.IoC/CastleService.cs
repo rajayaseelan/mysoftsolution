@@ -8,6 +8,8 @@ using MySoft.IoC.Callback;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using MySoft.Net.Http;
+using MySoft.IoC.HttpServer;
 
 namespace MySoft.IoC
 {
@@ -16,18 +18,12 @@ namespace MySoft.IoC
     /// </summary>
     public class CastleService : ILogable, IErrorLogable, IDisposable
     {
+        private CastleServiceConfiguration config;
         private IServiceContainer container;
+        private HTTPServer httpServer;
         private IScsServer server;
         private ScsTcpEndPoint epServer = null;
         private ServiceCaller caller;
-
-        /// <summary>
-        /// 服务容器
-        /// </summary>
-        public IServiceContainer Container
-        {
-            get { return container; }
-        }
 
         /// <summary>
         /// 实例化CastleService
@@ -35,6 +31,8 @@ namespace MySoft.IoC
         /// <param name="config"></param>
         public CastleService(CastleServiceConfiguration config)
         {
+            this.config = config;
+
             if (string.Compare(config.Host, "any", true) == 0)
             {
                 config.Host = IPAddress.Loopback.ToString();
@@ -55,6 +53,13 @@ namespace MySoft.IoC
 
             //实例化调用者
             this.caller = new ServiceCaller(server, config, container);
+
+            //判断是否启用httpServer
+            if (config.HttpEnabled)
+            {
+                var factory = new HttpRequestHandlerFactory(config, container);
+                this.httpServer = new HTTPServer(factory, config.HttpPort);
+            }
 
             //绑定事件
             MessageCenter.Instance.OnError += Instance_OnError;
@@ -78,6 +83,24 @@ namespace MySoft.IoC
         {
             //启动服务
             server.Start();
+
+            if (config.HttpEnabled)
+            {
+                httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://{1}:{2}", DateTime.Now, DnsHelper.GetIPAddress(), config.HttpPort); };
+                httpServer.OnServerStop += () => { Console.WriteLine("[{0}] => Http server stoped.", DateTime.Now); };
+
+                httpServer.OnServerException += httpServer_OnServerException;
+                httpServer.Start();
+            }
+        }
+
+        /// <summary>
+        /// HttpServer异常
+        /// </summary>
+        /// <param name="ex"></param>
+        void httpServer_OnServerException(Exception ex)
+        {
+            if (OnError != null) OnError(ex);
         }
 
         /// <summary>
@@ -106,7 +129,14 @@ namespace MySoft.IoC
         /// </summary>
         public void Stop()
         {
-            this.Dispose();
+            if (config.HttpEnabled)
+            {
+                httpServer.Stop();
+            }
+
+            server.Stop();
+            server.Clients.ClearAll();
+            container.Dispose();
         }
 
         /// <summary>
@@ -114,9 +144,7 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            server.Stop();
-            server.Clients.ClearAll();
-            container.Dispose();
+            this.Stop();
         }
 
         #endregion
