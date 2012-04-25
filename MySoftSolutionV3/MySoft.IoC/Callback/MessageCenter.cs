@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Callback
 {
     /// <summary>
     /// 消息中心；

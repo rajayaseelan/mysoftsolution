@@ -1,7 +1,7 @@
 ﻿using System;
+using MySoft.Communication.Scs.Communication.EndPoints;
 using MySoft.Communication.Scs.Communication.Protocols;
 using MySoft.Communication.Threading;
-using MySoft.Communication.Scs.Communication.EndPoints;
 
 namespace MySoft.Communication.Scs.Server
 {

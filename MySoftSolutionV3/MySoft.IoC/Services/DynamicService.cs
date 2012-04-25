@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Linq;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
 
@@ -88,7 +87,7 @@ namespace MySoft.IoC.Services
                 ServiceConfig.SetParameterValue(method, parameters, reqMsg.Parameters);
 
                 //调用对应的服务
-                object returnValue = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
+                resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
 
                 //处理返回参数
                 var collection = ServiceConfig.CreateParameters(method, parameters, true);
@@ -96,9 +95,9 @@ namespace MySoft.IoC.Services
                 //返回结果数据
                 if (reqMsg.InvokeMethod)
                 {
-                    returnValue = new InvokeData
+                    resMsg.Value = new InvokeData
                     {
-                        Value = SerializationManager.SerializeJson(returnValue),
+                        Value = SerializationManager.SerializeJson(resMsg.Value),
                         Count = resMsg.Count,
                         OutParameters = collection.ToString()
                     };
@@ -107,8 +106,6 @@ namespace MySoft.IoC.Services
                 {
                     resMsg.Parameters = collection;
                 }
-
-                resMsg.Value = returnValue;
             }
             catch (Exception ex)
             {

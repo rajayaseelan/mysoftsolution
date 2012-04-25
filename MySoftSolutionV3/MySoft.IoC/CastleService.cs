@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.Communication.Scs.Server;
+using MySoft.IoC.Callback;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
 using MySoft.Logger;
-using System.Threading;
-using MySoft.IoC.Logger;
-using System.Diagnostics;
 
 namespace MySoft.IoC
 {

@@ -4,6 +4,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Server;
+using MySoft.IoC.Callback;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC

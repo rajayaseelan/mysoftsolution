@@ -78,6 +78,7 @@
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
     <Compile Include="CacheObject.cs" />
+    <Compile Include="Callback\CallbackInfo.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="HttpServer\HttpCallerInfoCollection.cs" />
     <Compile Include="Callback\MessageCenter.cs" />
@@ -164,7 +165,7 @@
     <Compile Include="Messages\ScsResultMessage.cs" />
     <Compile Include="Messages\ServiceMessageEventArgs.cs" />
     <Compile Include="Callback\CallbackInvocationHandler.cs" />
-    <Compile Include="Callback\OperationContext.cs" />
+    <Compile Include="OperationContext.cs" />
     <Compile Include="ServiceRequestPool.cs" />
     <Compile Include="Services\BigInteger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

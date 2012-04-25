@@ -1,8 +1,5 @@
-using MySoft.IoC.Messages;
 using System;
-using MySoft.Communication.Scs.Server;
-using MySoft.Communication.Scs.Communication.Messages;
-using MySoft.IoC.Services;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {

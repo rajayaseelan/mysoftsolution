@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Server;
+using MySoft.IoC.Callback;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.Threading;

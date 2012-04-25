@@ -5,7 +5,6 @@ using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {

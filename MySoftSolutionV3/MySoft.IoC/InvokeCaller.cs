@@ -1,5 +1,4 @@
 ﻿using System;
-using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC

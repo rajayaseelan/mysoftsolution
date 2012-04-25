@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using MySoft.IoC.Messages;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Callback
 {
     /// <summary>
     /// 消息监听

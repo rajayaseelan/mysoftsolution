@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Xml;
-using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Configuration
 {
@@ -124,7 +123,7 @@ namespace MySoft.IoC.Configuration
                 //判断是否包含默认的服务
                 if (!nodes.ContainsKey(defaultKey))
                 {
-                    throw new WarningException("Not find the default service node [" + defaultKey + "]！");
+                    throw new WarningException("Not find the default service node 【" + defaultKey + "】！");
                 }
             }
         }

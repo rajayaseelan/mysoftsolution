@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Reflection;
 using Castle.DynamicProxy;
-using System.Collections;
 
 namespace MySoft.IoC.Aspect
 {
