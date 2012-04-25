@@ -74,7 +74,7 @@ namespace MySoft
         /// <returns></returns>
         public static string SerializeJson(object obj, params JsonConverter[] converters)
         {
-            if (obj == null) return "null";
+            if (obj == null) return "{}";
 
             if (converters == null || converters.Length == 0)
                 return JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
