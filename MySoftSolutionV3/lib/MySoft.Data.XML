@@ -319,38 +319,20 @@
             </summary>
             <param name="command">The command.</param>
         </member>
-        <member name="M:MySoft.Data.DbProvider.EndExecuteCommand(System.Data.Common.DbCommand,System.Object,System.Int64)">
+        <member name="M:MySoft.Data.DbProvider.EndExecuteCommand(System.Data.Common.DbCommand,System.Object,System.Exception,System.Int64)">
             <summary>
             结束时执行的操作
             </summary>
             <param name="command"></param>
-        </member>
-        <member name="M:MySoft.Data.DbProvider.WriteErrorCommand(System.Exception,System.Data.Common.DbCommand)">
-            <summary>
-            Writes the exception log.
-            </summary>
+            <param name="result"></param>
             <param name="ex"></param>
-            <param name="command"></param>
-        </member>
-        <member name="M:MySoft.Data.DbProvider.GetLog(System.Data.Common.DbCommand)">
-            <summary>
-            获取输出的日志
-            </summary>
-            <param name="command"></param>
-            <returns></returns>
+            <param name="elapsedTime"></param>
         </member>
         <member name="M:MySoft.Data.DbProvider.GetAutoIncrement(System.String)">
             <summary>
             获取IdentityName
             </summary>
             <param name="name"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.DbProvider.GetParameterType(System.Data.Common.DbParameter)">
-            <summary>
-            获取参数类型
-            </summary>
-            <param name="parameter"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Data.DbProvider.CreateParameter(System.String,System.Object)">
@@ -391,6 +373,11 @@
             <param name="value"></param>
             <returns></returns>
         </member>
+        <member name="P:MySoft.Data.DbProvider.ThrowError">
+            <summary>
+            是否抛出异常
+            </summary>
+        </member>
         <member name="P:MySoft.Data.DbProvider.Logger">
             <summary>
             日志依赖
@@ -426,13 +413,6 @@
             返回自动ID的sql语句
             </summary>
         </member>
-        <member name="M:MySoft.Data.SqlServer.SqlServerProvider.GetParameterType(System.Data.Common.DbParameter)">
-            <summary>
-            获取参数类型
-            </summary>
-            <param name="parameter"></param>
-            <returns></returns>
-        </member>
         <member name="M:MySoft.Data.SqlServer.SqlServerProvider.CreateParameter(System.String,System.Object)">
             <summary>
             创建DbParameter
@@ -467,13 +447,6 @@
             <summary>
             返回自动ID的sql语句
             </summary>
-        </member>
-        <member name="M:MySoft.Data.MsAccess.MsAccessProvider.GetParameterType(System.Data.Common.DbParameter)">
-            <summary>
-            获取参数类型
-            </summary>
-            <param name="parameter"></param>
-            <returns></returns>
         </member>
         <member name="M:MySoft.Data.MsAccess.MsAccessProvider.CreateParameter(System.String,System.Object)">
             <summary>
@@ -1692,7 +1665,7 @@
             </summary>
             <param name="handler"></param>
         </member>
-        <member name="M:MySoft.Data.IDbSession.RegisterLogger(MySoft.Data.IExecuteLog)">
+        <member name="M:MySoft.Data.IDbSession.RegisterLogger(MySoft.Data.Logger.IExecuteLog)">
             <summary>
             注册日志依赖
             </summary>
@@ -2360,7 +2333,7 @@
             </summary>
             <param name="handler"></param>
         </member>
-        <member name="M:MySoft.Data.DbSession.RegisterLogger(MySoft.Data.IExecuteLog)">
+        <member name="M:MySoft.Data.DbSession.RegisterLogger(MySoft.Data.Logger.IExecuteLog)">
             <summary>
             注册日志依赖
             </summary>
@@ -2377,6 +2350,12 @@
             设置命令操作超时时间
             </summary>
             <param name="timeout"></param>
+        </member>
+        <member name="M:MySoft.Data.DbSession.SetThrowError(System.Boolean)">
+            <summary>
+            设置是否抛出异常
+            </summary>
+            <param name="throwError"></param>
         </member>
         <member name="M:MySoft.Data.DbSession.Insert``1(MySoft.Data.FieldValue[])">
             <summary>
@@ -3973,13 +3952,6 @@
             格式化IdentityName
             </summary>
             <param name="name"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.Oracle.OracleProvider.GetParameterType(System.Data.Common.DbParameter)">
-            <summary>
-            获取参数类型
-            </summary>
-            <param name="parameter"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Data.Oracle.OracleProvider.CreateParameter(System.String,System.Object)">
@@ -8941,6 +8913,13 @@
             <param name="values"></param>
             <returns></returns>
         </member>
+        <member name="M:MySoft.Data.DataHelper.GetCommandLog(System.Data.IDbCommand)">
+            <summary>
+            获取输出的日志
+            </summary>
+            <param name="command"></param>
+            <returns></returns>
+        </member>
         <member name="T:Norm.Responses.PreviousErrorResponse">
             <summary>
             The previous error response.
@@ -11341,27 +11320,6 @@
             </summary>
             <param name="table"></param>
         </member>
-        <member name="T:MySoft.Data.IExecuteLog">
-            <summary>
-            执行并输出日志的接口
-            </summary>
-        </member>
-        <member name="M:MySoft.Data.IExecuteLog.Begin(System.String,MySoft.Data.SQLParameter[])">
-            <summary>
-            开始执行命令，返回是否需要执行
-            </summary>
-            <param name="cmdText"></param>
-            <param name="parameter"></param>
-        </member>
-        <member name="M:MySoft.Data.IExecuteLog.End(System.String,MySoft.Data.SQLParameter[],System.Object,System.Int64)">
-            <summary>
-            结束执行命令
-            </summary>
-            <param name="cmdText"></param>
-            <param name="parameter"></param>
-            <param name="result"></param>
-            <param name="elapsedTime"></param>
-        </member>
         <member name="T:Norm.Responses.ForceSyncResponse">
             <summary>
             Indicates the result of a demand that MongoDB flush non-file committed writes to their respective files.
@@ -11758,6 +11716,31 @@
         <member name="P:MySoft.Data.Validator`1.Result">
             <summary>
             验证的结果
+            </summary>
+        </member>
+        <member name="T:MySoft.Data.ReturnValue">
+            <summary>
+            返回数据
+            </summary>
+        </member>
+        <member name="P:MySoft.Data.ReturnValue.Data">
+            <summary>
+            返回值
+            </summary>
+        </member>
+        <member name="P:MySoft.Data.ReturnValue.Error">
+            <summary>
+            异常信息
+            </summary>
+        </member>
+        <member name="P:MySoft.Data.ReturnValue.Count">
+            <summary>
+            记录数
+            </summary>
+        </member>
+        <member name="P:MySoft.Data.ReturnValue.IsError">
+            <summary>
+            是否有异常
             </summary>
         </member>
         <member name="T:Norm.Responses.ServerStatusResponse">
@@ -12891,6 +12874,26 @@
             <summary>
             消息列表
             </summary>
+        </member>
+        <member name="T:MySoft.Data.Logger.IExecuteLog">
+            <summary>
+            执行并输出日志的接口
+            </summary>
+        </member>
+        <member name="M:MySoft.Data.Logger.IExecuteLog.Begin(System.Data.IDbCommand)">
+            <summary>
+            开始执行命令，返回是否需要执行
+            </summary>
+            <param name="command"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.Logger.IExecuteLog.End(System.Data.IDbCommand,MySoft.Data.ReturnValue,System.Int64)">
+            <summary>
+            结束执行命令
+            </summary>
+            <param name="command"></param>
+            <param name="retValue"></param>
+            <param name="elapsedTime"></param>
         </member>
         <member name="T:MySoft.Data.Entity">
             <summary>

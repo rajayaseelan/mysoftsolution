@@ -22,13 +22,6 @@
             <param name="name"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.PostgreSQL.PostgreSQLProvider.GetParameterType(System.Data.Common.DbParameter)">
-            <summary>
-            获取参数类型
-            </summary>
-            <param name="parameter"></param>
-            <returns></returns>
-        </member>
         <member name="M:MySoft.Data.PostgreSQL.PostgreSQLProvider.CreateParameter(System.String,System.Object)">
             <summary>
             创建DbParameter
