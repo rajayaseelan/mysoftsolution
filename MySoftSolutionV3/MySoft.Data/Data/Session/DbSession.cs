@@ -1194,29 +1194,25 @@ namespace MySoft.Data
         /// 插入实体
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
         /// <param name="entity"></param>
-        /// <param name="retVal"></param>
         /// <returns></returns>
-        public int Insert<T, TResult>(T entity, out TResult retVal, params FieldValue[] fvs)
+        public int Insert<T>(T entity, params FieldValue[] fvs)
             where T : Entity
         {
-            return dbTrans.Insert<T, TResult>(entity, out retVal, fvs);
+            return dbTrans.Insert<T>(entity, fvs);
         }
 
         /// <summary>
         /// 插入实体
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
         /// <param name="table"></param>
         /// <param name="entity"></param>
-        /// <param name="retVal"></param>
         /// <returns></returns>
-        public int Insert<T, TResult>(Table table, T entity, out TResult retVal, params FieldValue[] fvs)
+        public int Insert<T>(Table table, T entity, params FieldValue[] fvs)
             where T : Entity
         {
-            return dbTrans.Insert<T, TResult>(table, entity, out retVal, fvs);
+            return dbTrans.Insert<T>(table, entity, fvs);
         }
 
         #endregion

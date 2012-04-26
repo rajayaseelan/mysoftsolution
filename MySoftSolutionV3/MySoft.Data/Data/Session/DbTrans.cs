@@ -1047,7 +1047,7 @@ namespace MySoft.Data
         public int Insert<T>(FieldValue[] fvs)
             where T : Entity
         {
-            return Insert<T>(null, fvs);
+            return Insert<T>((Table)null, fvs);
         }
 
         /// <summary>
@@ -1177,26 +1177,22 @@ namespace MySoft.Data
         /// 插入实体
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
         /// <param name="entity"></param>
-        /// <param name="retVal"></param>
         /// <returns></returns>
-        public int Insert<T, TResult>(T entity, out TResult retVal, params FieldValue[] fvs)
+        public int Insert<T>(T entity, params FieldValue[] fvs)
             where T : Entity
         {
-            return Insert<T, TResult>(null, entity, out retVal);
+            return Insert<T>(null, entity, fvs);
         }
 
         /// <summary>
         /// 插入实体
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
         /// <param name="table"></param>
         /// <param name="entity"></param>
-        /// <param name="retVal"></param>
         /// <returns></returns>
-        public int Insert<T, TResult>(Table table, T entity, out TResult retVal, params FieldValue[] fvs)
+        public int Insert<T>(Table table, T entity, params FieldValue[] fvs)
             where T : Entity
         {
             var list = entity.GetFieldValues();
@@ -1236,7 +1232,20 @@ namespace MySoft.Data
 
             #endregion
 
-            return Insert<T, TResult>(table, list.ToArray(), out retVal);
+            object retVal;
+            int value = Insert<T, object>(table, list.ToArray(), out retVal);
+
+            //给标识列赋值
+            if (retVal != null)
+            {
+                //如果标识列不为null
+                if ((IField)entity.IdentityField != null)
+                {
+                    CoreHelper.SetPropertyValue(entity, entity.IdentityField.PropertyName, retVal);
+                }
+            }
+
+            return value;
         }
 
         #endregion

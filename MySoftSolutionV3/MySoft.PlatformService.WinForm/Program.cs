@@ -19,13 +19,17 @@ namespace MySoft.PlatformService.WinForm
             Application.Run(new frmMain());
 
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Program_UnhandledException);
-            Thread.GetDomain().UnhandledException += new UnhandledExceptionEventHandler(Program_UnhandledException);
+            Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
+        }
+
+        static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
+        {
+            SimpleLog.Instance.WriteLogWithSendMail(e.Exception, "my181@163.com");
         }
 
         static void Program_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var exception = e.ExceptionObject as Exception;
-            //SimpleLog.Instance.WriteLog(exception);
             SimpleLog.Instance.WriteLogWithSendMail(exception, "my181@163.com");
         }
     }

@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Text;
 using System.Linq;
 using System.Threading;
+using MySoft.Data.Design;
 
 namespace MySoft.Data
 {
@@ -167,15 +168,19 @@ namespace MySoft.Data
             //判断实体的状态
             if (state == EntityState.Insert)
             {
-                object retVal;
                 fvlist.RemoveAll(fv => fv.IsChanged);
 
+                object retVal;
                 value = Insert<T>(table, fvlist, out retVal);
 
                 //给标识列赋值
                 if (retVal != null)
                 {
-                    CoreHelper.SetPropertyValue(entity, entity.IdentityField.PropertyName, retVal);
+                    //如果标识列不为null
+                    if ((IField)entity.IdentityField != null)
+                    {
+                        CoreHelper.SetPropertyValue(entity, entity.IdentityField.PropertyName, retVal);
+                    }
                 }
             }
             else
