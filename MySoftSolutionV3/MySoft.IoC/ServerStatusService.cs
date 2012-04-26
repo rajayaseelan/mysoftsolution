@@ -40,7 +40,9 @@ namespace MySoft.IoC
             this.counterlist = new CounterInfoCollection(config.MinuteCalls);
 
             //启动定义推送线程
-            ManagedThreadPool.QueueUserWorkItem(DoPushWork);
+            Thread thread = new Thread(DoPushWork);
+            thread.IsBackground = true;
+            thread.Start();
         }
 
         void DoPushWork(object state)

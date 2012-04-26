@@ -24,7 +24,9 @@ namespace MySoft.IoC.Callback
             this.client = client;
 
             //启用线程进行数据推送
-            ManagedThreadPool.QueueUserWorkItem(DoSend);
+            Thread thread = new Thread(DoSend);
+            thread.IsBackground = true;
+            thread.Start();
         }
 
         private void DoSend(object state)

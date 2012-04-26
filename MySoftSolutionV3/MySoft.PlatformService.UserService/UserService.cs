@@ -66,6 +66,8 @@ namespace MySoft.PlatformService.UserService
             //int value = new Random().Next(1, 5);
             //Thread.Sleep(value * 1000);
 
+            Thread.Sleep(10);
+
             return user;
         }
 
