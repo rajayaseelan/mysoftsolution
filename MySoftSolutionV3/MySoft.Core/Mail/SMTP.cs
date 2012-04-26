@@ -606,8 +606,9 @@ namespace MySoft.Mail
             var result = SendMail(false);
 
             string log = string.Format("SyncSendMail from ({0}) to ({1}), {2}.", mMailFrom, String.Join("|", mMailTo), result.Message);
+
             //写邮件发送日志
-            SimpleLog.Instance.WriteLog("Mail", string.Format("{0} subject: {1}", log, mMailSubject));
+            SimpleLog.Instance.WriteLogForDir("Mail", string.Format("{0} subject: {1}", log, mMailSubject));
 
             return result;
         }

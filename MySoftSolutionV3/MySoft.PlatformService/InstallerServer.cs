@@ -45,7 +45,7 @@ namespace MySoft.PlatformService
                         }
 
                         //写错误日志
-                        SimpleLog.Instance.WriteLog(ex);
+                        SimpleLog.Instance.WriteLogForDir("ServiceRun", ex);
                     }
                 }
 
@@ -84,7 +84,7 @@ namespace MySoft.PlatformService
                         }
 
                         //写错误日志
-                        SimpleLog.Instance.WriteLog(ex);
+                        SimpleLog.Instance.WriteLogForDir("ServiceRun", ex);
                     }
 
                     #endregion

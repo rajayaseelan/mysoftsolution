@@ -140,7 +140,7 @@ namespace MySoft.RESTful.Business.Register
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLog(ex);
+                SimpleLog.Instance.WriteLogForDir("RESTful", ex);
             }
         }
 

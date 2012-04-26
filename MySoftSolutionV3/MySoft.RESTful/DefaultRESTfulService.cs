@@ -273,7 +273,7 @@ namespace MySoft.RESTful
                     var error = new Exception(string.Format("{0} - {1}", ret.Code, ret.Message), ex);
 
                     //记录错误日志
-                    SimpleLog.Instance.WriteLog(ex);
+                    SimpleLog.Instance.WriteLogForDir("RESTful", ex);
                 }
             }
             else
