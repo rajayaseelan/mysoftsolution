@@ -41,11 +41,10 @@ namespace MySoft.IoC
             foreach (var p in pis)
             {
                 //给参数赋值
-                if (p.IsOut)
+                if (collection[p.Name] == null)
                     parameters[index] = CoreHelper.GetTypeDefaultValue(p.ParameterType);
                 else
                     parameters[index] = collection[p.Name];
-
 
                 index++;
             }
@@ -122,7 +121,7 @@ namespace MySoft.IoC
             int index = 0;
             foreach (var p in method.GetParameters())
             {
-                if (p.IsOut)
+                if (parameters[index] == null)
                     collection[p.Name] = CoreHelper.GetTypeDefaultValue(p.ParameterType);
                 else
                     collection[p.Name] = parameters[index];

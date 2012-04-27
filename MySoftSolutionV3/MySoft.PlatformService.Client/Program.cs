@@ -272,7 +272,9 @@ namespace MySoft.PlatformService.Client
             are.WaitOne();
 
             var node = CastleFactory.Create().GetDefaultNode();
+
             var service = CastleFactory.Create().GetChannel<IUserService>();
+            //service = new UserService.UserService();
             //var service1 = CastleFactory.Create().GetChannel<IStatusService>(node);
 
             while (true)
