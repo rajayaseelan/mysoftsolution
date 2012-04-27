@@ -90,8 +90,8 @@ namespace MySoft.IoC.Configuration
                     if (childattribute["compress"] != null && childattribute["compress"].Value.Trim() != string.Empty)
                         node.Compress = Convert.ToBoolean(childattribute["compress"].Value);
 
-                    if (childattribute["invoke"] != null && childattribute["invoke"].Value.Trim() != string.Empty)
-                        node.Invoke = Convert.ToBoolean(childattribute["invoke"].Value);
+                    if (childattribute["format"] != null && childattribute["format"].Value.Trim() != string.Empty)
+                        node.Format = (TransferType)Enum.Parse(typeof(TransferType), childattribute["format"].Value, true);
 
                     //处理默认的服务
                     if (string.IsNullOrEmpty(defaultKey))

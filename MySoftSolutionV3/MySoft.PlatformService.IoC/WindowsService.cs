@@ -76,12 +76,12 @@ namespace MySoft.PlatformService.IoC
         {
             if (startMode == StartMode.Console)
             {
-                Console.WriteLine("[{0}] => Service ready started...", DateTime.Now);
+                server_OnLog("Service ready started...", LogType.Normal);
 
                 StartService();
 
-                Console.WriteLine("[{0}] => Server host: {1}", DateTime.Now, server.ServerUrl);
-                Console.WriteLine("[{0}] => Press enter to exit and stop service...", DateTime.Now);
+                server_OnLog(string.Format("Server host: {0}", server.ServerUrl), LogType.Normal);
+                server_OnLog("Press enter to exit and stop service...", LogType.Normal);
             }
             else
             {
@@ -98,7 +98,7 @@ namespace MySoft.PlatformService.IoC
         {
             if (startMode == StartMode.Console)
             {
-                Console.WriteLine("[{0}] => Service ready stopped...", DateTime.Now);
+                server_OnLog("Service ready stopped...", LogType.Normal);
             }
 
             server.Stop();
@@ -120,8 +120,9 @@ namespace MySoft.PlatformService.IoC
                         Console.ForegroundColor = ConsoleColor.Red;
                     else if (type == LogType.Warning)
                         Console.ForegroundColor = ConsoleColor.Yellow;
-                    else
+                    else if (type == LogType.Information)
                         Console.ForegroundColor = ConsoleColor.Green;
+
                     Console.WriteLine(message);
 
                     //恢复当前颜色
@@ -148,6 +149,7 @@ namespace MySoft.PlatformService.IoC
                         Console.ForegroundColor = ConsoleColor.Yellow;
                     else
                         Console.ForegroundColor = ConsoleColor.Red;
+
                     Console.WriteLine(message);
 
                     //恢复当前颜色

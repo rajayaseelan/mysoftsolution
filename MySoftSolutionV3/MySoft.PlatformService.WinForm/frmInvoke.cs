@@ -41,6 +41,9 @@ namespace MySoft.PlatformService.WinForm
 
         private void frmInvoke_Load(object sender, EventArgs e)
         {
+            //自动生成列
+            dataGridView1.AutoGenerateColumns = true;
+
             lblServiceName.Text = serviceName;
             lblMethodName.Text = methodName;
 
@@ -222,6 +225,9 @@ namespace MySoft.PlatformService.WinForm
                 {
                     richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
                         data.Count, data.Value, data.OutParameters);
+
+                    //获取DataView数据
+                    dataGridView1.DataSource = GetDataTable(data.Value);
                 }
             }
             catch (Exception ex)
@@ -233,6 +239,64 @@ namespace MySoft.PlatformService.WinForm
             {
                 label5.Text = watch.ElapsedMilliseconds + " ms";
             }
+        }
+
+        /// <summary>
+        /// 生成DataTable
+        /// </summary>
+        /// <param name="jsonString"></param>
+        /// <returns></returns>
+        private DataTable GetDataTable(string jsonString)
+        {
+            var table = new DataTable("TEMP_TABLE");
+
+            try
+            {
+                var jobject = JContainer.Parse(jsonString);
+                if (jobject is JArray)
+                {
+                    var jarray = jobject as JArray;
+                    for (int i = 0; i < jarray.Count; i++)
+                    {
+                        var value = jarray[i] as JObject;
+                        if (i == 0)
+                        {
+                            foreach (var kv in value)
+                            {
+                                table.Columns.Add(kv.Key);
+                            }
+                        }
+
+                        var row = table.NewRow();
+                        foreach (var kv in value)
+                        {
+                            row[kv.Key] = kv.Value;
+                        }
+                        table.Rows.Add(row);
+                    }
+                }
+                else if (jobject is JObject)
+                {
+                    var value = jobject as JObject;
+                    foreach (var kv in value)
+                    {
+                        table.Columns.Add(kv.Key);
+                    }
+
+                    var row = table.NewRow();
+                    foreach (var kv in value)
+                    {
+                        row[kv.Key] = kv.Value;
+                    }
+                    table.Rows.Add(row);
+                }
+            }
+            catch
+            {
+                //TO DO
+            }
+
+            return table;
         }
 
         private void button2_Click(object sender, EventArgs e)

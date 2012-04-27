@@ -80,6 +80,7 @@
     <Compile Include="CacheObject.cs" />
     <Compile Include="Callback\CallbackInfo.cs" />
     <Compile Include="Common\Extensions.cs" />
+    <Compile Include="Common\IoCHelper.cs" />
     <Compile Include="HttpServer\HttpCallerInfoCollection.cs" />
     <Compile Include="Callback\MessageCenter.cs" />
     <Compile Include="Callback\MessageListener.cs" />
@@ -203,6 +204,7 @@
     <Compile Include="Messages\Status\HighestStatus.cs" />
     <Compile Include="Messages\Status\TimeStatus.cs" />
     <Compile Include="SubscribeOptions.cs" />
+    <Compile Include="TransferType.cs" />
     <Compile Include="WarningException.cs" />
   </ItemGroup>
   <ItemGroup>

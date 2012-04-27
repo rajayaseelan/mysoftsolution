@@ -18,7 +18,7 @@ namespace MySoft.PlatformService.Console
         {
             System.Console.BackgroundColor = ConsoleColor.DarkBlue;
             System.Console.ForegroundColor = ConsoleColor.White;
-            System.Console.WriteLine("Service ready started...");
+            Program_OnLog("Service ready started...", LogType.Normal);
 
             var config = CastleServiceConfiguration.GetConfig();
             var server = new CastleService(config);
@@ -26,9 +26,9 @@ namespace MySoft.PlatformService.Console
             server.OnError += new ErrorLogEventHandler(Program_OnError);
             server.Start();
 
-            System.Console.WriteLine("Tcp server started. {0}", server.ServerUrl);
-            System.Console.WriteLine("Service count -> {0} services.", server.ServiceCount);
-            System.Console.WriteLine("Press any key to exit and stop service...");
+            Program_OnLog(string.Format("Tcp server started. {0}", server.ServerUrl), LogType.Normal);
+            Program_OnLog(string.Format("Service count -> {0} services.", server.ServiceCount), LogType.Normal);
+            Program_OnLog(string.Format("Press any key to exit and stop service..."), LogType.Normal);
             System.Console.ReadLine();
         }
 
@@ -41,8 +41,9 @@ namespace MySoft.PlatformService.Console
                     System.Console.ForegroundColor = ConsoleColor.Red;
                 else if (type == LogType.Warning)
                     System.Console.ForegroundColor = ConsoleColor.Yellow;
-                else
+                else if (type == LogType.Information)
                     System.Console.ForegroundColor = ConsoleColor.Green;
+
                 System.Console.WriteLine(message);
             }
         }
@@ -61,11 +62,8 @@ namespace MySoft.PlatformService.Console
                     System.Console.ForegroundColor = ConsoleColor.Yellow;
                 else
                     System.Console.ForegroundColor = ConsoleColor.Red;
+
                 System.Console.WriteLine(message);
-
-                //SimpleLog.Instance.WriteLogWithSendMail(error, "maoyong@fund123.cn");
-
-                //SimpleLog.Instance.WriteLog(message);
             }
         }
     }

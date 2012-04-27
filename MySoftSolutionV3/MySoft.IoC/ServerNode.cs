@@ -15,7 +15,7 @@ namespace MySoft.IoC
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
         private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
-        private bool invoked = false;
+        private TransferType format = TransferType.Binary;
 
         /// <summary>
         /// Gets or sets the key.
@@ -88,13 +88,13 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Gets or sets the invoked
+        /// Gets or sets the format
         /// </summary>
-        /// <value>The invoked.</value>
-        public bool Invoke
+        /// <value>The format.</value>
+        public TransferType Format
         {
-            get { return invoked; }
-            set { invoked = value; }
+            get { return format; }
+            set { format = value; }
         }
 
         /// <summary>

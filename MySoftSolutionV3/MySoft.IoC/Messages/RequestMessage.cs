@@ -101,26 +101,10 @@ namespace MySoft.IoC.Messages
     }
 
     /// <summary>
-    /// Invoke接口
-    /// </summary>
-    public interface IInvoking
-    {
-        /// <summary>
-        /// Invoke方式调用
-        /// </summary>
-        bool InvokeMethod { get; set; }
-
-        /// <summary>
-        /// 方法
-        /// </summary>
-        System.Reflection.MethodInfo MethodInfo { get; set; }
-    }
-
-    /// <summary>
     /// The request msg.
     /// </summary>
     [Serializable]
-    public class RequestMessage : MessageBase, IInvoking
+    public class RequestMessage : MessageBase
     {
         #region Private Members
 
@@ -128,7 +112,6 @@ namespace MySoft.IoC.Messages
         private string hostName;
         private string requestAddress;
         private bool invokeMethod;
-        private bool isCaching;
 
         #endregion
 
@@ -194,28 +177,13 @@ namespace MySoft.IoC.Messages
             }
         }
 
-        /// <summary>
-        /// 是否缓存
-        /// </summary>
-        public bool IsCaching
-        {
-            get
-            {
-                return isCaching;
-            }
-            set
-            {
-                isCaching = value;
-            }
-        }
-
         [NonSerialized]
         private System.Reflection.MethodInfo method;
 
         /// <summary>
         /// 响应的方法
         /// </summary>
-        System.Reflection.MethodInfo IInvoking.MethodInfo
+        internal System.Reflection.MethodInfo MethodInfo
         {
             get
             {

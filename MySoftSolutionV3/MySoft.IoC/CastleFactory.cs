@@ -63,11 +63,11 @@ namespace MySoft.IoC
             {
                 foreach (var p in config.Nodes)
                 {
-                    if (p.Value.MaxPool < 1) throw new WarningException("Minimum pool size 1£¡");
-                    if (p.Value.MaxPool > 100) throw new WarningException("Maximum pool size 100£¡");
+                    if (p.Value.MaxPool < 10) throw new WarningException("Minimum pool size 10£¡");
+                    if (p.Value.MaxPool > 500) throw new WarningException("Maximum pool size 500£¡");
 
                     IService proxy = null;
-                    if (p.Value.Invoke)
+                    if (p.Value.Format == TransferType.Json)
                         proxy = new InvokeProxy(p.Value, container);
                     else
                         proxy = new RemoteProxy(p.Value, container);
@@ -212,7 +212,7 @@ namespace MySoft.IoC
                     proxy = singleton.proxies[node.Key.ToLower()];
                 else
                 {
-                    if (node.Invoke)
+                    if (node.Format == TransferType.Json)
                         proxy = new InvokeProxy(node, container);
                     else
                         proxy = new RemoteProxy(node, container);
@@ -381,7 +381,7 @@ namespace MySoft.IoC
                     service = singleton.proxies[node.Key.ToLower()];
                 else
                 {
-                    if (node.Invoke)
+                    if (node.Format == TransferType.Json)
                         service = new InvokeProxy(node, container);
                     else
                         service = new RemoteProxy(node, container);

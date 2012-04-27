@@ -79,18 +79,17 @@ namespace MySoft.IoC.Services
                     var jsonString = (objValue == null ? string.Empty : objValue.ToString());
 
                     //解析参数
-                    reqMsg.Parameters = ServiceConfig.CreateParameters(method, jsonString);
+                    reqMsg.Parameters = IoCHelper.CreateParameters(method, jsonString);
                 }
 
                 //参数赋值
-                object[] parameters = new object[reqMsg.Parameters.Count];
-                ServiceConfig.SetParameterValue(method, parameters, reqMsg.Parameters);
+                object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
 
                 //调用对应的服务
                 resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
 
                 //处理返回参数
-                var collection = ServiceConfig.CreateParameters(method, parameters, true);
+                IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
 
                 //返回结果数据
                 if (reqMsg.InvokeMethod)
@@ -99,12 +98,11 @@ namespace MySoft.IoC.Services
                     {
                         Value = SerializationManager.SerializeJson(resMsg.Value),
                         Count = resMsg.Count,
-                        OutParameters = collection.ToString()
+                        OutParameters = resMsg.Parameters.ToString()
                     };
-                }
-                else
-                {
-                    resMsg.Parameters = collection;
+
+                    //清除参数集合
+                    resMsg.Parameters.Clear();
                 }
             }
             catch (Exception ex)

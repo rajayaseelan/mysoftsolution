@@ -65,9 +65,8 @@ namespace MySoft.IoC
         public object Invoke(object proxy, System.Reflection.MethodInfo method, object[] parameters)
         {
             object returnValue = null;
-
-            var collection = ServiceConfig.CreateParameters(method, parameters, false);
-            string cacheKey = ServiceConfig.GetCacheKey(serviceType, method, collection);
+            var collection = IoCHelper.CreateParameters(method, parameters);
+            string cacheKey = IoCHelper.GetCacheKey(serviceType, method, collection);
             var cacheValue = cache.GetCache<CacheObject>(cacheKey);
 
             //缓存无值
@@ -81,7 +80,7 @@ namespace MySoft.IoC
                     returnValue = resMsg.Value;
 
                     //处理参数
-                    ServiceConfig.SetParameterValue(method, parameters, resMsg.Parameters);
+                    IoCHelper.SetRefParameterValues(method, resMsg.Parameters, parameters);
 
                     //如果需要缓存，则存入本地缓存
                     if (returnValue != null && cacheTimes.ContainsKey(method.ToString()))
@@ -103,7 +102,7 @@ namespace MySoft.IoC
                 returnValue = cacheValue.Value;
 
                 //处理参数
-                ServiceConfig.SetParameterValue(method, parameters, cacheValue.Parameters);
+                IoCHelper.SetRefParameterValues(method, cacheValue.Parameters, parameters);
             }
 
             //返回结果
@@ -114,9 +113,9 @@ namespace MySoft.IoC
         /// 调用方法返回
         /// </summary>
         /// <param name="method"></param>
-        /// <param name="parameters"></param>
+        /// <param name="collection"></param>
         /// <returns></returns>
-        private ResponseMessage InvokeMethod(System.Reflection.MethodInfo method, ParameterCollection parameters)
+        private ResponseMessage InvokeMethod(System.Reflection.MethodInfo method, ParameterCollection collection)
         {
             #region 设置请求信息
 
@@ -129,17 +128,9 @@ namespace MySoft.IoC
                 ServiceName = serviceType.FullName,             //服务名称
                 MethodName = method.ToString(),                 //方法名称
                 TransactionId = Guid.NewGuid(),                 //传输ID号
-                Parameters = parameters                         //设置参数
+                MethodInfo = method,                            //设置调用方法
+                Parameters = collection                         //设置参数
             };
-
-            //设置调用方法
-            (reqMsg as IInvoking).MethodInfo = method;
-
-            //设置是否缓存
-            if (cacheTimes.ContainsKey(method.ToString()))
-            {
-                reqMsg.IsCaching = true;
-            }
 
             #endregion
 

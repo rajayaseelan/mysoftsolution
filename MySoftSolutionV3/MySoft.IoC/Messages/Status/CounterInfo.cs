@@ -31,7 +31,7 @@ namespace MySoft.IoC.Messages
         public void Call(CallEventArgs args)
         {
             //计数按方法
-            var jsonString = ServiceConfig.FormatJson(args.Caller.Parameters);
+            var jsonString = IoCHelper.ClearJSONSpace(args.Caller.Parameters);
             string callKey = string.Format("{0}${1}${2}${3}", args.Caller.AppName, args.Caller.ServiceName, args.Caller.MethodName, jsonString);
 
             lock (hashtable.SyncRoot)

@@ -63,12 +63,21 @@ namespace MySoft.PlatformService.UserService
             };
 
             userid = user.Name;
-            guid = new Guid(userid.Split('_')[1]);
+
+            try
+            {
+                guid = new Guid(userid.Split('_')[1]);
+            }
+            catch
+            {
+                guid = Guid.NewGuid();
+            }
 
             //int value = new Random().Next(1, 5);
             //Thread.Sleep(value * 1000);
+            Console.WriteLine("{0} => {1}", DateTime.Now, guid);
 
-            Thread.Sleep(10);
+            //Thread.Sleep(10);
 
             return user;
         }

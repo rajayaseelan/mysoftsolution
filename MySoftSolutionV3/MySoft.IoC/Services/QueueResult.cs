@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
 using MySoft.IoC.Messages;
+using System.Text;
+using MySoft.Security;
 
 namespace MySoft.IoC.Services
 {
@@ -13,7 +15,6 @@ namespace MySoft.IoC.Services
         private AutoResetEvent reset;
         private Guid transactionId;
         private string queueKey;
-        private bool isQueuing;
         private ResponseMessage message;
 
         /// <summary>
@@ -22,14 +23,6 @@ namespace MySoft.IoC.Services
         public ResponseMessage Message
         {
             get { return message; }
-        }
-
-        /// <summary>
-        /// 是否排除
-        /// </summary>
-        public bool IsQueuing
-        {
-            get { return isQueuing; }
         }
 
         /// <summary>
@@ -48,11 +41,11 @@ namespace MySoft.IoC.Services
         {
             this.reset = new AutoResetEvent(false);
             this.transactionId = reqMsg.TransactionId;
-            this.isQueuing = reqMsg.IsCaching;
 
             //队列Key值
-            var key = string.Format("{0}${1}${2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString()).ToLower();
-            this.queueKey = ServiceConfig.FormatJson(key);
+            var thisKey = string.Format("{0}${1}${2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString());
+            var formatKey = IoCHelper.ClearJSONSpace(thisKey);
+            this.queueKey = MD5.HexHash(Encoding.Default.GetBytes(formatKey));
         }
 
         /// <summary>

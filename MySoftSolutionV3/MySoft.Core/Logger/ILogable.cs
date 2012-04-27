@@ -26,6 +26,10 @@ namespace MySoft.Logger
     public enum LogType
     {
         /// <summary>
+        ///普通事件
+        /// </summary>
+        Normal,
+        /// <summary>
         /// 错误事件
         /// </summary>
         Error,

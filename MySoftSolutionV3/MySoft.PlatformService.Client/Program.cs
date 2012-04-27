@@ -166,7 +166,7 @@ namespace MySoft.PlatformService.Client
             CastleFactory.Create().RegisterLogger(new ServiceLog());
 
             ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
@@ -298,7 +298,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + userid + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    //Console.WriteLine("¡¾" + counter + "¡¿times => " + userid + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //var clients = service1.GetClientList();
 
@@ -309,7 +309,7 @@ namespace MySoft.PlatformService.Client
                     Console.WriteLine(ex.Message);
                 }
 
-                Thread.Sleep(1000);
+                //Thread.Sleep(1000);
             }
         }
 

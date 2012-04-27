@@ -59,9 +59,8 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private System.Reflection.MethodInfo GetInvokeMethod(RequestMessage reqMsg)
         {
-            var invoke = reqMsg as IInvoking;
-            var method = invoke.MethodInfo;
-            invoke.MethodInfo = null;
+            var method = reqMsg.MethodInfo;
+            reqMsg.MethodInfo = null;
 
             return method;
         }
@@ -101,13 +100,13 @@ namespace MySoft.IoC.Services
         {
             if (resMsg.IsError) return;
 
+            var invokeData = resMsg.Value as InvokeData;
             var pis = method.GetParameters().Where(p => p.ParameterType.IsByRef);
             if (pis.Count() > 0)
             {
-                var value = resMsg.Value as InvokeData;
-                if (!string.IsNullOrEmpty(value.OutParameters))
+                if (!string.IsNullOrEmpty(invokeData.OutParameters))
                 {
-                    var jobject = JObject.Parse(value.OutParameters);
+                    var jobject = JObject.Parse(invokeData.OutParameters);
                     if (jobject != null && jobject.Count > 0)
                     {
                         foreach (var p in pis)
@@ -120,8 +119,6 @@ namespace MySoft.IoC.Services
                     }
                 }
             }
-
-            var invokeData = resMsg.Value as InvokeData;
 
             //处理返回值
             var returnType = GetElementType(method.ReturnType);

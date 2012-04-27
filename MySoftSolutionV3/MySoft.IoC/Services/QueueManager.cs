@@ -27,9 +27,6 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Add(QueueResult result)
         {
-            //如果不缓存，返回false
-            if (!result.IsQueuing) return false;
-
             lock (hashtable.SyncRoot)
             {
                 //队列Key
@@ -62,8 +59,6 @@ namespace MySoft.IoC.Services
         /// <param name="resMsg"></param>
         public void Set(QueueResult result, ResponseMessage resMsg)
         {
-            if (!result.IsQueuing) return;
-
             lock (hashtable.SyncRoot)
             {
                 //队列Key
@@ -76,8 +71,9 @@ namespace MySoft.IoC.Services
 
                     if (queue.Count > 0)
                     {
+#if DEBUG
                         Console.WriteLine("Queue Count => {0}\tQueue Key : {1}", queue.Count, queueKey);
-
+#endif
                         while (queue.Count > 0)
                         {
                             var waitResult = queue.Dequeue();

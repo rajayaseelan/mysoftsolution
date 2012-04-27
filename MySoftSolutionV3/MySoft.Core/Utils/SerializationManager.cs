@@ -74,8 +74,6 @@ namespace MySoft
         /// <returns></returns>
         public static string SerializeJson(object obj, params JsonConverter[] converters)
         {
-            if (obj == null) return "{}";
-
             if (converters == null || converters.Length == 0)
                 return JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
             else
@@ -126,11 +124,6 @@ namespace MySoft
         public static object DeserializeJson(Type returnType, string data, params JsonConverter[] converters)
         {
             if (string.IsNullOrEmpty(data)) return null;
-
-            if (returnType.IsArray && data != null && !data.StartsWith("["))
-            {
-                data = "[" + data + "]";
-            }
 
             if (converters == null || converters.Length == 0)
                 return JsonConvert.DeserializeObject(data, returnType, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
