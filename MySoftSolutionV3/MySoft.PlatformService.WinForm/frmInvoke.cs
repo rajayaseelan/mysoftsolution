@@ -43,6 +43,7 @@ namespace MySoft.PlatformService.WinForm
         {
             //自动生成列
             gridDataQuery.AutoGenerateColumns = true;
+            webBrowser1.Url = new Uri("about:blank");
 
             lblServiceName.Text = serviceName;
             lblMethodName.Text = methodName;
@@ -227,7 +228,19 @@ namespace MySoft.PlatformService.WinForm
                         data.Count, data.Value, data.OutParameters);
 
                     //获取DataView数据
-                    gridDataQuery.DataSource = GetDataTable(data.Value);
+                    var table = GetDataTable(data.Value);
+                    gridDataQuery.DataSource = table;
+
+                    if (table == null)
+                    {
+                        //写Document文档
+                        try
+                        {
+                            webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+                            webBrowser1.Document.Write(JContainer.Parse(data.Value).ToString());
+                        }
+                        catch { }
+                    }
                 }
             }
             catch (Exception ex)
@@ -248,10 +261,12 @@ namespace MySoft.PlatformService.WinForm
         /// <returns></returns>
         private DataTable GetDataTable(string jsonString)
         {
-            var table = new DataTable("TEMP_TABLE");
+            DataTable table = null;
 
             try
             {
+                table = new DataTable("TEMP_TABLE");
+
                 var jobject = JContainer.Parse(jsonString);
                 if (jobject is JArray)
                 {
@@ -290,9 +305,14 @@ namespace MySoft.PlatformService.WinForm
                     }
                     table.Rows.Add(row);
                 }
+                else
+                {
+                    table = null;
+                }
             }
             catch
             {
+                table = null;
                 //TO DO
             }
 
