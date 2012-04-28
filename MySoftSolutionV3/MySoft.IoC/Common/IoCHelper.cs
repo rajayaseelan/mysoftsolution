@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json.Linq;
 using MySoft.IoC.Messages;
+using MySoft.Security;
+using Newtonsoft.Json.Linq;
 
 namespace MySoft.IoC
 {
@@ -166,27 +166,25 @@ namespace MySoft.IoC
             else
             {
                 //返回默认的缓存key
-
-                var jsonString = ClearJSONSpace(collection.ToString());
-                var methodKey = string.Format("{0}_{1}_{2}", serviceType.FullName, method.ToString(), jsonString);
-
-                return string.Format("CastleCache_{0}", methodKey).ToLower();
+                var cacheKey = string.Format("{0}${1}${2}", serviceType.FullName, method.ToString(), collection.ToString());
+                return string.Format("CastleCache_{0}", GetMD5String(cacheKey));
             }
         }
 
         /// <summary>
-        /// 格式化Json
+        /// 获取MD5值
         /// </summary>
-        /// <param name="jsonString"></param>
+        /// <param name="thisKey"></param>
         /// <returns></returns>
-        public static string ClearJSONSpace(string jsonString)
+        public static string GetMD5String(string thisKey)
         {
-            if (string.IsNullOrEmpty(jsonString))
+            if (string.IsNullOrEmpty(thisKey))
             {
-                return jsonString;
+                return thisKey;
             }
 
-            return jsonString.Replace(" ", "").Replace("\r\n", "");
+            var formatKey = thisKey.Replace(" ", "").Replace("\r\n", "");
+            return MD5.HexHash(Encoding.Default.GetBytes(formatKey));
         }
     }
 }

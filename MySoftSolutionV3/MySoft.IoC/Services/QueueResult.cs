@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading;
 using MySoft.IoC.Messages;
-using System.Text;
-using MySoft.Security;
 
 namespace MySoft.IoC.Services
 {
@@ -44,8 +42,7 @@ namespace MySoft.IoC.Services
 
             //队列Key值
             var thisKey = string.Format("{0}${1}${2}", reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString());
-            var formatKey = IoCHelper.ClearJSONSpace(thisKey);
-            this.queueKey = MD5.HexHash(Encoding.Default.GetBytes(formatKey));
+            this.queueKey = IoCHelper.GetMD5String(thisKey);
         }
 
         /// <summary>

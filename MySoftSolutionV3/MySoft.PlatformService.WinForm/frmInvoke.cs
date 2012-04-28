@@ -42,7 +42,7 @@ namespace MySoft.PlatformService.WinForm
         private void frmInvoke_Load(object sender, EventArgs e)
         {
             //自动生成列
-            dataGridView1.AutoGenerateColumns = true;
+            gridDataQuery.AutoGenerateColumns = true;
 
             lblServiceName.Text = serviceName;
             lblMethodName.Text = methodName;
@@ -227,7 +227,7 @@ namespace MySoft.PlatformService.WinForm
                         data.Count, data.Value, data.OutParameters);
 
                     //获取DataView数据
-                    dataGridView1.DataSource = GetDataTable(data.Value);
+                    gridDataQuery.DataSource = GetDataTable(data.Value);
                 }
             }
             catch (Exception ex)

@@ -171,8 +171,8 @@ namespace MySoft.IoC.HttpServer
                     Parameters = parameters
                 };
 
-                var jsonString = IoCHelper.ClearJSONSpace(message.Parameters);
-                string cacheKey = string.Format("HttpServiceCaller_{0}_{1}_{2}", message.ServiceName, message.MethodName, jsonString);
+                string thisKey = string.Format("{0}${1}${2}", message.ServiceName, message.MethodName, message.Parameters);
+                var cacheKey = string.Format("HttpServiceCaller_{0}", IoCHelper.GetMD5String(thisKey));
 
                 var invokeData = CacheHelper.Get<InvokeData>(cacheKey);
                 if (invokeData == null)

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Collections;
-using MySoft.Logger;
+using System.Linq;
 
 namespace MySoft.IoC.Messages
 {
@@ -31,8 +30,8 @@ namespace MySoft.IoC.Messages
         public void Call(CallEventArgs args)
         {
             //计数按方法
-            var jsonString = IoCHelper.ClearJSONSpace(args.Caller.Parameters);
-            string callKey = string.Format("{0}${1}${2}${3}", args.Caller.AppName, args.Caller.ServiceName, args.Caller.MethodName, jsonString);
+            var thisKey = string.Format("{0}${1}${2}${3}", args.Caller.AppName, args.Caller.ServiceName, args.Caller.MethodName, args.Caller.Parameters);
+            var callKey = IoCHelper.GetMD5String(thisKey);
 
             lock (hashtable.SyncRoot)
             {

@@ -23,6 +23,16 @@ namespace MySoft.Logger
         private Queue<LogInfo> logqueue;
 
         /// <summary>
+        /// 写文件日志静态方法（传入文件绝对路径与文件内容）
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="text"></param>
+        public static void WriteFile(string filePath, string text)
+        {
+            Instance.WriteFileLog(filePath, text, true);
+        }
+
+        /// <summary>
         /// 设置基准路径
         /// </summary>
         /// <param name="basedir"></param>
@@ -109,7 +119,7 @@ namespace MySoft.Logger
 
             filePath = Path.Combine(filePath, string.Format("{0}.log", GetServiceFile(ex)));
 
-            WriteFileLog(filePath, ex);
+            WriteFileLog(filePath, ex, false);
         }
 
         /// <summary>
@@ -146,7 +156,7 @@ namespace MySoft.Logger
             string filePath = Path.Combine(Path.Combine(basedir, "Logs"), dir);
             filePath = Path.Combine(filePath, string.Format("{0}.log", DateTime.Now.ToString("yyyy-MM-dd")));
 
-            WriteFileLog(filePath, log);
+            WriteFileLog(filePath, log, false);
         }
 
         /// <summary>
@@ -200,10 +210,10 @@ namespace MySoft.Logger
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="ex"></param>
-        public void WriteLog(string fileName, Exception ex)
+        public void WriteLogForFile(string fileName, Exception ex)
         {
             string log = ErrorHelper.GetErrorWithoutHtml(ex);
-            WriteLog(fileName, log);
+            WriteLogForFile(fileName, log);
         }
 
         /// <summary>
@@ -211,10 +221,10 @@ namespace MySoft.Logger
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="log"></param>
-        public void WriteLog(string fileName, string log)
+        public void WriteLogForFile(string fileName, string log)
         {
             string filePath = Path.Combine(basedir, fileName);
-            WriteFileLog(filePath, log);
+            WriteFileLog(filePath, log, false);
         }
 
         /// <summary>
@@ -236,7 +246,7 @@ namespace MySoft.Logger
         /// <param name="mailTo"></param>
         public void WriteLogWithSendMail(string fileName, string log, string[] mailTo)
         {
-            WriteLog(fileName, log);
+            WriteLogForFile(fileName, log);
             SendMail(log, mailTo);
         }
 
@@ -259,7 +269,7 @@ namespace MySoft.Logger
         /// <param name="mailTo"></param>
         public void WriteLogWithSendMail(string fileName, Exception ex, string[] mailTo)
         {
-            WriteLog(fileName, ex);
+            WriteLogForFile(fileName, ex);
             SendMail(ex, mailTo);
         }
 
@@ -349,10 +359,10 @@ namespace MySoft.Logger
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="ex"></param>
-        private void WriteFileLog(string filePath, Exception ex)
+        private void WriteFileLog(string filePath, Exception ex, bool isOriginal)
         {
             string log = ErrorHelper.GetErrorWithoutHtml(ex);
-            WriteFileLog(filePath, log);
+            WriteFileLog(filePath, log, isOriginal);
         }
 
         /// <summary>
@@ -360,12 +370,16 @@ namespace MySoft.Logger
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="log"></param>
-        private void WriteFileLog(string filePath, string log)
+        private void WriteFileLog(string filePath, string log, bool isOriginal)
         {
             lock (logqueue)
             {
-                log = string.Format("【{0}】 ==> {1}{2}{2}========================================================================================================================{2}{2}",
-                                    DateTime.Now.ToLongTimeString(), log, Environment.NewLine);
+                if (!isOriginal)
+                {
+                    log = string.Format("【{0}】 ==> {1}{2}{2}========================================================================================================================{2}{2}",
+                                        DateTime.Now.ToLongTimeString(), log, Environment.NewLine);
+                }
+
                 var loginfo = new LogInfo { FilePath = filePath, Log = log };
 
                 //将信息入队列
@@ -375,9 +389,19 @@ namespace MySoft.Logger
 
         #endregion
 
+        /// <summary>
+        /// 日志信息
+        /// </summary>
         private class LogInfo
         {
+            /// <summary>
+            /// 文件路径
+            /// </summary>
             public string FilePath { get; set; }
+
+            /// <summary>
+            /// 日志内容
+            /// </summary>
             public string Log { get; set; }
         }
     }
