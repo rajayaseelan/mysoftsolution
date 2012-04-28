@@ -146,6 +146,7 @@ namespace MySoft.PlatformService.WinForm
                     }
                     catch (Exception ex)
                     {
+                        SimpleLog.Instance.WriteLogForDir("Client", ex);
                         MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
@@ -163,6 +164,7 @@ namespace MySoft.PlatformService.WinForm
                     }
                     catch (Exception ex)
                     {
+                        SimpleLog.Instance.WriteLogForDir("Client", ex);
                         MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
 
@@ -205,6 +207,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -630,6 +633,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -776,6 +780,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -796,6 +801,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -916,6 +922,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -958,6 +965,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -992,6 +1000,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -1012,6 +1021,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -1032,6 +1042,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -1052,6 +1063,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -1072,6 +1084,7 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -1095,6 +1108,7 @@ namespace MySoft.PlatformService.WinForm
                 try { service.SubscribeApp(app); }
                 catch (Exception ex)
                 {
+                    SimpleLog.Instance.WriteLogForDir("Client", ex);
                     MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }

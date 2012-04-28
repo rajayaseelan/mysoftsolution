@@ -33,30 +33,30 @@ namespace MySoft.IoC.Callback
         {
             while (true)
             {
-                if (queue.Count > 0)
+                CallbackInfo info = null;
+                lock (queue.SyncRoot)
                 {
-                    CallbackInfo info = null;
-                    lock (queue.SyncRoot)
+                    if (queue.Count > 0)
                     {
                         var message = queue.Dequeue();
                         info = message as CallbackInfo;
                     }
+                }
 
-                    //发送消息
-                    if (info != null)
+                //发送消息
+                if (info != null)
+                {
+                    try
                     {
-                        try
-                        {
-                            var client = info.Client;
-                            var message = new ScsCallbackMessage(info.Message);
+                        var client = info.Client;
+                        var message = new ScsCallbackMessage(info.Message);
 
-                            //发送回调数据
-                            client.SendMessage(message);
-                        }
-                        catch (Exception ex)
-                        {
-                            //TO DO
-                        }
+                        //发送回调数据
+                        client.SendMessage(message);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TO DO
                     }
                 }
 
