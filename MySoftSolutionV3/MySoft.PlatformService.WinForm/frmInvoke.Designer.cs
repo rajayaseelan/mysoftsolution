@@ -49,9 +49,9 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.gridDataQuery = new System.Windows.Forms.DataGridView();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.webBrowser1 = new System.Windows.Forms.WebBrowser();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.panel1.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -277,15 +277,15 @@
             this.gridDataQuery.Location = new System.Drawing.Point(0, 0);
             this.gridDataQuery.Name = "gridDataQuery";
             this.gridDataQuery.RowTemplate.Height = 23;
-            this.gridDataQuery.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.gridDataQuery.Size = new System.Drawing.Size(378, 366);
             this.gridDataQuery.TabIndex = 2;
+            this.gridDataQuery.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.gridDataQuery_RowPostPaint);
             // 
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.webBrowser1);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(0, 0, 0, 0);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Size = new System.Drawing.Size(378, 366);
             this.tabPage3.TabIndex = 2;

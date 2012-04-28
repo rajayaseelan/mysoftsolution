@@ -271,39 +271,23 @@ namespace MySoft.PlatformService.WinForm
                 if (jobject is JArray)
                 {
                     var jarray = jobject as JArray;
-                    for (int i = 0; i < jarray.Count; i++)
-                    {
-                        var value = jarray[i] as JObject;
-                        if (i == 0)
-                        {
-                            foreach (var kv in value)
-                            {
-                                table.Columns.Add(kv.Key);
-                            }
-                        }
-
-                        var row = table.NewRow();
-                        foreach (var kv in value)
-                        {
-                            row[kv.Key] = kv.Value;
-                        }
-                        table.Rows.Add(row);
-                    }
+                    AddFromJArray(table, jarray);
                 }
                 else if (jobject is JObject)
                 {
                     var value = jobject as JObject;
-                    foreach (var kv in value)
+                    if (value.Count > 1)
                     {
-                        table.Columns.Add(kv.Key);
-                    }
+                        var jarray = new JArray();
+                        foreach (var token in value.Values())
+                        {
+                            jarray.Add(token);
+                        }
 
-                    var row = table.NewRow();
-                    foreach (var kv in value)
-                    {
-                        row[kv.Key] = kv.Value;
+                        AddFromJArray(table, jarray);
                     }
-                    table.Rows.Add(row);
+                    else
+                        AddFromJObject(table, value);
                 }
                 else
                 {
@@ -319,6 +303,53 @@ namespace MySoft.PlatformService.WinForm
             return table;
         }
 
+        /// <summary>
+        /// 从对象添加
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="value"></param>
+        private static void AddFromJObject(DataTable table, JObject value)
+        {
+            foreach (var kv in value)
+            {
+                table.Columns.Add(kv.Key);
+            }
+
+            var row = table.NewRow();
+            foreach (var kv in value)
+            {
+                row[kv.Key] = kv.Value;
+            }
+            table.Rows.Add(row);
+        }
+
+        /// <summary>
+        /// 从数组添加
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="jarray"></param>
+        private static void AddFromJArray(DataTable table, JArray jarray)
+        {
+            for (int i = 0; i < jarray.Count; i++)
+            {
+                var value = jarray[i] as JObject;
+                if (i == 0)
+                {
+                    foreach (var kv in value)
+                    {
+                        table.Columns.Add(kv.Key);
+                    }
+                }
+
+                var row = table.NewRow();
+                foreach (var kv in value)
+                {
+                    row[kv.Key] = kv.Value;
+                }
+                table.Rows.Add(row);
+            }
+        }
+
         private void button2_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -331,6 +362,25 @@ namespace MySoft.PlatformService.WinForm
             this.txtParameters = null;
 
             this.Dispose();
+        }
+
+        /// <summary>
+        /// 生成行号
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void gridDataQuery_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
+        {
+            Color color = gridDataQuery.RowHeadersDefaultCellStyle.ForeColor;
+            if (gridDataQuery.Rows[e.RowIndex].Selected)
+                color = gridDataQuery.RowHeadersDefaultCellStyle.SelectionForeColor;
+            else
+                color = gridDataQuery.RowHeadersDefaultCellStyle.ForeColor;
+
+            using (SolidBrush b = new SolidBrush(color))
+            {
+                e.Graphics.DrawString((e.RowIndex + 1).ToString(), e.InheritedRowStyle.Font, b, e.RowBounds.Location.X + 20, e.RowBounds.Location.Y + 6);
+            }
         }
     }
 }
