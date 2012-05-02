@@ -236,11 +236,6 @@ namespace MySoft.RESTful.SDK
         /// <returns></returns>
         public TResult Invoke<TResult>(string name, IDictionary<string, object> item, Token token, HttpMethod method)
         {
-            if (item == null || !item.GetType().IsClass)
-            {
-                throw new ArgumentException("item不能为null，且必须为类对象，可以是匿名类对象！");
-            }
-
             RESTfulParameter parameter = new RESTfulParameter(name, method, format);
             parameter.Token = token;
 
@@ -313,6 +308,11 @@ namespace MySoft.RESTful.SDK
         /// <returns></returns>
         public TResult Invoke<TResult>(string name, object item, Token token, HttpMethod method)
         {
+            if (item == null || !item.GetType().IsClass)
+            {
+                throw new ArgumentException("item不能为null，且必须为类对象，可以是匿名类对象！");
+            }
+
             RESTfulParameter parameter = new RESTfulParameter(name, method, format);
             parameter.Token = token;
 
