@@ -11,7 +11,7 @@ namespace MySoft.Data
     /// <summary>
     /// 批处理
     /// </summary>
-    public class DbBatch : IDbBatch
+    public class DbBatch : IDbBatch, IDisposable
     {
         private bool useBatch = false;
         private int batchSize;
@@ -452,5 +452,17 @@ namespace MySoft.Data
             FromSection<T> fs = new FromSection<T>(dbProvider, dbTrans, table, null);
             return fs.Where(where).Count() > 0;
         }
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            commandList.Clear();
+        }
+
+        #endregion
     }
 }

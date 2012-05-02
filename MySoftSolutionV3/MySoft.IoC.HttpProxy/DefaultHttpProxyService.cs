@@ -154,9 +154,9 @@ namespace MySoft.IoC.HttpProxy
             response.ContentType = "application/json;charset=utf-8";
 
             //认证用户信息
-            ServiceItem service;
+            ServiceItem item;
             var header = new WebHeaderCollection();
-            var jsonString = AuthorizeMethod(name, header, out service);
+            var jsonString = AuthorizeMethod(name, header, out item);
 
             //如果jsonString为null，则继续处理
             if (string.IsNullOrEmpty(jsonString))
@@ -170,7 +170,7 @@ namespace MySoft.IoC.HttpProxy
                     }
 
                     jsonString = helper.Post(name, query.ToString(), postValue, header);
-                    if (service != null && service.TypeString)
+                    if (item != null && item.TypeString)
                     {
                         //如果返回是字符串类型，则设置为文本返回
                         response.ContentType = "text/plain;charset=utf-8";

@@ -30,7 +30,7 @@ namespace MySoft.Data
         public SQLParameter[] Parameters
         {
             get { return plist.ToArray(); }
-            set { plist.Clear(); plist.AddRange(value); }
+            set { plist = new List<SQLParameter>(value); }
         }
 
         /// <summary>

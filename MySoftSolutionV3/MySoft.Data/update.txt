@@ -520,3 +520,7 @@ IList<IUserGroupInfo> ilist = list.ConvertTo<IUserGroupInfo>();
   1、支持Repeater的强类型操作
   
   2、Repeater支持可分页的处理，需与MySoft.Data中的HtmlPager联合使用！
+
+
+版本号：3.0 beta
+
