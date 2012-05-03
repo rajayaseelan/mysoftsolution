@@ -236,6 +236,11 @@ namespace MySoft.RESTful.SDK
         /// <returns></returns>
         public TResult Invoke<TResult>(string name, IDictionary<string, object> item, Token token, HttpMethod method)
         {
+            if (item == null)
+            {
+                throw new ArgumentException("item不能为null！");
+            }
+
             RESTfulParameter parameter = new RESTfulParameter(name, method, format);
             parameter.Token = token;
 

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using MySoft.IoC;
 using MySoft.IoC.Messages;
-using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 
 namespace MySoft.PlatformService.WinForm
@@ -21,12 +21,15 @@ namespace MySoft.PlatformService.WinForm
         private IList<ParameterInfo> parameters;
         private IDictionary<string, TextBox> txtParameters;
         private string paramValue;
+        private int timeout;
 
         public frmInvoke(ServerNode node, string serviceName, string methodName, IList<ParameterInfo> parameters)
         {
             InitializeComponent();
 
             this.node = node;
+            this.timeout = node.Timeout;
+            this.node.Timeout = 30;
             this.serviceName = serviceName;
             this.methodName = methodName;
             this.parameters = parameters;
@@ -227,25 +230,36 @@ namespace MySoft.PlatformService.WinForm
                     richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
                         data.Count, data.Value, data.OutParameters);
 
-                    //获取DataView数据
-                    var table = GetDataTable(data.Value);
-                    gridDataQuery.DataSource = table;
-
-                    if (table == null)
+                    //启用线程进行数据填充
+                    ThreadPool.QueueUserWorkItem(state =>
                     {
-                        //写Document文档
-                        try
+                        if (state == null) return;
+                        var jsonString = state as string;
+
+                        //获取DataView数据
+                        var table = GetDataTable(jsonString);
+                        this.Invoke(new Action(() => gridDataQuery.DataSource = table));
+
+                        if (table == null)
                         {
-                            webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
-                            webBrowser1.Document.Write(JContainer.Parse(data.Value).ToString());
+                            //写Document文档
+                            try
+                            {
+                                this.Invoke(new Action(() =>
+                                {
+                                    webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+                                    webBrowser1.Document.Write(JContainer.Parse(data.Value).ToString());
+                                }));
+                            }
+                            catch { }
                         }
-                        catch { }
-                    }
+                    }, data.Value);
                 }
             }
             catch (Exception ex)
             {
                 watch.Stop();
+
                 richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", ex.Message);
             }
             finally
@@ -276,18 +290,15 @@ namespace MySoft.PlatformService.WinForm
                 else if (jobject is JObject)
                 {
                     var value = jobject as JObject;
-                    if (value.Count > 1)
+                    if (value.First.First is JObject)
                     {
-                        var jarray = new JArray();
-                        foreach (var token in value.Values())
-                        {
-                            jarray.Add(token);
-                        }
-
+                        var jarray = new JArray(value.Values().ToArray());
                         AddFromJArray(table, jarray);
                     }
                     else
+                    {
                         AddFromJObject(table, value);
+                    }
                 }
                 else
                 {
@@ -315,12 +326,7 @@ namespace MySoft.PlatformService.WinForm
                 table.Columns.Add(kv.Key);
             }
 
-            var row = table.NewRow();
-            foreach (var kv in value)
-            {
-                row[kv.Key] = kv.Value;
-            }
-            table.Rows.Add(row);
+            table.Rows.Add(value.Values().ToArray());
         }
 
         /// <summary>
@@ -341,12 +347,7 @@ namespace MySoft.PlatformService.WinForm
                     }
                 }
 
-                var row = table.NewRow();
-                foreach (var kv in value)
-                {
-                    row[kv.Key] = kv.Value;
-                }
-                table.Rows.Add(row);
+                table.Rows.Add(value.Values().ToArray());
             }
         }
 
@@ -381,6 +382,16 @@ namespace MySoft.PlatformService.WinForm
             {
                 e.Graphics.DrawString((e.RowIndex + 1).ToString(), e.InheritedRowStyle.Font, b, e.RowBounds.Location.X + 20, e.RowBounds.Location.Y + 6);
             }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            checkBox1_CheckedChanged(sender, e);
         }
     }
 }

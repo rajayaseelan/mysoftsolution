@@ -416,9 +416,9 @@ namespace MySoft.Web
         /// </summary>
         public void Update(TimeSpan timeSpan)
         {
-            ManagedThreadPool.QueueUserWorkItem(obj =>
+            ManagedThreadPool.QueueUserWorkItem(state =>
             {
-                ArrayList arr = obj as ArrayList;
+                ArrayList arr = state as ArrayList;
                 IStaticPageItem item = (IStaticPageItem)arr[0];
                 TimeSpan span = (TimeSpan)arr[1];
                 Thread.Sleep(span);
@@ -996,9 +996,9 @@ namespace MySoft.Web
         /// </summary>
         public void Update(TimeSpan timeSpan)
         {
-            ManagedThreadPool.QueueUserWorkItem(obj =>
+            ManagedThreadPool.QueueUserWorkItem(state =>
             {
-                TimeSpan span = (TimeSpan)obj;
+                TimeSpan span = (TimeSpan)state;
                 Thread.Sleep(span);
 
                 (this as IUpdateItem).Update(DateTime.MaxValue);

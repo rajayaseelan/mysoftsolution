@@ -51,7 +51,7 @@ namespace MySoft.Logger
             this.logqueue = new Queue<LogInfo>();
 
             //启动生成文件线程
-            ManagedThreadPool.QueueUserWorkItem((state) =>
+            ManagedThreadPool.QueueUserWorkItem(state =>
             {
                 while (true)
                 {
