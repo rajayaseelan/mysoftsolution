@@ -49,12 +49,31 @@ namespace MySoft.IoC
         {
             while (true)
             {
-                //响应定时信息
-                if (statuslist.Count > 0)
+                //启用线程来进行处理
+                ManagedThreadPool.QueueUserWorkItem(obj =>
                 {
-                    var status = GetServerStatus();
-                    MessageCenter.Instance.Notify(status);
-                }
+                    //响应定时信息
+                    if (statuslist.Count > 0)
+                    {
+                        var status = GetServerStatus();
+                        MessageCenter.Instance.Notify(status);
+                    }
+
+                    //处理客户端连接
+                    var lastMinute = DateTime.Now.AddMinutes(-1);
+                    foreach (var client in server.Clients.GetAllItems())
+                    {
+                        //没有State表示非正常客户端连接
+                        if (client.State == null)
+                        {
+                            if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
+                            {
+                                //如果超过1分钟没响应，则断开链接
+                                client.Disconnect();
+                            }
+                        }
+                    }
+                });
 
                 //每分钟进行一次计数
                 if (counterlist.Count >= 60)

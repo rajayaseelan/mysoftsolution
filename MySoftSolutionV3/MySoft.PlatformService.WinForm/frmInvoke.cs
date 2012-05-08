@@ -386,7 +386,15 @@ namespace MySoft.PlatformService.WinForm
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-
+            if (checkBox1.Checked)
+            {
+                int seconds = Convert.ToInt32(numericUpDown1.Value);
+                node.Timeout = seconds;
+            }
+            else
+            {
+                node.Timeout = timeout;
+            }
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)

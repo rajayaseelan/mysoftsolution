@@ -202,13 +202,13 @@ namespace MySoft.RESTful.Business
                         }
                         else
                         {
-                            table.Append("<tr><td colspan=\"5\" style=\"padding: 30px 300px 30px 300px;\">没有匹配到指定方法的服务！</td></tr>");
+                            table.Append("<tr><td colspan=\"5\" style=\"padding: 30px 300px 30px 300px; text-align: center;\">没有匹配到指定方法的服务！</td></tr>");
                         }
                     }
                 }
                 else
                 {
-                    table.Append("<tr><td colspan=\"5\" style=\"padding: 30px 300px 30px 300px;\">没有匹配到指定类型的服务！</td></tr>");
+                    table.Append("<tr><td colspan=\"5\" style=\"padding: 30px 300px 30px 300px; text-align: center;\">没有匹配到指定类型的服务！</td></tr>");
                 }
             }
 

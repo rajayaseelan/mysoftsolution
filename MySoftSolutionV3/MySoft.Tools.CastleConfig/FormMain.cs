@@ -56,6 +56,12 @@ namespace MySoft.Tools.CastleConfig
                     var filePath1 = textBox2.Text.Trim();
                     SimpleLog.WriteFile(filePath1, richTextBox1.Text);
                 }
+
+                MessageBox.Show("配置生成成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("配置生成失败！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
