@@ -254,6 +254,14 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:MySoft.RESTful.IRESTfulContext.Contains(System.String,System.String)">
+            <summary>
+            判断是否存在服务
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.RESTful.IRESTfulContext.IsAuthorized(System.String,System.String)">
             <summary>
             是否需要认证
@@ -262,7 +270,7 @@
             <param name="method"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.IRESTfulContext.Invoke(System.String,System.String,System.String,System.Type@)">
+        <member name="M:MySoft.RESTful.IRESTfulContext.Invoke(System.String,System.String,System.Collections.Specialized.NameValueCollection,System.Type@)">
             <summary>
             方法调用
             </summary>
@@ -357,12 +365,15 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetResult(System.String,System.Exception)">
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetErrorMessage(System.Exception,System.String,System.String,System.Collections.Specialized.NameValueCollection,MySoft.RESTful.RESTfulResult@)">
             <summary>
-            写错误日志
+            获取错误消息
             </summary>
-            <param name="parameter"></param>
             <param name="exception"></param>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
         </member>
         <member name="M:MySoft.RESTful.DefaultRESTfulService.AuthorizeRequest">
             <summary>
@@ -459,19 +470,12 @@
             参数处理
             </summary>
         </member>
-        <member name="M:MySoft.RESTful.Utils.ParameterHelper.Resolve(System.Collections.Specialized.NameValueCollection)">
-            <summary>
-            解析参数
-            </summary>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.RESTful.Utils.ParameterHelper.Convert(System.Reflection.ParameterInfo[],Newtonsoft.Json.Linq.JObject)">
+        <member name="M:MySoft.RESTful.Utils.ParameterHelper.Convert(System.Reflection.ParameterInfo[],System.Collections.Specialized.NameValueCollection)">
             <summary>
             参数解析
             </summary>
             <param name="paramters"></param>
-            <param name="obj"></param>
+            <param name="nvs"></param>
             <returns></returns>
         </member>
         <member name="T:MySoft.RESTful.Business.Register.NativeBusinessRegister">
@@ -590,6 +594,14 @@
             <param name="pool"></param>
             <param name="register"></param>
         </member>
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.Contains(System.String,System.String)">
+            <summary>
+            判断是否存在服务
+            </summary>
+            <param name="kind"></param>
+            <param name="method"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.IsAuthorized(System.String,System.String)">
             <summary>
             是否需要认证
@@ -598,7 +610,7 @@
             <param name="method"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.Invoke(System.String,System.String,System.String,System.Type@)">
+        <member name="M:MySoft.RESTful.Business.BusinessRESTfulContext.Invoke(System.String,System.String,System.Collections.Specialized.NameValueCollection,System.Type@)">
             <summary>
             方法调用
             </summary>

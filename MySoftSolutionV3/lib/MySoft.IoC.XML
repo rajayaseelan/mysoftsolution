@@ -213,47 +213,6 @@
             The default pool number.
             </summary>
         </member>
-        <member name="M:MySoft.IoC.ServiceConfig.SetParameterValue(System.Reflection.MethodInfo,System.Object[],MySoft.IoC.Messages.ParameterCollection)">
-            <summary>
-            设置参数值
-            </summary>
-            <param name="method"></param>
-            <param name="parameters"></param>
-            <param name="collection"></param>
-        </member>
-        <member name="M:MySoft.IoC.ServiceConfig.CreateParameters(System.Reflection.MethodInfo,System.Object[],System.Boolean)">
-            <summary>
-            创建一个ParameterCollection
-            </summary>
-            <param name="method"></param>
-            <param name="parameters"></param>
-            <param name="isRef"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ServiceConfig.CreateParameters(System.Reflection.MethodInfo,System.String)">
-            <summary>
-            创建一个ParameterCollection
-            </summary>
-            <param name="method"></param>
-            <param name="jsonString"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ServiceConfig.GetCacheKey(System.Type,System.Reflection.MethodInfo,MySoft.IoC.Messages.ParameterCollection)">
-            <summary>
-            获取缓存Key值
-            </summary>
-            <param name="serviceType"></param>
-            <param name="method"></param>
-            <param name="collection"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.ServiceConfig.FormatJson(System.String)">
-            <summary>
-            格式化Json
-            </summary>
-            <param name="jsonString"></param>
-            <returns></returns>
-        </member>
         <member name="T:MySoft.IoC.Messages.ServiceMessageEventArgs">
             <summary>
             服务响应事件参数
@@ -763,21 +722,6 @@
             响应的消息
             </summary>
         </member>
-        <member name="T:MySoft.IoC.Messages.IInvoking">
-            <summary>
-            Invoke接口
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Messages.IInvoking.InvokeMethod">
-            <summary>
-            Invoke方式调用
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Messages.IInvoking.MethodInfo">
-            <summary>
-            方法
-            </summary>
-        </member>
         <member name="T:MySoft.IoC.Messages.RequestMessage">
             <summary>
             The request msg.
@@ -805,12 +749,7 @@
             invoke method
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Messages.RequestMessage.IsCaching">
-            <summary>
-            是否缓存
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Messages.RequestMessage.MySoft#IoC#Messages#IInvoking#MethodInfo">
+        <member name="P:MySoft.IoC.Messages.RequestMessage.MethodInfo">
             <summary>
             响应的方法
             </summary>
@@ -1468,6 +1407,41 @@
         <member name="P:MySoft.IoC.Messages.ServerStatus.Latest">
             <summary>
             最新状态信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Services.WaitResult">
+            <summary>
+            返回值对象
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Services.WaitResult.#ctor(MySoft.IoC.Messages.RequestMessage)">
+            <summary>
+            实例化QueueResult
+            </summary>
+            <param name="reqMsg"></param>
+        </member>
+        <member name="M:MySoft.IoC.Services.WaitResult.Wait(System.TimeSpan)">
+            <summary>
+            等待信号
+            </summary>
+            <param name="timeSpan"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.WaitResult.Set(MySoft.IoC.Messages.ResponseMessage)">
+            <summary>
+            响应信号
+            </summary>
+            <param name="resMsg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.WaitResult.Dispose">
+            <summary>
+            清理资源
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.WaitResult.Message">
+            <summary>
+            消息对象
             </summary>
         </member>
         <member name="T:MySoft.IoC.CastleService">
@@ -2210,11 +2184,11 @@
             </summary>
             <value>The maxpool.</value>
         </member>
-        <member name="P:MySoft.IoC.ServerNode.Invoke">
+        <member name="P:MySoft.IoC.ServerNode.Format">
             <summary>
-            Gets or sets the invoked
+            Gets or sets the format
             </summary>
-            <value>The invoked.</value>
+            <value>The format.</value>
         </member>
         <member name="T:MySoft.Communication.Scs.Communication.Protocols.IScsWireProtocol">
             <summary>
@@ -3678,7 +3652,7 @@
             调用方法返回
             </summary>
             <param name="method"></param>
-            <param name="parameters"></param>
+            <param name="collection"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.IoC.ServiceInvocationHandler.CallService(MySoft.IoC.Messages.RequestMessage)">
@@ -4372,6 +4346,61 @@
             <param name="request"></param>
             <returns></returns>
         </member>
+        <member name="M:MySoft.IoC.IoCHelper.SetRefParameterValues(System.Reflection.MethodInfo,MySoft.IoC.Messages.ParameterCollection,System.Object[])">
+            <summary>
+            设置参数值
+            </summary>
+            <param name="method"></param>
+            <param name="collection"></param>
+            <param name="parameters"></param>
+        </member>
+        <member name="M:MySoft.IoC.IoCHelper.CreateParameterValues(System.Reflection.MethodInfo,MySoft.IoC.Messages.ParameterCollection)">
+            <summary>
+            设置参数值
+            </summary>
+            <param name="method"></param>
+            <param name="reqMsg"></param>
+        </member>
+        <member name="M:MySoft.IoC.IoCHelper.SetRefParameters(System.Reflection.MethodInfo,MySoft.IoC.Messages.ParameterCollection,System.Object[])">
+            <summary>
+            设置ParameterCollection值
+            </summary>
+            <param name="method"></param>
+            <param name="collection"></param>
+            <param name="parameters"></param>
+        </member>
+        <member name="M:MySoft.IoC.IoCHelper.CreateParameters(System.Reflection.MethodInfo,System.String)">
+            <summary>
+            创建一个ParameterCollection
+            </summary>
+            <param name="method"></param>
+            <param name="jsonString"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IoCHelper.CreateParameters(System.Reflection.MethodInfo,System.Object[])">
+            <summary>
+            创建一个ParameterCollection
+            </summary>
+            <param name="method"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IoCHelper.GetCacheKey(System.Type,System.Reflection.MethodInfo,MySoft.IoC.Messages.ParameterCollection)">
+            <summary>
+            获取缓存Key值
+            </summary>
+            <param name="serviceType"></param>
+            <param name="method"></param>
+            <param name="collection"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.IoCHelper.GetMD5String(System.String)">
+            <summary>
+            获取MD5值
+            </summary>
+            <param name="thisKey"></param>
+            <returns></returns>
+        </member>
         <member name="T:MySoft.IoC.Messages.ClientInfo">
             <summary>
             客户端连接信息
@@ -4401,13 +4430,6 @@
             <summary>
             Initializes a new instance of the <see cref="T:MySoft.IoC.Messages.ParameterCollection"/> class.
             </summary>
-        </member>
-        <member name="M:MySoft.IoC.Messages.ParameterCollection.ContainsKey(System.String)">
-            <summary>
-            Get contains key
-            </summary>
-            <param name="paramName"></param>
-            <returns></returns>
         </member>
         <member name="M:MySoft.IoC.Messages.ParameterCollection.Remove(System.String)">
             <summary>
@@ -4443,35 +4465,6 @@
             <summary>
             Get param Keys;
             </summary>
-        </member>
-        <member name="T:MySoft.IoC.Services.QueueManager">
-            <summary>
-            QueueManager
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Services.QueueManager.Instance">
-            <summary>
-            QueueManager单例
-            </summary>
-        </member>
-        <member name="F:MySoft.IoC.Services.QueueManager.hashtable">
-            <summary>
-            集合对象
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.QueueManager.Add(MySoft.IoC.Services.QueueResult)">
-            <summary>
-            添加对象
-            </summary>
-            <param name="result"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.QueueManager.Set(MySoft.IoC.Services.QueueResult,MySoft.IoC.Messages.ResponseMessage)">
-            <summary>
-            响应对象
-            </summary>
-            <param name="result"></param>
-            <param name="resMsg"></param>
         </member>
         <member name="T:MySoft.Communication.Scs.Client.ScsClientFactory">
             <summary>
@@ -4520,6 +4513,21 @@
             处理之后
             </summary>
             <param name="invocation"></param>
+        </member>
+        <member name="T:MySoft.IoC.TransferType">
+            <summary>
+            数据传输类型
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.TransferType.Binary">
+            <summary>
+            二进制格式
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.TransferType.Json">
+            <summary>
+            Json格式
+            </summary>
         </member>
         <member name="T:MySoft.IoC.ServiceRequestPool">
             <summary>
@@ -4968,51 +4976,6 @@
         <member name="P:MySoft.IoC.ServiceRequest.IsConnected">
             <summary>
             是否连接
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.Services.QueueResult">
-            <summary>
-            返回值对象
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.QueueResult.#ctor(MySoft.IoC.Messages.RequestMessage)">
-            <summary>
-            实例化QueueResult
-            </summary>
-            <param name="reqMsg"></param>
-        </member>
-        <member name="M:MySoft.IoC.Services.QueueResult.Wait(System.TimeSpan)">
-            <summary>
-            等待信号
-            </summary>
-            <param name="timeSpan"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.QueueResult.Set(MySoft.IoC.Messages.ResponseMessage)">
-            <summary>
-            响应信号
-            </summary>
-            <param name="resMsg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.QueueResult.Dispose">
-            <summary>
-            清理资源
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Services.QueueResult.Message">
-            <summary>
-            消息对象
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Services.QueueResult.IsQueuing">
-            <summary>
-            是否排除
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Services.QueueResult.QueueKey">
-            <summary>
-            唯一关键字
             </summary>
         </member>
         <member name="T:MySoft.IoC.Messages.CallEventArgs">
@@ -5603,6 +5566,13 @@
             </summary>
             <param name="request"></param>
             <param name="response"></param>
+        </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpServiceHandler.ConvertJsonString(System.Collections.Specialized.NameValueCollection)">
+            <summary>
+            转换成JObject
+            </summary>
+            <param name="nvs"></param>
+            <returns></returns>
         </member>
     </members>
 </doc>

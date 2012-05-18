@@ -1223,6 +1223,11 @@
             <param name="where"></param>
             <returns></returns>
         </member>
+        <member name="M:MySoft.Data.DbBatch.Dispose">
+            <summary>
+            清理资源
+            </summary>
+        </member>
         <member name="T:MySoft.Data.AllField`1">
             <summary>
             所有字段（特殊字段）
@@ -1374,18 +1379,11 @@
             <param name="table"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.Field.Func(System.String)">
-            <summary>
-            函数处理
-            </summary>
-            <param name="func"></param>
-            <returns></returns>
-        </member>
         <member name="M:MySoft.Data.Field.Func(System.String,MySoft.Data.Field[])">
             <summary>
             函数处理
             </summary>
-            <param name="func"></param>
+            <param name="function"></param>
             <param name="fields"></param>
             <returns></returns>
         </member>
@@ -2433,25 +2431,21 @@
             <param name="where"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbSession.Insert``2(``0,``1@,MySoft.Data.FieldValue[])">
+        <member name="M:MySoft.Data.DbSession.Insert``1(``0,MySoft.Data.FieldValue[])">
             <summary>
             插入实体
             </summary>
             <typeparam name="T"></typeparam>
-            <typeparam name="TResult"></typeparam>
             <param name="entity"></param>
-            <param name="retVal"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbSession.Insert``2(MySoft.Data.Table,``0,``1@,MySoft.Data.FieldValue[])">
+        <member name="M:MySoft.Data.DbSession.Insert``1(MySoft.Data.Table,``0,MySoft.Data.FieldValue[])">
             <summary>
             插入实体
             </summary>
             <typeparam name="T"></typeparam>
-            <typeparam name="TResult"></typeparam>
             <param name="table"></param>
             <param name="entity"></param>
-            <param name="retVal"></param>
             <returns></returns>
         </member>
         <member name="T:Norm.Responses.DatabaseInfo">
@@ -6740,25 +6734,21 @@
             <param name="where"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbTrans.Insert``2(``0,``1@,MySoft.Data.FieldValue[])">
+        <member name="M:MySoft.Data.DbTrans.Insert``1(``0,MySoft.Data.FieldValue[])">
             <summary>
             插入实体
             </summary>
             <typeparam name="T"></typeparam>
-            <typeparam name="TResult"></typeparam>
             <param name="entity"></param>
-            <param name="retVal"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbTrans.Insert``2(MySoft.Data.Table,``0,``1@,MySoft.Data.FieldValue[])">
+        <member name="M:MySoft.Data.DbTrans.Insert``1(MySoft.Data.Table,``0,MySoft.Data.FieldValue[])">
             <summary>
             插入实体
             </summary>
             <typeparam name="T"></typeparam>
-            <typeparam name="TResult"></typeparam>
             <param name="table"></param>
             <param name="entity"></param>
-            <param name="retVal"></param>
             <returns></returns>
         </member>
         <member name="T:MySoft.Data.OrderByClip">
