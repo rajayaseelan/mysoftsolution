@@ -24,14 +24,22 @@
 #endregion
 
 using System;
-using System.Globalization;
+using Newtonsoft.Json.Serialization;
 using System.Reflection;
+#if NET20
+using Newtonsoft.Json.Utilities.LinqBridge;
+#endif
 
 namespace Newtonsoft.Json.Utilities
 {
   internal class LateBoundReflectionDelegateFactory : ReflectionDelegateFactory
   {
-    public static readonly LateBoundReflectionDelegateFactory Instance = new LateBoundReflectionDelegateFactory();
+    private static readonly LateBoundReflectionDelegateFactory _instance = new LateBoundReflectionDelegateFactory();
+
+    internal static ReflectionDelegateFactory Instance
+    {
+      get { return _instance; }
+    }
 
     public override MethodCall<T, object> CreateMethodCall<T>(MethodBase method)
     {
@@ -48,7 +56,7 @@ namespace Newtonsoft.Json.Utilities
     {
       ValidationUtils.ArgumentNotNull(type, "type");
 
-      if (type.IsValueType)
+      if (type.IsValueType())
         return () => (T)ReflectionUtils.CreateInstance(type);
 
       ConstructorInfo constructorInfo = ReflectionUtils.GetDefaultConstructor(type, true);

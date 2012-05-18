@@ -1,5 +1,6 @@
 ﻿using System;
 using MySoft.RESTful.Utils;
+using System.Collections.Specialized;
 
 namespace MySoft.RESTful
 {
@@ -13,6 +14,14 @@ namespace MySoft.RESTful
         /// </summary>
         /// <returns></returns>
         string MakeDocument(Uri requestUri, string kind, string method);
+
+        /// <summary>
+        /// 判断是否存在服务
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        bool Contains(string kind, string method);
 
         /// <summary>
         /// 是否需要认证
@@ -29,6 +38,6 @@ namespace MySoft.RESTful
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        object Invoke(string kind, string method, string parameters, out Type retType);
+        object Invoke(string kind, string method, NameValueCollection parameters, out Type retType);
     }
 }

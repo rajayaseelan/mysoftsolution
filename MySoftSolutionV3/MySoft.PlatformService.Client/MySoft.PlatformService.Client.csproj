@@ -81,6 +81,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +125,10 @@
     <ProjectReference Include="..\MySoft.PlatformService.UserService\MySoft.PlatformService.UserService.csproj">
       <Project>{4955AB17-A062-4399-8795-3D40F6FDB869}</Project>
       <Name>MySoft.PlatformService.UserService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MySoft.RESTful.SDK\MySoft.RESTful.SDK.csproj">
+      <Project>{5662E617-0E9B-4EE8-9B85-004ED7F15E5E}</Project>
+      <Name>MySoft.RESTful.SDK</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

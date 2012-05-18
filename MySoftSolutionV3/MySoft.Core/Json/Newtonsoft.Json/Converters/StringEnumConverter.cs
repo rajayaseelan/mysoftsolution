@@ -26,10 +26,14 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using Newtonsoft.Json.Utilities;
+#if NET20
+using Newtonsoft.Json.Utilities.LinqBridge;
+#else
+using System.Linq;
+#endif
 
 namespace Newtonsoft.Json.Converters
 {
@@ -80,7 +84,10 @@ namespace Newtonsoft.Json.Converters
         resolvedEnumName = resolvedEnumName ?? enumName;
 
         if (CamelCaseText)
-          resolvedEnumName = StringUtils.ToCamelCase(resolvedEnumName);
+        {
+          string[] names = resolvedEnumName.Split(',').Select(item => StringUtils.ToCamelCase(item.Trim())).ToArray();
+          resolvedEnumName = string.Join(", ", names);
+        }
 
         writer.WriteValue(resolvedEnumName);
       }
@@ -103,7 +110,7 @@ namespace Newtonsoft.Json.Converters
       if (reader.TokenType == JsonToken.Null)
       {
         if (!ReflectionUtils.IsNullableType(objectType))
-          throw new Exception("Cannot convert null value to {0}.".FormatWith(CultureInfo.InvariantCulture, objectType));
+          throw JsonSerializationException.Create(reader, "Cannot convert null value to {0}.".FormatWith(CultureInfo.InvariantCulture, objectType));
 
         return null;
       }
@@ -121,7 +128,7 @@ namespace Newtonsoft.Json.Converters
       if (reader.TokenType == JsonToken.Integer)
         return ConvertUtils.ConvertOrCast(reader.Value, CultureInfo.InvariantCulture, t);
 
-      throw new Exception("Unexpected token when parsing enum. Expected String or Integer, got {0}.".FormatWith(CultureInfo.InvariantCulture, reader.TokenType));
+      throw JsonSerializationException.Create(reader, "Unexpected token when parsing enum. Expected String or Integer, got {0}.".FormatWith(CultureInfo.InvariantCulture, reader.TokenType));
     }
 
     /// <summary>
@@ -161,7 +168,7 @@ namespace Newtonsoft.Json.Converters
             string s;
             if (map.TryGetBySecond(n2, out s))
             {
-              throw new Exception("Enum name '{0}' already exists on enum '{1}'."
+              throw new InvalidOperationException("Enum name '{0}' already exists on enum '{1}'."
                 .FormatWith(CultureInfo.InvariantCulture, n2, t.Name));
             }
 
@@ -188,7 +195,7 @@ namespace Newtonsoft.Json.Converters
       ? Nullable.GetUnderlyingType(objectType)
       : objectType;
 
-      return t.IsEnum;
+      return t.IsEnum();
     }
   }
 }

@@ -73,7 +73,8 @@ namespace MySoft.Data.UnitTest
         {
             //Field field = new Field("userid").Func(1, "datediff", "day", "getdate()");
 
-            Field field = new Field("userid").Func("upper");
+            Field field = Field.Func("upper({0})", new Field("userid"));
+            Field.Func("isnull({0},1)", new Field("aaa"));
 
             WhereClip where = new Field("userid").Between(1, 10);
 

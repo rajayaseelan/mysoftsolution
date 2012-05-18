@@ -690,20 +690,10 @@ namespace MySoft.Data
         /// <summary>
         /// 函数处理
         /// </summary>
-        /// <param name="func"></param>
-        /// <returns></returns>
-        public Field Func(string func)
-        {
-            return new Field(string.Format(func, this.Name));
-        }
-
-        /// <summary>
-        /// 函数处理
-        /// </summary>
-        /// <param name="func"></param>
+        /// <param name="function"></param>
         /// <param name="fields"></param>
         /// <returns></returns>
-        public static Field Func(string func, params Field[] fields)
+        public static Field Func(string function, params Field[] fields)
         {
             if (fields != null && fields.Length > 0)
             {
@@ -713,10 +703,10 @@ namespace MySoft.Data
                     list.Add(field.Name);
                 }
 
-                return new Field(string.Format(func, list.ToArray()));
+                return new Field(string.Format(function, list.ToArray()));
             }
             else
-                return new Field(func);
+                return new Field(function);
         }
 
         #endregion

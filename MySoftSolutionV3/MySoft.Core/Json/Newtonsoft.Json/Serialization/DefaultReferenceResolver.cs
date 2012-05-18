@@ -24,10 +24,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using Newtonsoft.Json.Utilities;
 using System.Globalization;
 
@@ -46,7 +42,7 @@ namespace Newtonsoft.Json.Serialization
       else if (context is JsonSerializerProxy)
         internalSerializer = ((JsonSerializerProxy) context).GetInternalSerializer();
       else
-        throw new Exception("The DefaultReferenceResolver can only be used internally.");
+        throw new JsonException("The DefaultReferenceResolver can only be used internally.");
 
       return internalSerializer.DefaultReferenceMappings;
     }

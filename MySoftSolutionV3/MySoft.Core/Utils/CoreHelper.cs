@@ -10,6 +10,9 @@ using System.Text.RegularExpressions;
 using System.Web;
 using MySoft.Converter;
 using Newtonsoft.Json.Utilities;
+using System.Collections.Specialized;
+using System.Data;
+using System.Collections;
 
 namespace MySoft
 {
@@ -359,10 +362,12 @@ namespace MySoft
         /// <param name="info"></param>
         /// <param name="jsonString"></param>
         /// <returns></returns>
-        public static object ConvertValue(Type type, string jsonString)
+        public static object ConvertJsonValue(Type type, string jsonString)
         {
+            var originalType = type;
             object jsonValue = null;
             if (type.IsByRef) type = type.GetElementType();
+            if (type.IsEnum) type = typeof(int);
 
             if (!string.IsNullOrEmpty(jsonString))
             {
@@ -380,6 +385,11 @@ namespace MySoft
                             jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
                     }
                 }
+                else if (type.IsValueType || type == typeof(string))
+                {
+                    if (!(jsonString.StartsWith("\"") && jsonString.EndsWith("\"")))
+                        jsonString = string.Format("\"{0}\"", jsonString);
+                }
 
                 if (jsonString.Contains("new Date"))
                     jsonValue = SerializationManager.DeserializeJson(type, jsonString, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
@@ -389,7 +399,7 @@ namespace MySoft
 
             //如果为null，获取默认值
             if (jsonValue == null) jsonValue = GetTypeDefaultValue(type);
-            return jsonValue;
+            return ConvertValue(originalType, jsonValue);
         }
 
         #endregion
@@ -422,7 +432,7 @@ namespace MySoft
         /// <returns></returns>
         public static MethodInfo[] GetMethodsFromType(Type type)
         {
-            return type.AllMethods().ToArray();
+            return type.GetAllMethods().ToArray();
         }
 
         /// <summary>
@@ -432,7 +442,7 @@ namespace MySoft
         /// <returns></returns>
         public static MethodInfo[] GetMethodsFromType<T>()
         {
-            return typeof(T).AllMethods().ToArray();
+            return GetMethodsFromType(typeof(T));
         }
 
         /// <summary>
@@ -554,6 +564,89 @@ namespace MySoft
 
             return defaultValue;
         }
+
+        #region 数据转换
+
+        /// <summary>
+        /// 从对象obj中获取值传给当前实体,TOutput必须为class或接口
+        /// TInput可以为class、NameValueCollection、IDictionary、IRowReader、DataRow
+        /// </summary>
+        /// <typeparam name="TInput"></typeparam>
+        /// <typeparam name="TOutput"></typeparam>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static TOutput ConvertType<TInput, TOutput>(TInput obj)
+        {
+            if (obj == null) return default(TOutput);
+
+            if (obj is TOutput && typeof(TOutput).IsInterface)
+            {
+                return (TOutput)(obj as object);
+            }
+            else
+            {
+                TOutput t = default(TOutput);
+
+                try
+                {
+                    //t = CoreHelper.CreateInstance<TOutput>();
+                    if (typeof(TOutput) == typeof(TInput))
+                    {
+                        t = CreateInstance<TOutput>(obj.GetType());
+                    }
+                    else
+                    {
+                        t = CreateInstance<TOutput>();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new MySoftException(string.Format("创建类型对象【{0}】出错，可能不存在构造函数！", typeof(TOutput).FullName), ex);
+                }
+
+                foreach (PropertyInfo p in GetPropertiesFromType<TOutput>())
+                {
+                    object value = null;
+                    if (obj is NameValueCollection)
+                    {
+                        NameValueCollection reader = obj as NameValueCollection;
+                        if (reader[p.Name] == null) continue;
+                        value = reader[p.Name];
+                    }
+                    else if (obj is IDictionary)
+                    {
+                        IDictionary reader = obj as IDictionary;
+                        if (!reader.Contains(p.Name)) continue;
+                        if (reader[p.Name] == null) continue;
+                        value = reader[p.Name];
+                    }
+                    else if (obj is DataRow)
+                    {
+                        DataRow row = obj as DataRow;
+                        if (!Contains(row, p.Name)) continue;
+                        if (row.IsNull(p.Name)) continue;
+                        value = row[p.Name];
+                    }
+                    else
+                    {
+                        value = GetPropertyValue(obj, p.Name);
+                    }
+
+                    if (value == null) continue;
+                    SetPropertyValue(t, p, value);
+                }
+
+                return t;
+            }
+        }
+
+        private static bool Contains(DataRow row, string name)
+        {
+            if (row == null) return false;
+            return row.Table.Columns.Contains(name);
+        }
+
+        #endregion
 
         #endregion
 

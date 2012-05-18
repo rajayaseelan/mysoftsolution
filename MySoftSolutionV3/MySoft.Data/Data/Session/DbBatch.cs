@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Text;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using MySoft.Data.Design;
 
@@ -46,10 +46,10 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="errors">输出的错误</param>
         /// <returns></returns>
-        public int Execute(out IList<DataException> errors)
+        public int Execute(out IList<MySoft.Data.DataException> errors)
         {
             //实例化errors
-            errors = new List<DataException>();
+            errors = new List<MySoft.Data.DataException>();
             int rowCount = 0;
 
             if (commandList.Count == 0)
@@ -68,9 +68,10 @@ namespace MySoft.Data
                         //执行成功，则马上退出
                         rowCount += dbProvider.ExecuteNonQuery(cmd, dbTrans);
                     }
-                    catch (DbException ex)
+                    catch (Exception ex)
                     {
-                        errors.Add(new DataException(ex.Message, ex));
+                        var cmdText = DataHelper.GetCommandLog(cmd);
+                        errors.Add(new DataException(cmdText, ex));
                     }
 
                     //执行一次休眠一下
@@ -114,9 +115,10 @@ namespace MySoft.Data
                         //执行成功，则马上退出
                         rowCount += dbProvider.ExecuteNonQuery(mergeCommand, dbTrans);
                     }
-                    catch (DbException ex)
+                    catch (Exception ex)
                     {
-                        errors.Add(new DataException(ex.Message, ex));
+                        var cmdText = DataHelper.GetCommandLog(mergeCommand);
+                        errors.Add(new DataException(cmdText, ex));
                     }
 
                     //执行一次休眠一下
@@ -245,6 +247,13 @@ namespace MySoft.Data
         private int Update<T>(Table table, List<FieldValue> fvlist, WhereClip where)
             where T : Entity
         {
+            //如果没有设置更新的字段，抛出异常
+            if (fvlist.FindAll(fv => fv.IsChanged).Count == 0)
+            {
+                //throw new DataException("更新数据异常，没有需要更新的数据！");
+                return -1; //-1表示没有需要更新的列
+            }
+
             int val = 0;
 
             if (useBatch)

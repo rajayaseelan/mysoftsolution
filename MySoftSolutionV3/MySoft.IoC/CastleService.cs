@@ -83,7 +83,7 @@ namespace MySoft.IoC
         {
             if (config.HttpEnabled)
             {
-                httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://{1}:{2}", DateTime.Now, DnsHelper.GetIPAddress(), config.HttpPort); };
+                httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://{1}:{2}/", DateTime.Now, DnsHelper.GetIPAddress(), config.HttpPort); };
                 httpServer.OnServerStop += () => { Console.WriteLine("[{0}] => Http server stoped.", DateTime.Now); };
 
                 httpServer.OnServerException += httpServer_OnServerException;
@@ -257,9 +257,36 @@ namespace MySoft.IoC
             {
                 client.SendMessage(message);
             }
-            catch
+            catch (Exception ex)
             {
-                //不做处理
+                //写异常日志
+                container.Write(ex);
+
+                //如果是返回结果
+                if (message is ScsResultMessage)
+                {
+                    try
+                    {
+                        var reqMsg = (message as ScsResultMessage).MessageValue;
+                        var resMsg = new ResponseMessage
+                        {
+                            TransactionId = reqMsg.TransactionId,
+                            ReturnType = reqMsg.ReturnType,
+                            ServiceName = reqMsg.ServiceName,
+                            MethodName = reqMsg.MethodName,
+                            Parameters = reqMsg.Parameters,
+                            Error = ex
+                        };
+
+                        //发送错误消息 
+                        client.SendMessage(new ScsResultMessage(resMsg, message.RepliedMessageId));
+                    }
+                    catch
+                    {
+                        //写异常日志
+                        container.Write(ex);
+                    }
+                }
             }
         }
 

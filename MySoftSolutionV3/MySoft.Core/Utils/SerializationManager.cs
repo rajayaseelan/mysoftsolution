@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace MySoft
 {
@@ -74,11 +75,54 @@ namespace MySoft
         /// <returns></returns>
         public static string SerializeJson(object obj, params JsonConverter[] converters)
         {
-            if (converters == null || converters.Length == 0)
-                return JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
-            else
-                return JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented, converters);
+            return SerializeJson(obj, true, converters);
         }
+
+        /// <summary>
+        /// 将对象系列化成字符串
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="indented"></param>
+        /// <param name="converters"></param>
+        /// <returns></returns>
+        public static string SerializeJson(object obj, bool indented, params JsonConverter[] converters)
+        {
+            var format = indented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
+            if (converters == null || converters.Length == 0)
+                return JsonConvert.SerializeObject(obj, format, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
+            else
+                return JsonConvert.SerializeObject(obj, format, converters);
+        }
+
+        #region 支持Contract解析的方法
+
+        /// <summary>
+        /// 将对象系列化成字符串
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static string SerializeJson(object obj, IContractResolver resolver, params JsonConverter[] converters)
+        {
+            return SerializeJson(obj, true, resolver, converters);
+        }
+
+        /// <summary>
+        /// 将对象系列化成字符串
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="indented"></param>
+        /// <param name="converters"></param>
+        /// <returns></returns>
+        public static string SerializeJson(object obj, bool indented, IContractResolver resolver, params JsonConverter[] converters)
+        {
+            var format = indented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
+            if (converters == null || converters.Length == 0)
+                return JsonConvert.SerializeObject(obj, format, new JsonSerializerSettings { ContractResolver = resolver, Converters = new[] { new Newtonsoft.Json.Converters.IsoDateTimeConverter() } });
+            else
+                return JsonConvert.SerializeObject(obj, format, new JsonSerializerSettings { ContractResolver = resolver, Converters = converters });
+        }
+
+        #endregion
 
         /// <summary>
         /// 将数据反系列化成对象
@@ -153,6 +197,49 @@ namespace MySoft
         {
             return DeserializeJson<T>(data, converters);
         }
+
+        #region 支持Contract解析的方法
+
+        /// <summary>
+        /// 将字符串反系列化成对象
+        /// </summary>
+        /// <param name="returnType"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static object DeserializeJson(Type returnType, string data, IContractResolver resolver, params JsonConverter[] converters)
+        {
+            if (string.IsNullOrEmpty(data)) return null;
+
+            if (converters == null || converters.Length == 0)
+                return JsonConvert.DeserializeObject(data, returnType, new JsonSerializerSettings { ContractResolver = resolver, Converters = new[] { new Newtonsoft.Json.Converters.IsoDateTimeConverter() } });
+            else
+                return JsonConvert.DeserializeObject(data, returnType, new JsonSerializerSettings { ContractResolver = resolver, Converters = converters });
+        }
+
+        /// <summary>
+        /// 将字符串反系列化成对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static T DeserializeJson<T>(string data, IContractResolver resolver, params JsonConverter[] converters)
+        {
+            return (T)DeserializeJson(typeof(T), data, resolver, converters);
+        }
+
+        /// <summary>
+        /// 将字符串反系列化成对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <param name="anonymousObject"></param>
+        /// <returns></returns>
+        public static T DeserializeJson<T>(string data, T anonymousObject, IContractResolver resolver, params JsonConverter[] converters)
+        {
+            return DeserializeJson<T>(data, resolver, converters);
+        }
+
+        #endregion
 
         #endregion
 

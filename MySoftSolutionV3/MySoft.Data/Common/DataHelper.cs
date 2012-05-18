@@ -100,7 +100,13 @@ namespace MySoft.Data
                 }
 
                 //通过此方式处理的对象将修改列清除
-                if (t != null && t is Entity) (t as Entity).AttachSet();
+                if (t != null && t is Entity)
+                {
+                    (t as Entity).AttachSet();
+
+                    //改变为插入状态
+                    (t as Entity).Detach();
+                }
 
                 return t;
             }

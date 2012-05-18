@@ -14,6 +14,8 @@ using System.Collections.Specialized;
 using MySoft.IoC.Messages;
 using System.Collections;
 using MySoft.IoC.Logger;
+using System.Web;
+using MySoft.RESTful.SDK;
 
 namespace MySoft.PlatformService.Client
 {
@@ -163,6 +165,20 @@ namespace MySoft.PlatformService.Client
             //Console.ReadLine();
             //return;
 
+            var url = "http://openapi.mysoft.com/user.addusers.json?aaa=1&bbb=2";
+            var users = new { users = new[] { new { ID = 1, Name = "test1=aaa" }, new { ID = 2, Name = "test2" } } };
+            //var value = "users=" + SerializationManager.SerializeJson(users, false);
+
+            //var text = new HttpHelper(120).Poster(url, value);
+
+            var factory = RESTfulFactory.Create(url, DataFormat.JSON);
+            var token = factory.Invoke("user.addusers", users, HttpMethod.POST);
+
+            Console.WriteLine(token.ToString());
+            Console.ReadLine();
+
+            return;
+
             CastleFactory.Create().RegisterLogger(new ServiceLog());
 
             ManualResetEvent are = new ManualResetEvent(false);
@@ -181,7 +197,7 @@ namespace MySoft.PlatformService.Client
 
             //string a = SerializationManager.SerializeJson(null);
 
-            //var request = (HttpWebRequest)WebRequest.Create("http://webapi.fund123.cn/user.getuser1");
+            //var request = (HttpWebRequest)WebRequest.Create("http://webapi.mysoft.com/user.getuser1");
             //request.Method = "POST";
             //request.ContentType = "application/x-www-form-urlencoded";
 
@@ -220,13 +236,17 @@ namespace MySoft.PlatformService.Client
             Console.ReadKey();
         }
 
+        static Program()
+        {
+            ServicePointManager.Expect100Continue = false;
+        }
+
         static void GetRequestString()
         {
             var url = "http://192.168.1.230:7004/fundapi/restful/system/session";
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.ContentType = "application/x-www-form-urlencoded";
             request.Method = "POST";
-            request.ServicePoint.Expect100Continue = false;
 
             var hashtable = new Dictionary<string, string>();
             hashtable.Add("merid", "FUND123");

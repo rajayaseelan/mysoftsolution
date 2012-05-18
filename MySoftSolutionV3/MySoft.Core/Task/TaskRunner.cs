@@ -66,9 +66,9 @@ namespace MySoft.Task
                     if (!threads.ContainsKey(job.Name))
                     {
                         job.State = JobState.Running;
-                        Thread thread = new Thread(new ThreadStart(job.Execute));
+                        Thread thread = new Thread(job.Execute);
                         thread.IsBackground = true;
-                        threads.Add(job.Name, thread);
+                        threads[job.Name] = thread;
                         thread.Start();
 
                         WriteLog(string.Format("计划任务[{0}]已启动，服务类名：{1}，程序集：{2}", job.Name, job.ClassName, job.AssemblyName), LogType.Information);
@@ -99,11 +99,10 @@ namespace MySoft.Task
                 {
                     job.State = JobState.Running;
 
-                    Thread t = TaskThreadPool.Instance.Threads[job.Name];
-                    t = null;
-                    t = new Thread(new ThreadStart(job.Execute));
-                    t.Start();
-                    TaskThreadPool.Instance.Threads[job.Name] = t;
+                    Thread thread = TaskThreadPool.Instance.Threads[job.Name];
+                    thread = new Thread((job.Execute));
+                    thread.IsBackground = true;
+                    thread.Start();
 
                     WriteLog(string.Format("计划任务[{0}]已启动，服务类名：{1}，程序集：{2}", job.Name, job.ClassName, job.AssemblyName), LogType.Information);
                 }

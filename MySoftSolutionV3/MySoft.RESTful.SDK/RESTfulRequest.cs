@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Collections;
+using System.Web;
 
 namespace MySoft.RESTful.SDK
 {
@@ -12,6 +13,11 @@ namespace MySoft.RESTful.SDK
     /// </summary>
     public class RESTfulRequest
     {
+        static RESTfulRequest()
+        {
+            ServicePointManager.Expect100Continue = false;
+        }
+
         private Encoding encoding = Encoding.UTF8;
         /// <summary>
         /// 编码方式
@@ -90,7 +96,7 @@ namespace MySoft.RESTful.SDK
 
         private string GetRequestUrl()
         {
-            string value = string.Format("{0}/{1}.{2}/{3}", url.TrimEnd('/'), parameter.HttpMethod, parameter.DataFormat, parameter.MethodName);
+            string value = string.Format("{0}/{1}.{2}", url.TrimEnd('/'), parameter.MethodName, parameter.DataFormat);
             List<string> list = new List<string>();
             foreach (var p in parameter.Parameters)
             {
@@ -166,15 +172,22 @@ namespace MySoft.RESTful.SDK
                 {
                     request.ContentType = "application/x-www-form-urlencoded";
                     request.Method = parameter.HttpMethod.ToString();
-                    request.ServicePoint.Expect100Continue = false;
 
-                    string input = SerializationManager.SerializeJson(parameter.DataObject);
-                    var buffer = encoding.GetBytes(input);
+                    var sb = new StringBuilder();
+                    foreach (var kvp in parameter.DataObject)
+                    {
+                        var value = SerializationManager.SerializeJson(kvp.Value);
+                        sb.AppendFormat("&{0}={1}", kvp.Key, HttpUtility.UrlEncode(value));
+                    }
+
+                    if (sb.Length > 0) sb.Remove(0, 1);
+                    var buffer = encoding.GetBytes(sb.ToString());
+
+                    //设置流的长度
+                    request.ContentLength = buffer.Length;
+
                     using (var stream = request.GetRequestStream())
                     {
-                        //设置流的长度
-                        request.ContentLength = buffer.Length;
-
                         stream.Write(buffer, 0, buffer.Length);
                         stream.Flush();
                     }
@@ -183,33 +196,36 @@ namespace MySoft.RESTful.SDK
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    StreamReader sr = new StreamReader(response.GetResponseStream(), encoding);
-                    string value = sr.ReadToEnd();
+                    //读取响应流
+                    using (StreamReader sr = new StreamReader(response.GetResponseStream(), encoding))
+                    {
+                        string value = sr.ReadToEnd();
 
-                    if (string.IsNullOrEmpty(value) || returnType == typeof(string))
-                    {
-                        return Convert.ChangeType(value, returnType);
-                    }
-                    else
-                    {
-                        var retType = returnType;
-                        object result = null;
-                        if (returnType.IsValueType)
+                        if (string.IsNullOrEmpty(value) || returnType == typeof(string))
                         {
-                            retType = typeof(RESTfulResponse);
+                            return Convert.ChangeType(value, returnType);
                         }
-
-                        if (parameter.DataFormat == DataFormat.JSON)
-                            result = SerializationManager.DeserializeJson(retType, value);
-                        else if (parameter.DataFormat == DataFormat.XML)
-                            result = SerializationManager.DeserializeXml(retType, value);
                         else
-                            result = value;
+                        {
+                            var retType = returnType;
+                            object result = null;
+                            if (returnType.IsValueType)
+                            {
+                                retType = typeof(RESTfulResponse);
+                            }
 
-                        if (retType == typeof(RESTfulResponse))
-                            return Convert.ChangeType((result as RESTfulResponse).Value, returnType);
-                        else
-                            return result;
+                            if (parameter.DataFormat == DataFormat.JSON)
+                                result = SerializationManager.DeserializeJson(retType, value);
+                            else if (parameter.DataFormat == DataFormat.XML)
+                                result = SerializationManager.DeserializeXml(retType, value);
+                            else
+                                result = value;
+
+                            if (retType == typeof(RESTfulResponse))
+                                return Convert.ChangeType((result as RESTfulResponse).Value, returnType);
+                            else
+                                return result;
+                        }
                     }
                 }
                 else

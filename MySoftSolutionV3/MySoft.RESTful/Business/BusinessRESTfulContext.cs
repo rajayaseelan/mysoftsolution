@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,7 +10,6 @@ using System.Text;
 using MySoft.RESTful.Business.Pool;
 using MySoft.RESTful.Business.Register;
 using MySoft.RESTful.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace MySoft.RESTful.Business
 {
@@ -68,6 +68,17 @@ namespace MySoft.RESTful.Business
         }
 
         /// <summary>
+        /// 判断是否存在服务
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public bool Contains(string kind, string method)
+        {
+            return pool.FindMethod(kind, method) != null;
+        }
+
+        /// <summary>
         /// 是否需要认证
         /// </summary>
         /// <param name="kind"></param>
@@ -85,42 +96,18 @@ namespace MySoft.RESTful.Business
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public object Invoke(string kind, string method, string parameters, out Type retType)
+        public object Invoke(string kind, string method, NameValueCollection parameters, out Type retType)
         {
             WebOperationContext context = WebOperationContext.Current;
-            JObject obj = new JObject();
             BusinessMethodModel metadata = pool.FindMethod(kind, method);
 
             //返回类型
             retType = metadata.Method.ReturnType;
 
-            try
+            //处理请求类型
+            if (metadata.HttpMethod == HttpMethod.POST && context.IncomingRequest.Method.ToUpper() == "GET")
             {
-                if (metadata.HttpMethod == HttpMethod.POST && context.IncomingRequest.Method.ToUpper() == "GET")
-                {
-                    throw new RESTfulException((int)HttpStatusCode.MethodNotAllowed, "Resources can only by the [" + metadata.HttpMethod + "] way to acquire!");
-                }
-
-                if (!string.IsNullOrEmpty(parameters))
-                {
-                    obj = JObject.Parse(parameters);
-                }
-
-                //解析QueryString
-                var nvs = context.IncomingRequest.UriTemplateMatch.QueryParameters;
-                if (nvs.Count > 0)
-                {
-                    var jo = ParameterHelper.Resolve(nvs);
-                    foreach (var o in jo) obj[o.Key] = o.Value;
-                }
-            }
-            catch (RESTfulException e)
-            {
-                throw e;
-            }
-            catch (Exception e)
-            {
-                throw new RESTfulException((int)HttpStatusCode.BadRequest, string.Format("Fault parameters: {0}!", parameters));
+                throw new RESTfulException((int)HttpStatusCode.MethodNotAllowed, "Resources can only by the [" + metadata.HttpMethod + "] way to acquire.");
             }
 
             //实例对象
@@ -128,7 +115,8 @@ namespace MySoft.RESTful.Business
 
             try
             {
-                object[] arguments = ParameterHelper.Convert(metadata.Parameters, obj);
+                //调用方法
+                object[] arguments = ParameterHelper.Convert(metadata.Parameters, parameters);
                 instance = register.Resolve(metadata.Service);
                 return DynamicCalls.GetMethodInvoker(metadata.Method)(instance, arguments);
             }
@@ -220,7 +208,7 @@ namespace MySoft.RESTful.Business
                 foreach (BusinessMethodModel model in methods)
                 {
                     string template = item;
-                    var tempStr = string.Format("<a href='/help/{0}/{1}'>{0}.{2}</a><br/>{3}", e.Name, model.Name, model.Name, model.Description);
+                    var tempStr = string.Format("<a href='/help/{0}/{1}'>{0}.{2}</a> [<font color='red'>{4}</font>]<br/>{3}", e.Name, model.Name, model.Name, model.Description, model.ParametersCount);
                     template = template.Replace("${method}", tempStr);
 
                     var plist = new List<string>();
@@ -360,11 +348,10 @@ namespace MySoft.RESTful.Business
         private string CreateAnchorHtml(Uri requestUri, BusinessKindModel e, BusinessMethodModel model, List<string> plist, HttpMethod mode, string format)
         {
             string url = string.Empty;
-            string method = mode.ToString().ToLower();
             if (mode == HttpMethod.GET && plist.Count > 0)
-                url = string.Format("/{0}.{1}/{2}.{3}?{4}", method, format, e.Name, model.Name, string.Join("&", plist.ToArray()));
+                url = string.Format("/{0}.{1}.{2}?{3}", e.Name, model.Name, format, string.Join("&", plist.ToArray()));
             else
-                url = string.Format("/{0}.{1}/{2}.{3}", method, format, e.Name, model.Name);
+                url = string.Format("/{0}.{1}.{2}", e.Name, model.Name, format);
 
             if (!string.IsNullOrEmpty(requestUri.Query))
             {

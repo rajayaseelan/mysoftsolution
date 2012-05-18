@@ -25,17 +25,20 @@
 
 using System;
 using System.Collections.Generic;
-#if !(NET35 || NET20 || WINDOWS_PHONE)
+#if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
 using System.Dynamic;
 using System.Linq.Expressions;
 #endif
-using System.Linq;
 using System.IO;
 using Newtonsoft.Json.Utilities;
 using System.Diagnostics;
 using System.Globalization;
 using System.Collections;
-using System.ComponentModel;
+#if NET20
+using Newtonsoft.Json.Utilities.LinqBridge;
+#else
+using System.Linq;
+#endif
 
 namespace Newtonsoft.Json.Linq
 {
@@ -43,15 +46,16 @@ namespace Newtonsoft.Json.Linq
   /// Represents an abstract JSON token.
   /// </summary>
   public abstract class JToken : IJEnumerable<JToken>, IJsonLineInfo
-#if !SILVERLIGHT
+#if !(SILVERLIGHT || NETFX_CORE || PORTABLE)
 , ICloneable
 #endif
-#if !(NET35 || NET20 || WINDOWS_PHONE)
+#if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
 , IDynamicMetaObjectProvider
 #endif
   {
     private JContainer _parent;
-    internal JToken _next;
+    private JToken _previous;
+    private JToken _next;
     private static JTokenEqualityComparer _equalityComparer;
 
     private int? _lineNumber;
@@ -138,13 +142,7 @@ namespace Newtonsoft.Json.Linq
     /// <value>The <see cref="JToken"/> that contains the next sibling token.</value>
     public JToken Next
     {
-      get
-      {
-        if (_parent != null && _next != _parent.First)
-          return _next;
-
-        return null;
-      }
+      get { return _next; }
       internal set { _next = value; }
     }
 
@@ -154,20 +152,8 @@ namespace Newtonsoft.Json.Linq
     /// <value>The <see cref="JToken"/> that contains the previous sibling token.</value>
     public JToken Previous
     {
-      get
-      {
-        if (_parent == null)
-          return null;
-
-        JToken parentNext = _parent.Content._next;
-        JToken parentNextBefore = null;
-        while (parentNext != this)
-        {
-          parentNextBefore = parentNext;
-          parentNext = parentNext.Next;
-        }
-        return parentNextBefore;
-      }
+      get { return _previous; }
+      internal set { _previous = value; }
     }
 
     internal JToken()
@@ -183,7 +169,8 @@ namespace Newtonsoft.Json.Linq
       if (_parent == null)
         throw new InvalidOperationException("The parent is missing.");
 
-      _parent.AddInternal((Next == null), this, content);
+      int index = _parent.IndexOfItem(this);
+      _parent.AddInternal(index + 1, content, false);
     }
 
     /// <summary>
@@ -195,11 +182,8 @@ namespace Newtonsoft.Json.Linq
       if (_parent == null)
         throw new InvalidOperationException("The parent is missing.");
 
-      JToken previous = Previous;
-      if (previous == null)
-        previous = _parent.Last;
-
-      _parent.AddInternal(false, previous, content);
+      int index = _parent.IndexOfItem(this);
+      _parent.AddInternal(index, content, false);
     }
 
     /// <summary>
@@ -224,7 +208,9 @@ namespace Newtonsoft.Json.Linq
         yield break;
 
       for (JToken o = Next; o != null; o = o.Next)
+      {
         yield return o;
+      }
     }
 
     /// <summary>
@@ -234,7 +220,9 @@ namespace Newtonsoft.Json.Linq
     public IEnumerable<JToken> BeforeSelf()
     {
       for (JToken o = Parent.First; o != this; o = o.Next)
+      {
         yield return o;
+      }
     }
 
     /// <summary>
@@ -284,7 +272,7 @@ namespace Newtonsoft.Json.Linq
     /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="JToken"/> containing the child tokens of this <see cref="JToken"/>, in document order.</returns>
     public virtual JEnumerable<JToken> Children()
     {
-      throw new InvalidOperationException("Cannot access child value on {0}.".FormatWith(CultureInfo.InvariantCulture, GetType()));
+      return JEnumerable<JToken>.Empty;
     }
 
     /// <summary>
@@ -437,7 +425,7 @@ namespace Newtonsoft.Json.Linq
       if (v == null || !ValidateBoolean(v, false))
         throw new ArgumentException("Can not convert {0} to Boolean.".FormatWith(CultureInfo.InvariantCulture, GetType(value)));
 
-      return (bool)v.Value;
+      return Convert.ToBoolean(v.Value, CultureInfo.InvariantCulture);
     }
 
 #if !PocketPC && !NET20
@@ -470,7 +458,7 @@ namespace Newtonsoft.Json.Linq
       if (v == null || !ValidateBoolean(v, true))
         throw new ArgumentException("Can not convert {0} to Boolean.".FormatWith(CultureInfo.InvariantCulture, GetType(value)));
 
-      return (bool?)v.Value;
+      return (v.Value != null) ? (bool?)Convert.ToBoolean(v.Value, CultureInfo.InvariantCulture) : null;
     }
 
     /// <summary>
@@ -484,7 +472,7 @@ namespace Newtonsoft.Json.Linq
       if (v == null || !ValidateInteger(v, false))
         throw new ArgumentException("Can not convert {0} to Int64.".FormatWith(CultureInfo.InvariantCulture, GetType(value)));
 
-      return (long)v.Value;
+      return Convert.ToInt64(v.Value, CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -501,7 +489,7 @@ namespace Newtonsoft.Json.Linq
       if (v == null || !ValidateDate(v, true))
         throw new ArgumentException("Can not convert {0} to DateTime.".FormatWith(CultureInfo.InvariantCulture, GetType(value)));
 
-      return (DateTime?)v.Value;
+      return (v.Value != null) ? (DateTime?)Convert.ToDateTime(v.Value, CultureInfo.InvariantCulture) : null;
     }
 
 #if !PocketPC && !NET20
@@ -663,7 +651,7 @@ namespace Newtonsoft.Json.Linq
       if (v == null || !ValidateDate(v, false))
         throw new ArgumentException("Can not convert {0} to DateTime.".FormatWith(CultureInfo.InvariantCulture, GetType(value)));
 
-      return (DateTime)v.Value;
+      return Convert.ToDateTime(v.Value, CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -680,7 +668,7 @@ namespace Newtonsoft.Json.Linq
       if (v == null || !ValidateInteger(v, true))
         throw new ArgumentException("Can not convert {0} to Int64.".FormatWith(CultureInfo.InvariantCulture, GetType(value)));
 
-      return (long?)v.Value;
+      return (v.Value != null) ? (long?)Convert.ToInt64(v.Value, CultureInfo.InvariantCulture) : null;
     }
 
     /// <summary>
@@ -729,7 +717,7 @@ namespace Newtonsoft.Json.Linq
       if (v == null || !ValidateInteger(v, true))
         throw new ArgumentException("Can not convert {0} to UInt32.".FormatWith(CultureInfo.InvariantCulture, GetType(value)));
 
-      return (uint?)v.Value;
+      return (v.Value != null) ? (uint?)Convert.ToUInt32(v.Value, CultureInfo.InvariantCulture) : null;
     }
 
     /// <summary>
@@ -747,7 +735,7 @@ namespace Newtonsoft.Json.Linq
       if (v == null || !ValidateInteger(v, true))
         throw new ArgumentException("Can not convert {0} to UInt64.".FormatWith(CultureInfo.InvariantCulture, GetType(value)));
 
-      return (ulong?)v.Value;
+      return (v.Value != null) ? (ulong?)Convert.ToUInt64(v.Value, CultureInfo.InvariantCulture) : null;
     }
 
     /// <summary>
@@ -761,7 +749,7 @@ namespace Newtonsoft.Json.Linq
       if (v == null || !ValidateFloat(v, false))
         throw new ArgumentException("Can not convert {0} to Double.".FormatWith(CultureInfo.InvariantCulture, GetType(value)));
 
-      return (double)v.Value;
+      return Convert.ToDouble(v.Value, CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -792,7 +780,7 @@ namespace Newtonsoft.Json.Linq
       if (v == null || !ValidateString(v))
         throw new ArgumentException("Can not convert {0} to String.".FormatWith(CultureInfo.InvariantCulture, GetType(value)));
 
-      return (string)v.Value;
+      return (v.Value != null) ? Convert.ToString(v.Value, CultureInfo.InvariantCulture) : null;
     }
 
     /// <summary>
@@ -1177,6 +1165,30 @@ namespace Newtonsoft.Json.Linq
     }
 
     /// <summary>
+    /// Creates the specified .NET type from the <see cref="JToken"/>.
+    /// </summary>
+    /// <returns>The new object created from the JSON value.</returns>
+    public T ToObject<T>()
+    {
+      return ToObject<T>(new JsonSerializer());
+    }
+
+    /// <summary>
+    /// Creates the specified .NET type from the <see cref="JToken"/> using the specified <see cref="JsonSerializer"/>.
+    /// </summary>
+    /// <param name="jsonSerializer">The <see cref="JsonSerializer"/> that will be used when creating the object.</param>
+    /// <returns>The new object created from the JSON value.</returns>
+    public T ToObject<T>(JsonSerializer jsonSerializer)
+    {
+      ValidationUtils.ArgumentNotNull(jsonSerializer, "jsonSerializer");
+
+      using (JTokenReader jsonReader = new JTokenReader(this))
+      {
+        return jsonSerializer.Deserialize<T>(jsonReader);
+      }
+    }
+
+    /// <summary>
     /// Creates a <see cref="JToken"/> from a <see cref="JsonReader"/>.
     /// </summary>
     /// <param name="reader">An <see cref="JsonReader"/> positioned at the token to read into this <see cref="JToken"/>.</param>
@@ -1192,7 +1204,7 @@ namespace Newtonsoft.Json.Linq
       if (reader.TokenType == JsonToken.None)
       {
         if (!reader.Read())
-          throw new Exception("Error reading JToken from JsonReader.");
+          throw JsonReaderException.Create(reader, "Error reading JToken from JsonReader.");
       }
 
       if (reader.TokenType == JsonToken.StartObject)
@@ -1207,12 +1219,11 @@ namespace Newtonsoft.Json.Linq
       if (reader.TokenType == JsonToken.StartConstructor)
         return JConstructor.Load(reader);
 
-      // hack. change to look at TokenType rather than using value
       if (!JsonReader.IsStartToken(reader.TokenType))
         return new JValue(reader.Value);
 
       // TODO: loading constructor and parameters?
-      throw new Exception("Error reading JToken from JsonReader. Unexpected token: {0}".FormatWith(CultureInfo.InvariantCulture, reader.TokenType));
+      throw JsonReaderException.Create(reader, "Error reading JToken from JsonReader. Unexpected token: {0}".FormatWith(CultureInfo.InvariantCulture, reader.TokenType));
     }
 
     /// <summary>
@@ -1222,9 +1233,14 @@ namespace Newtonsoft.Json.Linq
     /// <returns>A <see cref="JToken"/> populated from the string that contains JSON.</returns>
     public static JToken Parse(string json)
     {
-      JsonReader jsonReader = new JsonTextReader(new StringReader(json));
+      JsonReader reader = new JsonTextReader(new StringReader(json));
 
-      return Load(jsonReader);
+      JToken t = Load(reader);
+
+      if (reader.Read() && reader.TokenType != JsonToken.Comment)
+        throw JsonReaderException.Create(reader, "Additional text found in JSON string after parsing content.");
+
+      return t;
     }
 
     /// <summary>
@@ -1302,7 +1318,7 @@ namespace Newtonsoft.Json.Linq
       return p.Evaluate(this, errorWhenNoMatch);
     }
 
-#if !(NET35 || NET20 || WINDOWS_PHONE)
+#if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
     /// <summary>
     /// Returns the <see cref="T:System.Dynamic.DynamicMetaObject"/> responsible for binding operations performed on this object.
     /// </summary>
@@ -1328,7 +1344,7 @@ namespace Newtonsoft.Json.Linq
     }
 #endif
 
-#if !SILVERLIGHT
+#if !(SILVERLIGHT || NETFX_CORE || PORTABLE)
     object ICloneable.Clone()
     {
       return DeepClone();

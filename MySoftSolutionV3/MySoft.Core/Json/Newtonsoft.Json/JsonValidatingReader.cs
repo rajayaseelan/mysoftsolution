@@ -25,14 +25,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Utilities;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.IO;
+#if NET20
+using Newtonsoft.Json.Utilities.LinqBridge;
+#else
+using System.Linq;
+#endif
 
 namespace Newtonsoft.Json
 {
@@ -112,6 +115,14 @@ namespace Newtonsoft.Json
     }
 
     /// <summary>
+    /// Gets the path of the current JSON token. 
+    /// </summary>
+    public override string Path
+    {
+      get { return _reader.Path; }
+    }
+
+    /// <summary>
     /// Gets the quotation mark character used to enclose the value of a string.
     /// </summary>
     /// <value></value>
@@ -131,7 +142,7 @@ namespace Newtonsoft.Json
     }
 
     /// <summary>
-    /// Gets The Common Language Runtime (CLR) type for the current Json token.
+    /// Gets the Common Language Runtime (CLR) type for the current Json token.
     /// </summary>
     /// <value></value>
     public override Type ValueType
@@ -177,7 +188,7 @@ namespace Newtonsoft.Json
           case JTokenType.Object:
             {
               if (_currentScope.CurrentPropertyName == null)
-                throw new Exception("CurrentPropertyName has not been set on scope.");
+                throw new JsonReaderException("CurrentPropertyName has not been set on scope.");
 
               IList<JsonSchemaModel> schemas = new List<JsonSchemaModel>();
 
@@ -214,10 +225,14 @@ namespace Newtonsoft.Json
                 if (!CollectionUtils.IsNullOrEmpty(schema.Items))
                 {
                   if (schema.Items.Count == 1)
+                  {
                     schemas.Add(schema.Items[0]);
-
-                  if (schema.Items.Count > (_currentScope.ArrayItemCount - 1))
-                    schemas.Add(schema.Items[_currentScope.ArrayItemCount - 1]);
+                  }
+                  else
+                  {
+                    if (schema.Items.Count > (_currentScope.ArrayItemCount - 1))
+                      schemas.Add(schema.Items[_currentScope.ArrayItemCount - 1]);
+                  }
                 }
 
                 if (schema.AllowAdditionalProperties && schema.AdditionalProperties != null)
@@ -242,7 +257,7 @@ namespace Newtonsoft.Json
                                   ? message + " Line {0}, position {1}.".FormatWith(CultureInfo.InvariantCulture, lineInfo.LineNumber, lineInfo.LinePosition)
                                   : message;
 
-      OnValidationEvent(new JsonSchemaException(exceptionMessage, null, lineInfo.LineNumber, lineInfo.LinePosition));
+      OnValidationEvent(new JsonSchemaException(exceptionMessage, null, Path, lineInfo.LineNumber, lineInfo.LinePosition));
     }
 
     private void OnValidationEvent(JsonSchemaException exception)
@@ -276,7 +291,7 @@ namespace Newtonsoft.Json
       set
       {
         if (TokenType != JsonToken.None)
-          throw new Exception("Cannot change schema while validating JSON.");
+          throw new InvalidOperationException("Cannot change schema while validating JSON.");
 
         _schema = value;
         _model = null;
@@ -341,6 +356,18 @@ namespace Newtonsoft.Json
     }
 
     /// <summary>
+    /// Reads the next JSON token from the stream as a <see cref="Nullable{Int32}"/>.
+    /// </summary>
+    /// <returns>A <see cref="Nullable{Int32}"/>.</returns>
+    public override int? ReadAsInt32()
+    {
+      int? i = _reader.ReadAsInt32();
+
+      ValidateCurrentToken();
+      return i;
+    }
+
+    /// <summary>
     /// Reads the next JSON token from the stream as a <see cref="T:Byte[]"/>.
     /// </summary>
     /// <returns>
@@ -364,6 +391,30 @@ namespace Newtonsoft.Json
 
       ValidateCurrentToken();
       return d;
+    }
+
+    /// <summary>
+    /// Reads the next JSON token from the stream as a <see cref="String"/>.
+    /// </summary>
+    /// <returns>A <see cref="String"/>. This method will return <c>null</c> at the end of an array.</returns>
+    public override string ReadAsString()
+    {
+      string s = _reader.ReadAsString();
+
+      ValidateCurrentToken();
+      return s;
+    }
+
+    /// <summary>
+    /// Reads the next JSON token from the stream as a <see cref="Nullable{DateTime}"/>.
+    /// </summary>
+    /// <returns>A <see cref="String"/>. This method will return <c>null</c> at the end of an array.</returns>
+    public override DateTime? ReadAsDateTime()
+    {
+      DateTime? dateTime = _reader.ReadAsDateTime();
+
+      ValidateCurrentToken();
+      return dateTime;
     }
 
 #if !NET20
@@ -406,8 +457,6 @@ namespace Newtonsoft.Json
         JsonSchemaModelBuilder builder = new JsonSchemaModelBuilder();
         _model = builder.Build(_schema);
       }
-
-      //ValidateValueToken();
 
       switch (_reader.TokenType)
       {
@@ -487,6 +536,11 @@ namespace Newtonsoft.Json
           Pop();
           break;
         case JsonToken.Date:
+        case JsonToken.Bytes:
+          // these have no equivalent in JSON schema
+          break;
+        case JsonToken.None:
+          // no content, do nothing
           break;
         default:
           throw new ArgumentOutOfRangeException();
@@ -654,7 +708,7 @@ namespace Newtonsoft.Json
 
     private static bool IsZero(double value)
     {
-      double epsilon = 2.2204460492503131e-016;
+      const double epsilon = 2.2204460492503131e-016;
 
       return Math.Abs(value) < 10.0 * epsilon;
     }
@@ -727,7 +781,7 @@ namespace Newtonsoft.Json
     bool IJsonLineInfo.HasLineInfo()
     {
       IJsonLineInfo lineInfo = _reader as IJsonLineInfo;
-      return (lineInfo != null) ? lineInfo.HasLineInfo() : false;
+      return lineInfo != null && lineInfo.HasLineInfo();
     }
 
     int IJsonLineInfo.LineNumber

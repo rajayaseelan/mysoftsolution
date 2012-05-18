@@ -66,6 +66,7 @@
     <Compile Include="CacheType.cs" />
     <Compile Include="LocalCacheStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SessionCache.cs" />
     <Compile Include="SharedCacheStrategy.cs" />
   </ItemGroup>
   <ItemGroup>

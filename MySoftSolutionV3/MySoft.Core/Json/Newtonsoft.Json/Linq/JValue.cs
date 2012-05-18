@@ -25,12 +25,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json.Utilities;
 using System.Globalization;
-using System.ComponentModel;
-#if !(NET35 || NET20 || WINDOWS_PHONE)
+#if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
 using System.Dynamic;
 using System.Linq.Expressions;
 #endif
@@ -119,6 +116,33 @@ namespace Newtonsoft.Json.Linq
     /// Initializes a new instance of the <see cref="JValue"/> class with the given value.
     /// </summary>
     /// <param name="value">The value.</param>
+    public JValue(Guid value)
+      : this(value, JTokenType.String)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JValue"/> class with the given value.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    public JValue(Uri value)
+      : this(value, JTokenType.String)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JValue"/> class with the given value.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    public JValue(TimeSpan value)
+      : this(value, JTokenType.String)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JValue"/> class with the given value.
+    /// </summary>
+    /// <param name="value">The value.</param>
     public JValue(object value)
       : this(value, GetValueType(null, value))
     {
@@ -129,6 +153,8 @@ namespace Newtonsoft.Json.Linq
       JValue other = node as JValue;
       if (other == null)
         return false;
+      if (other == this)
+        return true;
 
       return ValuesEquals(this, other);
     }
@@ -170,7 +196,7 @@ namespace Newtonsoft.Json.Linq
           string s1 = Convert.ToString(objA, CultureInfo.InvariantCulture);
           string s2 = Convert.ToString(objB, CultureInfo.InvariantCulture);
 
-          return s1.CompareTo(s2);
+          return string.CompareOrdinal(s1, s2);
         case JTokenType.Boolean:
           bool b1 = Convert.ToBoolean(objA, CultureInfo.InvariantCulture);
           bool b2 = Convert.ToBoolean(objB, CultureInfo.InvariantCulture);
@@ -192,15 +218,15 @@ namespace Newtonsoft.Json.Linq
             if (!(objB is DateTimeOffset))
               throw new ArgumentException("Object must be of type DateTimeOffset.");
 
-            DateTimeOffset date1 = (DateTimeOffset)objA;
-            DateTimeOffset date2 = (DateTimeOffset)objB;
+            DateTimeOffset date1 = (DateTimeOffset) objA;
+            DateTimeOffset date2 = (DateTimeOffset) objB;
 
             return date1.CompareTo(date2);
           }
 #endif
         case JTokenType.Bytes:
           if (!(objB is byte[]))
-              throw new ArgumentException("Object must be of type byte[].");
+            throw new ArgumentException("Object must be of type byte[].");
 
           byte[] bytes1 = objA as byte[];
           byte[] bytes2 = objB as byte[];
@@ -210,6 +236,30 @@ namespace Newtonsoft.Json.Linq
             return 1;
 
           return MiscellaneousUtils.ByteArrayCompare(bytes1, bytes2);
+        case JTokenType.Guid:
+          if (!(objB is Guid))
+            throw new ArgumentException("Object must be of type Guid.");
+
+          Guid guid1 = (Guid) objA;
+          Guid guid2 = (Guid) objB;
+
+          return guid1.CompareTo(guid2);
+        case JTokenType.Uri:
+          if (!(objB is Uri))
+            throw new ArgumentException("Object must be of type Uri.");
+
+          Uri uri1 = (Uri)objA;
+          Uri uri2 = (Uri)objB;
+
+          return Comparer<string>.Default.Compare(uri1.ToString(), uri2.ToString());
+        case JTokenType.TimeSpan:
+          if (!(objB is TimeSpan))
+            throw new ArgumentException("Object must be of type TimeSpan.");
+
+          TimeSpan ts1 = (TimeSpan)objA;
+          TimeSpan ts2 = (TimeSpan)objB;
+
+          return ts1.CompareTo(ts2);
         default:
           throw MiscellaneousUtils.CreateArgumentOutOfRangeException("valueType", valueType, "Unexpected value type: {0}".FormatWith(CultureInfo.InvariantCulture, valueType));
       }
@@ -227,7 +277,7 @@ namespace Newtonsoft.Json.Linq
       return d1.CompareTo(d2);
     }
 
-#if !(NET35 || NET20 || WINDOWS_PHONE)
+#if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
     private static bool Operation(ExpressionType operation, object objA, object objB, out object result)
     {
       if (objA is string || objB is string)
@@ -368,8 +418,10 @@ namespace Newtonsoft.Json.Linq
     {
       if (value == null)
         return JTokenType.Null;
+#if !(NETFX_CORE || PORTABLE)
       else if (value == DBNull.Value)
         return JTokenType.Null;
+#endif
       else if (value is string)
         return GetStringValueType(current);
       else if (value is long || value is int || value is short || value is sbyte
@@ -389,6 +441,12 @@ namespace Newtonsoft.Json.Linq
         return JTokenType.Bytes;
       else if (value is bool)
         return JTokenType.Boolean;
+      else if (value is Guid)
+        return JTokenType.Guid;
+      else if (value is Uri)
+        return JTokenType.Uri;
+      else if (value is TimeSpan)
+        return JTokenType.TimeSpan;
 
       throw new ArgumentException("Could not determine JSON object type for type {0}.".FormatWith(CultureInfo.InvariantCulture, value.GetType()));
     }
@@ -491,6 +549,11 @@ namespace Newtonsoft.Json.Linq
           return;
         case JTokenType.Bytes:
           writer.WriteValue((byte[])_value);
+          return;
+        case JTokenType.Guid:
+        case JTokenType.Uri:
+        case JTokenType.TimeSpan:
+          writer.WriteValue((_value != null) ? _value.ToString() : null);
           return;
       }
 
@@ -618,7 +681,7 @@ namespace Newtonsoft.Json.Linq
         return _value.ToString();
     }
 
-#if !(NET35 || NET20 || WINDOWS_PHONE)
+#if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
     /// <summary>
     /// Returns the <see cref="T:System.Dynamic.DynamicMetaObject"/> responsible for binding operations performed on this object.
     /// </summary>

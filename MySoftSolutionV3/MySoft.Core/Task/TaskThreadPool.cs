@@ -61,9 +61,6 @@ namespace MySoft.Task
                     _Threads.Remove(kvp.Key);
                 }
             }
-
-            //º‰∏Ù10√Î
-            Thread.Sleep(10000);
         }
     }
 }

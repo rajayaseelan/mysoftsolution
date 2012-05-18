@@ -23,7 +23,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-#if !(NET35 || NET20 || WINDOWS_PHONE)
+#if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -56,6 +56,8 @@ namespace Newtonsoft.Json.Serialization
     public JsonDynamicContract(Type underlyingType)
       : base(underlyingType)
     {
+      ContractType = JsonContractType.Dynamic;
+
       Properties = new JsonPropertyCollection(UnderlyingType);
     }
   }

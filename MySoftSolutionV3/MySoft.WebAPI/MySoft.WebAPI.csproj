@@ -86,7 +86,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>4666</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://webapi.fund123.cn</IISUrl>
+          <IISUrl>http://webapi.mysoft.com</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

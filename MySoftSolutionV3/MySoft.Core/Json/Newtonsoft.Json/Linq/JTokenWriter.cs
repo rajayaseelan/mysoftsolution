@@ -1,7 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿#region License
+// Copyright (c) 2007 James Newton-King
+//
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+#endregion
+
+using System;
+using System.Globalization;
 using Newtonsoft.Json.Utilities;
 
 namespace Newtonsoft.Json.Linq
@@ -80,7 +103,7 @@ namespace Newtonsoft.Json.Linq
       if (_parent == null)
         _token = container;
       else
-        _parent.Add(container);
+        _parent.AddAndSkipParentCheck(container);
 
       _parent = container;
     }
@@ -303,7 +326,13 @@ namespace Newtonsoft.Json.Linq
     public override void WriteValue(char value)
     {
       base.WriteValue(value);
-      AddValue(value.ToString(), JsonToken.String);
+      string s = null;
+#if !(NETFX_CORE || PORTABLE)
+      s = value.ToString(CultureInfo.InvariantCulture);
+#else
+      s = value.ToString();
+#endif
+      AddValue(s, JsonToken.String);
     }
 
     /// <summary>
@@ -344,6 +373,7 @@ namespace Newtonsoft.Json.Linq
     public override void WriteValue(DateTime value)
     {
       base.WriteValue(value);
+      value = JsonConvert.EnsureDateTime(value, DateTimeZoneHandling);
       AddValue(value, JsonToken.Date);
     }
 
@@ -367,6 +397,36 @@ namespace Newtonsoft.Json.Linq
     {
       base.WriteValue(value);
       AddValue(value, JsonToken.Bytes);
+    }
+
+    /// <summary>
+    /// Writes a <see cref="TimeSpan"/> value.
+    /// </summary>
+    /// <param name="value">The <see cref="TimeSpan"/> value to write.</param>
+    public override void WriteValue(TimeSpan value)
+    {
+      base.WriteValue(value);
+      AddValue(value, JsonToken.String);
+    }
+
+    /// <summary>
+    /// Writes a <see cref="Guid"/> value.
+    /// </summary>
+    /// <param name="value">The <see cref="Guid"/> value to write.</param>
+    public override void WriteValue(Guid value)
+    {
+      base.WriteValue(value);
+      AddValue(value, JsonToken.String);
+    }
+
+    /// <summary>
+    /// Writes a <see cref="Uri"/> value.
+    /// </summary>
+    /// <param name="value">The <see cref="Uri"/> value to write.</param>
+    public override void WriteValue(Uri value)
+    {
+      base.WriteValue(value);
+      AddValue(value, JsonToken.String);
     }
     #endregion
   }

@@ -354,6 +354,7 @@ namespace MySoft.PlatformService.WinForm
 
             comboBox1.DisplayMember = "Key";
             comboBox1.DataSource = CastleFactory.Create().GetServerNodes();
+            autoCompleteTextbox1.KeyPress += new KeyPressEventHandler(autoCompleteTextbox1_KeyPress);
 
             //解析邮件地址
             var receivedEmail = ConfigurationManager.AppSettings["ReceivedEmail"];
@@ -366,6 +367,28 @@ namespace MySoft.PlatformService.WinForm
             formTimer.Start();
 
             InitBrowser();
+        }
+
+        void autoCompleteTextbox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            //按回车
+            if (e.KeyChar == 13)
+            {
+                var key = autoCompleteTextbox1.Text.Trim();
+                if (methods.ContainsKey(key))
+                {
+                    var service = methods[key];
+                    SingletonMul.Show(string.Format("FORM_{0}_{1}", service.ServiceName, service.MethodName), () =>
+                    {
+                        frmInvoke frm = new frmInvoke(defaultNode, service.ServiceName, service.MethodName, service.Parameters);
+                        return frm;
+                    });
+                }
+                else
+                {
+                    MessageBox.Show("查找的方法【" + key + "】不存在！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         void Items_OnItemInserted(int index)
@@ -599,6 +622,7 @@ namespace MySoft.PlatformService.WinForm
         /// 服务信息
         /// </summary>
         private IList<ServiceInfo> services = new List<ServiceInfo>();
+        private IDictionary<string, InvokeService> methods = new Dictionary<string, InvokeService>();
 
         private void InitService(ServerNode node, bool forceRefresh)
         {
@@ -627,6 +651,24 @@ namespace MySoft.PlatformService.WinForm
             {
                 services = CastleFactory.Create().GetChannel<IStatusService>(node)
                     .GetServiceList().OrderBy(p => p.Name).ToList();
+
+                methods.Clear();
+                foreach (var s in services)
+                {
+                    foreach (var m in s.Methods)
+                    {
+                        string key = string.Format("{0}_{1}", s.FullName, m.FullName);
+                        methods[key] = new InvokeService
+                        {
+                            ServiceName = s.FullName,
+                            MethodName = m.FullName,
+                            Parameters = m.Parameters
+                        };
+                    }
+                }
+
+                //处理自动完成列表
+                autoCompleteTextbox1.AutoCompleteList = methods.Select(p => p.Key).ToList();
 
                 this.Text = string.Format("分布式服务监控 v1.0 【当前服务器节点({0}:{1}) 服务数:{2} 接口数:{3}】",
                     node.IP, node.Port, services.Count, services.Sum(p => p.Methods.Count));

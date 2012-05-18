@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.ServiceModel;
@@ -93,6 +94,7 @@ namespace MySoft.RESTful
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
+
             var query = request.UriTemplateMatch.QueryParameters;
             var callback = query["callback"];
             string result = string.Empty;
@@ -107,7 +109,7 @@ namespace MySoft.RESTful
             }
             else
             {
-                result = GetResponseString(ParameterFormat.Jsonp, kind, method, null);
+                result = GetResponseString(ParameterFormat.Jsonp, kind, method, query);
                 response.ContentType = "application/javascript;charset=utf-8";
                 result = string.Format("{0}({1});", callback, result ?? "{}");
             }
@@ -162,8 +164,9 @@ namespace MySoft.RESTful
         public Stream GetMethodHtmlFromKindAndMethod(string kind, string method)
         {
             var request = WebOperationContext.Current.IncomingRequest;
-            var html = Context.MakeDocument(request.UriTemplateMatch.RequestUri, kind, method);
             var response = WebOperationContext.Current.OutgoingResponse;
+
+            var html = Context.MakeDocument(request.UriTemplateMatch.RequestUri, kind, method);
             response.ContentType = "text/html;charset=utf-8";
             return new MemoryStream(Encoding.UTF8.GetBytes(html));
         }
@@ -172,25 +175,31 @@ namespace MySoft.RESTful
 
         private Stream GetResponseStream(ParameterFormat format, string kind, string method, Stream stream)
         {
-            string data = null;
-            if (stream != null)
-            {
-                using (var sr = new StreamReader(stream))
-                {
-                    data = sr.ReadToEnd();
-                }
-            }
-
-            string result = GetResponseString(format, kind, method, data);
-            if (string.IsNullOrEmpty(result)) return new MemoryStream();
-
-            //处理ETag功能
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
+
+            NameValueCollection nvs = null;
+            if (stream == null)
+            {
+                nvs = request.UriTemplateMatch.QueryParameters;
+            }
+            else
+            {
+                //接收流内部数据
+                var sr = new StreamReader(stream);
+                string streamValue = sr.ReadToEnd();
+                nvs = HttpUtility.ParseQueryString(streamValue, Encoding.UTF8);
+            }
+
+            string result = GetResponseString(format, kind, method, nvs);
+            if (string.IsNullOrEmpty(result)) return new MemoryStream();
+
+            //转换成buffer
             var buffer = Encoding.UTF8.GetBytes(result);
 
             if (request.Method.ToUpper() == "GET" && response.StatusCode == HttpStatusCode.OK)
             {
+                //处理ETag功能
                 string etagToken = MD5.HexHash(buffer);
                 response.ETag = etagToken;
 
@@ -212,7 +221,7 @@ namespace MySoft.RESTful
             return new MemoryStream(buffer);
         }
 
-        private string GetResponseString(ParameterFormat format, string kind, string method, string parameters)
+        private string GetResponseString(ParameterFormat format, string kind, string method, NameValueCollection parameters)
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
@@ -228,57 +237,69 @@ namespace MySoft.RESTful
 
             //从缓存读取
             object result = null;
-
-            //进行认证处理
-            RESTfulResult authResult = new RESTfulResult { Code = (int)HttpStatusCode.OK };
-
-            //进行认证处理
-            if (Context != null && Context.IsAuthorized(kind, method))
+            if (Context != null && !Context.Contains(kind, method))
             {
-                authResult = AuthorizeRequest();
-            }
-
-            //认证成功
-            if (authResult.Code == (int)HttpStatusCode.OK)
-            {
-                try
-                {
-                    Type retType;
-                    result = Context.Invoke(kind, method, parameters, out retType);
-
-                    //设置返回成功
-                    response.StatusCode = HttpStatusCode.OK;
-
-                    //如果值为null，以对象方式返回
-                    if (result == null || retType == typeof(string))
-                    {
-                        return Convert.ToString(result);
-                    }
-
-                    //如果是值类型，则以对象方式返回
-                    if (retType.IsValueType)
-                    {
-                        result = new RESTfulResponse { Value = result };
-                    }
-                }
-                catch (Exception ex)
-                {
-                    //记录错误日志
-                    result = GetResult(parameters, ex);
-
-                    //转换结果
-                    var ret = result as RESTfulResult;
-
-                    //重新定义一个异常
-                    var error = new Exception(string.Format("{0} - {1}", ret.Code, ret.Message), ex);
-
-                    //记录错误日志
-                    SimpleLog.Instance.WriteLogForDir("RESTful", ex);
-                }
+                response.StatusCode = HttpStatusCode.NotFound;
+                result = new RESTfulResult { Code = (int)response.StatusCode, Message = "service [" + kind + "." + method + "] not found." };
             }
             else
             {
-                result = authResult;
+
+                //进行认证处理
+                RESTfulResult authResult = new RESTfulResult { Code = (int)HttpStatusCode.OK };
+
+                //进行认证处理
+                if (Context != null && Context.IsAuthorized(kind, method))
+                {
+                    authResult = AuthorizeRequest();
+                }
+
+                //认证成功
+                if (authResult.Code == (int)HttpStatusCode.OK)
+                {
+                    try
+                    {
+                        Type retType;
+                        result = Context.Invoke(kind, method, parameters, out retType);
+
+                        //设置返回成功
+                        response.StatusCode = HttpStatusCode.OK;
+
+                        //如果值为null，以对象方式返回
+                        if (retType == typeof(string))
+                        {
+                            switch (format)
+                            {
+                                case ParameterFormat.Text:
+                                case ParameterFormat.Html:
+                                    return Convert.ToString(result);
+                            }
+                        }
+
+                        //如果是值类型，则以对象方式返回
+                        if (retType.IsValueType || retType == typeof(string))
+                        {
+                            result = new RESTfulResponse { Value = result };
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        RESTfulResult ret;
+                        var errorMessage = GetErrorMessage(ex, kind, method, parameters, out ret);
+
+                        result = ret;
+
+                        //重新定义一个异常
+                        var error = new Exception(errorMessage, ex);
+
+                        //记录错误日志
+                        SimpleLog.Instance.WriteLogForDir("RESTful\\" + kind, error);
+                    }
+                }
+                else
+                {
+                    result = authResult;
+                }
             }
 
             ISerializer serializer = SerializerFactory.Create(format);
@@ -286,24 +307,58 @@ namespace MySoft.RESTful
         }
 
         /// <summary>
-        /// 写错误日志
+        /// 获取错误消息
         /// </summary>
-        /// <param name="parameter"></param>
         /// <param name="exception"></param>
-        private RESTfulResult GetResult(string parameter, Exception exception)
+        /// <param name="kind"></param>
+        /// <param name="method"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        private string GetErrorMessage(Exception exception, string kind, string method, NameValueCollection nvs, out RESTfulResult ret)
         {
             var response = WebOperationContext.Current.OutgoingResponse;
-            var result = new RESTfulResult { Code = (int)HttpStatusCode.BadRequest };
+            var request = WebOperationContext.Current.IncomingRequest;
 
+            int code = (int)HttpStatusCode.BadRequest;
             if (exception is RESTfulException)
             {
-                var error = exception as RESTfulException;
-                result.Code = error.Code;
-                response.StatusCode = (HttpStatusCode)Enum.ToObject(typeof(HttpStatusCode), error.Code);
+                code = (exception as RESTfulException).Code;
+            }
+
+            //转换状态码
+            response.StatusCode = (HttpStatusCode)code;
+
+            //设置返回值
+            ret = new RESTfulResult { Code = code, Message = ErrorHelper.GetInnerException(exception).Message };
+
+            var errorMessage = string.Format("\r\n\tCode:[{0}]\r\n\tError:[{1}]\r\n\tMethod:[{2}.{3}]", code,
+                    ErrorHelper.GetInnerException(exception).Message, kind, method);
+
+            //如果参数大于0
+            if (nvs.Count > 0)
+            {
+                errorMessage = string.Format("{0}\r\n\tParameters:{1}", errorMessage, GetParameters(nvs));
+            }
+
+            //加上认证的用户名
+            if (AuthorizeContext.Current != null && AuthorizeContext.Current.Result.Succeed)
+            {
+                errorMessage = string.Format("{0}\r\n\tUser:[{1}]", errorMessage, AuthorizeContext.Current.Result.Name);
             }
 
             //返回结果
-            return result;
+            return errorMessage;
+        }
+
+        private string GetParameters(NameValueCollection nvs)
+        {
+            var sb = new StringBuilder();
+            foreach (var key in nvs.AllKeys)
+            {
+                sb.AppendFormat("\r\n\t\t{0}={1}", key, nvs[key]);
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>
@@ -314,6 +369,7 @@ namespace MySoft.RESTful
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
+
             response.StatusCode = HttpStatusCode.Unauthorized;
 
             var token = new AuthorizeToken

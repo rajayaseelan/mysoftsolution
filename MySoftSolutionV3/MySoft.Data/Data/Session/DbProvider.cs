@@ -225,6 +225,9 @@ namespace MySoft.Data
             //调整DbCommand;
             PrepareCommand(cmd);
 
+            //开始写日志
+            BeginExecuteCommand(cmd);
+
             int retVal = -1;
             Stopwatch watch = Stopwatch.StartNew();
             try
@@ -263,6 +266,9 @@ namespace MySoft.Data
         {
             //调整DbCommand;
             PrepareCommand(cmd);
+
+            //开始写日志
+            BeginExecuteCommand(cmd);
 
             SourceReader retVal = null;
             Stopwatch watch = Stopwatch.StartNew();
@@ -305,6 +311,9 @@ namespace MySoft.Data
             //调整DbCommand;
             PrepareCommand(cmd);
 
+            //开始写日志
+            BeginExecuteCommand(cmd);
+
             DataSet retVal = null;
             Stopwatch watch = Stopwatch.StartNew();
             try
@@ -344,6 +353,9 @@ namespace MySoft.Data
             //调整DbCommand;
             PrepareCommand(cmd);
 
+            //开始写日志
+            BeginExecuteCommand(cmd);
+
             DataTable retVal = null;
             Stopwatch watch = Stopwatch.StartNew();
             try
@@ -382,6 +394,9 @@ namespace MySoft.Data
         {
             //调整DbCommand;
             PrepareCommand(cmd);
+
+            //开始写日志
+            BeginExecuteCommand(cmd);
 
             object retVal = null;
             Stopwatch watch = Stopwatch.StartNew();
@@ -686,16 +701,6 @@ namespace MySoft.Data
         internal int Update<T>(Table table, List<FieldValue> fvlist, WhereClip where, DbTrans trans)
             where T : Entity
         {
-            //如果没有设置更新的字段，抛出异常
-            if (fvlist.FindAll(fv =>
-            {
-                return fv.IsChanged;
-            }).Count == 0)
-            {
-                //throw new DataException("更新数据异常，没有需要更新的数据！");
-                return -1; //-1表示没有需要更新的列
-            }
-
             DbCommand cmd = CreateUpdate<T>(table, fvlist, where);
             return ExecuteNonQuery(cmd, trans);
         }

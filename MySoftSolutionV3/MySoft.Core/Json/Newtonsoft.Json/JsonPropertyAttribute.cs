@@ -1,3 +1,28 @@
+#region License
+// Copyright (c) 2007 James Newton-King
+//
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+#endregion
+
 using System;
 
 namespace Newtonsoft.Json
@@ -5,7 +30,7 @@ namespace Newtonsoft.Json
   /// <summary>
   /// Instructs the <see cref="JsonSerializer"/> to always serialize the member with the specified name.
   /// </summary>
-  [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
+  [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
   public sealed class JsonPropertyAttribute : Attribute
   {
     // yuck. can't set nullable properties on an attribute in C#
@@ -16,6 +41,7 @@ namespace Newtonsoft.Json
     internal ObjectCreationHandling? _objectCreationHandling;
     internal TypeNameHandling? _typeNameHandling;
     internal bool? _isReference;
+    internal int? _order;
 
     /// <summary>
     /// Gets or sets the null value handling used when serializing this property.
@@ -75,6 +101,16 @@ namespace Newtonsoft.Json
     {
       get { return _isReference ?? default(bool); }
       set { _isReference = value; }
+    }
+
+    /// <summary>
+    /// Gets or sets the order of serialization and deserialization of a member.
+    /// </summary>
+    /// <value>The numeric order of serialization or deserialization.</value>
+    public int Order
+    {
+      get { return _order ?? default(int); }
+      set { _order = value; }
     }
 
     /// <summary>

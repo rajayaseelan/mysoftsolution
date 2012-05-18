@@ -1,6 +1,7 @@
 ﻿using System;
 using MySoft.IoC.Messages;
 using MySoft.Threading;
+using System.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -36,7 +37,7 @@ namespace MySoft.IoC.Services
             using (var waitResult = new AsyncResult(context, reqMsg))
             {
                 //异步调用
-                ManagedThreadPool.QueueUserWorkItem(GetResponse, waitResult);
+                ThreadPool.QueueUserWorkItem(GetResponse, waitResult);
 
                 //等待响应
                 if (!waitResult.Wait(elapsedTime))

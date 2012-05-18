@@ -48,6 +48,9 @@
             this.退订此服务UToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer5 = new System.Windows.Forms.SplitContainer();
             this.listMethod = new ListControls.MessageListBox();
+            this.panel4 = new System.Windows.Forms.Panel();
+            this.autoCompleteTextbox1 = new MySoft.PlatformService.WinForm.AutoCompleteTextbox();
+            this.label14 = new System.Windows.Forms.Label();
             this.richTextBox3 = new System.Windows.Forms.RichTextBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.splitContainer7 = new System.Windows.Forms.SplitContainer();
@@ -132,6 +135,7 @@
             this.splitContainer5.Panel1.SuspendLayout();
             this.splitContainer5.Panel2.SuspendLayout();
             this.splitContainer5.SuspendLayout();
+            this.panel4.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.splitContainer7.Panel1.SuspendLayout();
             this.splitContainer7.Panel2.SuspendLayout();
@@ -229,8 +233,8 @@
             // 
             // tabControl1
             // 
-            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage0);
             this.tabControl1.Controls.Add(this.tabPage1);
@@ -364,6 +368,7 @@
             // splitContainer5.Panel1
             // 
             this.splitContainer5.Panel1.Controls.Add(this.listMethod);
+            this.splitContainer5.Panel1.Controls.Add(this.panel4);
             // 
             // splitContainer5.Panel2
             // 
@@ -378,12 +383,45 @@
             this.listMethod.AutoScrollMinSize = new System.Drawing.Size(543, 0);
             this.listMethod.BackColor = System.Drawing.Color.White;
             this.listMethod.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listMethod.Location = new System.Drawing.Point(0, 0);
+            this.listMethod.Location = new System.Drawing.Point(0, 32);
             this.listMethod.Name = "listMethod";
             this.listMethod.SelectedIndex = -1;
             this.listMethod.SelectedItem = null;
-            this.listMethod.Size = new System.Drawing.Size(573, 311);
+            this.listMethod.Size = new System.Drawing.Size(573, 279);
             this.listMethod.TabIndex = 12;
+            // 
+            // panel4
+            // 
+            this.panel4.Controls.Add(this.autoCompleteTextbox1);
+            this.panel4.Controls.Add(this.label14);
+            this.panel4.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel4.Location = new System.Drawing.Point(0, 0);
+            this.panel4.Name = "panel4";
+            this.panel4.Size = new System.Drawing.Size(573, 32);
+            this.panel4.TabIndex = 14;
+            // 
+            // autoCompleteTextbox1
+            // 
+            this.autoCompleteTextbox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.autoCompleteTextbox1.AutoCompleteList = ((System.Collections.Generic.List<string>)(resources.GetObject("autoCompleteTextbox1.AutoCompleteList")));
+            this.autoCompleteTextbox1.CaseSensitive = false;
+            this.autoCompleteTextbox1.Location = new System.Drawing.Point(68, 6);
+            this.autoCompleteTextbox1.MinTypedCharacters = 2;
+            this.autoCompleteTextbox1.Name = "autoCompleteTextbox1";
+            this.autoCompleteTextbox1.SelectedIndex = -1;
+            this.autoCompleteTextbox1.Size = new System.Drawing.Size(498, 21);
+            this.autoCompleteTextbox1.TabIndex = 2;
+            // 
+            // label14
+            // 
+            this.label14.Dock = System.Windows.Forms.DockStyle.Left;
+            this.label14.Location = new System.Drawing.Point(0, 0);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(74, 32);
+            this.label14.TabIndex = 1;
+            this.label14.Text = "方法名称：";
+            this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // richTextBox3
             // 
@@ -1118,7 +1156,7 @@
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(100, 20);
             this.comboBox1.TabIndex = 15;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(comboBox1_SelectedIndexChanged);
+            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
             // label12
             // 
@@ -1155,7 +1193,6 @@
             // 
             // frmMain
             // 
-            this.AcceptButton = this.button1;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(921, 592);
@@ -1204,6 +1241,8 @@
             this.splitContainer5.Panel1.ResumeLayout(false);
             this.splitContainer5.Panel2.ResumeLayout(false);
             this.splitContainer5.ResumeLayout(false);
+            this.panel4.ResumeLayout(false);
+            this.panel4.PerformLayout();
             this.tabPage1.ResumeLayout(false);
             this.splitContainer7.Panel1.ResumeLayout(false);
             this.splitContainer7.Panel2.ResumeLayout(false);
@@ -1333,5 +1372,8 @@
         private System.Windows.Forms.Label lblError;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Panel panel4;
+        private System.Windows.Forms.Label label14;
+        private AutoCompleteTextbox autoCompleteTextbox1;
     }
 }

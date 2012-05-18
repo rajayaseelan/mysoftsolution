@@ -79,10 +79,7 @@ namespace MySoft.IoC.Services
         {
             if (hashtable.ContainsKey(resMsg.TransactionId))
             {
-                var waitResult = hashtable[resMsg.TransactionId] as QueueResult;
-
-                //响应数据
-                QueueManager.Instance.Set(waitResult, resMsg);
+                var waitResult = hashtable[resMsg.TransactionId] as WaitResult;
 
                 //数据响应
                 waitResult.Set(resMsg);
@@ -112,18 +109,14 @@ namespace MySoft.IoC.Services
             try
             {
                 //处理数据
-                using (var waitResult = new QueueResult(reqMsg))
+                using (var waitResult = new WaitResult(reqMsg))
                 {
-                    //如果需要缓存，才使用Queue服务
-                    if (!QueueManager.Instance.Add(waitResult))
-                    {
-                        hashtable[reqMsg.TransactionId] = waitResult;
+                    hashtable[reqMsg.TransactionId] = waitResult;
 
-                        reqProxy = reqPool.Pop();
+                    reqProxy = reqPool.Pop();
 
-                        //发送消息
-                        reqProxy.SendMessage(reqMsg);
-                    }
+                    //发送消息
+                    reqProxy.SendMessage(reqMsg);
 
                     //等待信号响应
                     var elapsedTime = TimeSpan.FromSeconds(node.Timeout);

@@ -24,7 +24,7 @@ namespace MySoft.RESTful
         /// <param name="method">发布的业务方法</param>
         /// <returns>字节数据流</returns>
         [OperationContract]
-        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "get.text/{kind}.{method}")]
+        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "{kind}.{method}.text")]
         Stream GetTextEntry(string kind, string method);
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace MySoft.RESTful
         /// <param name="method">发布的业务方法</param>
         /// <returns>字节数据流</returns>
         [OperationContract]
-        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "get.html/{kind}.{method}")]
+        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "{kind}.{method}.html")]
         Stream GetHtmlEntry(string kind, string method);
 
         #endregion
@@ -49,7 +49,7 @@ namespace MySoft.RESTful
         /// <param name="parameters">请求参数</param>
         /// <returns>字节数据流</returns>
         [OperationContract]
-        [WebInvoke(Method = "POST", BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "post.json/{kind}.{method}")]
+        [WebInvoke(Method = "POST", BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "{kind}.{method}.json")]
         Stream PostJsonEntry(string kind, string method, Stream parameters);
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace MySoft.RESTful
         /// <param name="method">发布的业务方法</param>
         /// <returns>字节数据流</returns>
         [OperationContract]
-        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "get.json/{kind}.{method}")]
+        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "{kind}.{method}.json")]
         Stream GetJsonEntry(string kind, string method);
 
         #endregion
@@ -74,7 +74,7 @@ namespace MySoft.RESTful
         /// <param name="parameters">请求参数</param>
         /// <returns>字节数据流</returns>
         [OperationContract]
-        [WebInvoke(Method = "POST", BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "post.xml/{kind}.{method}")]
+        [WebInvoke(Method = "POST", BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "{kind}.{method}.xml")]
         Stream PostXmlEntry(string kind, string method, Stream parameters);
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace MySoft.RESTful
         /// <param name="method">发布的业务方法</param>
         /// <returns>字节数据流</returns>
         [OperationContract]
-        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "get.xml/{kind}.{method}")]
+        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "{kind}.{method}.xml")]
         Stream GetXmlEntry(string kind, string method);
 
         #endregion
@@ -96,7 +96,7 @@ namespace MySoft.RESTful
         /// <param name="method"></param>
         /// <returns></returns>
         [OperationContract]
-        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "get.jsonp/{kind}.{method}")]
+        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "{kind}.{method}.jsonp")]
         Stream GetEntryCallBack(string kind, string method);
 
         /// <summary>

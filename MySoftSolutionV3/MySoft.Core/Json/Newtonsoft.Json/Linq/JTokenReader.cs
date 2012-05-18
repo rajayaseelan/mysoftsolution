@@ -1,9 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿#region License
+// Copyright (c) 2007 James Newton-King
+//
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+#endregion
+
+using System;
 using Newtonsoft.Json.Utilities;
-using System.Globalization;
 
 namespace Newtonsoft.Json.Linq
 {
@@ -32,75 +53,61 @@ namespace Newtonsoft.Json.Linq
     /// Reads the next JSON token from the stream as a <see cref="T:Byte[]"/>.
     /// </summary>
     /// <returns>
-    /// A <see cref="T:Byte[]"/> or a null reference if the next JSON token is null.
+    /// A <see cref="T:Byte[]"/> or a null reference if the next JSON token is null. This method will return <c>null</c> at the end of an array.
     /// </returns>
     public override byte[] ReadAsBytes()
     {
-      Read();
-
-      // attempt to convert possible base 64 string to bytes
-      if (TokenType == JsonToken.String)
-      {
-        string s = (string) Value;
-        byte[] data = (s.Length == 0) ? new byte[0] : Convert.FromBase64String(s);
-        SetToken(JsonToken.Bytes, data);
-      }
-
-      if (TokenType == JsonToken.Null)
-        return null;
-      if (TokenType == JsonToken.Bytes)
-        return (byte[])Value;
-
-      throw new JsonReaderException("Error reading bytes. Expected bytes but got {0}.".FormatWith(CultureInfo.InvariantCulture, TokenType));
+      return ReadAsBytesInternal();
     }
 
     /// <summary>
     /// Reads the next JSON token from the stream as a <see cref="Nullable{Decimal}"/>.
     /// </summary>
-    /// <returns>A <see cref="Nullable{Decimal}"/>.</returns>
+    /// <returns>A <see cref="Nullable{Decimal}"/>. This method will return <c>null</c> at the end of an array.</returns>
     public override decimal? ReadAsDecimal()
     {
-      Read();
+      return ReadAsDecimalInternal();
+    }
 
-      if (TokenType == JsonToken.Null)
-        return null;
-      if (TokenType == JsonToken.Integer || TokenType == JsonToken.Float)
-      {
-        SetToken(JsonToken.Float, Convert.ToDecimal(Value, CultureInfo.InvariantCulture));
-        return (decimal) Value;
-      }
+    /// <summary>
+    /// Reads the next JSON token from the stream as a <see cref="Nullable{Int32}"/>.
+    /// </summary>
+    /// <returns>A <see cref="Nullable{Int32}"/>. This method will return <c>null</c> at the end of an array.</returns>
+    public override int? ReadAsInt32()
+    {
+      return ReadAsInt32Internal();
+    }
 
-      throw new JsonReaderException("Error reading decimal. Expected a number but got {0}.".FormatWith(CultureInfo.InvariantCulture, TokenType));
+    /// <summary>
+    /// Reads the next JSON token from the stream as a <see cref="String"/>.
+    /// </summary>
+    /// <returns>A <see cref="String"/>. This method will return <c>null</c> at the end of an array.</returns>
+    public override string ReadAsString()
+    {
+      return ReadAsStringInternal();
+    }
+
+    /// <summary>
+    /// Reads the next JSON token from the stream as a <see cref="Nullable{DateTime}"/>.
+    /// </summary>
+    /// <returns>A <see cref="String"/>. This method will return <c>null</c> at the end of an array.</returns>
+    public override DateTime? ReadAsDateTime()
+    {
+      return ReadAsDateTimeInternal();
     }
 
 #if !NET20
     /// <summary>
     /// Reads the next JSON token from the stream as a <see cref="Nullable{DateTimeOffset}"/>.
     /// </summary>
-    /// <returns>A <see cref="Nullable{DateTimeOffset}"/>.</returns>
+    /// <returns>A <see cref="Nullable{DateTimeOffset}"/>. This method will return <c>null</c> at the end of an array.</returns>
     public override DateTimeOffset? ReadAsDateTimeOffset()
     {
-      Read();
-
-      if (TokenType == JsonToken.Null)
-        return null;
-      if (TokenType == JsonToken.Date)
-      {
-        SetToken(JsonToken.Date, new DateTimeOffset((DateTime)Value));
-        return (DateTimeOffset)Value;
-      }
-
-      throw new JsonReaderException("Error reading date. Expected bytes but got {0}.".FormatWith(CultureInfo.InvariantCulture, TokenType));
+      return ReadAsDateTimeOffsetInternal();
     }
 #endif
 
-    /// <summary>
-    /// Reads the next JSON token from the stream.
-    /// </summary>
-    /// <returns>
-    /// true if the next token was read successfully; false if there are no more tokens to read.
-    /// </returns>
-    public override bool Read()
+    internal override bool ReadInternal()
     {
       if (CurrentState != State.Start)
       {
@@ -113,6 +120,19 @@ namespace Newtonsoft.Json.Linq
 
       SetToken(_current);
       return true;
+    }
+
+    /// <summary>
+    /// Reads the next JSON token from the stream.
+    /// </summary>
+    /// <returns>
+    /// true if the next token was read successfully; false if there are no more tokens to read.
+    /// </returns>
+    public override bool Read()
+    {
+      _readType = ReadType.Read;
+
+      return ReadInternal();
     }
 
     private bool ReadOver(JToken t)
@@ -138,7 +158,7 @@ namespace Newtonsoft.Json.Linq
 
     private bool ReadToEnd()
     {
-      //CurrentState = State.Finished;
+      SetToken(JsonToken.None);
       return false;
     }
 
@@ -242,9 +262,23 @@ namespace Newtonsoft.Json.Linq
         case JTokenType.Bytes:
           SetToken(JsonToken.Bytes, ((JValue)token).Value);
           break;
+        case JTokenType.Guid:
+          SetToken(JsonToken.String, SafeToString(((JValue)token).Value));
+          break;
+        case JTokenType.Uri:
+          SetToken(JsonToken.String, SafeToString(((JValue)token).Value));
+          break;
+        case JTokenType.TimeSpan:
+          SetToken(JsonToken.String, SafeToString(((JValue)token).Value));
+          break;
         default:
           throw MiscellaneousUtils.CreateArgumentOutOfRangeException("Type", token.Type, "Unexpected JTokenType.");
       }
+    }
+
+    private string SafeToString(object value)
+    {
+      return (value != null) ? value.ToString() : null;
     }
 
     bool IJsonLineInfo.HasLineInfo()

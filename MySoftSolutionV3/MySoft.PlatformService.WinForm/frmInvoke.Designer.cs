@@ -88,6 +88,7 @@
             0,
             0,
             0});
+            this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
             // plParameters
             // 
@@ -230,6 +231,7 @@
             this.checkBox1.TabIndex = 3;
             this.checkBox1.Text = "超时        秒";
             this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // label5
             // 
@@ -274,6 +276,7 @@
             this.button2.TabIndex = 0;
             this.button2.Text = "关闭(&C)";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // button1
             // 
@@ -284,6 +287,7 @@
             this.button1.TabIndex = 0;
             this.button1.Text = "开始执行(&E)";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // label1
             // 
@@ -341,8 +345,10 @@
             // 
             // frmInvoke
             // 
+            this.AcceptButton = this.button1;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.button2;
             this.ClientSize = new System.Drawing.Size(732, 440);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.panel1);

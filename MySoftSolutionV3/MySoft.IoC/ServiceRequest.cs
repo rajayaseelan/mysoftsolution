@@ -6,6 +6,7 @@ using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {

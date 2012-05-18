@@ -22,6 +22,9 @@ namespace MySoft.IoC.HttpProxy
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public class DefaultHttpProxyService : IHttpProxyService
     {
+        const string HTTP_PROXY_API = "{0}/{1}";
+        const string HTTP_PROXY_URL = "{0}/{1}?{2}";
+        private string proxyServer;
         private HttpHelper helper;
         private IList<ServiceItem> services;
 
@@ -31,8 +34,10 @@ namespace MySoft.IoC.HttpProxy
             var url = ConfigurationManager.AppSettings["HttpProxyServer"];
             if (string.IsNullOrEmpty(url))
                 throw new ArgumentNullException("Http proxy server can't for empty.");
+            else
+                proxyServer = url;
 
-            this.helper = new HttpHelper(url);
+            this.helper = new HttpHelper(Encoding.UTF8, 30);
             this.services = new List<ServiceItem>();
 
             //读取服务信息
@@ -45,7 +50,8 @@ namespace MySoft.IoC.HttpProxy
         private void ReaderService()
         {
             //数据缓存1分钟
-            var jsonString = helper.Get("api", string.Empty, 60);
+            var url = string.Format(HTTP_PROXY_API, proxyServer, "api");
+            var jsonString = helper.Reader(url, 60);
 
             //将数据反系列化成对象
             this.services = SerializationManager.DeserializeJson<IList<ServiceItem>>(jsonString);
@@ -76,8 +82,18 @@ namespace MySoft.IoC.HttpProxy
                 try
                 {
                     //数据缓存5秒
-                    var parameters = HttpUtility.UrlDecode(query.ToString());
-                    jsonString = helper.Get(name, parameters, 5, header);
+                    var url = string.Empty;
+                    if (query.Count > 0)
+                    {
+                        var parameters = HttpUtility.UrlDecode(query.ToString());
+                        url = string.Format(HTTP_PROXY_URL, proxyServer, name, parameters);
+                    }
+                    else
+                    {
+                        url = string.Format(HTTP_PROXY_API, proxyServer, name);
+                    }
+
+                    jsonString = helper.Reader(url, 5, header);
 
                     if (service != null && service.TypeString)
                     {
@@ -144,7 +160,7 @@ namespace MySoft.IoC.HttpProxy
         /// </summary>
         /// <param name="name">方法名称</param>
         /// <returns>字节数据流</returns>
-        public Stream PostTextEntry(string name, Stream parameters)
+        public Stream PostTextEntry(string name, Stream stream)
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
@@ -164,12 +180,23 @@ namespace MySoft.IoC.HttpProxy
                 try
                 {
                     var postValue = string.Empty;
-                    using (var sr = new StreamReader(parameters))
+                    using (var sr = new StreamReader(stream))
                     {
                         postValue = sr.ReadToEnd();
                     }
 
-                    jsonString = helper.Post(name, query.ToString(), postValue, header);
+                    var url = string.Empty;
+                    if (query.Count > 0)
+                    {
+                        var parameters = HttpUtility.UrlDecode(query.ToString());
+                        url = string.Format(HTTP_PROXY_URL, proxyServer, name, parameters);
+                    }
+                    else
+                    {
+                        url = string.Format(HTTP_PROXY_API, proxyServer, name);
+                    }
+
+                    jsonString = helper.Poster(url, postValue, header);
                     if (item != null && item.TypeString)
                     {
                         //如果返回是字符串类型，则设置为文本返回
@@ -179,8 +206,8 @@ namespace MySoft.IoC.HttpProxy
                 catch (WebException ex)
                 {
                     var rep = (ex.Response as HttpWebResponse);
-                    var stream = rep.GetResponseStream();
-                    using (var sr = new StreamReader(stream))
+                    var output = rep.GetResponseStream();
+                    using (var sr = new StreamReader(output))
                     {
                         jsonString = sr.ReadToEnd();
                     }
@@ -217,14 +244,15 @@ namespace MySoft.IoC.HttpProxy
             if (!string.IsNullOrEmpty(kind)) method += ("/" + kind);
 
             //文档缓存1分钟
-            string html = helper.Get(method, string.Empty, 60);
+            var url = string.Format(HTTP_PROXY_API, proxyServer, method);
+            string html = helper.Reader(url, 60);
 
             //转换成utf8返回
             response.ContentType = "text/html;charset=utf-8";
             var regex = new Regex(@"<title>([\s\S]+) 处的操作</title>", RegexOptions.IgnoreCase);
             if (regex.IsMatch(html))
             {
-                var url = string.Format("http://{0}/", request.UriTemplateMatch.RequestUri.Authority);
+                url = string.Format("http://{0}/", request.UriTemplateMatch.RequestUri.Authority);
                 html = html.Replace(regex.Match(html).Result("$1"), url);
             }
 
@@ -290,7 +318,7 @@ namespace MySoft.IoC.HttpProxy
                 var result = Authorize(token);
                 if (result.Succeed && !string.IsNullOrEmpty(result.Name))
                 {
-                    header["Set-Authorize"] = result.Name;
+                    header["X-AuthParameter"] = result.Name;
                     response.StatusCode = HttpStatusCode.OK;
                     return new HttpProxyResult { Code = (int)response.StatusCode };
                 }

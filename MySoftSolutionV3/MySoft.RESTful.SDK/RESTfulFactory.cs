@@ -334,7 +334,7 @@ namespace MySoft.RESTful.SDK
                 var plist = CoreHelper.GetPropertiesFromType(item.GetType());
                 for (int index = 0; index < plist.Length; index++)
                 {
-                    collection[plist[index].Name] = plist[index].GetValue(item, null);
+                    collection[plist[index].Name] = CoreHelper.GetPropertyValue(item, plist[index]);
                 }
 
                 parameter.DataObject = collection;

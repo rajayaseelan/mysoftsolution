@@ -35,6 +35,13 @@ namespace MySoft.RESTful.Demo
         /// <returns></returns>
         [PublishMethod("getusers", Description = "获取一组用户")]
         IList<User> GetUsers();
+
+        /// <summary>
+        /// 添加一组用户
+        /// </summary>
+        /// <returns></returns>
+        [PublishMethod("addusers", Description = "添加一组用户")]
+        int AddUsers(IList<User> users);
     }
 
     /// <summary>
@@ -64,6 +71,15 @@ namespace MySoft.RESTful.Demo
                 new User { Id = 2, Name = "test2" }            , 
                 new User { Id = 3, Name = "test3" }
             };
+        }
+
+        /// <summary>
+        /// 添加一组用户
+        /// </summary>
+        /// <param name="users"></param>
+        public int AddUsers(IList<User> users)
+        {
+            return users.Count;
         }
 
         #endregion

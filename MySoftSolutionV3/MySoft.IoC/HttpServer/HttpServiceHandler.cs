@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.IO;
-using MySoft.Net.Http;
-using Newtonsoft.Json.Linq;
 using System.Text;
-using MySoft.IoC.Messages;
+using System.Web;
 using MySoft.Auth;
 using MySoft.IoC.Configuration;
+using MySoft.Net.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -109,35 +111,35 @@ namespace MySoft.IoC.HttpServer
             try
             {
                 //调用方法
-                var collection = ParseCollection(paramString);
-
-                if (callMethod.Authorized)
+                NameValueCollection collection = null;
+                if (callMethod.HttpMethod == HttpMethod.GET)
                 {
-                    if (!request.Has("Set-Authorize"))
-                        throw new AuthorizeException("Request header did not exist set-authorize info.");
-                    else
-                        //调用认证的信息
-                        collection[callMethod.AuthParameter] = request.Get("Set-Authorize");
+                    collection = HttpUtility.ParseQueryString(paramString ?? string.Empty, Encoding.UTF8);
                 }
-
-                if (callMethod.HttpMethod == HttpMethod.POST)
+                else
                 {
                     //接收流内部数据
                     using (var stream = request.GetRequestStream())
                     using (var sr = new StreamReader(stream))
                     {
                         string streamValue = sr.ReadToEnd();
-                        var jobject = JObject.Parse(streamValue);
-
-                        //处理POST的数据
-                        foreach (var kvp in jobject)
-                        {
-                            collection[kvp.Key] = kvp.Value;
-                        }
+                        collection = HttpUtility.ParseQueryString(streamValue, Encoding.UTF8);
                     }
                 }
 
-                string jsonString = caller.CallMethod(methodName, collection.ToString());
+                if (callMethod.Authorized)
+                {
+                    if (!request.Has("X-AuthParameter"))
+                        throw new AuthorizeException("Request header did not exist [X-AuthParameter] info.");
+                    else
+                        //调用认证的信息
+                        collection[callMethod.AuthParameter] = request.Get("X-AuthParameter");
+                }
+
+                //转换成JsonString
+                var parameters = ConvertJsonString(collection);
+                string jsonString = caller.CallMethod(methodName, parameters);
+
                 if (callMethod.TypeString)
                 {
                     //如果返回是字符串类型，则设置为文本返回
@@ -180,19 +182,24 @@ namespace MySoft.IoC.HttpServer
             SendResponse(response, jsonString);
         }
 
-        private JObject ParseCollection(string paramString)
+        /// <summary>
+        /// 转换成JObject
+        /// </summary>
+        /// <param name="nvs"></param>
+        /// <returns></returns>
+        private string ConvertJsonString(NameValueCollection nvs)
         {
-            var collection = new JObject();
-            if (!string.IsNullOrEmpty(paramString))
+            var obj = new JObject();
+            if (nvs.Count > 0)
             {
-                var nvs = UrlUtility.ParseQueryString(paramString);
                 foreach (var key in nvs.AllKeys)
                 {
-                    collection[key] = nvs[key];
+                    obj[key] = nvs[key];
                 }
             }
 
-            return collection;
+            //转换成Json字符串
+            return obj.ToString(Formatting.Indented);
         }
 
         #endregion

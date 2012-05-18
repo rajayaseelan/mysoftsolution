@@ -1,4 +1,29 @@
-﻿#if !(NET35 || NET20 || WINDOWS_PHONE)
+﻿#region License
+// Copyright (c) 2007 James Newton-King
+//
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+#endregion
+
+#if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -24,11 +49,7 @@ namespace Newtonsoft.Json.Utilities
 
     private bool IsOverridden(string method)
     {
-      return _proxy.GetType().GetMember(method, MemberTypes.Method, BindingFlags.Public | BindingFlags.Instance).Cast<MethodInfo>()
-        .Any(info =>
-          // check that the method overrides the original on DynamicObjectProxy
-          info.DeclaringType != typeof(DynamicProxy<T>) &&
-          info.GetBaseDefinition().DeclaringType == typeof(DynamicProxy<T>));
+      return ReflectionUtils.IsMethodOverridden(_proxy.GetType(), typeof (DynamicProxy<T>), method);
     }
 
     public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
@@ -176,8 +197,8 @@ namespace Newtonsoft.Json.Utilities
     private static ConstantExpression Constant(DynamicMetaObjectBinder binder)
     {
       Type t = binder.GetType();
-      while (!t.IsVisible)
-        t = t.BaseType;
+      while (!t.IsVisible())
+        t = t.BaseType();
       return Expression.Constant(binder, t);
     }
 
@@ -224,19 +245,19 @@ namespace Newtonsoft.Json.Utilities
       callArgs.AddRange(args);
       callArgs.Add(result);
 
-      DynamicMetaObject resultMO = new DynamicMetaObject(result, BindingRestrictions.Empty);
+      DynamicMetaObject resultMetaObject = new DynamicMetaObject(result, BindingRestrictions.Empty);
 
       // Need to add a conversion if calling TryConvert
       if (binder.ReturnType != typeof (object))
       {
-        UnaryExpression convert = Expression.Convert(resultMO.Expression, binder.ReturnType);
+        UnaryExpression convert = Expression.Convert(resultMetaObject.Expression, binder.ReturnType);
         // will always be a cast or unbox
 
-        resultMO = new DynamicMetaObject(convert, resultMO.Restrictions);
+        resultMetaObject = new DynamicMetaObject(convert, resultMetaObject.Restrictions);
       }
 
       if (fallbackInvoke != null)
-        resultMO = fallbackInvoke(resultMO);
+        resultMetaObject = fallbackInvoke(resultMetaObject);
 
       DynamicMetaObject callDynamic = new DynamicMetaObject(
         Expression.Block(
@@ -247,12 +268,12 @@ namespace Newtonsoft.Json.Utilities
               typeof(DynamicProxy<T>).GetMethod(methodName),
               callArgs
               ),
-            resultMO.Expression,
+            resultMetaObject.Expression,
             fallbackResult.Expression,
             binder.ReturnType
             )
           ),
-        GetRestrictions().Merge(resultMO.Restrictions).Merge(fallbackResult.Restrictions)
+        GetRestrictions().Merge(resultMetaObject.Restrictions).Merge(fallbackResult.Restrictions)
         );
 
       return callDynamic;

@@ -25,18 +25,22 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+#if !PORTABLE
 using System.Collections.Specialized;
+#endif
 using System.ComponentModel;
-#if !(NET35 || NET20 || WINDOWS_PHONE)
+#if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
 using System.Dynamic;
 using System.Linq.Expressions;
 #endif
-using System.Linq;
 using System.IO;
 using Newtonsoft.Json.Utilities;
 using System.Globalization;
-#if !PocketPC && !SILVERLIGHT
-using Newtonsoft.Json.Linq.ComponentModel;
+#if NET20
+using Newtonsoft.Json.Utilities.LinqBridge;
+#else
+using System.Linq;
 #endif
 
 namespace Newtonsoft.Json.Linq
@@ -45,19 +49,30 @@ namespace Newtonsoft.Json.Linq
   /// Represents a JSON object.
   /// </summary>
   public class JObject : JContainer, IDictionary<string, JToken>, INotifyPropertyChanged
-#if !(PocketPC || SILVERLIGHT)
+#if !(SILVERLIGHT || NETFX_CORE || PORTABLE)
     , ICustomTypeDescriptor
 #endif
-#if !(PocketPC || SILVERLIGHT || NET20)
+#if !(SILVERLIGHT || NET20 || NETFX_CORE || PORTABLE)
     , INotifyPropertyChanging
 #endif
   {
+    private readonly JPropertyKeyedCollection _properties = new JPropertyKeyedCollection();
+
+    /// <summary>
+    /// Gets the container's children tokens.
+    /// </summary>
+    /// <value>The container's children tokens.</value>
+    protected override IList<JToken> ChildrenTokens
+    {
+      get { return _properties; }
+    }
+
     /// <summary>
     /// Occurs when a property value changes.
     /// </summary>
     public event PropertyChangedEventHandler PropertyChanged;
 
-#if !(PocketPC || SILVERLIGHT || NET20)
+#if !(SILVERLIGHT || NET20 || NETFX_CORE || PORTABLE)
     /// <summary>
     /// Occurs when a property value is changing.
     /// </summary>
@@ -101,7 +116,19 @@ namespace Newtonsoft.Json.Linq
     internal override bool DeepEquals(JToken node)
     {
       JObject t = node as JObject;
-      return (t != null && ContentsEqual(t));
+      if (t == null)
+        return false;
+
+      return _properties.Compare(t._properties);
+    }
+
+    internal override void InsertItem(int index, JToken item, bool skipParentCheck)
+    {
+      // don't add comments to JObject, no name to reference comment by
+      if (item != null && item.Type == JTokenType.Comment)
+        return;
+
+      base.InsertItem(index, item, skipParentCheck);
     }
 
     internal override void ValidateToken(JToken o, JToken existing)
@@ -111,30 +138,34 @@ namespace Newtonsoft.Json.Linq
       if (o.Type != JTokenType.Property)
         throw new ArgumentException("Can not add {0} to {1}.".FormatWith(CultureInfo.InvariantCulture, o.GetType(), GetType()));
 
-      // looping over all properties every time isn't good
-      // need to think about performance here
-      JProperty property = (JProperty)o;
-      foreach (JProperty childProperty in Children())
+      JProperty newProperty = (JProperty) o;
+
+      if (existing != null)
       {
-        if (childProperty != existing && string.Equals(childProperty.Name, property.Name, StringComparison.Ordinal))
-          throw new ArgumentException("Can not add property {0} to {1}. Property with the same name already exists on object.".FormatWith(CultureInfo.InvariantCulture, property.Name, GetType()));
+        JProperty existingProperty = (JProperty) existing;
+
+        if (newProperty.Name == existingProperty.Name)
+          return;
       }
+
+      if (_properties.TryGetValue(newProperty.Name, out existing))
+        throw new ArgumentException("Can not add property {0} to {1}. Property with the same name already exists on object.".FormatWith(CultureInfo.InvariantCulture, newProperty.Name, GetType()));
     }
 
     internal void InternalPropertyChanged(JProperty childProperty)
     {
       OnPropertyChanged(childProperty.Name);
-#if !SILVERLIGHT
+#if !(SILVERLIGHT || NETFX_CORE || PORTABLE)
       OnListChanged(new ListChangedEventArgs(ListChangedType.ItemChanged, IndexOfItem(childProperty)));
 #endif
-#if SILVERLIGHT || !(NET20 || NET35)
+#if SILVERLIGHT || !(NET20 || NET35 || PORTABLE)
       OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, childProperty, childProperty, IndexOfItem(childProperty)));
 #endif
     }
 
     internal void InternalPropertyChanging(JProperty childProperty)
     {
-#if !PocketPC && !SILVERLIGHT && !NET20
+#if !(SILVERLIGHT || NET20 || NETFX_CORE || PORTABLE)
       OnPropertyChanging(childProperty.Name);
 #endif
     }
@@ -159,7 +190,7 @@ namespace Newtonsoft.Json.Linq
     /// <returns>An <see cref="IEnumerable{JProperty}"/> of this object's properties.</returns>
     public IEnumerable<JProperty> Properties()
     {
-      return Children().Cast<JProperty>();
+      return ChildrenTokens.Cast<JProperty>();
     }
 
     /// <summary>
@@ -169,9 +200,12 @@ namespace Newtonsoft.Json.Linq
     /// <returns>A <see cref="JProperty"/> with the specified name or null.</returns>
     public JProperty Property(string name)
     {
-      return Properties()
-        .Where(p => string.Equals(p.Name, name, StringComparison.Ordinal))
-        .SingleOrDefault();
+      if (name == null)
+        return null;
+
+      JToken property;
+      _properties.TryGetValue(name, out property);
+      return (JProperty)property;
     }
 
     /// <summary>
@@ -234,7 +268,7 @@ namespace Newtonsoft.Json.Linq
         }
         else
         {
-#if !PocketPC && !SILVERLIGHT && !NET20
+#if !(SILVERLIGHT || NET20 || NETFX_CORE || PORTABLE)
           OnPropertyChanging(propertyName);
 #endif
           Add(new JProperty(propertyName, value));
@@ -255,13 +289,13 @@ namespace Newtonsoft.Json.Linq
       if (reader.TokenType == JsonToken.None)
       {
         if (!reader.Read())
-          throw new Exception("Error reading JObject from JsonReader.");
+          throw JsonReaderException.Create(reader, "Error reading JObject from JsonReader.");
       }
 
       if (reader.TokenType != JsonToken.StartObject)
-        throw new Exception(
-          "Error reading JObject from JsonReader. Current JsonReader item is not an object: {0}".FormatWith(
-            CultureInfo.InvariantCulture, reader.TokenType));
+      {
+        throw JsonReaderException.Create(reader, "Error reading JObject from JsonReader. Current JsonReader item is not an object: {0}".FormatWith(CultureInfo.InvariantCulture, reader.TokenType));
+      }
 
       JObject o = new JObject();
       o.SetLineInfo(reader as IJsonLineInfo);
@@ -278,9 +312,14 @@ namespace Newtonsoft.Json.Linq
     /// <returns>A <see cref="JObject"/> populated from the string that contains JSON.</returns>
     public static new JObject Parse(string json)
     {
-      JsonReader jsonReader = new JsonTextReader(new StringReader(json));
+      JsonReader reader = new JsonTextReader(new StringReader(json));
 
-      return Load(jsonReader);
+      JObject o = Load(reader);
+
+      if (reader.Read() && reader.TokenType != JsonToken.Comment)
+        throw JsonReaderException.Create(reader, "Additional text found in JSON string after parsing content.");
+
+      return o;
     }
 
     /// <summary>
@@ -318,7 +357,7 @@ namespace Newtonsoft.Json.Linq
     {
       writer.WriteStartObject();
 
-      foreach (JProperty property in ChildrenInternal())
+      foreach (JProperty property in ChildrenTokens)
       {
         property.WriteTo(writer, converters);
       }
@@ -339,12 +378,13 @@ namespace Newtonsoft.Json.Linq
 
     bool IDictionary<string, JToken>.ContainsKey(string key)
     {
-      return (Property(key) != null);
+      return _properties.Contains(key);
     }
 
     ICollection<string> IDictionary<string, JToken>.Keys
     {
-      get { throw new NotImplementedException(); }
+      // todo: make order the collection returned match JObject order
+      get { return _properties.Keys; }
     }
 
     /// <summary>
@@ -383,7 +423,11 @@ namespace Newtonsoft.Json.Linq
 
     ICollection<JToken> IDictionary<string, JToken>.Values
     {
-      get { throw new NotImplementedException(); }
+      get
+      {
+        // todo: need to wrap _properties.Values with a collection to get the JProperty value
+        throw new NotImplementedException();
+      }
     }
 
     #endregion
@@ -421,21 +465,11 @@ namespace Newtonsoft.Json.Linq
         throw new ArgumentException("The number of elements in the source JObject is greater than the available space from arrayIndex to the end of the destination array.");
 
       int index = 0;
-      foreach (JProperty property in Properties())
+      foreach (JProperty property in ChildrenTokens)
       {
         array[arrayIndex + index] = new KeyValuePair<string, JToken>(property.Name, property.Value);
         index++;
       }
-    }
-
-    /// <summary>
-    /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
-    /// </summary>
-    /// <value></value>
-    /// <returns>The number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.</returns>
-    public int Count
-    {
-      get { return Children().Count(); }
     }
 
     bool ICollection<KeyValuePair<string,JToken>>.IsReadOnly
@@ -467,7 +501,7 @@ namespace Newtonsoft.Json.Linq
     /// </returns>
     public IEnumerator<KeyValuePair<string, JToken>> GetEnumerator()
     {
-      foreach (JProperty property in Properties())
+      foreach (JProperty property in ChildrenTokens)
       {
         yield return new KeyValuePair<string, JToken>(property.Name, property.Value);
       }
@@ -483,7 +517,7 @@ namespace Newtonsoft.Json.Linq
         PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
     }
 
-#if !PocketPC && !SILVERLIGHT && !NET20
+#if !(SILVERLIGHT || NETFX_CORE || PORTABLE || NET20)
     /// <summary>
     /// Raises the <see cref="PropertyChanging"/> event with the provided arguments.
     /// </summary>
@@ -495,7 +529,7 @@ namespace Newtonsoft.Json.Linq
     }
 #endif
 
-#if !PocketPC && !SILVERLIGHT
+#if !(SILVERLIGHT || NETFX_CORE || PORTABLE)
     // include custom type descriptor on JObject rather than use a provider because the properties are specific to a type
     #region ICustomTypeDescriptor
     /// <summary>
@@ -654,7 +688,7 @@ namespace Newtonsoft.Json.Linq
     #endregion
 #endif
 
-#if !(NET35 || NET20 || WINDOWS_PHONE)
+#if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
     /// <summary>
     /// Returns the <see cref="T:System.Dynamic.DynamicMetaObject"/> responsible for binding operations performed on this object.
     /// </summary>

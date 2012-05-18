@@ -501,8 +501,7 @@ namespace MySoft.Data
         {
             if (topSize <= 0) throw new DataException("选取前N条数据值不能小于等于0！");
 
-            var tempQuery = this.SubQuery("SUB_TOP_TABLE");
-            var query = dbProvider.CreatePageQuery<T>(tempQuery, topSize, 0);
+            var query = dbProvider.CreatePageQuery<T>(this, topSize, 0);
             TopSection<T> top = new TopSection<T>(query, dbProvider, dbTran, topSize);
 
             return top;
@@ -866,62 +865,57 @@ namespace MySoft.Data
         private SourceList<TResult> GetList<TResult>(QuerySection<TResult> query, int itemCount, int skipCount)
             where TResult : Entity
         {
-            QuerySection<TResult> tempQuery = null;
             if (query.UnionQuery)
-                tempQuery = query.SubQuery("SUB_UNION_TABLE");
-            else
-                tempQuery = query.SubQuery("SUB_TMP_TABLE");
+            {
+                query = query.SubQuery("SUB_UNION_TABLE");
+            }
 
-            tempQuery = dbProvider.CreatePageQuery<TResult>(tempQuery, itemCount, skipCount);
-            return ExecuteDataList<TResult>(tempQuery);
+            query = dbProvider.CreatePageQuery<TResult>(query, itemCount, skipCount);
+            return ExecuteDataList<TResult>(query);
         }
 
         private ArrayList<TResult> GetListResult<TResult>(QuerySection<T> query, int itemCount, int skipCount)
         {
-            QuerySection<T> tempQuery = null;
             if (query.UnionQuery)
-                tempQuery = query.SubQuery("SUB_UNION_TABLE");
-            else
-                tempQuery = query.SubQuery("SUB_TMP_TABLE");
+            {
+                query = query.SubQuery("SUB_UNION_TABLE");
+            }
 
-            tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
-            return ExecuteDataListResult<TResult>(tempQuery);
+            query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
+            return ExecuteDataListResult<TResult>(query);
         }
 
         private SourceReader GetDataReader(QuerySection<T> query, int itemCount, int skipCount)
         {
-            QuerySection<T> tempQuery = null;
             if (query.UnionQuery)
-                tempQuery = query.SubQuery("SUB_UNION_TABLE");
-            else
-                tempQuery = query.SubQuery("SUB_TMP_TABLE");
+            {
+                query = query.SubQuery("SUB_UNION_TABLE");
+            }
 
-            tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
-            return ExecuteDataReader(tempQuery);
+            query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
+            return ExecuteDataReader(query);
         }
 
         private SourceTable GetDataTable(QuerySection<T> query, int itemCount, int skipCount)
         {
-            QuerySection<T> tempQuery = null;
             if (query.UnionQuery)
-                tempQuery = query.SubQuery("SUB_UNION_TABLE");
-            else
-                tempQuery = query.SubQuery("SUB_TMP_TABLE");
+            {
+                query = query.SubQuery("SUB_UNION_TABLE");
+            }
 
-            tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
-            return ExecuteDataTable(tempQuery);
+            query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
+            return ExecuteDataTable(query);
         }
 
         private DataSet GetDataSet(QuerySection<T> query, int itemCount, int skipCount)
         {
-            QuerySection<T> tempQuery = null;
             if (query.UnionQuery)
-                tempQuery = query.SubQuery("SUB_UNION_TABLE");
-            else
-                tempQuery = query.SubQuery("SUB_TMP_TABLE");
+            {
+                query = query.SubQuery("SUB_UNION_TABLE");
+            }
 
-            tempQuery = dbProvider.CreatePageQuery<T>(tempQuery, itemCount, skipCount);
-            return ExecuteDataSet(tempQuery);
+            query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
+            return ExecuteDataSet(query);
         }
 
         private int GetCount(QuerySection<T> query)

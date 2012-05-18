@@ -25,19 +25,29 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json.Utilities;
 using System.Collections;
+#if NET20
+using Newtonsoft.Json.Utilities.LinqBridge;
+#else
+using System.Linq;
+#endif
 
 namespace Newtonsoft.Json.Serialization
 {
   /// <summary>
   /// Contract details for a <see cref="Type"/> used by the <see cref="JsonSerializer"/>.
   /// </summary>
-  public class JsonArrayContract : JsonContract
+  public class JsonArrayContract : JsonContainerContract
   {
-    internal Type CollectionItemType { get; private set; }
+    /// <summary>
+    /// Gets the <see cref="Type"/> of the collection items.
+    /// </summary>
+    /// <value>The <see cref="Type"/> of the collection items.</value>
+    public Type CollectionItemType { get; private set; }
+
+    internal JsonContract CollectionItemContract { get; set; }
 
     private readonly bool _isCollectionItemTypeNullableType;
     private readonly Type _genericCollectionDefinitionType;
@@ -51,9 +61,16 @@ namespace Newtonsoft.Json.Serialization
     public JsonArrayContract(Type underlyingType)
       : base(underlyingType)
     {
+      ContractType = JsonContractType.Array;
+      
       if (ReflectionUtils.ImplementsGenericDefinition(underlyingType, typeof(ICollection<>), out _genericCollectionDefinitionType))
       {
         CollectionItemType = _genericCollectionDefinitionType.GetGenericArguments()[0];
+      }
+      else if (underlyingType.IsGenericType() && underlyingType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+      {
+        _genericCollectionDefinitionType =  typeof (IEnumerable<>);
+        CollectionItemType = underlyingType.GetGenericArguments()[0];
       }
       else
       {
@@ -101,13 +118,17 @@ namespace Newtonsoft.Json.Serialization
 
     private void EnsureGenericWrapperCreator()
     {
-      if (_genericWrapperType == null)
+      if (_genericWrapperCreator == null)
       {
         _genericWrapperType = ReflectionUtils.MakeGenericType(typeof (CollectionWrapper<>), CollectionItemType);
 
-        Type constructorArgument = (ReflectionUtils.InheritsGenericDefinition(_genericCollectionDefinitionType, typeof (List<>)))
-                                     ? ReflectionUtils.MakeGenericType(typeof (ICollection<>), CollectionItemType)
-                                     : _genericCollectionDefinitionType;
+        Type constructorArgument;
+
+        if (ReflectionUtils.InheritsGenericDefinition(_genericCollectionDefinitionType, typeof(List<>))
+          || _genericCollectionDefinitionType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+          constructorArgument = ReflectionUtils.MakeGenericType(typeof(ICollection<>), CollectionItemType);
+        else
+          constructorArgument = _genericCollectionDefinitionType;
 
         ConstructorInfo genericWrapperConstructor = _genericWrapperType.GetConstructor(new[] { constructorArgument });
         _genericWrapperCreator = JsonTypeReflector.ReflectionDelegateFactory.CreateMethodCall<object>(genericWrapperConstructor);
@@ -116,7 +137,7 @@ namespace Newtonsoft.Json.Serialization
 
     private bool IsTypeGenericCollectionInterface(Type type)
     {
-      if (!type.IsGenericType)
+      if (!type.IsGenericType())
         return false;
 
       Type genericDefinition = type.GetGenericTypeDefinition();
