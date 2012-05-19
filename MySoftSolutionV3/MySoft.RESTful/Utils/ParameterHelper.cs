@@ -19,32 +19,34 @@ namespace MySoft.RESTful.Utils
         /// <returns></returns>
         public static object[] Convert(ParameterInfo[] paramters, NameValueCollection nvs)
         {
-            try
+
+            List<object> args = new List<object>();
+            foreach (ParameterInfo info in paramters)
             {
-                List<object> args = new List<object>();
-                foreach (ParameterInfo info in paramters)
+                var type = GetElementType(info.ParameterType);
+                if (nvs[info.Name] != null)
                 {
-                    var type = GetElementType(info.ParameterType);
-                    if (nvs[info.Name] != null)
+                    try
                     {
                         //获取Json值
                         var jsonValue = CoreHelper.ConvertJsonValue(type, nvs[info.Name]);
                         args.Add(jsonValue);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        //没有的参数使用默认值
-                        var jsonValue = CoreHelper.GetTypeDefaultValue(type);
-                        args.Add(jsonValue);
+                        throw new RESTfulException((int)HttpStatusCode.BadRequest, string.Format("Parameter [{0}] convert type [{1}] did not match. ",
+                            info.Name, info.ParameterType.FullName));
                     }
                 }
+                else
+                {
+                    //没有的参数使用默认值
+                    var jsonValue = CoreHelper.GetTypeDefaultValue(type);
+                    args.Add(jsonValue);
+                }
+            }
 
-                return args.ToArray();
-            }
-            catch (Exception ex)
-            {
-                throw new RESTfulException((int)HttpStatusCode.BadRequest, "Parameter type did not match. " + ErrorHelper.GetInnerException(ex).Message);
-            }
+            return args.ToArray();
         }
 
         private static Type GetElementType(Type type)
