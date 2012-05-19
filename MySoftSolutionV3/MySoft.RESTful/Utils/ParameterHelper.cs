@@ -34,7 +34,7 @@ namespace MySoft.RESTful.Utils
                     }
                     catch (Exception ex)
                     {
-                        throw new RESTfulException((int)HttpStatusCode.BadRequest, string.Format("Parameter [{0}] convert type [{1}] did not match. ",
+                        throw new RESTfulException((int)HttpStatusCode.BadRequest, string.Format("Parameter [{0}] did not match type [{1}].",
                             info.Name, info.ParameterType.FullName));
                     }
                 }
