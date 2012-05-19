@@ -40,9 +40,7 @@ namespace MySoft.RESTful.Utils
                 }
                 else
                 {
-                    //没有的参数使用默认值
-                    var jsonValue = CoreHelper.GetTypeDefaultValue(type);
-                    args.Add(jsonValue);
+                    throw new RESTfulException((int)HttpStatusCode.BadRequest, "Parameter [" + info.Name + "] is not found.");
                 }
             }
 
