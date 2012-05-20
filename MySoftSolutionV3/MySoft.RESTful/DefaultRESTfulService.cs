@@ -12,6 +12,7 @@ using MySoft.Logger;
 using MySoft.RESTful.Business;
 using MySoft.RESTful.Utils;
 using MySoft.Security;
+using Newtonsoft.Json.Linq;
 
 namespace MySoft.RESTful
 {
@@ -188,7 +189,9 @@ namespace MySoft.RESTful
                 //接收流内部数据
                 var sr = new StreamReader(stream);
                 string streamValue = sr.ReadToEnd();
-                nvs = HttpUtility.ParseQueryString(streamValue, Encoding.UTF8);
+
+                //转换成NameValueCollection
+                nvs = ConvertCollection(streamValue);
             }
 
             string result = GetResponseString(format, kind, method, nvs);
@@ -219,6 +222,41 @@ namespace MySoft.RESTful
             }
 
             return new MemoryStream(buffer);
+        }
+
+        /// <summary>
+        /// 转换成NameValueCollection
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private NameValueCollection ConvertCollection(string data)
+        {
+            //处理成Form方式
+            var values = HttpUtility.ParseQueryString(data, Encoding.UTF8);
+
+            //为0表示为json方式
+            if (values.Count == 0 || (values.Count == 1 && values.AllKeys[0] == null))
+            {
+                try
+                {
+                    //清除所的值
+                    values.Clear();
+
+                    //保持与Json兼容处理
+                    var jobj = JObject.Parse(data);
+                    foreach (var kvp in jobj)
+                    {
+                        values[kvp.Key] = kvp.Value.ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //TODO 不做处理
+                    SimpleLog.Instance.WriteLogForDir("DataConvert", ex);
+                }
+            }
+
+            return values;
         }
 
         private string GetResponseString(ParameterFormat format, string kind, string method, NameValueCollection parameters)
