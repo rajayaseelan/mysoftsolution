@@ -187,7 +187,7 @@ namespace MySoft.RESTful
             else
             {
                 //接收流内部数据
-                var sr = new StreamReader(stream);
+                var sr = new StreamReader(stream, Encoding.UTF8);
                 string streamValue = sr.ReadToEnd();
 
                 //转换成NameValueCollection

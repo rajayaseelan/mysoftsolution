@@ -365,6 +365,13 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.ConvertCollection(System.String)">
+            <summary>
+            转换成NameValueCollection
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.RESTful.DefaultRESTfulService.GetErrorMessage(System.Exception,System.String,System.String,System.Collections.Specialized.NameValueCollection,MySoft.RESTful.RESTfulResult@)">
             <summary>
             获取错误消息

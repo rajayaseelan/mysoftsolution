@@ -5567,6 +5567,13 @@
             <param name="request"></param>
             <param name="response"></param>
         </member>
+        <member name="M:MySoft.IoC.HttpServer.HttpServiceHandler.ConvertCollection(System.String)">
+            <summary>
+            转换成NameValueCollection
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
         <member name="M:MySoft.IoC.HttpServer.HttpServiceHandler.ConvertJsonString(System.Collections.Specialized.NameValueCollection)">
             <summary>
             转换成JObject

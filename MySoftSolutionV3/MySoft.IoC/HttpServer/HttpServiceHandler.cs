@@ -8,6 +8,7 @@ using MySoft.IoC.Configuration;
 using MySoft.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using MySoft.Logger;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -111,20 +112,22 @@ namespace MySoft.IoC.HttpServer
             try
             {
                 //调用方法
-                NameValueCollection collection = null;
+                NameValueCollection nvs = null;
                 if (callMethod.HttpMethod == HttpMethod.GET)
                 {
-                    collection = HttpUtility.ParseQueryString(paramString ?? string.Empty, Encoding.UTF8);
+                    nvs = HttpUtility.ParseQueryString(paramString ?? string.Empty, Encoding.UTF8);
                 }
                 else
                 {
                     //接收流内部数据
-                    using (var stream = request.GetRequestStream())
-                    using (var sr = new StreamReader(stream))
-                    {
-                        string streamValue = sr.ReadToEnd();
-                        collection = HttpUtility.ParseQueryString(streamValue, Encoding.UTF8);
-                    }
+                    var stream = request.GetRequestStream();
+
+                    //接收流内部数据
+                    var sr = new StreamReader(stream, Encoding.UTF8);
+                    string streamValue = sr.ReadToEnd();
+
+                    //转换成NameValueCollection
+                    nvs = ConvertCollection(streamValue);
                 }
 
                 if (callMethod.Authorized)
@@ -133,11 +136,11 @@ namespace MySoft.IoC.HttpServer
                         throw new AuthorizeException("Request header did not exist [X-AuthParameter] info.");
                     else
                         //调用认证的信息
-                        collection[callMethod.AuthParameter] = request.Get("X-AuthParameter");
+                        nvs[callMethod.AuthParameter] = request.Get("X-AuthParameter");
                 }
 
                 //转换成JsonString
-                var parameters = ConvertJsonString(collection);
+                var parameters = ConvertJsonString(nvs);
                 string jsonString = caller.CallMethod(methodName, parameters);
 
                 if (callMethod.TypeString)
@@ -164,6 +167,41 @@ namespace MySoft.IoC.HttpServer
                 var error = new HttpServiceResult { Message = string.Format("{0} - {1}", e.GetType().Name, e.Message) };
                 SendResponse(response, error);
             }
+        }
+
+        /// <summary>
+        /// 转换成NameValueCollection
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private NameValueCollection ConvertCollection(string data)
+        {
+            //处理成Form方式
+            var values = HttpUtility.ParseQueryString(data, Encoding.UTF8);
+
+            //为0表示为json方式
+            if (values.Count == 0 || (values.Count == 1 && values.AllKeys[0] == null))
+            {
+                try
+                {
+                    //清除所的值
+                    values.Clear();
+
+                    //保持与Json兼容处理
+                    var jobj = JObject.Parse(data);
+                    foreach (var kvp in jobj)
+                    {
+                        values[kvp.Key] = kvp.Value.ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //TODO 不做处理
+                    SimpleLog.Instance.WriteLogForDir("DataConvert", ex);
+                }
+            }
+
+            return values;
         }
 
         private void SendResponse(HTTPServerResponse response, string responseString)
