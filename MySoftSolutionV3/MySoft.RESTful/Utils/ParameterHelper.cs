@@ -41,7 +41,7 @@ namespace MySoft.RESTful.Utils
                     catch (Exception ex)
                     {
                         throw new RESTfulException((int)HttpStatusCode.BadRequest, string.Format("Parameter [{0}] did not match type [{1}].",
-                            info.Name, info.ParameterType.FullName));
+                            info.Name, GetTypeName(type)));
                     }
                 }
                 else
@@ -59,6 +59,17 @@ namespace MySoft.RESTful.Utils
             return type;
         }
 
+        private static string GetTypeName(Type type)
+        {
+            string typeName = type.Name;
+            if (type.IsGenericType) type = type.GetGenericArguments()[0];
+            if (typeName.Contains("`1"))
+            {
+                typeName = typeName.Replace("`1", "&lt;" + type.Name + "&gt;");
+            }
+            return typeName;
+        }
+
         /// <summary>
         /// 转换成JObject
         /// </summary>
@@ -73,7 +84,7 @@ namespace MySoft.RESTful.Utils
                 {
                     try
                     {
-                        obj[key] = JObject.Parse(nvs[key]);
+                        obj[key] = JContainer.Parse(nvs[key]);
                     }
                     catch
                     {

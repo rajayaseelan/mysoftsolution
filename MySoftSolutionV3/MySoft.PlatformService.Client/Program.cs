@@ -165,16 +165,24 @@ namespace MySoft.PlatformService.Client
             //Console.ReadLine();
             //return;
 
-            var url = "http://openapi.mysoft.com/user.addusers.json?aaa=1&bbb=2";
-            var users = new { users = new[] { new { ID = 1, Name = "test1=aaa" }, new { ID = 2, Name = "test2" } } };
-            //var value = "users=" + SerializationManager.SerializeJson(users, false);
+            //var url = "http://openapi.mysoft.com/user.addusers.json?aaa=1&bbb=2";
+            //var users = new { users = new[] { new { ID = 1, Name = "test1=aaa" }, new { ID = 2, Name = "test2" } } };
+            ////var value = "users=" + SerializationManager.SerializeJson(users, false);
 
-            //var text = new HttpHelper(120).Poster(url, value);
+            ////var text = new HttpHelper(120).Poster(url, value);
 
-            var factory = RESTfulFactory.Create(url, DataFormat.JSON);
-            var token = factory.Invoke("user.addusers", users, HttpMethod.POST);
+            //var factory = RESTfulFactory.Create(url, DataFormat.JSON);
+            //var token = factory.Invoke("user.addusers", users, HttpMethod.POST);
 
-            Console.WriteLine(token.ToString());
+            //Console.WriteLine(token.ToString());
+
+            var url = "http://openapi.fund123.cn/post.json/myfund.addopenandfinancialfund?uid=yayiyao&pwd=2";
+            var v = HttpUtility.UrlEncode("[{\"AccountBookId\":\"d269da43-4e80-4c8e-ba69-32fca1fcf6e3\",\"ParentID\":\"\",\"Code\":\"100022\",\"Quotient\":1.26,\"BuyMoney\":1,\"BuyDate\":\"2012-04-24\",\"BonusType\":0,\"FrontOrBack\":1,\"RateType\":0,\"DeductFeeType\":0,\"FrontRate\":0.6,\"BuyRate\":0,\"BuyRate1\":0,\"BuyRate2\":0,\"BuyRate3\":0,\"Rate\":0.5,\"Rate1\":0.25,\"Rate2\":0,\"Rate3\":0,\"ChannelType\":0,\"BuyChannel\":\"\",\"Remark\":\"\"}]");
+            var value = "funds=" + v;
+
+            //ÇëÇó·þÎñ
+            value = HttpHelper.Default.Poster(url, value);
+            Console.WriteLine(value);
             Console.ReadLine();
 
             return;

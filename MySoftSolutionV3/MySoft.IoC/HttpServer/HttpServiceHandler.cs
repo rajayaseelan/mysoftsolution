@@ -234,7 +234,7 @@ namespace MySoft.IoC.HttpServer
                 {
                     try
                     {
-                        obj[key] = JObject.Parse(nvs[key]);
+                        obj[key] = JContainer.Parse(nvs[key]);
                     }
                     catch
                     {
