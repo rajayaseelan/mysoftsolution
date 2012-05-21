@@ -195,6 +195,7 @@ namespace MySoft.PlatformService.WinForm
             try
             {
                 label5.Text = "正在调用服务，请稍候...";
+                label5.Refresh();
 
                 var jValue = new JObject();
 

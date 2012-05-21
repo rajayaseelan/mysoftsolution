@@ -232,7 +232,14 @@ namespace MySoft.IoC.HttpServer
             {
                 foreach (var key in nvs.AllKeys)
                 {
-                    obj[key] = nvs[key];
+                    try
+                    {
+                        obj[key] = JObject.Parse(nvs[key]);
+                    }
+                    catch
+                    {
+                        obj[key] = nvs[key];
+                    }
                 }
             }
 

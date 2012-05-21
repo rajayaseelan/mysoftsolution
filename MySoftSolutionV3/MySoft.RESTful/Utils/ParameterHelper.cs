@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Net;
 using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MySoft.RESTful.Utils
 {
@@ -19,17 +22,20 @@ namespace MySoft.RESTful.Utils
         /// <returns></returns>
         public static object[] Convert(ParameterInfo[] paramters, NameValueCollection nvs)
         {
-
             List<object> args = new List<object>();
+            var obj = ConvertJsonObject(nvs);
+
             foreach (ParameterInfo info in paramters)
             {
                 var type = GetElementType(info.ParameterType);
-                if (nvs[info.Name] != null)
+
+                var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
+                if (property != null)
                 {
                     try
                     {
                         //获取Json值
-                        var jsonValue = CoreHelper.ConvertJsonValue(type, nvs[info.Name]);
+                        var jsonValue = CoreHelper.ConvertJsonValue(type, property.Value.ToString(Formatting.None));
                         args.Add(jsonValue);
                     }
                     catch (Exception ex)
@@ -51,6 +57,33 @@ namespace MySoft.RESTful.Utils
         {
             if (type.IsByRef) type = type.GetElementType();
             return type;
+        }
+
+        /// <summary>
+        /// 转换成JObject
+        /// </summary>
+        /// <param name="nvs"></param>
+        /// <returns></returns>
+        private static JObject ConvertJsonObject(NameValueCollection nvs)
+        {
+            var obj = new JObject();
+            if (nvs.Count > 0)
+            {
+                foreach (var key in nvs.AllKeys)
+                {
+                    try
+                    {
+                        obj[key] = JObject.Parse(nvs[key]);
+                    }
+                    catch
+                    {
+                        obj[key] = nvs[key];
+                    }
+                }
+            }
+
+            //转换成Json对象
+            return obj;
         }
     }
 }

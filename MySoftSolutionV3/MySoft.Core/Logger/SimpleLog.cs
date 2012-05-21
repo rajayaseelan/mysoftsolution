@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using MySoft.Mail;
-using System.Threading;
 using System.Linq;
-using MySoft.Threading;
+using System.Text;
+using System.Threading;
+using MySoft.Mail;
 
 namespace MySoft.Logger
 {
@@ -51,7 +50,7 @@ namespace MySoft.Logger
             this.logqueue = new Queue<LogInfo>();
 
             //启动生成文件线程
-            ManagedThreadPool.QueueUserWorkItem(state =>
+            var threadLog = new Thread(() =>
             {
                 while (true)
                 {
@@ -90,6 +89,10 @@ namespace MySoft.Logger
                     Thread.Sleep(100);
                 }
             });
+
+            //启动日志线程
+            threadLog.IsBackground = true;
+            threadLog.Start();
         }
 
         #region 自动创建文件
