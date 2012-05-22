@@ -99,9 +99,11 @@ namespace MySoft.Web
     /// <summary>
     /// 生成页面时委托
     /// </summary>
+    /// <param name="dynamicurl"></param>
+    /// <param name="staticurl"></param>
     /// <param name="content"></param>
     /// <returns></returns>
-    public delegate string CallbackEventHandler(string content);
+    public delegate string CallbackEventHandler(string dynamicurl, string staticurl, string content);
 
     /// <summary>
     /// 返回值数组的委托
@@ -345,7 +347,7 @@ namespace MySoft.Web
                 {
                     try
                     {
-                        content = Callback(content);
+                        content = Callback(item.DynamicUrl, item.StaticUrl, content);
                     }
                     catch (Exception ex)
                     {
@@ -919,7 +921,7 @@ namespace MySoft.Web
                         {
                             try
                             {
-                                content = Callback(content);
+                                content = Callback(item.DynamicUrl, item.StaticUrl, content);
                             }
                             catch { };
                         }

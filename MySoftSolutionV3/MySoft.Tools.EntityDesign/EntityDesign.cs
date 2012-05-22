@@ -33,6 +33,9 @@ namespace MySoft.Tools.EntityDesign
 
             if (btnConnect.Text == "断开服务器连接")
             {
+                chkCreateAssembly.Checked = false;
+                chkCreateAssembly_CheckedChanged(sender, e);
+
                 EnableGenEntity(false);
                 return;
             }
