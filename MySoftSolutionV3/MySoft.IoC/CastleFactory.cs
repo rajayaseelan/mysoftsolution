@@ -214,7 +214,7 @@ namespace MySoft.IoC
             //获取服务节点
             if (resolver != null)
             {
-                node = resolver.GetServerNode(typeof(IServiceInterfaceType), node);
+                node = resolver.GetServerNode<IServiceInterfaceType>(node);
             }
 
             //获取本地服务
@@ -334,7 +334,7 @@ namespace MySoft.IoC
             //获取服务节点
             if (resolver != null)
             {
-                node = resolver.GetServerNode(typeof(IPublishService), node);
+                node = resolver.GetServerNode<IPublishService>(node);
             }
 
             if (callback == null) throw new IoCException("Callback cannot be the null!");
@@ -482,7 +482,7 @@ namespace MySoft.IoC
             {
                 if (resolver != null)
                 {
-                    ls = (IServiceInterfaceType)resolver.ResolveService(serviceType);
+                    ls = resolver.ResolveService<IServiceInterfaceType>(container);
                 }
 
                 if (ls == null)

@@ -13,16 +13,17 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取服务器节点
         /// </summary>
-        /// <param name="interfaceType"></param>
+        /// <typeparam name="T"></typeparam>
         /// <param name="currNode"></param>
         /// <returns></returns>
-        ServerNode GetServerNode(Type interfaceType, ServerNode currNode);
+        ServerNode GetServerNode<T>(ServerNode currNode);
 
         /// <summary>
         /// 解析服务，可自己注入自定义服务为代理本地服务
         /// </summary>
-        /// <param name="interfaceType"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="container"></param>
         /// <returns></returns>
-        object ResolveService(Type interfaceType);
+        T ResolveService<T>(IContainer container);
     }
 }
