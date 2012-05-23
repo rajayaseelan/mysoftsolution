@@ -200,32 +200,31 @@ namespace MySoft.RESTful.SDK
                     using (StreamReader sr = new StreamReader(response.GetResponseStream(), encoding))
                     {
                         string value = sr.ReadToEnd();
+                        if (string.IsNullOrEmpty(value)) return null;
 
-                        if (string.IsNullOrEmpty(value) || returnType == typeof(string))
+                        var retType = returnType;
+
+                        //如果是xml格式，则使用对象包装
+                        if (parameter.DataFormat == DataFormat.XML)
                         {
-                            return Convert.ChangeType(value, returnType);
-                        }
-                        else
-                        {
-                            var retType = returnType;
-                            object result = null;
-                            if (returnType.IsValueType)
+                            if (returnType.IsValueType || returnType == typeof(string))
                             {
                                 retType = typeof(RESTfulResponse);
                             }
-
-                            if (parameter.DataFormat == DataFormat.JSON)
-                                result = SerializationManager.DeserializeJson(retType, value);
-                            else if (parameter.DataFormat == DataFormat.XML)
-                                result = SerializationManager.DeserializeXml(retType, value);
-                            else
-                                result = value;
-
-                            if (retType == typeof(RESTfulResponse))
-                                return Convert.ChangeType((result as RESTfulResponse).Value, returnType);
-                            else
-                                return result;
                         }
+
+                        object result = null;
+
+                        //数据反序列化
+                        if (parameter.DataFormat == DataFormat.JSON)
+                            result = SerializationManager.DeserializeJson(retType, value);
+                        else if (parameter.DataFormat == DataFormat.XML)
+                            result = SerializationManager.DeserializeXml(retType, value);
+
+                        if (retType == typeof(RESTfulResponse))
+                            return Convert.ChangeType((result as RESTfulResponse).Value, returnType);
+                        else
+                            return result;
                     }
                 }
                 else

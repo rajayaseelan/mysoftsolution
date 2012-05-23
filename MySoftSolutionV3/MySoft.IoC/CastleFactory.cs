@@ -24,6 +24,7 @@ namespace MySoft.IoC
         private CastleFactoryConfiguration config;
         private IServiceContainer container;
         private IDictionary<string, IService> proxies;
+        private IServiceResolver resolver;
         private ICacheStrategy cache;
         private IServiceLog logger;
 
@@ -157,6 +158,15 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 注册服务解析器
+        /// </summary>
+        /// <param name="resolver"></param>
+        public void RegisterResolver(IServiceResolver resolver)
+        {
+            this.resolver = resolver;
+        }
+
+        /// <summary>
         /// Create service channel.
         /// </summary>
         /// <returns>The service implemetation instance.</returns>
@@ -200,6 +210,12 @@ namespace MySoft.IoC
         {
             if (node == null)
                 throw new WarningException("Server node can't for empty!");
+
+            //获取服务节点
+            if (resolver != null)
+            {
+                node = resolver.GetServerNode(typeof(IServiceInterfaceType), node);
+            }
 
             //获取本地服务
             var service = GetLocalService<IServiceInterfaceType>();
@@ -278,6 +294,17 @@ namespace MySoft.IoC
         /// 获取回调发布服务
         /// </summary>
         /// <typeparam name="IPublishService"></typeparam>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public IPublishService GetChannel<IPublishService>(object callback)
+        {
+            return GetChannel<IPublishService>(config.Default, callback);
+        }
+
+        /// <summary>
+        /// 获取回调发布服务
+        /// </summary>
+        /// <typeparam name="IPublishService"></typeparam>
         /// <param name="nodeKey"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
@@ -303,6 +330,12 @@ namespace MySoft.IoC
         {
             if (node == null)
                 throw new WarningException("Server node can't for empty!");
+
+            //获取服务节点
+            if (resolver != null)
+            {
+                node = resolver.GetServerNode(typeof(IPublishService), node);
+            }
 
             if (callback == null) throw new IoCException("Callback cannot be the null!");
             var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(typeof(IPublishService));
@@ -441,33 +474,47 @@ namespace MySoft.IoC
                 }
             }
 
+            //定义本地服务
+            IServiceInterfaceType ls = default(IServiceInterfaceType);
+
             //如果是本地配置，则抛出异常
             if (config.Type != CastleFactoryType.Remote)
             {
-                //本地服务
-                if (container.Kernel.HasComponent(serviceType))
+                if (resolver != null)
                 {
-                    lock (hashtable.SyncRoot)
-                    {
-                        if (!hashtable.ContainsKey(serviceType))
-                        {
-                            //返回本地服务
-                            var service = container.Resolve<IService>("Service_" + serviceType.FullName);
-                            var handler = new LocalInvocationHandler(config, container, service, serviceType, cache, logger);
-                            var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
-
-                            hashtable[serviceType] = dynamicProxy;
-                        }
-                    }
-
-                    return (IServiceInterfaceType)hashtable[serviceType];
+                    ls = (IServiceInterfaceType)resolver.ResolveService(serviceType);
                 }
 
-                if (config.Type == CastleFactoryType.Local)
-                    throw new WarningException(string.Format("Local not find service ({0}).", serviceType.FullName));
+                if (ls == null)
+                {
+                    //本地服务
+                    if (container.Kernel.HasComponent(serviceType))
+                    {
+                        lock (hashtable.SyncRoot)
+                        {
+                            if (!hashtable.ContainsKey(serviceType))
+                            {
+                                //返回本地服务
+                                var service = container.Resolve<IService>("Service_" + serviceType.FullName);
+                                var handler = new LocalInvocationHandler(config, container, service, serviceType, cache, logger);
+                                var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
+
+                                hashtable[serviceType] = dynamicProxy;
+                            }
+                        }
+
+                        ls = (IServiceInterfaceType)hashtable[serviceType];
+                    }
+                }
+
+                if (ls == null)
+                {
+                    if (config.Type == CastleFactoryType.Local)
+                        throw new WarningException(string.Format("Local not find service ({0}).", serviceType.FullName));
+                }
             }
 
-            return default(IServiceInterfaceType);
+            return ls;
         }
 
         /// <summary>

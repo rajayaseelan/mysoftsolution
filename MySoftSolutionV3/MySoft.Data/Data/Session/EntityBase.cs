@@ -221,6 +221,12 @@ namespace MySoft.Data
         /// <param name="reader"></param>
         protected abstract void SetValues(IRowReader reader);
 
+        /// <summary>
+        /// 设置扩展属性值
+        /// </summary>
+        /// <param name="reader"></param>
+        protected virtual void SetExtValues(IRowReader reader) { }
+
         #region 内部方法
 
         /// <summary>
@@ -284,6 +290,9 @@ namespace MySoft.Data
             {
                 //设置内部的值
                 SetValues(reader);
+
+                //设置扩展属性值
+                SetExtValues(reader);
 
                 //设置来自数据库变量为true
                 isFromDB = true;

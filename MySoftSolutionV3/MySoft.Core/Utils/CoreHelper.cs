@@ -364,31 +364,34 @@ namespace MySoft
         /// <returns></returns>
         public static object ConvertJsonValue(Type type, string jsonString)
         {
-            var originalType = type;
             object jsonValue = null;
             if (type.IsByRef) type = type.GetElementType();
+            var originalType = type;
+
             if (type.IsEnum) type = typeof(int);
 
+            //jsonString不为null
             if (!string.IsNullOrEmpty(jsonString))
             {
-                if (type.IsArray)
+                var pType = GetPrimitiveType(type);
+
+                //只有基类型为值类型或者为String类型
+                if (pType.IsValueType || pType == typeof(string))
                 {
-                    if (!(jsonString.StartsWith("[") && jsonString.EndsWith("]")))
-                        jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
-                }
-                else if (type.IsGenericType)
-                {
-                    var t = type.GetGenericTypeDefinition();
-                    if (typeof(IList<>).IsAssignableFrom(t))
+                    if (type.IsArray)
                     {
                         if (!(jsonString.StartsWith("[") && jsonString.EndsWith("]")))
                             jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
                     }
-                }
-                else if (type.IsValueType || type == typeof(string))
-                {
-                    if (!(jsonString.StartsWith("\"") && jsonString.EndsWith("\"")))
-                        jsonString = string.Format("\"{0}\"", jsonString);
+                    else if (type.IsGenericType)
+                    {
+                        var t = type.GetGenericTypeDefinition();
+                        if (typeof(IList<>).IsAssignableFrom(t))
+                        {
+                            if (!(jsonString.StartsWith("[") && jsonString.EndsWith("]")))
+                                jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
+                        }
+                    }
                 }
 
                 if (jsonString.Contains("new Date"))
@@ -399,6 +402,7 @@ namespace MySoft
 
             //如果为null，获取默认值
             if (jsonValue == null) jsonValue = GetTypeDefaultValue(type);
+
             return ConvertValue(originalType, jsonValue);
         }
 

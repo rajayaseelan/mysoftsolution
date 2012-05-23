@@ -97,6 +97,7 @@
     <Compile Include="Messages\InvokeMessage.cs" />
     <Compile Include="Messages\ReturnMessage.cs" />
     <Compile Include="Messages\Status\CounterInfo.cs" />
+    <Compile Include="IServiceResolver.cs" />
     <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
     <Compile Include="Services\InvokeProxy.cs">

@@ -22,14 +22,14 @@ namespace MySoft.Cache
             this.cache = cache;
             this.queue = new Queue<QueueData>();
 
-            ThreadPool.QueueUserWorkItem(SaveQueueData);
+            ThreadPool.QueueUserWorkItem(SaveCache);
         }
 
         /// <summary>
         /// 保存Queue数据
         /// </summary>
         /// <param name="state"></param>
-        private void SaveQueueData(object state)
+        private void SaveCache(object state)
         {
             while (true)
             {

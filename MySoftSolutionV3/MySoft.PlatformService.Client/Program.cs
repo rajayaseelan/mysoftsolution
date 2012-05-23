@@ -19,6 +19,27 @@ using MySoft.RESTful.SDK;
 
 namespace MySoft.PlatformService.Client
 {
+    public class ServiceResolver : IServiceResolver
+    {
+        #region IServiceResolver 成员
+
+        public ServerNode GetServerNode(Type interfaceType, ServerNode currNode)
+        {
+            //throw new NotImplementedException();
+
+            return currNode;
+        }
+
+        public object ResolveService(Type interfaceType)
+        {
+            //throw new NotImplementedException();
+
+            return null;
+        }
+
+        #endregion
+    }
+
     public class ServiceLog : IServiceLog
     {
         #region IServiceLog 成员
@@ -176,18 +197,19 @@ namespace MySoft.PlatformService.Client
 
             //Console.WriteLine(token.ToString());
 
-            var url = "http://openapi.fund123.cn/post.json/myfund.addopenandfinancialfund?uid=yayiyao&pwd=2";
-            var v = HttpUtility.UrlEncode("[{\"AccountBookId\":\"d269da43-4e80-4c8e-ba69-32fca1fcf6e3\",\"ParentID\":\"\",\"Code\":\"100022\",\"Quotient\":1.26,\"BuyMoney\":1,\"BuyDate\":\"2012-04-24\",\"BonusType\":0,\"FrontOrBack\":1,\"RateType\":0,\"DeductFeeType\":0,\"FrontRate\":0.6,\"BuyRate\":0,\"BuyRate1\":0,\"BuyRate2\":0,\"BuyRate3\":0,\"Rate\":0.5,\"Rate1\":0.25,\"Rate2\":0,\"Rate3\":0,\"ChannelType\":0,\"BuyChannel\":\"\",\"Remark\":\"\"}]");
-            var value = "funds=" + v;
+            //var url = "http://openapi.fund123.cn/post.json/myfund.addopenandfinancialfund?uid=yayiyao&pwd=2";
+            //var v = HttpUtility.UrlEncode("[{\"AccountBookId\":\"d269da43-4e80-4c8e-ba69-32fca1fcf6e3\",\"ParentID\":\"\",\"Code\":\"100022\",\"Quotient\":1.26,\"BuyMoney\":1,\"BuyDate\":\"2012-04-24\",\"BonusType\":0,\"FrontOrBack\":1,\"RateType\":0,\"DeductFeeType\":0,\"FrontRate\":0.6,\"BuyRate\":0,\"BuyRate1\":0,\"BuyRate2\":0,\"BuyRate3\":0,\"Rate\":0.5,\"Rate1\":0.25,\"Rate2\":0,\"Rate3\":0,\"ChannelType\":0,\"BuyChannel\":\"\",\"Remark\":\"\"}]");
+            //var value = "funds=" + v;
 
-            //请求服务
-            value = HttpHelper.Default.Poster(url, value);
-            Console.WriteLine(value);
-            Console.ReadLine();
+            ////请求服务
+            //value = HttpHelper.Default.Poster(url, value);
+            //Console.WriteLine(value);
+            //Console.ReadLine();
 
-            return;
+            //return;
 
             CastleFactory.Create().RegisterLogger(new ServiceLog());
+            CastleFactory.Create().RegisterResolver(new ServiceResolver());
 
             ManualResetEvent are = new ManualResetEvent(false);
             for (int i = 0; i < 1; i++)

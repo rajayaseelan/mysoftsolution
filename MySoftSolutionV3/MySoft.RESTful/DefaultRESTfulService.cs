@@ -314,10 +314,14 @@ namespace MySoft.RESTful
                             }
                         }
 
-                        //如果是值类型，则以对象方式返回
-                        if (retType.IsValueType || retType == typeof(string))
+                        //xml方式需要进行数据包装
+                        if (format == ParameterFormat.Xml)
                         {
-                            result = new RESTfulResponse { Value = result };
+                            //如果是值类型，则以对象方式返回
+                            if (retType.IsValueType || retType == typeof(string))
+                            {
+                                result = new RESTfulResponse { Value = result };
+                            }
                         }
                     }
                     catch (Exception ex)
