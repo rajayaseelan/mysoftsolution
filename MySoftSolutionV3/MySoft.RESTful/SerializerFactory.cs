@@ -3,12 +3,12 @@ using MySoft.RESTful.Utils;
 namespace MySoft.RESTful
 {
     /// <summary>
-    /// 系列化工厂
+    /// 序列化工厂
     /// </summary>
     public sealed class SerializerFactory
     {
         /// <summary>
-        /// 创建系列化
+        /// 创建序列化
         /// </summary>
         /// <param name="format"></param>
         /// <returns></returns>
@@ -20,9 +20,11 @@ namespace MySoft.RESTful
                     return new XmlSerializer();
                 case ParameterFormat.Text:
                 case ParameterFormat.Html:
+                    return new TextSerializer();
                 case ParameterFormat.Json:
-                case ParameterFormat.Jsonp:
                     return new JsonSerializer();
+                case ParameterFormat.Jsonp:
+                    return new JsonpSerializer();
                 default:
                     return new JsonSerializer();
             }

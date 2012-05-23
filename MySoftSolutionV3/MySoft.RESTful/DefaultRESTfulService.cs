@@ -303,17 +303,6 @@ namespace MySoft.RESTful
                         //设置返回成功
                         response.StatusCode = HttpStatusCode.OK;
 
-                        //如果值为null，以对象方式返回
-                        if (retType == typeof(string))
-                        {
-                            switch (format)
-                            {
-                                case ParameterFormat.Text:
-                                case ParameterFormat.Html:
-                                    return Convert.ToString(result);
-                            }
-                        }
-
                         //xml方式需要进行数据包装
                         if (format == ParameterFormat.Xml)
                         {
@@ -345,7 +334,7 @@ namespace MySoft.RESTful
             }
 
             ISerializer serializer = SerializerFactory.Create(format);
-            return serializer.Serialize(result, format == ParameterFormat.Jsonp);
+            return serializer.Serialize(result);
         }
 
         /// <summary>

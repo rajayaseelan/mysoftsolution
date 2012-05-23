@@ -87,9 +87,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IRESTfulContext.cs" />
     <Compile Include="Business\BusinessRESTfulContext.cs" />
+    <Compile Include="Utils\JsonpSerializer.cs" />
     <Compile Include="Utils\JsonSerializer.cs" />
     <Compile Include="Utils\ParameterFormat.cs" />
     <Compile Include="Utils\ParameterHelper.cs" />
+    <Compile Include="Utils\TextSerializer.cs" />
     <Compile Include="Utils\XmlSerializer.cs" />
   </ItemGroup>
   <ItemGroup>

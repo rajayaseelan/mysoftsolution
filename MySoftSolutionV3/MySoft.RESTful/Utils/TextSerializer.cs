@@ -6,13 +6,17 @@ using System.Text;
 namespace MySoft.RESTful.Utils
 {
     /// <summary>
-    /// Json序列化
+    /// Text序列化
     /// </summary>
-    public class JsonSerializer : ISerializer
+    public class TextSerializer : ISerializer
     {
+        #region ISerializer 成员
+
         public string Serialize(object data)
         {
-            return SerializationManager.SerializeJson(data);
+            return Convert.ToString(data);
         }
+
+        #endregion
     }
 }
