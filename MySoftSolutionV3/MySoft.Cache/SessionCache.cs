@@ -11,7 +11,7 @@ namespace MySoft.Cache
     public class SessionCache
     {
         private ICacheStrategy cache;
-        private Queue<QueueData> queue;
+        private Queue<QueueTimeSpan> queue;
 
         /// <summary>
         /// 实例化SessionCache
@@ -20,7 +20,7 @@ namespace MySoft.Cache
         public SessionCache(ICacheStrategy cache)
         {
             this.cache = cache;
-            this.queue = new Queue<QueueData>();
+            this.queue = new Queue<QueueTimeSpan>();
 
             ThreadPool.QueueUserWorkItem(SaveCache);
         }
@@ -35,7 +35,7 @@ namespace MySoft.Cache
             {
                 if (queue.Count > 0)
                 {
-                    QueueData data = null;
+                    QueueTimeSpan data = null;
                     lock (queue)
                     {
                         data = queue.Dequeue();
@@ -44,14 +44,55 @@ namespace MySoft.Cache
                     //保存值
                     if (data != null && cache != null)
                     {
-                        try { cache.AddObject(data.Key, data.Value, data.TimeSpan); }
+                        try { cache.SetExpired(data.Key, DateTime.Now.Add(data.TimeSpan)); }
                         catch { }
                     }
                 }
 
-                //暂停100毫秒
-                Thread.Sleep(100);
+                //暂停10毫秒
+                Thread.Sleep(10);
             }
+        }
+
+        /// <summary>
+        /// 获取值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <returns></returns>
+        public object Get(string cacheKey)
+        {
+            var obj = cache.GetObject(cacheKey);
+
+            //处理缓存
+            if (obj != null)
+            {
+                //获取过期时间
+                var timeSpanKey = string.Format("SessionCache_{0}", cacheKey);
+                var timeSpan = CacheHelper.Get(timeSpanKey);
+
+                if (timeSpan != null)
+                {
+                    if (!queue.Any(p => p.Key == cacheKey))
+                    {
+                        lock (queue)
+                        {
+                            //如果key存在，则不保存
+                            if (!queue.Any(p => p.Key == cacheKey))
+                            {
+                                var data = new QueueTimeSpan
+                                {
+                                    Key = cacheKey,
+                                    TimeSpan = (TimeSpan)timeSpan
+                                };
+
+                                queue.Enqueue(data);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return obj;
         }
 
         /// <summary>
@@ -60,32 +101,9 @@ namespace MySoft.Cache
         /// <typeparam name="T"></typeparam>
         /// <param name="cacheKey"></param>
         /// <returns></returns>
-        public T Get<T>(string cacheKey) where T : class
+        public T Get<T>(string cacheKey)
         {
-            T obj = default(T);
-
-            if (queue.Any(p => p.Key == cacheKey))
-            {
-                lock (queue)
-                {
-                    if (queue.Any(p => p.Key == cacheKey))
-                    {
-                        var value = queue.SingleOrDefault(p => p.Key == cacheKey);
-                        if (value != null)
-                        {
-                            obj = (T)value.Value;
-                        }
-                    }
-                }
-            }
-
-            if (obj == null)
-            {
-                try { obj = cache.GetObject<T>(cacheKey); }
-                catch { }
-            }
-
-            return obj;
+            return (T)Get(cacheKey);
         }
 
         /// <summary>
@@ -96,41 +114,24 @@ namespace MySoft.Cache
         /// <param name="timeSpan"></param>
         public void Add(string cacheKey, object cacheValue, TimeSpan timeSpan)
         {
-            var data = new QueueData
-            {
-                Key = cacheKey,
-                Value = cacheValue,
-                TimeSpan = timeSpan
-            };
+            //存入缓存
+            cache.AddObject(cacheKey, cacheValue, timeSpan);
 
-            if (!queue.Any(p => p.Key == cacheKey))
-            {
-                lock (queue)
-                {
-                    //如果key存在，则不保存
-                    if (!queue.Any(p => p.Key == cacheKey))
-                    {
-                        queue.Enqueue(data);
-                    }
-                }
-            }
+            //记录过期时间
+            var timeSpanKey = string.Format("SessionCache_{0}", cacheKey);
+            CacheHelper.Insert(timeSpanKey, timeSpan);
         }
     }
 
     /// <summary>
-    /// Queue数据
+    /// Queue过期时间
     /// </summary>
-    internal class QueueData
+    internal class QueueTimeSpan
     {
         /// <summary>
         /// Key
         /// </summary>
         public string Key { get; set; }
-
-        /// <summary>
-        /// Value
-        /// </summary>
-        public object Value { get; set; }
 
         /// <summary>
         /// 时间

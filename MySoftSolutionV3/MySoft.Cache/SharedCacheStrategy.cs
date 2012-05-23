@@ -107,6 +107,24 @@ namespace MySoft.Cache
         #region ICacheStrategy 成员
 
         /// <summary>
+        /// 设置过期时间
+        /// </summary>
+        /// <param name="objId"></param>
+        /// <param name="datetime"></param>
+        public override void SetExpired(string objId, DateTime datetime)
+        {
+            if (objId == null || objId.Length == 0)
+            {
+                return;
+            }
+
+            lock (lockObject)
+            {
+                dataCache.ExtendTtl(GetInputKey(objId), datetime);
+            }
+        }
+
+        /// <summary>
         /// 添加指定ID的对象
         /// </summary>
         /// <param name="objId"></param>

@@ -8,8 +8,19 @@ namespace MySoft.Cache
     /// </summary>
     public abstract class CacheStrategyBase : ICacheStrategy
     {
+        /// <summary>
+        /// 分区名称
+        /// </summary>
         protected string regionName;
+        /// <summary>
+        /// 前缀
+        /// </summary>
         protected string prefix;
+
+        /// <summary>
+        /// 实例化CacheStrategyBase
+        /// </summary>
+        /// <param name="regionName"></param>
         public CacheStrategyBase(string regionName)
         {
             this.regionName = regionName;
@@ -37,7 +48,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId"></param>
         /// <returns></returns>
-        protected string GetInputKey(string objId)
+        internal protected string GetInputKey(string objId)
         {
             if (string.IsNullOrEmpty(objId)) return objId;
             if (objId.StartsWith(prefix)) return objId;
@@ -50,7 +61,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId"></param>
         /// <returns></returns>
-        protected string GetOutputKey(string objId)
+        internal protected string GetOutputKey(string objId)
         {
             if (string.IsNullOrEmpty(objId)) return objId;
             if (!objId.StartsWith(prefix)) return objId;
@@ -79,6 +90,13 @@ namespace MySoft.Cache
         }
 
         /// <summary>
+        /// 设置过期时间
+        /// </summary>
+        /// <param name="objId"></param>
+        /// <param name="datetime"></param>
+        public abstract void SetExpired(string objId, DateTime datetime);
+
+        /// <summary>
         /// 添加指定ID的对象
         /// </summary>
         /// <param name="objId"></param>
@@ -90,6 +108,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId"></param>
         /// <param name="o"></param>
+        /// <param name="expires"></param>
         public abstract void AddObject(string objId, object o, TimeSpan expires);
 
         /// <summary>
@@ -97,6 +116,7 @@ namespace MySoft.Cache
         /// </summary>
         /// <param name="objId"></param>
         /// <param name="o"></param>
+        /// <param name="datetime"></param>
         public abstract void AddObject(string objId, object o, DateTime datetime);
 
         /// <summary>
@@ -122,14 +142,14 @@ namespace MySoft.Cache
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="regularExpression"></param>
         /// <returns></returns>
         public abstract object GetMatchObject(string regularExpression);
 
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="regularExpression"></param>
         /// <returns></returns>
         public abstract T GetMatchObject<T>(string regularExpression);
 

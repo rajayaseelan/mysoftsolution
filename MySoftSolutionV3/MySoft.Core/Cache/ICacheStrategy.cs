@@ -67,6 +67,13 @@ namespace MySoft.Cache
     public interface ICacheStrategy
     {
         /// <summary>
+        /// 设置过期时间
+        /// </summary>
+        /// <param name="objId"></param>
+        /// <param name="datetime"></param>
+        void SetExpired(string objId, DateTime datetime);
+
+        /// <summary>
         /// 设置区域名称
         /// </summary>
         /// <param name="regionName"></param>

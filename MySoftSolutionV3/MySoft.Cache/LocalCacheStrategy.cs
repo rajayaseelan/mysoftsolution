@@ -98,6 +98,28 @@ namespace MySoft.Cache
         }
 
         /// <summary>
+        /// 设置过期时间
+        /// </summary>
+        /// <param name="objId"></param>
+        /// <param name="datetime"></param>
+        public override void SetExpired(string objId, DateTime datetime)
+        {
+            if (objId == null || objId.Length == 0)
+            {
+                return;
+            }
+
+            lock (lockObject)
+            {
+                //重新加入到缓存中
+                var value = GetObject(objId);
+                if (value == null) return;
+
+                AddObject(objId, value, datetime);
+            }
+        }
+
+        /// <summary>
         /// 加入当前对象到缓存中
         /// </summary>
         /// <param name="objId">对象的键值</param>
