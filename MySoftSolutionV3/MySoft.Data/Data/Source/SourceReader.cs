@@ -80,14 +80,18 @@ namespace MySoft.Data
         /// </summary>
         public void Close()
         {
-            reader.Close();
+            if (!reader.IsClosed)
+            {
+                reader.Close();
+                reader.Dispose();
+            }
         }
 
         // 摘要:
         //     执行与释放或重置非托管资源相关的应用程序定义的任务。
         public void Dispose()
         {
-            reader.Dispose();
+            this.Close();
         }
 
         #region 获取数据
