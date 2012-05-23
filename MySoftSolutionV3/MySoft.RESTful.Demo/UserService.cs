@@ -42,6 +42,13 @@ namespace MySoft.RESTful.Demo
         /// <returns></returns>
         [PublishMethod("addusers", Description = "添加一组用户")]
         int AddUsers(IList<User> users);
+
+        /// <summary>
+        /// 获取用户名
+        /// </summary>
+        /// <returns></returns>
+        [PublishMethod("getusername", Description = "获取用户名")]
+        string GetUserName(int id);
     }
 
     /// <summary>
@@ -59,6 +66,17 @@ namespace MySoft.RESTful.Demo
         {
             return new User { Id = name.Length, Name = name };
         }
+
+        /// <summary>
+        /// 获取用户名
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public string GetUserName(int id)
+        {
+            return "maoyong" + id;
+        }
+
 
         /// <summary>
         /// 获取一组用户
