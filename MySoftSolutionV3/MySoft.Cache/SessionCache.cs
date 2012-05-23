@@ -119,7 +119,7 @@ namespace MySoft.Cache
 
             //记录过期时间
             var timeSpanKey = string.Format("SessionCache_{0}", cacheKey);
-            CacheHelper.Insert(timeSpanKey, timeSpan);
+            CacheHelper.Permanent(timeSpanKey, timeSpan);
         }
     }
 
