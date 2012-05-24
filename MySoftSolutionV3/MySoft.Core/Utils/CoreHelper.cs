@@ -13,6 +13,7 @@ using Newtonsoft.Json.Utilities;
 using System.Collections.Specialized;
 using System.Data;
 using System.Collections;
+using System.Collections.ObjectModel;
 
 namespace MySoft
 {
@@ -951,22 +952,21 @@ namespace MySoft
             if (type.IsGenericType)
             {
                 var t = type.GetGenericTypeDefinition();
-                if (typeof(IList<>).IsAssignableFrom(t))
+                if (typeof(IList<>).IsAssignableFrom(t) || typeof(List<>).IsAssignableFrom(t)
+                    || typeof(ICollection<>).IsAssignableFrom(t) || typeof(Collection<>).IsAssignableFrom(t)
+                    || typeof(IEnumerable<>).IsAssignableFrom(t))
                 {
                     var types = type.GetGenericArguments();
                     type = GetPrimitiveType(types[0]);
                 }
-                else if (typeof(IDictionary<,>).IsAssignableFrom(t))
+                else if (typeof(IDictionary<,>).IsAssignableFrom(t) || typeof(Dictionary<,>).IsAssignableFrom(t))
                 {
                     var types = type.GetGenericArguments();
                     type = GetPrimitiveType(types[0]);
                     if (type.IsValueType || type == typeof(string))
+                    {
                         type = GetPrimitiveType(types[1]);
-                }
-                else if (typeof(ICollection<>).IsAssignableFrom(t))
-                {
-                    var types = type.GetGenericArguments();
-                    type = GetPrimitiveType(types[0]);
+                    }
                 }
             }
 
