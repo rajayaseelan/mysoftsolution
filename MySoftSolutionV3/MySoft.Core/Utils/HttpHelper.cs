@@ -11,11 +11,6 @@ namespace MySoft
     /// </summary>
     public class HttpHelper
     {
-        /// <summary>
-        /// 默认处理器
-        /// </summary>
-        public static readonly HttpHelper Default = new HttpHelper();
-
         static HttpHelper()
         {
             ServicePointManager.Expect100Continue = false;
