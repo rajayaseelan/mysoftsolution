@@ -136,9 +136,6 @@ namespace MySoft.IoC
         /// <param name="cache"></param>
         public void RegisterCache(ICacheStrategy cache)
         {
-            //设置区域名称为应用名称
-            cache.SetRegionName(config.AppName);
-
             this.cache = cache;
         }
 

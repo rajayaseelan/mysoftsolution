@@ -72,21 +72,18 @@ namespace MySoft.Cache
 
                 if (timeSpan != null)
                 {
-                    if (!queue.Any(p => p.Key == cacheKey))
+                    lock (queue)
                     {
-                        lock (queue)
+                        //如果key存在，则不保存
+                        if (!queue.Any(p => p.Key == cacheKey))
                         {
-                            //如果key存在，则不保存
-                            if (!queue.Any(p => p.Key == cacheKey))
+                            var data = new QueueTimeSpan
                             {
-                                var data = new QueueTimeSpan
-                                {
-                                    Key = cacheKey,
-                                    TimeSpan = (TimeSpan)timeSpan
-                                };
+                                Key = cacheKey,
+                                TimeSpan = (TimeSpan)timeSpan
+                            };
 
-                                queue.Enqueue(data);
-                            }
+                            queue.Enqueue(data);
                         }
                     }
                 }

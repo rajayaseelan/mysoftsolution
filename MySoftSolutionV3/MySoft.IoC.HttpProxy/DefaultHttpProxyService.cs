@@ -148,6 +148,11 @@ namespace MySoft.IoC.HttpProxy
                     response.StatusCode = rep.StatusCode;
                     response.StatusDescription = rep.StatusDescription;
                 }
+                finally
+                {
+                    //使用完后清理上下文
+                    AuthorizeContext.Current = null;
+                }
             }
 
             //转换成utf8返回
@@ -304,6 +309,13 @@ namespace MySoft.IoC.HttpProxy
             var response = WebOperationContext.Current.OutgoingResponse;
             response.StatusCode = HttpStatusCode.Unauthorized;
 
+            //认证成功，设置上下文
+            AuthorizeContext.Current = new AuthorizeContext
+            {
+                OperationContext = WebOperationContext.Current,
+                HttpContext = HttpContext.Current
+            };
+
             try
             {
                 var token = Authorize();
@@ -311,6 +323,10 @@ namespace MySoft.IoC.HttpProxy
                 {
                     header["X-AuthParameter"] = token.Name;
                     response.StatusCode = HttpStatusCode.OK;
+
+                    //认证信息
+                    AuthorizeContext.Current.Token = token;
+
                     return new HttpProxyResult { Code = (int)response.StatusCode };
                 }
                 else

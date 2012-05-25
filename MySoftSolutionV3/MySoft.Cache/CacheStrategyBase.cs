@@ -11,7 +11,7 @@ namespace MySoft.Cache
         /// <summary>
         /// 分区名称
         /// </summary>
-        protected string regionName;
+        protected string bucketName;
         /// <summary>
         /// 前缀
         /// </summary>
@@ -20,15 +20,15 @@ namespace MySoft.Cache
         /// <summary>
         /// 实例化CacheStrategyBase
         /// </summary>
-        /// <param name="regionName"></param>
-        public CacheStrategyBase(string regionName)
+        /// <param name="bucketName"></param>
+        public CacheStrategyBase(string bucketName)
         {
-            this.regionName = regionName;
+            this.bucketName = bucketName;
 
-            if (string.IsNullOrEmpty(regionName))
-                this.prefix = "{DEFAULT}|";
+            if (string.IsNullOrEmpty(bucketName))
+                this.prefix = "[default]_";
             else
-                this.prefix = "{" + regionName.ToUpper() + "}|";
+                this.prefix = "[" + bucketName.ToLower() + "]_";
         }
 
         // 默认缓存存活期为1440分钟(24小时)
@@ -70,24 +70,6 @@ namespace MySoft.Cache
         }
 
         #region ICacheStrategy 成员
-
-        /// <summary>
-        /// 设置区域名称，只能应用于区域名称为空时
-        /// </summary>
-        /// <param name="regionName"></param>
-        public void SetRegionName(string regionName)
-        {
-            //针对区域名称为空
-            if (string.IsNullOrEmpty(this.regionName))
-            {
-                this.regionName = regionName;
-
-                if (string.IsNullOrEmpty(regionName))
-                    this.prefix = "{DEFAULT}|";
-                else
-                    this.prefix = "{" + regionName.ToUpper() + "}|";
-            }
-        }
 
         /// <summary>
         /// 设置过期时间

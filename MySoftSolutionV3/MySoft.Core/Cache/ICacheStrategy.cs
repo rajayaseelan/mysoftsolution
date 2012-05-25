@@ -50,9 +50,9 @@ namespace MySoft.Cache
     }
 
     /// <summary>
-    /// SharedCache策略接口
+    /// DistributedCache策略接口
     /// </summary>
-    public interface ISharedCacheStrategy : ICacheStrategy
+    public interface IDistributedCacheStrategy : ICacheStrategy
     {
         /// <summary>
         /// 设置本地缓存超时时间
@@ -72,12 +72,6 @@ namespace MySoft.Cache
         /// <param name="objId"></param>
         /// <param name="datetime"></param>
         void SetExpired(string objId, DateTime datetime);
-
-        /// <summary>
-        /// 设置区域名称
-        /// </summary>
-        /// <param name="regionName"></param>
-        void SetRegionName(string regionName);
 
         /// <summary>
         /// 到期时间

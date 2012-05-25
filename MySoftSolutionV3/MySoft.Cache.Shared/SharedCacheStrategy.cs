@@ -10,7 +10,7 @@ namespace MySoft.Cache
     /// <summary>
     /// 分布式缓存管理类
     /// </summary>
-    public class SharedCacheStrategy : CacheStrategyBase, ISharedCacheStrategy
+    public class SharedCacheStrategy : CacheStrategyBase, IDistributedCacheStrategy
     {
         private ICacheStrategy localCache;
         private TimeSpan localTimeSpan;
@@ -23,7 +23,7 @@ namespace MySoft.Cache
         {
             if (timeout > 0)
             {
-                this.localCache = CacheFactory.CreateCache("Local_" + base.regionName, CacheType.Local);
+                this.localCache = CacheFactory.Create("Local_" + base.bucketName, CacheType.Local);
                 this.localCache.Timeout = timeout;
                 this.localTimeSpan = TimeSpan.FromSeconds(timeout);
             }
@@ -85,8 +85,8 @@ namespace MySoft.Cache
         /// <summary>
         /// 实例化分布式缓存
         /// </summary>
-        /// <param name="regionName"></param>
-        public SharedCacheStrategy(string regionName) : base(regionName) { }
+        /// <param name="bucketName"></param>
+        public SharedCacheStrategy(string bucketName) : base(bucketName) { }
 
         /// <summary>
         /// 缓存对象

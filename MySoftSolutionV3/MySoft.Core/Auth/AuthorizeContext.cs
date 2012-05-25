@@ -1,5 +1,8 @@
 ﻿using System.Runtime.Remoting.Messaging;
 using System.Threading;
+using System.ServiceModel;
+using System.ServiceModel.Web;
+using System.Web;
 
 namespace MySoft.Auth
 {
@@ -8,6 +11,38 @@ namespace MySoft.Auth
     /// </summary>
     public class AuthorizeContext
     {
+        private HttpContext httpContext;
+        /// <summary>
+        /// 请求的httpContext信息
+        /// </summary>
+        public HttpContext HttpContext
+        {
+            get
+            {
+                return httpContext;
+            }
+            set
+            {
+                httpContext = value;
+            }
+        }
+
+        private WebOperationContext operationContext;
+        /// <summary>
+        /// 请求的operationContext信息
+        /// </summary>
+        public WebOperationContext OperationContext
+        {
+            get
+            {
+                return operationContext;
+            }
+            set
+            {
+                operationContext = value;
+            }
+        }
+
         private AuthorizeToken token;
         /// <summary>
         /// 认证的token信息

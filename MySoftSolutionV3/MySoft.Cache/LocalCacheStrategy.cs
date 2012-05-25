@@ -78,8 +78,8 @@ namespace MySoft.Cache
         /// <summary>
         /// 实例化本地缓存
         /// </summary>
-        /// <param name="regionName"></param>
-        public LocalCacheStrategy(string regionName) : base(regionName) { }
+        /// <param name="bucketName"></param>
+        public LocalCacheStrategy(string bucketName) : base(bucketName) { }
 
         /// <summary>
         /// 缓存对象

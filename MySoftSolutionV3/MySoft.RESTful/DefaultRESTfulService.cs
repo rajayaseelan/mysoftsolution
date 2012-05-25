@@ -326,6 +326,11 @@ namespace MySoft.RESTful
                         //记录错误日志
                         SimpleLog.Instance.WriteLogForDir("RESTful\\" + kind, error);
                     }
+                    finally
+                    {
+                        //使用完后清理上下文
+                        AuthorizeContext.Current = null;
+                    }
                 }
                 else
                 {
@@ -401,6 +406,13 @@ namespace MySoft.RESTful
             var response = WebOperationContext.Current.OutgoingResponse;
             response.StatusCode = HttpStatusCode.Unauthorized;
 
+            //认证成功，设置上下文
+            AuthorizeContext.Current = new AuthorizeContext
+            {
+                OperationContext = WebOperationContext.Current,
+                HttpContext = HttpContext.Current
+            };
+
             //实例化一个结果
             var restResult = new RESTfulResult { Code = (int)response.StatusCode };
 
@@ -415,8 +427,8 @@ namespace MySoft.RESTful
                     restResult.Code = (int)response.StatusCode;
                     restResult.Message = "Authentication request success.";
 
-                    //认证成功，设置上下文
-                    AuthorizeContext.Current = new AuthorizeContext { Token = token };
+                    //认证信息
+                    AuthorizeContext.Current.Token = token;
                 }
                 else
                 {
