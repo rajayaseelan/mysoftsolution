@@ -235,7 +235,7 @@ namespace SF.Cache
         /// </summary>
         public override void RemoveAllObjects()
         {
-            throw new NotSupportedException("不支持RemoveAllObjects方法！");
+            dataCache.FlushAll();
         }
 
         /// <summary>
@@ -363,10 +363,14 @@ namespace SF.Cache
                 objIdList = objIdList.ConvertAll<string>(objId => GetInputKey(objId));
                 objIdList = (from item in objIdList select item).Distinct().ToList();
 
+                var dictCache = dataCache.Get(objIdList);
                 IDictionary<string, object> cacheData = new Dictionary<string, object>();
                 foreach (var objId in objIdList)
                 {
-                    cacheData.Add(objId, GetObject(objId));
+                    if (dictCache.ContainsKey(objId))
+                        cacheData.Add(objId, dictCache[objId]);
+                    else
+                        cacheData.Add(objId, null);
                 }
 
                 return cacheData;
@@ -387,10 +391,14 @@ namespace SF.Cache
                 objIdList = objIdList.ConvertAll<string>(objId => GetInputKey(objId));
                 objIdList = (from item in objIdList select item).Distinct().ToList();
 
+                var dictCache = dataCache.Get(objIdList);
                 IDictionary<string, T> cacheData = new Dictionary<string, T>();
                 foreach (var objId in objIdList)
                 {
-                    cacheData.Add(objId, GetObject<T>(objId));
+                    if (dictCache.ContainsKey(objId))
+                        cacheData.Add(objId, (T)dictCache[objId]);
+                    else
+                        cacheData.Add(objId, default(T));
                 }
 
                 return cacheData;
