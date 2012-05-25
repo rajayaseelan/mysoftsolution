@@ -5,9 +5,8 @@ using System.Linq;
 using Couchbase;
 using Couchbase.Configuration;
 using Enyim.Caching.Memcached;
-using MySoft.Cache;
 
-namespace SF.Cache
+namespace MySoft.Cache
 {
     /// <summary>
     /// 分布式缓存管理类
