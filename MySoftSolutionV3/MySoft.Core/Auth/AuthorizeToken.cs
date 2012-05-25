@@ -6,9 +6,9 @@ using System.Web;
 namespace MySoft.Auth
 {
     /// <summary>
-    /// 认证结果
+    /// 认证Token结果
     /// </summary>
-    public class AuthorizeResult
+    public class AuthorizeToken
     {
         /// <summary>
         /// 认证是否成功
@@ -21,9 +21,14 @@ namespace MySoft.Auth
         public string Name { get; set; }
 
         /// <summary>
-        /// 实例化AuthorizeResult
+        /// 用户标识
         /// </summary>
-        public AuthorizeResult()
+        public object UserState { get; set; }
+
+        /// <summary>
+        /// 实例化AuthorizeToken
+        /// </summary>
+        public AuthorizeToken()
         {
             this.Succeed = false;
         }

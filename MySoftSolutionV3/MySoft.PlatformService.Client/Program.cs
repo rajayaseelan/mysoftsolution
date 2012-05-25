@@ -21,20 +21,19 @@ namespace MySoft.PlatformService.Client
 {
     public class ServiceResolver : IServiceResolver
     {
+
         #region IServiceResolver ≥…‘±
 
-        public ServerNode GetServerNode(Type interfaceType, ServerNode currNode)
+        public ServerNode GetServerNode<T>(ServerNode currNode)
         {
             //throw new NotImplementedException();
-
             return currNode;
         }
 
-        public object ResolveService(Type interfaceType)
+        public T ResolveService<T>(IContainer container)
         {
             //throw new NotImplementedException();
-
-            return null;
+            return default(T);
         }
 
         #endregion
@@ -110,6 +109,42 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            var list = new List<User>();
+            for (int i = 0; i < 1000; i++)
+            {
+                list.Add(new User { Id = i, Name = "test" + i });
+            }
+
+            Stopwatch watch = Stopwatch.StartNew();
+            var lb = new List<byte>();
+            for (int i = 0; i < 100; i++)
+            {
+                var s = SerializationManager.SerializeBin(list);
+                lb.AddRange(s);
+            }
+            watch.Stop();
+            Console.WriteLine(lb.Count + " - " + watch.ElapsedMilliseconds);
+
+            watch = Stopwatch.StartNew();
+
+            var set = new Polenter.Serialization.SharpSerializerBinarySettings();
+            set.Mode = Polenter.Serialization.BinarySerializationMode.SizeOptimized;
+            set.Encoding = Encoding.Default;
+
+            lb = new List<byte>();
+            var se = new Polenter.Serialization.SharpSerializer(set);
+            for (int i = 0; i < 100; i++)
+            {
+                var stream = new MemoryStream();
+                se.Serialize(list, stream);
+
+                lb.AddRange(stream.ToArray());
+            }
+
+            watch.Stop();
+            Console.WriteLine(lb.Count + " - " + watch.ElapsedMilliseconds);
+
+
             //CastleFactoryConfiguration config = CastleFactoryConfiguration.GetConfig();
 
             //LogEventHandler logger = Console.WriteLine;
@@ -208,17 +243,17 @@ namespace MySoft.PlatformService.Client
 
             //return;
 
-            CastleFactory.Create().RegisterLogger(new ServiceLog());
-            CastleFactory.Create().RegisterResolver(new ServiceResolver());
+            //CastleFactory.Create().RegisterLogger(new ServiceLog());
+            //CastleFactory.Create().RegisterResolver(new ServiceResolver());
 
-            ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 1; i++)
-            {
-                Thread thread = new Thread(DoWork1);
-                thread.Start(are);
-            }
+            //ManualResetEvent are = new ManualResetEvent(false);
+            //for (int i = 0; i < 1; i++)
+            //{
+            //    Thread thread = new Thread(DoWork1);
+            //    thread.Start(are);
+            //}
 
-            are.Set();
+            //are.Set();
 
             //var node = CastleFactory.Create().GetDefaultNode();
             //var clients = CastleFactory.Create().GetChannel<IStatusService>(node).GetAppClients();

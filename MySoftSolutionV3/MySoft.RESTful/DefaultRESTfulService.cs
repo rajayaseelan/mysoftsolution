@@ -372,9 +372,9 @@ namespace MySoft.RESTful
             }
 
             //加上认证的用户名
-            if (AuthorizeContext.Current != null && AuthorizeContext.Current.Result.Succeed)
+            if (AuthorizeContext.Current != null && AuthorizeContext.Current.Token.Succeed)
             {
-                errorMessage = string.Format("{0}\r\n\tUser:[{1}]", errorMessage, AuthorizeContext.Current.Result.Name);
+                errorMessage = string.Format("{0}\r\n\tUser:[{1}]", errorMessage, AuthorizeContext.Current.Token.Name);
             }
 
             //返回结果
@@ -398,27 +398,16 @@ namespace MySoft.RESTful
         /// <returns></returns>
         private RESTfulResult AuthorizeRequest()
         {
-            var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
-
             response.StatusCode = HttpStatusCode.Unauthorized;
-
-            var token = new AuthorizeToken
-            {
-                RequestUri = request.UriTemplateMatch.RequestUri,
-                Method = request.Method,
-                Headers = request.Headers,
-                Parameters = request.UriTemplateMatch.QueryParameters,
-                Cookies = GetCookies()
-            };
 
             //实例化一个结果
             var restResult = new RESTfulResult { Code = (int)response.StatusCode };
 
             try
             {
-                var result = Authorize(token);
-                if (result.Succeed)
+                var token = Authorize();
+                if (token.Succeed)
                 {
                     response.StatusCode = HttpStatusCode.OK;
 
@@ -427,11 +416,7 @@ namespace MySoft.RESTful
                     restResult.Message = "Authentication request success.";
 
                     //认证成功，设置上下文
-                    AuthorizeContext.Current = new AuthorizeContext
-                    {
-                        Result = result,
-                        Token = token
-                    };
+                    AuthorizeContext.Current = new AuthorizeContext { Token = token };
                 }
                 else
                 {
@@ -452,50 +437,13 @@ namespace MySoft.RESTful
         }
 
         /// <summary>
-        /// 获取Cookie信息
-        /// </summary>
-        /// <returns></returns>
-        private HttpCookieCollection GetCookies()
-        {
-            if (HttpContext.Current != null)
-                return HttpContext.Current.Request.Cookies;
-
-            HttpCookieCollection collection = new HttpCookieCollection();
-
-            var request = WebOperationContext.Current.IncomingRequest;
-            var cookie = request.Headers[HttpRequestHeader.Cookie];
-
-            //从头中获取Cookie
-            if (!string.IsNullOrEmpty(cookie))
-            {
-                string[] cookies = cookie.Split(';');
-                HttpCookie cook = null;
-                foreach (string e in cookies)
-                {
-                    if (!string.IsNullOrEmpty(e))
-                    {
-                        string[] values = e.Split(new char[] { '=' }, 2);
-                        if (values.Length == 2)
-                        {
-                            cook = new HttpCookie(values[0], values[1]);
-                        }
-                        collection.Add(cook);
-                    }
-                }
-            }
-
-            return collection;
-        }
-
-        /// <summary>
         /// 进行认证处理
         /// </summary>
-        /// <param name="token"></param>
         /// <returns></returns>
-        protected virtual AuthorizeResult Authorize(AuthorizeToken token)
+        protected virtual AuthorizeToken Authorize()
         {
             //返回认证失败
-            return new AuthorizeResult
+            return new AuthorizeToken
             {
                 Succeed = false,
                 Name = "Unknown"

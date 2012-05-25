@@ -8,22 +8,6 @@ namespace MySoft.Auth
     /// </summary>
     public class AuthorizeContext
     {
-        private AuthorizeResult result;
-        /// <summary>
-        /// 认证结果信息
-        /// </summary>
-        public AuthorizeResult Result
-        {
-            get
-            {
-                return result;
-            }
-            set
-            {
-                result = value;
-            }
-        }
-
         private AuthorizeToken token;
         /// <summary>
         /// 认证的token信息

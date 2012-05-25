@@ -15,11 +15,10 @@ namespace MySoft.WebAPI
         /// <summary>
         /// 进行认证处理，如用户认证
         /// </summary>
-        /// <param name="token"></param>
         /// <returns></returns>
-        protected override AuthorizeResult Authorize(AuthorizeToken token)
+        protected override AuthorizeToken Authorize()
         {
-            return new AuthorizeResult
+            return new AuthorizeToken
             {
                 Succeed = true,
                 Name = "my181"

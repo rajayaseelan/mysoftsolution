@@ -33,22 +33,5 @@ namespace MySoft.Data.Cache
         /// <param name="cacheKey"></param>
         /// <returns></returns>
         T GetCache<T>(string cacheKey);
-
-        #region 处理一组缓存
-
-        /// <summary>
-        /// 移除缓存
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        void RemoveCache<T>();
-
-        /// <summary>
-        /// 获取缓存
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        IList<T> GetCache<T>();
-
-        #endregion
     }
 }

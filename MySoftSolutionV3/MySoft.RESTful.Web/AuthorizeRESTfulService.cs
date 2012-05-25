@@ -15,9 +15,9 @@ namespace MySoft.RESTful.Web
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public class AuthorizeRESTfulService : DefaultRESTfulService
     {
-        protected override AuthorizeResult Authorize(AuthorizeToken token)
+        protected override AuthorizeToken Authorize()
         {
-            return new AuthorizeResult
+            return new AuthorizeToken
             {
                 Succeed = true,
                 Name = "my181"

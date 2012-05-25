@@ -580,8 +580,7 @@ namespace MySoft.Data
             }
 
             //ÒÆ³ý»º´æ
-            if (this.Cache != null)
-                Cache.RemoveCache<T>();
+            //if (this.Cache != null) Cache.RemoveCache<T>();
 
             string tableName = table == null ? entity.GetTable().Name : table.Name;
 
@@ -679,8 +678,7 @@ namespace MySoft.Data
             }
 
             //ÒÆ³ý»º´æ
-            if (this.Cache != null)
-                Cache.RemoveCache<T>();
+            //if (this.Cache != null) Cache.RemoveCache<T>();
 
             StringBuilder sb = new StringBuilder();
             string tableName = table == null ? entity.GetTable().Name : table.Name;
@@ -721,8 +719,7 @@ namespace MySoft.Data
             }
 
             //ÒÆ³ý»º´æ
-            if (this.Cache != null)
-                Cache.RemoveCache<T>();
+            //if (this.Cache != null) Cache.RemoveCache<T>();
 
             string tableName = table == null ? entity.GetTable().Name : table.Name;
 

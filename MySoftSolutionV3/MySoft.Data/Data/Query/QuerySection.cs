@@ -1174,11 +1174,14 @@ namespace MySoft.Data
         private string GetCacheKey(string sql, SQLParameter[] parameters)
         {
             sql = dbProvider.FormatCommandText(sql);
-            if (parameters == null) return sql;
-            foreach (var p in parameters)
+            if (!(parameters == null || parameters.Length == 0))
             {
-                sql = sql.Replace(p.Name, DataHelper.FormatValue(p.Value));
+                foreach (var p in parameters)
+                {
+                    sql = sql.Replace(p.Name, DataHelper.FormatValue(p.Value));
+                }
             }
+
             return sql.ToLower();
         }
 
@@ -1219,8 +1222,12 @@ namespace MySoft.Data
             string key = string.Concat(prefix, "_", cacheKey);
             if (dbProvider.Cache != null)
             {
-                int timeout = EntityConfig.Instance.GetTableTimeout<CacheType>();
-                dbProvider.Cache.AddCache(key, obj, timeout);
+                //如果key里面出现(0=0)，则不进行缓存，没办法，为了及时性做一个特殊约定
+                if (!cacheKey.Contains("(0=0)"))
+                {
+                    int timeout = EntityConfig.Instance.GetTableTimeout<CacheType>();
+                    dbProvider.Cache.AddCache(key, obj, timeout);
+                }
             }
         }
 

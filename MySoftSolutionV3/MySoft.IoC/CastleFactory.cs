@@ -32,13 +32,7 @@ namespace MySoft.IoC
         /// Gets the service container.
         /// </summary>
         /// <value>The service container.</value>
-        public IServiceContainer ServiceContainer
-        {
-            get
-            {
-                return container;
-            }
-        }
+        public IContainer Container { get { return container; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CastleFactory"/> class.
@@ -349,7 +343,7 @@ namespace MySoft.IoC
             else
                 throw new IoCException("Callback type cannot be the null!");
 
-            CallbackProxy proxy = new CallbackProxy(callback, node, this.ServiceContainer);
+            CallbackProxy proxy = new CallbackProxy(callback, node, container);
             return GetProxyChannel<IPublishService>(proxy, false);
         }
 

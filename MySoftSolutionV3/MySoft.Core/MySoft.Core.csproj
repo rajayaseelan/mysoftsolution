@@ -91,7 +91,7 @@
     <Compile Include="Aop\AopSwitcherAttribute.cs" />
     <Compile Include="Aop\IAopOperator.cs" />
     <Compile Include="Aop\IAopProxyFactory.cs" />
-    <Compile Include="Auth\AuthorizeResult.cs" />
+    <Compile Include="Auth\AuthorizeToken.cs" />
     <Compile Include="Cache\ICacheStrategy.cs" />
     <Compile Include="Common\HttpMethod.cs" />
     <Compile Include="IoC\HttpInvoke.cs" />

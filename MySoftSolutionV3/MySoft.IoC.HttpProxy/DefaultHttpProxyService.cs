@@ -301,74 +301,27 @@ namespace MySoft.IoC.HttpProxy
 
         private HttpProxyResult AuthorizeHeader(WebHeaderCollection header)
         {
-            var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
-
-            var token = new AuthorizeToken
-            {
-                RequestUri = request.UriTemplateMatch.RequestUri,
-                Method = request.Method,
-                Headers = request.Headers,
-                Parameters = request.UriTemplateMatch.QueryParameters,
-                Cookies = GetCookies()
-            };
+            response.StatusCode = HttpStatusCode.Unauthorized;
 
             try
             {
-                var result = Authorize(token);
-                if (result.Succeed && !string.IsNullOrEmpty(result.Name))
+                var token = Authorize();
+                if (token.Succeed && !string.IsNullOrEmpty(token.Name))
                 {
-                    header["X-AuthParameter"] = result.Name;
+                    header["X-AuthParameter"] = token.Name;
                     response.StatusCode = HttpStatusCode.OK;
                     return new HttpProxyResult { Code = (int)response.StatusCode };
                 }
                 else
                 {
-                    response.StatusCode = HttpStatusCode.Unauthorized;
                     return new HttpProxyResult { Code = (int)response.StatusCode, Message = "Unauthorized or authorize name is empty." };
                 }
             }
             catch (Exception ex)
             {
-                response.StatusCode = HttpStatusCode.Unauthorized;
                 return new HttpProxyResult { Code = (int)response.StatusCode, Message = "Unauthorized - " + ex.Message };
             }
-        }
-
-        /// <summary>
-        /// 获取Cookie信息
-        /// </summary>
-        /// <returns></returns>
-        private HttpCookieCollection GetCookies()
-        {
-            if (HttpContext.Current != null)
-                return HttpContext.Current.Request.Cookies;
-
-            HttpCookieCollection collection = new HttpCookieCollection();
-
-            var request = WebOperationContext.Current.IncomingRequest;
-            var cookie = request.Headers[HttpRequestHeader.Cookie];
-
-            //从头中获取Cookie
-            if (!string.IsNullOrEmpty(cookie))
-            {
-                string[] cookies = cookie.Split(';');
-                HttpCookie cook = null;
-                foreach (string e in cookies)
-                {
-                    if (!string.IsNullOrEmpty(e))
-                    {
-                        string[] values = e.Split(new char[] { '=' }, 2);
-                        if (values.Length == 2)
-                        {
-                            cook = new HttpCookie(values[0], values[1]);
-                        }
-                        collection.Add(cook);
-                    }
-                }
-            }
-
-            return collection;
         }
 
         /// <summary>
@@ -384,12 +337,11 @@ namespace MySoft.IoC.HttpProxy
         /// <summary>
         /// 进行认证处理
         /// </summary>
-        /// <param name="token"></param>
         /// <returns></returns>
-        protected virtual AuthorizeResult Authorize(AuthorizeToken token)
+        protected virtual AuthorizeToken Authorize()
         {
             //返回认证失败
-            return new AuthorizeResult
+            return new AuthorizeToken
             {
                 Succeed = false,
                 Name = "Unknown"

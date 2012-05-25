@@ -12,7 +12,7 @@ namespace MySoft.Data
     /// <summary>
     /// 会话操作对象
     /// </summary>
-    public partial class DbSession : IDbSession
+    public partial class DbSession : IDbSession, ICacheDependent
     {
         /// <summary>
         /// 默认会话对象
@@ -20,6 +20,7 @@ namespace MySoft.Data
         public static DbSession Default;
         private DbProvider dbProvider;
         private DbTrans dbTrans;
+        private string connectName;
 
         #region 初始化Session
 
@@ -41,7 +42,9 @@ namespace MySoft.Data
         /// <param name="connectName"></param>
         public DbSession(string connectName)
             : this(DbProviderFactory.CreateDbProvider(connectName))
-        { }
+        {
+            this.connectName = connectName;
+        }
 
         /// <summary>
         /// 指定驱动实例化一个Session会话
@@ -51,6 +54,7 @@ namespace MySoft.Data
         {
             try
             {
+                this.connectName = dbProvider.ToString();
                 InitSession(dbProvider);
             }
             catch
@@ -1043,7 +1047,7 @@ namespace MySoft.Data
         /// <param name="cache"></param>
         public void RegisterCache(ICacheStrategy cache)
         {
-            this.dbProvider.Cache = new DataCacheDependent(cache);
+            this.dbProvider.Cache = new DataCacheDependent(cache, connectName);
         }
 
         /// <summary>
@@ -1216,6 +1220,48 @@ namespace MySoft.Data
         }
 
         #endregion
+
+        #endregion
+
+        #region ICacheDependent 成员
+
+        /// <summary>
+        /// 添加缓存
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <param name="cacheTime"></param>
+        public void AddCache<T>(string cacheKey, T cacheValue, int cacheTime)
+        {
+            if (dbProvider.Cache != null)
+                dbProvider.Cache.AddCache<T>(cacheKey, cacheValue, cacheTime);
+        }
+
+        /// <summary>
+        /// 移除缓存
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheKey"></param>
+        public void RemoveCache<T>(string cacheKey)
+        {
+            if (dbProvider.Cache != null)
+                dbProvider.Cache.RemoveCache<T>(cacheKey);
+        }
+
+        /// <summary>
+        /// 获取缓存
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheKey"></param>
+        /// <returns></returns>
+        public T GetCache<T>(string cacheKey)
+        {
+            if (dbProvider.Cache != null)
+                return dbProvider.Cache.GetCache<T>(cacheKey);
+            else
+                return default(T);
+        }
 
         #endregion
     }

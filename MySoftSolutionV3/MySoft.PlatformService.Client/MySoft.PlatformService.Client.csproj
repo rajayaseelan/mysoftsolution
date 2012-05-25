@@ -75,6 +75,9 @@
     <OutputPath>bin\x64\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Polenter.SharpSerializer">
+      <HintPath>C:\Users\maoyong\Desktop\Polenter.SharpSerializer.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core">

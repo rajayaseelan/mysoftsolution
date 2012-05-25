@@ -11,13 +11,17 @@ namespace MySoft.Data.Cache
     internal class DataCacheDependent : ICacheDependent
     {
         private ICacheStrategy strategy;
+        private string connectName;
+
         /// <summary>
         /// 实例化默认缓存依赖
         /// </summary>
         /// <param name="strategy"></param>
-        public DataCacheDependent(ICacheStrategy strategy)
+        /// <param name="connectName"></param>
+        public DataCacheDependent(ICacheStrategy strategy, string connectName)
         {
             this.strategy = strategy;
+            this.connectName = connectName;
         }
 
         #region ICacheDependent 成员
@@ -34,7 +38,7 @@ namespace MySoft.Data.Cache
             if (cacheTime > 0)
             {
                 //组合CacheKey
-                cacheKey = string.Format("{0}_{1}", typeof(T).FullName, cacheKey);
+                cacheKey = string.Format("{0}_{1}_{2}", connectName, typeof(T).FullName, cacheKey);
                 strategy.AddObject(cacheKey, cacheValue, TimeSpan.FromSeconds(cacheTime));
             }
         }
@@ -47,7 +51,7 @@ namespace MySoft.Data.Cache
         public void RemoveCache<T>(string cacheKey)
         {
             //组合CacheKey
-            cacheKey = string.Format("{0}_{1}", typeof(T).FullName, cacheKey);
+            cacheKey = string.Format("{0}_{1}_{2}", connectName, typeof(T).FullName, cacheKey);
             strategy.RemoveObject(cacheKey);
         }
         /// <summary>
@@ -60,31 +64,8 @@ namespace MySoft.Data.Cache
         public T GetCache<T>(string cacheKey)
         {
             //组合CacheKey
-            cacheKey = string.Format("{0}_{1}", typeof(T).FullName, cacheKey);
+            cacheKey = string.Format("{0}_{1}_{2}", connectName, typeof(T).FullName, cacheKey);
             return strategy.GetObject<T>(cacheKey);
-        }
-
-        #endregion
-
-        #region 处理一组缓存
-
-        /// <summary>
-        /// 移除缓存
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public void RemoveCache<T>()
-        {
-            strategy.RemoveMatchObjects(typeof(T).FullName);
-        }
-
-        /// <summary>
-        /// 获取缓存
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public IList<T> GetCache<T>()
-        {
-            return strategy.GetMatchObjects<T>(typeof(T).FullName).Values.ToList();
         }
 
         #endregion
