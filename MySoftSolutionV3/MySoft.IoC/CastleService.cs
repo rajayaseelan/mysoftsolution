@@ -242,7 +242,7 @@ namespace MySoft.IoC
                 var resMsg = caller.CallMethod(client, reqMsg);
 
                 //发送数据到服务端
-                SendMessage(client, new ScsResultMessage(resMsg, message.RepliedMessageId));
+                SendMessage(client, resMsg, message.RepliedMessageId);
             }
         }
 
@@ -250,42 +250,43 @@ namespace MySoft.IoC
         /// 发送消息
         /// </summary>
         /// <param name="client"></param>
-        /// <param name="message"></param>
-        private void SendMessage(IScsServerClient client, IScsMessage message)
+        /// <param name="msgBase"></param>
+        /// <param name="messageId"></param>
+        private void SendMessage(IScsServerClient client, MessageBase msgBase, string messageId)
         {
             try
             {
-                client.SendMessage(message);
+                var sendMsg = new ScsResultMessage(msgBase, messageId);
+
+                //发送消息
+                client.SendMessage(sendMsg);
             }
             catch (Exception ex)
             {
                 //写异常日志
                 container.Write(ex);
 
-                //如果是返回结果
-                if (message is ScsResultMessage)
+                try
                 {
-                    try
+                    msgBase = new ResponseMessage
                     {
-                        var reqMsg = (message as ScsResultMessage).MessageValue;
-                        var resMsg = new ResponseMessage
-                        {
-                            TransactionId = reqMsg.TransactionId,
-                            ReturnType = reqMsg.ReturnType,
-                            ServiceName = reqMsg.ServiceName,
-                            MethodName = reqMsg.MethodName,
-                            Parameters = reqMsg.Parameters,
-                            Error = ex
-                        };
+                        TransactionId = msgBase.TransactionId,
+                        ReturnType = msgBase.ReturnType,
+                        ServiceName = msgBase.ServiceName,
+                        MethodName = msgBase.MethodName,
+                        Parameters = msgBase.Parameters,
+                        Error = ex
+                    };
 
-                        //发送错误消息 
-                        client.SendMessage(new ScsResultMessage(resMsg, message.RepliedMessageId));
-                    }
-                    catch
-                    {
-                        //写异常日志
-                        container.Write(ex);
-                    }
+                    var sendMsg = new ScsResultMessage(msgBase, messageId);
+
+                    //发送消息
+                    client.SendMessage(sendMsg);
+                }
+                catch
+                {
+                    //写异常日志
+                    container.Write(ex);
                 }
             }
         }

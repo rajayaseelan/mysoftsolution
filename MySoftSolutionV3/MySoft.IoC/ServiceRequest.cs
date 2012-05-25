@@ -41,7 +41,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="node"></param>
         /// <param name="logger"></param>
-        public ServiceRequest(ServerNode node, ILog logger, bool autoDisconnect)
+        public ServiceRequest(ServerNode node, ILog logger, bool isTimeoutDisconnect)
         {
             this.logger = logger;
             this.node = node.Key;
@@ -50,7 +50,7 @@ namespace MySoft.IoC
 
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
             this.client.ConnectTimeout = 5000;
-            this.client.DisconnectTimeout = autoDisconnect ? node.Timeout * 1000 : -1;
+            this.client.IsTimeoutDisconnect = isTimeoutDisconnect;
             this.client.Disconnected += client_Disconnected;
             this.client.MessageReceived += client_MessageReceived;
             this.client.MessageSent += client_MessageSent;

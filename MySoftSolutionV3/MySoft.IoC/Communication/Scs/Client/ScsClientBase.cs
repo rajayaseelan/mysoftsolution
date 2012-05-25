@@ -47,7 +47,7 @@ namespace MySoft.Communication.Scs.Client
         /// <summary>
         /// Auto disconnected
         /// </summary>
-        public int DisconnectTimeout { get; set; }
+        public bool IsTimeoutDisconnect { get; set; }
 
         /// <summary>
         /// Timeout for connecting to a server (as milliseconds).
@@ -144,7 +144,7 @@ namespace MySoft.Communication.Scs.Client
             _pingTimer = new Timer(30000);
             _pingTimer.Elapsed += PingTimer_Elapsed;
             ConnectTimeout = DefaultConnectionAttemptTimeout;
-            DisconnectTimeout = DefaultDisconnectionAttemptTimeout;
+            IsTimeoutDisconnect = true;
             WireProtocol = WireProtocolManager.GetDefaultWireProtocol();
         }
 
@@ -281,12 +281,10 @@ namespace MySoft.Communication.Scs.Client
                     return;
                 }
 
-                if (DisconnectTimeout <= 0)
-                    _communicationChannel.SendMessage(new ScsPingMessage());
-                else
+                if (IsTimeoutDisconnect)
                 {
                     //判断超时时间
-                    lastMinute = DateTime.Now.Add(-TimeSpan.FromMilliseconds(DisconnectTimeout));
+                    lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
 
                     if (_communicationChannel.LastReceivedMessageTime < lastMinute && _communicationChannel.LastSentMessageTime < lastMinute)
                     {
@@ -295,6 +293,10 @@ namespace MySoft.Communication.Scs.Client
 
                         return;
                     }
+                }
+                else
+                {
+                    _communicationChannel.SendMessage(new ScsPingMessage());
                 }
             }
             catch
