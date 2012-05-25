@@ -227,13 +227,6 @@ namespace MySoft.IoC
                 //获取client发送端
                 var client = sender as IScsServerClient;
 
-                //如果状态为空的客户端，则不处理，直接断开！
-                if (client.State == null)
-                {
-                    client.Disconnect();
-                    return;
-                }
-
                 //解析消息
                 var message = e.Message as ScsResultMessage;
                 var reqMsg = message.MessageValue as RequestMessage;
