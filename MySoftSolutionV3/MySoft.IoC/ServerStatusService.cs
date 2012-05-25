@@ -17,6 +17,8 @@ namespace MySoft.IoC
     /// </summary>
     public class ServerStatusService : IStatusService
     {
+        private const int DefaultDisconnectionAttemptTimeout = 5 * 60 * 1000; //5 minutes.
+
         private CastleServiceConfiguration config;
         private IScsServer server;
         private IServiceContainer container;
@@ -60,7 +62,7 @@ namespace MySoft.IoC
                     }
 
                     //处理客户端连接
-                    var lastMinute = DateTime.Now.AddMinutes(-1);
+                    var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
                     foreach (var client in server.Clients.GetAllItems())
                     {
                         //没有State表示非正常客户端连接
@@ -68,7 +70,7 @@ namespace MySoft.IoC
                         {
                             if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
                             {
-                                //如果超过1分钟没响应，则断开链接
+                                //如果超过5分钟没响应，则断开链接
                                 client.Disconnect();
                             }
                         }
