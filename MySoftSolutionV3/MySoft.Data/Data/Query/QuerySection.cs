@@ -168,7 +168,7 @@ namespace MySoft.Data
 
         #region 获取公有变量
 
-        internal SQLParameter[] Parameters
+        internal virtual SQLParameter[] Parameters
         {
             get
             {

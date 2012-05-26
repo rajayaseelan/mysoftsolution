@@ -34,6 +34,18 @@ namespace MySoft.Data
             }
         }
 
+        internal override SQLParameter[] Parameters
+        {
+            get
+            {
+                return query.Parameters;
+            }
+            set
+            {
+                query.Parameters = value;
+            }
+        }
+
         /// <summary>
         /// CreateQuery
         /// </summary>

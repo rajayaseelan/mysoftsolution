@@ -962,7 +962,7 @@ namespace MySoft.Data
                     throw new DataException("当值为null时只能应用于=与<>操作！");
             }
 
-            string pName = CoreHelper.MakeUniqueKey(100, "$");
+            string pName = CoreHelper.MakeUniqueKey(100, "$p_");
             SQLParameter p = new SQLParameter(pName);
             p.Value = value;
 
