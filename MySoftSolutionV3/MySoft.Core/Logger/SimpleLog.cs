@@ -379,8 +379,8 @@ namespace MySoft.Logger
             {
                 if (!isOriginal)
                 {
-                    log = string.Format("【{0}】 ==> {1}{2}{2}========================================================================================================================{2}{2}",
-                                        DateTime.Now.ToLongTimeString(), log, Environment.NewLine);
+                    log = string.Format("【{0}】 => {1}{2}{3}{2}", DateTime.Now, log,
+                                        Environment.NewLine, string.Empty.PadRight(150, '='));
                 }
 
                 var loginfo = new LogInfo { FilePath = filePath, Log = log };
