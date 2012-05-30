@@ -79,7 +79,6 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            this.reset = null;
             this.request = null;
             this.message = null;
             this.context = null;

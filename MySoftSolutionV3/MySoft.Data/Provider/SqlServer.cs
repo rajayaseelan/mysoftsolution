@@ -111,12 +111,12 @@ namespace MySoft.Data.SqlServer
         {
             if (skipCount == 0)
             {
-                ((IPaging)query).Prefix("top " + itemCount);
+                ((IPaging)query).Prefix("TOP " + itemCount);
                 return query;
             }
             else
             {
-                ((IPaging)query).Prefix("top " + itemCount);
+                ((IPaging)query).Prefix("TOP " + itemCount);
 
                 Field pagingField = query.PagingField;
 
@@ -126,15 +126,10 @@ namespace MySoft.Data.SqlServer
                 }
 
                 QuerySection<T> jquery = query.CreateQuery<T>();
-                ((IPaging)jquery).Prefix("top " + skipCount);
+                ((IPaging)jquery).Prefix("TOP " + skipCount);
                 jquery.Select(pagingField);
 
-                //如果是联合查询，则需要符值整个QueryString
-                if (query.UnionQuery)
-                {
-                    jquery.QueryString = query.QueryString;
-                }
-
+                //sqlserver2000分页条件操作
                 query.PageWhere = !pagingField.In(jquery);
 
                 return query;

@@ -6,18 +6,20 @@ namespace MySoft.Data
     /// Top对应的Query查询
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class TopSection<T> : QuerySection<T>
+    internal class TopQuery<T> : QuerySection<T>
         where T : Entity
     {
         private QuerySection<T> query;
         private int topSize;
 
-        internal TopSection(QuerySection<T> query, DbProvider dbProvider, DbTrans dbTran, int topSize)
+        internal TopQuery(QuerySection<T> query, DbProvider dbProvider, DbTrans dbTran, int topSize)
             : base(query.FromSection, dbProvider, dbTran)
         {
             this.query = query;
             this.topSize = topSize;
         }
+
+        #region 方法重载
 
         /// <summary>
         /// QueryString
@@ -27,10 +29,6 @@ namespace MySoft.Data
             get
             {
                 return query.QueryString;
-            }
-            set
-            {
-                query.QueryString = value;
             }
         }
 
@@ -55,8 +53,6 @@ namespace MySoft.Data
         {
             return query.SubQuery("SUB_QUERY_TABLE").CreateQuery<TResult>();
         }
-
-        #region 方法重载
 
         /// <summary>
         /// 获取分页

@@ -123,6 +123,9 @@ namespace MySoft.IoC.Services
 
                     if (!waitResult.Wait(elapsedTime))
                     {
+                        //如果请求超时，则断开连接
+                        reqProxy.Disconnect();
+
                         throw new WarningException(string.Format("【{0}:{1}】 => Call service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
                            , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()));
                     }

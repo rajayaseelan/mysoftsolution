@@ -29,7 +29,7 @@ namespace MySoft.Data.SqlServer9
             else
             {
                 //如果没有指定Order 则由指定的key来排序
-                if (query.OrderString == null)
+                if (string.IsNullOrEmpty(query.OrderString))
                 {
                     Field pagingField = query.PagingField;
 
@@ -43,6 +43,7 @@ namespace MySoft.Data.SqlServer9
 
                 ((IPaging)query).Suffix(",ROW_NUMBER() OVER(" + query.OrderString + ") AS TMP__ROWID");
                 query.OrderBy(OrderByClip.None);
+                query.SetPagingField(null);
 
                 QuerySection<T> jquery = query.SubQuery("TMP_TABLE");
                 jquery.Where(new WhereClip("TMP__ROWID BETWEEN " + (skipCount + 1) + " AND " + (itemCount + skipCount)));

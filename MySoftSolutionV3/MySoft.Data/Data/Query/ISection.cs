@@ -6,9 +6,9 @@ namespace MySoft.Data
     interface ISqlSection
     {
         int Execute();
-        T ToSingle<T>() where T : Entity;
+        T ToSingle<T>() where T : class;
 
-        SourceList<T> ToList<T>() where T : Entity;
+        SourceList<T> ToList<T>() where T : class;
         ArrayList<TResult> ToListResult<TResult>();
 
         SourceReader ToReader();
@@ -22,9 +22,9 @@ namespace MySoft.Data
     interface IProcSection : ISqlSection
     {
         int Execute(out IDictionary<string, object> outValues);
-        T ToSingle<T>(out IDictionary<string, object> outValues) where T : Entity;
+        T ToSingle<T>(out IDictionary<string, object> outValues) where T : class;
 
-        SourceList<T> ToList<T>(out IDictionary<string, object> outValues) where T : Entity;
+        SourceList<T> ToList<T>(out IDictionary<string, object> outValues) where T : class;
         ArrayList<TResult> ToListResult<TResult>(out IDictionary<string, object> outValues);
 
         SourceReader ToReader(out IDictionary<string, object> outValues);

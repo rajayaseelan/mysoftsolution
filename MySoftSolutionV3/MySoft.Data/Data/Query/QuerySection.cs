@@ -15,16 +15,13 @@ namespace MySoft.Data
         protected DbProvider dbProvider;
         protected DbTrans dbTran;
 
-        private string formatString = " SELECT {0} {1} {2} {3} FROM {4} {5} {6} {7} {8} {9}";
-        private string distinctString;
-        private string prefixString;
-        private string suffixString;
-        private string endString;
+        protected string formatString = " SELECT {0} {1} {2} {3} FROM {4} {5} {6} {7} {8} {9}";
+        protected string distinctString;
+        protected string prefixString;
+        protected string suffixString;
+        protected string endString;
         private string sqlString;
-        private string queryString;
-        private string countString;
         private bool fieldSelect;
-        private bool unionQuery;
         private Field pagingField;
         private List<Field> fieldList = new List<Field>();
         private List<SQLParameter> parameterList = new List<SQLParameter>();
@@ -88,34 +85,25 @@ namespace MySoft.Data
             }
         }
 
-        private string CountString
+        internal virtual string CountString
         {
             get
             {
-                string sql = null;
-                if (countString != null)
+                string countSql = string.Empty;
+                if (DataHelper.IsNullOrEmpty(groupBy) && string.IsNullOrEmpty(distinctString))
                 {
-                    sql = countString;
+                    countSql = string.Format(formatString, null, null, "COUNT(*) AS ROW_COUNT",
+                        null, SqlString, countWhereString, null, null, null, null);
                 }
                 else
                 {
-                    if (DataHelper.IsNullOrEmpty(groupBy) && distinctString == null)
-                    {
-                        sql = string.Format(formatString, null, null, "COUNT(*) AS ROW_COUNT",
-                            null, SqlString, countWhereString, null, null, null, null);
-                    }
-                    else
-                    {
-                        sql = string.Format(formatString, distinctString, null, fieldString,
-                           null, SqlString, countWhereString, groupString, havingString, null, endString);
-                        sql = string.Format("SELECT COUNT(*) AS ROW_COUNT FROM ({0}) TMP_TABLE", sql);
-                    }
+                    countSql = string.Format(formatString, distinctString, null, fieldString,
+                       null, SqlString, countWhereString, groupString, havingString, null, endString);
+
+                    countSql = string.Format("SELECT COUNT(*) AS ROW_COUNT FROM ({0}) TMP_TABLE", countSql);
                 }
-                return sql;
-            }
-            set
-            {
-                countString = value;
+
+                return countSql;
             }
         }
 
@@ -152,7 +140,7 @@ namespace MySoft.Data
         {
             get
             {
-                if (sqlString == null)
+                if (string.IsNullOrEmpty(sqlString))
                 {
                     sqlString = fromSection.TableName + " " + fromSection.Relation;
                 }
@@ -259,29 +247,12 @@ namespace MySoft.Data
         {
             get
             {
-                if (queryString == null)
-                {
-                    return string.Format(formatString, distinctString, prefixString, fieldString,
-                         suffixString, SqlString, whereString, groupString, havingString, OrderString, endString);
-                }
-                else
-                {
-                    if (prefixString != null)
-                    {
-                        string sql = "(" + queryString + ") " + fromSection.TableName;
-                        return string.Format(formatString, distinctString, prefixString, fieldString,
-                               suffixString, sql, whereString, groupString, havingString, OrderString, endString);
-                    }
-                    return queryString;
-                }
-            }
-            set
-            {
-                queryString = value;
+                return string.Format(formatString, distinctString, prefixString, fieldString,
+                     suffixString, SqlString, whereString, groupString, havingString, OrderString, endString);
             }
         }
 
-        internal string OrderString
+        internal virtual string OrderString
         {
             get
             {
@@ -290,14 +261,6 @@ namespace MySoft.Data
                     return null;
                 }
                 return " ORDER BY " + orderBy.ToString();
-            }
-        }
-
-        internal bool UnionQuery
-        {
-            get
-            {
-                return unionQuery;
             }
         }
 
@@ -502,7 +465,7 @@ namespace MySoft.Data
             if (topSize <= 0) throw new DataException("选取前N条数据值不能小于等于0！");
 
             var query = dbProvider.CreatePageQuery<T>(this, topSize, 0);
-            TopSection<T> top = new TopSection<T>(query, dbProvider, dbTran, topSize);
+            TopQuery<T> top = new TopQuery<T>(query, dbProvider, dbTran, topSize);
 
             return top;
         }
@@ -574,7 +537,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        public QuerySection<T> Union(QuerySection<T> query)
+        public virtual QuerySection<T> Union(QuerySection<T> query)
         {
             return Union(query, false);
         }
@@ -584,7 +547,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        public QuerySection<T> UnionAll(QuerySection<T> query)
+        public virtual QuerySection<T> UnionAll(QuerySection<T> query)
         {
             return Union(query, true);
         }
@@ -597,18 +560,7 @@ namespace MySoft.Data
         /// <returns></returns>
         private QuerySection<T> Union(QuerySection<T> query, bool isUnionAll)
         {
-            QuerySection<T> tempQuery = CreateQuery<T>();
-            tempQuery.QueryString = this.QueryString;
-            tempQuery.CountString = this.CountString;
-            tempQuery.QueryString += " UNION " + (isUnionAll ? " ALL " : "") + query.QueryString;
-            tempQuery.CountString += " UNION " + (isUnionAll ? " ALL " : "") + query.CountString;
-            tempQuery.unionQuery = true;
-
-            //将排序进行合并
-            OrderByClip order = this.orderBy && query.orderBy;
-            tempQuery.Parameters = query.Parameters;
-
-            return tempQuery.OrderBy(order);
+            return new UnionQuery<T>(this, query, dbProvider, dbTran, isUnionAll);
         }
 
         #endregion
@@ -646,10 +598,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public virtual PageSection<T> GetPage(int pageSize)
         {
-            if (unionQuery)
-                return new PageSection<T>(this.SubQuery("SUB_PAGE_TABLE"), pageSize);
-            else
-                return new PageSection<T>(this, pageSize);
+            return new PageSection<T>(this, pageSize);
         }
 
         /// <summary>
@@ -865,66 +814,36 @@ namespace MySoft.Data
         private SourceList<TResult> GetList<TResult>(QuerySection<TResult> query, int itemCount, int skipCount)
             where TResult : Entity
         {
-            if (query.UnionQuery)
-            {
-                query = query.SubQuery("SUB_UNION_TABLE");
-            }
-
             query = dbProvider.CreatePageQuery<TResult>(query, itemCount, skipCount);
             return ExecuteDataList<TResult>(query);
         }
 
         private ArrayList<TResult> GetListResult<TResult>(QuerySection<T> query, int itemCount, int skipCount)
         {
-            if (query.UnionQuery)
-            {
-                query = query.SubQuery("SUB_UNION_TABLE");
-            }
-
             query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
             return ExecuteDataListResult<TResult>(query);
         }
 
         private SourceReader GetDataReader(QuerySection<T> query, int itemCount, int skipCount)
         {
-            if (query.UnionQuery)
-            {
-                query = query.SubQuery("SUB_UNION_TABLE");
-            }
-
             query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
             return ExecuteDataReader(query);
         }
 
         private SourceTable GetDataTable(QuerySection<T> query, int itemCount, int skipCount)
         {
-            if (query.UnionQuery)
-            {
-                query = query.SubQuery("SUB_UNION_TABLE");
-            }
-
             query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
             return ExecuteDataTable(query);
         }
 
         private DataSet GetDataSet(QuerySection<T> query, int itemCount, int skipCount)
         {
-            if (query.UnionQuery)
-            {
-                query = query.SubQuery("SUB_UNION_TABLE");
-            }
-
             query = dbProvider.CreatePageQuery<T>(query, itemCount, skipCount);
             return ExecuteDataSet(query);
         }
 
         private int GetCount(QuerySection<T> query)
         {
-            if (query.unionQuery)
-            {
-                query = query.SubQuery("SUB_COUNT_TABLE");
-            }
-
             string countString = query.CountString;
             string cacheKey = GetCacheKey(countString, this.Parameters);
             object obj = GetCache<T>("Count", cacheKey);

@@ -184,9 +184,9 @@ namespace MySoft.Data
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public T ToSingle<T>()
-            where T : Entity
+            where T : class
         {
-            ISourceList<T> list = GetList<T>(dbCommand, dbTran);
+            ISourceList<T> list = ToList<T>();
             if (list.Count == 0)
             {
                 return default(T);
@@ -203,9 +203,9 @@ namespace MySoft.Data
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public SourceList<T> ToList<T>()
-            where T : Entity
+            where T : class
         {
-            return GetList<T>(dbCommand, dbTran);
+            return ToReader().ConvertTo<T>();
         }
 
         /// <summary>
@@ -288,9 +288,9 @@ namespace MySoft.Data
         /// <param name="outValues"></param>
         /// <returns></returns>
         public T ToSingle<T>(out IDictionary<string, object> outValues)
-            where T : Entity
+            where T : class
         {
-            ISourceList<T> list = GetList<T>(dbCommand, dbTran);
+            ISourceList<T> list = ToList<T>();
             GetOutputParameterValues(dbCommand, out outValues);
             if (list.Count == 0)
             {
@@ -309,9 +309,9 @@ namespace MySoft.Data
         /// <param name="outValues"></param>
         /// <returns></returns>
         public SourceList<T> ToList<T>(out IDictionary<string, object> outValues)
-            where T : Entity
+            where T : class
         {
-            SourceList<T> list = GetList<T>(dbCommand, dbTran);
+            SourceList<T> list = ToList<T>();
             GetOutputParameterValues(dbCommand, out outValues);
             return list;
         }
@@ -403,35 +403,6 @@ namespace MySoft.Data
         #endregion
 
         #region Ë½ÓÐ·½·¨
-
-        private SourceList<T> GetList<T>(DbCommand cmd, DbTrans dbTran)
-            where T : Entity
-        {
-            try
-            {
-                using (ISourceReader reader = dbProvider.ExecuteReader(cmd, dbTran))
-                {
-                    SourceList<T> list = new SourceList<T>();
-                    FastCreateInstanceHandler creator = CoreHelper.GetFastInstanceCreator(typeof(T));
-
-                    while (reader.Read())
-                    {
-                        T entity = (T)creator();
-                        entity.SetDbValues(reader);
-                        entity.Attach();
-                        list.Add(entity);
-                    }
-
-                    reader.Close();
-
-                    return list;
-                }
-            }
-            catch
-            {
-                throw;
-            }
-        }
 
         private ArrayList<TResult> GetListResult<TResult>(DbCommand cmd, DbTrans dbTran)
         {

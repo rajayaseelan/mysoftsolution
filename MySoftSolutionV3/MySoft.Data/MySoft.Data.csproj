@@ -108,7 +108,8 @@
     <Compile Include="Creator\UpdateCreator.cs" />
     <Compile Include="Data\Expression\SQLParameter.cs" />
     <Compile Include="Data\Query\TableEntity.cs" />
-    <Compile Include="Data\Query\TopSection.cs" />
+    <Compile Include="Data\Query\TopQuery.cs" />
+    <Compile Include="Data\Query\UnionQuery.cs" />
     <Compile Include="Data\Relation\ITableRelation.cs" />
     <Compile Include="Data\Session\AllField.cs" />
     <Compile Include="Data\Session\EntityBase.cs" />

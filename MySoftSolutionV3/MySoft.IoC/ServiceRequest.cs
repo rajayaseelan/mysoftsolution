@@ -83,6 +83,14 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 断开连接
+        /// </summary>
+        public void Disconnect()
+        {
+            client.Disconnect();
+        }
+
+        /// <summary>
         /// 连接服务器
         /// </summary>
         private void ConnectServer(RequestMessage reqMsg)

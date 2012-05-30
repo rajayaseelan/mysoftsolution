@@ -330,17 +330,17 @@ namespace MySoft.Data
                         if (identityField.Name == field.Name) fv.IsIdentity = true;
 
                     //判断是否为主键
-                    if (pkFields.Contains(field)) fv.IsPrimaryKey = true;
+                    if (pkFields.Any(p => p.Name == field.Name)) fv.IsPrimaryKey = true;
 
                     if (isUpdate)
                     {
                         //如果是更新，则将更新的字段改变状态为true
-                        if (updatelist.Contains(field)) fv.IsChanged = true;
+                        if (updatelist.Any(p => p.Name == field.Name)) fv.IsChanged = true;
                     }
                     else
                     {
                         //如果是插入，则将移除插入的字段改变状态为true
-                        if (removeinsertlist.Contains(field)) fv.IsChanged = true;
+                        if (removeinsertlist.Any(p => p.Name == field.Name)) fv.IsChanged = true;
                     }
 
                     fvlist.Add(fv);

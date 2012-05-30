@@ -44,7 +44,7 @@ namespace MySoft.Data
             List<Field> list = new List<Field>(fields);
             list = list.FindAll(f =>
             {
-                if (this.Fields.Contains(f)) return true;
+                if (this.Fields.Any(p => p.Name == f.Name)) return true;
                 return false;
             });
 

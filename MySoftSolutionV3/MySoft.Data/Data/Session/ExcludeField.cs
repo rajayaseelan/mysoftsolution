@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace MySoft.Data
@@ -42,7 +43,7 @@ namespace MySoft.Data
             List<Field> list = new List<Field>(fields);
             list.RemoveAll(f =>
             {
-                if (this.Fields.Contains(f)) return true;
+                if (this.Fields.Any(p => p.Name == f.Name)) return true;
                 return false;
             });
 

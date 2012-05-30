@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using MySoft.Data.Design;
 
@@ -107,7 +108,7 @@ namespace MySoft.Data
                 List<Field> list = new List<Field>(this.GetFields());
                 list.RemoveAll(f =>
                 {
-                    if (fields.Contains(f)) return true;
+                    if (fields.Any(p => p.Name == f.Name)) return true;
                     return false;
                 });
                 RemoveFieldsToInsert(list);

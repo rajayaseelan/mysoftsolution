@@ -147,7 +147,7 @@ namespace MySoft.Data.Oracle
         {
             if (skipCount == 0)
             {
-                if (itemCount == 1 && query.OrderString == null)
+                if (itemCount == 1 && string.IsNullOrEmpty(query.OrderString))
                 {
                     query.PageWhere = new WhereClip("ROWNUM <= 1");
                     return query;
@@ -164,7 +164,7 @@ namespace MySoft.Data.Oracle
             else
             {
                 //如果没有指定Order 则由指定的key来排序
-                if (query.OrderString == null)
+                if (string.IsNullOrEmpty(query.OrderString))
                 {
                     Field pagingField = query.PagingField;
 
@@ -178,6 +178,7 @@ namespace MySoft.Data.Oracle
 
                 ((IPaging)query).Suffix(",ROW_NUMBER() OVER(" + query.OrderString + ") AS TMP__ROWID");
                 query.OrderBy(OrderByClip.None);
+                query.SetPagingField(null);
 
                 QuerySection<T> jquery = query.SubQuery("TMP_TABLE");
                 jquery.Where(new WhereClip("TMP__ROWID BETWEEN " + (skipCount + 1) + " AND " + (itemCount + skipCount)));
