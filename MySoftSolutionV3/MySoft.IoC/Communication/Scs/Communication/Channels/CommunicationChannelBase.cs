@@ -77,8 +77,8 @@ namespace MySoft.Communication.Scs.Communication.Channels
         protected CommunicationChannelBase()
         {
             CommunicationState = CommunicationStates.Disconnected;
-            LastReceivedMessageTime = DateTime.MinValue;
-            LastSentMessageTime = DateTime.MinValue;
+            LastReceivedMessageTime = DateTime.Now;
+            LastSentMessageTime = DateTime.Now;
         }
 
         #endregion

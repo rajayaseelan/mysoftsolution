@@ -58,6 +58,9 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
+            this.reset.Reset();
+
+            this.reset = null;
             this.message = null;
         }
 

@@ -60,8 +60,8 @@ namespace MySoft.IoC.Callback
                     }
                 }
 
-                //等待10毫秒
-                Thread.Sleep(10);
+                //等待1毫秒
+                Thread.Sleep(1);
             }
         }
 

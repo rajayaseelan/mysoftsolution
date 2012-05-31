@@ -275,16 +275,10 @@ namespace MySoft.Communication.Scs.Client
 
             try
             {
-                var lastMinute = DateTime.Now.AddMinutes(-1);
-                if (_communicationChannel.LastReceivedMessageTime > lastMinute || _communicationChannel.LastSentMessageTime > lastMinute)
-                {
-                    return;
-                }
-
                 if (IsTimeoutDisconnect)
                 {
                     //判断超时时间
-                    lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
+                    var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
 
                     if (_communicationChannel.LastReceivedMessageTime < lastMinute && _communicationChannel.LastSentMessageTime < lastMinute)
                     {

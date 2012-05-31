@@ -15,6 +15,7 @@ namespace MySoft.IoC
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
         private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
+        private int minpool = ServiceConfig.DEFAULT_CLIENT_MINPOOL;
         private TransferType format = TransferType.Binary;
 
         /// <summary>
@@ -75,6 +76,16 @@ namespace MySoft.IoC
         {
             get { return timeout; }
             set { timeout = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the minpool.
+        /// </summary>
+        /// <value>The maxpool.</value>
+        public int MinPool
+        {
+            get { return minpool; }
+            set { minpool = value; }
         }
 
         /// <summary>

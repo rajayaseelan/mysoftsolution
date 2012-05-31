@@ -84,6 +84,10 @@ namespace MySoft.IoC.Configuration
                     if (childattribute["maxpool"] != null && childattribute["maxpool"].Value.Trim() != string.Empty)
                         node.MaxPool = Convert.ToInt32(childattribute["maxpool"].Value);
 
+                    //最小连接池
+                    if (childattribute["minpool"] != null && childattribute["minpool"].Value.Trim() != string.Empty)
+                        node.MinPool = Convert.ToInt32(childattribute["minpool"].Value);
+
                     if (childattribute["encrypt"] != null && childattribute["encrypt"].Value.Trim() != string.Empty)
                         node.Encrypt = Convert.ToBoolean(childattribute["encrypt"].Value);
 

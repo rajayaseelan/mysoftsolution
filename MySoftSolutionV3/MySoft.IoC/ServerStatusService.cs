@@ -42,10 +42,16 @@ namespace MySoft.IoC
             this.counterlist = new CounterInfoCollection(config.MinuteCalls);
 
             //启动定义推送线程
-            Thread thread = new Thread(DoPushWork);
-            thread.IsBackground = true;
-            thread.Start();
+            var threadPush = new Thread(DoPushWork);
+            threadPush.IsBackground = true;
+            threadPush.Start();
+
+            //启动自动检测线程
+            var threadCheck = new Thread(DoCheckWork);
+            threadCheck.IsBackground = true;
+            threadCheck.Start();
         }
+
 
         void DoPushWork(object state)
         {
@@ -57,22 +63,14 @@ namespace MySoft.IoC
                     //响应定时信息
                     if (statuslist.Count > 0)
                     {
-                        var status = GetServerStatus();
-                        MessageCenter.Instance.Notify(status);
-                    }
-
-                    //处理客户端连接
-                    var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
-                    foreach (var client in server.Clients.GetAllItems())
-                    {
-                        //没有State表示非正常客户端连接
-                        if (client.State == null)
+                        try
                         {
-                            if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
-                            {
-                                //如果超过5分钟没响应，则断开链接
-                                client.Disconnect();
-                            }
+                            var status = GetServerStatus();
+                            MessageCenter.Instance.Notify(status);
+                        }
+                        catch (Exception ex)
+                        {
+                            //TODO
                         }
                     }
                 });
@@ -85,6 +83,38 @@ namespace MySoft.IoC
 
                 //每秒推送一次
                 Thread.Sleep(1000);
+            }
+        }
+
+        void DoCheckWork(object state)
+        {
+            while (true)
+            {
+                //每5分钟检测一次
+                Thread.Sleep(DefaultDisconnectionAttemptTimeout);
+
+                try
+                {
+                    //处理客户端连接
+                    var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
+
+                    foreach (var client in server.Clients.GetAllItems())
+                    {
+                        //没有State表示非正常客户端连接
+                        if (client.State == null)
+                        {
+                            if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
+                            {
+                                //如果超过5分钟没响应，则断开链接
+                                client.Disconnect();
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //TODO
+                }
             }
         }
 

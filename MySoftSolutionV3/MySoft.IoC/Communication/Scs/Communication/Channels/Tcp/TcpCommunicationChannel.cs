@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using MySoft.Communication.Scs.Communication.EndPoints;
 using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.Communication.Scs.Communication.Messages;
+using System.Threading;
 
 namespace MySoft.Communication.Scs.Communication.Channels.Tcp
 {
@@ -137,13 +138,26 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
                 //Send all bytes to the remote application
                 while (totalSent < messageBytes.Length)
                 {
-                    var sent = _clientSocket.Send(messageBytes, totalSent, messageBytes.Length - totalSent, SocketFlags.None);
-                    if (sent <= 0)
+                    try
                     {
-                        throw new CommunicationException("Message could not be sent via TCP socket. Only " + totalSent + " bytes of " + messageBytes.Length + " bytes are sent.");
-                    }
+                        var sent = _clientSocket.Send(messageBytes, totalSent, messageBytes.Length - totalSent, SocketFlags.None);
+                        if (sent <= 0)
+                        {
+                            throw new CommunicationException("Message could not be sent via TCP socket. Only " + totalSent + " bytes of " + messageBytes.Length + " bytes are sent.");
+                        }
 
-                    totalSent += sent;
+                        totalSent += sent;
+                    }
+                    catch (SocketException ex)
+                    {
+                        if (ex.SocketErrorCode == SocketError.WouldBlock ||
+                            ex.SocketErrorCode == SocketError.IOPending ||
+                            ex.SocketErrorCode == SocketError.NoBufferSpaceAvailable)
+                        {
+                            // socket buffer is probably full, wait and try again
+                            Thread.Sleep(30);
+                        }
+                    }
                 }
 
                 LastSentMessageTime = DateTime.Now;
@@ -204,7 +218,18 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
             }
             catch (SocketException ex)
             {
-                Disconnect();
+                if ((ex.SocketErrorCode == SocketError.ConnectionReset)
+                 || (ex.SocketErrorCode == SocketError.ConnectionAborted)
+                 || (ex.SocketErrorCode == SocketError.NotConnected)
+                 || (ex.SocketErrorCode == SocketError.Shutdown)
+                 || (ex.SocketErrorCode == SocketError.Disconnecting))
+                {
+                    Disconnect();
+                }
+                else
+                {
+                    OnErrorReceived(ex);
+                }
             }
             catch (CommunicationException ex)
             {

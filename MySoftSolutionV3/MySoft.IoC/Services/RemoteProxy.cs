@@ -13,6 +13,7 @@ namespace MySoft.IoC.Services
         protected ILog logger;
         protected ServerNode node;
         protected ServiceRequestPool reqPool;
+        private volatile int poolSize;
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
         /// <summary>
@@ -37,16 +38,27 @@ namespace MySoft.IoC.Services
 
             lock (this.reqPool)
             {
-                //服务请求池化
-                for (int i = 0; i < node.MaxPool; i++)
-                {
-                    var reqService = new ServiceRequest(node, logger, true);
-                    reqService.OnCallback += reqService_OnCallback;
-                    reqService.OnError += reqService_OnError;
+                this.poolSize = node.MinPool;
 
-                    this.reqPool.Push(reqService);
+                //服务请求池化，使用最小的池初始化
+                for (int i = 0; i < node.MinPool; i++)
+                {
+                    this.reqPool.Push(CreateRequest());
                 }
             }
+        }
+
+        /// <summary>
+        /// 创建一个服务请求项
+        /// </summary>
+        /// <returns></returns>
+        private ServiceRequest CreateRequest()
+        {
+            var reqService = new ServiceRequest(node, logger, true);
+            reqService.OnCallback += reqService_OnCallback;
+            reqService.OnError += reqService_OnError;
+
+            return reqService;
         }
 
         void reqService_OnError(object sender, ErrorMessageEventArgs e)
@@ -113,7 +125,8 @@ namespace MySoft.IoC.Services
                 {
                     hashtable[reqMsg.TransactionId] = waitResult;
 
-                    reqProxy = reqPool.Pop();
+                    //获取一个请求
+                    reqProxy = GetRequest();
 
                     //发送消息
                     reqProxy.SendMessage(reqMsg);
@@ -144,6 +157,45 @@ namespace MySoft.IoC.Services
                 //用完后移除
                 hashtable.Remove(reqMsg.TransactionId);
             }
+        }
+
+        /// <summary>
+        /// 获取一个请求
+        /// </summary>
+        /// <returns></returns>
+        private ServiceRequest GetRequest()
+        {
+            var reqProxy = reqPool.Pop();
+
+            if (reqProxy == null)
+            {
+                if (poolSize < node.MaxPool)
+                {
+                    lock (reqPool)
+                    {
+                        //一次性创建5个请求池
+                        for (int i = 0; i < 5; i++)
+                        {
+                            if (poolSize < node.MaxPool)
+                            {
+                                poolSize++;
+
+                                //创建一个新的请求
+                                reqPool.Push(CreateRequest());
+                            }
+                        }
+
+                        //增加后再从池里弹出一个
+                        reqProxy = reqPool.Pop();
+                    }
+                }
+                else
+                {
+                    throw new WarningException(string.Format("Service request pool beyond the {0} limit.", node.MaxPool));
+                }
+            }
+
+            return reqProxy;
         }
 
         #region IService 成员
