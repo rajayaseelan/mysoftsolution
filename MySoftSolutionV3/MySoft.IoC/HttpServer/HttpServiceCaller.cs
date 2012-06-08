@@ -198,7 +198,8 @@ namespace MySoft.IoC.HttpServer
                     };
 
                     //处理数据返回InvokeData
-                    var service = container.Resolve<IService>("Service_" + appCaller.ServiceName);
+                    var serviceKey = "Service_" + appCaller.ServiceName;
+                    var service = container.Resolve<IService>(serviceKey);
 
                     //等待超时
                     var time = TimeSpan.FromSeconds(config.Timeout);
@@ -208,7 +209,7 @@ namespace MySoft.IoC.HttpServer
                     }
 
                     //启用异步调用服务
-                    service = new AsyncService(service, time);
+                    service = new AsyncService(container, service, time);
 
                     //使用Invoke方式调用
                     var invoke = new InvokeCaller(appCaller.AppName, service);

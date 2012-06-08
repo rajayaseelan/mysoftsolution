@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MySoft.Data
 {
@@ -62,6 +63,6 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="errors">输出的错误</param>
         /// <returns></returns>
-        int Execute(out IList<DataException> errors);
+        int Execute(out IList<Exception> errors);
     }
 }

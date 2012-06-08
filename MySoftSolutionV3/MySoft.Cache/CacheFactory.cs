@@ -57,7 +57,15 @@ namespace MySoft.Cache
                     return new LocalCacheStrategy(bucketName);
                 case CacheType.Distributed:
                     {
-                        var distributedType = ConfigurationManager.AppSettings["DistributedType"];
+                        var configName = string.Format("DistributedType_{0}", bucketName ?? "Default");
+                        var distributedType = ConfigurationManager.AppSettings[configName];
+
+                        //找不到配置节就查找公共的DistributedType
+                        if (string.IsNullOrEmpty(distributedType))
+                        {
+                            distributedType = ConfigurationManager.AppSettings["DistributedType"];
+                        }
+
                         return Create(bucketName, GetTypeName(distributedType));
                     }
                 default:
@@ -76,10 +84,9 @@ namespace MySoft.Cache
 
             switch (type.ToLower())
             {
-                case "shared":
-                    return "MySoft.Cache.SharedCacheStrategy, MySoft.Cache.Shared";
                 case "couch":
                     return "MySoft.Cache.CouchCacheStrategy, MySoft.Cache.Couch";
+                case "shared":
                 default:
                     return "MySoft.Cache.SharedCacheStrategy, MySoft.Cache.Shared";
             }

@@ -46,10 +46,11 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="errors">输出的错误</param>
         /// <returns></returns>
-        public int Execute(out IList<MySoft.Data.DataException> errors)
+        public int Execute(out IList<Exception> errors)
         {
             //实例化errors
-            errors = new List<MySoft.Data.DataException>();
+            errors = new List<Exception>();
+
             int rowCount = 0;
 
             if (commandList.Count == 0)
@@ -70,8 +71,7 @@ namespace MySoft.Data
                     }
                     catch (Exception ex)
                     {
-                        var cmdText = DataHelper.GetCommandLog(cmd);
-                        errors.Add(new DataException(cmdText, ex));
+                        errors.Add(ex);
                     }
 
                     //执行一次休眠一下
@@ -117,8 +117,7 @@ namespace MySoft.Data
                     }
                     catch (Exception ex)
                     {
-                        var cmdText = DataHelper.GetCommandLog(mergeCommand);
-                        errors.Add(new DataException(cmdText, ex));
+                        errors.Add(ex);
                     }
 
                     //执行一次休眠一下

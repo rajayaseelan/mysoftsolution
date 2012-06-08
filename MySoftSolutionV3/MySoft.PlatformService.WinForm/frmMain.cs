@@ -657,7 +657,14 @@ namespace MySoft.PlatformService.WinForm
                 {
                     foreach (var m in s.Methods)
                     {
-                        string key = string.Format("{0}_{1}", s.FullName, m.FullName);
+                        var methodName = m.FullName;
+                        var indexOf = m.FullName.IndexOf(' ');
+                        if (indexOf >= 0)
+                        {
+                            methodName = m.FullName.Substring(indexOf + 1);
+                        }
+
+                        string key = string.Format("【{0}】{1}", s.FullName, methodName);
                         methods[key] = new InvokeService
                         {
                             ServiceName = s.FullName,

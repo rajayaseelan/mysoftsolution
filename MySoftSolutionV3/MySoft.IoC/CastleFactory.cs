@@ -478,15 +478,17 @@ namespace MySoft.IoC
 
                 if (ls == null)
                 {
+                    var serviceKey = "Service_" + serviceType.FullName;
+
                     //本地服务
-                    if (container.Kernel.HasComponent(serviceType))
+                    if (container.Kernel.HasComponent(serviceKey))
                     {
                         lock (hashtable.SyncRoot)
                         {
                             if (!hashtable.ContainsKey(serviceType))
                             {
                                 //返回本地服务
-                                var service = container.Resolve<IService>("Service_" + serviceType.FullName);
+                                var service = container.Resolve<IService>(serviceKey);
                                 var handler = new LocalInvocationHandler(config, container, service, serviceType, cache, logger);
                                 var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
@@ -538,6 +540,7 @@ namespace MySoft.IoC
         {
             IService service = null;
             string serviceKey = "Service_" + message.ServiceName;
+
             if (config.Type != CastleFactoryType.Remote)
             {
                 if (container.Kernel.HasComponent(serviceKey))

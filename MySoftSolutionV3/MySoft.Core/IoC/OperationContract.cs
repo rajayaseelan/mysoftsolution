@@ -9,7 +9,7 @@ namespace MySoft.IoC
     /// Attribute used to mark service interfaces.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class OperationContractAttribute : Attribute
+    public class OperationContractAttribute : ContractAttribute
     {
         private int cacheTime = -1;
         /// <summary>

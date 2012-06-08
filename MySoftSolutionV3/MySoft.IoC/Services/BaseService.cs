@@ -62,26 +62,11 @@ namespace MySoft.IoC.Services
             //如果出错，通知客户端
             if (resMsg.IsError)
             {
-                var ex = resMsg.Error;
-                string body = string.Format("【{5}】Dynamic ({0}) service ({1},{2}) error. \r\nMessage ==> {4}\r\nParameters ==> {3}",
-                    reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message, resMsg.TransactionId);
+                string body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}\r\nMessage => {4}",
+                    reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
 
-                var exception = new IoCException(body, ex)
-                {
-                    ApplicationName = reqMsg.AppName,
-                    ServiceName = reqMsg.ServiceName,
-                    ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                };
-
-                //上下文不为null
-                if (OperationContext.Current != null && OperationContext.Current.Caller != null)
-                {
-                    var caller = OperationContext.Current.Caller;
-                    if (!string.IsNullOrEmpty(caller.AppPath))
-                    {
-                        exception.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", exception.ErrorHeader, caller.AppPath);
-                    }
-                }
+                //获取异常
+                var exception = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
 
                 logger.Write(exception);
             }

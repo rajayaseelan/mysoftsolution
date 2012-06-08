@@ -16,7 +16,7 @@ namespace MySoft.IoC.Configuration
         private bool encrypt = false;
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;
-        private int minuteCalls = ServiceConfig.DEFAULT_MINUTE_CALL;        //默认为每分钟调用1000次，超过报异常
+        private int minuteCalls = ServiceConfig.DEFAULT_MINUTE_CALL;        //默认为每分钟调用100次，超过报异常
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;        //默认记录1小时
 
         /// <summary>

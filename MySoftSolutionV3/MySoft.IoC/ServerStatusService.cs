@@ -276,6 +276,12 @@ namespace MySoft.IoC
                         FullName = type.FullName
                     };
 
+                    if (contract1 != null)
+                    {
+                        s.ServiceName = contract1.Name;
+                        s.ServiceDescription = contract1.Description;
+                    }
+
                     //读取方法
                     foreach (var method in CoreHelper.GetMethodsFromType(type))
                     {
@@ -285,6 +291,12 @@ namespace MySoft.IoC
                             Name = method.Name,
                             FullName = method.ToString()
                         };
+
+                        if (contract2 != null)
+                        {
+                            m.MethodName = contract2.Name;
+                            m.MethodDescription = contract2.Description;
+                        }
 
                         //读取参数
                         foreach (var p in method.GetParameters())
@@ -438,48 +450,56 @@ namespace MySoft.IoC
         /// <returns></returns>
         private HighestStatus GetHighestStatus()
         {
-            var highest = new HighestStatus();
-            var list = statuslist.ToList();
-
-            #region 处理最高值
-
-            //处理最高值 
-            if (list.Count > 0)
+            //从缓存获取数据
+            var highest = CacheHelper.Get<HighestStatus>("GetHighestStatus");
+            if (highest == null)
             {
-                //成功
-                highest.SuccessCount = list.Max(p => p.SuccessCount);
-                if (highest.SuccessCount > 0)
+                highest = new HighestStatus();
+                var list = statuslist.ToList();
+
+                #region 处理最高值
+
+                //处理最高值 
+                if (list.Count > 0)
                 {
-                    var data = list.FirstOrDefault(p => p.SuccessCount == highest.SuccessCount);
-                    highest.SuccessCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                    //成功
+                    highest.SuccessCount = list.Max(p => p.SuccessCount);
+                    if (highest.SuccessCount > 0)
+                    {
+                        var data = list.FirstOrDefault(p => p.SuccessCount == highest.SuccessCount);
+                        highest.SuccessCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                    }
+
+                    //失败
+                    highest.ErrorCount = list.Max(p => p.ErrorCount);
+                    if (highest.ErrorCount > 0)
+                    {
+                        var data = list.FirstOrDefault(p => p.ErrorCount == highest.ErrorCount);
+                        highest.ErrorCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                    }
+
+                    //请求总数
+                    highest.RequestCount = list.Max(p => p.RequestCount);
+                    if (highest.RequestCount > 0)
+                    {
+                        var data = list.FirstOrDefault(p => p.RequestCount == highest.RequestCount);
+                        highest.RequestCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                    }
+
+                    //耗时
+                    highest.ElapsedTime = list.Max(p => p.ElapsedTime);
+                    if (highest.ElapsedTime > 0)
+                    {
+                        var data = list.FirstOrDefault(p => p.ElapsedTime == highest.ElapsedTime);
+                        highest.ElapsedTimeCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                    }
                 }
 
-                //失败
-                highest.ErrorCount = list.Max(p => p.ErrorCount);
-                if (highest.ErrorCount > 0)
-                {
-                    var data = list.FirstOrDefault(p => p.ErrorCount == highest.ErrorCount);
-                    highest.ErrorCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
-                }
+                #endregion
 
-                //请求总数
-                highest.RequestCount = list.Max(p => p.RequestCount);
-                if (highest.RequestCount > 0)
-                {
-                    var data = list.FirstOrDefault(p => p.RequestCount == highest.RequestCount);
-                    highest.RequestCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
-                }
-
-                //耗时
-                highest.ElapsedTime = list.Max(p => p.ElapsedTime);
-                if (highest.ElapsedTime > 0)
-                {
-                    var data = list.FirstOrDefault(p => p.ElapsedTime == highest.ElapsedTime);
-                    highest.ElapsedTimeCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
-                }
+                //缓存10秒
+                CacheHelper.Insert("GetHighestStatus", highest, 10);
             }
-
-            #endregion
 
             return highest;
         }
@@ -490,18 +510,26 @@ namespace MySoft.IoC
         /// <returns></returns>
         private SummaryStatus GetSummaryStatus()
         {
-            //获取状态列表
-            var list = GetTimeStatusList();
-
-            //统计状态信息
-            SummaryStatus status = new SummaryStatus
+            //从缓存获取数据
+            var status = CacheHelper.Get<SummaryStatus>("GetSummaryStatus");
+            if (status == null)
             {
-                RunningSeconds = list.Count,
-                RequestCount = list.Sum(p => p.RequestCount),
-                SuccessCount = list.Sum(p => p.SuccessCount),
-                ErrorCount = list.Sum(p => p.ErrorCount),
-                ElapsedTime = list.Sum(p => p.ElapsedTime)
-            };
+                //获取状态列表
+                var list = GetTimeStatusList();
+
+                //统计状态信息
+                status = new SummaryStatus
+                {
+                    RunningSeconds = list.Count,
+                    RequestCount = list.Sum(p => p.RequestCount),
+                    SuccessCount = list.Sum(p => p.SuccessCount),
+                    ErrorCount = list.Sum(p => p.ErrorCount),
+                    ElapsedTime = list.Sum(p => p.ElapsedTime)
+                };
+
+                //缓存10秒
+                CacheHelper.Insert("GetSummaryStatus", status, 10);
+            }
 
             return status;
         }

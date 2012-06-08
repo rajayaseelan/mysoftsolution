@@ -13,7 +13,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default record hour
         /// </summary>
-        public const int DEFAULT_RECORD_HOUR = 6; //6小时
+        public const int DEFAULT_RECORD_HOUR = 12; //12小时
 
         /// <summary>
         /// The default minute call number.
@@ -23,12 +23,12 @@ namespace MySoft.IoC
         /// <summary>
         /// The default client timeout number. 
         /// </summary>
-        public const int DEFAULT_CLIENT_TIMEOUT = 2 * 60; //60秒
+        public const int DEFAULT_CLIENT_TIMEOUT = 5 * 60; //60秒
 
         /// <summary>
         /// The default server timeout number. 
         /// </summary>
-        public const int DEFAULT_SERVER_TIMEOUT = 2 * 60; //60秒
+        public const int DEFAULT_SERVER_TIMEOUT = 3 * 60; //60秒
 
         /// <summary>
         /// The default pool number.

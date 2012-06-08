@@ -9,7 +9,7 @@ namespace MySoft.IoC
     /// Http调用属性
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class HttpInvokeAttribute : Attribute
+    public class HttpInvokeAttribute : ContractAttribute
     {
         private int cacheTime = -1;
         /// <summary>
@@ -24,38 +24,6 @@ namespace MySoft.IoC
             set
             {
                 cacheTime = value;
-            }
-        }
-
-        private string name;
-        /// <summary>
-        /// 名称
-        /// </summary>
-        public string Name
-        {
-            get
-            {
-                return name;
-            }
-            set
-            {
-                name = value;
-            }
-        }
-
-        private string description;
-        /// <summary>
-        /// 描述信息
-        /// </summary>
-        public string Description
-        {
-            get
-            {
-                return description;
-            }
-            set
-            {
-                description = value;
             }
         }
 
@@ -107,7 +75,7 @@ namespace MySoft.IoC
         public HttpInvokeAttribute(string name)
             : this()
         {
-            this.name = name;
+            this.Name = name;
         }
     }
 }

@@ -81,62 +81,53 @@ namespace MySoft.IoC
                 //设置上下文
                 SetOperationContext(client, caller);
 
-                //判断是否为状态服务
-                if (IsStatusService(reqMsg))
+                //启动计时
+                var watch = Stopwatch.StartNew();
+
+                //调用方法
+                var resMsg = CallAsyncMethod(reqMsg);
+
+                //停止计时
+                watch.Stop();
+
+                //调用参数
+                var callArgs = new CallEventArgs
                 {
-                    //调用方法
-                    return CallMethod(reqMsg, false);
+                    Caller = caller,
+                    ElapsedTime = watch.ElapsedMilliseconds,
+                    Count = resMsg.Count,
+                    Error = resMsg.Error,
+                    Value = resMsg.Value
+                };
+
+                //如果是Json方式调用，则需要处理异常
+                if (resMsg.IsError && reqMsg.InvokeMethod)
+                {
+                    resMsg.Error = new ApplicationException(callArgs.Error.Message);
                 }
-                else
+
+                //调用计数
+                ManagedThreadPool.QueueUserWorkItem(state =>
                 {
-                    //启动计时
-                    var watch = Stopwatch.StartNew();
-
-                    //调用方法
-                    var resMsg = CallMethod(reqMsg, true);
-
-                    //停止计时
-                    watch.Stop();
-
-                    //调用参数
-                    var callArgs = new CallEventArgs
+                    try
                     {
-                        Caller = caller,
-                        ElapsedTime = watch.ElapsedMilliseconds,
-                        Count = resMsg.Count,
-                        Error = resMsg.Error,
-                        Value = resMsg.Value
-                    };
+                        var arr = state as ArrayList;
+                        var statusService = arr[0] as ServerStatusService;
+                        var eventArgs = arr[1] as CallEventArgs;
 
-                    //如果是Json方式调用，则需要处理异常
-                    if (resMsg.IsError && reqMsg.InvokeMethod)
-                    {
-                        resMsg.Error = new ApplicationException(callArgs.Error.Message);
+                        //调用计数服务
+                        statusService.Counter(eventArgs);
+
+                        //响应消息
+                        MessageCenter.Instance.Notify(eventArgs);
                     }
-
-                    //调用计数
-                    ManagedThreadPool.QueueUserWorkItem(state =>
+                    catch (Exception ex)
                     {
-                        try
-                        {
-                            var arr = state as ArrayList;
-                            var statusService = arr[0] as ServerStatusService;
-                            var eventArgs = arr[1] as CallEventArgs;
+                        //TODO
+                    }
+                }, new ArrayList { status, callArgs });
 
-                            //调用计数服务
-                            statusService.Counter(eventArgs);
-
-                            //响应消息
-                            MessageCenter.Instance.Notify(eventArgs);
-                        }
-                        catch (Exception ex)
-                        {
-                            //TODO
-                        }
-                    }, new ArrayList { status, callArgs });
-
-                    return resMsg;
-                }
+                return resMsg;
             }
             catch (Exception ex)
             {
@@ -165,32 +156,19 @@ namespace MySoft.IoC
         /// 调用异步方法
         /// </summary>
         /// <param name="reqMsg"></param>
-        /// <param name="isAsync"></param>
         /// <returns></returns>
-        private ResponseMessage CallMethod(RequestMessage reqMsg, bool isAsync)
+        private ResponseMessage CallAsyncMethod(RequestMessage reqMsg)
         {
-            //定义服务
-            IService service = null;
-
-            //判断是否是异步服务
-            if (!isAsync)
+            //等待超时
+            var time = TimeSpan.FromSeconds(config.Timeout);
+            if (callTimeouts.ContainsKey(reqMsg.ServiceName))
             {
-                //解析服务
-                service = ParseService(reqMsg);
+                time = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
             }
-            else
-            {
-                //等待超时
-                var time = TimeSpan.FromSeconds(config.Timeout);
-                if (callTimeouts.ContainsKey(reqMsg.ServiceName))
-                {
-                    time = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
-                }
 
-                //解析服务
-                var s = ParseService(reqMsg);
-                service = new AsyncService(s, time);
-            }
+            //解析服务
+            var service = ParseService(reqMsg);
+            service = new AsyncService(container, service, time);
 
             //调用服务
             return service.CallService(reqMsg);
@@ -251,40 +229,23 @@ namespace MySoft.IoC
         /// <returns></returns>
         private IService ParseService(RequestMessage reqMsg)
         {
-            var service = container.Resolve<IService>("Service_" + reqMsg.ServiceName);
+            IService service = null;
+            string serviceKey = "Service_" + reqMsg.ServiceName;
+
+            if (container.Kernel.HasComponent(serviceKey))
+            {
+                service = container.Resolve<IService>(serviceKey);
+            }
+
             if (service == null)
             {
                 string body = string.Format("The server not find matching service ({0}).", reqMsg.ServiceName);
-                var exception = new WarningException(body)
-                {
-                    ApplicationName = reqMsg.AppName,
-                    ServiceName = reqMsg.ServiceName,
-                    ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress)
-                };
 
-                //上下文不为null
-                if (OperationContext.Current != null && OperationContext.Current.Caller != null)
-                {
-                    var caller = OperationContext.Current.Caller;
-                    if (!string.IsNullOrEmpty(caller.AppPath))
-                    {
-                        exception.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", exception.ErrorHeader, caller.AppPath);
-                    }
-                }
-
-                throw exception;
+                //获取异常
+                throw IoCHelper.GetException(OperationContext.Current, reqMsg, body);
             }
 
             return service;
-        }
-
-        /// <summary>
-        /// 判断是否是状态服务
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        private bool IsStatusService(RequestMessage reqMsg)
-        {
-            return reqMsg.ServiceName == typeof(IStatusService).FullName;
         }
     }
 }

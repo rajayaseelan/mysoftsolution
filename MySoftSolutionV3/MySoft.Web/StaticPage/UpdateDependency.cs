@@ -64,10 +64,15 @@ namespace MySoft.Web
         /// <returns></returns>
         public abstract bool HasUpdate(DateTime currentDate, int inMinutes);
 
+        protected UpdateType updateType;
         /// <summary>
         /// 更新类型
         /// </summary>
-        public abstract UpdateType UpdateType { get; set; }
+        public UpdateType UpdateType
+        {
+            get { return updateType; }
+            set { updateType = value; }
+        }
 
         protected DateTime lastUpdateTime = DateTime.Now;
         /// <summary>
@@ -91,19 +96,20 @@ namespace MySoft.Web
 
         public AbstractUpdateDependency()
         {
+            this.updateType = UpdateType.Day;
             this.updateSuccess = true;
         }
     }
 
     /// <summary>
-    /// 定时生成策略
+    /// 定时生成策略，用于控制区间
     /// </summary>
-    public sealed class SlidingParamInfo
+    public sealed class SlidingDateTimeRegion
     {
         private DateTime beginDateTime;
         private DateTime endDateTime;
 
-        public SlidingParamInfo(DateTime beginDateTime, DateTime endDateTime)
+        public SlidingDateTimeRegion(DateTime beginDateTime, DateTime endDateTime)
         {
             this.beginDateTime = beginDateTime;
             this.endDateTime = endDateTime;
@@ -116,52 +122,41 @@ namespace MySoft.Web
         /// <returns></returns>
         internal bool CheckUpdate(UpdateType updateType, DateTime updateTime)
         {
+            var checkTime = updateTime;
+            var beginTime = beginDateTime;
+            var endTime = endDateTime;
+
             switch (updateType)
             {
                 case UpdateType.Year:
-                    if (beginDateTime.Year != updateTime.Year)
-                    {
-                        beginDateTime = beginDateTime.AddYears(1);
-                        endDateTime = endDateTime.AddYears(1);
-                    }
+                    checkTime = DateTime.Parse(checkTime.ToString("1900-MM-dd HH:mm:ss"));
+                    beginTime = DateTime.Parse(beginTime.ToString("1900-MM-dd HH:mm:ss"));
+                    endTime = DateTime.Parse(endTime.ToString("1900-MM-dd HH:mm:ss"));
                     break;
                 case UpdateType.Month:
-                    if (beginDateTime.Month != updateTime.Month)
-                    {
-                        beginDateTime = beginDateTime.AddMonths(1);
-                        endDateTime = endDateTime.AddMonths(1);
-                    }
+                    checkTime = DateTime.Parse(checkTime.ToString("1900-01-dd HH:mm:ss"));
+                    beginTime = DateTime.Parse(beginTime.ToString("1900-01-dd HH:mm:ss"));
+                    endTime = DateTime.Parse(endTime.ToString("1900-01-dd HH:mm:ss"));
                     break;
                 case UpdateType.Day:
-                    if (beginDateTime.Day != updateTime.Day)
-                    {
-                        beginDateTime = beginDateTime.AddDays(1);
-                        endDateTime = endDateTime.AddDays(1);
-                    }
+                    checkTime = DateTime.Parse(checkTime.ToString("1900-01-01 HH:mm:ss"));
+                    beginTime = DateTime.Parse(beginTime.ToString("1900-01-01 HH:mm:ss"));
+                    endTime = DateTime.Parse(endTime.ToString("1900-01-01 HH:mm:ss"));
                     break;
             }
 
-            return updateTime.Ticks >= beginDateTime.Ticks && updateTime.Ticks <= endDateTime.Ticks;
+            //判断是否在区间内
+            return checkTime.Ticks >= beginTime.Ticks && checkTime.Ticks <= endTime.Ticks;
         }
     }
 
     /// <summary>
     /// 定时生成策略（按间隔时间）
     /// </summary>
-    public sealed class SlidingUpdateTime : AbstractUpdateDependency
+    public sealed class SlidingUpdateDependency : AbstractUpdateDependency
     {
         private TimeSpan slidingTimeSpan;
-        private SlidingParamInfo[] slidingTimeParams;
-
-        private UpdateType updateType;
-        /// <summary>
-        /// 更新类型
-        /// </summary>
-        public override UpdateType UpdateType
-        {
-            get { return updateType; }
-            set { updateType = value; }
-        }
+        private SlidingDateTimeRegion[] slidingTimeParams;
 
         /// <summary>
         /// 时间间隔
@@ -175,33 +170,32 @@ namespace MySoft.Web
         /// <summary>
         /// 定时生成时间段参数
         /// </summary>
-        public SlidingParamInfo[] SlidingTimeParams
+        public SlidingDateTimeRegion[] SlidingTimeParams
         {
             get { return slidingTimeParams; }
             set { slidingTimeParams = value; }
         }
 
-        public SlidingUpdateTime() { }
+        public SlidingUpdateDependency() { }
 
-        public SlidingUpdateTime(TimeSpan slidingTimeSpan)
+        public SlidingUpdateDependency(TimeSpan slidingTimeSpan)
         {
             this.slidingTimeSpan = slidingTimeSpan;
-            this.updateType = UpdateType.None;
         }
 
-        public SlidingUpdateTime(TimeSpan slidingTimeSpan, DateTime lastUpdateTime)
+        public SlidingUpdateDependency(TimeSpan slidingTimeSpan, DateTime lastUpdateTime)
             : this(slidingTimeSpan)
         {
             this.lastUpdateTime = lastUpdateTime;
         }
 
-        public SlidingUpdateTime(TimeSpan slidingTimeSpan, params SlidingParamInfo[] slidingTimeParams)
+        public SlidingUpdateDependency(TimeSpan slidingTimeSpan, params SlidingDateTimeRegion[] slidingTimeParams)
             : this(slidingTimeSpan)
         {
             this.slidingTimeParams = slidingTimeParams;
         }
 
-        public SlidingUpdateTime(TimeSpan slidingTimeSpan, DateTime lastUpdateTime, params SlidingParamInfo[] slidingTimeParams)
+        public SlidingUpdateDependency(TimeSpan slidingTimeSpan, DateTime lastUpdateTime, params SlidingDateTimeRegion[] slidingTimeParams)
             : this(slidingTimeSpan, lastUpdateTime)
         {
             this.slidingTimeParams = slidingTimeParams;
@@ -209,25 +203,25 @@ namespace MySoft.Web
 
         #region 带类型参数
 
-        public SlidingUpdateTime(UpdateType updateType, TimeSpan slidingTimeSpan)
+        public SlidingUpdateDependency(UpdateType updateType, TimeSpan slidingTimeSpan)
             : this(slidingTimeSpan)
         {
             this.updateType = updateType;
         }
 
-        public SlidingUpdateTime(UpdateType updateType, TimeSpan slidingTimeSpan, DateTime lastUpdateTime)
+        public SlidingUpdateDependency(UpdateType updateType, TimeSpan slidingTimeSpan, DateTime lastUpdateTime)
             : this(slidingTimeSpan, lastUpdateTime)
         {
             this.updateType = updateType;
         }
 
-        public SlidingUpdateTime(UpdateType updateType, TimeSpan slidingTimeSpan, params SlidingParamInfo[] slidingTimeParams)
+        public SlidingUpdateDependency(UpdateType updateType, TimeSpan slidingTimeSpan, params SlidingDateTimeRegion[] slidingTimeParams)
             : this(slidingTimeSpan, slidingTimeParams)
         {
             this.updateType = updateType;
         }
 
-        public SlidingUpdateTime(UpdateType updateType, TimeSpan slidingTimeSpan, DateTime lastUpdateTime, params SlidingParamInfo[] slidingTimeParams)
+        public SlidingUpdateDependency(UpdateType updateType, TimeSpan slidingTimeSpan, DateTime lastUpdateTime, params SlidingDateTimeRegion[] slidingTimeParams)
             : this(slidingTimeSpan, lastUpdateTime, slidingTimeParams)
         {
             this.updateType = updateType;
@@ -252,13 +246,14 @@ namespace MySoft.Web
             bool isUpdate = span.Ticks > 0 && span.TotalMinutes < inMinutes;
             if (isUpdate)
             {
-                if (slidingTimeParams != null)
+                if (slidingTimeParams != null && slidingTimeParams.Length > 0)
                 {
-                    foreach (SlidingParamInfo slidingTimeParam in slidingTimeParams)
-                    {
-                        if (slidingTimeParam.CheckUpdate(updateType, currentDate)) return true;
-                    }
                     isUpdate = false;
+                    foreach (SlidingDateTimeRegion slidingTimeParam in slidingTimeParams)
+                    {
+                        isUpdate = slidingTimeParam.CheckUpdate(updateType, currentDate);
+                        if (isUpdate) break;
+                    }
                 }
             }
             return isUpdate;
@@ -268,18 +263,9 @@ namespace MySoft.Web
     /// <summary>
     /// 绝对时间生成策略
     /// </summary>
-    public sealed class AbsoluteUpdateTime : AbstractUpdateDependency
+    public sealed class AbsoluteUpdateDependency : AbstractUpdateDependency
     {
         private DateTime[] absoluteDateTimes;
-        private UpdateType updateType;
-        /// <summary>
-        /// 更新类型
-        /// </summary>
-        public override UpdateType UpdateType
-        {
-            get { return updateType; }
-            set { updateType = value; }
-        }
 
         /// <summary>
         /// 时间间隔
@@ -290,15 +276,14 @@ namespace MySoft.Web
             set { absoluteDateTimes = value; }
         }
 
-        public AbsoluteUpdateTime() { }
+        public AbsoluteUpdateDependency() { }
 
-        public AbsoluteUpdateTime(params DateTime[] absoluteDateTimes)
+        public AbsoluteUpdateDependency(params DateTime[] absoluteDateTimes)
         {
             this.absoluteDateTimes = absoluteDateTimes;
-            this.updateType = UpdateType.None;
         }
 
-        public AbsoluteUpdateTime(UpdateType updateType, params DateTime[] absoluteDateTimes)
+        public AbsoluteUpdateDependency(UpdateType updateType, params DateTime[] absoluteDateTimes)
             : this(absoluteDateTimes)
         {
             this.updateType = updateType;
@@ -315,39 +300,34 @@ namespace MySoft.Web
 
             if (!updateSuccess) return false;
 
-            int index = 0;
             bool isUpdate = false;
+            var checkTime = currentDate;
+
             foreach (DateTime absoluteDateTime in absoluteDateTimes)
             {
-                //如果日期不一致，则把日期先变成一致
-                if (absoluteDateTime.Day != currentDate.Day)
+                var absoluteTime = absoluteDateTime;
+
+                switch (updateType)
                 {
-                    absoluteDateTimes[index] = absoluteDateTime.AddDays(currentDate.Day - absoluteDateTime.Day);
+                    case UpdateType.Year:
+                        checkTime = DateTime.Parse(checkTime.ToString("1900-MM-dd HH:mm:ss"));
+                        absoluteTime = DateTime.Parse(absoluteTime.ToString("1900-MM-dd HH:mm:ss"));
+                        break;
+                    case UpdateType.Month:
+                        checkTime = DateTime.Parse(checkTime.ToString("1900-01-dd HH:mm:ss"));
+                        absoluteTime = DateTime.Parse(absoluteTime.ToString("1900-01-dd HH:mm:ss"));
+                        break;
+                    case UpdateType.Day:
+                        checkTime = DateTime.Parse(checkTime.ToString("1900-01-01 HH:mm:ss"));
+                        absoluteTime = DateTime.Parse(absoluteTime.ToString("1900-01-01 HH:mm:ss"));
+                        break;
                 }
 
-                var span = currentDate.Subtract(absoluteDateTime);
+                var span = checkTime.Subtract(absoluteTime);
                 isUpdate = span.Ticks > 0 && span.TotalMinutes < inMinutes;
-                if (isUpdate)
-                {
-                    switch (updateType)
-                    {
-                        case UpdateType.Year:
-                            absoluteDateTimes[index] = absoluteDateTime.AddYears(1);
-                            break;
-                        case UpdateType.Month:
-                            absoluteDateTimes[index] = absoluteDateTime.AddMonths(1);
-                            break;
-                        case UpdateType.Day:
-                            absoluteDateTimes[index] = absoluteDateTime.AddDays(1);
-                            break;
-                        case UpdateType.None:
-                            absoluteDateTimes[index] = currentDate;
-                            break;
-                    }
-                    break;
-                }
-                index++;
+                if (isUpdate) break;
             }
+
             return isUpdate;
         }
     }

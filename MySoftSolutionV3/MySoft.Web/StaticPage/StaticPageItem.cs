@@ -222,7 +222,7 @@ namespace MySoft.Web
         {
             this.outEncoding = Encoding.UTF8;
             this.inEncoding = Encoding.UTF8;
-            this.staticPageDependency = new SlidingUpdateTime(new TimeSpan(1, 0, 0));
+            this.staticPageDependency = new SlidingUpdateDependency(new TimeSpan(1, 0, 0));
             this.isRemote = false;
             this.updateComplete = true;
         }
@@ -310,6 +310,11 @@ namespace MySoft.Web
         /// </summary>
         void IUpdateItem.Update(DateTime updateTime)
         {
+            if (!(this as IUpdateItem).NeedUpdate(updateTime))
+            {
+                return;
+            }
+
             updateComplete = false;
 
             string dynamicurl = templatePath;
@@ -631,7 +636,7 @@ namespace MySoft.Web
         {
             this.outEncoding = Encoding.UTF8;
             this.inEncoding = Encoding.UTF8;
-            this.staticPageDependency = new SlidingUpdateTime(new TimeSpan(1, 0, 0));
+            this.staticPageDependency = new SlidingUpdateDependency(new TimeSpan(1, 0, 0));
             this.isRemote = false;
             this.updateComplete = true;
             this.updateErrorList = new List<UpdateItem>();
@@ -698,6 +703,11 @@ namespace MySoft.Web
         /// </summary>
         void IUpdateItem.Update(DateTime updateTime)
         {
+            if (!(this as IUpdateItem).NeedUpdate(updateTime))
+            {
+                return;
+            }
+
             updateComplete = false;
 
             //如果未能全部生成成功，则生成失败列表

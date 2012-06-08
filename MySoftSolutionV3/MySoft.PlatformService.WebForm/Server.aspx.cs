@@ -4,7 +4,6 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using MySoft.PlatformService.UserService;
 using MySoft.IoC;
 using System.Net;
 using System.Text;

@@ -6,7 +6,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 状态服务信息
     /// </summary>
-    [ServiceContract(CallbackType = typeof(IStatusListener))]
+    [ServiceContract(CallbackType = typeof(IStatusListener), Timeout = 60)]
     public interface IStatusService
     {
         /// <summary>

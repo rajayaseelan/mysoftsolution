@@ -186,5 +186,66 @@ namespace MySoft.IoC
             var formatKey = thisKey.Replace(" ", "").Replace("\r\n", "");
             return MD5.HexHash(Encoding.Default.GetBytes(formatKey));
         }
+
+        #region 获取异常
+
+        /// <summary>
+        /// 获取IoCException
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static IoCException GetException(OperationContext context, RequestMessage reqMsg, string message)
+        {
+            var exception = new WarningException(message);
+
+            //获取警告异常
+            return GetException(context, reqMsg, exception);
+        }
+
+        /// <summary>
+        /// 获取IoCException
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="message"></param>
+        /// <param name="inner"></param>
+        /// <returns></returns>
+        public static IoCException GetException(OperationContext context, RequestMessage reqMsg, string message, Exception inner)
+        {
+            var exception = new IoCException(message, inner);
+
+            //获取IoC异常
+            return GetException(context, reqMsg, exception);
+        }
+
+        /// <summary>
+        /// 获取异常
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        private static IoCException GetException(OperationContext context, RequestMessage reqMsg, IoCException exception)
+        {
+            exception.ApplicationName = reqMsg.AppName;
+            exception.ServiceName = reqMsg.ServiceName;
+            exception.ErrorHeader = string.Format("App【{0}】occurs error, comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress);
+
+            //上下文不为null
+            if (context != null && context.Caller != null)
+            {
+                var caller = context.Caller;
+                if (!string.IsNullOrEmpty(caller.AppPath))
+                {
+                    exception.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", exception.ErrorHeader, caller.AppPath);
+                }
+            }
+
+            return exception;
+        }
+
+        #endregion
     }
 }

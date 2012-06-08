@@ -254,7 +254,7 @@ namespace MySoft.Data
                 EndExecuteCommand(cmd, null, ex, watch.ElapsedMilliseconds);
 
                 if (throwError)
-                    throw ex;
+                    throw new DataException(DataHelper.GetCommandLog(cmd), ex);
                 else
                     retVal = default(int);
             }
@@ -298,7 +298,7 @@ namespace MySoft.Data
                 EndExecuteCommand(cmd, null, ex, watch.ElapsedMilliseconds);
 
                 if (throwError)
-                    throw ex;
+                    throw new DataException(DataHelper.GetCommandLog(cmd), ex);
                 else
                     retVal = default(SourceReader);
             }
@@ -340,7 +340,7 @@ namespace MySoft.Data
                 EndExecuteCommand(cmd, null, ex, watch.ElapsedMilliseconds);
 
                 if (throwError)
-                    throw ex;
+                    throw new DataException(DataHelper.GetCommandLog(cmd), ex);
                 else
                     retVal = default(DataSet);
             }
@@ -382,7 +382,7 @@ namespace MySoft.Data
                 EndExecuteCommand(cmd, null, ex, watch.ElapsedMilliseconds);
 
                 if (throwError)
-                    throw ex;
+                    throw new DataException(DataHelper.GetCommandLog(cmd), ex);
                 else
                     retVal = default(DataTable);
             }
@@ -424,7 +424,7 @@ namespace MySoft.Data
                 EndExecuteCommand(cmd, null, ex, watch.ElapsedMilliseconds);
 
                 if (throwError)
-                    throw ex;
+                    throw new DataException(DataHelper.GetCommandLog(cmd), ex);
                 else
                     retVal = default(object);
             }

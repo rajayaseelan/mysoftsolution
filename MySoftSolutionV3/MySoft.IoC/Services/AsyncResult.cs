@@ -14,6 +14,7 @@ namespace MySoft.IoC.Services
         private RequestMessage request;
         private ResponseMessage message;
         private OperationContext context;
+        private Thread thread;
 
         /// <summary>
         /// 消息对象
@@ -72,6 +73,31 @@ namespace MySoft.IoC.Services
             return reset.Set();
         }
 
+        /// <summary>
+        /// 设置当前线程
+        /// </summary>
+        /// <param name="thread"></param>
+        public void Set(Thread thread)
+        {
+            this.thread = thread;
+        }
+
+        /// <summary>
+        /// 结束当前线程
+        /// </summary>
+        public void Cancel()
+        {
+            try
+            {
+                //中止线程
+                if (thread != null) thread.Abort();
+            }
+            catch
+            {
+                //TODO
+            }
+        }
+
         #region IDisposable 成员
 
         /// <summary>
@@ -81,10 +107,14 @@ namespace MySoft.IoC.Services
         {
             this.reset.Reset();
 
+            this.thread = null;
             this.reset = null;
             this.request = null;
             this.message = null;
             this.context = null;
+
+            //上下文设置为null
+            OperationContext.Current = null;
         }
 
         #endregion

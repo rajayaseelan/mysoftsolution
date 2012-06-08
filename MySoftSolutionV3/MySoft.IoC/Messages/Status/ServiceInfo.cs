@@ -25,6 +25,16 @@ namespace MySoft.IoC.Messages
         public string FullName { get; set; }
 
         /// <summary>
+        /// 服务发布名称
+        /// </summary>
+        public string ServiceName { get; set; }
+
+        /// <summary>
+        /// 服务发布描述
+        /// </summary>
+        public string ServiceDescription { get; set; }
+
+        /// <summary>
         /// 方法信息
         /// </summary>
         public IList<MethodInfo> Methods { get; set; }
@@ -50,6 +60,16 @@ namespace MySoft.IoC.Messages
         /// 服务全称
         /// </summary>
         public string FullName { get; set; }
+
+        /// <summary>
+        /// 方法发布名称
+        /// </summary>
+        public string MethodName { get; set; }
+
+        /// <summary>
+        /// 方法发布描述
+        /// </summary>
+        public string MethodDescription { get; set; }
 
         /// <summary>
         /// 参数信息
