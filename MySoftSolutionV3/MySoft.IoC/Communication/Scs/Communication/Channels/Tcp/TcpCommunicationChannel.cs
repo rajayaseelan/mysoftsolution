@@ -35,7 +35,6 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
         private const int bufferSize = 8 * 1024;    //8KB
-        private const int minuteTimeout = 5;        //5分钟超时
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -70,15 +69,6 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
         {
             _clientSocket = clientSocket;
             _clientSocket.NoDelay = true;
-
-            //设置缓冲区大小
-            _clientSocket.SendBufferSize = bufferSize;
-            _clientSocket.ReceiveBufferSize = bufferSize;
-
-            //设置超时时间
-            int milliseconds = (int)TimeSpan.FromMinutes(minuteTimeout).TotalMilliseconds;
-            _clientSocket.SendTimeout = milliseconds;
-            _clientSocket.ReceiveTimeout = milliseconds;
 
             var ipEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
