@@ -239,7 +239,8 @@ namespace MySoft.IoC
 
             if (service == null)
             {
-                string body = string.Format("The server not find matching service ({0}).", reqMsg.ServiceName);
+                string body = string.Format("The server【{1}({2})】not find matching service ({0})."
+                    , reqMsg.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
 
                 //获取异常
                 throw IoCHelper.GetException(OperationContext.Current, reqMsg, body);

@@ -66,10 +66,10 @@ namespace MySoft.IoC.Services
             //如果值为null则返回
             if (state == null) return;
 
+            var waitResult = state as AsyncResult;
+
             try
             {
-                var waitResult = state as AsyncResult;
-
                 //设置当前线程
                 waitResult.Set(Thread.CurrentThread);
 
@@ -84,8 +84,19 @@ namespace MySoft.IoC.Services
             }
             catch (Exception ex)
             {
-                //TODO
-                logger.Write(ex);
+                try
+                {
+                    var caller = waitResult.Context.Caller;
+                    var message = string.Format("AppName: {0}\r\nClient: {1}({2})\r\nService: {3}\r\nMethod: {4}\r\nParameter(s): {5}",
+                                caller.AppName, caller.HostName, caller.IPAddress, caller.ServiceName, caller.MethodName, caller.Parameters);
+
+                    //TODO
+                    logger.Write(new ApplicationException(message, ex));
+                }
+                catch (Exception e)
+                {
+                    //TODO
+                }
             }
             finally
             {

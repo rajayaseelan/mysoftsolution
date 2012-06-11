@@ -503,7 +503,8 @@ namespace MySoft.IoC
                 if (ls == null)
                 {
                     if (config.Type == CastleFactoryType.Local)
-                        throw new WarningException(string.Format("Local not find service ({0}).", serviceType.FullName));
+                        throw new WarningException(string.Format("The local¡¾{1}({2})¡¿not find matching service ({0})."
+                            , serviceType.FullName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress()));
                 }
             }
 
