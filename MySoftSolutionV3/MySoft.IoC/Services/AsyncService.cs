@@ -50,7 +50,12 @@ namespace MySoft.IoC.Services
                         , reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString());
 
                     //获取异常
-                    throw IoCHelper.GetException(OperationContext.Current, reqMsg, body);
+                    var ex = IoCHelper.GetException(OperationContext.Current, reqMsg, body);
+
+                    //将异常信息写出
+                    logger.Write(ex);
+
+                    throw ex;
                 }
 
                 //返回响应的消息
@@ -84,19 +89,8 @@ namespace MySoft.IoC.Services
             }
             catch (Exception ex)
             {
-                try
-                {
-                    var caller = waitResult.Context.Caller;
-                    var message = string.Format("AppName: {0}\r\nClient: {1}({2})\r\nService: {3}\r\nMethod: {4}\r\nParameter(s): {5}",
-                                caller.AppName, caller.HostName, caller.IPAddress, caller.ServiceName, caller.MethodName, caller.Parameters);
-
-                    //TODO
-                    logger.Write(new ApplicationException(message, ex));
-                }
-                catch (Exception e)
-                {
-                    //TODO
-                }
+                //将异常信息写出
+                logger.Write(ex);
             }
             finally
             {
