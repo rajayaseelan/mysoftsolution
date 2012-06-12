@@ -572,23 +572,55 @@ namespace MySoft.PlatformService.WinForm
             webBrowser1.Dock = DockStyle.Fill;
             splitContainer2.Panel2.Controls.Add(webBrowser1);
 
-            webBrowser2 = new WebBrowser();
-            webBrowser2.Dock = DockStyle.Fill;
-            webBrowser2.Navigating += new WebBrowserNavigatingEventHandler(webBrowser2_Navigating);
-            panel3.Controls.Add(webBrowser2);
-
             webBrowser1.Navigate("about:blank");
             //webBrowser1.AllowNavigation = false;
             webBrowser1.IsWebBrowserContextMenuEnabled = false;
 
-            var url = ConfigurationManager.AppSettings["ServerMonitorUrl"];
-            if (!string.IsNullOrEmpty(url))
-                webBrowser2.Navigate(url);
-            else
-                webBrowser2.Navigate("about:blank");
+            var url1 = ConfigurationManager.AppSettings["ServerMonitorUrl"];
+            var url2 = ConfigurationManager.AppSettings["ServerWebAPIUrl"];
+            var url3 = ConfigurationManager.AppSettings["ServerOpenAPIUrl"];
 
-            //webBrowser2.AllowNavigation = false;
-            //webBrowser2.IsWebBrowserContextMenuEnabled = false;
+            //处理Monitor
+            if (string.IsNullOrEmpty(url1))
+            {
+                tabControl1.TabPages.Remove(tabPage4);
+            }
+            else
+            {
+                webBrowser2 = new WebBrowser();
+                webBrowser2.Dock = DockStyle.Fill;
+                webBrowser2.Navigating += new WebBrowserNavigatingEventHandler(webBrowser2_Navigating);
+                webBrowser2.Navigate(url1);
+                tabPage4.Controls.Add(webBrowser2);
+                //webBrowser2.AllowNavigation = false;
+                //webBrowser2.IsWebBrowserContextMenuEnabled = false;
+            }
+
+            //处理WebAPI
+            if (string.IsNullOrEmpty(url2))
+            {
+                tabControl1.TabPages.Remove(tabPage5);
+            }
+            else
+            {
+                var webBrowser = new WebBrowser();
+                webBrowser.Dock = DockStyle.Fill;
+                tabPage5.Controls.Add(webBrowser);
+                webBrowser.Navigate(url2);
+            }
+
+            //处理OpenAPI
+            if (string.IsNullOrEmpty(url3))
+            {
+                tabControl1.TabPages.Remove(tabPage6);
+            }
+            else
+            {
+                var webBrowser = new WebBrowser();
+                webBrowser.Dock = DockStyle.Fill;
+                tabPage6.Controls.Add(webBrowser);
+                webBrowser.Navigate(url3);
+            }
         }
 
         void webBrowser2_Navigating(object sender, WebBrowserNavigatingEventArgs e)
@@ -614,8 +646,8 @@ namespace MySoft.PlatformService.WinForm
             webBrowser2.Dispose();
             webBrowser2 = sender as WebBrowser;
 
-            panel3.Controls.Clear();
-            panel3.Controls.Add(webBrowser2);
+            tabPage4.Controls.Clear();
+            tabPage4.Controls.Add(webBrowser2);
         }
 
         /// <summary>
@@ -888,6 +920,25 @@ namespace MySoft.PlatformService.WinForm
             }
 
             InitService(defaultNode, true);
+        }
+
+        private void 刷新API服务AToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (defaultNode == null)
+            {
+                MessageBox.Show("请选择监控节点！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            try
+            {
+                CastleFactory.Create().GetChannel<IStatusService>(defaultNode).RefreshApi();
+            }
+            catch (Exception ex)
+            {
+                SimpleLog.Instance.WriteLogForDir("Client", ex);
+                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void 调用此服务CToolStripMenuItem_Click(object sender, EventArgs e)

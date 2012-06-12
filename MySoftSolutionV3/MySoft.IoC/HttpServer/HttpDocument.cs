@@ -14,18 +14,13 @@ namespace MySoft.IoC.HttpServer
     {
         private HttpCallerInfoCollection callers;
         private int port;
+        private string htmlTemplate, itemTemplate;
+
         public HttpDocument(HttpCallerInfoCollection callers, int port)
         {
             this.callers = callers;
             this.port = port;
-        }
 
-        /// <summary>
-        /// 生成文档
-        /// </summary>
-        /// <returns></returns>
-        public string MakeDocument(string name)
-        {
             #region 读取资源
 
             Assembly assm = this.GetType().Assembly;
@@ -35,18 +30,25 @@ namespace MySoft.IoC.HttpServer
             StreamReader helpReader = new StreamReader(helpStream);
             StreamReader helpitemReader = new StreamReader(helpitemStream);
 
-            string html = helpReader.ReadToEnd(); helpReader.Close();
-            string item = helpitemReader.ReadToEnd(); helpitemReader.Close();
+            htmlTemplate = helpReader.ReadToEnd(); helpReader.Close();
+            itemTemplate = helpitemReader.ReadToEnd(); helpitemReader.Close();
 
             #endregion
+        }
 
+        /// <summary>
+        /// 生成文档
+        /// </summary>
+        /// <returns></returns>
+        public string MakeDocument(string name)
+        {
             string uri = string.Format("http://{0}:{1}/", DnsHelper.GetIPAddress(), port);
-            html = html.Replace("${uri}", uri);
+            var html = htmlTemplate.Replace("${uri}", uri);
 
             StringBuilder sbUrl = new StringBuilder();
             foreach (var kv in callers)
             {
-                sbUrl.Append(GetItemDocument(kv.Value, item, name));
+                sbUrl.Append(GetItemDocument(kv.Value, name));
             }
 
             html = html.Replace("${body}", sbUrl.ToString());
@@ -57,12 +59,11 @@ namespace MySoft.IoC.HttpServer
         /// 获取Item文档
         /// </summary>
         /// <param name="caller"></param>
-        /// <param name="item"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        private string GetItemDocument(HttpCallerInfo caller, string item, string name)
+        private string GetItemDocument(HttpCallerInfo caller, string name)
         {
-            var template = item;
+            var template = itemTemplate;
             var plist = new List<string>();
             foreach (var p in caller.Method.GetParameters())
             {
@@ -80,9 +81,10 @@ namespace MySoft.IoC.HttpServer
 
             var url = string.Format("<a rel=\"operation\" target=\"_blank\" title=\"{0}\" href=\"{0}\">{0}</a> 处的服务", uri.ToLower());
 
+            var description = caller.Description == null ? null : caller.Description.Replace("\r\n", "<br/>");
             var serviceInfo = string.Format("【{0}】\r\n【{1}】", caller.Service.FullName, caller.Method.ToString());
             template = template.Replace("${method}", string.Format("<p title=\"分布式服务接口:\r\n{2}\"><b><a href='/help/{0}'>{0}</a></b><br/>{1}</p>",
-                caller.CallerName, caller.Description, serviceInfo));
+                caller.CallerName, description, serviceInfo));
 
             var strParameter = GetMethodParameter(caller.Method, caller.Authorized, caller.AuthParameter, name);
             if (string.IsNullOrEmpty(strParameter))

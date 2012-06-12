@@ -50,24 +50,24 @@ namespace MySoft.PlatformService.UserService
 
         string GetUser(UserInfo user);
 
-        [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
+        //[HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         string GetSex(Sex value);
 
-        [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
+        //[HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
 
-        [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
+        //[HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         [OperationContract(CacheTime = 1)]
         IList<UserInfo> GetUsers();
 
-        [HttpInvoke(Name = "user.getuser", Description = "获取用户", Authorized = true, AuthParameter = "name")]
+        //[HttpInvoke(Name = "user.getuser", Description = "获取用户", Authorized = true, AuthParameter = "name")]
         [OperationContract(CacheTime = 10)]
         UserInfo GetUser(int id, string name, IList<string> list, int[] values);
 
-        [HttpInvoke(Name = "user.getuser", Description = "获取用户")]
+        //[HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         IDictionary<Sex, IList<UserInfo>> GetDict();
 
-        [HttpInvoke(Name = "user.getuserstr", Description = "获取用户")]
+        //[HttpInvoke(Name = "user.getuserstr", Description = "获取用户")]
         string GetUsersString();
     }
 

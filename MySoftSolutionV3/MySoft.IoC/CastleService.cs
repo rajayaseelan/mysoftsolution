@@ -52,13 +52,32 @@ namespace MySoft.IoC
             this.container.OnLog += (log, type) => { if (OnLog != null) OnLog(log, type); };
 
             //实例化调用者
-            this.caller = new ServiceCaller(server, config, container);
+            var status = new ServerStatusService(server, config, container);
+            this.caller = new ServiceCaller(status);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
             {
-                var factory = new HttpRequestHandlerFactory(config, container);
+                //设置默认的解析器
+                IHttpApiResolver resolver = new DefaultApiResolver();
+
+                //判断是否配置了HttpType
+                if (config.HttpType != null && typeof(IHttpApiResolver).IsAssignableFrom(config.HttpType))
+                {
+                    resolver = Activator.CreateInstance(config.HttpType) as IHttpApiResolver;
+                }
+
+                var httpCaller = new HttpServiceCaller(config, container);
+
+                //初始化调用器
+                httpCaller.InitCaller(resolver);
+
+                var handler = new HttpServiceHandler(httpCaller);
+                var factory = new HttpRequestHandlerFactory(handler);
                 this.httpServer = new HTTPServer(factory, config.HttpPort);
+
+                //刷新服务委托
+                status.OnRefresh += () => httpCaller.InitCaller(resolver);
             }
 
             //绑定事件

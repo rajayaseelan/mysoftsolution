@@ -19,11 +19,10 @@ namespace MySoft.IoC.HttpServer
         /// <summary>
         /// 初始化CastleServiceHandler
         /// </summary>
-        /// <param name="config"></param>
-        /// <param name="container"></param>
-        public HttpRequestHandlerFactory(CastleServiceConfiguration config, IServiceContainer container)
+        /// <param name="handler"></param>
+        public HttpRequestHandlerFactory(IHTTPRequestHandler handler)
         {
-            this.handler = new HttpServiceHandler(config, container);
+            this.handler = handler;
         }
 
         /// <summary>

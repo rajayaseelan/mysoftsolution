@@ -4,6 +4,11 @@ using MySoft.IoC.Messages;
 namespace MySoft.IoC
 {
     /// <summary>
+    /// 刷新委托
+    /// </summary>
+    public delegate void RefreshEventHandler();
+
+    /// <summary>
     /// 状态服务信息
     /// </summary>
     [ServiceContract(CallbackType = typeof(IStatusListener), Timeout = 60)]
@@ -73,6 +78,12 @@ namespace MySoft.IoC
         /// <param name="serviceName"></param>
         /// <returns></returns>
         bool ContainsService(string serviceName);
+
+        /// <summary>
+        /// 刷新接口
+        /// </summary>
+        /// <returns></returns>
+        void RefreshApi();
 
         /// <summary>
         /// 获取服务信息列表

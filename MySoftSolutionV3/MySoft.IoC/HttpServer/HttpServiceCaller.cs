@@ -29,6 +29,17 @@ namespace MySoft.IoC.HttpServer
             this.container = container;
             this.callers = new HttpCallerInfoCollection();
             this.callTimeouts = new Dictionary<string, int>();
+        }
+
+        /// <summary>
+        /// 初始化Caller
+        /// </summary>
+        /// <param name="resolver"></param>
+        public void InitCaller(IHttpApiResolver resolver)
+        {
+            //清理资源
+            callTimeouts.Clear();
+            callers.Clear();
 
             //获取拥有ServiceContract约束的服务
             var types = container.GetServiceTypes<ServiceContractAttribute>();
@@ -46,40 +57,34 @@ namespace MySoft.IoC.HttpServer
                         callTimeouts[type.FullName] = contract.Timeout;
                 }
 
-                //添加方法
-                foreach (var method in CoreHelper.GetMethodsFromType(type))
+                if (resolver != null)
                 {
-                    var httpInvoke = CoreHelper.GetMemberAttribute<HttpInvokeAttribute>(method);
-                    if (httpInvoke == null) continue;
-
-                    //创建一个新的Caller
-                    CreateNewCaller(type, method, httpInvoke);
+                    //添加方法
+                    foreach (var httpApi in resolver.MethodResolver(type))
+                    {
+                        //添加一个新的Caller
+                        AddNewCaller(type, httpApi);
+                    }
                 }
             }
         }
 
-        private void CreateNewCaller(Type serviceType, System.Reflection.MethodInfo methodInfo, HttpInvokeAttribute invoke)
+        private void AddNewCaller(Type serviceType, HttpApiMethod httpApi)
         {
             //将方法添加到字典
             var callerInfo = new HttpCallerInfo
             {
-                CacheTime = invoke.CacheTime,
+                CacheTime = httpApi.CacheTime,
                 Service = serviceType,
-                Method = methodInfo,
-                TypeString = methodInfo.ReturnType == typeof(string),
-                Description = invoke.Description,
-                Authorized = invoke.Authorized,
-                AuthParameter = invoke.AuthParameter,
-                HttpMethod = HttpMethod.GET                             //默认为GET方式
+                Method = httpApi.Method,
+                TypeString = httpApi.Method.ReturnType == typeof(string),
+                Description = httpApi.Description,
+                Authorized = httpApi.Authorized,
+                AuthParameter = httpApi.AuthParameter,
+                HttpMethod = httpApi.HttpMethod
             };
 
-            var types = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
-            if (!CoreHelper.CheckPrimitiveType(types))
-            {
-                callerInfo.HttpMethod = HttpMethod.POST;
-            }
-
-            string fullName = invoke.Name;
+            string fullName = httpApi.Name;
             if (callers.ContainsKey(fullName))
             {
                 //处理重复的方法
@@ -197,28 +202,36 @@ namespace MySoft.IoC.HttpServer
                         Caller = appCaller
                     };
 
-                    //处理数据返回InvokeData
-                    var serviceKey = "Service_" + appCaller.ServiceName;
-                    var service = container.Resolve<IService>(serviceKey);
-
-                    //等待超时
-                    var time = TimeSpan.FromSeconds(config.Timeout);
-                    if (callTimeouts.ContainsKey(appCaller.ServiceName))
+                    try
                     {
-                        time = TimeSpan.FromSeconds(callTimeouts[appCaller.ServiceName]);
+                        //处理数据返回InvokeData
+                        var serviceKey = "Service_" + appCaller.ServiceName;
+                        var service = container.Resolve<IService>(serviceKey);
+
+                        //等待超时
+                        var timeSpan = TimeSpan.FromSeconds(config.Timeout);
+                        if (callTimeouts.ContainsKey(appCaller.ServiceName))
+                        {
+                            timeSpan = TimeSpan.FromSeconds(callTimeouts[appCaller.ServiceName]);
+                        }
+
+                        //启用异步调用服务
+                        service = new AsyncService(container, service, timeSpan, config.MaxCalls);
+
+                        //使用Invoke方式调用
+                        var invoke = new InvokeCaller(appCaller.AppName, service);
+                        invokeData = invoke.CallMethod(message);
+
+                        //插入缓存
+                        if (invokeData != null && caller.CacheTime > 0)
+                        {
+                            CacheHelper.Insert(cacheKey, invokeData, caller.CacheTime);
+                        }
                     }
-
-                    //启用异步调用服务
-                    service = new AsyncService(container, service, time);
-
-                    //使用Invoke方式调用
-                    var invoke = new InvokeCaller(appCaller.AppName, service);
-                    invokeData = invoke.CallMethod(message);
-
-                    //插入缓存
-                    if (invokeData != null && caller.CacheTime > 0)
+                    finally
                     {
-                        CacheHelper.Insert(cacheKey, invokeData, caller.CacheTime);
+                        //初始化上下文
+                        OperationContext.Current = null;
                     }
                 }
 

@@ -21,6 +21,11 @@ namespace MySoft.IoC
         public const int DEFAULT_MINUTE_CALL = 100; //100次
 
         /// <summary>
+        /// The default max call number.
+        /// </summary>
+        public const int DEFAULT_MAX_CALL = 500; //500次
+
+        /// <summary>
         /// The default client timeout number. 
         /// </summary>
         public const int DEFAULT_CLIENT_TIMEOUT = 5 * 60; //60秒

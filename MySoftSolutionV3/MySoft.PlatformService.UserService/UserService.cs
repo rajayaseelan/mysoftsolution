@@ -44,6 +44,8 @@ namespace MySoft.PlatformService.UserService
         //[AspectSwitcher(true)]
         public virtual UserInfo GetUserInfo(string name, out string userid, out Guid guid, out UserInfo user)
         {
+            //Thread.Sleep(60000);
+
             var context = OperationContext.Current;
 
             //var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);

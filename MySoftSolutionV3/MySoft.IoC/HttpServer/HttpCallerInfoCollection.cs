@@ -35,6 +35,17 @@ namespace MySoft.IoC.HttpServer
         }
 
         /// <summary>
+        /// 清除集合
+        /// </summary>
+        public void Clear()
+        {
+            lock (callers)
+            {
+                callers.Clear();
+            }
+        }
+
+        /// <summary>
         /// 获取集合中的数据
         /// </summary>
         /// <param name="key"></param>

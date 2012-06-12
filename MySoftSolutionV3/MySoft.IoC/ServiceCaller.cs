@@ -16,8 +16,6 @@ namespace MySoft.IoC
     /// </summary>
     public class ServiceCaller
     {
-        private IServiceContainer container;
-        private CastleServiceConfiguration config;
         private IDictionary<string, Type> callbackTypes;
         private IDictionary<string, int> callTimeouts;
         private ServerStatusService status;
@@ -25,25 +23,22 @@ namespace MySoft.IoC
         /// <summary>
         /// 初始化ServiceCaller
         /// </summary>
-        /// <param name="server"></param>
-        /// <param name="container"></param>
-        /// <param name="config"></param>
-        public ServiceCaller(IScsServer server, CastleServiceConfiguration config, IServiceContainer container)
+        /// <param name="status"></param>
+        public ServiceCaller(ServerStatusService status)
         {
-            this.status = new ServerStatusService(server, config, container);
-            this.config = config;
-            this.container = container;
+            this.status = status;
             this.callbackTypes = new Dictionary<string, Type>();
             this.callTimeouts = new Dictionary<string, int>();
 
             //初始化服务
-            InitServiceCaller(container);
+            InitServiceCaller(status.Container);
 
             //注册状态服务
             var hashtable = new Dictionary<Type, object>();
             hashtable[typeof(IStatusService)] = status;
 
-            this.container.RegisterComponents(hashtable);
+            //注册组件
+            status.Container.RegisterComponents(hashtable);
         }
 
         private void InitServiceCaller(IServiceContainer container)
@@ -132,7 +127,7 @@ namespace MySoft.IoC
             catch (Exception ex)
             {
                 //输出错误
-                container.Write(ex);
+                status.Container.Write(ex);
 
                 //处理异常
                 return new ResponseMessage
@@ -160,15 +155,15 @@ namespace MySoft.IoC
         private ResponseMessage CallAsyncMethod(RequestMessage reqMsg)
         {
             //等待超时
-            var time = TimeSpan.FromSeconds(config.Timeout);
+            var timeSpan = TimeSpan.FromSeconds(status.Config.Timeout);
             if (callTimeouts.ContainsKey(reqMsg.ServiceName))
             {
-                time = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
+                timeSpan = TimeSpan.FromSeconds(callTimeouts[reqMsg.ServiceName]);
             }
 
             //解析服务
             var service = ParseService(reqMsg);
-            service = new AsyncService(container, service, time);
+            service = new AsyncService(status.Container, service, timeSpan, status.Config.MaxCalls);
 
             //调用服务
             return service.CallService(reqMsg);
@@ -217,7 +212,7 @@ namespace MySoft.IoC
 
             OperationContext.Current = new OperationContext(client, callbackType)
             {
-                Container = container,
+                Container = status.Container,
                 Caller = caller
             };
         }
@@ -232,9 +227,9 @@ namespace MySoft.IoC
             IService service = null;
             string serviceKey = "Service_" + reqMsg.ServiceName;
 
-            if (container.Kernel.HasComponent(serviceKey))
+            if (status.Container.Kernel.HasComponent(serviceKey))
             {
-                service = container.Resolve<IService>(serviceKey);
+                service = status.Container.Resolve<IService>(serviceKey);
             }
 
             if (service == null)

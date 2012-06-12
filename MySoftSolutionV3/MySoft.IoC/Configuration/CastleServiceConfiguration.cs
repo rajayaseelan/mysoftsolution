@@ -13,11 +13,13 @@ namespace MySoft.IoC.Configuration
         private int port = 8888;
         private int httpPort = 8080;
         private bool httpEnabled = false;
+        private Type httpType;
         private bool encrypt = false;
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;
         private int minuteCalls = ServiceConfig.DEFAULT_MINUTE_CALL;        //默认为每分钟调用100次，超过报异常
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;        //默认记录1小时
+        private int maxCalls = ServiceConfig.DEFAULT_MAX_CALL;              //默认的并发调用数
 
         /// <summary>
         /// 获取远程对象配置
@@ -68,6 +70,9 @@ namespace MySoft.IoC.Configuration
             if (attribute["minuteCalls"] != null && attribute["minuteCalls"].Value.Trim() != string.Empty)
                 minuteCalls = Convert.ToInt32(attribute["minuteCalls"].Value);
 
+            if (attribute["maxCalls"] != null && attribute["maxCalls"].Value.Trim() != string.Empty)
+                maxCalls = Convert.ToInt32(attribute["maxCalls"].Value);
+
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
                 if (child.NodeType == XmlNodeType.Comment) continue;
@@ -77,6 +82,16 @@ namespace MySoft.IoC.Configuration
                 {
                     httpPort = Convert.ToInt32(childattribute["port"].Value);
                     httpEnabled = Convert.ToBoolean(childattribute["enabled"].Value);
+
+                    try
+                    {
+                        var typeName = childattribute["type"].Value;
+                        httpType = Type.GetType(typeName);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO
+                    }
                 }
             }
         }
@@ -99,6 +114,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return httpEnabled; }
             set { httpEnabled = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the httpType
+        /// </summary>
+        public Type HttpType
+        {
+            get { return httpType; }
+            set { httpType = value; }
         }
 
         #endregion
@@ -169,6 +193,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return minuteCalls; }
             set { minuteCalls = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the maxCalls
+        /// </summary>
+        public int MaxCalls
+        {
+            get { return maxCalls; }
+            set { maxCalls = value; }
         }
     }
 }

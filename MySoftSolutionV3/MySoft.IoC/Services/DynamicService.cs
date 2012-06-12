@@ -48,9 +48,10 @@ namespace MySoft.IoC.Services
                 var m = CoreHelper.GetMethodFromType(serviceType, reqMsg.MethodName);
                 if (m == null)
                 {
-                    string message = string.Format("The server not find called method ({0},{1}).", reqMsg.ServiceName, reqMsg.MethodName);
-                    resMsg.Error = new WarningException(message);
+                    string message = string.Format("The server¡¾{2}({3})¡¿not find matching method. ({0},{1})."
+                        , reqMsg.ServiceName, reqMsg.MethodName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
 
+                    resMsg.Error = new WarningException(message);
                     return resMsg;
                 }
 

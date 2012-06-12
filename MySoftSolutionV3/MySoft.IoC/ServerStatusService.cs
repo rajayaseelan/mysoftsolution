@@ -17,6 +17,11 @@ namespace MySoft.IoC
     /// </summary>
     public class ServerStatusService : IStatusService
     {
+        /// <summary>
+        /// 刷新处理
+        /// </summary>
+        public event RefreshEventHandler OnRefresh;
+
         private const int DefaultDisconnectionAttemptTimeout = 5 * 60 * 1000; //5 minutes.
 
         private CastleServiceConfiguration config;
@@ -25,6 +30,9 @@ namespace MySoft.IoC
         private TimeStatusCollection statuslist;
         private CounterInfoCollection counterlist;
         private DateTime startTime;
+
+        internal IServiceContainer Container { get { return container; } }
+        internal CastleServiceConfiguration Config { get { return config; } }
 
         /// <summary>
         /// 实例化ServerStatusService
@@ -246,6 +254,15 @@ namespace MySoft.IoC
         public bool ContainsService(string serviceName)
         {
             return container.Contains<ServiceContractAttribute>(serviceName);
+        }
+
+        /// <summary>
+        /// 刷新API服务
+        /// </summary>
+        /// <returns></returns>
+        public void RefreshApi()
+        {
+            if (OnRefresh != null) OnRefresh();
         }
 
         #region GetServiceInfos

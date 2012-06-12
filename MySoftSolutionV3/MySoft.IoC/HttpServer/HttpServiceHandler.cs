@@ -22,11 +22,10 @@ namespace MySoft.IoC.HttpServer
         /// <summary>
         /// 初始化CastleServiceHandler
         /// </summary>
-        /// <param name="config"></param>
-        /// <param name="container"></param>
-        public HttpServiceHandler(CastleServiceConfiguration config, IServiceContainer container)
+        /// <param name="caller"></param>
+        public HttpServiceHandler(HttpServiceCaller caller)
         {
-            this.caller = new HttpServiceCaller(config, container);
+            this.caller = caller;
         }
 
         #region IHTTPRequestHandler 成员

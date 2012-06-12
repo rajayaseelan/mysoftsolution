@@ -96,7 +96,6 @@
     <Compile Include="Cache\ICacheStrategy.cs" />
     <Compile Include="Common\HttpMethod.cs" />
     <Compile Include="IoC\ContractAttribute.cs" />
-    <Compile Include="IoC\HttpInvoke.cs" />
     <Compile Include="IoC\IContainer.cs" />
     <Compile Include="Json\Newtonsoft.Json\Bson\BsonBinaryType.cs" />
     <Compile Include="Json\Newtonsoft.Json\Bson\BsonBinaryWriter.cs" />

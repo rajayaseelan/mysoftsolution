@@ -81,6 +81,12 @@
     <Compile Include="Callback\CallbackInfo.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IoCHelper.cs" />
+    <Compile Include="HttpServer\HttpApi\DefaultApiResolver.cs" />
+    <Compile Include="HttpServer\HttpApi\Config\HttpApiItem.cs" />
+    <Compile Include="HttpServer\HttpApi\Config\HttpApiConfig.cs" />
+    <Compile Include="HttpServer\HttpApi\HttpApiMethod.cs" />
+    <Compile Include="HttpServer\HttpApi\Config\HttpApiService.cs" />
+    <Compile Include="HttpServer\HttpApi\IHttpApiResolver.cs" />
     <Compile Include="HttpServer\HttpCallerInfoCollection.cs" />
     <Compile Include="Callback\MessageCenter.cs" />
     <Compile Include="Callback\MessageListener.cs" />
@@ -103,7 +109,6 @@
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Services\AsyncResult.cs" />
     <Compile Include="Services\AsyncService.cs" />
     <Compile Include="Services\ServiceDiscoverFacility.cs" />
     <Compile Include="Messages\Status\AppCaller.cs" />
@@ -189,6 +194,7 @@
     <Compile Include="Services\RemoteProxy.cs" />
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
+    <Compile Include="Common\ThreadManager.cs" />
     <Compile Include="Services\WaitResult.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
     <Compile Include="Messages\Status\CallInfo.cs" />
