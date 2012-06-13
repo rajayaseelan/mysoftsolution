@@ -387,7 +387,9 @@ namespace MySoft
                     else if (type.IsGenericType)
                     {
                         var t = type.GetGenericTypeDefinition();
-                        if (typeof(IList<>).IsAssignableFrom(t))
+                        if (typeof(IList<>).IsAssignableFrom(t) || typeof(List<>).IsAssignableFrom(t)
+                            || typeof(ICollection<>).IsAssignableFrom(t) || typeof(Collection<>).IsAssignableFrom(t)
+                            || typeof(IEnumerable<>).IsAssignableFrom(t))
                         {
                             if (!(jsonString.StartsWith("[") && jsonString.EndsWith("]")))
                                 jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));

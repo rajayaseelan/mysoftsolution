@@ -41,7 +41,7 @@ namespace MySoft.RESTful.Utils
                     catch (Exception ex)
                     {
                         throw new RESTfulException((int)HttpStatusCode.BadRequest, string.Format("Parameter [{0}] did not match type [{1}].",
-                            info.Name, GetTypeName(type)));
+                            info.Name, CoreHelper.GetTypeName(type)));
                     }
                 }
                 else
@@ -57,17 +57,6 @@ namespace MySoft.RESTful.Utils
         {
             if (type.IsByRef) type = type.GetElementType();
             return type;
-        }
-
-        private static string GetTypeName(Type type)
-        {
-            string typeName = type.Name;
-            if (type.IsGenericType) type = type.GetGenericArguments()[0];
-            if (typeName.Contains("`1"))
-            {
-                typeName = typeName.Replace("`1", "&lt;" + type.Name + "&gt;");
-            }
-            return typeName;
         }
 
         /// <summary>
