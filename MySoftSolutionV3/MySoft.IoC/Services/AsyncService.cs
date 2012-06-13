@@ -10,7 +10,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     /// <param name="reqMsg"></param>
     /// <returns></returns>
-    public delegate ResponseMessage AsyncCaller(OperationContext context, RequestMessage reqMsg);
+    public delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
 
     /// <summary>
     /// 队列服务
@@ -50,7 +50,7 @@ namespace MySoft.IoC.Services
             }
 
             //实例化异步调用器
-            var caller = new AsyncCaller(GetResponse);
+            var caller = new AsyncMethodCaller(GetResponse);
 
             //开始异步调用
             var ar = caller.BeginInvoke(OperationContext.Current, reqMsg, null, caller);
@@ -58,8 +58,11 @@ namespace MySoft.IoC.Services
             //等待响应
             if (!ar.AsyncWaitHandle.WaitOne(elapsedTime))
             {
-                //结束当前线程
-                ThreadManager.Cancel(reqMsg.TransactionId);
+                if (!ar.IsCompleted)
+                {
+                    //结束当前线程
+                    ThreadManager.Cancel(reqMsg.TransactionId);
+                }
 
                 var body = string.Format("Call service ({0}, {1}) timeout ({2}) ms.\r\nParameters => {3}"
                     , reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString());
@@ -92,13 +95,6 @@ namespace MySoft.IoC.Services
 
                 //调用方法
                 return service.CallService(reqMsg);
-            }
-            catch (Exception ex)
-            {
-                //写错误日志
-                logger.Write(ex);
-
-                return null;
             }
             finally
             {

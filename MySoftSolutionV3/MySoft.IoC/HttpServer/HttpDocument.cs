@@ -23,15 +23,29 @@ namespace MySoft.IoC.HttpServer
 
             #region 读取资源
 
-            Assembly assm = this.GetType().Assembly;
-            Stream helpStream = assm.GetManifestResourceStream("MySoft.IoC.HttpServer.Template.help.htm");
-            Stream helpitemStream = assm.GetManifestResourceStream("MySoft.IoC.HttpServer.Template.helpitem.htm");
+            try
+            {
+                var assm = this.GetType().Assembly;
+                var helpStream = assm.GetManifestResourceStream("MySoft.IoC.HttpServer.Template.help.htm");
+                var helpitemStream = assm.GetManifestResourceStream("MySoft.IoC.HttpServer.Template.helpitem.htm");
 
-            StreamReader helpReader = new StreamReader(helpStream);
-            StreamReader helpitemReader = new StreamReader(helpitemStream);
+                //读取主模板
+                using (var helpReader = new StreamReader(helpStream))
+                {
+                    htmlTemplate = helpReader.ReadToEnd();
+                }
 
-            htmlTemplate = helpReader.ReadToEnd(); helpReader.Close();
-            itemTemplate = helpitemReader.ReadToEnd(); helpitemReader.Close();
+                //读取子项模板
+                using (var helpitemReader = new StreamReader(helpitemStream))
+                {
+                    itemTemplate = helpitemReader.ReadToEnd();
+                }
+            }
+            catch
+            {
+                htmlTemplate = string.Empty;
+                itemTemplate = string.Empty;
+            }
 
             #endregion
         }

@@ -20,7 +20,13 @@ namespace MySoft.IoC
         /// </summary>
         public static int Count
         {
-            get { return hashtable.Count; }
+            get
+            {
+                lock (hashtable.SyncRoot)
+                {
+                    return hashtable.Count;
+                }
+            }
         }
 
         /// <summary>
@@ -30,8 +36,11 @@ namespace MySoft.IoC
         /// <param name="thread"></param>
         public static void Add(Guid guid, Thread thread)
         {
-            //将当前线程放入队列中
-            hashtable[guid] = thread;
+            lock (hashtable.SyncRoot)
+            {
+                //将当前线程放入队列中
+                hashtable[guid] = thread;
+            }
         }
 
         /// <summary>
@@ -40,24 +49,27 @@ namespace MySoft.IoC
         /// <param name="guid"></param>
         public static void Cancel(Guid guid)
         {
-            if (hashtable.ContainsKey(guid))
+            lock (hashtable.SyncRoot)
             {
-                try
+                if (hashtable.ContainsKey(guid))
                 {
-                    //中止当前线程
-                    var thread = hashtable[guid] as Thread;
-                    if ((thread.ThreadState & (ThreadState.Stopped | ThreadState.Unstarted)) == ThreadState.Running)
+                    try
                     {
-                        thread.Abort();
+                        //中止当前线程
+                        var thread = hashtable[guid] as Thread;
+                        if ((thread.ThreadState & (ThreadState.Stopped | ThreadState.Unstarted)) == ThreadState.Running)
+                        {
+                            thread.Abort();
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    //TODO
-                }
-                finally
-                {
-                    hashtable.Remove(guid);
+                    catch (Exception ex)
+                    {
+                        //TODO
+                    }
+                    finally
+                    {
+                        hashtable.Remove(guid);
+                    }
                 }
             }
         }
@@ -68,9 +80,12 @@ namespace MySoft.IoC
         /// <param name="guid"></param>
         public static void Remove(Guid guid)
         {
-            if (hashtable.ContainsKey(guid))
+            lock (hashtable.SyncRoot)
             {
-                hashtable.Remove(guid);
+                if (hashtable.ContainsKey(guid))
+                {
+                    hashtable.Remove(guid);
+                }
             }
         }
     }
