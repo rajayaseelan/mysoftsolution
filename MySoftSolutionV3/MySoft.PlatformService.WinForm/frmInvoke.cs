@@ -273,23 +273,29 @@ namespace MySoft.PlatformService.WinForm
                     richTextBox1.Refresh();
                 }));
 
-                //获取DataView数据
-                var table = GetDataTable(data.Value);
-                this.Invoke(new Action(() => gridDataQuery.DataSource = table));
-
-                if (table == null)
+                //启用线程来处理数据
+                ThreadPool.QueueUserWorkItem(state =>
                 {
-                    //写Document文档
-                    try
+                    var invokeData = state as InvokeData;
+
+                    //获取DataView数据
+                    var table = GetDataTable(invokeData.Value);
+                    this.Invoke(new Action(() => gridDataQuery.DataSource = table));
+
+                    if (table == null)
                     {
-                        this.Invoke(new Action(() =>
+                        //写Document文档
+                        try
                         {
-                            webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
-                            webBrowser1.Document.Write(JContainer.Parse(data.Value).ToString());
-                        }));
+                            this.Invoke(new Action(() =>
+                            {
+                                webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+                                webBrowser1.Document.Write(JContainer.Parse(invokeData.Value).ToString());
+                            }));
+                        }
+                        catch { }
                     }
-                    catch { }
-                }
+                }, data);
             }
             else
             {
