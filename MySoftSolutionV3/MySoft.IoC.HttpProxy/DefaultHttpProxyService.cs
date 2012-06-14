@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using MySoft.Auth;
 using MySoft.Security;
+using System.Threading;
 
 namespace MySoft.IoC.HttpProxy
 {
@@ -37,24 +38,57 @@ namespace MySoft.IoC.HttpProxy
             else
                 proxyServer = url;
 
-            this.helper = new HttpHelper(Encoding.UTF8, 30);
-            this.services = new List<ServiceItem>();
-
             //读取服务信息
-            this.ReaderService();
+            services = this.ReaderService();
+
+            //更新服务
+            var thread = new Thread(UpdateService);
+            thread.Start();
+        }
+
+        /// <summary>
+        /// 更新服务
+        /// </summary>
+        private void UpdateService()
+        {
+            while (true)
+            {
+                //一分钟检测一次
+                Thread.Sleep(TimeSpan.FromMinutes(1));
+
+                var items = ReaderService();
+
+                //判断是否有更新
+                if (items.Count > 0 && items.Count != services.Count)
+                {
+                    this.services = items;
+                }
+            }
         }
 
         /// <summary>
         /// 读取服务
         /// </summary>
-        private void ReaderService()
+        private IList<ServiceItem> ReaderService()
         {
-            //数据缓存1分钟
-            var url = string.Format(HTTP_PROXY_API, proxyServer, "api");
-            var jsonString = helper.Reader(url, 60);
+            var services = new List<ServiceItem>();
 
-            //将数据反系列化成对象
-            this.services = SerializationManager.DeserializeJson<IList<ServiceItem>>(jsonString);
+            try
+            {
+                //数据缓存1分钟
+                var url = string.Format(HTTP_PROXY_API, proxyServer, "api");
+                var jsonString = helper.Reader(url, 60);
+
+                //将数据反系列化成对象
+                var items = SerializationManager.DeserializeJson<IList<ServiceItem>>(jsonString);
+                services.AddRange(items);
+            }
+            catch
+            {
+                //TODO
+            }
+
+            return services;
         }
 
         /// <summary>
