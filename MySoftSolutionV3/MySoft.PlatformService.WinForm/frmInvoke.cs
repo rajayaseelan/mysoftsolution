@@ -260,13 +260,15 @@ namespace MySoft.PlatformService.WinForm
 
         private void AsyncComplete(IAsyncResult ar)
         {
+            if (this.IsDisposed) return;
+
             var caller = ar.AsyncState as AsyncMethodCaller;
             var value = caller.EndInvoke(ar);
             var data = value as InvokeResponse;
 
             if (!data.IsError)
             {
-                this.Invoke(new Action(() =>
+                InvokeMethod(new Action(() =>
                 {
                     richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
                         data.Count, data.Value, data.OutParameters);
@@ -280,14 +282,14 @@ namespace MySoft.PlatformService.WinForm
 
                     //获取DataView数据
                     var table = GetDataTable(invokeData.Value);
-                    this.Invoke(new Action(() => gridDataQuery.DataSource = table));
+                    InvokeMethod(new Action(() => gridDataQuery.DataSource = table));
 
                     if (table == null)
                     {
                         //写Document文档
                         try
                         {
-                            this.Invoke(new Action(() =>
+                            InvokeMethod(new Action(() =>
                             {
                                 webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
                                 webBrowser1.Document.Write(JContainer.Parse(invokeData.Value).ToString());
@@ -302,7 +304,7 @@ namespace MySoft.PlatformService.WinForm
                 richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
             }
 
-            this.Invoke(new Action(() =>
+            InvokeMethod(new Action(() =>
             {
                 label5.Text = data.ElapsedMilliseconds + " ms";
                 label5.Refresh();
@@ -310,6 +312,19 @@ namespace MySoft.PlatformService.WinForm
                 button1.Enabled = true;
                 button1.Focus();
             }));
+        }
+
+        private void InvokeMethod(Action action)
+        {
+            if (this.IsDisposed) return;
+            if (this.InvokeRequired)
+            {
+                this.Invoke(action);
+            }
+            else
+            {
+                action();
+            }
         }
 
         /// <summary>

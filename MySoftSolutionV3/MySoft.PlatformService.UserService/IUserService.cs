@@ -68,6 +68,7 @@ namespace MySoft.PlatformService.UserService
         IDictionary<Sex, IList<UserInfo>> GetDict();
 
         //[HttpInvoke(Name = "user.getuserstr", Description = "获取用户")]
+        [OperationContract(CacheTime = 10)]
         string GetUsersString();
     }
 
