@@ -168,6 +168,22 @@ namespace MySoft.IoC.HttpServer
             }
         }
 
+        private void SendResponse(HTTPServerResponse response, string responseString)
+        {
+            using (var sw = new StreamWriter(response.Send()))
+            {
+                sw.Write(responseString);
+            }
+        }
+
+        private void SendResponse(HTTPServerResponse response, HttpServiceResult error)
+        {
+            error.Code = (int)response.Status;
+
+            var jsonString = SerializationManager.SerializeJson(error);
+            SendResponse(response, jsonString);
+        }
+
         /// <summary>
         /// 转换成NameValueCollection
         /// </summary>
@@ -196,27 +212,11 @@ namespace MySoft.IoC.HttpServer
                 catch (Exception ex)
                 {
                     //TODO 不做处理
-                    SimpleLog.Instance.WriteLogForDir("DataConvert", ex);
+                    SimpleLog.Instance.WriteLogForDir("ConvertData", ex);
                 }
             }
 
             return values;
-        }
-
-        private void SendResponse(HTTPServerResponse response, string responseString)
-        {
-            using (var sw = new StreamWriter(response.Send()))
-            {
-                sw.Write(responseString);
-            }
-        }
-
-        private void SendResponse(HTTPServerResponse response, HttpServiceResult error)
-        {
-            error.Code = (int)response.Status;
-
-            var jsonString = SerializationManager.SerializeJson(error);
-            SendResponse(response, jsonString);
         }
 
         /// <summary>

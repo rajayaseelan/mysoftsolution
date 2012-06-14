@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
+using MySoft.Threading;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -13,6 +13,7 @@ namespace MySoft.IoC.HttpServer
     /// </summary>
     public class HttpServiceCaller
     {
+        private IWorkItemsGroup group;
         private IServiceContainer container;
         private CastleServiceConfiguration config;
         private HttpCallerInfoCollection callers;
@@ -21,12 +22,14 @@ namespace MySoft.IoC.HttpServer
         /// <summary>
         /// HttpServiceCaller初始化
         /// </summary>
+        /// <param name="group"></param>
         /// <param name="config"></param>
         /// <param name="container"></param>
-        public HttpServiceCaller(CastleServiceConfiguration config, IServiceContainer container)
+        public HttpServiceCaller(IWorkItemsGroup group, CastleServiceConfiguration config, IServiceContainer container)
         {
             this.config = config;
             this.container = container;
+            this.group = group;
             this.callers = new HttpCallerInfoCollection();
             this.callTimeouts = new Dictionary<string, int>();
         }
@@ -195,29 +198,14 @@ namespace MySoft.IoC.HttpServer
                         CallTime = DateTime.Now
                     };
 
+                    //创建服务
+                    var service = CreateService(appCaller);
+
                     //初始化上下文
-                    OperationContext.Current = new OperationContext
-                    {
-                        Container = container,
-                        Caller = appCaller
-                    };
+                    SetOperationContext(appCaller);
 
                     try
                     {
-                        //处理数据返回InvokeData
-                        var serviceKey = "Service_" + appCaller.ServiceName;
-                        var service = container.Resolve<IService>(serviceKey);
-
-                        //等待超时
-                        var timeSpan = TimeSpan.FromSeconds(config.Timeout);
-                        if (callTimeouts.ContainsKey(appCaller.ServiceName))
-                        {
-                            timeSpan = TimeSpan.FromSeconds(callTimeouts[appCaller.ServiceName]);
-                        }
-
-                        //启用异步调用服务
-                        service = new AsyncService(container, service, timeSpan, config.MaxCalls);
-
                         //使用Invoke方式调用
                         var invoke = new InvokeCaller(appCaller.AppName, service);
                         invokeData = invoke.CallMethod(message);
@@ -241,6 +229,36 @@ namespace MySoft.IoC.HttpServer
             }
 
             return "null";
+        }
+
+        private IService CreateService(AppCaller appCaller)
+        {
+            //处理数据返回InvokeData
+            var serviceKey = "Service_" + appCaller.ServiceName;
+            var service = container.Resolve<IService>(serviceKey);
+
+            //等待超时
+            var timeSpan = TimeSpan.FromSeconds(config.Timeout);
+            if (callTimeouts.ContainsKey(appCaller.ServiceName))
+            {
+                timeSpan = TimeSpan.FromSeconds(callTimeouts[appCaller.ServiceName]);
+            }
+
+            //启用异步调用服务
+            return new AsyncService(group, container, service, timeSpan);
+        }
+
+        /// <summary>
+        /// 设置上下文
+        /// </summary>
+        /// <param name="caller"></param>
+        private void SetOperationContext(AppCaller caller)
+        {
+            OperationContext.Current = new OperationContext
+            {
+                Container = container,
+                Caller = caller
+            };
         }
     }
 }

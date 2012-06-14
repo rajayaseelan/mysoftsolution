@@ -84,6 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncMethodCaller.cs" />
     <Compile Include="AutoCompleteTextbox.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -2,39 +2,33 @@
 using System.Threading;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
-    /// <summary>
-    /// 异步调用器
-    /// </summary>
-    /// <param name="reqMsg"></param>
-    /// <returns></returns>
-    public delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
-
     /// <summary>
     /// 队列服务
     /// </summary>
     public class AsyncService : IService
     {
+        private IWorkItemsGroup group;
         private ILog logger;
         private IService service;
         private TimeSpan elapsedTime;
-        private int maxCalls;
 
         /// <summary>
         /// 实例化QueueService
         /// </summary>
+        /// <param name="smart"></param>
         /// <param name="logger"></param>
         /// <param name="service"></param>
         /// <param name="elapsedTime"></param>
-        /// <param name="maxCalls"></param>
-        public AsyncService(ILog logger, IService service, TimeSpan elapsedTime, int maxCalls)
+        public AsyncService(IWorkItemsGroup group, ILog logger, IService service, TimeSpan elapsedTime)
         {
+            this.group = group;
             this.logger = logger;
             this.service = service;
             this.elapsedTime = elapsedTime;
-            this.maxCalls = maxCalls;
         }
 
         /// <summary>
@@ -43,25 +37,19 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            while (ThreadManager.Count > maxCalls)
-            {
-                //调用项大于最大调用项，则暂停1秒
-                Thread.Sleep(1000);
-            }
+            var context = OperationContext.Current;
 
             //实例化异步调用器
-            var caller = new AsyncMethodCaller(GetResponse);
-
-            //开始异步调用
-            var ar = caller.BeginInvoke(OperationContext.Current, reqMsg, null, caller);
+            var worker = group.QueueWorkItem<OperationContext, RequestMessage, ResponseMessage>
+                                            (GetResponse, context, reqMsg);
 
             //等待响应
-            if (!ar.AsyncWaitHandle.WaitOne(elapsedTime))
+            if (!SmartThreadPool.WaitAll(new[] { worker }, elapsedTime, true))
             {
-                if (!ar.IsCompleted)
+                if (!worker.IsCompleted)
                 {
                     //结束当前线程
-                    ThreadManager.Cancel(reqMsg.TransactionId);
+                    worker.Cancel(true);
                 }
 
                 var body = string.Format("Call service ({0}, {1}) timeout ({2}) ms.\r\nParameters => {3}"
@@ -73,11 +61,22 @@ namespace MySoft.IoC.Services
                 //将异常信息写出
                 logger.Write(error);
 
-                throw error;
+                //处理异常
+                return new ResponseMessage
+                {
+                    TransactionId = reqMsg.TransactionId,
+                    ReturnType = reqMsg.ReturnType,
+                    ServiceName = reqMsg.ServiceName,
+                    MethodName = reqMsg.MethodName,
+                    Parameters = reqMsg.Parameters,
+                    Error = error
+                };
             }
-
-            //返回响应的消息
-            return caller.EndInvoke(ar);
+            else
+            {
+                //返回响应的消息
+                return worker.Result;
+            }
         }
 
         /// <summary>
@@ -87,20 +86,19 @@ namespace MySoft.IoC.Services
         {
             try
             {
-                //添加当前线程
-                ThreadManager.Add(reqMsg.TransactionId, Thread.CurrentThread);
-
                 //设置上下文
                 OperationContext.Current = context;
 
                 //调用方法
                 return service.CallService(reqMsg);
             }
+            catch (Exception ex)
+            {
+                //出现异常时返回null
+                return null;
+            }
             finally
             {
-                //移除指定的项
-                ThreadManager.Remove(reqMsg.TransactionId);
-
                 //初始化上下文
                 OperationContext.Current = null;
             }

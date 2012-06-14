@@ -247,7 +247,7 @@ namespace MySoft.PlatformService.Client
             CastleFactory.Create().RegisterResolver(new ServiceResolver());
 
             ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 500; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
@@ -373,10 +373,11 @@ namespace MySoft.PlatformService.Client
 
                     //service.GetUserInfo("maoyong", ref length, out user);
 
-                    string userid;
-                    Guid guid;
-                    UserInfo user;
-                    UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
+                    //string userid;
+                    //Guid guid;
+                    //UserInfo user;
+                    //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
+                    var value = service.GetUsersString();
 
                     //var users = service.GetUsers();
                     //var str = service.GetUsersString();
@@ -385,7 +386,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + userid + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //var clients = service1.GetClientList();
 
@@ -393,7 +394,7 @@ namespace MySoft.PlatformService.Client
                 }
                 catch (Exception ex)
                 {
-                    string msg = ex.ToString();
+                    string msg = ex.Message;
                     Console.WriteLine(msg);
                 }
 

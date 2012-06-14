@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using MySoft.Communication.Scs.Server;
 using MySoft.IoC.Callback;
-using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Threading;
@@ -18,15 +17,18 @@ namespace MySoft.IoC
     {
         private IDictionary<string, Type> callbackTypes;
         private IDictionary<string, int> callTimeouts;
+        private IWorkItemsGroup group;
         private ServerStatusService status;
 
         /// <summary>
         /// 初始化ServiceCaller
         /// </summary>
+        /// <param name="group"></param>
         /// <param name="status"></param>
-        public ServiceCaller(ServerStatusService status)
+        public ServiceCaller(IWorkItemsGroup group, ServerStatusService status)
         {
             this.status = status;
+            this.group = group;
             this.callbackTypes = new Dictionary<string, Type>();
             this.callTimeouts = new Dictionary<string, int>();
 
@@ -68,19 +70,22 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg)
         {
+            //创建服务
+            var service = CreateService(reqMsg);
+
+            //创建Caller;
+            var caller = CreateCaller(client, reqMsg);
+
+            //设置上下文
+            SetOperationContext(client, caller);
+
             try
             {
-                //创建Caller;
-                var caller = CreateCaller(client, reqMsg);
-
-                //设置上下文
-                SetOperationContext(client, caller);
-
                 //启动计时
                 var watch = Stopwatch.StartNew();
 
-                //调用方法
-                var resMsg = CallAsyncMethod(reqMsg);
+                //调用服务
+                var resMsg = service.CallService(reqMsg);
 
                 //停止计时
                 watch.Stop();
@@ -95,50 +100,16 @@ namespace MySoft.IoC
                     Value = resMsg.Value
                 };
 
+                //响应计数
+                NotifyEventArgs(callArgs);
+
                 //如果是Json方式调用，则需要处理异常
                 if (resMsg.IsError && reqMsg.InvokeMethod)
                 {
                     resMsg.Error = new ApplicationException(callArgs.Error.Message);
                 }
 
-                //调用计数
-                ManagedThreadPool.QueueUserWorkItem(state =>
-                {
-                    try
-                    {
-                        var arr = state as ArrayList;
-                        var statusService = arr[0] as ServerStatusService;
-                        var eventArgs = arr[1] as CallEventArgs;
-
-                        //调用计数服务
-                        statusService.Counter(eventArgs);
-
-                        //响应消息
-                        MessageCenter.Instance.Notify(eventArgs);
-                    }
-                    catch (Exception ex)
-                    {
-                        //TODO
-                    }
-                }, new ArrayList { status, callArgs });
-
                 return resMsg;
-            }
-            catch (Exception ex)
-            {
-                //输出错误
-                status.Container.Write(ex);
-
-                //处理异常
-                return new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = reqMsg.ReturnType,
-                    ServiceName = reqMsg.ServiceName,
-                    MethodName = reqMsg.MethodName,
-                    Parameters = reqMsg.Parameters,
-                    Error = ex
-                };
             }
             finally
             {
@@ -148,11 +119,11 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 调用异步方法
+        /// 创建服务
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage CallAsyncMethod(RequestMessage reqMsg)
+        private IService CreateService(RequestMessage reqMsg)
         {
             //等待超时
             var timeSpan = TimeSpan.FromSeconds(status.Config.Timeout);
@@ -163,10 +134,36 @@ namespace MySoft.IoC
 
             //解析服务
             var service = ParseService(reqMsg);
-            service = new AsyncService(status.Container, service, timeSpan, status.Config.MaxCalls);
 
-            //调用服务
-            return service.CallService(reqMsg);
+            return new AsyncService(group, status.Container, service, timeSpan);
+        }
+
+        /// <summary>
+        /// 响应计数事件
+        /// </summary>
+        /// <param name="callArgs"></param>
+        private void NotifyEventArgs(CallEventArgs callArgs)
+        {
+            //调用计数
+            ManagedThreadPool.QueueUserWorkItem(state =>
+            {
+                try
+                {
+                    var arr = state as ArrayList;
+                    var statusService = arr[0] as ServerStatusService;
+                    var eventArgs = arr[1] as CallEventArgs;
+
+                    //调用计数服务
+                    statusService.Counter(eventArgs);
+
+                    //响应消息
+                    MessageCenter.Instance.Notify(eventArgs);
+                }
+                catch (Exception ex)
+                {
+                    //TODO
+                }
+            }, new ArrayList { status, callArgs });
         }
 
         /// <summary>

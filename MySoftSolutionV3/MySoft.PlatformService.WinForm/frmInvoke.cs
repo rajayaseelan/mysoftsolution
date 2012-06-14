@@ -191,82 +191,119 @@ namespace MySoft.PlatformService.WinForm
                     return;
             }
 
-            Stopwatch watch = Stopwatch.StartNew();
-            try
+            button1.Enabled = false;
+
+            label5.Text = "正在调用服务，请稍候...";
+            label5.Refresh();
+
+            var jValue = new JObject();
+            if (txtParameters.Count > 0)
             {
-                label5.Text = "正在调用服务，请稍候...";
-                label5.Refresh();
-
-                var jValue = new JObject();
-
-                if (txtParameters.Count > 0)
+                foreach (var p in txtParameters)
                 {
-                    foreach (var p in txtParameters)
+                    var text = p.Value.Text.Trim();
+                    if (!string.IsNullOrEmpty(text))
                     {
-                        var text = p.Value.Text.Trim();
-                        if (!string.IsNullOrEmpty(text))
-                        {
-                            var info = p.Value.Tag as ParameterInfo;
-                            if (info.IsPrimitive)
-                                text = string.Format("\"{0}\"", text);
+                        var info = p.Value.Tag as ParameterInfo;
+                        if (info.IsPrimitive)
+                            text = string.Format("\"{0}\"", text);
 
+                        try
+                        {
                             jValue[p.Key] = JToken.Parse(text);
+                        }
+                        catch
+                        {
+                            jValue[p.Key] = text;
                         }
                     }
                 }
+            }
 
-                //提交的参数信息
-                string parameter = jValue.ToString(Newtonsoft.Json.Formatting.None);
-                var data = CastleFactory.Create().Invoke(node, new InvokeMessage
-                {
-                    ServiceName = serviceName,
-                    MethodName = methodName,
-                    Parameters = parameter
-                });
+            //提交的参数信息
+            string parameter = jValue.ToString(Newtonsoft.Json.Formatting.None);
+            var message = new InvokeMessage
+            {
+                ServiceName = serviceName,
+                MethodName = methodName,
+                Parameters = parameter
+            };
 
-                watch.Stop();
+            //启用线程进行数据填充
+            var caller = new AsyncMethodCaller(AsyncCaller);
+            var ar = caller.BeginInvoke(message, AsyncComplete, caller);
+        }
 
-                if (data != null)
-                {
-                    richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
-                        data.Count, data.Value, data.OutParameters);
+        private InvokeData AsyncCaller(InvokeMessage message)
+        {
+            InvokeResponse data;
 
-                    //启用线程进行数据填充
-                    ThreadPool.QueueUserWorkItem(state =>
-                    {
-                        if (state == null) return;
-                        var jsonString = state as string;
+            //开始计时
+            var watch = Stopwatch.StartNew();
 
-                        //获取DataView数据
-                        var table = GetDataTable(jsonString);
-                        this.Invoke(new Action(() => gridDataQuery.DataSource = table));
-
-                        if (table == null)
-                        {
-                            //写Document文档
-                            try
-                            {
-                                this.Invoke(new Action(() =>
-                                {
-                                    webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
-                                    webBrowser1.Document.Write(JContainer.Parse(data.Value).ToString());
-                                }));
-                            }
-                            catch { }
-                        }
-                    }, data.Value);
-                }
+            try
+            {
+                //调用服务
+                var invokeData = CastleFactory.Create().Invoke(node, message);
+                data = new InvokeResponse(invokeData);
             }
             catch (Exception ex)
             {
-                watch.Stop();
+                data = new InvokeResponse { Exception = ex };
+            }
 
-                richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", ex.Message);
-            }
-            finally
+            watch.Stop();
+            data.ElapsedMilliseconds = watch.ElapsedMilliseconds;
+
+            return data;
+        }
+
+        private void AsyncComplete(IAsyncResult ar)
+        {
+            var caller = ar.AsyncState as AsyncMethodCaller;
+            var value = caller.EndInvoke(ar);
+            var data = value as InvokeResponse;
+
+            if (!data.IsError)
             {
-                label5.Text = watch.ElapsedMilliseconds + " ms";
+                this.Invoke(new Action(() =>
+                {
+                    richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
+                        data.Count, data.Value, data.OutParameters);
+                    richTextBox1.Refresh();
+                }));
+
+                //获取DataView数据
+                var table = GetDataTable(data.Value);
+                this.Invoke(new Action(() => gridDataQuery.DataSource = table));
+
+                if (table == null)
+                {
+                    //写Document文档
+                    try
+                    {
+                        this.Invoke(new Action(() =>
+                        {
+                            webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+                            webBrowser1.Document.Write(JContainer.Parse(data.Value).ToString());
+                        }));
+                    }
+                    catch { }
+                }
             }
+            else
+            {
+                richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
+            }
+
+            this.Invoke(new Action(() =>
+            {
+                label5.Text = data.ElapsedMilliseconds + " ms";
+                label5.Refresh();
+
+                button1.Enabled = true;
+                button1.Focus();
+            }));
         }
 
         /// <summary>

@@ -89,9 +89,30 @@ namespace MySoft.PlatformService.UserService
             return string.Format("{0} => {1}", guid, DateTime.Now);
         }
 
+        private static string value;
+        private static readonly object syncRoot = new object();
         public string GetUsersString()
         {
-            return "asdfadfasdfasdf";
+            Thread.Sleep(1000);
+
+            try
+            {
+                if (value == null)
+                {
+                    lock (syncRoot)
+                    {
+                        if (value == null)
+                        {
+                            value = System.IO.File.ReadAllText("d:\\text.htm");
+                        }
+                    }
+                }
+                return value;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
 
         public IList<UserInfo> GetUsers()

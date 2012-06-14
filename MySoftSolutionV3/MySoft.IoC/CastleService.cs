@@ -10,6 +10,8 @@ using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 using MySoft.Net.Http;
+using MySoft.Threading;
+using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -18,6 +20,7 @@ namespace MySoft.IoC
     /// </summary>
     public class CastleService : ILogable, IErrorLogable, IDisposable
     {
+        private SmartThreadPool smart;
         private CastleServiceConfiguration config;
         private IServiceContainer container;
         private HTTPServer httpServer;
@@ -51,9 +54,26 @@ namespace MySoft.IoC
             this.container.OnError += error => { if (OnError != null) OnError(error); };
             this.container.OnLog += (log, type) => { if (OnLog != null) OnLog(log, type); };
 
+            //实例化SmartThreadPool
+            var stp = new STPStartInfo
+            {
+                IdleTimeout = config.Timeout,
+                MaxWorkerThreads = Math.Max(config.MaxCalls, 10),
+                MinWorkerThreads = 5,
+                ThreadPriority = ThreadPriority.Highest,
+                WorkItemPriority = WorkItemPriority.Highest
+            };
+
+            smart = new SmartThreadPool(stp);
+            smart.Start();
+
+            //创建工作组
+            var group = smart.CreateWorkItemsGroup(Environment.ProcessorCount);
+            group.Start();
+
             //实例化调用者
             var status = new ServerStatusService(server, config, container);
-            this.caller = new ServiceCaller(status);
+            this.caller = new ServiceCaller(smart, status);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -67,7 +87,10 @@ namespace MySoft.IoC
                     resolver = Activator.CreateInstance(config.HttpType) as IHttpApiResolver;
                 }
 
-                var httpCaller = new HttpServiceCaller(config, container);
+                var httpCaller = new HttpServiceCaller(smart, config, container);
+
+                //刷新服务委托
+                status.OnRefresh += () => httpCaller.InitCaller(resolver);
 
                 //初始化调用器
                 httpCaller.InitCaller(resolver);
@@ -75,9 +98,6 @@ namespace MySoft.IoC
                 var handler = new HttpServiceHandler(httpCaller);
                 var factory = new HttpRequestHandlerFactory(handler);
                 this.httpServer = new HTTPServer(factory, config.HttpPort);
-
-                //刷新服务委托
-                status.OnRefresh += () => httpCaller.InitCaller(resolver);
             }
 
             //绑定事件
@@ -156,6 +176,9 @@ namespace MySoft.IoC
             server.Stop();
             server.Clients.ClearAll();
             container.Dispose();
+
+            //停止所有线程
+            smart.Shutdown();
         }
 
         /// <summary>
