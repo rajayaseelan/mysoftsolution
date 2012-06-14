@@ -371,9 +371,19 @@ namespace MySoft.RESTful
                     ErrorHelper.GetInnerException(exception).Message, kind, method);
 
             //如果参数大于0
-            if (nvs.Count > 0)
+            var coll = request.UriTemplateMatch.QueryParameters;
+
+            //请求地址
+            errorMessage = string.Format("{0}\r\n\tRequest Uri:{1}", errorMessage, request.UriTemplateMatch.RequestUri);
+
+            if (request.Method.ToUpper() == "POST")
             {
-                errorMessage = string.Format("{0}\r\n\tParameters:{1}", errorMessage, GetParameters(nvs));
+                errorMessage = string.Format("{0}\r\n\tGET Parameters:{1}\r\n\tPOST Parameters:{2}",
+                                                errorMessage, GetParameters(coll), GetParameters(nvs));
+            }
+            else
+            {
+                errorMessage = string.Format("{0}\r\n\tGET Parameters:{1}", errorMessage, GetParameters(coll));
             }
 
             //加上认证的用户名
