@@ -60,7 +60,7 @@ namespace MySoft.IoC
                 IdleTimeout = config.Timeout,
                 MaxWorkerThreads = Math.Max(config.MaxCalls, 10),
                 MinWorkerThreads = 5,
-                ThreadPriority = ThreadPriority.Normal,
+                ThreadPriority = ThreadPriority.Highest,
                 WorkItemPriority = WorkItemPriority.Normal
             };
 
