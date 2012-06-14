@@ -1127,49 +1127,39 @@
             是否更新成功
             </summary>
         </member>
-        <member name="T:MySoft.Web.SlidingParamInfo">
+        <member name="T:MySoft.Web.SlidingDateTimeRegion">
             <summary>
-            定时生成策略
+            定时生成策略，用于控制区间
             </summary>
         </member>
-        <member name="M:MySoft.Web.SlidingParamInfo.CheckUpdate(MySoft.Web.UpdateType,System.DateTime)">
+        <member name="M:MySoft.Web.SlidingDateTimeRegion.CheckUpdate(MySoft.Web.UpdateType,System.DateTime)">
             <summary>
             检测当前更新时间是否在设置的范围内
             </summary>
             <param name="updateTime"></param>
             <returns></returns>
         </member>
-        <member name="T:MySoft.Web.SlidingUpdateTime">
+        <member name="T:MySoft.Web.SlidingUpdateDependency">
             <summary>
             定时生成策略（按间隔时间）
             </summary>
         </member>
-        <member name="P:MySoft.Web.SlidingUpdateTime.UpdateType">
-            <summary>
-            更新类型
-            </summary>
-        </member>
-        <member name="P:MySoft.Web.SlidingUpdateTime.SlidingTimeSpan">
+        <member name="P:MySoft.Web.SlidingUpdateDependency.SlidingTimeSpan">
             <summary>
             时间间隔
             </summary>
         </member>
-        <member name="P:MySoft.Web.SlidingUpdateTime.SlidingTimeParams">
+        <member name="P:MySoft.Web.SlidingUpdateDependency.SlidingTimeParams">
             <summary>
             定时生成时间段参数
             </summary>
         </member>
-        <member name="T:MySoft.Web.AbsoluteUpdateTime">
+        <member name="T:MySoft.Web.AbsoluteUpdateDependency">
             <summary>
             绝对时间生成策略
             </summary>
         </member>
-        <member name="P:MySoft.Web.AbsoluteUpdateTime.UpdateType">
-            <summary>
-            更新类型
-            </summary>
-        </member>
-        <member name="P:MySoft.Web.AbsoluteUpdateTime.AbsoluteDateTimes">
+        <member name="P:MySoft.Web.AbsoluteUpdateDependency.AbsoluteDateTimes">
             <summary>
             时间间隔
             </summary>
@@ -2200,6 +2190,8 @@
             <summary>
             生成页面时委托
             </summary>
+            <param name="dynamicurl"></param>
+            <param name="staticurl"></param>
             <param name="content"></param>
             <returns></returns>
         </member>

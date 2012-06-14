@@ -155,6 +155,16 @@
             <param name="businessMethodName">业务方法</param>
             <returns>返回该业务类别下的业务模型实例</returns>
         </member>
+        <member name="T:MySoft.RESTful.Utils.JsonpSerializer">
+            <summary>
+            Jsonp序列化
+            </summary>
+        </member>
+        <member name="T:MySoft.RESTful.ISerializer">
+            <summary>
+            序列化接口
+            </summary>
+        </member>
         <member name="T:MySoft.RESTful.Business.Register.IBusinessRegister">
             <summary>
             业务注册器
@@ -185,12 +195,7 @@
         </member>
         <member name="T:MySoft.RESTful.Utils.XmlSerializer">
             <summary>
-            xml系列化
-            </summary>
-        </member>
-        <member name="T:MySoft.RESTful.ISerializer">
-            <summary>
-            系列化接口
+            xml序列化
             </summary>
         </member>
         <member name="T:MySoft.RESTful.Business.BusinessMethodModel">
@@ -388,17 +393,10 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetCookies">
-            <summary>
-            获取Cookie信息
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.Authorize(MySoft.Auth.AuthorizeToken)">
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.Authorize">
             <summary>
             进行认证处理
             </summary>
-            <param name="token"></param>
             <returns></returns>
         </member>
         <member name="P:MySoft.RESTful.DefaultRESTfulService.Context">
@@ -408,7 +406,7 @@
         </member>
         <member name="T:MySoft.RESTful.Utils.JsonSerializer">
             <summary>
-            Json系列化
+            Json序列化
             </summary>
         </member>
         <member name="T:MySoft.RESTful.Business.Pool.DefaultBusinessPool">
@@ -485,6 +483,13 @@
             <param name="nvs"></param>
             <returns></returns>
         </member>
+        <member name="M:MySoft.RESTful.Utils.ParameterHelper.ConvertJsonObject(System.Collections.Specialized.NameValueCollection)">
+            <summary>
+            转换成JObject
+            </summary>
+            <param name="nvs"></param>
+            <returns></returns>
+        </member>
         <member name="T:MySoft.RESTful.Business.Register.NativeBusinessRegister">
             <summary>
             本地业务注册器,读取本地配置文件,加载程序集,反射获取需要绑定的业务接口对象和业务方法
@@ -531,6 +536,11 @@
             释放资源
             </summary>
             <param name="instance"></param>
+        </member>
+        <member name="T:MySoft.RESTful.Utils.TextSerializer">
+            <summary>
+            Text序列化
+            </summary>
         </member>
         <member name="T:MySoft.RESTful.Utils.ParameterFormat">
             <summary>
@@ -654,12 +664,12 @@
         </member>
         <member name="T:MySoft.RESTful.SerializerFactory">
             <summary>
-            系列化工厂
+            序列化工厂
             </summary>
         </member>
         <member name="M:MySoft.RESTful.SerializerFactory.Create(MySoft.RESTful.Utils.ParameterFormat)">
             <summary>
-            创建系列化
+            创建序列化
             </summary>
             <param name="format"></param>
             <returns></returns>

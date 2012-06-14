@@ -9,6 +9,22 @@
             缓存基类
             </summary>
         </member>
+        <member name="F:MySoft.Cache.CacheStrategyBase.bucketName">
+            <summary>
+            分区名称
+            </summary>
+        </member>
+        <member name="F:MySoft.Cache.CacheStrategyBase.prefix">
+            <summary>
+            前缀
+            </summary>
+        </member>
+        <member name="M:MySoft.Cache.CacheStrategyBase.#ctor(System.String)">
+            <summary>
+            实例化CacheStrategyBase
+            </summary>
+            <param name="bucketName"></param>
+        </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.GetInputKey(System.String)">
             <summary>
             获取输入的Key
@@ -23,11 +39,12 @@
             <param name="objId"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Cache.CacheStrategyBase.SetRegionName(System.String)">
+        <member name="M:MySoft.Cache.CacheStrategyBase.SetExpired(System.String,System.DateTime)">
             <summary>
-            设置区域名称，只能应用于区域名称为空时
+            设置过期时间
             </summary>
-            <param name="regionName"></param>
+            <param name="objId"></param>
+            <param name="datetime"></param>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.AddObject(System.String,System.Object)">
             <summary>
@@ -42,6 +59,7 @@
             </summary>
             <param name="objId"></param>
             <param name="o"></param>
+            <param name="expires"></param>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.AddObject(System.String,System.Object,System.DateTime)">
             <summary>
@@ -49,6 +67,7 @@
             </summary>
             <param name="objId"></param>
             <param name="o"></param>
+            <param name="datetime"></param>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.RemoveObject(System.String)">
             <summary>
@@ -74,14 +93,14 @@
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="regularExpression"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.GetMatchObject``1(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="regularExpression"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.RemoveAllObjects">
@@ -184,33 +203,40 @@
             缓存工厂类
             </summary>
         </member>
-        <member name="M:MySoft.Cache.CacheFactory.CreateCache(System.String)">
+        <member name="M:MySoft.Cache.CacheFactory.Create(System.String)">
             <summary>
             创建一个缓存块
             </summary>
-            <param name="configName"></param>
+            <param name="typeName"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Cache.CacheFactory.CreateCache(MySoft.Cache.CacheType)">
+        <member name="M:MySoft.Cache.CacheFactory.Create(MySoft.Cache.CacheType)">
             <summary>
             创建一个缓存块
             </summary>
             <param name="type"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Cache.CacheFactory.CreateCache(System.String,System.String)">
+        <member name="M:MySoft.Cache.CacheFactory.Create(System.String,System.String)">
             <summary>
             创建一个缓存块(用前缀区分)
             </summary>
-            <param name="regionName"></param>
-            <param name="configName"></param>
+            <param name="bucketName"></param>
+            <param name="typeName"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Cache.CacheFactory.CreateCache(System.String,MySoft.Cache.CacheType)">
+        <member name="M:MySoft.Cache.CacheFactory.Create(System.String,MySoft.Cache.CacheType)">
             <summary>
             创建一个缓存块(用前缀区分)
             </summary>
-            <param name="regionName"></param>
+            <param name="bucketName"></param>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CacheFactory.GetTypeName(System.String)">
+            <summary>
+            获取类型名称
+            </summary>
             <param name="type"></param>
             <returns></returns>
         </member>
@@ -227,200 +253,6 @@
         <member name="F:MySoft.Cache.CacheType.Distributed">
             <summary>
             分布的
-            </summary>
-        </member>
-        <member name="T:MySoft.Cache.SharedCacheStrategy">
-            <summary>
-            分布式缓存管理类
-            </summary>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.SetLocalCacheTimeout(System.Int32)">
-            <summary>
-            设置本地缓存超时时间
-            </summary>
-            <param name="timeout">超时时间，单位：秒</param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.Remove(System.String)">
-            <summary>
-            移除对象
-            </summary>
-            <param name="objId"></param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.Clear">
-            <summary>
-            清除所有缓存
-            </summary>
-        </member>
-        <member name="F:MySoft.Cache.SharedCacheStrategy.Default">
-            <summary>
-            分布式缓存单例
-            </summary>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.#ctor(System.String)">
-            <summary>
-            实例化分布式缓存
-            </summary>
-            <param name="regionName"></param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.AddObject(System.String,System.Object)">
-            <summary>
-            添加指定ID的对象
-            </summary>
-            <param name="objId"></param>
-            <param name="o"></param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.AddObject(System.String,System.Object,System.TimeSpan)">
-            <summary>
-            添加指定ID的对象
-            </summary>
-            <param name="objId"></param>
-            <param name="o"></param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.AddObject(System.String,System.Object,System.DateTime)">
-            <summary>
-            添加指定ID的对象
-            </summary>
-            <param name="objId"></param>
-            <param name="o"></param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.RemoveObject(System.String)">
-            <summary>
-            移除指定ID的对象
-            </summary>
-            <param name="objId"></param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetObject(System.String)">
-            <summary>
-            返回指定ID的对象
-            </summary>
-            <param name="objId"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetObject``1(System.String)">
-            <summary>
-            返回指定ID的对象
-            </summary>
-            <param name="objId"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetMatchObject(System.String)">
-            <summary>
-            返回指定ID的对象
-            </summary>
-            <param name="objId"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetMatchObject``1(System.String)">
-            <summary>
-            返回指定ID的对象
-            </summary>
-            <param name="objId"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.RemoveAllObjects">
-            <summary>
-            移除所有缓存对象
-            </summary>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetAllKeys">
-            <summary>
-            获取所有Key值
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetCacheCount">
-            <summary>
-            获取缓存数
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetAllObjects">
-            <summary>
-            获取所有对象
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetAllObjects``1">
-            <summary>
-            获取所有对象
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetKeys(System.String)">
-            <summary>
-            通过正则获取对应的Key列表
-            </summary>
-            <param name="regularExpression"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.AddObjects(System.Collections.Generic.IDictionary{System.String,System.Object})">
-            <summary>
-            添加多个对象
-            </summary>
-            <param name="data"></param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.AddObjects``1(System.Collections.Generic.IDictionary{System.String,``0})">
-            <summary>
-            添加多个对象
-            </summary>
-            <param name="data"></param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.RemoveMatchObjects(System.String)">
-            <summary>
-            正则表达式方式移除对象
-            </summary>
-            <param name="regularExpression">匹配KEY正则表示式</param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.RemoveObjects(System.Collections.Generic.IList{System.String})">
-            <summary>
-            移除多个对象
-            </summary>
-            <param name="objIds"></param>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetObjects(System.Collections.Generic.IList{System.String})">
-            <summary>
-            获取多个对象
-            </summary>
-            <param name="objIds"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetObjects``1(System.Collections.Generic.IList{System.String})">
-            <summary>
-            获取多个对象
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="objIds"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetMatchObjects(System.String)">
-            <summary>
-            返回指定正则表达式的对象
-            </summary>
-            <param name="regularExpression"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Cache.SharedCacheStrategy.GetMatchObjects``1(System.String)">
-            <summary>
-            返回指定正则表达的对象
-            </summary>
-            <param name="regularExpression"></param>
-            <returns></returns>
-        </member>
-        <member name="P:MySoft.Cache.SharedCacheStrategy.AllKeys">
-            <summary>
-            获取所有Key值
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="P:MySoft.Cache.SharedCacheStrategy.CacheObject">
-            <summary>
-            缓存对象
-            </summary>
-        </member>
-        <member name="P:MySoft.Cache.SharedCacheStrategy.CacheCount">
-            <summary>
-            缓存对象数
             </summary>
         </member>
         <member name="T:MySoft.Cache.LocalCacheStrategy">
@@ -448,7 +280,14 @@
             <summary>
             实例化本地缓存
             </summary>
-            <param name="regionName"></param>
+            <param name="bucketName"></param>
+        </member>
+        <member name="M:MySoft.Cache.LocalCacheStrategy.SetExpired(System.String,System.DateTime)">
+            <summary>
+            设置过期时间
+            </summary>
+            <param name="objId"></param>
+            <param name="datetime"></param>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.AddObject(System.String,System.Object)">
             <summary>
@@ -662,11 +501,18 @@
             </summary>
             <param name="cache"></param>
         </member>
-        <member name="M:MySoft.Cache.SessionCache.SaveQueueData(System.Object)">
+        <member name="M:MySoft.Cache.SessionCache.SaveCache(System.Object)">
             <summary>
             保存Queue数据
             </summary>
             <param name="state"></param>
+        </member>
+        <member name="M:MySoft.Cache.SessionCache.Get(System.String)">
+            <summary>
+            获取值
+            </summary>
+            <param name="cacheKey"></param>
+            <returns></returns>
         </member>
         <member name="M:MySoft.Cache.SessionCache.Get``1(System.String)">
             <summary>
@@ -684,22 +530,17 @@
             <param name="cacheValue"></param>
             <param name="timeSpan"></param>
         </member>
-        <member name="T:MySoft.Cache.QueueData">
+        <member name="T:MySoft.Cache.QueueTimeSpan">
             <summary>
-            Queue数据
+            Queue过期时间
             </summary>
         </member>
-        <member name="P:MySoft.Cache.QueueData.Key">
+        <member name="P:MySoft.Cache.QueueTimeSpan.Key">
             <summary>
             Key
             </summary>
         </member>
-        <member name="P:MySoft.Cache.QueueData.Value">
-            <summary>
-            Value
-            </summary>
-        </member>
-        <member name="P:MySoft.Cache.QueueData.TimeSpan">
+        <member name="P:MySoft.Cache.QueueTimeSpan.TimeSpan">
             <summary>
             时间
             </summary>

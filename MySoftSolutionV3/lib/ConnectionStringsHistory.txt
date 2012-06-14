@@ -10,3 +10,6 @@ server=192.168.123.11;Database=Shumi.Fund;uid=sa;pwd=ShiMi&Fund123;min pool size
 server=192.168.123.11;database=Shumi.Fund;uid=sa;pwd=ShuMi&Fund123;min pool size=10;max pool size=50;
 Server=(local);Database=ykjob;Uid=sa;Pwd=shumiwang;
 Data Source=192.168.1.213; Initial Catalog=FundData; User Id=sa; Password=ShuMi&Fund123;
+server=192.168.1.213;Database=FundUms;uid=sa;pwd=ShiMi&Fund123;
+server=192.168.1.213;Database=FundUms;uid=sa;pwd=ShuMi&Fund123;
+Server=192.168.1.213;Database=HZUnicom;Uid=sa;Pwd=ShuMi&Fund123;

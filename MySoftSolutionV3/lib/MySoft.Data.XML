@@ -1083,14 +1083,14 @@
             <param name="where"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.IDbBatch.Execute(System.Collections.Generic.IList{MySoft.Data.DataException}@)">
+        <member name="M:MySoft.Data.IDbBatch.Execute(System.Collections.Generic.IList{System.Exception}@)">
             <summary>
             执行批处理操作
             </summary>
             <param name="errors">输出的错误</param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.Data.DbBatch.Execute(System.Collections.Generic.IList{MySoft.Data.DataException}@)">
+        <member name="M:MySoft.Data.DbBatch.Execute(System.Collections.Generic.IList{System.Exception}@)">
             <summary>
             执行批处理操作
             </summary>
@@ -1680,6 +1680,35 @@
             设置命令超时时间
             </summary>
             <param name="timeout"></param>
+        </member>
+        <member name="T:MySoft.Data.Cache.ICacheDependent">
+            <summary>
+            缓存依赖
+            </summary>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.AddCache``1(System.String,``0,System.Int32)">
+            <summary>
+            添加缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <param name="cacheValue"></param>
+            <param name="cacheTime"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.RemoveCache``1(System.String)">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+        </member>
+        <member name="M:MySoft.Data.Cache.ICacheDependent.GetCache``1(System.String)">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <returns></returns>
         </member>
         <member name="F:MySoft.Data.DbSession.Default">
             <summary>
@@ -2448,6 +2477,30 @@
             <param name="entity"></param>
             <returns></returns>
         </member>
+        <member name="M:MySoft.Data.DbSession.AddCache``1(System.String,``0,System.Int32)">
+            <summary>
+            添加缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <param name="cacheValue"></param>
+            <param name="cacheTime"></param>
+        </member>
+        <member name="M:MySoft.Data.DbSession.RemoveCache``1(System.String)">
+            <summary>
+            移除缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+        </member>
+        <member name="M:MySoft.Data.DbSession.GetCache``1(System.String)">
+            <summary>
+            获取缓存
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
         <member name="T:Norm.Responses.DatabaseInfo">
             <summary>
             The database info.
@@ -3074,454 +3127,6 @@
         <member name="T:Norm.MongoIdentifierAttribute">
             <summary>
             Flags a property as a Mongo identifier (_id)
-            </summary>
-        </member>
-        <member name="T:MySoft.Data.TopSection`1">
-            <summary>
-            Top对应的Query查询
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:MySoft.Data.IPaging.Prefix(System.String)">
-            <summary>
-            设置前缀
-            </summary>
-            <param name="prefix"></param>
-        </member>
-        <member name="M:MySoft.Data.IPaging.Suffix(System.String)">
-            <summary>
-            设置后缀
-            </summary>
-            <param name="suffix"></param>
-        </member>
-        <member name="M:MySoft.Data.IPaging.End(System.String)">
-            <summary>
-            设置结尾
-            </summary>
-            <param name="end"></param>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.MySoft#Data#IPaging#Prefix(System.String)">
-            <summary>
-            前置值如 top n
-            </summary>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.MySoft#Data#IPaging#Suffix(System.String)">
-            <summary>
-            结尾值如 row_number()
-            </summary>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.MySoft#Data#IPaging#End(System.String)">
-            <summary>
-            设置值如 limit n
-            </summary>
-            <param name="end"></param>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToList``1(System.Int32,System.Int32)">
-            <summary>
-            返回一个列表
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <param name="startIndex"></param>
-            <param name="endIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToList``1">
-            <summary>
-            返回一个列表
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToSingle``1">
-            <summary>
-            返回一个实体
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.SubQuery">
-            <summary>
-            生成一个子查询
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.SubQuery(System.String)">
-            <summary>
-            生成一个子查询
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.SubQuery``1">
-            <summary>
-            生成一个子查询
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.SubQuery``1(System.String)">
-            <summary>
-            生成一个子查询
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.CreateQuery``1">
-            <summary>
-            创建一个跟当前相同的子查询
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.GroupBy(MySoft.Data.GroupByClip)">
-            <summary>
-            进行GroupBy操作
-            </summary>
-            <param name="groupBy"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.OrderBy(MySoft.Data.OrderByClip)">
-            <summary>
-            进行OrderBy操作
-            </summary>
-            <param name="orderBy"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.GetTop(System.Int32)">
-            <summary>
-            选取前N条数据
-            </summary>
-            <param name="topSize"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.SetPagingField(MySoft.Data.Field)">
-            <summary>
-            设置分页字段
-            </summary>
-            <param name="pagingField"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.Select(MySoft.Data.Field[])">
-            <summary>
-            选择输出的列
-            </summary>
-            <param name="fields"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.Select(MySoft.Data.IFieldFilter)">
-            <summary>
-            选择被排除以外的列（用于列多时排除某几列的情况）
-            </summary>
-            <param name="filter"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.Where(MySoft.Data.WhereClip)">
-            <summary>
-            注入当前查询的条件
-            </summary>
-            <param name="where"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.Union(MySoft.Data.QuerySection{`0})">
-            <summary>
-            进行Union操作
-            </summary>
-            <param name="query"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.UnionAll(MySoft.Data.QuerySection{`0})">
-            <summary>
-            进行Union操作
-            </summary>
-            <param name="query"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.Union(MySoft.Data.QuerySection{`0},System.Boolean)">
-            <summary>
-            进行Union操作
-            </summary>
-            <param name="query"></param>
-            <param name="isUnionAll"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.Having(MySoft.Data.WhereClip)">
-            <summary>
-            进行Having操作
-            </summary>
-            <param name="where"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.Distinct">
-            <summary>
-            进行Distinct操作
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.GetPage(System.Int32)">
-            <summary>
-            返回一个分页处理的Page节
-            </summary>
-            <param name="pageSize"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToSingle">
-            <summary>
-            返回一个实体
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToListResult(System.Int32,System.Int32)">
-            <summary>
-            返回一个Object列表
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <param name="startIndex"></param>
-            <param name="endIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToListResult">
-            <summary>
-            返回一个Object列表
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToListResult``1(System.Int32,System.Int32)">
-            <summary>
-            返回一个Object列表
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <param name="startIndex"></param>
-            <param name="endIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToListResult``1">
-            <summary>
-            返回一个Object列表
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToList">
-            <summary>
-            返回IArrayList
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToList(System.Int32,System.Int32)">
-            <summary>
-            返回IArrayList
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToReader(System.Int32,System.Int32)">
-            <summary>
-            返回一个DbReader
-            </summary>
-            <param name="startIndex"></param>
-            <param name="endIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToReader">
-            <summary>
-            返回一个DbReader
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToDataSet(System.Int32,System.Int32)">
-            <summary>
-            返回一个DataSet
-            </summary>
-            <param name="startIndex"></param>
-            <param name="endIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToDataSet">
-            <summary>
-            返回一个DataSet
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToTable(System.Int32,System.Int32)">
-            <summary>
-            返回一个DataTable
-            </summary>
-            <param name="startIndex"></param>
-            <param name="endIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToTable">
-            <summary>
-            返回一个DataTable
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToScalar``1">
-            <summary>
-            返回一个值
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToScalar">
-            <summary>
-            返回一个值
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.Count">
-            <summary>
-            返回当前查询记录数
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.GetPageCount(System.Int32)">
-            <summary>
-            获取总页数
-            </summary>
-            <param name="pageSize"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.GetCacheKey(System.String,MySoft.Data.SQLParameter[])">
-            <summary>
-            获取缓存的Key
-            </summary>
-            <param name="sql"></param>
-            <param name="parameters"></param>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.GetCache``1(System.String,System.String)">
-            <summary>
-            获取缓存信息
-            </summary>
-            <typeparam name="CacheType"></typeparam>
-            <param name="prefix"></param>
-            <param name="cacheKey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.SetCache``1(System.String,System.String,System.Object)">
-            <summary>
-            设置缓存信息
-            </summary>
-            <typeparam name="CacheType"></typeparam>
-            <param name="prefix"></param>
-            <param name="cacheKey"></param>
-            <param name="obj"></param>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToListPage(System.Int32,System.Int32)">
-            <summary>
-            
-            </summary>
-            <param name="pageSize"></param>
-            <param name="pageIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToTablePage(System.Int32,System.Int32)">
-            <summary>
-            返回DataPage
-            </summary>
-            <param name="pageSize"></param>
-            <param name="pageIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.QuerySection`1.ToDataSetPage(System.Int32,System.Int32)">
-            <summary>
-            返回DataPage
-            </summary>
-            <param name="pageSize"></param>
-            <param name="pageIndex"></param>
-            <returns></returns>
-        </member>
-        <member name="P:MySoft.Data.QuerySection`1.FromSection">
-            <summary>
-            表名
-            </summary>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.CreateQuery``1">
-            <summary>
-            CreateQuery
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.GetPage(System.Int32)">
-            <summary>
-            获取分页
-            </summary>
-            <param name="pageSize"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.ToListResult">
-            <summary>
-            返回结果列表
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.ToListResult``1">
-            <summary>
-            返回结果列表
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.ToList">
-            <summary>
-            返回实体列表
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.ToList``1">
-            <summary>
-            返回实体列表
-            </summary>
-            <typeparam name="TResult"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.ToReader">
-            <summary>
-            返回阅读器
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.ToTable">
-            <summary>
-            返回表数据
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.ToDataSet">
-            <summary>
-            返回数据集
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.SubQuery">
-            <summary>
-            创建子查询
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.SubQuery(System.String)">
-            <summary>
-            创建子查询
-            </summary>
-            <param name="aliasName"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.SubQuery``1">
-            <summary>
-            创建子查询
-            </summary>
-            <typeparam name="TSub"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.TopSection`1.SubQuery``1(System.String)">
-            <summary>
-            创建子查询
-            </summary>
-            <typeparam name="TSub"></typeparam>
-            <param name="aliasName"></param>
-            <returns></returns>
-        </member>
-        <member name="P:MySoft.Data.TopSection`1.QueryString">
-            <summary>
-            QueryString
             </summary>
         </member>
         <member name="T:MySoft.Data.FromSection`1">
@@ -7043,6 +6648,412 @@
             字段映射的名称
             </summary>
         </member>
+        <member name="T:MySoft.Data.UnionQuery`1">
+            <summary>
+            联合查询
+            </summary>
+        </member>
+        <member name="M:MySoft.Data.IPaging.Prefix(System.String)">
+            <summary>
+            设置前缀
+            </summary>
+            <param name="prefix"></param>
+        </member>
+        <member name="M:MySoft.Data.IPaging.Suffix(System.String)">
+            <summary>
+            设置后缀
+            </summary>
+            <param name="suffix"></param>
+        </member>
+        <member name="M:MySoft.Data.IPaging.End(System.String)">
+            <summary>
+            设置结尾
+            </summary>
+            <param name="end"></param>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.MySoft#Data#IPaging#Prefix(System.String)">
+            <summary>
+            前置值如 top n
+            </summary>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.MySoft#Data#IPaging#Suffix(System.String)">
+            <summary>
+            结尾值如 row_number()
+            </summary>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.MySoft#Data#IPaging#End(System.String)">
+            <summary>
+            设置值如 limit n
+            </summary>
+            <param name="end"></param>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToList``1(System.Int32,System.Int32)">
+            <summary>
+            返回一个列表
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <param name="startIndex"></param>
+            <param name="endIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToList``1">
+            <summary>
+            返回一个列表
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToSingle``1">
+            <summary>
+            返回一个实体
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.SubQuery">
+            <summary>
+            生成一个子查询
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.SubQuery(System.String)">
+            <summary>
+            生成一个子查询
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.SubQuery``1">
+            <summary>
+            生成一个子查询
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.SubQuery``1(System.String)">
+            <summary>
+            生成一个子查询
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.CreateQuery``1">
+            <summary>
+            创建一个跟当前相同的子查询
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.GroupBy(MySoft.Data.GroupByClip)">
+            <summary>
+            进行GroupBy操作
+            </summary>
+            <param name="groupBy"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.OrderBy(MySoft.Data.OrderByClip)">
+            <summary>
+            进行OrderBy操作
+            </summary>
+            <param name="orderBy"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.GetTop(System.Int32)">
+            <summary>
+            选取前N条数据
+            </summary>
+            <param name="topSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.SetPagingField(MySoft.Data.Field)">
+            <summary>
+            设置分页字段
+            </summary>
+            <param name="pagingField"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.Select(MySoft.Data.Field[])">
+            <summary>
+            选择输出的列
+            </summary>
+            <param name="fields"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.Select(MySoft.Data.IFieldFilter)">
+            <summary>
+            选择被排除以外的列（用于列多时排除某几列的情况）
+            </summary>
+            <param name="filter"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.Where(MySoft.Data.WhereClip)">
+            <summary>
+            注入当前查询的条件
+            </summary>
+            <param name="where"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.Union(MySoft.Data.QuerySection{`0})">
+            <summary>
+            进行Union操作
+            </summary>
+            <param name="query"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.UnionAll(MySoft.Data.QuerySection{`0})">
+            <summary>
+            进行Union操作
+            </summary>
+            <param name="query"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.Union(MySoft.Data.QuerySection{`0},System.Boolean)">
+            <summary>
+            进行Union操作
+            </summary>
+            <param name="query"></param>
+            <param name="isUnionAll"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.Having(MySoft.Data.WhereClip)">
+            <summary>
+            进行Having操作
+            </summary>
+            <param name="where"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.Distinct">
+            <summary>
+            进行Distinct操作
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.GetPage(System.Int32)">
+            <summary>
+            返回一个分页处理的Page节
+            </summary>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToSingle">
+            <summary>
+            返回一个实体
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToListResult(System.Int32,System.Int32)">
+            <summary>
+            返回一个Object列表
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <param name="startIndex"></param>
+            <param name="endIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToListResult">
+            <summary>
+            返回一个Object列表
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToListResult``1(System.Int32,System.Int32)">
+            <summary>
+            返回一个Object列表
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <param name="startIndex"></param>
+            <param name="endIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToListResult``1">
+            <summary>
+            返回一个Object列表
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToList">
+            <summary>
+            返回IArrayList
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToList(System.Int32,System.Int32)">
+            <summary>
+            返回IArrayList
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToReader(System.Int32,System.Int32)">
+            <summary>
+            返回一个DbReader
+            </summary>
+            <param name="startIndex"></param>
+            <param name="endIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToReader">
+            <summary>
+            返回一个DbReader
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToDataSet(System.Int32,System.Int32)">
+            <summary>
+            返回一个DataSet
+            </summary>
+            <param name="startIndex"></param>
+            <param name="endIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToDataSet">
+            <summary>
+            返回一个DataSet
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToTable(System.Int32,System.Int32)">
+            <summary>
+            返回一个DataTable
+            </summary>
+            <param name="startIndex"></param>
+            <param name="endIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToTable">
+            <summary>
+            返回一个DataTable
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToScalar``1">
+            <summary>
+            返回一个值
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToScalar">
+            <summary>
+            返回一个值
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.Count">
+            <summary>
+            返回当前查询记录数
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.GetPageCount(System.Int32)">
+            <summary>
+            获取总页数
+            </summary>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.GetCacheKey(System.String,MySoft.Data.SQLParameter[])">
+            <summary>
+            获取缓存的Key
+            </summary>
+            <param name="sql"></param>
+            <param name="parameters"></param>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.GetCache``1(System.String,System.String)">
+            <summary>
+            获取缓存信息
+            </summary>
+            <typeparam name="CacheType"></typeparam>
+            <param name="prefix"></param>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.SetCache``1(System.String,System.String,System.Object)">
+            <summary>
+            设置缓存信息
+            </summary>
+            <typeparam name="CacheType"></typeparam>
+            <param name="prefix"></param>
+            <param name="cacheKey"></param>
+            <param name="obj"></param>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToListPage(System.Int32,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="pageSize"></param>
+            <param name="pageIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToTablePage(System.Int32,System.Int32)">
+            <summary>
+            返回DataPage
+            </summary>
+            <param name="pageSize"></param>
+            <param name="pageIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.QuerySection`1.ToDataSetPage(System.Int32,System.Int32)">
+            <summary>
+            返回DataPage
+            </summary>
+            <param name="pageSize"></param>
+            <param name="pageIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.Data.QuerySection`1.FromSection">
+            <summary>
+            表名
+            </summary>
+        </member>
+        <member name="M:MySoft.Data.UnionQuery`1.#ctor(MySoft.Data.QuerySection{`0},MySoft.Data.QuerySection{`0},MySoft.Data.DbProvider,MySoft.Data.DbTrans,System.Boolean)">
+            <summary>
+            UnionQuery构造函数
+            </summary>
+            <param name="query1"></param>
+            <param name="query2"></param>
+            <param name="dbProvider"></param>
+            <param name="dbTran"></param>
+            <param name="isUnionAll"></param>
+        </member>
+        <member name="M:MySoft.Data.UnionQuery`1.Union(MySoft.Data.QuerySection{`0})">
+            <summary>
+            联合查询
+            </summary>
+            <param name="query"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.UnionQuery`1.UnionAll(MySoft.Data.QuerySection{`0})">
+            <summary>
+            联合查询
+            </summary>
+            <param name="query"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.Data.UnionQuery`1.QueryString">
+            <summary>
+            QueryString
+            </summary>
+        </member>
+        <member name="P:MySoft.Data.UnionQuery`1.OrderString">
+            <summary>
+            排序信息
+            </summary>
+        </member>
+        <member name="T:MySoft.Data.UnionItem`1">
+            <summary>
+            联合查询Item
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:MySoft.Data.UnionItem`1.Query">
+            <summary>
+            查询节
+            </summary>
+        </member>
+        <member name="P:MySoft.Data.UnionItem`1.IsUnionAll">
+            <summary>
+            是否全部Union
+            </summary>
+        </member>
         <member name="T:MySoft.Data.SqlServer9.SqlServer9Provider">
             <summary>
             SQL Server 2005 驱动
@@ -10296,48 +10307,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:MySoft.Data.Cache.ICacheDependent">
-            <summary>
-            缓存依赖
-            </summary>
-        </member>
-        <member name="M:MySoft.Data.Cache.ICacheDependent.AddCache``1(System.String,``0,System.Int32)">
-            <summary>
-            添加缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-            <param name="cacheValue"></param>
-            <param name="cacheTime"></param>
-        </member>
-        <member name="M:MySoft.Data.Cache.ICacheDependent.RemoveCache``1(System.String)">
-            <summary>
-            移除缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-        </member>
-        <member name="M:MySoft.Data.Cache.ICacheDependent.GetCache``1(System.String)">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="cacheKey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.Cache.ICacheDependent.RemoveCache``1">
-            <summary>
-            移除缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:MySoft.Data.Cache.ICacheDependent.GetCache``1">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
         <member name="T:MySoft.Data.JoinType">
             <summary>
             连接类型
@@ -12152,11 +12121,12 @@
             默认缓存依赖
             </summary>
         </member>
-        <member name="M:MySoft.Data.Cache.DataCacheDependent.#ctor(MySoft.Cache.ICacheStrategy)">
+        <member name="M:MySoft.Data.Cache.DataCacheDependent.#ctor(MySoft.Cache.ICacheStrategy,System.String)">
             <summary>
             实例化默认缓存依赖
             </summary>
             <param name="strategy"></param>
+            <param name="connectName"></param>
         </member>
         <member name="M:MySoft.Data.Cache.DataCacheDependent.AddCache``1(System.String,``0,System.Int32)">
             <summary>
@@ -12181,19 +12151,6 @@
             <typeparam name="T"></typeparam>
             <param name="?"></param>
             <param name="cacheKey"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.Data.Cache.DataCacheDependent.RemoveCache``1">
-            <summary>
-            移除缓存
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
-        <member name="M:MySoft.Data.Cache.DataCacheDependent.GetCache``1">
-            <summary>
-            获取缓存
-            </summary>
-            <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
         <member name="T:MySoft.Data.ProcSection">
@@ -12747,6 +12704,12 @@
         <member name="M:MySoft.Data.EntityBase.SetValues(MySoft.Data.IRowReader)">
             <summary>
             设置属性值
+            </summary>
+            <param name="reader"></param>
+        </member>
+        <member name="M:MySoft.Data.EntityBase.SetExtValues(MySoft.Data.IRowReader)">
+            <summary>
+            设置扩展属性值
             </summary>
             <param name="reader"></param>
         </member>
@@ -13815,6 +13778,103 @@
             </summary>
             <param name="name"></param>
             <returns></returns>
+        </member>
+        <member name="T:MySoft.Data.TopQuery`1">
+            <summary>
+            Top对应的Query查询
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.CreateQuery``1">
+            <summary>
+            CreateQuery
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.GetPage(System.Int32)">
+            <summary>
+            获取分页
+            </summary>
+            <param name="pageSize"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.ToListResult">
+            <summary>
+            返回结果列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.ToListResult``1">
+            <summary>
+            返回结果列表
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.ToList">
+            <summary>
+            返回实体列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.ToList``1">
+            <summary>
+            返回实体列表
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.ToReader">
+            <summary>
+            返回阅读器
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.ToTable">
+            <summary>
+            返回表数据
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.ToDataSet">
+            <summary>
+            返回数据集
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.SubQuery">
+            <summary>
+            创建子查询
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.SubQuery(System.String)">
+            <summary>
+            创建子查询
+            </summary>
+            <param name="aliasName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.SubQuery``1">
+            <summary>
+            创建子查询
+            </summary>
+            <typeparam name="TSub"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Data.TopQuery`1.SubQuery``1(System.String)">
+            <summary>
+            创建子查询
+            </summary>
+            <typeparam name="TSub"></typeparam>
+            <param name="aliasName"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MySoft.Data.TopQuery`1.QueryString">
+            <summary>
+            QueryString
+            </summary>
         </member>
         <member name="T:MySoft.Data.Design.ViewEntity">
             <summary>

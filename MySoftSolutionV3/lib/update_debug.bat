@@ -3,6 +3,8 @@
 
 copy ..\MySoft.Common\bin\Debug\MySoft.Common.dll /Y
 copy ..\MySoft.Cache\bin\Debug\MySoft.Cache.dll /Y
+copy ..\MySoft.Cache.Couch\bin\Debug\MySoft.Cache.Couch.dll /Y
+copy ..\MySoft.Cache.Shared\bin\Debug\MySoft.Cache.Shared.dll /Y
 copy ..\MySoft.Data\bin\Debug\MySoft.Data.dll /Y
 copy ..\MySoft.Data.MySql\bin\Debug\MySoft.Data.MySql.dll /Y
 copy ..\MySoft.Data.FireBird\bin\Debug\MySoft.Data.FireBird.dll /Y
@@ -12,9 +14,13 @@ copy ..\MySoft.Core\bin\Debug\MySoft.Core.dll /Y
 copy ..\MySoft.IoC\bin\Debug\MySoft.IoC.dll /Y
 copy ..\MySoft.Web\bin\Debug\MySoft.Web.dll /Y
 copy ..\MySoft.RESTful\bin\Debug\MySoft.RESTful.dll /Y
+copy ..\MySoft.PlatformService.IoC\bin\Debug\MySoft.PlatformService.IoC.dll /Y
+copy ..\MySoft.PlatformService\bin\Debug\MySoft.PlatformService.exe /Y
 
 copy ..\MySoft.Common\bin\Debug\MySoft.Common.xml /Y
 copy ..\MySoft.Cache\bin\Debug\MySoft.Cache.xml /Y
+copy ..\MySoft.Cache.Couch\bin\Debug\MySoft.Cache.Couch.xml /Y
+copy ..\MySoft.Cache.Shared\bin\Debug\MySoft.Cache.Shared.xml /Y
 copy ..\MySoft.Data\bin\Debug\MySoft.Data.xml /Y
 copy ..\MySoft.Data.MySql\bin\Debug\MySoft.Data.MySql.xml /Y
 copy ..\MySoft.Data.FireBird\bin\Debug\MySoft.Data.FireBird.xml /Y
@@ -24,6 +30,8 @@ copy ..\MySoft.Core\bin\Debug\MySoft.Core.xml /Y
 copy ..\MySoft.IoC\bin\Debug\MySoft.IoC.xml /Y
 copy ..\MySoft.Web\bin\Debug\MySoft.Web.xml /Y
 copy ..\MySoft.RESTful\bin\Debug\MySoft.RESTful.xml /Y
+copy ..\MySoft.PlatformService.IoC\bin\Debug\MySoft.PlatformService.IoC.xml /Y
+copy ..\MySoft.PlatformService\bin\Debug\MySoft.PlatformService.xml /Y
 
 copy ..\MySoft.Tools.EntityDesign\bin\Debug\MySoft.Tools.EntityDesign.exe /Y
 copy ..\MySoft.Tools.EntityDesignVsPlugin\bin\Debug\MySoft.Tools.EntityDesignVsPlugin.dll /Y

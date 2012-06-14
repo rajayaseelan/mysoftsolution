@@ -1,0 +1,177 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MySoft.Cache.Couch</name>
+    </assembly>
+    <members>
+        <member name="T:MySoft.Cache.CouchCacheStrategy">
+            <summary>
+            分布式缓存管理类
+            </summary>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.SetLocalCacheTimeout(System.Int32)">
+            <summary>
+            设置本地缓存超时时间
+            </summary>
+            <param name="timeout">超时时间，单位：秒</param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.#ctor(System.String)">
+            <summary>
+            实例化分布式缓存
+            </summary>
+            <param name="sectionName"></param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.SetExpired(System.String,System.DateTime)">
+            <summary>
+            设置过期时间
+            </summary>
+            <param name="objId"></param>
+            <param name="datetime"></param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.AddObject(System.String,System.Object)">
+            <summary>
+            添加指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <param name="o"></param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.AddObject(System.String,System.Object,System.TimeSpan)">
+            <summary>
+            添加指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <param name="o"></param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.AddObject(System.String,System.Object,System.DateTime)">
+            <summary>
+            添加指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <param name="o"></param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.RemoveObject(System.String)">
+            <summary>
+            移除指定ID的对象
+            </summary>
+            <param name="objId"></param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetObject(System.String)">
+            <summary>
+            返回指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetObject``1(System.String)">
+            <summary>
+            返回指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetMatchObject(System.String)">
+            <summary>
+            返回指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetMatchObject``1(System.String)">
+            <summary>
+            返回指定ID的对象
+            </summary>
+            <param name="objId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.RemoveAllObjects">
+            <summary>
+            移除所有缓存对象
+            </summary>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetAllKeys">
+            <summary>
+            获取所有Key值
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetCacheCount">
+            <summary>
+            获取缓存数
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetAllObjects">
+            <summary>
+            获取所有对象
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetAllObjects``1">
+            <summary>
+            获取所有对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetKeys(System.String)">
+            <summary>
+            通过正则获取对应的Key列表
+            </summary>
+            <param name="regularExpression"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.AddObjects(System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            添加多个对象
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.AddObjects``1(System.Collections.Generic.IDictionary{System.String,``0})">
+            <summary>
+            添加多个对象
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.RemoveMatchObjects(System.String)">
+            <summary>
+            正则表达式方式移除对象
+            </summary>
+            <param name="regularExpression">匹配KEY正则表示式</param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.RemoveObjects(System.Collections.Generic.IList{System.String})">
+            <summary>
+            移除多个对象
+            </summary>
+            <param name="objIds"></param>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetObjects(System.Collections.Generic.IList{System.String})">
+            <summary>
+            获取多个对象
+            </summary>
+            <param name="objIds"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetObjects``1(System.Collections.Generic.IList{System.String})">
+            <summary>
+            获取多个对象
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="objIds"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetMatchObjects(System.String)">
+            <summary>
+            返回指定正则表达式的对象
+            </summary>
+            <param name="regularExpression"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.CouchCacheStrategy.GetMatchObjects``1(System.String)">
+            <summary>
+            返回指定正则表达的对象
+            </summary>
+            <param name="regularExpression"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

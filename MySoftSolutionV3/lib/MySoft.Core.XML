@@ -1908,6 +1908,21 @@
             true if the next token was read successfully; false if there are no more tokens to read.
             </returns>
         </member>
+        <member name="T:MySoft.IoC.ContractAttribute">
+            <summary>
+            约束抽象类
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.ContractAttribute.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.ContractAttribute.Description">
+            <summary>
+            描述信息
+            </summary>
+        </member>
         <member name="T:MySoft.Aop.IAopOperator">
             <summary>
             IAopOperator AOP操作符接口，包括前处理和后处理
@@ -8423,26 +8438,6 @@
         <member name="F:MySoft.HttpMethod.POST">
             <summary>
             POST方式
-            </summary>
-        </member>
-        <member name="T:MySoft.Auth.AuthorizeResult">
-            <summary>
-            认证结果
-            </summary>
-        </member>
-        <member name="M:MySoft.Auth.AuthorizeResult.#ctor">
-            <summary>
-            实例化AuthorizeResult
-            </summary>
-        </member>
-        <member name="P:MySoft.Auth.AuthorizeResult.Succeed">
-            <summary>
-            认证是否成功
-            </summary>
-        </member>
-        <member name="P:MySoft.Auth.AuthorizeResult.Name">
-            <summary>
-            认证名称
             </summary>
         </member>
         <member name="T:MySoft.Aop.IAopProxyFactory">
@@ -15133,47 +15128,6 @@
             	<c>true</c> if this instance can convert the specified value type; otherwise, <c>false</c>.
             </returns>
         </member>
-        <member name="T:MySoft.IoC.HttpInvokeAttribute">
-            <summary>
-            Http调用属性
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.HttpInvokeAttribute.#ctor">
-            <summary>
-            初始化HttpInvokeAttribute
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.HttpInvokeAttribute.#ctor(System.String)">
-            <summary>
-            初始化HttpInvokeAttribute
-            </summary>
-            <param name="name"></param>
-        </member>
-        <member name="P:MySoft.IoC.HttpInvokeAttribute.CacheTime">
-            <summary>
-            数据缓存时间（单位：秒）
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HttpInvokeAttribute.Name">
-            <summary>
-            名称
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HttpInvokeAttribute.Description">
-            <summary>
-            描述信息
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HttpInvokeAttribute.Authorized">
-            <summary>
-            是否认证
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.HttpInvokeAttribute.AuthParameter">
-            <summary>
-            认证参数
-            </summary>
-        </member>
         <member name="T:MySoft.Aop.AopSwitcherAttribute">
             <summary>
             AopSwitcherAttribute 用于决定一个被AopProxyAttribute修饰的class的某个特定方法是否启用截获 。
@@ -20100,11 +20054,6 @@
             Http资源帮助
             </summary>
         </member>
-        <member name="F:MySoft.HttpHelper.Default">
-            <summary>
-            默认处理器
-            </summary>
-        </member>
         <member name="M:MySoft.HttpHelper.#ctor">
             <summary>
             实例化HttpHelper
@@ -22697,7 +22646,7 @@
         </member>
         <member name="T:MySoft.Auth.AuthorizeToken">
             <summary>
-            认证的Token信息
+            认证Token结果
             </summary>
         </member>
         <member name="M:MySoft.Auth.AuthorizeToken.#ctor">
@@ -22705,29 +22654,19 @@
             实例化AuthorizeToken
             </summary>
         </member>
-        <member name="P:MySoft.Auth.AuthorizeToken.RequestUri">
+        <member name="P:MySoft.Auth.AuthorizeToken.Succeed">
             <summary>
-            请求的uri
+            认证是否成功
             </summary>
         </member>
-        <member name="P:MySoft.Auth.AuthorizeToken.Method">
+        <member name="P:MySoft.Auth.AuthorizeToken.Name">
             <summary>
-            提交方法 （Post or Get）
+            认证名称
             </summary>
         </member>
-        <member name="P:MySoft.Auth.AuthorizeToken.Headers">
+        <member name="P:MySoft.Auth.AuthorizeToken.UserState">
             <summary>
-            头信息
-            </summary>
-        </member>
-        <member name="P:MySoft.Auth.AuthorizeToken.Parameters">
-            <summary>
-            参数信息
-            </summary>
-        </member>
-        <member name="P:MySoft.Auth.AuthorizeToken.Cookies">
-            <summary>
-            Cookie信息
+            用户标识
             </summary>
         </member>
         <member name="T:MySoft.Task.Job">
@@ -24182,9 +24121,14 @@
             认证的当前上下文对象
             </summary>
         </member>
-        <member name="P:MySoft.Auth.AuthorizeContext.Result">
+        <member name="P:MySoft.Auth.AuthorizeContext.HttpContext">
             <summary>
-            认证结果信息
+            请求的httpContext信息
+            </summary>
+        </member>
+        <member name="P:MySoft.Auth.AuthorizeContext.OperationContext">
+            <summary>
+            请求的operationContext信息
             </summary>
         </member>
         <member name="P:MySoft.Auth.AuthorizeContext.Token">
@@ -24673,11 +24617,12 @@
             公共缓存策略接口
             </summary>
         </member>
-        <member name="M:MySoft.Cache.ICacheStrategy.SetRegionName(System.String)">
+        <member name="M:MySoft.Cache.ICacheStrategy.SetExpired(System.String,System.DateTime)">
             <summary>
-            设置区域名称
+            设置过期时间
             </summary>
-            <param name="regionName"></param>
+            <param name="objId"></param>
+            <param name="datetime"></param>
         </member>
         <member name="M:MySoft.Cache.ICacheStrategy.AddObject(System.String,System.Object)">
             <summary>
@@ -24862,12 +24807,12 @@
             <param name="o"></param>
             <param name="dependKey"></param>
         </member>
-        <member name="T:MySoft.Cache.ISharedCacheStrategy">
+        <member name="T:MySoft.Cache.IDistributedCacheStrategy">
             <summary>
-            SharedCache策略接口
+            DistributedCache策略接口
             </summary>
         </member>
-        <member name="M:MySoft.Cache.ISharedCacheStrategy.SetLocalCacheTimeout(System.Int32)">
+        <member name="M:MySoft.Cache.IDistributedCacheStrategy.SetLocalCacheTimeout(System.Int32)">
             <summary>
             设置本地缓存超时时间
             </summary>

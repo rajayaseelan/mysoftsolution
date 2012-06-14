@@ -3,6 +3,8 @@
 
 copy ..\MySoft.Common\bin\Release\MySoft.Common.dll /Y
 copy ..\MySoft.Cache\bin\Release\MySoft.Cache.dll /Y
+copy ..\MySoft.Cache.Couch\bin\Release\MySoft.Cache.Couch.dll /Y
+copy ..\MySoft.Cache.Shared\bin\Release\MySoft.Cache.Shared.dll /Y
 copy ..\MySoft.Data\bin\Release\MySoft.Data.dll /Y
 copy ..\MySoft.Data.MySql\bin\Release\MySoft.Data.MySql.dll /Y
 copy ..\MySoft.Data.FireBird\bin\Release\MySoft.Data.FireBird.dll /Y
@@ -17,6 +19,8 @@ copy ..\MySoft.PlatformService\bin\Release\MySoft.PlatformService.exe /Y
 
 copy ..\MySoft.Common\bin\Release\MySoft.Common.xml /Y
 copy ..\MySoft.Cache\bin\Release\MySoft.Cache.xml /Y
+copy ..\MySoft.Cache.Couch\bin\Release\MySoft.Cache.Couch.xml /Y
+copy ..\MySoft.Cache.Shared\bin\Release\MySoft.Cache.Shared.xml /Y
 copy ..\MySoft.Data\bin\Release\MySoft.Data.xml /Y
 copy ..\MySoft.Data.MySql\bin\Release\MySoft.Data.MySql.xml /Y
 copy ..\MySoft.Data.FireBird\bin\Release\MySoft.Data.FireBird.xml /Y
