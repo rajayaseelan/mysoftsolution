@@ -317,13 +317,22 @@ namespace MySoft.PlatformService.WinForm
         private void InvokeMethod(Action action)
         {
             if (this.IsDisposed) return;
-            if (this.InvokeRequired)
+
+            try
             {
-                this.Invoke(action);
+                if (this.InvokeRequired)
+                {
+                    var ar = this.BeginInvoke(action);
+                    this.EndInvoke(ar);
+                }
+                else
+                {
+                    action();
+                }
             }
-            else
+            catch
             {
-                action();
+                //TODO
             }
         }
 
