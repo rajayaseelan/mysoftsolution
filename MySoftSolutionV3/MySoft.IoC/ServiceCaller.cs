@@ -70,18 +70,6 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg)
         {
-            //处理状态服务
-            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
-            {
-                var s = ParseService(reqMsg);
-
-                //调用服务
-                return s.CallService(reqMsg);
-            }
-
-            //创建服务
-            var service = CreateService(reqMsg);
-
             //创建Caller;
             var caller = CreateCaller(client, reqMsg);
 
@@ -90,35 +78,49 @@ namespace MySoft.IoC
 
             try
             {
-                //启动计时
-                var watch = Stopwatch.StartNew();
-
-                //调用服务
-                var resMsg = service.CallService(reqMsg);
-
-                //停止计时
-                watch.Stop();
-
-                //调用参数
-                var callArgs = new CallEventArgs
+                //处理状态服务
+                if (reqMsg.ServiceName == typeof(IStatusService).FullName)
                 {
-                    Caller = caller,
-                    ElapsedTime = watch.ElapsedMilliseconds,
-                    Count = resMsg.Count,
-                    Error = resMsg.Error,
-                    Value = resMsg.Value
-                };
+                    var s = ParseService(reqMsg);
 
-                //响应计数
-                NotifyEventArgs(callArgs);
-
-                //如果是Json方式调用，则需要处理异常
-                if (resMsg.IsError && reqMsg.InvokeMethod)
-                {
-                    resMsg.Error = new ApplicationException(callArgs.Error.Message);
+                    //调用服务
+                    return s.CallService(reqMsg);
                 }
+                else
+                {
+                    //创建服务
+                    var service = CreateService(reqMsg);
 
-                return resMsg;
+                    //启动计时
+                    var watch = Stopwatch.StartNew();
+
+                    //调用服务
+                    var resMsg = service.CallService(reqMsg);
+
+                    //停止计时
+                    watch.Stop();
+
+                    //调用参数
+                    var callArgs = new CallEventArgs
+                    {
+                        Caller = caller,
+                        ElapsedTime = watch.ElapsedMilliseconds,
+                        Count = resMsg.Count,
+                        Error = resMsg.Error,
+                        Value = resMsg.Value
+                    };
+
+                    //响应计数
+                    NotifyEventArgs(callArgs);
+
+                    //如果是Json方式调用，则需要处理异常
+                    if (resMsg.IsError && reqMsg.InvokeMethod)
+                    {
+                        resMsg.Error = new ApplicationException(callArgs.Error.Message);
+                    }
+
+                    return resMsg;
+                }
             }
             finally
             {
