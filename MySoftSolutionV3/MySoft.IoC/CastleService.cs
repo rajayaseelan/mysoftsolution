@@ -178,7 +178,7 @@ namespace MySoft.IoC
             container.Dispose();
 
             //等待闲置
-            smart.WaitForIdle(config.Timeout * 1000);
+            smart.WaitForIdle();
 
             //停止所有线程
             smart.Shutdown();

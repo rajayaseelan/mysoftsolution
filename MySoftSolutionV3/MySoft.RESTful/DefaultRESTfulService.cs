@@ -59,7 +59,20 @@ namespace MySoft.RESTful
         /// <returns></returns>
         public Stream GetJsonEntry(string kind, string method)
         {
-            return GetResponseStream(ParameterFormat.Json, kind, method, null);
+            var request = WebOperationContext.Current.IncomingRequest;
+            var query = request.UriTemplateMatch.QueryParameters;
+            var jsoncallback = query["jsoncallback"];
+
+            if (string.IsNullOrEmpty(jsoncallback))
+            {
+                return GetResponseStream(ParameterFormat.Json, kind, method, null);
+            }
+            else
+            {
+                string result = GetResponseString(ParameterFormat.Json, kind, method, query);
+                result = string.Format("{0}({1});", jsoncallback, result ?? "{}");
+                return new MemoryStream(Encoding.UTF8.GetBytes(result));
+            }
         }
 
         /// <summary>

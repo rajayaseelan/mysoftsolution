@@ -38,8 +38,7 @@ namespace MySoft.IoC.HttpProxy
             else
                 proxyServer = url;
 
-            //读取服务信息
-            services = this.ReaderService();
+            this.services = new List<ServiceItem>();
 
             //更新服务
             var thread = new Thread(UpdateService);
@@ -53,25 +52,26 @@ namespace MySoft.IoC.HttpProxy
         {
             while (true)
             {
-                //一分钟检测一次
-                Thread.Sleep(TimeSpan.FromMinutes(1));
-
-                var items = ReaderService();
+                bool isError = false;
+                var items = ReaderService(out isError);
 
                 //判断是否有更新
-                if (items.Count > 0 && items.Count != services.Count)
+                if (!isError && items.Count != services.Count)
                 {
                     this.services = items;
                 }
+
+                //一分钟检测一次
+                Thread.Sleep(TimeSpan.FromMinutes(1));
             }
         }
 
         /// <summary>
         /// 读取服务
         /// </summary>
-        private IList<ServiceItem> ReaderService()
+        private IList<ServiceItem> ReaderService(out bool isError)
         {
-            var services = new List<ServiceItem>();
+            var serviceItems = new List<ServiceItem>();
 
             try
             {
@@ -81,14 +81,17 @@ namespace MySoft.IoC.HttpProxy
 
                 //将数据反系列化成对象
                 var items = SerializationManager.DeserializeJson<IList<ServiceItem>>(jsonString);
-                services.AddRange(items);
+                serviceItems.AddRange(items);
+
+                isError = false;
             }
             catch
             {
+                isError = true;
                 //TODO
             }
 
-            return services;
+            return serviceItems;
         }
 
         /// <summary>
@@ -132,13 +135,27 @@ namespace MySoft.IoC.HttpProxy
                     if (service != null && service.TypeString)
                     {
                         //如果返回是字符串类型，则设置为文本返回
-                        response.ContentType = "text/plain;charset=utf-8";
+                        var format = query["format"] ?? "text";
+                        switch (format)
+                        {
+                            case "html":
+                                response.ContentType = "text/html;charset=utf-8";
+                                break;
+                            case "xml":
+                                response.ContentType = "text/xml;charset=utf-8";
+                                break;
+                            case "text":
+                            default:
+                                response.ContentType = "text/plain;charset=utf-8";
+                                break;
+                        }
                     }
 
                     //判断是否需要回调
                     var callback = query["callback"];
+                    var jsoncallback = query["jsoncallback"];
 
-                    if (string.IsNullOrEmpty(callback))
+                    if (string.IsNullOrEmpty(callback) && string.IsNullOrEmpty(jsoncallback))
                     {
                         //如果值为空或null
                         if (string.IsNullOrEmpty(jsonString))
@@ -165,9 +182,17 @@ namespace MySoft.IoC.HttpProxy
                     }
                     else
                     {
-                        //输出为javascript格式数据
-                        response.ContentType = "application/javascript;charset=utf-8";
-                        jsonString = string.Format("{0}({1});", callback, jsonString ?? "{}");
+                        if (string.IsNullOrEmpty(jsoncallback))
+                        {
+                            //输出为javascript格式数据
+                            response.ContentType = "application/javascript;charset=utf-8";
+                            jsonString = string.Format("{0}({1});", callback, jsonString ?? "{}");
+                        }
+                        else
+                        {
+                            //输出为json格式数据
+                            jsonString = string.Format("{0}({1});", jsoncallback, jsonString ?? "{}");
+                        }
                     }
                 }
                 catch (WebException ex)
@@ -239,7 +264,20 @@ namespace MySoft.IoC.HttpProxy
                     if (item != null && item.TypeString)
                     {
                         //如果返回是字符串类型，则设置为文本返回
-                        response.ContentType = "text/plain;charset=utf-8";
+                        var format = query["format"] ?? "text";
+                        switch (format)
+                        {
+                            case "html":
+                                response.ContentType = "text/html;charset=utf-8";
+                                break;
+                            case "xml":
+                                response.ContentType = "text/xml;charset=utf-8";
+                                break;
+                            case "text":
+                            default:
+                                response.ContentType = "text/plain;charset=utf-8";
+                                break;
+                        }
                     }
                 }
                 catch (WebException ex)
