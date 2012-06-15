@@ -182,63 +182,71 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<ClientInfo> GetClientList()
         {
-            //统计客户端数量
-            var clients = new List<ClientInfo>();
-            try
+            //从缓存获取数据
+            var clients = CacheHelper.Get<List<ClientInfo>>("GetClientList");
+            if (clients == null)
             {
-                var epServer = server.EndPoint as ScsTcpEndPoint;
-                var items = server.Clients.GetAllItems();
+                clients = new List<ClientInfo>();
 
-                var list1 = items.Where(p => p.State != null).ToList();
-                var list2 = items.Where(p => p.State == null).ToList();
-
-                //如果list不为0
-                if (list1.Count > 0)
+                try
                 {
-                    var ls = list1.Select(p => p.State as AppClient)
-                             .GroupBy(p => new
-                             {
-                                 AppName = p.AppName,
-                                 IPAddress = p.IPAddress,
-                                 AppPath = p.AppPath,
-                             })
-                             .Select(p => new ClientInfo
-                             {
-                                 AppPath = p.Key.AppPath,
-                                 AppName = p.Key.AppName,
-                                 IPAddress = p.Key.IPAddress,
-                                 HostName = p.Max(c => c.HostName),
-                                 ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
-                                 ServerPort = epServer.TcpPort,
-                                 Count = p.Count()
-                             }).ToList();
+                    var epServer = server.EndPoint as ScsTcpEndPoint;
+                    var items = server.Clients.GetAllItems();
 
-                    clients.AddRange(ls);
+                    var list1 = items.Where(p => p.State != null).ToList();
+                    var list2 = items.Where(p => p.State == null).ToList();
+
+                    //如果list不为0
+                    if (list1.Count > 0)
+                    {
+                        var ls = list1.Select(p => p.State as AppClient)
+                                 .GroupBy(p => new
+                                 {
+                                     AppName = p.AppName,
+                                     IPAddress = p.IPAddress,
+                                     AppPath = p.AppPath,
+                                 })
+                                 .Select(p => new ClientInfo
+                                 {
+                                     AppPath = p.Key.AppPath,
+                                     AppName = p.Key.AppName,
+                                     IPAddress = p.Key.IPAddress,
+                                     HostName = p.Max(c => c.HostName),
+                                     ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                                     ServerPort = epServer.TcpPort,
+                                     Count = p.Count()
+                                 }).ToList();
+
+                        clients.AddRange(ls);
+                    }
+
+                    //如果list不为0
+                    if (list2.Count > 0)
+                    {
+                        var ls = list2.Where(p => p.State == null)
+                                .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
+                                .GroupBy(p => p.IpAddress)
+                                .Select(g => new ClientInfo
+                                {
+                                    AppPath = "Unknown Path",
+                                    AppName = "Unknown",
+                                    IPAddress = g.Key,
+                                    ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                                    ServerPort = epServer.TcpPort,
+                                    HostName = "Unknown",
+                                    Count = g.Count()
+                                }).ToList();
+
+                        clients.AddRange(ls);
+                    }
+
+                    //缓存10秒
+                    CacheHelper.Insert("GetClientList", clients, 10);
                 }
-
-                //如果list不为0
-                if (list2.Count > 0)
+                catch (Exception ex)
                 {
-                    var ls = list2.Where(p => p.State == null)
-                            .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
-                            .GroupBy(p => p.IpAddress)
-                            .Select(g => new ClientInfo
-                            {
-                                AppPath = "Unknown Path",
-                                AppName = "Unknown",
-                                IPAddress = g.Key,
-                                ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
-                                ServerPort = epServer.TcpPort,
-                                HostName = "Unknown",
-                                Count = g.Count()
-                            }).ToList();
-
-                    clients.AddRange(ls);
+                    container.Write(ex);
                 }
-            }
-            catch (Exception ex)
-            {
-                container.Write(ex);
             }
 
             return clients;
@@ -577,9 +585,6 @@ namespace MySoft.IoC
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
             var endPoint = OperationContext.Current.RemoteEndPoint;
             MessageCenter.Instance.AddListener(new MessageListener(endPoint, callback, options, subscribeTypes));
-
-            //推送客户端连接信息
-            MessageCenter.Instance.Notify(GetClientList());
         }
 
         /// <summary>

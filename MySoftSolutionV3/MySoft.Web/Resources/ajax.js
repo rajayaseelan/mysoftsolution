@@ -535,7 +535,7 @@ Object.extend(Ajax, {
         var url = this.getRequestURL();
         var op = {
             callback: null,
-            template: null,
+            template: false,
             interval: null,
             cache: false
         };
@@ -581,8 +581,8 @@ Object.extend(Ajax, {
             //如果使用模板方式，则进行解析
             if (op.template) {
                 try {
-                    var json = eval('(' + html + ')');
-                    html = json.jst.process(json.data);
+                    var data = eval('(' + html + ')');
+                    html = TrimPath.parseTemplate(data.jst).process(data);
                 } catch (e) { }
             }
 

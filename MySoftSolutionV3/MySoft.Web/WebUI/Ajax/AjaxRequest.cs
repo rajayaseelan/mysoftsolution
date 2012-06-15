@@ -9,6 +9,8 @@ using System.Web;
 using System.Web.Caching;
 using System.Web.UI;
 using MySoft.Web.Configuration;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace MySoft.Web.UI
 {
@@ -60,14 +62,14 @@ namespace MySoft.Web.UI
                 }
                 else
                 {
-                    var args = GetCallbackParams();
+                    var callbackParams = GetCallbackParams();
 
                     //只有启用Ajax，才调用初始化方法
                     if (info.CurrentPage is IAjaxInitHandler)
-                        (info.CurrentPage as IAjaxInitHandler).OnAjaxInit(args);
+                        (info.CurrentPage as IAjaxInitHandler).OnAjaxInit(callbackParams);
 
                     if (info.CurrentPage is IAjaxProcessHandler)
-                        (info.CurrentPage as IAjaxProcessHandler).OnAjaxProcess(args);
+                        (info.CurrentPage as IAjaxProcessHandler).OnAjaxProcess(callbackParams);
 
                     bool AjaxRegister = WebHelper.GetRequestParam<bool>(info.CurrentPage.Request, "X-Ajax-Register", false);
                     bool AjaxRequest = WebHelper.GetRequestParam<bool>(info.CurrentPage.Request, "X-Ajax-Request", false);
@@ -96,11 +98,11 @@ namespace MySoft.Web.UI
                     else if (AjaxLoad)
                     {
                         string AjaxControlPath = WebHelper.GetRequestParam<string>(info.CurrentPage.Request, "X-Ajax-Path", null);
-                        string AjaxTemplatePath = WebHelper.GetRequestParam<string>(info.CurrentPage.Request, "X-Ajax-Template", null);
+                        bool UseAjaxTemplate = WebHelper.GetRequestParam<bool>(info.CurrentPage.Request, "X-Ajax-Template", false);
 
                         if (CheckHeader(AjaxKey))
                         {
-                            AjaxCallbackParam param = LoadAjaxControl(AjaxControlPath, AjaxTemplatePath);
+                            AjaxCallbackParam param = LoadAjaxControl(AjaxControlPath, UseAjaxTemplate);
 
                             //将param写入Response流
                             WriteToBuffer(param);
@@ -132,48 +134,6 @@ namespace MySoft.Web.UI
 
             WriteToBuffer(param);
         }
-
-        #region 私有方法
-
-        /// <summary>
-        /// Called when [ajax template pre render].
-        /// </summary>
-        /// <param name="templatePath"></param>
-        /// <returns></returns>
-        private string LoadTemplate(string templatePath)
-        {
-            try
-            {
-                if (templatePath == null) return null;
-                string html = GetCache(templatePath, string.Empty);
-                if (html == null)
-                {
-                    Control control = info.CurrentPage.LoadControl(templatePath.ToLower().EndsWith(".ascx") ? templatePath : templatePath + ".ascx");
-                    if (control != null)
-                    {
-                        var args = GetCallbackParams();
-
-                        if (control is IAjaxInitHandler)
-                            (control as IAjaxInitHandler).OnAjaxInit(args);
-
-                        if (control is IAjaxProcessHandler)
-                            (control as IAjaxProcessHandler).OnAjaxProcess(args);
-
-                        StringBuilder sb = new StringBuilder();
-                        control.RenderControl(new HtmlTextWriter(new StringWriter(sb)));
-                        html = sb.ToString();
-                        SetCache(templatePath, string.Empty, html);
-                    }
-                }
-                return html;
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        #endregion
 
         #region Ajax类的处理
 
@@ -237,16 +197,16 @@ namespace MySoft.Web.UI
         /// <returns></returns>
         private AjaxCallbackParam LoadAjaxControl(string controlPath)
         {
-            return LoadAjaxControl(controlPath, null);
+            return LoadAjaxControl(controlPath, false);
         }
 
         /// <summary>
         /// 加载控件返回String
         /// </summary>
         /// <param name="controlPath"></param>
-        /// <param name="templatePath"></param>
+        /// <param name="useTemplate"></param>
         /// <returns></returns>
-        private AjaxCallbackParam LoadAjaxControl(string controlPath, string templatePath)
+        private AjaxCallbackParam LoadAjaxControl(string controlPath, bool useTemplate)
         {
             string path = controlPath.ToLower().EndsWith(".ascx") ? controlPath : controlPath + ".ascx";
 
@@ -257,23 +217,25 @@ namespace MySoft.Web.UI
                 Control control = info.CurrentPage.LoadControl(path);
                 if (control != null)
                 {
-                    var args = GetCallbackParams();
+                    var callbackParams = GetCallbackParams();
 
                     if (control is IAjaxInitHandler)
-                        (control as IAjaxInitHandler).OnAjaxInit(args);
+                        (control as IAjaxInitHandler).OnAjaxInit(callbackParams);
 
                     if (control is IAjaxProcessHandler)
-                        (control as IAjaxProcessHandler).OnAjaxProcess(args);
+                        (control as IAjaxProcessHandler).OnAjaxProcess(callbackParams);
+
+                    //判断是否启用模板
+                    if (info.EnableAjaxTemplate && useTemplate)
+                    {
+                        //模板控件必须继承自AjaxTemplateControl
+                        if (control is IAjaxTemplateHandler)
+                            (control as IAjaxTemplateHandler).OnAjaxTemplateRender(callbackParams);
+                    }
 
                     StringBuilder sb = new StringBuilder();
                     control.RenderControl(new HtmlTextWriter(new StringWriter(sb)));
                     html = sb.ToString();
-
-                    if (info.EnableAjaxTemplate && templatePath != null)
-                    {
-                        string templateString = LoadTemplate(templatePath);
-                        html = "{ data : " + html + ",\r\njst : " + SerializationManager.SerializeJson(templateString) + " }";
-                    }
 
                     //将数据放入缓存
                     SetCache(path, info.CurrentPage.Request.Form.ToString(), html);

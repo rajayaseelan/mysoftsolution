@@ -70,6 +70,15 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseMessage CallMethod(IScsServerClient client, RequestMessage reqMsg)
         {
+            //处理状态服务
+            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
+            {
+                var s = ParseService(reqMsg);
+
+                //调用服务
+                return s.CallService(reqMsg);
+            }
+
             //创建服务
             var service = CreateService(reqMsg);
 

@@ -126,6 +126,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebUI\Ajax\AjaxRequest.cs" />
     <Compile Include="WebUI\Ajax\CallbackParam.cs" />
+    <Compile Include="WebUI\Ajax\IAjaxTemplateHandler.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="WebUI\Ajax\MasterAjaxPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -150,8 +153,7 @@
     <Compile Include="WebUI\Page.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="WebUI\Ajax\IAjaxProcessHandler.cs">
-    </Compile>
+    <Compile Include="WebUI\Ajax\IAjaxProcessHandler.cs" />
     <Compile Include="WebUI\Ajax\IAjaxInitHandler.cs" />
   </ItemGroup>
   <ItemGroup>

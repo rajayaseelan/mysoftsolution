@@ -112,6 +112,16 @@ namespace MySoft.Web.UI
         }
 
         /// <summary>
+        /// 移除指定的Key
+        /// </summary>
+        /// <param name="key"></param>
+        public void Remove(string key)
+        {
+            if (Contains(key))
+                dictValues.Remove(key);
+        }
+
+        /// <summary>
         /// 将当前集合转换成对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
