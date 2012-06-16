@@ -108,7 +108,7 @@ namespace MySoft.PlatformService.WinForm
                     {
                         if (obj[parameter.Name] != null)
                         {
-                            t.Text = obj[parameter.Name].ToString(Newtonsoft.Json.Formatting.None);
+                            t.Text = obj[parameter.Name].Value<string>();
                         }
                     }
 
@@ -205,8 +205,6 @@ namespace MySoft.PlatformService.WinForm
                     if (!string.IsNullOrEmpty(text))
                     {
                         var info = p.Value.Tag as ParameterInfo;
-                        if (info.IsPrimitive)
-                            text = string.Format("\"{0}\"", text);
 
                         try
                         {
