@@ -286,6 +286,8 @@ namespace MySoft.PlatformService.WinForm
                         //写Document文档
                         InvokeMethod(new Action(() =>
                         {
+                            gridDataQuery.DataSource = null;
+
                             var html = container.ToString();
                             webBrowser1.Url = new Uri("about:blank");
                             webBrowser1.DocumentCompleted += (sender, e) =>
