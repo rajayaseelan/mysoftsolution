@@ -329,11 +329,31 @@ namespace MySoft.IoC.HttpProxy
             var regex = new Regex(@"<title>([\s\S]+) 处的操作</title>", RegexOptions.IgnoreCase);
             if (regex.IsMatch(html))
             {
-                url = string.Format("http://{0}/", request.UriTemplateMatch.RequestUri.Authority);
+                url = string.Format("http://{0}/", GetRequestUri().Authority);
                 html = html.Replace(regex.Match(html).Result("$1"), url);
             }
 
             return new MemoryStream(Encoding.UTF8.GetBytes(html));
+        }
+
+        /// <summary>
+        /// 获取请求Uri
+        /// </summary>
+        /// <returns></returns>
+        private Uri GetRequestUri()
+        {
+            Uri uri = null;
+            if (HttpContext.Current != null)
+            {
+                uri = HttpContext.Current.Request.Url;
+            }
+            else if (WebOperationContext.Current != null)
+            {
+                var request = WebOperationContext.Current.IncomingRequest;
+                uri = request.UriTemplateMatch.RequestUri;
+            }
+
+            return uri;
         }
 
         private string AuthorizeMethod(string name, WebHeaderCollection header, out ServiceItem service)

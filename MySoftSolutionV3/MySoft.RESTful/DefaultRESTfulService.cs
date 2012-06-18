@@ -177,15 +177,34 @@ namespace MySoft.RESTful
         /// <returns></returns>
         public Stream GetMethodHtmlFromKindAndMethod(string kind, string method)
         {
-            var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
 
-            var html = Context.MakeDocument(request.UriTemplateMatch.RequestUri, kind, method);
+            var html = Context.MakeDocument(GetRequestUri(), kind, method);
             response.ContentType = "text/html;charset=utf-8";
             return new MemoryStream(Encoding.UTF8.GetBytes(html));
         }
 
         #endregion
+
+        /// <summary>
+        /// 获取请求Uri
+        /// </summary>
+        /// <returns></returns>
+        private Uri GetRequestUri()
+        {
+            Uri uri = null;
+            if (HttpContext.Current != null)
+            {
+                uri = HttpContext.Current.Request.Url;
+            }
+            else if (WebOperationContext.Current != null)
+            {
+                var request = WebOperationContext.Current.IncomingRequest;
+                uri = request.UriTemplateMatch.RequestUri;
+            }
+
+            return uri;
+        }
 
         private Stream GetResponseStream(ParameterFormat format, string kind, string method, Stream stream)
         {
@@ -387,7 +406,7 @@ namespace MySoft.RESTful
             var coll = request.UriTemplateMatch.QueryParameters;
 
             //请求地址
-            errorMessage = string.Format("{0}\r\n\tRequest Uri:{1}", errorMessage, request.UriTemplateMatch.RequestUri);
+            errorMessage = string.Format("{0}\r\n\tRequest Uri:{1}", errorMessage, GetRequestUri());
 
             if (request.Method.ToUpper() == "POST")
             {
