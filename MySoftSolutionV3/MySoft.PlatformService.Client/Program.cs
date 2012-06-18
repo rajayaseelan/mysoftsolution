@@ -247,7 +247,7 @@ namespace MySoft.PlatformService.Client
             CastleFactory.Create().RegisterResolver(new ServiceResolver());
 
             ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);

@@ -57,18 +57,18 @@ namespace MySoft.PlatformService.UserService
         string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
 
         //[HttpInvoke(Name = "user.getuser", Description = "获取用户")]
-        [OperationContract(CacheTime = 1)]
+        //[OperationContract(CacheTime = 1)]
         IList<UserInfo> GetUsers();
 
         //[HttpInvoke(Name = "user.getuser", Description = "获取用户", Authorized = true, AuthParameter = "name")]
-        [OperationContract(CacheTime = 10)]
+        //[OperationContract(CacheTime = 10)]
         UserInfo GetUser(int id, string name, IList<string> list, int[] values);
 
         //[HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         IDictionary<Sex, IList<UserInfo>> GetDict();
 
         //[HttpInvoke(Name = "user.getuserstr", Description = "获取用户")]
-        [OperationContract(CacheTime = 10)]
+        //[OperationContract(CacheTime = 10)]
         string GetUsersString();
     }
 

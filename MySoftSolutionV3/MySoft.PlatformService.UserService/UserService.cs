@@ -103,7 +103,7 @@ namespace MySoft.PlatformService.UserService
                     {
                         if (value == null)
                         {
-                            value = System.IO.File.ReadAllText("d:\\text.htm");
+                            value = System.IO.File.ReadAllText("d:\\test.htm");
                         }
                     }
                 }

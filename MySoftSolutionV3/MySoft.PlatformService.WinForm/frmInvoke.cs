@@ -277,29 +277,38 @@ namespace MySoft.PlatformService.WinForm
                 ThreadPool.QueueUserWorkItem(state =>
                 {
                     var invokeData = state as InvokeData;
+                    var container = JContainer.Parse(invokeData.Value);
 
                     //获取DataView数据
-                    var table = GetDataTable(invokeData.Value);
-                    InvokeMethod(new Action(() => gridDataQuery.DataSource = table));
-
+                    var table = GetDataTable(container);
                     if (table == null)
                     {
                         //写Document文档
-                        try
+                        InvokeMethod(new Action(() =>
                         {
-                            InvokeMethod(new Action(() =>
+                            var html = container.ToString();
+                            webBrowser1.Url = new Uri("about:blank");
+                            webBrowser1.DocumentCompleted += (sender, e) =>
                             {
+                                if (this.IsDisposed) return;
+
                                 webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
-                                webBrowser1.Document.Write(JContainer.Parse(invokeData.Value).ToString());
-                            }));
-                        }
-                        catch { }
+                                webBrowser1.Document.Write(html);
+                            };
+                        }));
+                    }
+                    else
+                    {
+                        InvokeMethod(new Action(() => gridDataQuery.DataSource = table));
                     }
                 }, data);
             }
             else
             {
-                richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
+                InvokeMethod(new Action(() =>
+                {
+                    richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
+                }));
             }
 
             InvokeMethod(new Action(() =>
@@ -308,7 +317,12 @@ namespace MySoft.PlatformService.WinForm
                 label5.Refresh();
 
                 button1.Enabled = true;
-                button1.Focus();
+
+                if (txtParameters.Count > 0)
+                {
+                    var p = txtParameters.Values.FirstOrDefault();
+                    p.Focus();
+                }
             }));
         }
 
@@ -337,25 +351,23 @@ namespace MySoft.PlatformService.WinForm
         /// <summary>
         /// 生成DataTable
         /// </summary>
-        /// <param name="jsonString"></param>
+        /// <param name="container"></param>
         /// <returns></returns>
-        private DataTable GetDataTable(string jsonString)
+        private DataTable GetDataTable(JToken container)
         {
             DataTable table = null;
 
             try
             {
                 table = new DataTable("TEMP_TABLE");
-
-                var jobject = JContainer.Parse(jsonString);
-                if (jobject is JArray)
+                if (container is JArray)
                 {
-                    var jarray = jobject as JArray;
+                    var jarray = container as JArray;
                     AddFromJArray(table, jarray);
                 }
-                else if (jobject is JObject)
+                else if (container is JObject)
                 {
-                    var value = jobject as JObject;
+                    var value = container as JObject;
                     if (value.First.First is JObject)
                     {
                         var jarray = new JArray(value.Values().ToArray());
