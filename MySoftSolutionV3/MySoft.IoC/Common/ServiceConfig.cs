@@ -23,7 +23,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default max call number.
         /// </summary>
-        public const int DEFAULT_MAX_CALL = 100; //100次，一般情况下100足矣
+        public const int DEFAULT_MAX_CALL = 500; //500次，一般情况下500足矣
 
         /// <summary>
         /// The default client timeout number. 

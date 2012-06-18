@@ -13,7 +13,7 @@ namespace MySoft.IoC.HttpServer
     /// </summary>
     public class HttpServiceCaller
     {
-        private IWorkItemsGroup group;
+        private IWorkItemsGroup smart;
         private IServiceContainer container;
         private CastleServiceConfiguration config;
         private HttpCallerInfoCollection callers;
@@ -29,7 +29,7 @@ namespace MySoft.IoC.HttpServer
         {
             this.config = config;
             this.container = container;
-            this.group = group;
+            this.smart = group;
             this.callers = new HttpCallerInfoCollection();
             this.callTimeouts = new Dictionary<string, int>();
         }
@@ -245,7 +245,7 @@ namespace MySoft.IoC.HttpServer
             }
 
             //启用异步调用服务
-            return new AsyncService(group, container, service, timeSpan);
+            return new AsyncService(smart, container, service, timeSpan);
         }
 
         /// <summary>

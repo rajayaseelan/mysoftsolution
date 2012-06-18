@@ -11,7 +11,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class AsyncService : IService
     {
-        private IWorkItemsGroup group;
+        private IWorkItemsGroup smart;
         private ILog logger;
         private IService service;
         private TimeSpan elapsedTime;
@@ -25,7 +25,7 @@ namespace MySoft.IoC.Services
         /// <param name="elapsedTime"></param>
         public AsyncService(IWorkItemsGroup group, ILog logger, IService service, TimeSpan elapsedTime)
         {
-            this.group = group;
+            this.smart = group;
             this.logger = logger;
             this.service = service;
             this.elapsedTime = elapsedTime;
@@ -40,20 +40,23 @@ namespace MySoft.IoC.Services
             var context = OperationContext.Current;
 
             //实例化异步调用器
-            var worker = group.QueueWorkItem<OperationContext, RequestMessage, ResponseMessage>
+            var worker = smart.QueueWorkItem<OperationContext, RequestMessage, ResponseMessage>
                                             (GetResponse, context, reqMsg);
 
             //等待响应
-            if (!SmartThreadPool.WaitAll(new[] { worker }, elapsedTime, true))
-            {
-                if (!worker.IsCompleted)
-                {
-                    //结束当前线程
-                    worker.Cancel(true);
-                }
+            ResponseMessage resMsg = null;
 
-                var body = string.Format("Call service ({0}, {1}) timeout ({2}) ms.\r\nParameters => {3}"
-                    , reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString());
+            try
+            {
+                resMsg = worker.GetResult(elapsedTime, true);
+            }
+            catch (Exception ex)
+            {
+                //结束当前线程
+                if (!worker.IsCompleted) worker.Cancel(true);
+
+                var body = string.Format("Call service ({0}, {1}) timeout ({2}) ms. Error: {4}\r\nParameters => {3}"
+                    , reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString(), ex.Message);
 
                 //获取异常
                 var error = IoCHelper.GetException(OperationContext.Current, reqMsg, body);
@@ -62,7 +65,7 @@ namespace MySoft.IoC.Services
                 logger.Write(error);
 
                 //处理异常
-                return new ResponseMessage
+                resMsg = new ResponseMessage
                 {
                     TransactionId = reqMsg.TransactionId,
                     ReturnType = reqMsg.ReturnType,
@@ -72,11 +75,9 @@ namespace MySoft.IoC.Services
                     Error = error
                 };
             }
-            else
-            {
-                //返回响应的消息
-                return worker.Result;
-            }
+
+            //返回响应的消息
+            return resMsg;
         }
 
         /// <summary>

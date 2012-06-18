@@ -17,7 +17,7 @@ namespace MySoft.IoC
     {
         private IDictionary<string, Type> callbackTypes;
         private IDictionary<string, int> callTimeouts;
-        private IWorkItemsGroup group;
+        private IWorkItemsGroup smart;
         private ServerStatusService status;
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace MySoft.IoC
         public ServiceCaller(IWorkItemsGroup group, ServerStatusService status)
         {
             this.status = status;
-            this.group = group;
+            this.smart = group;
             this.callbackTypes = new Dictionary<string, Type>();
             this.callTimeouts = new Dictionary<string, int>();
 
@@ -146,7 +146,7 @@ namespace MySoft.IoC
             //解析服务
             var service = ParseService(reqMsg);
 
-            return new AsyncService(group, status.Container, service, timeSpan);
+            return new AsyncService(smart, status.Container, service, timeSpan);
         }
 
         /// <summary>

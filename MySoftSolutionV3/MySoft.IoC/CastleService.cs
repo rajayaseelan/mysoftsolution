@@ -57,23 +57,20 @@ namespace MySoft.IoC
             //实例化SmartThreadPool
             var stp = new STPStartInfo
             {
-                IdleTimeout = config.Timeout,
+                IdleTimeout = config.Timeout * 1000,
                 MaxWorkerThreads = Math.Max(config.MaxCalls, 10),
                 MinWorkerThreads = 5,
-                ThreadPriority = ThreadPriority.Highest,
+                ThreadPriority = ThreadPriority.Normal,
                 WorkItemPriority = WorkItemPriority.Normal
             };
 
+            //创建线程池
             smart = new SmartThreadPool(stp);
             smart.Start();
 
-            //创建工作组
-            var group = smart.CreateWorkItemsGroup(Environment.ProcessorCount);
-            group.Start();
-
             //实例化调用者
             var status = new ServerStatusService(server, config, container);
-            this.caller = new ServiceCaller(group, status);
+            this.caller = new ServiceCaller(smart, status);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -87,7 +84,7 @@ namespace MySoft.IoC
                     resolver = Activator.CreateInstance(config.HttpType) as IHttpApiResolver;
                 }
 
-                var httpCaller = new HttpServiceCaller(group, config, container);
+                var httpCaller = new HttpServiceCaller(smart, config, container);
 
                 //刷新服务委托
                 status.OnRefresh += () => httpCaller.InitCaller(resolver);
@@ -176,9 +173,6 @@ namespace MySoft.IoC
             server.Stop();
             server.Clients.ClearAll();
             container.Dispose();
-
-            //等待闲置
-            smart.WaitForIdle();
 
             //停止所有线程
             smart.Shutdown();
