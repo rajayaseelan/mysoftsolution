@@ -68,9 +68,13 @@ namespace MySoft.IoC
             smart = new SmartThreadPool(stp);
             smart.Start();
 
+            //创建并发任务组
+            var group = smart.CreateWorkItemsGroup(2);
+            group.Start();
+
             //实例化调用者
             var status = new ServerStatusService(server, config, container);
-            this.caller = new ServiceCaller(smart, status);
+            this.caller = new ServiceCaller(group, status);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -84,7 +88,7 @@ namespace MySoft.IoC
                     resolver = Activator.CreateInstance(config.HttpType) as IHttpApiResolver;
                 }
 
-                var httpCaller = new HttpServiceCaller(smart, config, container);
+                var httpCaller = new HttpServiceCaller(group, config, container);
 
                 //刷新服务委托
                 status.OnRefresh += () => httpCaller.InitCaller(resolver);
