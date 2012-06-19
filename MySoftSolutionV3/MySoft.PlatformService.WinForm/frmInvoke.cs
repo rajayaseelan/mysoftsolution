@@ -179,7 +179,10 @@ namespace MySoft.PlatformService.WinForm
         protected override void OnShown(EventArgs e)
         {
             if (txtParameters.Count > 0)
-                txtParameters.First().Value.Focus();
+            {
+                var p = txtParameters.Values.FirstOrDefault();
+                p.Focus();
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -324,6 +327,10 @@ namespace MySoft.PlatformService.WinForm
                 {
                     var p = txtParameters.Values.FirstOrDefault();
                     p.Focus();
+                }
+                else
+                {
+                    button1.Focus();
                 }
             }));
         }
