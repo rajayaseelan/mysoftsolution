@@ -281,6 +281,13 @@ namespace MySoft.Data
 
         #endregion
 
+        /// <summary>
+        /// 转换成指定对象
+        /// </summary>
+        /// <typeparam name="TOutput"></typeparam>
+        /// <returns></returns>
+        TOutput ToEntity<TOutput>();
+
         #endregion
     }
 }

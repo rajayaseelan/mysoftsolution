@@ -412,6 +412,16 @@ namespace MySoft.Data
 
         #endregion
 
+        /// <summary>
+        /// 转换成指定对象
+        /// </summary>
+        /// <typeparam name="TOutput"></typeparam>
+        /// <returns></returns>
+        public TOutput ToEntity<TOutput>()
+        {
+            return DataHelper.ConvertType<IRowReader, TOutput>(this);
+        }
+
         // 摘要:
         //     执行与释放或重置非托管资源相关的应用程序定义的任务。
         public void Dispose()

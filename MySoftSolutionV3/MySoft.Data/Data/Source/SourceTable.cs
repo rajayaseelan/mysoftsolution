@@ -388,7 +388,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public SourceList<TOutput> ConvertTo<TOutput>()
         {
-            return this.ConvertAll<TOutput>(p => DataHelper.ConvertType<IRowReader, TOutput>(p));
+            return this.ConvertAll<TOutput>(p => p.ToEntity<TOutput>());
         }
 
         /// <summary>

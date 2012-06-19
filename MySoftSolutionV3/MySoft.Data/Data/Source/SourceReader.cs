@@ -480,7 +480,17 @@ namespace MySoft.Data
         /// <returns></returns>
         public SourceList<TOutput> ConvertTo<TOutput>()
         {
-            return this.ConvertAll<TOutput>(p => DataHelper.ConvertType<IRowReader, TOutput>(p));
+            return this.ConvertAll<TOutput>(p => p.ToEntity<TOutput>());
+        }
+
+        /// <summary>
+        /// 转换成指定对象
+        /// </summary>
+        /// <typeparam name="TOutput"></typeparam>
+        /// <returns></returns>
+        public TOutput ToEntity<TOutput>()
+        {
+            return DataHelper.ConvertType<IRowReader, TOutput>(this);
         }
 
         /// <summary>
