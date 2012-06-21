@@ -228,7 +228,7 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
                 }
                 else
                 {
-                    OnErrorReceived(ex);
+                    OnMessageError(ex);
                 }
             }
             catch (CommunicationException ex)
@@ -237,7 +237,7 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                OnErrorReceived(ex);
+                OnMessageError(ex);
             }
         }
 

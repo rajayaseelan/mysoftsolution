@@ -23,7 +23,7 @@ namespace MySoft.Communication.Scs.Communication.Messengers
         /// <summary>
         /// Receive error message.
         /// </summary>
-        event EventHandler<ErrorEventArgs> ErrorReceived;
+        event EventHandler<ErrorEventArgs> MessageError;
 
         /// <summary>
         /// Gets/sets wire protocol that is used while reading and writing messages.

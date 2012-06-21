@@ -200,7 +200,7 @@ namespace MySoft.IoC
             container.Write(string.Format("User connection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Information);
             e.Client.MessageReceived += Client_MessageReceived;
             e.Client.MessageSent += Client_MessageSent;
-            e.Client.ErrorReceived += Client_ErrorReceived;
+            e.Client.MessageError += Client_MessageError;
 
             //处理登入事件
             var connect = new ConnectInfo
@@ -216,7 +216,7 @@ namespace MySoft.IoC
             MessageCenter.Instance.Notify(connect);
         }
 
-        void Client_ErrorReceived(object sender, ErrorEventArgs e)
+        void Client_MessageError(object sender, ErrorEventArgs e)
         {
             container.Write(e.Error);
         }

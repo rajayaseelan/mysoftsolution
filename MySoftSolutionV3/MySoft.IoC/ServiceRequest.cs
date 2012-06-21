@@ -54,7 +54,7 @@ namespace MySoft.IoC
             this.client.Disconnected += client_Disconnected;
             this.client.MessageReceived += client_MessageReceived;
             this.client.MessageSent += client_MessageSent;
-            this.client.ErrorReceived += client_ErrorReceived;
+            this.client.MessageError += client_MessageError;
             this.client.WireProtocol = new CustomWireProtocol(node.Compress, node.Encrypt);
         }
 
@@ -67,7 +67,7 @@ namespace MySoft.IoC
                 this.logger.Write(new SocketException((int)SocketError.ConnectionReset));
         }
 
-        void client_ErrorReceived(object sender, ErrorEventArgs e)
+        void client_MessageError(object sender, ErrorEventArgs e)
         {
             //输出错误信息
             if (OnError != null)

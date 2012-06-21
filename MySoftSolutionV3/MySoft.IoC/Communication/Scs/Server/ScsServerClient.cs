@@ -28,7 +28,7 @@ namespace MySoft.Communication.Scs.Server
         /// <summary>
         /// Receive error message.
         /// </summary>
-        public event EventHandler<ErrorEventArgs> ErrorReceived;
+        public event EventHandler<ErrorEventArgs> MessageError;
 
         /// <summary>
         /// This event is raised when client is disconnected from server.
@@ -121,13 +121,13 @@ namespace MySoft.Communication.Scs.Server
             _communicationChannel = communicationChannel;
             _communicationChannel.MessageReceived += CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent += CommunicationChannel_MessageSent;
-            _communicationChannel.ErrorReceived += CommunicationChannel_ErrorReceived;
+            _communicationChannel.MessageError += CommunicationChannel_MessageError;
             _communicationChannel.Disconnected += CommunicationChannel_Disconnected;
         }
 
-        void CommunicationChannel_ErrorReceived(object sender, ErrorEventArgs e)
+        void CommunicationChannel_MessageError(object sender, ErrorEventArgs e)
         {
-            OnErrorReceived(e.Error);
+            OnMessageError(e.Error);
         }
 
         #endregion
@@ -238,9 +238,9 @@ namespace MySoft.Communication.Scs.Server
         /// Raises MessageReceived event.
         /// </summary>
         /// <param name="error"></param>
-        protected virtual void OnErrorReceived(Exception error)
+        protected virtual void OnMessageError(Exception error)
         {
-            var handler = ErrorReceived;
+            var handler = MessageError;
             if (handler != null)
             {
                 handler(this, new ErrorEventArgs(error));

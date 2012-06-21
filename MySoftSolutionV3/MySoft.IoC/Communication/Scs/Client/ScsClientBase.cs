@@ -28,7 +28,7 @@ namespace MySoft.Communication.Scs.Client
         /// <summary>
         /// Receive error message.
         /// </summary>
-        public event EventHandler<ErrorEventArgs> ErrorReceived;
+        public event EventHandler<ErrorEventArgs> MessageError;
 
         /// <summary>
         /// This event is raised when communication channel closed.
@@ -163,7 +163,7 @@ namespace MySoft.Communication.Scs.Client
             _communicationChannel.Disconnected += CommunicationChannel_Disconnected;
             _communicationChannel.MessageReceived += CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent += CommunicationChannel_MessageSent;
-            _communicationChannel.ErrorReceived += CommunicationChannel_ErrorReceived;
+            _communicationChannel.MessageError += CommunicationChannel_MessageError;
             _communicationChannel.Start();
             _pingTimer.Start();
             OnConnected();
@@ -220,9 +220,9 @@ namespace MySoft.Communication.Scs.Client
 
         #region Private methods
 
-        void CommunicationChannel_ErrorReceived(object sender, ErrorEventArgs e)
+        void CommunicationChannel_MessageError(object sender, ErrorEventArgs e)
         {
-            OnErrorReceived(e.Error);
+            OnMessageError(e.Error);
         }
 
         /// <summary>
@@ -357,9 +357,9 @@ namespace MySoft.Communication.Scs.Client
         /// Raises MessageReceived event.
         /// </summary>
         /// <param name="error"></param>
-        protected virtual void OnErrorReceived(Exception error)
+        protected virtual void OnMessageError(Exception error)
         {
-            var handler = ErrorReceived;
+            var handler = MessageError;
             if (handler != null)
             {
                 handler(this, new ErrorEventArgs(error));

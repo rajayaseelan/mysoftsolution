@@ -26,7 +26,7 @@ namespace MySoft.Communication.Scs.Communication.Channels
         /// <summary>
         /// Receive error message.
         /// </summary>
-        public event EventHandler<ErrorEventArgs> ErrorReceived;
+        public event EventHandler<ErrorEventArgs> MessageError;
 
         /// <summary>
         /// This event is raised when communication channel closed.
@@ -184,12 +184,12 @@ namespace MySoft.Communication.Scs.Communication.Channels
         }
 
         /// <summary>
-        /// Raises MessageReceived event.
+        /// Raises MessageError event.
         /// </summary>
         /// <param name="error"></param>
-        protected virtual void OnErrorReceived(Exception error)
+        protected virtual void OnMessageError(Exception error)
         {
-            var handler = ErrorReceived;
+            var handler = MessageError;
             if (handler != null)
             {
                 handler(this, new ErrorEventArgs(error));
