@@ -1,4 +1,0 @@
-namespace SharedCache.WinService
-{
-
-}

@@ -1,1 +1,0 @@
-<%@ WebService Language="C#" CodeBehind="Version.asmx.cs" Class="SharedCache.Version.Version" %>
