@@ -1,6 +1,6 @@
-﻿using MySoft.Communication.Scs.Communication.Protocols.BinarySerialization;
+﻿using MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerialization;
 
-namespace MySoft.Communication.Scs.Communication.Protocols
+namespace MySoft.IoC.Communication.Scs.Communication.Protocols
 {
     /// <summary>
     /// This class is used to get default protocols.

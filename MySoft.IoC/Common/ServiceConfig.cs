@@ -18,12 +18,17 @@ namespace MySoft.IoC
         /// <summary>
         /// The default minute call number.
         /// </summary>
-        public const int DEFAULT_MINUTE_CALL = 100; //100次
+        public const int DEFAULT_MINUTE_CALL = 500; //500次
 
         /// <summary>
         /// The default max call number.
         /// </summary>
         public const int DEFAULT_MAX_CALL = 100; //100次，一般情况下100足矣
+
+        /// <summary>
+        /// The default max connection number.
+        /// </summary>
+        public const int DEFAULT_MAX_CONNECTION = 10000; //1000个连接
 
         /// <summary>
         /// The default client timeout number. 

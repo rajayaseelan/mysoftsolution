@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.Communication.Scs.Server
+namespace MySoft.IoC.Communication.Scs.Server
 {
     /// <summary>
     /// Stores client information to be used by an event.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace MySoft.Communication.Threading
+namespace MySoft.IoC.Communication.Threading
 {
     /// <summary>
     /// This class is a timer that performs some tasks periodically.

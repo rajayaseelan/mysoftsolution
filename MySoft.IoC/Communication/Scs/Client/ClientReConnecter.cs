@@ -1,8 +1,8 @@
 ﻿using System;
-using MySoft.Communication.Scs.Communication;
-using MySoft.Communication.Threading;
+using MySoft.IoC.Communication.Scs.Communication;
+using MySoft.IoC.Communication.Threading;
 
-namespace MySoft.Communication.Scs.Client
+namespace MySoft.IoC.Communication.Scs.Client
 {
     /// <summary>
     /// This class is used to automatically re-connect to server if disconnected.

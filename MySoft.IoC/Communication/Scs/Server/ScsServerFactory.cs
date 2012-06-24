@@ -1,6 +1,6 @@
-﻿using MySoft.Communication.Scs.Communication.EndPoints;
+﻿using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 
-namespace MySoft.Communication.Scs.Server
+namespace MySoft.IoC.Communication.Scs.Server
 {
     /// <summary>
     /// This class is used to create SCS servers.

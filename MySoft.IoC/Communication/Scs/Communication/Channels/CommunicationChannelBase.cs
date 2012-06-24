@@ -1,9 +1,9 @@
 ﻿using System;
-using MySoft.Communication.Scs.Communication.EndPoints;
-using MySoft.Communication.Scs.Communication.Messages;
-using MySoft.Communication.Scs.Communication.Protocols;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Communication.Protocols;
 
-namespace MySoft.Communication.Scs.Communication.Channels
+namespace MySoft.IoC.Communication.Scs.Communication.Channels
 {
     /// <summary>
     /// This class provides base functionality for all communication channel classes.
@@ -153,7 +153,13 @@ namespace MySoft.Communication.Scs.Communication.Channels
             var handler = Disconnected;
             if (handler != null)
             {
-                handler(this, EventArgs.Empty);
+                try
+                {
+                    handler(this, EventArgs.Empty);
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -166,7 +172,13 @@ namespace MySoft.Communication.Scs.Communication.Channels
             var handler = MessageReceived;
             if (handler != null)
             {
-                handler(this, new MessageEventArgs(message));
+                try
+                {
+                    handler(this, new MessageEventArgs(message));
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -179,7 +191,13 @@ namespace MySoft.Communication.Scs.Communication.Channels
             var handler = MessageSent;
             if (handler != null)
             {
-                handler(this, new MessageEventArgs(message));
+                try
+                {
+                    handler(this, new MessageEventArgs(message));
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -192,7 +210,13 @@ namespace MySoft.Communication.Scs.Communication.Channels
             var handler = MessageError;
             if (handler != null)
             {
-                handler(this, new ErrorEventArgs(error));
+                try
+                {
+                    handler(this, new ErrorEventArgs(error));
+                }
+                catch
+                {
+                }
             }
         }
 

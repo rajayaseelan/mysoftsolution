@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using MySoft.Communication.Scs.Communication.EndPoints;
-using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
-using MySoft.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
 using System.Threading;
+using System.Collections.Generic;
+using System.ServiceModel.Channels;
 
-namespace MySoft.Communication.Scs.Communication.Channels.Tcp
+namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {
     /// <summary>
     /// This class is used to communicate with a remote application over TCP/IP protocol.
@@ -26,25 +28,22 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
             }
         }
         private readonly ScsTcpEndPoint _remoteEndPoint;
+        private readonly IPEndPoint _clientEndPoint;
 
         #endregion
 
         #region Private fields
 
         /// <summary>
-        /// Size of the buffer that is used to receive bytes from TCP socket.
-        /// </summary>
-        private const int bufferSize = 8 * 1024;    //8KB
-
-        /// <summary>
-        /// This buffer is used to receive bytes 
-        /// </summary>
-        private readonly byte[] _buffer;
-
-        /// <summary>
         /// Socket object to send/reveice messages.
         /// </summary>
         private readonly Socket _clientSocket;
+
+        private readonly SocketAsyncEventArgsPool _socketPool;
+
+        private readonly BufferManager _bufferManager;
+
+        private readonly int _bufferSize;
 
         /// <summary>
         /// A flag to control thread's running
@@ -55,6 +54,8 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
         /// This object is just used for thread synchronizing (locking).
         /// </summary>
         private readonly object _syncLock;
+
+        private const int TIMEOUT = 5000;
 
         #endregion
 
@@ -68,12 +69,19 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
         public TcpCommunicationChannel(Socket clientSocket)
         {
             _clientSocket = clientSocket;
+            _clientSocket.SendTimeout = TIMEOUT;
+            _clientSocket.ReceiveTimeout = TIMEOUT;
             _clientSocket.NoDelay = true;
 
             var ipEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
+            _clientEndPoint = (IPEndPoint)_clientSocket.LocalEndPoint;
 
-            _buffer = new byte[bufferSize];
+            _bufferSize = SocketSetting.BufferSize;
+            _socketPool = SocketSetting.TcpSocketPool;
+
+            _bufferManager = BufferManager.CreateBufferManager(0, _bufferSize);
+
             _syncLock = new object();
         }
 
@@ -94,20 +102,21 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
             _running = false;
             try
             {
-                if (_clientSocket.Connected)
+                CommunicationState = CommunicationStates.Disconnected;
+
+                SocketAsyncEventArgs e = new SocketAsyncEventArgs();
+                e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+                if (!_clientSocket.DisconnectAsync(e))
                 {
-                    _clientSocket.Close();
+                    AsyncDisconnectComplete(e);
                 }
 
                 //_clientSocket.Dispose();
             }
             catch
             {
-
+                OnDisconnected();
             }
-
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
         }
 
         #endregion
@@ -120,7 +129,9 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
         protected override void StartInternal()
         {
             _running = true;
-            _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), _clientSocket);
+
+            //开始异步接收
+            BeginAsyncReceive();
         }
 
         /// <summary>
@@ -129,40 +140,28 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
         /// <param name="message">Message to be sent</param>
         protected override void SendMessageInternal(IScsMessage message)
         {
-            //Send message
-            var totalSent = 0;
+            if (!_running)
+            {
+                return;
+            }
+
             lock (_syncLock)
             {
+
+                //发送数据
+                SocketAsyncEventArgs e = new SocketAsyncEventArgs();
+                e.UserToken = message;
+                e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+
                 //Create a byte array from message according to current protocol
                 var messageBytes = WireProtocol.GetBytes(message);
-                //Send all bytes to the remote application
-                while (totalSent < messageBytes.Length)
+
+                e.SetBuffer(messageBytes, 0, messageBytes.Length);
+
+                if (!_clientSocket.SendAsync(e))
                 {
-                    try
-                    {
-                        var sent = _clientSocket.Send(messageBytes, totalSent, messageBytes.Length - totalSent, SocketFlags.None);
-                        if (sent <= 0)
-                        {
-                            throw new CommunicationException("Message could not be sent via TCP socket. Only " + totalSent + " bytes of " + messageBytes.Length + " bytes are sent.");
-                        }
-
-                        totalSent += sent;
-                    }
-                    catch (SocketException ex)
-                    {
-                        if (ex.SocketErrorCode == SocketError.WouldBlock ||
-                            ex.SocketErrorCode == SocketError.IOPending ||
-                            ex.SocketErrorCode == SocketError.NoBufferSpaceAvailable)
-                        {
-                            // socket buffer is probably full, wait and try again
-                            Thread.Sleep(30);
-                        }
-                    }
+                    AsyncSendComplete(e);
                 }
-
-                LastSentMessageTime = DateTime.Now;
-
-                OnMessageSent(message);
             }
         }
 
@@ -174,46 +173,80 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
         /// This method is used as callback method in _clientSocket's BeginReceive method.
         /// It reveives bytes from socker.
         /// </summary>
-        /// <param name="ar">Asyncronous call result</param>
-        private void ReceiveCallback(IAsyncResult ar)
+        private void BeginAsyncReceive()
         {
-            Socket __clientSocket = ar.AsyncState as Socket;
-
             if (!_running)
             {
                 return;
             }
 
+            if (_socketPool.Count > 0)
+            {
+                //接收完成
+                SocketAsyncEventArgs e = _socketPool.Pop();
+                e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+
+                var buffer = _bufferManager.TakeBuffer(_bufferSize);
+
+                e.SetBuffer(buffer, 0, buffer.Length);
+
+                if (!_clientSocket.ReceiveAsync(e))
+                {
+                    AsyncReceiveComplete(e);
+                }
+            }
+        }
+
+        void IO_Completed(object sender, SocketAsyncEventArgs e)
+        {
+            switch (e.LastOperation)
+            {
+                case SocketAsyncOperation.Send:
+                    {
+                        AsyncSendComplete(e);
+                        break;
+                    }
+                case SocketAsyncOperation.Receive:
+                    {
+                        AsyncReceiveComplete(e);
+                        break;
+                    }
+                case SocketAsyncOperation.Disconnect:
+                    {
+                        AsyncDisconnectComplete(e);
+                        break;
+                    }
+            }
+        }
+
+        void AsyncSendComplete(SocketAsyncEventArgs e)
+        {
             try
             {
-                //Get received bytes count
-                var bytesRead = __clientSocket.EndReceive(ar);
-                if (bytesRead > 0)
+                if (e.SocketError == SocketError.Success)
                 {
-                    LastReceivedMessageTime = DateTime.Now;
-
-                    //Copy received bytes to a new byte array
-                    var receivedBytes = new byte[bytesRead];
-                    Array.Copy(_buffer, 0, receivedBytes, 0, bytesRead);
-
-                    //Read messages according to current wire protocol
-                    var messages = WireProtocol.CreateMessages(receivedBytes);
-
-                    //Raise MessageReceived event for all received messages
-                    foreach (var message in messages)
+                    if ((e.Offset + e.BytesTransferred) < e.Count)
                     {
-                        OnMessageReceived(message);
+                        //----- Continue to send until all bytes are sent!
+                        e.SetBuffer(e.Offset + e.BytesTransferred, e.Count - e.BytesTransferred - e.Offset);
+
+                        if (!_clientSocket.SendAsync(e))
+                        {
+                            AsyncSendComplete(e);
+                        }
+                    }
+                    else
+                    {
+                        e.SetBuffer(null, 0, 0);
+
+                        LastSentMessageTime = DateTime.Now;
+
+                        OnMessageSent(e.UserToken as IScsMessage);
                     }
                 }
                 else
                 {
-                    throw new CommunicationException("Tcp socket is closed");
-                }
-
-                //Read more bytes if still running
-                if (_running)
-                {
-                    __clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), __clientSocket);
+                    throw new SocketException((int)e.SocketError);
                 }
             }
             catch (SocketException ex)
@@ -225,20 +258,123 @@ namespace MySoft.Communication.Scs.Communication.Channels.Tcp
                  || (ex.SocketErrorCode == SocketError.Disconnecting))
                 {
                     Disconnect();
+
+                    var error = new CommunicationException(string.Format("Tcp socket ({0}:{1}) is closed.",
+                            _clientEndPoint.Address, _clientEndPoint.Port), ex);
+
+                    OnMessageError(error);
                 }
                 else
                 {
-                    OnMessageError(ex);
+                    Console.WriteLine("({0}){1} => {2}", ex.ErrorCode, ex.SocketErrorCode, ex.Message);
                 }
-            }
-            catch (CommunicationException ex)
-            {
-                Disconnect();
             }
             catch (Exception ex)
             {
                 OnMessageError(ex);
             }
+        }
+
+        /// <summary>
+        /// 异步完成
+        /// </summary>
+        /// <param name="e"></param>
+        void AsyncReceiveComplete(SocketAsyncEventArgs e)
+        {
+            try
+            {
+                //Get received bytes count
+                if (e.SocketError == SocketError.Success)
+                {
+                    if (e.BytesTransferred > 0)
+                    {
+                        try
+                        {
+                            LastReceivedMessageTime = DateTime.Now;
+
+                            //Copy received bytes to a new byte array
+                            var receivedBytes = new byte[e.BytesTransferred];
+                            Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, e.BytesTransferred);
+                            Array.Clear(e.Buffer, 0, e.BytesTransferred);
+
+                            //Read messages according to current wire protocol
+                            var messages = WireProtocol.CreateMessages(receivedBytes);
+
+                            //Raise MessageReceived event for all received messages
+                            foreach (var message in messages)
+                            {
+                                OnMessageReceived(message);
+                            }
+
+                            //Read more bytes if still running
+                            if (_running)
+                            {
+                                if (!_clientSocket.ReceiveAsync(e))
+                                {
+                                    AsyncReceiveComplete(e);
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            _bufferManager.ReturnBuffer(e.Buffer);
+                        }
+                    }
+                }
+                else
+                {
+                    throw new SocketException((int)e.SocketError);
+                }
+            }
+            catch (SocketException ex)
+            {
+                e.Completed -= new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+                _socketPool.Push(e);
+
+                if ((ex.SocketErrorCode == SocketError.ConnectionReset)
+                 || (ex.SocketErrorCode == SocketError.ConnectionAborted)
+                 || (ex.SocketErrorCode == SocketError.NotConnected)
+                 || (ex.SocketErrorCode == SocketError.Shutdown)
+                 || (ex.SocketErrorCode == SocketError.Disconnecting))
+                {
+                    Disconnect();
+
+                    var error = new CommunicationException(string.Format("Tcp socket ({0}:{1}) is closed.",
+                            _clientEndPoint.Address, _clientEndPoint.Port), ex);
+
+                    OnMessageError(error);
+                }
+                else
+                {
+                    Console.WriteLine("({0}){1} => {2}", ex.ErrorCode, ex.SocketErrorCode, ex.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnMessageError(ex);
+            }
+        }
+
+        /// <summary>
+        /// 异步完成
+        /// </summary>
+        /// <param name="e"></param>
+        void AsyncDisconnectComplete(SocketAsyncEventArgs e)
+        {
+            try
+            {
+                if (e.SocketError == SocketError.Success)
+                {
+                    _clientSocket.Shutdown(SocketShutdown.Both);
+                    _clientSocket.Close();
+                }
+            }
+            catch
+            {
+
+            }
+
+            OnDisconnected();
         }
 
         #endregion

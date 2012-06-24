@@ -11,29 +11,27 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class CallbackProxy : RemoteProxy
     {
+        private ServiceRequest reqService;
         private object callback;
+
         public CallbackProxy(object callback, ServerNode node, ILog logger)
             : base(node, logger)
         {
             this.callback = callback;
+
+            this.reqService = new ServiceRequest(node, logger, false);
+            this.reqService.OnCallback += reqService_OnCallback;
+            this.reqService.OnError += reqService_OnError;
+            this.reqService.Disconnected += reqService_Disconnected;
         }
 
         /// <summary>
-        /// 初始化请求
+        /// 获取请求
         /// </summary>
-        protected override void InitRequest()
+        /// <returns></returns>
+        protected override ServiceRequest GetServiceRequest()
         {
-            ServiceRequest reqService = new ServiceRequest(node, logger, false);
-            reqService.OnCallback += reqService_OnCallback;
-            reqService.OnError += reqService_OnError;
-            reqService.Disconnected += reqService_Disconnected;
-
-            this.reqPool = new ServiceRequestPool(1);
-
-            lock (this.reqPool)
-            {
-                this.reqPool.Push(reqService);
-            }
+            return reqService;
         }
 
         void reqService_OnError(object sender, ErrorMessageEventArgs e)

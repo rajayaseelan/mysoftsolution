@@ -2,10 +2,11 @@
 using System.Net;
 using System.Runtime.Remoting.Messaging;
 using System.Threading;
-using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
-using MySoft.Communication.Scs.Server;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 
 namespace MySoft.IoC
 {
@@ -36,7 +37,6 @@ namespace MySoft.IoC
         /// </summary>
         private Type callbackType;
         private IScsServerClient client;
-        private EndPoint endPoint;
         private IContainer container;
         private AppCaller caller;
 
@@ -59,17 +59,11 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 远程节点
+        /// 远程客户端
         /// </summary>
-        public EndPoint RemoteEndPoint
+        public IScsServerClient ServerClient
         {
-            get
-            {
-                if (client == null)
-                    return null;
-                else
-                    return endPoint;
-            }
+            get { return client; }
         }
 
         internal OperationContext() { }
@@ -78,12 +72,6 @@ namespace MySoft.IoC
         {
             this.client = client;
             this.callbackType = callbackType;
-
-            if (client != null)
-            {
-                var ep = client.RemoteEndPoint as ScsTcpEndPoint;
-                this.endPoint = new IPEndPoint(IPAddress.Parse(ep.IpAddress), ep.TcpPort);
-            }
         }
 
         /// <summary>
@@ -95,7 +83,7 @@ namespace MySoft.IoC
         {
             if (callbackType == null || typeof(ICallbackService) != callbackType)
             {
-                throw new IoCException("Please set the current of callback interface type!");
+                throw new IoCException("Please set the current of callback interface type.");
             }
             else
             {

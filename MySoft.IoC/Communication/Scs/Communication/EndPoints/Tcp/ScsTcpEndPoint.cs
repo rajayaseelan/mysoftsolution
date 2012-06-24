@@ -1,10 +1,10 @@
 ﻿using System;
-using MySoft.Communication.Scs.Client;
-using MySoft.Communication.Scs.Client.Tcp;
-using MySoft.Communication.Scs.Server;
-using MySoft.Communication.Scs.Server.Tcp;
+using MySoft.IoC.Communication.Scs.Client;
+using MySoft.IoC.Communication.Scs.Client.Tcp;
+using MySoft.IoC.Communication.Scs.Server;
+using MySoft.IoC.Communication.Scs.Server.Tcp;
 
-namespace MySoft.Communication.Scs.Communication.EndPoints.Tcp
+namespace MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp
 {
     /// <summary>
     /// Represens a TCP end point in SCS.

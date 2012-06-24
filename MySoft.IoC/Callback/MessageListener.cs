@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Callback
@@ -19,13 +20,13 @@ namespace MySoft.IoC.Callback
             get { return _pushTime; }
         }
 
-        private EndPoint _endPoint;
+        private IScsServerClient _client;
         /// <summary>
-        /// 远程节点
+        /// 远程客户端
         /// </summary>
-        public EndPoint RemoteEndPoint
+        public IScsServerClient Client
         {
-            get { return _endPoint; }
+            get { return _client; }
         }
 
         private SubscribeOptions _options;
@@ -60,10 +61,10 @@ namespace MySoft.IoC.Callback
         /// <summary>
         /// 初始化消息监听器
         /// </summary>
-        /// <param name="endPoint"></param>
-        public MessageListener(EndPoint endPoint, IStatusListener innerListener)
+        /// <param name="client"></param>
+        public MessageListener(IScsServerClient client, IStatusListener innerListener)
         {
-            _endPoint = endPoint;
+            _client = client;
             _innerListener = innerListener;
             _pushTime = DateTime.Now;
             _appNames = new List<string>();
@@ -73,11 +74,11 @@ namespace MySoft.IoC.Callback
         /// <summary>
         /// 初始化消息监听器
         /// </summary>
-        /// <param name="endPoint"></param>
+        /// <param name="client"></param>
         /// <param name="innerListener"></param>
         /// <param name="options"></param>
-        public MessageListener(EndPoint endPoint, IStatusListener innerListener, SubscribeOptions options, string[] subscribeTypes)
-            : this(endPoint, innerListener)
+        public MessageListener(IScsServerClient client, IStatusListener innerListener, SubscribeOptions options, string[] subscribeTypes)
+            : this(client, innerListener)
         {
             _options = options;
 
@@ -147,24 +148,6 @@ namespace MySoft.IoC.Callback
         public override int GetHashCode()
         {
             return base.GetHashCode();
-        }
-
-        public override bool Equals(object obj)
-        {
-            bool eq = base.Equals(obj);
-            if (!eq)
-            {
-                MessageListener lstn = obj as MessageListener;
-                var endPoint = lstn._endPoint as IPEndPoint;
-                var currEndPoint = this._endPoint as IPEndPoint;
-
-                if (endPoint.Address.Equals(currEndPoint.Address)
-                    && endPoint.Port == currEndPoint.Port)
-                {
-                    eq = true;
-                }
-            }
-            return eq;
         }
     }
 }

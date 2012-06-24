@@ -1,7 +1,7 @@
 ﻿using System;
-using MySoft.Communication.Scs.Communication;
+using MySoft.IoC.Communication.Scs.Communication;
 
-namespace MySoft.Communication.Scs.Client
+namespace MySoft.IoC.Communication.Scs.Client
 {
     /// <summary>
     /// Represents a client for SCS servers.

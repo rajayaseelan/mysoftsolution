@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.Communication.Scs.Communication.Channels
+namespace MySoft.IoC.Communication.Scs.Communication.Channels
 {
     /// <summary>
     /// Represents a communication listener.

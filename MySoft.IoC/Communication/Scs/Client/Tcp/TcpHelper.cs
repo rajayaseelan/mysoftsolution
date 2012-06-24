@@ -1,14 +1,24 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
+using MySoft.IoC.Communication.Scs.Communication;
 
-namespace MySoft.Communication.Scs.Client.Tcp
+namespace MySoft.IoC.Communication.Scs.Client.Tcp
 {
     /// <summary>
     /// This class is used to simplify TCP socket operations.
     /// </summary>
-    internal static class TcpHelper
+    internal class TcpHelper
     {
+        private EndPoint endPoint;
+        private AutoResetEvent waitReset = new System.Threading.AutoResetEvent(false);
+
+        public TcpHelper(EndPoint endPoint)
+        {
+            this.endPoint = endPoint;
+        }
+
         /// <summary>
         /// This code is used to connect to a TCP socket with timeout option.
         /// </summary>
@@ -17,14 +27,31 @@ namespace MySoft.Communication.Scs.Client.Tcp
         /// <returns>Socket object connected to server</returns>
         /// <exception cref="SocketException">Throws SocketException if can not connect.</exception>
         /// <exception cref="TimeoutException">Throws TimeoutException if can not connect within specified timeoutMs</exception>
-        public static Socket ConnectToServer(EndPoint endPoint, int timeoutMs)
+        public Socket ConnectToServer(int timeoutMs)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
             {
-                socket.Blocking = false;
-                socket.Connect(endPoint);
-                socket.Blocking = true;
+                SocketAsyncEventArgs e = new SocketAsyncEventArgs();
+                e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+                e.RemoteEndPoint = endPoint;
+                e.UserToken = socket;
+
+                if (!socket.ConnectAsync(e))
+                {
+                    AsyncConnectComplete(e);
+                }
+
+                if (!waitReset.WaitOne(timeoutMs))
+                {
+                    throw new TimeoutException("The host failed to connect. Timeout occured.");
+                }
+
+                if (e.SocketError != SocketError.Success)
+                {
+                    throw new CommunicationException("The host failed to connect.");
+                }
+
                 return socket;
             }
             catch (SocketException socketException)
@@ -35,15 +62,34 @@ namespace MySoft.Communication.Scs.Client.Tcp
                     throw;
                 }
 
-                if (!socket.Poll(timeoutMs * 1000, SelectMode.SelectWrite))
-                {
-                    socket.Close();
-                    throw new TimeoutException("The host failed to connect. Timeout occured.");
-                }
-
-                socket.Blocking = true;
                 return socket;
             }
+        }
+
+        void IO_Completed(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.LastOperation == SocketAsyncOperation.Connect)
+            {
+                AsyncConnectComplete(e);
+            }
+        }
+
+        void AsyncConnectComplete(SocketAsyncEventArgs e)
+        {
+            Socket socket = e.UserToken as Socket;
+            if (e.SocketError != SocketError.Success)
+            {
+                try
+                {
+                    socket.Close();
+                }
+                catch
+                {
+
+                }
+            }
+
+            waitReset.Set();
         }
     }
 }

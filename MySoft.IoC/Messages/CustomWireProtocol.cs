@@ -1,6 +1,6 @@
 ﻿using System.Text;
-using MySoft.Communication.Scs.Communication.Messages;
-using MySoft.Communication.Scs.Communication.Protocols.BinarySerialization;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerialization;
 using MySoft.IoC.Services;
 using MySoft.Security;
 

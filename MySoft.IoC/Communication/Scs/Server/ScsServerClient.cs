@@ -1,11 +1,11 @@
 ﻿using System;
-using MySoft.Communication.Scs.Communication;
-using MySoft.Communication.Scs.Communication.Channels;
-using MySoft.Communication.Scs.Communication.EndPoints;
-using MySoft.Communication.Scs.Communication.Messages;
-using MySoft.Communication.Scs.Communication.Protocols;
+using MySoft.IoC.Communication.Scs.Communication;
+using MySoft.IoC.Communication.Scs.Communication.Channels;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Communication.Protocols;
 
-namespace MySoft.Communication.Scs.Server
+namespace MySoft.IoC.Communication.Scs.Server
 {
     /// <summary>
     /// This class represents a client in server side.
@@ -204,7 +204,13 @@ namespace MySoft.Communication.Scs.Server
             var handler = Disconnected;
             if (handler != null)
             {
-                handler(this, EventArgs.Empty);
+                try
+                {
+                    handler(this, EventArgs.Empty);
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -217,7 +223,13 @@ namespace MySoft.Communication.Scs.Server
             var handler = MessageReceived;
             if (handler != null)
             {
-                handler(this, new MessageEventArgs(message));
+                try
+                {
+                    handler(this, new MessageEventArgs(message));
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -230,7 +242,13 @@ namespace MySoft.Communication.Scs.Server
             var handler = MessageSent;
             if (handler != null)
             {
-                handler(this, new MessageEventArgs(message));
+                try
+                {
+                    handler(this, new MessageEventArgs(message));
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -243,7 +261,13 @@ namespace MySoft.Communication.Scs.Server
             var handler = MessageError;
             if (handler != null)
             {
-                handler(this, new ErrorEventArgs(error));
+                try
+                {
+                    handler(this, new ErrorEventArgs(error));
+                }
+                catch
+                {
+                }
             }
         }
 

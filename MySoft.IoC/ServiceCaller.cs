@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using MySoft.Communication.Scs.Server;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;

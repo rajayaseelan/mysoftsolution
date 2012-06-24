@@ -1,4 +1,4 @@
-﻿using MySoft.Communication.Scs.Server;
+﻿using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Callback

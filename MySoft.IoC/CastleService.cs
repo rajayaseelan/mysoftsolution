@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
-using MySoft.Communication.Scs.Communication.Messages;
-using MySoft.Communication.Scs.Server;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
@@ -12,6 +12,7 @@ using MySoft.Logger;
 using MySoft.Net.Http;
 using MySoft.Threading;
 using System.Threading;
+using MySoft.IoC.Communication;
 
 namespace MySoft.IoC
 {
@@ -35,6 +36,12 @@ namespace MySoft.IoC
         public CastleService(CastleServiceConfiguration config)
         {
             this.config = config;
+
+            //不等重新设置最大连接池
+            if (config.MaxConnections != SocketSetting.MaxConnections)
+            {
+                SocketSetting.Set(config.MaxConnections);
+            }
 
             if (string.Compare(config.Host, "any", true) == 0)
             {
@@ -69,7 +76,7 @@ namespace MySoft.IoC
             smart.Start();
 
             //创建并发任务组
-            var group = smart.CreateWorkItemsGroup(2);
+            var group = smart.CreateWorkItemsGroup(Environment.ProcessorCount);
             group.Start();
 
             //实例化调用者
@@ -102,16 +109,8 @@ namespace MySoft.IoC
             }
 
             //绑定事件
-            MessageCenter.Instance.OnError += Instance_OnError;
-        }
-
-        /// <summary>
-        /// 处理异常信息
-        /// </summary>
-        /// <param name="error"></param>
-        void Instance_OnError(Exception error)
-        {
-            container.Write(error);
+            MessageCenter.Instance.OnError += container.Write;
+            MessageCenter.Instance.OnLog += container.Write;
         }
 
         #region 启动停止服务

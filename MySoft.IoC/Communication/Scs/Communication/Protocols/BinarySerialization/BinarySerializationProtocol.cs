@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using MySoft.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
 
-namespace MySoft.Communication.Scs.Communication.Protocols.BinarySerialization
+namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerialization
 {
     /// <summary>
     /// Default communication protocol between server and clients to send and receive a message.
@@ -28,7 +28,7 @@ namespace MySoft.Communication.Scs.Communication.Protocols.BinarySerialization
         /// <summary>
         /// Maximum length of a message.
         /// </summary>
-        private const int MaxMessageLength = 1024 * 1024 * 1024; //1024 Megabytes.
+        private const int MaxMessageLength = 1024 * 1024 * 8; //8 Mbytes.
 
         /// <summary>
         /// This MemoryStream object is used to collect receiving bytes to build messages.

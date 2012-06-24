@@ -1,10 +1,10 @@
 ﻿using System;
-using MySoft.Communication.Scs.Communication.Channels;
-using MySoft.Communication.Scs.Communication.EndPoints;
-using MySoft.Communication.Scs.Communication.Protocols;
-using MySoft.Communication.Threading;
+using MySoft.IoC.Communication.Scs.Communication.Channels;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints;
+using MySoft.IoC.Communication.Scs.Communication.Protocols;
+using MySoft.IoC.Communication.Threading;
 
-namespace MySoft.Communication.Scs.Server
+namespace MySoft.IoC.Communication.Scs.Server
 {
     /// <summary>
     /// This class provides base functionality for server classes.
@@ -147,7 +147,13 @@ namespace MySoft.Communication.Scs.Server
             var handler = ClientConnected;
             if (handler != null)
             {
-                handler(this, new ServerClientEventArgs(client));
+                try
+                {
+                    handler(this, new ServerClientEventArgs(client));
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -160,7 +166,13 @@ namespace MySoft.Communication.Scs.Server
             var handler = ClientDisconnected;
             if (handler != null)
             {
-                handler(this, new ServerClientEventArgs(client));
+                try
+                {
+                    handler(this, new ServerClientEventArgs(client));
+                }
+                catch
+                {
+                }
             }
         }
 

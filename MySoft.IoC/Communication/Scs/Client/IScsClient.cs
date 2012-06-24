@@ -1,6 +1,6 @@
-﻿using MySoft.Communication.Scs.Communication.Messengers;
+﻿using MySoft.IoC.Communication.Scs.Communication.Messengers;
 
-namespace MySoft.Communication.Scs.Client
+namespace MySoft.IoC.Communication.Scs.Client
 {
     /// <summary>
     /// Represents a client to connect to server.

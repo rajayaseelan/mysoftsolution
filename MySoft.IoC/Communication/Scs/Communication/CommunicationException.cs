@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace MySoft.Communication.Scs.Communication
+namespace MySoft.IoC.Communication.Scs.Communication
 {
     /// <summary>
     /// This application is thrown in a communication error.

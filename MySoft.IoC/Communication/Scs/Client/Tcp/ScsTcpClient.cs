@@ -1,9 +1,9 @@
-﻿using MySoft.Communication.Scs.Communication.Channels;
-using MySoft.Communication.Scs.Communication.Channels.Tcp;
-using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
+﻿using MySoft.IoC.Communication.Scs.Communication.Channels;
+using MySoft.IoC.Communication.Scs.Communication.Channels.Tcp;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using System.Net;
 
-namespace MySoft.Communication.Scs.Client.Tcp
+namespace MySoft.IoC.Communication.Scs.Client.Tcp
 {
     /// <summary>
     /// This class is used to communicate with server over TCP/IP protocol.
@@ -30,11 +30,9 @@ namespace MySoft.Communication.Scs.Client.Tcp
         /// <returns>Ready communication channel to communicate</returns>
         protected override ICommunicationChannel CreateCommunicationChannel()
         {
-            return new TcpCommunicationChannel(
-                TcpHelper.ConnectToServer(
-                    new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort),
-                    ConnectTimeout
-                    ));
+            var tcpHelper = new TcpHelper(new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort));
+
+            return new TcpCommunicationChannel(tcpHelper.ConnectToServer(ConnectTimeout));
         }
     }
 }

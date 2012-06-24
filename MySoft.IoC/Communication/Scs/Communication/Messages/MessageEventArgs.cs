@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.Communication.Scs.Communication.Messages
+namespace MySoft.IoC.Communication.Scs.Communication.Messages
 {
     /// <summary>
     /// Stores message to be used by an event.

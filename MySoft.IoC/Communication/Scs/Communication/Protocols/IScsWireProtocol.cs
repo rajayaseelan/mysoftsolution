@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using MySoft.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
 
-namespace MySoft.Communication.Scs.Communication.Protocols
+namespace MySoft.IoC.Communication.Scs.Communication.Protocols
 {
     /// <summary>
     /// Represents a byte-level communication protocol between applications.

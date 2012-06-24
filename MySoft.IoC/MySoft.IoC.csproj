@@ -62,6 +62,7 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
@@ -81,6 +82,8 @@
     <Compile Include="Callback\CallbackInfo.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IoCHelper.cs" />
+    <Compile Include="Communication\SocketAsyncEventArgsPool.cs" />
+    <Compile Include="Communication\SocketSetting.cs" />
     <Compile Include="HttpServer\HttpApi\DefaultApiResolver.cs" />
     <Compile Include="HttpServer\HttpApi\Config\HttpApiItem.cs" />
     <Compile Include="HttpServer\HttpApi\Config\HttpApiConfig.cs" />

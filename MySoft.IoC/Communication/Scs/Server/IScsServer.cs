@@ -1,9 +1,9 @@
 ﻿using System;
-using MySoft.Communication.Scs.Communication.EndPoints;
-using MySoft.Communication.Scs.Communication.Protocols;
-using MySoft.Communication.Threading;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints;
+using MySoft.IoC.Communication.Scs.Communication.Protocols;
+using MySoft.IoC.Communication.Threading;
 
-namespace MySoft.Communication.Scs.Server
+namespace MySoft.IoC.Communication.Scs.Server
 {
     /// <summary>
     /// Represents a SCS server that is used to accept and manage client connections.

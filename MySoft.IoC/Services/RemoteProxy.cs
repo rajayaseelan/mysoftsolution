@@ -26,13 +26,13 @@ namespace MySoft.IoC.Services
             this.node = node;
             this.logger = logger;
 
-            InitRequest();
+            InitServiceRequest();
         }
 
         /// <summary>
         /// 初始化请求
         /// </summary>
-        protected virtual void InitRequest()
+        private void InitServiceRequest()
         {
             this.reqPool = new ServiceRequestPool(node.MaxPool);
 
@@ -43,7 +43,7 @@ namespace MySoft.IoC.Services
                 //服务请求池化，使用最小的池初始化
                 for (int i = 0; i < node.MinPool; i++)
                 {
-                    this.reqPool.Push(CreateRequest());
+                    this.reqPool.Push(CreateServiceRequest());
                 }
             }
         }
@@ -52,7 +52,7 @@ namespace MySoft.IoC.Services
         /// 创建一个服务请求项
         /// </summary>
         /// <returns></returns>
-        private ServiceRequest CreateRequest()
+        private ServiceRequest CreateServiceRequest()
         {
             var reqService = new ServiceRequest(node, logger, true);
             reqService.OnCallback += reqService_OnCallback;
@@ -126,7 +126,7 @@ namespace MySoft.IoC.Services
                     hashtable[reqMsg.TransactionId] = waitResult;
 
                     //获取一个请求
-                    reqProxy = GetRequest();
+                    reqProxy = GetServiceRequest();
 
                     //发送消息
                     reqProxy.SendMessage(reqMsg);
@@ -136,10 +136,7 @@ namespace MySoft.IoC.Services
 
                     if (!waitResult.Wait(elapsedTime))
                     {
-                        //如果请求超时，则断开连接
-                        reqProxy.Disconnect();
-
-                        throw new WarningException(string.Format("【{0}:{1}】 => Call service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
+                        throw new WarningException(string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
                            , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()));
                     }
 
@@ -160,10 +157,10 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 获取一个请求
+        /// 获取一个服务请求
         /// </summary>
         /// <returns></returns>
-        private ServiceRequest GetRequest()
+        protected virtual ServiceRequest GetServiceRequest()
         {
             var reqProxy = reqPool.Pop();
 
@@ -181,7 +178,7 @@ namespace MySoft.IoC.Services
                                 poolSize++;
 
                                 //创建一个新的请求
-                                reqPool.Push(CreateRequest());
+                                reqPool.Push(CreateServiceRequest());
                             }
                         }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.Communication.Scs.Communication.Channels
+namespace MySoft.IoC.Communication.Scs.Communication.Channels
 {
     /// <summary>
     /// This class provides base functionality for communication listener classes.
@@ -31,7 +31,13 @@ namespace MySoft.Communication.Scs.Communication.Channels
             var handler = CommunicationChannelConnected;
             if (handler != null)
             {
-                handler(this, new CommunicationChannelEventArgs(client));
+                try
+                {
+                    handler(this, new CommunicationChannelEventArgs(client));
+                }
+                catch
+                {
+                }
             }
         }
     }

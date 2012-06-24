@@ -42,13 +42,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public override void Start()
         {
             StartSocket();
-
             _running = true;
 
-            for (int i = 0; i < SocketConfig.AcceptThreads; i++)
+            //启动多个线程进行接收
+            for (int i = 0; i < SocketSetting.AcceptThreads; i++)
             {
-                Thread _thread = new Thread(BeginAccept);
-                _thread.Start();
+                BeginAsyncAccept();
             }
         }
 
@@ -70,36 +69,59 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _listenerSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _listenerSocket.Bind(endPoint);
-            _listenerSocket.Listen(SocketConfig.Backlog * SocketConfig.AcceptThreads);
+            _listenerSocket.Listen(SocketSetting.Backlog * SocketSetting.AcceptThreads);
         }
 
         /// <summary>
-        /// GetIPEndPoint
+        /// Starts listening socket.
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="port"></param>
-        /// <returns></returns>
-        private IPEndPoint GetIPEndPoint(string host, int port)
+        private void BeginAsyncAccept()
         {
-            IPEndPoint myEnd = new IPEndPoint(IPAddress.Any, port);
+            if (!_running) return;
 
-            if (!string.IsNullOrEmpty(host))
+            var e = new SocketAsyncEventArgs();
+            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+
+            if (!_listenerSocket.AcceptAsync(e))
             {
-                if (!host.Equals("any", StringComparison.CurrentCultureIgnoreCase))
+                ThreadPool.QueueUserWorkItem(AsyncAcceptComplete, e);
+            }
+        }
+
+        void IO_Completed(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.LastOperation == SocketAsyncOperation.Accept)
+            {
+                ThreadPool.QueueUserWorkItem(AsyncAcceptComplete, e);
+            }
+        }
+
+        /// <summary>
+        /// Entrance point of the thread.
+        /// This method is used by the thread to listen incoming requests.
+        /// </summary>
+        void AsyncAcceptComplete(object state)
+        {
+            try
+            {
+                SocketAsyncEventArgs e = state as SocketAsyncEventArgs;
+
+                if (e.SocketError == SocketError.Success)
                 {
-                    IPHostEntry p = Dns.GetHostEntry(Dns.GetHostName());
-                    foreach (IPAddress s in p.AddressList)
-                    {
-                        if (s.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            myEnd = new IPEndPoint(s, port);
-                            break;
-                        }
-                    }
+                    var clientSocket = e.AcceptSocket;
+
+                    OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
+
+                    e.AcceptSocket = null;
                 }
             }
+            catch (Exception ex)
+            {
 
-            return myEnd;
+            }
+
+            //重新进行接收
+            BeginAsyncAccept();
         }
 
         /// <summary>
@@ -116,103 +138,35 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
 
             }
-            finally
-            {
-                _listenerSocket = null;
-            }
         }
 
         /// <summary>
-        /// Entrance point of the thread.
-        /// This method is used by the thread to listen incoming requests.
+        /// GetIPEndPoint
         /// </summary>
-        private void BeginAccept()
+        /// <param name="host"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        private IPEndPoint GetIPEndPoint(string host, int port)
         {
-            try
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
+
+            if (!string.IsNullOrEmpty(host))
             {
-                var socketAsyncArgs = new SocketAsyncEventArgs();
-                socketAsyncArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                socketAsyncArgs.UserToken = _listenerSocket;
-
-                //接收监听
-                if (!_listenerSocket.AcceptAsync(socketAsyncArgs))
-                    IO_Completed(this, socketAsyncArgs);
-            }
-            catch
-            {
-                //Disconnect, wait for a while and connect again.
-                StopSocket();
-
-                Thread.Sleep(1000);
-
-                if (!_running)
+                if (!host.Equals("any", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    return;
-                }
-
-                try
-                {
-                    StartSocket();
-                }
-                catch
-                {
-
+                    IPHostEntry p = Dns.GetHostEntry(Dns.GetHostName());
+                    foreach (IPAddress s in p.AddressList)
+                    {
+                        if (s.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            endPoint = new IPEndPoint(s, port);
+                            break;
+                        }
+                    }
                 }
             }
-        }
 
-        /// <summary>
-        /// 接收完成
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void IO_Completed(object sender, SocketAsyncEventArgs e)
-        {
-            ThreadPool.QueueUserWorkItem(new WaitCallback(AcceptComplete), e);
-        }
-
-        /// <summary>
-        /// 接收完成
-        /// </summary>
-        /// <param name="state"></param>
-        private void AcceptComplete(object state)
-        {
-            if (!_running) return;
-
-            SocketAsyncEventArgs e = state as SocketAsyncEventArgs;
-
-            try
-            {
-                Socket listener = e.UserToken as Socket;
-
-                if (e.SocketError == SocketError.Success)
-                {
-                    OnCommunicationChannelConnected(new TcpCommunicationChannel(listener));
-                }
-
-                BeginAccept();
-            }
-            catch
-            {
-                //Disconnect, wait for a while and connect again.
-                StopSocket();
-
-                Thread.Sleep(1000);
-
-                if (!_running)
-                {
-                    return;
-                }
-
-                try
-                {
-                    StartSocket();
-                }
-                catch
-                {
-
-                }
-            }
+            return endPoint;
         }
     }
 }

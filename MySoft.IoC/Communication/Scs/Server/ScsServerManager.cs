@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace MySoft.Communication.Scs.Server
+namespace MySoft.IoC.Communication.Scs.Server
 {
     /// <summary>
     /// Provides some functionality that are used by servers.

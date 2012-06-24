@@ -1,9 +1,9 @@
 ﻿using System;
-using MySoft.Communication.Scs.Client;
-using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
-using MySoft.Communication.Scs.Server;
+using MySoft.IoC.Communication.Scs.Client;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.IoC.Communication.Scs.Server;
 
-namespace MySoft.Communication.Scs.Communication.EndPoints
+namespace MySoft.IoC.Communication.Scs.Communication.EndPoints
 {
     ///<summary>
     /// Represents a server side end point in SCS.

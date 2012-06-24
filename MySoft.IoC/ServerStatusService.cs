@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
-using MySoft.Communication.Scs.Server;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
@@ -118,6 +118,11 @@ namespace MySoft.IoC
                             }
                         }
                     }
+
+                    //清理资源
+                    GC.Collect();
+                    GC.Collect(2);
+                    GC.Collect();
                 }
                 catch (Exception ex)
                 {
@@ -583,8 +588,8 @@ namespace MySoft.IoC
         public void Subscribe(SubscribeOptions options, params string[] subscribeTypes)
         {
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
-            var endPoint = OperationContext.Current.RemoteEndPoint;
-            MessageCenter.Instance.AddListener(new MessageListener(endPoint, callback, options, subscribeTypes));
+            var client = OperationContext.Current.ServerClient;
+            MessageCenter.Instance.AddListener(new MessageListener(client, callback, options, subscribeTypes));
         }
 
         /// <summary>
@@ -593,8 +598,8 @@ namespace MySoft.IoC
         public void Unsubscribe()
         {
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
-            var endPoint = OperationContext.Current.RemoteEndPoint;
-            MessageCenter.Instance.RemoveListener(new MessageListener(endPoint, callback));
+            var client = OperationContext.Current.ServerClient;
+            MessageCenter.Instance.RemoveListener(new MessageListener(client, callback));
         }
 
         /// <summary>
@@ -603,8 +608,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<string> GetSubscribeTypes()
         {
-            var endPoint = OperationContext.Current.RemoteEndPoint;
-            var listener = MessageCenter.Instance.GetListener(endPoint);
+            var client = OperationContext.Current.ServerClient;
+            var listener = MessageCenter.Instance.GetListener(client);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
@@ -617,8 +622,8 @@ namespace MySoft.IoC
         /// <param name="subscribeType"></param>
         public void SubscribeType(string subscribeType)
         {
-            var endPoint = OperationContext.Current.RemoteEndPoint;
-            var listener = MessageCenter.Instance.GetListener(endPoint);
+            var client = OperationContext.Current.ServerClient;
+            var listener = MessageCenter.Instance.GetListener(client);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
@@ -637,8 +642,8 @@ namespace MySoft.IoC
         /// <param name="subscribeType"></param>
         public void UnsubscribeType(string subscribeType)
         {
-            var endPoint = OperationContext.Current.RemoteEndPoint;
-            var listener = MessageCenter.Instance.GetListener(endPoint);
+            var client = OperationContext.Current.ServerClient;
+            var listener = MessageCenter.Instance.GetListener(client);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
@@ -657,8 +662,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<string> GetSubscribeApps()
         {
-            var endPoint = OperationContext.Current.RemoteEndPoint;
-            var listener = MessageCenter.Instance.GetListener(endPoint);
+            var client = OperationContext.Current.ServerClient;
+            var listener = MessageCenter.Instance.GetListener(client);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
@@ -671,8 +676,8 @@ namespace MySoft.IoC
         /// <param name="appName"></param>
         public void SubscribeApp(string appName)
         {
-            var endPoint = OperationContext.Current.RemoteEndPoint;
-            var listener = MessageCenter.Instance.GetListener(endPoint);
+            var client = OperationContext.Current.ServerClient;
+            var listener = MessageCenter.Instance.GetListener(client);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
@@ -691,8 +696,8 @@ namespace MySoft.IoC
         /// <param name="appName"></param>
         public void UnsubscribeApp(string appName)
         {
-            var endPoint = OperationContext.Current.RemoteEndPoint;
-            var listener = MessageCenter.Instance.GetListener(endPoint);
+            var client = OperationContext.Current.ServerClient;
+            var listener = MessageCenter.Instance.GetListener(client);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 

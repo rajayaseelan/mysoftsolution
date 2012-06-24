@@ -1,6 +1,6 @@
-﻿using MySoft.Communication.Scs.Communication.EndPoints;
+﻿using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 
-namespace MySoft.Communication.Scs.Client
+namespace MySoft.IoC.Communication.Scs.Client
 {
     /// <summary>
     /// This class is used to create SCS Clients to connect to a SCS server.

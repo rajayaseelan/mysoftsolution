@@ -1,8 +1,8 @@
 ﻿using System;
-using MySoft.Communication.Scs.Communication.Messages;
-using MySoft.Communication.Scs.Communication.Protocols;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Communication.Protocols;
 
-namespace MySoft.Communication.Scs.Communication.Messengers
+namespace MySoft.IoC.Communication.Scs.Communication.Messengers
 {
     /// <summary>
     /// Represents an object that can send and receive messages.

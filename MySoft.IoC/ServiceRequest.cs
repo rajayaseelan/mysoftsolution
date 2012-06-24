@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Net.Sockets;
-using MySoft.Communication.Scs.Client;
-using MySoft.Communication.Scs.Communication;
-using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
-using MySoft.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Client;
+using MySoft.IoC.Communication.Scs.Communication;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 using MySoft.IoC.Services;
@@ -29,7 +29,8 @@ namespace MySoft.IoC
         /// This event is raised when client disconnected from server.
         /// </summary>
         public event EventHandler Disconnected;
-        private RequestMessage request;
+
+        private RequestMessage reqMessage;
         private IScsClient client;
         private ILog logger;
         private string node;
@@ -62,24 +63,24 @@ namespace MySoft.IoC
         {
             //输出错误信息
             if (Disconnected != null)
+            {
                 Disconnected(sender, e);
+            }
             else
-                this.logger.Write(new SocketException((int)SocketError.ConnectionReset));
+            {
+                var error = new SocketException((int)SocketError.ConnectionReset);
+
+                this.logger.Write(error);
+            }
         }
 
         void client_MessageError(object sender, ErrorEventArgs e)
         {
             //输出错误信息
             if (OnError != null)
-                OnError(sender, new ErrorMessageEventArgs { Request = request, Error = e.Error });
-        }
-
-        /// <summary>
-        /// 是否连接
-        /// </summary>
-        public bool IsConnected
-        {
-            get { return client.CommunicationState == CommunicationStates.Connected; }
+            {
+                OnError(sender, new ErrorMessageEventArgs { Request = reqMessage, Error = e.Error });
+            }
         }
 
         /// <summary>
@@ -95,29 +96,14 @@ namespace MySoft.IoC
         /// </summary>
         private void ConnectServer(RequestMessage reqMsg)
         {
-            //如果连接断开，直接抛出异常
-            if (!IsConnected)
+            try
             {
-                try
-                {
-                    //连接到服务器
-                    client.Connect();
-
-                    //发送客户端信息到服务端
-                    var clientInfo = new AppClient
-                    {
-                        AppPath = AppDomain.CurrentDomain.BaseDirectory,
-                        AppName = reqMsg.AppName,
-                        IPAddress = reqMsg.IPAddress,
-                        HostName = reqMsg.HostName
-                    };
-
-                    client.SendMessage(new ScsClientMessage(clientInfo));
-                }
-                catch (Exception e)
-                {
-                    throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", ip, port, node, e.Message));
-                }
+                //连接到服务器
+                client.Connect();
+            }
+            catch (Exception e)
+            {
+                throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", ip, port, node, e.Message));
             }
         }
 
@@ -128,12 +114,30 @@ namespace MySoft.IoC
         /// <returns></returns>
         public void SendMessage(RequestMessage reqMsg)
         {
-            this.request = reqMsg;
+            this.reqMessage = reqMsg;
 
-            //如果未连接上服务
-            if (!IsConnected) ConnectServer(reqMsg);
+            //如果连接断开，直接抛出异常
+            if (client.CommunicationState == CommunicationStates.Disconnected)
+            {
+                ConnectServer(reqMsg);
 
-            client.SendMessage(new ScsResultMessage(reqMsg, reqMsg.TransactionId.ToString()));
+                //发送客户端信息到服务端
+                var clientInfo = new AppClient
+                {
+                    AppPath = AppDomain.CurrentDomain.BaseDirectory,
+                    AppName = reqMsg.AppName,
+                    IPAddress = reqMsg.IPAddress,
+                    HostName = reqMsg.HostName
+                };
+
+                //发送消息
+                client.SendMessage(new ScsClientMessage(clientInfo));
+            }
+
+            IScsMessage message = new ScsResultMessage(reqMsg, reqMsg.TransactionId.ToString());
+
+            //发送消息
+            client.SendMessage(message);
         }
 
         #region Socket消息委托
@@ -148,7 +152,7 @@ namespace MySoft.IoC
             var message = new ServiceMessageEventArgs
             {
                 Client = client,
-                Request = request
+                Request = reqMessage
             };
 
             //不是指定消息不处理

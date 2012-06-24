@@ -20,6 +20,7 @@ namespace MySoft.IoC.Configuration
         private int minuteCalls = ServiceConfig.DEFAULT_MINUTE_CALL;        //默认为每分钟调用100次，超过报异常
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;        //默认记录1小时
         private int maxCalls = ServiceConfig.DEFAULT_MAX_CALL;              //默认的并发调用数
+        private int maxConnections = ServiceConfig.DEFAULT_MAX_CONNECTION;  //默认的最大连接数
 
         /// <summary>
         /// 获取远程对象配置
@@ -72,6 +73,9 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["maxCalls"] != null && attribute["maxCalls"].Value.Trim() != string.Empty)
                 maxCalls = Convert.ToInt32(attribute["maxCalls"].Value);
+
+            if (attribute["maxConnections"] != null && attribute["maxConnections"].Value.Trim() != string.Empty)
+                maxConnections = Convert.ToInt32(attribute["maxConnections"].Value);
 
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
@@ -202,6 +206,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return maxCalls; }
             set { maxCalls = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the maxConnections
+        /// </summary>
+        public int MaxConnections
+        {
+            get { return maxConnections; }
+            set { maxConnections = value; }
         }
     }
 }

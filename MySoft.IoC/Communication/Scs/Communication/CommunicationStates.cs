@@ -1,4 +1,4 @@
-﻿namespace MySoft.Communication.Scs.Communication
+﻿namespace MySoft.IoC.Communication.Scs.Communication
 {
     /// <summary>
     /// Communication states.

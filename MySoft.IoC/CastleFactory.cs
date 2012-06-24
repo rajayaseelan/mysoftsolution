@@ -169,7 +169,7 @@ namespace MySoft.IoC
                 var service = GetLocalService<IServiceInterfaceType>();
                 if (service != null) return service;
 
-                throw new WarningException(string.Format("Did not find the service {0}!", typeof(IServiceInterfaceType).FullName));
+                throw new WarningException(string.Format("Did not find the service {0}.", typeof(IServiceInterfaceType).FullName));
             }
 
             return GetChannel<IServiceInterfaceType>(config.Default);
@@ -186,7 +186,7 @@ namespace MySoft.IoC
             var node = GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
             if (node == null)
             {
-                throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
+                throw new WarningException(string.Format("Did not find the node {0}.", nodeKey));
             }
 
             return GetChannel<IServiceInterfaceType>(node);
@@ -200,7 +200,7 @@ namespace MySoft.IoC
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(ServerNode node)
         {
             if (node == null)
-                throw new WarningException("Server node can't for empty!");
+                throw new WarningException("Server node can't for empty.");
 
             //获取服务节点
             if (resolver != null)
@@ -305,7 +305,7 @@ namespace MySoft.IoC
             var node = GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
             if (node == null)
             {
-                throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
+                throw new WarningException(string.Format("Did not find the node {0}.", nodeKey));
             }
             return GetChannel<IPublishService>(node, callback);
         }
@@ -320,7 +320,7 @@ namespace MySoft.IoC
         public IPublishService GetChannel<IPublishService>(ServerNode node, object callback)
         {
             if (node == null)
-                throw new WarningException("Server node can't for empty!");
+                throw new WarningException("Server node can't for empty.");
 
             //获取服务节点
             if (resolver != null)
@@ -328,17 +328,17 @@ namespace MySoft.IoC
                 node = resolver.GetServerNode<IPublishService>(node);
             }
 
-            if (callback == null) throw new IoCException("Callback cannot be the null!");
+            if (callback == null) throw new IoCException("Callback cannot be the null.");
             var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(typeof(IPublishService));
             if (contract != null && contract.CallbackType != null)
             {
                 if (!contract.CallbackType.IsAssignableFrom(callback.GetType()))
                 {
-                    throw new IoCException("Callback must assignable from " + callback.GetType().FullName + "!");
+                    throw new IoCException("Callback must assignable from " + callback.GetType().FullName + ".");
                 }
             }
             else
-                throw new IoCException("Callback type cannot be the null!");
+                throw new IoCException("Callback type cannot be the null.");
 
             CallbackProxy proxy = new CallbackProxy(callback, node, container);
             return GetProxyChannel<IPublishService>(proxy, false);
@@ -361,7 +361,7 @@ namespace MySoft.IoC
                 IService service = GetLocalService(message);
                 if (service != null) return GetInvokeData(message, service);
 
-                throw new WarningException(string.Format("Did not find the service {0}!", message.ServiceName));
+                throw new WarningException(string.Format("Did not find the service {0}.", message.ServiceName));
             }
 
             return Invoke(config.Default, message);
@@ -379,7 +379,7 @@ namespace MySoft.IoC
             var node = GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
             if (node == null)
             {
-                throw new WarningException(string.Format("Did not find the node {0}!", nodeKey));
+                throw new WarningException(string.Format("Did not find the node {0}.", nodeKey));
             }
 
             return Invoke(node, message);
@@ -394,7 +394,7 @@ namespace MySoft.IoC
         public InvokeData Invoke(ServerNode node, InvokeMessage message)
         {
             if (node == null)
-                throw new WarningException("Server node can't for empty!");
+                throw new WarningException("Server node can't for empty.");
 
             //获取本地服务
             IService service = GetLocalService(message);

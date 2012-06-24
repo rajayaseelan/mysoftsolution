@@ -1,9 +1,9 @@
-﻿using MySoft.Communication.Scs.Communication.Channels;
-using MySoft.Communication.Scs.Communication.Channels.Tcp;
-using MySoft.Communication.Scs.Communication.EndPoints.Tcp;
-using MySoft.Communication.Scs.Communication.EndPoints;
+﻿using MySoft.IoC.Communication.Scs.Communication.Channels;
+using MySoft.IoC.Communication.Scs.Communication.Channels.Tcp;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 
-namespace MySoft.Communication.Scs.Server.Tcp
+namespace MySoft.IoC.Communication.Scs.Server.Tcp
 {
     /// <summary>
     /// This class is used to create a TCP server.

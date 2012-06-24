@@ -1,4 +1,4 @@
-﻿namespace MySoft.Communication.Scs.Communication.Protocols.BinarySerialization
+﻿namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerialization
 {
     /// <summary>
     /// This class is used to create Binary Serialization Protocol objects.

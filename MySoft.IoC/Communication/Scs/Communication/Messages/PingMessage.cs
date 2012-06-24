@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.Communication.Scs.Communication.Messages
+namespace MySoft.IoC.Communication.Scs.Communication.Messages
 {
     /// <summary>
     /// This message is used to send/receive ping messages.

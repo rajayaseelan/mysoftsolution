@@ -1,8 +1,8 @@
 ﻿using System;
-using MySoft.Communication.Scs.Communication.EndPoints;
-using MySoft.Communication.Scs.Communication.Messengers;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints;
+using MySoft.IoC.Communication.Scs.Communication.Messengers;
 
-namespace MySoft.Communication.Scs.Communication.Channels
+namespace MySoft.IoC.Communication.Scs.Communication.Channels
 {
     /// <summary>
     /// Represents a communication channel.
