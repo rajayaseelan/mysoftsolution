@@ -5,6 +5,7 @@ using MySoft.Installer;
 using MySoft.IoC;
 using MySoft.IoC.Configuration;
 using MySoft.Logger;
+using System.Net.Sockets;
 
 namespace MySoft.PlatformService.IoC
 {
@@ -159,6 +160,9 @@ namespace MySoft.PlatformService.IoC
             else
             {
                 //如果是以下异常，则不发送邮件
+                var ex = ErrorHelper.GetInnerException(error);
+                if (ex is SocketException) return;
+
                 SimpleLog.Instance.WriteLogWithSendMail(error, mailTo);
             }
         }
