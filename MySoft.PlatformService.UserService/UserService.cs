@@ -93,7 +93,8 @@ namespace MySoft.PlatformService.UserService
         private static readonly object syncRoot = new object();
         public string GetUsersString()
         {
-            Thread.Sleep(1000);
+            //return "asfsadf";
+            //Thread.Sleep(1000);
 
             try
             {
@@ -111,7 +112,7 @@ namespace MySoft.PlatformService.UserService
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                return ErrorHelper.GetHtmlError(ex);
             }
         }
 

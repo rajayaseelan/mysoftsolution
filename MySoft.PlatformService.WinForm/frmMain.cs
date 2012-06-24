@@ -18,6 +18,7 @@ namespace MySoft.PlatformService.WinForm
         private ServerNode defaultNode;
         private WebBrowser webBrowser1, webBrowser2;
         private System.Windows.Forms.Timer formTimer;
+        private readonly object _syncLock = new object();
 
         public frmMain()
         {
@@ -33,22 +34,30 @@ namespace MySoft.PlatformService.WinForm
                 //未连接状态，自动断开为SocketError.ConnectionReset
                 if ((error as SocketException).SocketErrorCode == SocketError.NotConnected)
                 {
-                    button1_Click(null, EventArgs.Empty);
-
-                    listConnect.Items.Insert(0,
-                        new ParseMessageEventArgs
+                    lock (_syncLock)
+                    {
+                        this.Invoke(new Action(() =>
                         {
-                            MessageType = ParseMessageType.Error,
-                            LineHeader = string.Format("【{0}】 当前网络已经从服务器断开...", DateTime.Now),
-                            MessageText = string.Format("({0}){1}", (error as SocketException).ErrorCode, (error as SocketException).Message)
-                        });
+                            if (button1.Tag == null) return;
 
-                    listConnect.Invalidate();
+                            StartMonitor(true);
 
-                    //发送错误邮件
-                    var socketError = (error as SocketException);
-                    string errorMessage = string.Format("{0} - {1}", socketError.ErrorCode, socketError.Message);
-                    SendErrorMail(errorMessage, socketError);
+                            listConnect.Items.Insert(0,
+                                new ParseMessageEventArgs
+                                {
+                                    MessageType = ParseMessageType.Error,
+                                    LineHeader = string.Format("【{0}】 当前网络已经从服务器断开...", DateTime.Now),
+                                    MessageText = string.Format("({0}){1}", (error as SocketException).ErrorCode, (error as SocketException).Message)
+                                });
+
+                            listConnect.Invalidate();
+
+                            //发送错误邮件
+                            var socketError = (error as SocketException);
+                            string errorMessage = string.Format("{0} - {1}", socketError.ErrorCode, socketError.Message);
+                            SendErrorMail(errorMessage, socketError);
+                        }));
+                    }
                 }
             }
         }
@@ -78,6 +87,11 @@ namespace MySoft.PlatformService.WinForm
         private IStatusService service;
         private void button1_Click(object sender, EventArgs e)
         {
+            StartMonitor(false);
+        }
+
+        private void StartMonitor(bool fromThread)
+        {
             try
             {
                 if (button1.Tag == null)
@@ -86,6 +100,12 @@ namespace MySoft.PlatformService.WinForm
                     {
                         MessageBox.Show("请选择监控节点！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
+                    }
+
+                    if (!fromThread)
+                    {
+                        if (MessageBox.Show("确定开始监控吗？", "系统提示",
+                            MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel) return;
                     }
 
                     if (checkBox3.Checked)
@@ -147,12 +167,12 @@ namespace MySoft.PlatformService.WinForm
                     catch (Exception ex)
                     {
                         SimpleLog.Instance.WriteLogForDir("Client", ex);
-                        MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ShowError(ex);
                     }
                 }
                 else
                 {
-                    if (sender != null)
+                    if (!fromThread)
                     {
                         if (MessageBox.Show("确定停止监控吗？", "系统提示",
                             MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel) return;
@@ -165,7 +185,7 @@ namespace MySoft.PlatformService.WinForm
                     catch (Exception ex)
                     {
                         SimpleLog.Instance.WriteLogForDir("Client", ex);
-                        MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ShowError(ex);
                     }
 
                     checkedListBox1.Items.Clear();
@@ -208,7 +228,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -305,7 +325,7 @@ namespace MySoft.PlatformService.WinForm
 
             rich.SelectionIndent = 0;
             rich.SelectionColor = Color.Blue;
-            rich.AppendText("ServerName:\r\n");
+            rich.AppendText("HostName:\r\n");
             rich.SelectionColor = Color.Black;
             rich.SelectionIndent = 20;
             rich.AppendText(caller.IPAddress + " => " + caller.HostName);
@@ -715,7 +735,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
                 return;
             }
 
@@ -862,7 +882,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -883,7 +903,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -941,7 +961,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -1027,7 +1047,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -1070,7 +1090,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -1105,7 +1125,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -1126,7 +1146,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -1147,7 +1167,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -1168,7 +1188,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -1189,7 +1209,7 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("Client", ex);
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError(ex);
             }
         }
 
@@ -1205,6 +1225,13 @@ namespace MySoft.PlatformService.WinForm
             });
         }
 
+        void ShowError(Exception ex)
+        {
+            if (ex is NullReferenceException) return;
+
+            MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
         void frm_OnCallback(string[] apps)
         {
             foreach (var app in apps)
@@ -1213,7 +1240,7 @@ namespace MySoft.PlatformService.WinForm
                 catch (Exception ex)
                 {
                     SimpleLog.Instance.WriteLogForDir("Client", ex);
-                    MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ShowError(ex);
                 }
             }
 
