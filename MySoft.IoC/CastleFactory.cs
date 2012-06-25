@@ -80,16 +80,19 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static CastleFactory Create()
         {
-            lock (hashtable.SyncRoot)
+            if (singleton == null)
             {
-                if (singleton == null)
+                lock (hashtable.SyncRoot)
                 {
-                    var config = CastleFactoryConfiguration.GetConfig();
+                    if (singleton == null)
+                    {
+                        var config = CastleFactoryConfiguration.GetConfig();
 
-                    if (config == null)
-                        throw new WarningException("Not find configuration section castleFactory.");
+                        if (config == null)
+                            throw new WarningException("Not find configuration section castleFactory.");
 
-                    singleton = new CastleFactory(config);
+                        singleton = new CastleFactory(config);
+                    }
                 }
             }
 

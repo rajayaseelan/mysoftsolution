@@ -47,11 +47,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private volatile bool _running;
 
-        /// <summary>
-        /// This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private readonly object _syncLock;
-
         private const int TIMEOUT = 5000;
 
         #endregion
@@ -70,14 +65,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _clientSocket.ReceiveTimeout = TIMEOUT;
             _clientSocket.NoDelay = true;
 
-            var ipEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
-            _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
-            _clientEndPoint = (IPEndPoint)_clientSocket.LocalEndPoint;
+            _clientEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
+            _remoteEndPoint = new ScsTcpEndPoint(_clientEndPoint.Address.ToString(), _clientEndPoint.Port);
 
             _bufferSize = SocketSetting.BufferSize;
             _socketPool = SocketSetting.TcpSocketPool;
-
-            _syncLock = new object();
         }
 
         #endregion
@@ -140,32 +132,28 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            lock (_syncLock)
+            //Create a byte array from message according to current protocol
+            var messageBytes = WireProtocol.GetBytes(message);
+
+            //发送数据
+            SocketAsyncEventArgs e = new SocketAsyncEventArgs();
+            e.UserToken = message;
+            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+
+            e.SetBuffer(messageBytes, 0, messageBytes.Length);
+
+            try
             {
-                //发送数据
-                SocketAsyncEventArgs e = new SocketAsyncEventArgs();
-                e.UserToken = message;
-                e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
-
-                e.SetBuffer(messageBytes, 0, messageBytes.Length);
-
                 if (!_clientSocket.SendAsync(e))
                 {
                     AsyncSendComplete(e);
                 }
+            }
+            catch (Exception ex)
+            {
+                TcpSocketHelper.Dispose(e);
 
-                //判断发送是否异常
-                if ((e.SocketError == SocketError.ConnectionReset)
-                 || (e.SocketError == SocketError.ConnectionAborted)
-                 || (e.SocketError == SocketError.NotConnected)
-                 || (e.SocketError == SocketError.Shutdown)
-                 || (e.SocketError == SocketError.Disconnecting))
-                {
-                    throw new SocketException((int)e.SocketError);
-                }
+                throw ex;
             }
         }
 
@@ -192,9 +180,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                 e.SetBuffer(new byte[_bufferSize], 0, _bufferSize);
 
-                if (!_clientSocket.ReceiveAsync(e))
+                try
                 {
-                    AsyncReceiveComplete(e);
+                    if (!_clientSocket.ReceiveAsync(e))
+                    {
+                        AsyncReceiveComplete(e);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TcpSocketHelper.Release(e);
+
+                    e.Completed -= new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+                    _socketPool.Push(e);
+
+                    throw ex;
                 }
             }
         }
@@ -352,6 +352,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
+                TcpSocketHelper.Release(e);
+
                 OnMessageError(ex);
             }
         }
