@@ -11,27 +11,42 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class CallbackProxy : RemoteProxy
     {
-        private ServiceRequest reqService;
         private object callback;
 
         public CallbackProxy(object callback, ServerNode node, ILog logger)
             : base(node, logger)
         {
             this.callback = callback;
-
-            this.reqService = new ServiceRequest(node, logger, false);
-            this.reqService.OnCallback += reqService_OnCallback;
-            this.reqService.OnError += reqService_OnError;
-            this.reqService.Disconnected += reqService_Disconnected;
         }
 
         /// <summary>
-        /// 获取请求
+        /// 初始化请求项
+        /// </summary>
+        protected override void InitServiceRequest()
+        {
+            this.reqPool = new ServiceRequestPool(1);
+
+            lock (this.reqPool)
+            {
+                var reqService = new ServiceRequest(node, logger, false);
+                reqService.OnCallback += reqService_OnCallback;
+                reqService.OnError += reqService_OnError;
+                reqService.Disconnected += reqService_Disconnected;
+
+                this.reqPool.Push(reqService);
+            }
+        }
+
+        /// <summary>
+        /// 获取一个服务请求
         /// </summary>
         /// <returns></returns>
         protected override ServiceRequest GetServiceRequest()
         {
-            return reqService;
+            if (reqPool.Count > 0)
+                return reqPool.Pop();
+            else
+                throw new WarningException(string.Format("Service request pool beyond the {0} limit.", 1));
         }
 
         void reqService_OnError(object sender, ErrorMessageEventArgs e)
@@ -41,7 +56,7 @@ namespace MySoft.IoC.Services
 
         void reqService_Disconnected(object sender, EventArgs e)
         {
-            this.logger.Write(new SocketException((int)SocketError.NotConnected));
+            this.logger.WriteError(new SocketException((int)SocketError.NotConnected));
         }
 
         /// <summary>

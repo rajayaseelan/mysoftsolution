@@ -175,7 +175,7 @@ namespace MySoft.IoC
                 if (config.ThrowError)
                     throw ex;
                 else
-                    container.Write(ex);
+                    container.WriteError(ex);
             }
 
             return resMsg;

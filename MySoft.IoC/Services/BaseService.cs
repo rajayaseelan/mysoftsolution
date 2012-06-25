@@ -68,7 +68,7 @@ namespace MySoft.IoC.Services
                 //ªÒ»°“Ï≥£
                 var exception = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
 
-                logger.Write(exception);
+                logger.WriteError(exception);
             }
 
             return resMsg;

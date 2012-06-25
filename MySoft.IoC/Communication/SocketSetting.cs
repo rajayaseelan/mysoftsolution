@@ -19,7 +19,7 @@ namespace MySoft.IoC.Communication
         /// <summary>
         /// 接收线程数
         /// </summary>
-        public static int AcceptThreads = 3; //接收3个线程
+        public static int AcceptThreads = 5; //接收5个线程
 
         /// <summary>
         /// 缓冲大小
@@ -34,7 +34,7 @@ namespace MySoft.IoC.Communication
         /// <summary>
         /// 最大等待连接数
         /// </summary>
-        public static int Backlog = 1024; //1024 连接
+        public static int Backlog = 1000; //1000 连接
 
         private static SocketAsyncEventArgsPool _socketPool;
         /// <summary>
@@ -76,14 +76,18 @@ namespace MySoft.IoC.Communication
             BufferSize = bufferSize;
             Backlog = backlog;
 
-            //初始化池
-            _socketPool = new SocketAsyncEventArgsPool(maxConnections);
-
-            lock (_socketPool)
+            //不等重新设置最大连接池
+            if (_socketPool == null || _socketPool.Count != maxConnections)
             {
-                for (int i = 0; i < maxConnections; i++)
+                //初始化池
+                _socketPool = new SocketAsyncEventArgsPool(maxConnections);
+
+                lock (_socketPool)
                 {
-                    _socketPool.Push(new SocketAsyncEventArgs());
+                    for (int i = 0; i < maxConnections; i++)
+                    {
+                        _socketPool.Push(new SocketAsyncEventArgs());
+                    }
                 }
             }
         }

@@ -94,7 +94,7 @@ namespace MySoft.PlatformService.UserService
         public string GetUsersString()
         {
             //return "asfsadf";
-            //Thread.Sleep(1000);
+            Thread.Sleep(1000);
 
             try
             {
@@ -112,7 +112,9 @@ namespace MySoft.PlatformService.UserService
             }
             catch (Exception ex)
             {
-                return ErrorHelper.GetHtmlError(ex);
+                //return ErrorHelper.GetHtmlError(ex);
+
+                throw ex;
             }
         }
 

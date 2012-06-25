@@ -13,6 +13,7 @@ using MySoft.Net.Http;
 using MySoft.Threading;
 using System.Threading;
 using MySoft.IoC.Communication;
+using System.Collections;
 
 namespace MySoft.IoC
 {
@@ -37,11 +38,8 @@ namespace MySoft.IoC
         {
             this.config = config;
 
-            //不等重新设置最大连接池
-            if (config.MaxConnections != SocketSetting.MaxConnections)
-            {
-                SocketSetting.Set(config.MaxConnections);
-            }
+            //设置最大连接数
+            SocketSetting.Set(config.MaxConnections);
 
             if (string.Compare(config.Host, "any", true) == 0)
             {
@@ -109,8 +107,8 @@ namespace MySoft.IoC
             }
 
             //绑定事件
-            MessageCenter.Instance.OnError += container.Write;
-            MessageCenter.Instance.OnLog += container.Write;
+            MessageCenter.Instance.OnError += container.WriteError;
+            MessageCenter.Instance.OnLog += container.WriteLog;
         }
 
         #region 启动停止服务
@@ -195,29 +193,19 @@ namespace MySoft.IoC
 
         void server_ClientConnected(object sender, ServerClientEventArgs e)
         {
-            var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
-            container.Write(string.Format("User connection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Information);
             e.Client.MessageReceived += Client_MessageReceived;
             e.Client.MessageSent += Client_MessageSent;
             e.Client.MessageError += Client_MessageError;
 
-            //处理登入事件
-            var connect = new ConnectInfo
-            {
-                ConnectTime = DateTime.Now,
-                IPAddress = endPoint.IpAddress,
-                Port = endPoint.TcpPort,
-                ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
-                ServerPort = epServer.TcpPort,
-                Connected = true
-            };
+            var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
 
-            MessageCenter.Instance.Notify(connect);
+            //推送ConnectInfo
+            ThreadPool.QueueUserWorkItem(PushConnectInfo, new ArrayList { endPoint, true });
         }
 
         void Client_MessageError(object sender, ErrorEventArgs e)
         {
-            container.Write(e.Error);
+            container.WriteError(e.Error);
         }
 
         void Client_MessageSent(object sender, MessageEventArgs e)
@@ -228,20 +216,48 @@ namespace MySoft.IoC
         void server_ClientDisconnected(object sender, ServerClientEventArgs e)
         {
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
-            container.Write(string.Format("User Disconnection {0}:{1}！", endPoint.IpAddress, endPoint.TcpPort), LogType.Error);
 
-            //处理登出事件
-            var connect = new ConnectInfo
+            //推送ConnectInfo
+            ThreadPool.QueueUserWorkItem(PushConnectInfo, new ArrayList { endPoint, false });
+        }
+
+        void PushConnectInfo(object state)
+        {
+            if (state == null) return;
+
+            try
             {
-                ConnectTime = DateTime.Now,
-                IPAddress = endPoint.IpAddress,
-                Port = endPoint.TcpPort,
-                ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
-                ServerPort = epServer.TcpPort,
-                Connected = false
-            };
+                var arr = state as ArrayList;
+                var endPoint = arr[0] as ScsTcpEndPoint;
+                bool connected = Convert.ToBoolean(arr[1]);
 
-            MessageCenter.Instance.Notify(connect);
+                if (connected)
+                {
+                    container.WriteLog(string.Format("[{2}] User connection ({0}:{1}).",
+                            endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count), LogType.Information);
+                }
+                else
+                {
+                    container.WriteLog(string.Format("[{2}] User Disconnection ({0}:{1}).",
+                            endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count), LogType.Error);
+                }
+
+                var connect = new ConnectInfo
+                {
+                    ConnectTime = DateTime.Now,
+                    IPAddress = endPoint.IpAddress,
+                    Port = endPoint.TcpPort,
+                    ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                    ServerPort = epServer.TcpPort,
+                    Connected = connected
+                };
+
+                MessageCenter.Instance.Notify(connect);
+            }
+            catch
+            {
+                //TODO
+            }
         }
 
         void Client_MessageReceived(object sender, MessageEventArgs e)
@@ -258,10 +274,9 @@ namespace MySoft.IoC
 
                     //响应客户端详细信息
                     var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
-                    container.Write(string.Format("Change app 【{4}】 client {0}:{1} to {2}[{3}]！",
-                        endPoint.IpAddress, endPoint.TcpPort, appClient.IPAddress, appClient.HostName, appClient.AppName), LogType.Information);
 
-                    MessageCenter.Instance.Notify(endPoint.IpAddress, endPoint.TcpPort, appClient);
+                    //推送ConnectInfo
+                    ThreadPool.QueueUserWorkItem(PushAppClient, new ArrayList { endPoint, appClient });
                 }
             }
             else if (e.Message is ScsResultMessage)
@@ -278,6 +293,27 @@ namespace MySoft.IoC
 
                 //发送数据到服务端
                 SendMessage(client, resMsg, message.RepliedMessageId);
+            }
+        }
+
+        void PushAppClient(object state)
+        {
+            if (state == null) return;
+
+            try
+            {
+                var arr = state as ArrayList;
+                var endPoint = arr[0] as ScsTcpEndPoint;
+                var appClient = arr[1] as AppClient;
+
+                container.WriteLog(string.Format("Change app 【{4}】 client {0}:{1} to {2}[{3}].",
+                        endPoint.IpAddress, endPoint.TcpPort, appClient.IPAddress, appClient.HostName, appClient.AppName), LogType.Information);
+
+                MessageCenter.Instance.Notify(endPoint.IpAddress, endPoint.TcpPort, appClient);
+            }
+            catch
+            {
+                //TODO
             }
         }
 
@@ -299,7 +335,7 @@ namespace MySoft.IoC
             catch (Exception ex)
             {
                 //写异常日志
-                container.Write(ex);
+                container.WriteError(ex);
 
                 try
                 {
@@ -321,7 +357,7 @@ namespace MySoft.IoC
                 catch
                 {
                     //写异常日志
-                    container.Write(ex);
+                    container.WriteError(ex);
                 }
             }
         }

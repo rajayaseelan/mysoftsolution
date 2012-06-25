@@ -23,7 +23,20 @@ namespace MySoft.PlatformService.WinForm
         public frmMain()
         {
             InitializeComponent();
+
             CastleFactory.Create().OnError += new ErrorLogEventHandler(frmMain_OnError);
+
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                while (true)
+                {
+                    //休眠1分钟
+                    Thread.Sleep(TimeSpan.FromMinutes(1));
+
+                    //清理资源
+                    GC.Collect();
+                }
+            });
         }
 
         void frmMain_OnError(Exception error)

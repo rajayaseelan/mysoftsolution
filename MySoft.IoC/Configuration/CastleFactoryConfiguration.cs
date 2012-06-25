@@ -115,19 +115,19 @@ namespace MySoft.IoC.Configuration
                 //如果app名称为空
                 if (string.IsNullOrEmpty(appname))
                 {
-                    throw new WarningException("App name must be provided！");
+                    throw new WarningException("App name must be provided.");
                 }
 
                 //判断是否配置了服务信息
                 if (nodes.Count == 0)
                 {
-                    throw new WarningException("Not configure any service node！");
+                    throw new WarningException("Not configure any service node.");
                 }
 
                 //判断是否包含默认的服务
                 if (!nodes.ContainsKey(defaultKey))
                 {
-                    throw new WarningException("Not find the default service node 【" + defaultKey + "】！");
+                    throw new WarningException("Not find the default service node 【" + defaultKey + "】.");
                 }
             }
         }

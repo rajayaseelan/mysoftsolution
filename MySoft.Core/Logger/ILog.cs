@@ -14,12 +14,12 @@ namespace MySoft.Logger
         /// Writes the log.
         /// </summary>
         /// <param name="log">The log info.</param>
-        void Write(string log, LogType type);
+        void WriteLog(string log, LogType type);
 
         /// <summary>
         /// Writes the exception.
         /// </summary>
         /// <param name="exception">The exception info.</param>
-        void Write(Exception error);
+        void WriteError(Exception error);
     }
 }

@@ -62,7 +62,7 @@ namespace MySoft.IoC.Services
                 var error = IoCHelper.GetException(OperationContext.Current, reqMsg, body);
 
                 //将异常信息写出
-                logger.Write(error);
+                logger.WriteError(error);
 
                 //处理异常
                 resMsg = new ResponseMessage

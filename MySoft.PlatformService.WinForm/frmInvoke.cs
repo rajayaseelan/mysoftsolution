@@ -297,14 +297,25 @@ namespace MySoft.PlatformService.WinForm
                             {
                                 if (this.IsDisposed) return;
 
-                                webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
-                                webBrowser1.Document.Write(html);
+                                try
+                                {
+                                    webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+                                    webBrowser1.Document.Write(html);
+                                }
+                                catch
+                                {
+                                }
                             };
                         }));
                     }
                     else
                     {
-                        InvokeMethod(new Action(() => gridDataQuery.DataSource = table));
+                        InvokeMethod(new Action(() =>
+                        {
+                            gridDataQuery.DataSource = table;
+
+                            table = null;
+                        }));
                     }
                 }, data);
             }
@@ -448,6 +459,8 @@ namespace MySoft.PlatformService.WinForm
             this.node = null;
             this.parameters = null;
             this.txtParameters = null;
+            this.webBrowser1.Dispose();
+            this.webBrowser1 = null;
 
             this.Dispose();
         }

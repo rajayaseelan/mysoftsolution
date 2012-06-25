@@ -247,7 +247,7 @@ namespace MySoft.PlatformService.Client
             CastleFactory.Create().RegisterResolver(new ServiceResolver());
 
             ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
@@ -395,7 +395,7 @@ namespace MySoft.PlatformService.Client
                 catch (Exception ex)
                 {
                     string msg = ex.Message;
-                    Console.WriteLine(msg);
+                    Console.WriteLine("[{0}] {1}", DateTime.Now, msg);
                 }
 
                 //Thread.Sleep(1000);

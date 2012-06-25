@@ -76,20 +76,26 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
 
         void AsyncConnectComplete(SocketAsyncEventArgs e)
         {
-            Socket socket = e.UserToken as Socket;
-            if (e.SocketError != SocketError.Success)
+            //响应消息
+            waitReset.Set();
+
+            try
             {
-                try
+                Socket socket = e.UserToken as Socket;
+
+                if (e.SocketError != SocketError.Success)
                 {
                     socket.Close();
                 }
-                catch
-                {
-
-                }
             }
+            catch
+            {
 
-            waitReset.Set();
+            }
+            finally
+            {
+                TcpSocketHelper.Dispose(e);
+            }
         }
     }
 }

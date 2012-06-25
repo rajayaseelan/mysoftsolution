@@ -58,8 +58,8 @@ namespace MySoft.IoC
             {
                 foreach (var p in config.Nodes)
                 {
-                    if (p.Value.MaxPool < 10) throw new WarningException("Minimum pool size 10！");
-                    if (p.Value.MaxPool > 500) throw new WarningException("Maximum pool size 500！");
+                    if (p.Value.MaxPool < 10) throw new WarningException("Minimum pool size 10.");
+                    if (p.Value.MaxPool > 500) throw new WarningException("Maximum pool size 500.");
 
                     IService proxy = null;
                     if (p.Value.Format == TransferType.Json)
@@ -87,7 +87,7 @@ namespace MySoft.IoC
                     var config = CastleFactoryConfiguration.GetConfig();
 
                     if (config == null)
-                        throw new WarningException("Not find configuration section castleFactory！");
+                        throw new WarningException("Not find configuration section castleFactory.");
 
                     singleton = new CastleFactory(config);
                 }
@@ -520,7 +520,7 @@ namespace MySoft.IoC
         {
             if (singleton.proxies.Count == 0)
             {
-                throw new WarningException("Not find any service node！");
+                throw new WarningException("Not find any service node.");
             }
 
             //如果不存在当前配置节，则使用默认配置节

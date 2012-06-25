@@ -85,9 +85,16 @@ namespace MySoft.IoC
 
                 //每分钟进行一次计数
                 if (counterlist.Count >= 60)
+                {
                     counterlist.Reset();
+
+                    //清理资源
+                    GC.Collect();
+                }
                 else
+                {
                     counterlist.Count++;
+                }
 
                 //每秒推送一次
                 Thread.Sleep(1000);
@@ -118,11 +125,6 @@ namespace MySoft.IoC
                             }
                         }
                     }
-
-                    //清理资源
-                    GC.Collect();
-                    GC.Collect(2);
-                    GC.Collect();
                 }
                 catch (Exception ex)
                 {
@@ -250,7 +252,7 @@ namespace MySoft.IoC
                 }
                 catch (Exception ex)
                 {
-                    container.Write(ex);
+                    container.WriteError(ex);
                 }
             }
 

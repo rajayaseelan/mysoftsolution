@@ -32,7 +32,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// ≥ı ºªØ«Î«Û
         /// </summary>
-        private void InitServiceRequest()
+        protected virtual void InitServiceRequest()
         {
             this.reqPool = new ServiceRequestPool(node.MaxPool);
 

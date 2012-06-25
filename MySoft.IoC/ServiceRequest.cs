@@ -50,7 +50,6 @@ namespace MySoft.IoC
             this.port = node.Port;
 
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
-            this.client.ConnectTimeout = 5000;
             this.client.IsTimeoutDisconnect = isTimeoutDisconnect;
             this.client.Disconnected += client_Disconnected;
             this.client.MessageReceived += client_MessageReceived;
@@ -70,7 +69,7 @@ namespace MySoft.IoC
             {
                 var error = new SocketException((int)SocketError.ConnectionReset);
 
-                this.logger.Write(error);
+                this.logger.WriteError(error);
             }
         }
 

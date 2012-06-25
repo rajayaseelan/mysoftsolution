@@ -366,7 +366,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="log"></param>
         /// <param name="type"></param>
-        public void Write(string log, LogType type)
+        public void WriteLog(string log, LogType type)
         {
             ManagedThreadPool.QueueUserWorkItem(state =>
             {
@@ -385,7 +385,7 @@ namespace MySoft.IoC
         /// Êä³ö´íÎó
         /// </summary>
         /// <param name="error"></param>
-        public void Write(Exception error)
+        public void WriteError(Exception error)
         {
             ManagedThreadPool.QueueUserWorkItem(state =>
             {

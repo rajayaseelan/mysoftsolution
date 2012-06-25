@@ -44,7 +44,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             StartSocket();
             _running = true;
 
-            //启动多个线程进行接收
+            //开始接收请求
             for (int i = 0; i < SocketSetting.AcceptThreads; i++)
             {
                 BeginAsyncAccept();
@@ -102,10 +102,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         void AsyncAcceptComplete(object state)
         {
+            if (state == null) return;
+            SocketAsyncEventArgs e = state as SocketAsyncEventArgs;
+
             try
             {
-                SocketAsyncEventArgs e = state as SocketAsyncEventArgs;
-
                 if (e.SocketError == SocketError.Success)
                 {
                     var clientSocket = e.AcceptSocket;
@@ -118,6 +119,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex)
             {
 
+            }
+            finally
+            {
+                TcpSocketHelper.Dispose(e);
             }
 
             //重新进行接收
