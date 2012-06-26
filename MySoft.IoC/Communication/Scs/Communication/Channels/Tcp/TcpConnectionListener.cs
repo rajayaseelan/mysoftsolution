@@ -1,8 +1,8 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
-using System.Net;
-using System;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {
@@ -45,7 +45,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _running = true;
 
             //开始接收请求
-            for (int i = 0; i < SocketSetting.AcceptThreads; i++)
+            for (int i = 0; i < TcpSocketSetting.AcceptThreads; i++)
             {
                 BeginAsyncAccept();
             }
@@ -69,7 +69,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _listenerSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _listenerSocket.Bind(endPoint);
-            _listenerSocket.Listen(SocketSetting.Backlog * SocketSetting.AcceptThreads);
+            _listenerSocket.Listen(TcpSocketSetting.Backlog * TcpSocketSetting.AcceptThreads);
         }
 
         /// <summary>
@@ -79,12 +79,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             if (!_running) return;
 
-            var e = new SocketAsyncEventArgs();
+            SocketAsyncEventArgs e = new SocketAsyncEventArgs();
             e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
 
-            if (!_listenerSocket.AcceptAsync(e))
+            try
             {
-                ThreadPool.QueueUserWorkItem(AsyncAcceptComplete, e);
+                if (!_listenerSocket.AcceptAsync(e))
+                {
+                    ThreadPool.QueueUserWorkItem(AsyncAcceptComplete, e);
+                }
+            }
+            catch (Exception ex)
+            {
+                TcpSocketHelper.Dispose(e);
+
+                BeginAsyncAccept();
             }
         }
 
@@ -103,6 +112,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         void AsyncAcceptComplete(object state)
         {
             if (state == null) return;
+
             SocketAsyncEventArgs e = state as SocketAsyncEventArgs;
 
             try
@@ -110,6 +120,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 if (e.SocketError == SocketError.Success)
                 {
                     var clientSocket = e.AcceptSocket;
+                    clientSocket.SendBufferSize = TcpSocketSetting.BufferSize;
+                    clientSocket.ReceiveBufferSize = TcpSocketSetting.BufferSize;
 
                     OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
 
@@ -123,10 +135,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 TcpSocketHelper.Dispose(e);
-            }
 
-            //重新进行接收
-            BeginAsyncAccept();
+                //重新进行接收
+                BeginAsyncAccept();
+            }
         }
 
         /// <summary>

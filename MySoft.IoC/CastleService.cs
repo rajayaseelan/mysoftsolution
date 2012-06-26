@@ -38,9 +38,6 @@ namespace MySoft.IoC
         {
             this.config = config;
 
-            //设置最大连接数
-            SocketSetting.Set(config.MaxConnections);
-
             if (string.Compare(config.Host, "any", true) == 0)
             {
                 config.Host = IPAddress.Loopback.ToString();
@@ -200,7 +197,7 @@ namespace MySoft.IoC
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
 
             //推送ConnectInfo
-            ThreadPool.QueueUserWorkItem(PushConnectInfo, new ArrayList { endPoint, true });
+            ThreadPool.QueueUserWorkItem(PushConnectInfo, new ArrayList { endPoint, true, server.Clients.Count });
         }
 
         void Client_MessageError(object sender, ErrorEventArgs e)
@@ -230,18 +227,20 @@ namespace MySoft.IoC
                 var arr = state as ArrayList;
                 var endPoint = arr[0] as ScsTcpEndPoint;
                 bool connected = Convert.ToBoolean(arr[1]);
+                var count = Convert.ToInt32(arr[2]);
 
                 if (connected)
                 {
                     container.WriteLog(string.Format("[{2}] User connection ({0}:{1}).",
-                            endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count), LogType.Information);
+                                        endPoint.IpAddress, endPoint.TcpPort, count), LogType.Information);
                 }
                 else
                 {
                     container.WriteLog(string.Format("[{2}] User Disconnection ({0}:{1}).",
-                            endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count), LogType.Error);
+                                        endPoint.IpAddress, endPoint.TcpPort, count), LogType.Error);
                 }
 
+                //推送连接信息
                 var connect = new ConnectInfo
                 {
                     ConnectTime = DateTime.Now,
@@ -262,37 +261,44 @@ namespace MySoft.IoC
 
         void Client_MessageReceived(object sender, MessageEventArgs e)
         {
-            //不是指定消息不处理
-            if (e.Message is ScsClientMessage)
+            try
             {
-                var info = sender as IScsServerClient;
-                if (server.Clients.ContainsKey(info.ClientId))
+                //不是指定消息不处理
+                if (e.Message is ScsClientMessage)
                 {
-                    var client = server.Clients[info.ClientId];
-                    var appClient = (e.Message as ScsClientMessage).Client;
-                    client.State = appClient;
+                    var info = sender as IScsServerClient;
+                    if (server.Clients.ContainsKey(info.ClientId))
+                    {
+                        var client = server.Clients[info.ClientId];
+                        var appClient = (e.Message as ScsClientMessage).Client;
+                        client.State = appClient;
 
-                    //响应客户端详细信息
-                    var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
+                        //响应客户端详细信息
+                        var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
 
-                    //推送ConnectInfo
-                    ThreadPool.QueueUserWorkItem(PushAppClient, new ArrayList { endPoint, appClient });
+                        //推送ConnectInfo
+                        ThreadPool.QueueUserWorkItem(PushAppClient, new ArrayList { endPoint, appClient });
+                    }
+                }
+                else if (e.Message is ScsResultMessage)
+                {
+                    //获取client发送端
+                    var client = sender as IScsServerClient;
+
+                    //解析消息
+                    var message = e.Message as ScsResultMessage;
+                    var reqMsg = message.MessageValue as RequestMessage;
+
+                    //调用方法
+                    var resMsg = caller.CallMethod(client, reqMsg);
+
+                    //发送数据到服务端
+                    SendMessage(client, resMsg, message.RepliedMessageId);
                 }
             }
-            else if (e.Message is ScsResultMessage)
+            catch (Exception ex)
             {
-                //获取client发送端
-                var client = sender as IScsServerClient;
-
-                //解析消息
-                var message = e.Message as ScsResultMessage;
-                var reqMsg = message.MessageValue as RequestMessage;
-
-                //调用方法
-                var resMsg = caller.CallMethod(client, reqMsg);
-
-                //发送数据到服务端
-                SendMessage(client, resMsg, message.RepliedMessageId);
+                container.WriteError(ex);
             }
         }
 

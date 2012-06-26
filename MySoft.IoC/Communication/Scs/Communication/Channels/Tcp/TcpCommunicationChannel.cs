@@ -4,8 +4,6 @@ using System.Net.Sockets;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
-using System.Threading;
-using System.Collections.Generic;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {
@@ -38,16 +36,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private readonly Socket _clientSocket;
 
-        private readonly SocketAsyncEventArgsPool _socketPool;
+        //create byte array to store: ensure at least 1 byte!
+        const int BufferSize = 2048;
 
-        private readonly int _bufferSize;
+        private readonly byte[] _buffer;
 
         /// <summary>
         /// A flag to control thread's running
         /// </summary>
         private volatile bool _running;
-
-        private const int TIMEOUT = 5000;
 
         #endregion
 
@@ -61,15 +58,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public TcpCommunicationChannel(Socket clientSocket)
         {
             _clientSocket = clientSocket;
-            _clientSocket.SendTimeout = TIMEOUT;
-            _clientSocket.ReceiveTimeout = TIMEOUT;
             _clientSocket.NoDelay = true;
 
             _clientEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(_clientEndPoint.Address.ToString(), _clientEndPoint.Port);
 
-            _bufferSize = SocketSetting.BufferSize;
-            _socketPool = SocketSetting.TcpSocketPool;
+            _buffer = new byte[BufferSize];
         }
 
         #endregion
@@ -87,12 +81,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
 
             _running = false;
+            CommunicationState = CommunicationStates.Disconnected;
+
+            SocketAsyncEventArgs e = new SocketAsyncEventArgs();
+            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+
             try
             {
-                CommunicationState = CommunicationStates.Disconnected;
-
-                SocketAsyncEventArgs e = new SocketAsyncEventArgs();
-                e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
                 if (!_clientSocket.DisconnectAsync(e))
                 {
                     AsyncDisconnectComplete(e);
@@ -102,6 +97,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch
             {
+                TcpSocketHelper.Dispose(e);
+
                 OnDisconnected();
             }
         }
@@ -140,10 +137,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             e.UserToken = message;
             e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
 
-            e.SetBuffer(messageBytes, 0, messageBytes.Length);
-
             try
             {
+                e.SetBuffer(messageBytes, 0, messageBytes.Length);
+
                 if (!_clientSocket.SendAsync(e))
                 {
                     AsyncSendComplete(e);
@@ -172,30 +169,27 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            if (_socketPool.Count > 0)
+            //接收数据
+            SocketAsyncEventArgs e = new SocketAsyncEventArgs();
+            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+
+            try
             {
-                //接收完成
-                SocketAsyncEventArgs e = _socketPool.Pop();
-                e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+                //clear buffer
+                Array.Clear(_buffer, 0, _buffer.Length);
 
-                e.SetBuffer(new byte[_bufferSize], 0, _bufferSize);
+                e.SetBuffer(_buffer, 0, _buffer.Length);
 
-                try
+                if (!_clientSocket.ReceiveAsync(e))
                 {
-                    if (!_clientSocket.ReceiveAsync(e))
-                    {
-                        AsyncReceiveComplete(e);
-                    }
+                    AsyncReceiveComplete(e);
                 }
-                catch (Exception ex)
-                {
-                    TcpSocketHelper.Release(e);
+            }
+            catch (Exception ex)
+            {
+                TcpSocketHelper.Dispose(e);
 
-                    e.Completed -= new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                    _socketPool.Push(e);
-
-                    throw ex;
-                }
+                throw ex;
             }
         }
 
@@ -239,6 +233,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     }
                     else
                     {
+                        Array.Clear(e.Buffer, 0, e.Count);
+
                         LastSentMessageTime = DateTime.Now;
 
                         OnMessageSent(e.UserToken as IScsMessage);
@@ -299,6 +295,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         //Copy received bytes to a new byte array
                         var receivedBytes = new byte[e.BytesTransferred];
                         Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, e.BytesTransferred);
+
                         Array.Clear(e.Buffer, 0, e.BytesTransferred);
 
                         //Read messages according to current wire protocol
@@ -327,10 +324,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (SocketException ex)
             {
-                TcpSocketHelper.Release(e);
-
-                e.Completed -= new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                _socketPool.Push(e);
+                TcpSocketHelper.Dispose(e);
 
                 if ((ex.SocketErrorCode == SocketError.ConnectionReset)
                  || (ex.SocketErrorCode == SocketError.ConnectionAborted)
@@ -352,7 +346,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                TcpSocketHelper.Release(e);
+                TcpSocketHelper.Dispose(e);
 
                 OnMessageError(ex);
             }

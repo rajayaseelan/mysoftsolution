@@ -30,13 +30,14 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
         public Socket ConnectToServer(int timeoutMs)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            SocketAsyncEventArgs e = new SocketAsyncEventArgs();
+            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+            e.RemoteEndPoint = endPoint;
+            e.UserToken = socket;
+
             try
             {
-                SocketAsyncEventArgs e = new SocketAsyncEventArgs();
-                e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                e.RemoteEndPoint = endPoint;
-                e.UserToken = socket;
-
                 if (!socket.ConnectAsync(e))
                 {
                     AsyncConnectComplete(e);
@@ -54,15 +55,11 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
 
                 return socket;
             }
-            catch (SocketException socketException)
+            catch (Exception ex)
             {
-                if (socketException.ErrorCode != 10035)
-                {
-                    socket.Close();
-                    throw;
-                }
+                TcpSocketHelper.Dispose(e);
 
-                return socket;
+                throw ex;
             }
         }
 
