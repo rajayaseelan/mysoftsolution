@@ -37,7 +37,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private readonly Socket _clientSocket;
 
         //create byte array to store: ensure at least 1 byte!
-        const int BufferSize = 2048;
+        const int BufferSize = 4096;
 
         private readonly byte[] _buffer;
 
