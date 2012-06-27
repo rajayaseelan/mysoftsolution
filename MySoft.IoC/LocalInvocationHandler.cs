@@ -40,8 +40,15 @@ namespace MySoft.IoC
             //上下文
             SetOperationContext(caller);
 
-            //调用基类方法
-            return base.CallService(reqMsg);
+            try
+            {
+                //调用基类方法
+                return base.CallService(reqMsg);
+            }
+            finally
+            {
+                OperationContext.Current = null;
+            }
         }
 
         /// <summary>

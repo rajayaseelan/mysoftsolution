@@ -54,6 +54,11 @@ namespace MySoft.Tools.CastleConfig
                 if (!string.IsNullOrEmpty(textBox2.Text.Trim()))
                 {
                     var filePath1 = textBox2.Text.Trim();
+                    if (File.Exists(filePath1))
+                    {
+                        try { File.Delete(filePath1); }
+                        catch { }
+                    }
                     SimpleLog.WriteFile(filePath1, richTextBox1.Text);
                 }
 

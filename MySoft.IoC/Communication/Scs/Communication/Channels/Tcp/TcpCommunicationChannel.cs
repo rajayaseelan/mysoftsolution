@@ -40,10 +40,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         const int SocketTimeout = 5 * 1000;
 
         // Socket send / receive timeout.
-        const int SocketBufferSize = 16 * 1024; //16kb
+        const int SocketBufferSize = 4 * 1024; //4kb
 
         //create byte array to store: ensure at least 1 byte!
-        const int BufferSize = 4 * 1024; //4kb
+        const int BufferSize = 2 * 1024; //2kb
 
         private readonly byte[] _buffer;
 
@@ -298,12 +298,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                  || (ex.SocketErrorCode == SocketError.Shutdown)
                  || (ex.SocketErrorCode == SocketError.Disconnecting))
                 {
+                    try
+                    {
+                        var error = new CommunicationException(string.Format("Tcp socket ({0} => {1}) is closed.",
+                                        _clientSocket.RemoteEndPoint, _clientSocket.LocalEndPoint), ex);
+
+                        OnMessageError(error);
+                    }
+                    catch
+                    {
+
+                    }
+
                     Disconnect();
-
-                    var error = new CommunicationException(string.Format("Tcp socket (local:{0} => remote:{1}) is closed.",
-                                    _clientSocket.RemoteEndPoint, _clientSocket.LocalEndPoint), ex);
-
-                    OnMessageError(error);
                 }
                 else
                 {
@@ -378,12 +385,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                  || (ex.SocketErrorCode == SocketError.Shutdown)
                  || (ex.SocketErrorCode == SocketError.Disconnecting))
                 {
+                    try
+                    {
+                        var error = new CommunicationException(string.Format("Tcp socket ({0} => {1}) is closed.",
+                                        _clientSocket.RemoteEndPoint, _clientSocket.LocalEndPoint), ex);
+
+                        OnMessageError(error);
+                    }
+                    catch
+                    {
+
+                    }
+
                     Disconnect();
-
-                    var error = new CommunicationException(string.Format("Tcp socket ({0} => {1}) is closed.",
-                                    _clientSocket.RemoteEndPoint, _clientSocket.LocalEndPoint), ex);
-
-                    OnMessageError(error);
                 }
                 else
                 {

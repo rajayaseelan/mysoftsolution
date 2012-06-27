@@ -208,6 +208,8 @@ namespace MySoft.PlatformService.WinForm
                     if (!string.IsNullOrEmpty(text))
                     {
                         var info = p.Value.Tag as ParameterInfo;
+                        if (info.IsPrimitive)
+                            text = string.Format("\"{0}\"", text);
 
                         try
                         {
