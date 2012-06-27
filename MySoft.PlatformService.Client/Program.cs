@@ -246,14 +246,19 @@ namespace MySoft.PlatformService.Client
             CastleFactory.Create().RegisterLogger(new ServiceLog());
             CastleFactory.Create().RegisterResolver(new ServiceResolver());
 
-            ManualResetEvent are = new ManualResetEvent(false);
-            for (int i = 0; i < 100; i++)
+            AutoResetEvent are = new AutoResetEvent(false);
+            are.Reset();
+            var watch = Stopwatch.StartNew();
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
             }
 
-            are.Set();
+            are.WaitOne();
+            watch.Stop();
+
+            Console.WriteLine("ElapsedMilliseconds => " + watch.ElapsedMilliseconds + " ms.");
 
             //var node = CastleFactory.Create().GetDefaultNode();
             //var clients = CastleFactory.Create().GetChannel<IStatusService>(node).GetAppClients();
@@ -353,16 +358,13 @@ namespace MySoft.PlatformService.Client
 
         static void DoWork1(object state)
         {
-            ManualResetEvent are = state as ManualResetEvent;
-            are.WaitOne();
-
             var node = CastleFactory.Create().GetDefaultNode();
 
             var service = CastleFactory.Create().GetChannel<IUserService>();
             //service = new UserService.UserService();
             //var service1 = CastleFactory.Create().GetChannel<IStatusService>(node);
 
-            while (true)
+            while (counter < 1000)
             {
                 try
                 {
@@ -386,7 +388,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    //Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //var clients = service1.GetClientList();
 
@@ -400,6 +402,9 @@ namespace MySoft.PlatformService.Client
 
                 //Thread.Sleep(1000);
             }
+
+            AutoResetEvent are = state as AutoResetEvent;
+            are.Set();
         }
 
         static void Program_OnError(Exception error)

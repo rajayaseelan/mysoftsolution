@@ -215,7 +215,7 @@ namespace MySoft.IoC
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
 
             //推送ConnectInfo
-            ThreadPool.QueueUserWorkItem(PushConnectInfo, new ArrayList { endPoint, false });
+            ThreadPool.QueueUserWorkItem(PushConnectInfo, new ArrayList { endPoint, false, server.Clients.Count });
         }
 
         void PushConnectInfo(object state)

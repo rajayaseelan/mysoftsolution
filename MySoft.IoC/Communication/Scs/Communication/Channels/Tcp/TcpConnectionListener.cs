@@ -120,10 +120,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 if (e.SocketError == SocketError.Success)
                 {
                     var clientSocket = e.AcceptSocket;
-                    clientSocket.SendBufferSize = TcpSocketSetting.BufferSize;
-                    clientSocket.ReceiveBufferSize = TcpSocketSetting.BufferSize;
 
-                    OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
+                    OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket, true));
 
                     e.AcceptSocket = null;
                 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Threading;
 using Castle.Core;
 using Castle.Core.Internal;
 using Castle.Core.Resource;
@@ -13,7 +14,6 @@ using Castle.Windsor;
 using Castle.Windsor.Configuration.Interpreters;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -368,7 +368,7 @@ namespace MySoft.IoC
         /// <param name="type"></param>
         public void WriteLog(string log, LogType type)
         {
-            ManagedThreadPool.QueueUserWorkItem(state =>
+            ThreadPool.QueueUserWorkItem(state =>
             {
                 try
                 {
@@ -387,7 +387,7 @@ namespace MySoft.IoC
         /// <param name="error"></param>
         public void WriteError(Exception error)
         {
-            ManagedThreadPool.QueueUserWorkItem(state =>
+            ThreadPool.QueueUserWorkItem(state =>
             {
                 try
                 {

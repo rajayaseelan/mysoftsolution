@@ -26,6 +26,7 @@ namespace MySoft.IoC.Communication
                 e.AcceptSocket = null;
                 e.RemoteEndPoint = null;
                 e.SetBuffer(null, 0, 0);
+                e.BufferList = null;
                 e.UserToken = null;
 
                 //销毁资源

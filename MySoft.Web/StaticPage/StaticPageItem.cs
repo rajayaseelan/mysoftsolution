@@ -423,7 +423,7 @@ namespace MySoft.Web
         /// </summary>
         public void Update(TimeSpan timeSpan)
         {
-            ManagedThreadPool.QueueUserWorkItem(state =>
+            ThreadPool.QueueUserWorkItem(state =>
             {
                 ArrayList arr = state as ArrayList;
                 IStaticPageItem item = (IStaticPageItem)arr[0];
@@ -807,7 +807,7 @@ namespace MySoft.Web
                                 else
                                     updateItems = items.GetRange(index * pageSize, items.Count - (index * pageSize));
 
-                                var thread = new Thread(state =>
+                                ThreadPool.QueueUserWorkItem(state =>
                                 {
                                     if (state == null) return;
 
@@ -827,10 +827,7 @@ namespace MySoft.Web
                                     }
 
                                     reset.Set();
-                                });
-
-                                //启动线程
-                                thread.Start(new ArrayList { updateItems, events[index] });
+                                }, new ArrayList { updateItems, events[index] });
                             }
 
                             //等待所有响应
@@ -1008,7 +1005,7 @@ namespace MySoft.Web
         /// </summary>
         public void Update(TimeSpan timeSpan)
         {
-            ManagedThreadPool.QueueUserWorkItem(state =>
+            ThreadPool.QueueUserWorkItem(state =>
             {
                 TimeSpan span = (TimeSpan)state;
                 Thread.Sleep(span);

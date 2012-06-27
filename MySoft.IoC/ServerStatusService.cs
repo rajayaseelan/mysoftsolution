@@ -3,12 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Server;
-using MySoft.IoC.Callback;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -28,7 +27,6 @@ namespace MySoft.IoC
         private IScsServer server;
         private IServiceContainer container;
         private TimeStatusCollection statuslist;
-        private CounterInfoCollection counterlist;
         private DateTime startTime;
 
         internal IServiceContainer Container { get { return container; } }
@@ -47,17 +45,25 @@ namespace MySoft.IoC
             this.container = container;
             this.startTime = DateTime.Now;
             this.statuslist = new TimeStatusCollection(config.RecordHours * 3600);
-            this.counterlist = new CounterInfoCollection(config.MinuteCalls);
 
             //启动定义推送线程
-            var threadPush = new Thread(DoPushWork);
-            threadPush.IsBackground = true;
-            threadPush.Start();
+            ThreadPool.QueueUserWorkItem(DoPushWork);
 
             //启动自动检测线程
-            var threadCheck = new Thread(DoCheckWork);
-            threadCheck.IsBackground = true;
-            threadCheck.Start();
+            ThreadPool.QueueUserWorkItem(DoCheckWork);
+
+            //启动回收线程
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                while (true)
+                {
+                    //暂停1分钟
+                    Thread.Sleep(TimeSpan.FromMinutes(1));
+
+                    //清理资源
+                    GC.Collect();
+                }
+            });
         }
 
 
@@ -66,7 +72,7 @@ namespace MySoft.IoC
             while (true)
             {
                 //启用线程来进行处理
-                ManagedThreadPool.QueueUserWorkItem(obj =>
+                ThreadPool.QueueUserWorkItem(obj =>
                 {
                     //响应定时信息
                     if (statuslist.Count > 0)
@@ -82,19 +88,6 @@ namespace MySoft.IoC
                         }
                     }
                 });
-
-                //每分钟进行一次计数
-                if (counterlist.Count >= 60)
-                {
-                    counterlist.Reset();
-
-                    //清理资源
-                    GC.Collect();
-                }
-                else
-                {
-                    counterlist.Count++;
-                }
 
                 //每秒推送一次
                 Thread.Sleep(1000);
@@ -150,9 +143,6 @@ namespace MySoft.IoC
                 status.ErrorCount++;
             else
                 status.SuccessCount++;
-
-            //计算统计
-            counterlist.Call(args);
         }
 
         #region IStatusService 成员

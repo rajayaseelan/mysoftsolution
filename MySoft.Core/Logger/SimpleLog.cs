@@ -50,7 +50,7 @@ namespace MySoft.Logger
             this.logqueue = new Queue<LogInfo>();
 
             //启动生成文件线程
-            var threadLog = new Thread(() =>
+            ThreadPool.QueueUserWorkItem(state =>
             {
                 while (true)
                 {
@@ -89,10 +89,6 @@ namespace MySoft.Logger
                     Thread.Sleep(100);
                 }
             });
-
-            //启动日志线程
-            threadLog.IsBackground = true;
-            threadLog.Start();
         }
 
         #region 自动创建文件

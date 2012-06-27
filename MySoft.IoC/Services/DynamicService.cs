@@ -74,23 +74,30 @@ namespace MySoft.IoC.Services
                 //返回拦截服务
                 var service = AspectFactory.CreateProxyService(serviceType, instance);
 
-                if (reqMsg.InvokeMethod)
+                try
                 {
-                    var objValue = reqMsg.Parameters["InvokeParameter"];
-                    var jsonString = (objValue == null ? string.Empty : objValue.ToString());
+                    if (reqMsg.InvokeMethod)
+                    {
+                        var objValue = reqMsg.Parameters["InvokeParameter"];
+                        var jsonString = (objValue == null ? string.Empty : objValue.ToString());
 
-                    //解析参数
-                    reqMsg.Parameters = IoCHelper.CreateParameters(method, jsonString);
+                        //解析参数
+                        reqMsg.Parameters = IoCHelper.CreateParameters(method, jsonString);
+                    }
+
+                    //参数赋值
+                    object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
+
+                    //调用对应的服务
+                    resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
+
+                    //处理返回参数
+                    IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
                 }
-
-                //参数赋值
-                object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
-
-                //调用对应的服务
-                resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
-
-                //处理返回参数
-                IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
+                finally
+                {
+                    service = null;
+                }
 
                 //返回结果数据
                 if (reqMsg.InvokeMethod)

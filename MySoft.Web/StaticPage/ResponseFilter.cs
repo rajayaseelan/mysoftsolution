@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.IO;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Web;
-using System.Linq;
-using MySoft.Web.Configuration;
 using System.Threading;
-using System.Collections;
-using MySoft.Threading;
+using System.Web;
 
 namespace MySoft.Web
 {
@@ -44,7 +39,7 @@ namespace MySoft.Web
             string path = HttpContext.Current.Request.Url.PathAndQuery;
 
             //启动生成线程
-            ManagedThreadPool.QueueUserWorkItem(WriteFile, new ArrayList { content, path });
+            ThreadPool.QueueUserWorkItem(WriteFile, new ArrayList { content, path });
         }
 
         /// <summary>

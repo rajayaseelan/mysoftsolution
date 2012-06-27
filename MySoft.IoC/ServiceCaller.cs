@@ -2,11 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Callback;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Threading;
+using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -156,7 +157,7 @@ namespace MySoft.IoC
         private void NotifyEventArgs(CallEventArgs callArgs)
         {
             //调用计数
-            ManagedThreadPool.QueueUserWorkItem(state =>
+            ThreadPool.QueueUserWorkItem(state =>
             {
                 try
                 {

@@ -31,8 +31,7 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
         protected override ICommunicationChannel CreateCommunicationChannel()
         {
             var tcpHelper = new TcpHelper(new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort));
-
-            return new TcpCommunicationChannel(tcpHelper.ConnectToServer(ConnectTimeout));
+            return new TcpCommunicationChannel(tcpHelper.ConnectToServer(ConnectTimeout), false);
         }
     }
 }

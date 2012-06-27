@@ -233,6 +233,9 @@ namespace MySoft.PlatformService.WinForm
             //启用线程进行数据填充
             var caller = new AsyncMethodCaller(AsyncCaller);
             var ar = caller.BeginInvoke(message, AsyncComplete, caller);
+
+            //清理资源
+            GC.Collect();
         }
 
         private InvokeData AsyncCaller(InvokeMessage message)

@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
+using System.Collections.Generic;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {
@@ -55,12 +56,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         /// <param name="clientSocket">A connected Socket object that is
         /// used to communicate over network</param>
-        public TcpCommunicationChannel(Socket clientSocket)
+        public TcpCommunicationChannel(Socket clientSocket, bool sendByServer)
         {
             _clientSocket = clientSocket;
             _clientSocket.NoDelay = true;
 
-            _clientEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
+            if (sendByServer)
+                _clientEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
+            else
+                _clientEndPoint = (IPEndPoint)_clientSocket.LocalEndPoint;
+
             _remoteEndPoint = new ScsTcpEndPoint(_clientEndPoint.Address.ToString(), _clientEndPoint.Port);
 
             _buffer = new byte[BufferSize];
@@ -154,6 +159,35 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
         }
 
+        #region 转换成byte组
+
+        /// <summary>
+        /// 转换成byte组
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        //private IList<ArraySegment<byte>> ConvertBufferList(byte[] source, int size)
+        //{
+        //    var target = new List<ArraySegment<byte>>();
+        //    int l = source.Length / size;
+        //    int y = source.Length % size;
+
+        //    for (int i = 0; i < l; i++)
+        //    {
+        //        target.Add(new ArraySegment<byte>(source, i * size, size));
+        //    }
+
+        //    if (y != 0)
+        //    {
+        //        target.Add(new ArraySegment<byte>(source, l * size, y));
+        //    }
+
+        //    return target;
+        //}
+
+        #endregion
+
         #endregion
 
         #region Private methods
@@ -176,7 +210,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 //clear buffer
-                Array.Clear(_buffer, 0, _buffer.Length);
+                if (_buffer != null)
+                    Array.Clear(_buffer, 0, _buffer.Length);
 
                 e.SetBuffer(_buffer, 0, _buffer.Length);
 
@@ -233,7 +268,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     }
                     else
                     {
-                        Array.Clear(e.Buffer, 0, e.Count);
+                        if (e.Buffer != null)
+                            Array.Clear(e.Buffer, 0, e.Count);
 
                         LastSentMessageTime = DateTime.Now;
 
@@ -296,7 +332,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         var receivedBytes = new byte[e.BytesTransferred];
                         Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, e.BytesTransferred);
 
-                        Array.Clear(e.Buffer, 0, e.BytesTransferred);
+                        if (e.Buffer != null)
+                            Array.Clear(e.Buffer, 0, e.BytesTransferred);
 
                         //Read messages according to current wire protocol
                         var messages = WireProtocol.CreateMessages(receivedBytes);

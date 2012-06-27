@@ -8,8 +8,6 @@ using System.Threading;
 using System.Web;
 using System.Web.Hosting;
 using MySoft.Logger;
-using System.Text.RegularExpressions;
-using MySoft.Threading;
 
 namespace MySoft.Web
 {
@@ -69,7 +67,7 @@ namespace MySoft.Web
             if (isStartUpdate)
             {
                 //启动一个临时线程生成
-                ManagedThreadPool.QueueUserWorkItem(state => RunUpdate(DateTime.MaxValue));
+                ThreadPool.QueueUserWorkItem(state => RunUpdate(DateTime.MaxValue));
             }
 
             //启动一个循环线程生成
@@ -100,7 +98,7 @@ namespace MySoft.Web
                     //需要生成才启动线程
                     if (sti.NeedUpdate(updateTime))
                     {
-                        var thread = new Thread(state =>
+                        ThreadPool.QueueUserWorkItem(state =>
                         {
                             if (state == null) return;
 
@@ -124,10 +122,7 @@ namespace MySoft.Web
                                     catch { }
                                 }
                             }
-                        });
-
-                        //启动线程
-                        thread.Start(new ArrayList { sti, updateTime });
+                        }, new ArrayList { sti, updateTime });
                     }
                 }
             }
