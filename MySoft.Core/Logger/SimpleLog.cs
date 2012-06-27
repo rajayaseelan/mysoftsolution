@@ -17,9 +17,62 @@ namespace MySoft.Logger
         /// 简单日志的单例 (默认路径为根目录下的Logs目录)
         /// </summary>
         public static readonly SimpleLog Instance = new SimpleLog(AppDomain.CurrentDomain.BaseDirectory);
+        private static readonly Queue<LogInfo> logqueue;
+
+        static SimpleLog()
+        {
+            logqueue = new Queue<LogInfo>();
+
+            //启动生成文件线程
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                while (true)
+                {
+                    try
+                    {
+                        if (logqueue.Count > 0)
+                        {
+                            var list = new List<LogInfo>();
+                            lock (logqueue)
+                            {
+                                list.AddRange(logqueue.ToArray());
+                                logqueue.Clear();
+                            }
+
+                            //对日志按路径进行分组
+                            var logs = list.GroupBy(p => p.FilePath).Select(p => new LogInfo
+                            {
+                                FilePath = p.Key,
+                                Log = string.Concat(p.Select(l => l.Log).ToArray())
+                            }).ToList();
+
+                            //批量写日志
+                            logs.ForEach(loginfo =>
+                            {
+                                try
+                                {
+                                    string dir = Path.GetDirectoryName(loginfo.FilePath);
+                                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                                    File.AppendAllText(loginfo.FilePath, loginfo.Log, Encoding.UTF8);
+                                }
+                                catch { }
+
+                                Thread.Sleep(10);
+                            });
+                        }
+                    }
+                    catch
+                    {
+                        //TODO
+                    }
+
+                    //等待1000毫秒
+                    Thread.Sleep(1000);
+                }
+            });
+        }
 
         private string basedir;
-        private Queue<LogInfo> logqueue;
 
         /// <summary>
         /// 写文件日志静态方法（传入文件绝对路径与文件内容）
@@ -47,48 +100,6 @@ namespace MySoft.Logger
         public SimpleLog(string basedir)
         {
             this.basedir = basedir;
-            this.logqueue = new Queue<LogInfo>();
-
-            //启动生成文件线程
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                while (true)
-                {
-                    if (logqueue.Count > 0)
-                    {
-                        var list = new List<LogInfo>();
-                        lock (logqueue)
-                        {
-                            list.AddRange(logqueue.ToArray());
-                            logqueue.Clear();
-                        }
-
-                        //对日志按路径进行分组
-                        var logs = list.GroupBy(p => p.FilePath).Select(p => new LogInfo
-                        {
-                            FilePath = p.Key,
-                            Log = string.Concat(p.Select(l => l.Log).ToArray())
-                        }).ToList();
-
-                        //批量写日志
-                        logs.ForEach(loginfo =>
-                        {
-                            try
-                            {
-                                string dir = Path.GetDirectoryName(loginfo.FilePath);
-                                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                                File.AppendAllText(loginfo.FilePath, loginfo.Log, Encoding.UTF8);
-                            }
-                            catch { }
-
-                            Thread.Sleep(10);
-                        });
-                    }
-
-                    //等待100毫秒
-                    Thread.Sleep(100);
-                }
-            });
         }
 
         #region 自动创建文件
@@ -376,7 +387,7 @@ namespace MySoft.Logger
                 if (!isOriginal)
                 {
                     log = string.Format("【{0}】 => {1}{2}{2}{3}{2}{2}", DateTime.Now, log,
-                                        Environment.NewLine, string.Empty.PadRight(200, '='));
+                                        Environment.NewLine, string.Empty.PadRight(150, '='));
                 }
 
                 var loginfo = new LogInfo { FilePath = filePath, Log = log };

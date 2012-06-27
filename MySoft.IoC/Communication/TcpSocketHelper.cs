@@ -18,7 +18,6 @@ namespace MySoft.IoC.Communication
         public static void Dispose(SocketAsyncEventArgs e)
         {
             if (e == null) return;
-            if (e.Buffer == null) return;
 
             try
             {

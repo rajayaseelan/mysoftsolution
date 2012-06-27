@@ -26,7 +26,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
         }
         private readonly ScsTcpEndPoint _remoteEndPoint;
-        private readonly IPEndPoint _clientEndPoint;
 
         #endregion
 
@@ -37,8 +36,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private readonly Socket _clientSocket;
 
+        // Socket send / receive timeout.
+        const int SocketTimeout = 5 * 1000;
+
+        // Socket send / receive timeout.
+        const int SocketBufferSize = 16 * 1024; //16kb
+
         //create byte array to store: ensure at least 1 byte!
-        const int BufferSize = 4096;
+        const int BufferSize = 4 * 1024; //4kb
 
         private readonly byte[] _buffer;
 
@@ -59,14 +64,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public TcpCommunicationChannel(Socket clientSocket, bool sendByServer)
         {
             _clientSocket = clientSocket;
+            _clientSocket.SendTimeout = SocketTimeout;
+            _clientSocket.ReceiveTimeout = SocketTimeout;
+            _clientSocket.SendBufferSize = SocketBufferSize;
+            _clientSocket.ReceiveBufferSize = SocketBufferSize;
             _clientSocket.NoDelay = true;
 
-            if (sendByServer)
-                _clientEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
-            else
-                _clientEndPoint = (IPEndPoint)_clientSocket.LocalEndPoint;
-
-            _remoteEndPoint = new ScsTcpEndPoint(_clientEndPoint.Address.ToString(), _clientEndPoint.Port);
+            var endPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
+            _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
 
             _buffer = new byte[BufferSize];
         }
@@ -295,14 +300,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     Disconnect();
 
-                    var error = new CommunicationException(string.Format("Tcp socket ({0}:{1}) is closed.",
-                            _clientEndPoint.Address, _clientEndPoint.Port), ex);
+                    var error = new CommunicationException(string.Format("Tcp socket (local:{0} => remote:{1}) is closed.",
+                                    _clientSocket.RemoteEndPoint, _clientSocket.LocalEndPoint), ex);
 
                     OnMessageError(error);
                 }
                 else
                 {
                     Console.WriteLine("({0}){1} => {2}", ex.ErrorCode, ex.SocketErrorCode, ex.Message);
+
+                    OnMessageError(ex);
                 }
             }
             catch (Exception ex)
@@ -338,6 +345,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         //Read messages according to current wire protocol
                         var messages = WireProtocol.CreateMessages(receivedBytes);
 
+                        receivedBytes = null;
+
                         //Raise MessageReceived event for all received messages
                         foreach (var message in messages)
                         {
@@ -371,14 +380,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     Disconnect();
 
-                    var error = new CommunicationException(string.Format("Tcp socket ({0}:{1}) is closed.",
-                            _clientEndPoint.Address, _clientEndPoint.Port), ex);
+                    var error = new CommunicationException(string.Format("Tcp socket ({0} => {1}) is closed.",
+                                    _clientSocket.RemoteEndPoint, _clientSocket.LocalEndPoint), ex);
 
                     OnMessageError(error);
                 }
                 else
                 {
                     Console.WriteLine("({0}){1} => {2}", ex.ErrorCode, ex.SocketErrorCode, ex.Message);
+
+                    OnMessageError(ex);
                 }
             }
             catch (Exception ex)
