@@ -43,6 +43,15 @@ namespace MySoft.IoC.Messages
         {
             this.Methods = new List<MethodInfo>();
         }
+
+        /// <summary>
+        /// 重载ToString
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.FullName;
+        }
     }
 
     /// <summary>
@@ -79,6 +88,15 @@ namespace MySoft.IoC.Messages
         public MethodInfo()
         {
             this.Parameters = new List<ParameterInfo>();
+        }
+
+        /// <summary>
+        /// 重载ToString
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.FullName;
         }
     }
 
@@ -137,6 +155,15 @@ namespace MySoft.IoC.Messages
         {
             this.SubParameters = new List<ParameterInfo>();
             this.EnumValue = new List<EnumInfo>();
+        }
+
+        /// <summary>
+        /// 重载ToString
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.Name;
         }
     }
 

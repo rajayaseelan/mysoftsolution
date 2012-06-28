@@ -14,6 +14,8 @@ using MySoft.Threading;
 using System.Threading;
 using MySoft.IoC.Communication;
 using System.Collections;
+using System.Text;
+using System.Collections.Generic;
 
 namespace MySoft.IoC
 {
@@ -106,6 +108,42 @@ namespace MySoft.IoC
             //绑定事件
             MessageCenter.Instance.OnError += container.WriteError;
             MessageCenter.Instance.OnLog += container.WriteLog;
+
+            //发布日志
+            ThreadPool.QueueUserWorkItem(PublishService, status.GetServiceList());
+        }
+
+        void PublishService(object state)
+        {
+            if (state == null) return;
+
+            var list = state as IList<ServiceInfo>;
+            string log = string.Format("此次发布的服务有{0}个，共有{1}个方法，详细信息如下：\r\n\r\n", list.Count, list.Sum(p => p.Methods.Count()));
+            var sb = new StringBuilder(log);
+
+            int index = 0;
+            foreach (var info in list)
+            {
+                sb.AppendFormat("{0}, {1}\r\n", info.FullName, info.Assembly);
+                sb.AppendLine("".PadRight(180, '-'));
+
+                foreach (var method in info.Methods)
+                {
+                    sb.AppendLine(method.FullName);
+                }
+
+                if (index < list.Count - 1)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("".PadRight(180, '<'));
+                    sb.AppendLine();
+                }
+
+                index++;
+            }
+
+            //写日志
+            SimpleLog.Instance.WriteLogForDir("ServiceRun", sb.ToString());
         }
 
         #region 启动停止服务

@@ -68,7 +68,6 @@ namespace MySoft.IoC
             else
             {
                 var error = new SocketException((int)SocketError.ConnectionReset);
-
                 this.logger.WriteError(error);
             }
         }
@@ -80,14 +79,6 @@ namespace MySoft.IoC
             {
                 OnError(sender, new ErrorMessageEventArgs { Request = reqMessage, Error = e.Error });
             }
-        }
-
-        /// <summary>
-        /// 断开连接
-        /// </summary>
-        public void Disconnect()
-        {
-            client.Disconnect();
         }
 
         /// <summary>

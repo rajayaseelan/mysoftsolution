@@ -37,10 +37,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private readonly Socket _clientSocket;
 
         // Socket send / receive timeout.
-        const int SocketTimeout = 5 * 1000;
+        const int SocketTimeout = 60 * 1000;
 
         // Socket send / receive timeout.
-        const int SocketBufferSize = 4 * 1024; //4kb
+        const int SocketBufferSize = 8 * 1024; //4kb
 
         //create byte array to store: ensure at least 1 byte!
         const int BufferSize = 2 * 1024; //2kb

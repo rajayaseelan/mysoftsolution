@@ -75,16 +75,6 @@ namespace MySoft.Logger
         private string basedir;
 
         /// <summary>
-        /// 写文件日志静态方法（传入文件绝对路径与文件内容）
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="text"></param>
-        public static void WriteFile(string filePath, string text)
-        {
-            Instance.WriteFileLog(filePath, text, true);
-        }
-
-        /// <summary>
         /// 设置基准路径
         /// </summary>
         /// <param name="basedir"></param>
@@ -365,11 +355,43 @@ namespace MySoft.Logger
         }
 
         /// <summary>
+        /// 写文件日志静态方法（传入文件绝对路径与文件内容）
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="text"></param>
+        public static void WriteFile(string filePath, string text)
+        {
+            WriteFile(filePath, text, false);
+        }
+
+        /// <summary>
+        /// 写文件日志静态方法（传入文件绝对路径与文件内容）
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="text"></param>
+        /// <param name="delFile"></param>
+        public static void WriteFile(string filePath, string text, bool delFile)
+        {
+            if (delFile && File.Exists(filePath))
+            {
+                try
+                {
+                    File.Delete(filePath);
+                }
+                catch
+                {
+                }
+            }
+
+            WriteFileLog(filePath, text, true);
+        }
+
+        /// <summary>
         /// 写文件日志
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="ex"></param>
-        private void WriteFileLog(string filePath, Exception ex, bool isOriginal)
+        private static void WriteFileLog(string filePath, Exception ex, bool isOriginal)
         {
             string log = ErrorHelper.GetErrorWithoutHtml(ex);
             WriteFileLog(filePath, log, isOriginal);
@@ -380,14 +402,14 @@ namespace MySoft.Logger
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="log"></param>
-        private void WriteFileLog(string filePath, string log, bool isOriginal)
+        private static void WriteFileLog(string filePath, string log, bool isOriginal)
         {
             lock (logqueue)
             {
                 if (!isOriginal)
                 {
                     log = string.Format("【{0}】 => {1}{2}{2}{3}{2}{2}", DateTime.Now, log,
-                                        Environment.NewLine, string.Empty.PadRight(150, '='));
+                                        Environment.NewLine, string.Empty.PadRight(180, '='));
                 }
 
                 var loginfo = new LogInfo { FilePath = filePath, Log = log };

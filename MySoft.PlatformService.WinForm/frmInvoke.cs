@@ -209,7 +209,13 @@ namespace MySoft.PlatformService.WinForm
                     {
                         var info = p.Value.Tag as ParameterInfo;
                         if (info.IsPrimitive)
-                            text = string.Format("\"{0}\"", text);
+                        {
+                            //如果字符串包含引号，则不处理。
+                            if (!(text.StartsWith("\"") && text.EndsWith("\"")))
+                            {
+                                text = string.Format("\"{0}\"", text);
+                            }
+                        }
 
                         try
                         {
