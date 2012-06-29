@@ -24,9 +24,9 @@ namespace MySoft.IoC.Communication
                 //设置为null
                 e.AcceptSocket = null;
                 e.RemoteEndPoint = null;
+                e.UserToken = null;
                 e.SetBuffer(null, 0, 0);
                 e.BufferList = null;
-                e.UserToken = null;
 
                 //销毁资源
                 e.Dispose();

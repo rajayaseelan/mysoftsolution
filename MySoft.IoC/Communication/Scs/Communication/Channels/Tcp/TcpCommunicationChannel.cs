@@ -36,14 +36,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private readonly Socket _clientSocket;
 
-        // Socket send / receive timeout.
-        const int SocketTimeout = 60 * 1000;
-
-        // Socket send / receive timeout.
-        const int SocketBufferSize = 8 * 1024; //4kb
-
         //create byte array to store: ensure at least 1 byte!
-        const int BufferSize = 2 * 1024; //2kb
+        const int BufferSize = 4 * 1024; //4kb
 
         private readonly byte[] _buffer;
 
@@ -64,10 +58,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public TcpCommunicationChannel(Socket clientSocket, bool sendByServer)
         {
             _clientSocket = clientSocket;
-            _clientSocket.SendTimeout = SocketTimeout;
-            _clientSocket.ReceiveTimeout = SocketTimeout;
-            _clientSocket.SendBufferSize = SocketBufferSize;
-            _clientSocket.ReceiveBufferSize = SocketBufferSize;
             _clientSocket.NoDelay = true;
 
             var endPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
@@ -360,9 +350,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                             OnMessageReceived(message);
                         }
 
-                        //Read more bytes if still running
-                        if (_running)
+                        if (!_running)
                         {
+                            TcpSocketHelper.Dispose(e);
+                        }
+                        else
+                        {
+                            //Read more bytes if still running
                             if (!_clientSocket.ReceiveAsync(e))
                             {
                                 AsyncReceiveComplete(e);
