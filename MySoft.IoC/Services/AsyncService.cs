@@ -52,9 +52,6 @@ namespace MySoft.IoC.Services
             }
             catch (Exception ex)
             {
-                //结束当前线程
-                if (!worker.IsCompleted) worker.Cancel(true);
-
                 var body = string.Format("Call service ({0}, {1}) timeout ({2}) ms. Error: {4}\r\nParameters => {3}"
                     , reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString(), ex.Message);
 
@@ -74,6 +71,14 @@ namespace MySoft.IoC.Services
                     Parameters = reqMsg.Parameters,
                     Error = error
                 };
+            }
+            finally
+            {
+                //结束当前线程
+                if (!worker.IsCompleted) worker.Cancel(true);
+
+                //将worker对象置null
+                if (worker != null) worker = null;
             }
 
             //返回响应的消息

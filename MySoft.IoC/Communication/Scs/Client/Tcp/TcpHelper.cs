@@ -82,6 +82,7 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
 
                 if (e.SocketError != SocketError.Success)
                 {
+                    socket.Shutdown(SocketShutdown.Both);
                     socket.Close();
                 }
             }

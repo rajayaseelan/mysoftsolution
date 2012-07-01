@@ -34,12 +34,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Socket object to send/reveice messages.
         /// </summary>
-        private readonly Socket _clientSocket;
+        private Socket _clientSocket;
 
         //create byte array to store: ensure at least 1 byte!
-        const int BufferSize = 4 * 1024; //4kb
-
-        private readonly byte[] _buffer;
+        const int BufferSize = 2 * 1024; //1kb
 
         /// <summary>
         /// A flag to control thread's running
@@ -62,8 +60,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             var endPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
-
-            _buffer = new byte[BufferSize];
         }
 
         #endregion
@@ -154,35 +150,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
         }
 
-        #region 转换成byte组
-
-        /// <summary>
-        /// 转换成byte组
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="size"></param>
-        /// <returns></returns>
-        //private IList<ArraySegment<byte>> ConvertBufferList(byte[] source, int size)
-        //{
-        //    var target = new List<ArraySegment<byte>>();
-        //    int l = source.Length / size;
-        //    int y = source.Length % size;
-
-        //    for (int i = 0; i < l; i++)
-        //    {
-        //        target.Add(new ArraySegment<byte>(source, i * size, size));
-        //    }
-
-        //    if (y != 0)
-        //    {
-        //        target.Add(new ArraySegment<byte>(source, l * size, y));
-        //    }
-
-        //    return target;
-        //}
-
-        #endregion
-
         #endregion
 
         #region Private methods
@@ -204,9 +171,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                //clear buffer
-                if (_buffer != null)
-                    Array.Clear(_buffer, 0, _buffer.Length);
+                var _buffer = new byte[BufferSize];
 
                 e.SetBuffer(_buffer, 0, _buffer.Length);
 
@@ -264,7 +229,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     else
                     {
                         if (e.Buffer != null)
-                            Array.Clear(e.Buffer, 0, e.Count);
+                        {
+                            Array.Clear(e.Buffer, 0, e.Buffer.Length);
+                        }
 
                         LastSentMessageTime = DateTime.Now;
 
@@ -326,41 +293,41 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 //Get received bytes count
-                if (e.SocketError == SocketError.Success)
+                if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
-                    if (e.BytesTransferred > 0)
+                    LastReceivedMessageTime = DateTime.Now;
+
+                    //Copy received bytes to a new byte array
+                    var receivedBytes = new byte[e.BytesTransferred];
+                    Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, e.BytesTransferred);
+
+                    if (e.Buffer != null)
                     {
-                        LastReceivedMessageTime = DateTime.Now;
+                        Array.Clear(e.Buffer, 0, e.Buffer.Length);
+                    }
 
-                        //Copy received bytes to a new byte array
-                        var receivedBytes = new byte[e.BytesTransferred];
-                        Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, e.BytesTransferred);
+                    //Read messages according to current wire protocol
+                    var messages = WireProtocol.CreateMessages(receivedBytes);
 
-                        if (e.Buffer != null)
-                            Array.Clear(e.Buffer, 0, e.BytesTransferred);
+                    //Raise MessageReceived event for all received messages
+                    foreach (var message in messages)
+                    {
+                        OnMessageReceived(message);
+                    }
 
-                        //Read messages according to current wire protocol
-                        var messages = WireProtocol.CreateMessages(receivedBytes);
+                    receivedBytes = null;
+                    messages = null;
 
-                        receivedBytes = null;
-
-                        //Raise MessageReceived event for all received messages
-                        foreach (var message in messages)
+                    if (!_running)
+                    {
+                        TcpSocketHelper.Dispose(e);
+                    }
+                    else
+                    {
+                        //Read more bytes if still running
+                        if (!_clientSocket.ReceiveAsync(e))
                         {
-                            OnMessageReceived(message);
-                        }
-
-                        if (!_running)
-                        {
-                            TcpSocketHelper.Dispose(e);
-                        }
-                        else
-                        {
-                            //Read more bytes if still running
-                            if (!_clientSocket.ReceiveAsync(e))
-                            {
-                                AsyncReceiveComplete(e);
-                            }
+                            AsyncReceiveComplete(e);
                         }
                     }
                 }
@@ -416,11 +383,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                if (e.SocketError == SocketError.Success)
-                {
-                    _clientSocket.Shutdown(SocketShutdown.Both);
-                    _clientSocket.Close();
-                }
+                _clientSocket.Shutdown(SocketShutdown.Both);
+                _clientSocket.Close();
             }
             catch
             {
@@ -428,6 +392,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
+                _clientSocket = null;
+
                 TcpSocketHelper.Dispose(e);
             }
 

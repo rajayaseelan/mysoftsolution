@@ -74,30 +74,23 @@ namespace MySoft.IoC.Services
                 //返回拦截服务
                 var service = AspectFactory.CreateProxyService(serviceType, instance);
 
-                try
+                if (reqMsg.InvokeMethod)
                 {
-                    if (reqMsg.InvokeMethod)
-                    {
-                        var objValue = reqMsg.Parameters["InvokeParameter"];
-                        var jsonString = (objValue == null ? string.Empty : objValue.ToString());
+                    var objValue = reqMsg.Parameters["InvokeParameter"];
+                    var jsonString = (objValue == null ? string.Empty : objValue.ToString());
 
-                        //解析参数
-                        reqMsg.Parameters = IoCHelper.CreateParameters(method, jsonString);
-                    }
-
-                    //参数赋值
-                    object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
-
-                    //调用对应的服务
-                    resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
-
-                    //处理返回参数
-                    IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
+                    //解析参数
+                    reqMsg.Parameters = IoCHelper.CreateParameters(method, jsonString);
                 }
-                finally
-                {
-                    service = null;
-                }
+
+                //参数赋值
+                object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
+
+                //调用对应的服务
+                resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
+
+                //处理返回参数
+                IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
 
                 //返回结果数据
                 if (reqMsg.InvokeMethod)
@@ -122,8 +115,6 @@ namespace MySoft.IoC.Services
             {
                 //释放资源
                 container.Release(instance);
-
-                instance = null;
             }
 
             return resMsg;
