@@ -175,6 +175,11 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// </summary>
         public void Disconnect()
         {
+            if (CommunicationState != CommunicationStates.Connected)
+            {
+                return;
+            }
+
             _communicationChannel.Disconnect();
         }
 
