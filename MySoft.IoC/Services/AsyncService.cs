@@ -39,20 +39,23 @@ namespace MySoft.IoC.Services
         {
             var context = OperationContext.Current;
 
-            //实例化异步调用器
-            var worker = smart.QueueWorkItem<OperationContext, RequestMessage, ResponseMessage>
-                                            (GetResponse, context, reqMsg);
+            //Worker对象
+            IWorkItemResult<ResponseMessage> worker = null;
 
             //等待响应
             ResponseMessage resMsg = null;
 
             try
             {
+                //创建异步调用器
+                worker = smart.QueueWorkItem<OperationContext, RequestMessage, ResponseMessage>(GetResponse, context, reqMsg);
+
+                //获取结果
                 resMsg = worker.GetResult(elapsedTime, true);
             }
             catch (Exception ex)
             {
-                var body = string.Format("Call service ({0}, {1}) timeout ({2}) ms. Error: {4}\r\nParameters => {3}"
+                var body = string.Format("Call service ({0}, {1}) timeout ({2}) ms. error: {4}\r\nParameters => {3}"
                     , reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString(), ex.Message);
 
                 //获取异常
@@ -62,23 +65,21 @@ namespace MySoft.IoC.Services
                 logger.WriteError(error);
 
                 //处理异常
-                resMsg = new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = reqMsg.ReturnType,
-                    ServiceName = reqMsg.ServiceName,
-                    MethodName = reqMsg.MethodName,
-                    Parameters = reqMsg.Parameters,
-                    Error = error
-                };
+                resMsg = IoCHelper.GetResponse(reqMsg, error);
             }
             finally
             {
-                //结束当前线程
-                if (!worker.IsCompleted) worker.Cancel(true);
-
                 //将worker对象置null
-                if (worker != null) worker = null;
+                if (worker != null)
+                {
+                    //结束当前线程
+                    if (!worker.IsCompleted)
+                    {
+                        worker.Cancel(true);
+                    }
+
+                    worker = null;
+                }
             }
 
             //返回响应的消息
@@ -90,17 +91,24 @@ namespace MySoft.IoC.Services
         /// </summary>
         private ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
         {
+            //设置上下文
+            OperationContext.Current = context;
+
             try
             {
-                //设置上下文
-                OperationContext.Current = context;
-
                 //调用方法
                 return service.CallService(reqMsg);
             }
+            catch (ThreadAbortException)
+            {
+                //线程异常不处理
+                return null;
+            }
             catch (Exception ex)
             {
-                //出现异常时返回null
+                logger.WriteError(ex);
+
+                //出现异常返回null
                 return null;
             }
             finally

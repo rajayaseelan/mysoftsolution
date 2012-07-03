@@ -20,5 +20,36 @@ namespace MySoft.IoC.Communication
         /// 最大等待连接数
         /// </summary>
         public static readonly int Backlog = 1000; //1000 连接
+
+        /// <summary>
+        /// 连接池对象
+        /// </summary>
+        internal static TcpSocketAsyncEventArgsPool SocketPool;
+
+        /// <summary>
+        /// 初始化对象池
+        /// </summary>
+        /// <param name="maxConnections"></param>
+        internal static void Init(int maxConnections)
+        {
+            if (SocketPool == null)
+            {
+                if (maxConnections < 100) maxConnections = 100;
+                SocketPool = new TcpSocketAsyncEventArgsPool(maxConnections);
+
+                lock (SocketPool)
+                {
+                    //实例化n个对象
+                    for (int i = 0; i < maxConnections; i++)
+                    {
+                        var e = new TcpSocketAsyncEventArgs();
+                        e.Pool = SocketPool;
+
+                        //入队列
+                        SocketPool.Push(e);
+                    }
+                }
+            }
+        }
     }
 }

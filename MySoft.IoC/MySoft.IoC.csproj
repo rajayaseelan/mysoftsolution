@@ -81,6 +81,9 @@
     <Compile Include="Callback\CallbackInfo.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IoCHelper.cs" />
+    <Compile Include="Communication\ITcpChannel.cs" />
+    <Compile Include="Communication\TcpSocketAsyncEventArgsPool.cs" />
+    <Compile Include="Communication\TcpSocketAsyncEventArgs.cs" />
     <Compile Include="Communication\TcpSocketSetting.cs" />
     <Compile Include="Communication\TcpSocketHelper.cs" />
     <Compile Include="HttpServer\HttpApi\DefaultApiResolver.cs" />

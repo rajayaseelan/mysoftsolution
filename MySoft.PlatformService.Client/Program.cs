@@ -249,13 +249,31 @@ namespace MySoft.PlatformService.Client
             AutoResetEvent are = new AutoResetEvent(false);
             are.Reset();
             var watch = Stopwatch.StartNew();
-            for (int i = 0; i < 1; i++)
+
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
             }
 
             are.WaitOne();
+
+            //for (int i = 0; i < 100; i++)
+            //{
+            //    Thread thread = new Thread(DoWork1);
+            //    thread.Start(are);
+            //}
+
+            //are.WaitOne();
+
+            //for (int i = 0; i < 100; i++)
+            //{
+            //    Thread thread = new Thread(DoWork1);
+            //    thread.Start(are);
+            //}
+
+            //are.WaitOne();
+
             watch.Stop();
 
             Console.WriteLine("ElapsedMilliseconds => " + watch.ElapsedMilliseconds + " ms.");
@@ -364,7 +382,7 @@ namespace MySoft.PlatformService.Client
             //service = new UserService.UserService();
             //var service1 = CastleFactory.Create().GetChannel<IStatusService>(node);
 
-            while (counter < 1000)
+            while (counter < 500000)
             {
                 try
                 {
@@ -388,7 +406,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    //Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //var clients = service1.GetClientList();
 

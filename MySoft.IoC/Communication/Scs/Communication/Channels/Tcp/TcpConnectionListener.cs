@@ -119,11 +119,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 if (e.SocketError == SocketError.Success)
                 {
-                    var clientSocket = e.AcceptSocket;
-
-                    OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket, true));
-
-                    e.AcceptSocket = null;
+                    OnCommunicationChannelConnected(new TcpCommunicationChannel(e.AcceptSocket, true));
                 }
             }
             catch (Exception ex)
@@ -152,6 +148,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch
             {
 
+            }
+            finally
+            {
+                _listenerSocket = null;
             }
         }
 

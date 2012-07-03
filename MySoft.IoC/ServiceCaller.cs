@@ -107,8 +107,7 @@ namespace MySoft.IoC
                         Caller = caller,
                         ElapsedTime = watch.ElapsedMilliseconds,
                         Count = resMsg.Count,
-                        Error = resMsg.Error,
-                        Value = resMsg.Value
+                        Error = resMsg.Error
                     };
 
                     //响应计数
@@ -122,6 +121,14 @@ namespace MySoft.IoC
 
                     return resMsg;
                 }
+            }
+            catch (Exception ex)
+            {
+                //将异常信息写出
+                status.Container.WriteError(ex);
+
+                //处理异常
+                return IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {

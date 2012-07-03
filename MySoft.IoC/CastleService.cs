@@ -40,6 +40,9 @@ namespace MySoft.IoC
         {
             this.config = config;
 
+            //初始化池
+            TcpSocketSetting.Init(config.MaxCalls * 50);
+
             if (string.Compare(config.Host, "any", true) == 0)
             {
                 config.Host = IPAddress.Loopback.ToString();
@@ -65,7 +68,8 @@ namespace MySoft.IoC
                 MaxWorkerThreads = Math.Max(config.MaxCalls, 10),
                 MinWorkerThreads = 5,
                 ThreadPriority = ThreadPriority.Normal,
-                WorkItemPriority = WorkItemPriority.Normal
+                WorkItemPriority = WorkItemPriority.Normal,
+                DisposeOfStateObjects = true
             };
 
             //创建线程池
@@ -331,7 +335,7 @@ namespace MySoft.IoC
                     var resMsg = caller.CallMethod(client, reqMsg);
 
                     //发送数据到服务端
-                    SendMessage(client, resMsg, message.RepliedMessageId);
+                    SendMessage(client, reqMsg, resMsg, message.RepliedMessageId);
                 }
             }
             catch (Exception ex)
@@ -365,13 +369,14 @@ namespace MySoft.IoC
         /// 发送消息
         /// </summary>
         /// <param name="client"></param>
-        /// <param name="msgBase"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="resMsg"></param>
         /// <param name="messageId"></param>
-        private void SendMessage(IScsServerClient client, MessageBase msgBase, string messageId)
+        private void SendMessage(IScsServerClient client, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
         {
             try
             {
-                var sendMsg = new ScsResultMessage(msgBase, messageId);
+                var sendMsg = new ScsResultMessage(resMsg, messageId);
 
                 //发送消息
                 client.SendMessage(sendMsg);
@@ -383,17 +388,9 @@ namespace MySoft.IoC
 
                 try
                 {
-                    msgBase = new ResponseMessage
-                    {
-                        TransactionId = msgBase.TransactionId,
-                        ReturnType = msgBase.ReturnType,
-                        ServiceName = msgBase.ServiceName,
-                        MethodName = msgBase.MethodName,
-                        Parameters = msgBase.Parameters,
-                        Error = ex
-                    };
+                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
 
-                    var sendMsg = new ScsResultMessage(msgBase, messageId);
+                    var sendMsg = new ScsResultMessage(resMsg, messageId);
 
                     //发送消息
                     client.SendMessage(sendMsg);

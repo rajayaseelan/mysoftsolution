@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using MySoft.IoC.Communication;
 
 namespace MySoft.IoC.Services
 {
@@ -25,6 +26,9 @@ namespace MySoft.IoC.Services
         {
             this.node = node;
             this.logger = logger;
+
+            //≥ı ºªØ≥ÿ
+            TcpSocketSetting.Init(node.MaxPool * 10);
 
             InitServiceRequest();
         }
@@ -70,14 +74,7 @@ namespace MySoft.IoC.Services
         {
             if (reqMsg != null)
             {
-                var resMsg = new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = reqMsg.ReturnType,
-                    ServiceName = reqMsg.ServiceName,
-                    MethodName = reqMsg.MethodName,
-                    Error = error
-                };
+                var resMsg = IoCHelper.GetResponse(reqMsg, error);
 
                 QueueMessage(resMsg);
             }

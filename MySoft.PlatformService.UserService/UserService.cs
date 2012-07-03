@@ -93,8 +93,7 @@ namespace MySoft.PlatformService.UserService
         private static readonly object syncRoot = new object();
         public string GetUsersString()
         {
-            //return "asfsadf";
-            //Thread.Sleep(1000);
+            Thread.Sleep(5000);
 
             try
             {

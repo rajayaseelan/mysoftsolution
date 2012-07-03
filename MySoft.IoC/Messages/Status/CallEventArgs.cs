@@ -29,11 +29,6 @@ namespace MySoft.IoC.Messages
         public int Count { get; set; }
 
         /// <summary>
-        /// 返回值
-        /// </summary>
-        public object Value { get; set; }
-
-        /// <summary>
         /// 是否错误
         /// </summary>
         public bool IsError

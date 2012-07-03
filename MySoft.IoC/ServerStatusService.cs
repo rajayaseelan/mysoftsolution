@@ -80,7 +80,10 @@ namespace MySoft.IoC
                         try
                         {
                             var status = GetServerStatus();
+
                             MessageCenter.Instance.Notify(status);
+
+                            status = null;
                         }
                         catch (Exception ex)
                         {

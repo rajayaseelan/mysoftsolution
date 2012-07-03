@@ -234,8 +234,22 @@ namespace MySoft.IoC.HttpServer
         private IService CreateService(AppCaller appCaller)
         {
             //处理数据返回InvokeData
-            var serviceKey = "Service_" + appCaller.ServiceName;
-            var service = container.Resolve<IService>(serviceKey);
+            IService service = null;
+            string serviceKey = "Service_" + appCaller.ServiceName;
+
+            if (container.Kernel.HasComponent(serviceKey))
+            {
+                service = container.Resolve<IService>(serviceKey);
+            }
+
+            if (service == null)
+            {
+                string body = string.Format("The server【{1}({2})】not find matching service ({0})."
+                    , appCaller.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
+
+                //返回异常信息
+                throw new WarningException(body);
+            }
 
             //等待超时
             var timeSpan = TimeSpan.FromSeconds(config.Timeout);

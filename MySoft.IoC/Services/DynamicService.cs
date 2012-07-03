@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MySoft.IoC.Services
 {
@@ -10,9 +12,9 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class DynamicService : BaseService
     {
-        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         private IServiceContainer container;
         private Type serviceType;
+        private IDictionary<string, System.Reflection.MethodInfo> methods;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicService"/> class.
@@ -23,6 +25,7 @@ namespace MySoft.IoC.Services
         {
             this.container = container;
             this.serviceType = serviceType;
+            this.methods = CoreHelper.GetMethodsFromType(serviceType).ToDictionary(p => p.ToString());
         }
 
         /// <summary>
@@ -32,30 +35,18 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         protected override ResponseMessage Run(RequestMessage reqMsg)
         {
-            var resMsg = new ResponseMessage
-            {
-                TransactionId = reqMsg.TransactionId,
-                ReturnType = reqMsg.ReturnType,
-                ServiceName = reqMsg.ServiceName,
-                MethodName = reqMsg.MethodName
-            };
+            var resMsg = IoCHelper.GetResponse(reqMsg);
 
             #region 获取相应的方法
 
-            var methodKey = string.Format("{0}${1}", reqMsg.ServiceName, reqMsg.MethodName);
-            if (!hashtable.ContainsKey(methodKey))
+            //判断方法是否存在
+            if (!methods.ContainsKey(reqMsg.MethodName))
             {
-                var m = CoreHelper.GetMethodFromType(serviceType, reqMsg.MethodName);
-                if (m == null)
-                {
-                    string message = string.Format("The server【{2}({3})】not find matching method. ({0},{1})."
-                        , reqMsg.ServiceName, reqMsg.MethodName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
+                string message = string.Format("The server【{2}({3})】not find matching method. ({0},{1})."
+                    , reqMsg.ServiceName, reqMsg.MethodName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
 
-                    resMsg.Error = new WarningException(message);
-                    return resMsg;
-                }
-
-                hashtable[methodKey] = m;
+                resMsg.Error = new WarningException(message);
+                return resMsg;
             }
 
             #endregion
@@ -66,7 +57,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //定义Method
-                var method = hashtable[methodKey] as System.Reflection.MethodInfo;
+                var method = methods[reqMsg.MethodName];
 
                 //解析服务
                 instance = container.Resolve(serviceType);
@@ -87,7 +78,7 @@ namespace MySoft.IoC.Services
                 object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
 
                 //调用对应的服务
-                resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
+                var value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
 
                 //处理返回参数
                 IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
@@ -97,7 +88,7 @@ namespace MySoft.IoC.Services
                 {
                     resMsg.Value = new InvokeData
                     {
-                        Value = SerializationManager.SerializeJson(resMsg.Value),
+                        Value = SerializationManager.SerializeJson(value),
                         Count = resMsg.Count,
                         OutParameters = resMsg.Parameters.ToString()
                     };
@@ -105,9 +96,15 @@ namespace MySoft.IoC.Services
                     //清除参数集合
                     resMsg.Parameters.Clear();
                 }
+                else
+                {
+                    resMsg.Value = value;
+                }
             }
             catch (Exception ex)
             {
+                resMsg.Value = null;
+
                 //捕获全局错误
                 resMsg.Error = ex;
             }
@@ -125,7 +122,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         public override void Dispose()
         {
-            hashtable.Clear();
+            methods.Clear();
         }
     }
 }

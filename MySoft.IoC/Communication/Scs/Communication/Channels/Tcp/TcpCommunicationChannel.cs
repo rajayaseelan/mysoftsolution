@@ -11,7 +11,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// <summary>
     /// This class is used to communicate with a remote application over TCP/IP protocol.
     /// </summary>
-    internal class TcpCommunicationChannel : CommunicationChannelBase
+    internal class TcpCommunicationChannel : CommunicationChannelBase, ITcpChannel
     {
         #region Public properties
 
@@ -36,13 +36,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private Socket _clientSocket;
 
+        private TcpSocketAsyncEventArgsPool _pool;
+
         //create byte array to store: ensure at least 1 byte!
-        const int BufferSize = 2 * 1024; //1kb
+        const int BufferSize = 4 * 1024; //4kb
+
+        const int SocketTimeout = 5 * 1000; //timeout 5 second
 
         /// <summary>
         /// A flag to control thread's running
         /// </summary>
         private volatile bool _running;
+
+        private readonly byte[] _buffer;
 
         #endregion
 
@@ -57,9 +63,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             _clientSocket = clientSocket;
             _clientSocket.NoDelay = true;
+            _clientSocket.SendTimeout = SocketTimeout;
+            _clientSocket.ReceiveTimeout = SocketTimeout;
 
             var endPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
+
+            _pool = TcpSocketSetting.SocketPool;
+            _buffer = new byte[BufferSize];
         }
 
         #endregion
@@ -71,7 +82,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public override void Disconnect()
         {
-            if (CommunicationState != CommunicationStates.Connected)
+            if (!_running)
             {
                 return;
             }
@@ -79,8 +90,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _running = false;
             CommunicationState = CommunicationStates.Disconnected;
 
-            SocketAsyncEventArgs e = new SocketAsyncEventArgs();
-            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+            TcpSocketAsyncEventArgs e = _pool.Pop(this);
 
             try
             {
@@ -89,11 +99,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     AsyncDisconnectComplete(e);
                 }
 
-                //_clientSocket.Dispose();
+                //_clientSocket.Release();
             }
             catch
             {
-                TcpSocketHelper.Dispose(e);
+                TcpSocketHelper.Release(e);
 
                 OnDisconnected();
             }
@@ -129,9 +139,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             var messageBytes = WireProtocol.GetBytes(message);
 
             //发送数据
-            SocketAsyncEventArgs e = new SocketAsyncEventArgs();
+            TcpSocketAsyncEventArgs e = _pool.Pop(this);
             e.UserToken = message;
-            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
 
             try
             {
@@ -144,7 +153,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                TcpSocketHelper.Dispose(e);
+                TcpSocketHelper.Release(e);
 
                 throw ex;
             }
@@ -166,13 +175,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
 
             //接收数据
-            SocketAsyncEventArgs e = new SocketAsyncEventArgs();
-            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+            TcpSocketAsyncEventArgs e = _pool.Pop(this);
 
             try
             {
-                var _buffer = new byte[BufferSize];
-
                 e.SetBuffer(_buffer, 0, _buffer.Length);
 
                 if (!_clientSocket.ReceiveAsync(e))
@@ -182,40 +188,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                TcpSocketHelper.Dispose(e);
+                TcpSocketHelper.Release(e);
 
                 throw ex;
             }
         }
 
-        void IO_Completed(object sender, SocketAsyncEventArgs e)
-        {
-            switch (e.LastOperation)
-            {
-                case SocketAsyncOperation.Send:
-                    {
-                        AsyncSendComplete(e);
-                        break;
-                    }
-                case SocketAsyncOperation.Receive:
-                    {
-                        AsyncReceiveComplete(e);
-                        break;
-                    }
-                case SocketAsyncOperation.Disconnect:
-                    {
-                        AsyncDisconnectComplete(e);
-                        break;
-                    }
-            }
-        }
-
-        void AsyncSendComplete(SocketAsyncEventArgs e)
+        void AsyncSendComplete(TcpSocketAsyncEventArgs e)
         {
             try
             {
                 if (e.SocketError == SocketError.Success)
                 {
+                    LastSentMessageTime = DateTime.Now;
+
                     if ((e.Offset + e.BytesTransferred) < e.Count)
                     {
                         //----- Continue to send until all bytes are sent!
@@ -228,16 +214,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     }
                     else
                     {
-                        if (e.Buffer != null)
-                        {
-                            Array.Clear(e.Buffer, 0, e.Buffer.Length);
-                        }
+                        var message = e.UserToken as IScsMessage;
+                        OnMessageSent(message);
 
-                        LastSentMessageTime = DateTime.Now;
-
-                        OnMessageSent(e.UserToken as IScsMessage);
-
-                        TcpSocketHelper.Dispose(e);
+                        TcpSocketHelper.Release(e);
                     }
                 }
                 else
@@ -247,7 +227,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (SocketException ex)
             {
-                TcpSocketHelper.Dispose(e);
+                TcpSocketHelper.Release(e);
 
                 if ((ex.SocketErrorCode == SocketError.ConnectionReset)
                  || (ex.SocketErrorCode == SocketError.ConnectionAborted)
@@ -278,7 +258,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                TcpSocketHelper.Dispose(e);
+                TcpSocketHelper.Release(e);
 
                 OnMessageError(ex);
             }
@@ -288,7 +268,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// 异步完成
         /// </summary>
         /// <param name="e"></param>
-        void AsyncReceiveComplete(SocketAsyncEventArgs e)
+        void AsyncReceiveComplete(TcpSocketAsyncEventArgs e)
         {
             try
             {
@@ -301,11 +281,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     var receivedBytes = new byte[e.BytesTransferred];
                     Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, e.BytesTransferred);
 
-                    if (e.Buffer != null)
-                    {
-                        Array.Clear(e.Buffer, 0, e.Buffer.Length);
-                    }
-
                     //Read messages according to current wire protocol
                     var messages = WireProtocol.CreateMessages(receivedBytes);
 
@@ -315,20 +290,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         OnMessageReceived(message);
                     }
 
-                    receivedBytes = null;
-                    messages = null;
-
-                    if (!_running)
+                    if (_running)
                     {
-                        TcpSocketHelper.Dispose(e);
-                    }
-                    else
-                    {
-                        //Read more bytes if still running
+                        //重新接收数据
                         if (!_clientSocket.ReceiveAsync(e))
                         {
                             AsyncReceiveComplete(e);
                         }
+                    }
+                    else
+                    {
+                        TcpSocketHelper.Release(e);
                     }
                 }
                 else
@@ -338,7 +310,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (SocketException ex)
             {
-                TcpSocketHelper.Dispose(e);
+                TcpSocketHelper.Release(e);
 
                 if ((ex.SocketErrorCode == SocketError.ConnectionReset)
                  || (ex.SocketErrorCode == SocketError.ConnectionAborted)
@@ -369,7 +341,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                TcpSocketHelper.Dispose(e);
+                TcpSocketHelper.Release(e);
 
                 OnMessageError(ex);
             }
@@ -379,7 +351,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// 异步完成
         /// </summary>
         /// <param name="e"></param>
-        void AsyncDisconnectComplete(SocketAsyncEventArgs e)
+        void AsyncDisconnectComplete(TcpSocketAsyncEventArgs e)
         {
             try
             {
@@ -394,10 +366,44 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 _clientSocket = null;
 
-                TcpSocketHelper.Dispose(e);
+                //Dispose resource.
+                WireProtocol.Dispose();
+
+                TcpSocketHelper.Release(e);
             }
 
             OnDisconnected();
+        }
+
+        #endregion
+
+        #region ITcpChannel 成员
+
+        /// <summary>
+        /// 接收完成
+        /// </summary>
+        /// <param name="e"></param>
+        public void OnReceiveComplete(SocketAsyncEventArgs e)
+        {
+            AsyncReceiveComplete(e as TcpSocketAsyncEventArgs);
+        }
+
+        /// <summary>
+        /// 发送完成
+        /// </summary>
+        /// <param name="e"></param>
+        public void OnSendComplete(SocketAsyncEventArgs e)
+        {
+            AsyncSendComplete(e as TcpSocketAsyncEventArgs);
+        }
+
+        /// <summary>
+        /// 断开完成
+        /// </summary>
+        /// <param name="e"></param>
+        public void OnDisconnectComplete(SocketAsyncEventArgs e)
+        {
+            AsyncDisconnectComplete(e as TcpSocketAsyncEventArgs);
         }
 
         #endregion

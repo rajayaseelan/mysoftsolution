@@ -28,46 +28,47 @@ namespace MySoft.Logger
             {
                 while (true)
                 {
-                    try
+                    //判断日志数
+                    if (logqueue.Count == 0)
                     {
-                        if (logqueue.Count > 0)
+                        Thread.Sleep(100);
+
+                        continue;
+                    }
+                    else
+                    {
+                        LogInfo item = null;
+
+                        lock (logqueue)
                         {
-                            var list = new List<LogInfo>();
-                            lock (logqueue)
-                            {
-                                list.AddRange(logqueue.ToArray());
-                                logqueue.Clear();
-                            }
-
-                            //对日志按路径进行分组
-                            var logs = list.GroupBy(p => p.FilePath).Select(p => new LogInfo
-                            {
-                                FilePath = p.Key,
-                                Log = string.Concat(p.Select(l => l.Log).ToArray())
-                            }).ToList();
-
-                            //批量写日志
-                            logs.ForEach(loginfo =>
-                            {
-                                try
-                                {
-                                    string dir = Path.GetDirectoryName(loginfo.FilePath);
-                                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                                    File.AppendAllText(loginfo.FilePath, loginfo.Log, Encoding.UTF8);
-                                }
-                                catch { }
-
-                                Thread.Sleep(10);
-                            });
+                            item = logqueue.Dequeue();
                         }
-                    }
-                    catch
-                    {
-                        //TODO
-                    }
 
-                    //等待1000毫秒
-                    Thread.Sleep(1000);
+                        if (item != null)
+                        {
+                            try
+                            {
+                                string dir = Path.GetDirectoryName(item.FilePath);
+                                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                                File.AppendAllText(item.FilePath, item.Log, Encoding.UTF8);
+                            }
+                            catch (IOException)
+                            {
+                                //写日志出错重回队列
+                                lock (logqueue)
+                                {
+                                    logqueue.Enqueue(item);
+                                }
+                            }
+                            catch
+                            {
+                                //其它错误不做处理
+                            }
+                        }
+
+                        //等待10毫秒
+                        Thread.Sleep(10);
+                    }
                 }
             });
         }

@@ -60,8 +60,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         public byte[] GetBytes(IScsMessage message)
         {
             //Serialize the message to a byte array
-            var serializedMessage = SerializeMessage(message); 
-           
+            var serializedMessage = SerializeMessage(message);
+
             //Check for message length
             var messageLength = serializedMessage.Length;
             if (messageLength > MaxMessageLength)
@@ -155,16 +155,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             {
                 //Go to head of the stream
                 deserializeMemoryStream.Position = 0;
-                
+
                 //Deserialize the message
                 var binaryFormatter = new BinaryFormatter
                 {
                     AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple,
                     Binder = new DeserializationAppDomainBinder()
                 };
-                
+
                 //Return the deserialized message
-                return (IScsMessage) binaryFormatter.Deserialize(deserializeMemoryStream);
+                return (IScsMessage)binaryFormatter.Deserialize(deserializeMemoryStream);
             }
         }
 
@@ -233,7 +233,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             //Re-create the receive memory stream and write remaining bytes
             _receiveMemoryStream = new MemoryStream();
             _receiveMemoryStream.Write(remainingBytes, 0, remainingBytes.Length);
-            
+
             //Return true to re-call this method to try to read next message
             return (remainingBytes.Length > 4);
         }
@@ -307,6 +307,28 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
                 return (from assembly in AppDomain.CurrentDomain.GetAssemblies()
                         where assembly.FullName.Split(',')[0] == toAssemblyName
                         select assembly.GetType(typeName)).FirstOrDefault();
+            }
+        }
+
+        #endregion
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// Clear buffer resource.
+        /// </summary>
+        public void Dispose()
+        {
+            try
+            {
+                _receiveMemoryStream.Close();
+                _receiveMemoryStream.Dispose();
+
+                _receiveMemoryStream = null;
+            }
+            catch
+            {
+
             }
         }
 

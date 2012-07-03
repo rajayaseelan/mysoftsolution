@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Protocols
@@ -6,7 +7,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols
     /// <summary>
     /// Represents a byte-level communication protocol between applications.
     /// </summary>
-    public interface IScsWireProtocol
+    public interface IScsWireProtocol : IDisposable
     {
         /// <summary>
         /// Serializes a message to a byte array to send to remote application.
