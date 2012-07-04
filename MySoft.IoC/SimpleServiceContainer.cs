@@ -368,17 +368,13 @@ namespace MySoft.IoC
         /// <param name="type"></param>
         public void WriteLog(string log, LogType type)
         {
-            ThreadPool.QueueUserWorkItem(state =>
+            try
             {
-                try
-                {
-                    var arr = state as ArrayList;
-                    if (OnLog != null) OnLog(arr[0] as string, (LogType)arr[1]);
-                }
-                catch (Exception)
-                {
-                }
-            }, new ArrayList { log, type });
+                if (OnLog != null) OnLog(log, type);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         /// <summary>
@@ -387,16 +383,13 @@ namespace MySoft.IoC
         /// <param name="error"></param>
         public void WriteError(Exception error)
         {
-            ThreadPool.QueueUserWorkItem(state =>
+            try
             {
-                try
-                {
-                    if (OnError != null) OnError(state as Exception);
-                }
-                catch (Exception)
-                {
-                }
-            }, error);
+                if (OnError != null) OnError(error);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         #endregion

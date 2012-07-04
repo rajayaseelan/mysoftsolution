@@ -34,21 +34,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Socket object to send/reveice messages.
         /// </summary>
-        private Socket _clientSocket;
+        private readonly Socket _clientSocket;
 
-        private TcpSocketAsyncEventArgsPool _pool;
+        private readonly TcpSocketAsyncEventArgsPool _pool;
 
         //create byte array to store: ensure at least 1 byte!
-        const int BufferSize = 4 * 1024; //4kb
+        const int BufferSize = 2 * 1024; //2kb
 
-        const int SocketTimeout = 5 * 1000; //timeout 5 second
+        const int SocketTimeout = 5 * 60 * 1000; //timeout 5 minutes
+
+        private readonly byte[] _buffer;
 
         /// <summary>
         /// A flag to control thread's running
         /// </summary>
         private volatile bool _running;
-
-        private readonly byte[] _buffer;
 
         #endregion
 
@@ -229,32 +229,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 TcpSocketHelper.Release(e);
 
-                if ((ex.SocketErrorCode == SocketError.ConnectionReset)
-                 || (ex.SocketErrorCode == SocketError.ConnectionAborted)
-                 || (ex.SocketErrorCode == SocketError.NotConnected)
-                 || (ex.SocketErrorCode == SocketError.Shutdown)
-                 || (ex.SocketErrorCode == SocketError.Disconnecting))
-                {
-                    try
-                    {
-                        var error = new CommunicationException(string.Format("Tcp socket ({0} => {1}) is closed.",
-                                        _clientSocket.RemoteEndPoint, _clientSocket.LocalEndPoint), ex);
-
-                        OnMessageError(error);
-                    }
-                    catch
-                    {
-
-                    }
-
-                    Disconnect();
-                }
-                else
-                {
-                    Console.WriteLine("({0}){1} => {2}", ex.ErrorCode, ex.SocketErrorCode, ex.Message);
-
-                    OnMessageError(ex);
-                }
+                Disconnect();
             }
             catch (Exception ex)
             {
@@ -290,17 +265,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         OnMessageReceived(message);
                     }
 
-                    if (_running)
+                    //重新接收数据
+                    if (!_clientSocket.ReceiveAsync(e))
                     {
-                        //重新接收数据
-                        if (!_clientSocket.ReceiveAsync(e))
-                        {
-                            AsyncReceiveComplete(e);
-                        }
-                    }
-                    else
-                    {
-                        TcpSocketHelper.Release(e);
+                        AsyncReceiveComplete(e);
                     }
                 }
                 else
@@ -312,32 +280,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 TcpSocketHelper.Release(e);
 
-                if ((ex.SocketErrorCode == SocketError.ConnectionReset)
-                 || (ex.SocketErrorCode == SocketError.ConnectionAborted)
-                 || (ex.SocketErrorCode == SocketError.NotConnected)
-                 || (ex.SocketErrorCode == SocketError.Shutdown)
-                 || (ex.SocketErrorCode == SocketError.Disconnecting))
-                {
-                    try
-                    {
-                        var error = new CommunicationException(string.Format("Tcp socket ({0} => {1}) is closed.",
-                                        _clientSocket.RemoteEndPoint, _clientSocket.LocalEndPoint), ex);
-
-                        OnMessageError(error);
-                    }
-                    catch
-                    {
-
-                    }
-
-                    Disconnect();
-                }
-                else
-                {
-                    Console.WriteLine("({0}){1} => {2}", ex.ErrorCode, ex.SocketErrorCode, ex.Message);
-
-                    OnMessageError(ex);
-                }
+                Disconnect();
             }
             catch (Exception ex)
             {
@@ -364,8 +307,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
-                _clientSocket = null;
-
                 //Dispose resource.
                 WireProtocol.Dispose();
 

@@ -1,21 +1,20 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text;
+using System.Threading;
+using MySoft.IoC.Callback;
+using MySoft.IoC.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
-using MySoft.IoC.Callback;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 using MySoft.Net.Http;
-using MySoft.Threading;
-using System.Threading;
-using MySoft.IoC.Communication;
-using System.Collections;
-using System.Text;
-using System.Collections.Generic;
 
 namespace MySoft.IoC
 {
@@ -24,7 +23,6 @@ namespace MySoft.IoC
     /// </summary>
     public class CastleService : ILogable, IErrorLogable, IDisposable
     {
-        private SmartThreadPool smart;
         private CastleServiceConfiguration config;
         private IServiceContainer container;
         private HTTPServer httpServer;
@@ -41,7 +39,7 @@ namespace MySoft.IoC
             this.config = config;
 
             //初始化池
-            TcpSocketSetting.Init(config.MaxCalls * 50);
+            TcpSocketSetting.Init(config.MaxCalls * 10);
 
             if (string.Compare(config.Host, "any", true) == 0)
             {
@@ -61,28 +59,9 @@ namespace MySoft.IoC
             this.container.OnError += error => { if (OnError != null) OnError(error); };
             this.container.OnLog += (log, type) => { if (OnLog != null) OnLog(log, type); };
 
-            //实例化SmartThreadPool
-            var stp = new STPStartInfo
-            {
-                IdleTimeout = config.Timeout * 1000,
-                MaxWorkerThreads = Math.Max(config.MaxCalls, 10),
-                MinWorkerThreads = 5,
-                ThreadPriority = ThreadPriority.Normal,
-                WorkItemPriority = WorkItemPriority.Normal,
-                DisposeOfStateObjects = true
-            };
-
-            //创建线程池
-            smart = new SmartThreadPool(stp);
-            smart.Start();
-
-            //创建并发任务组
-            var group = smart.CreateWorkItemsGroup(Environment.ProcessorCount);
-            group.Start();
-
             //实例化调用者
             var status = new ServerStatusService(server, config, container);
-            this.caller = new ServiceCaller(group, status);
+            this.caller = new ServiceCaller(status);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -96,7 +75,7 @@ namespace MySoft.IoC
                     resolver = Activator.CreateInstance(config.HttpType) as IHttpApiResolver;
                 }
 
-                var httpCaller = new HttpServiceCaller(group, config, container);
+                var httpCaller = new HttpServiceCaller(config, container);
 
                 //刷新服务委托
                 status.OnRefresh += () => httpCaller.InitCaller(resolver);
@@ -213,9 +192,6 @@ namespace MySoft.IoC
             server.Stop();
             server.Clients.ClearAll();
             container.Dispose();
-
-            //停止所有线程
-            smart.Shutdown();
         }
 
         /// <summary>
@@ -332,10 +308,7 @@ namespace MySoft.IoC
                     var reqMsg = message.MessageValue as RequestMessage;
 
                     //调用方法
-                    var resMsg = caller.CallMethod(client, reqMsg);
-
-                    //发送数据到服务端
-                    SendMessage(client, reqMsg, resMsg, message.RepliedMessageId);
+                    caller.CallMethod(client, reqMsg);
                 }
             }
             catch (Exception ex)
@@ -362,44 +335,6 @@ namespace MySoft.IoC
             catch
             {
                 //TODO
-            }
-        }
-
-        /// <summary>
-        /// 发送消息
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        /// <param name="messageId"></param>
-        private void SendMessage(IScsServerClient client, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
-        {
-            try
-            {
-                var sendMsg = new ScsResultMessage(resMsg, messageId);
-
-                //发送消息
-                client.SendMessage(sendMsg);
-            }
-            catch (Exception ex)
-            {
-                //写异常日志
-                container.WriteError(ex);
-
-                try
-                {
-                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                    var sendMsg = new ScsResultMessage(resMsg, messageId);
-
-                    //发送消息
-                    client.SendMessage(sendMsg);
-                }
-                catch
-                {
-                    //写异常日志
-                    container.WriteError(ex);
-                }
             }
         }
 

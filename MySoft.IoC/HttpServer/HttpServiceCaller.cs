@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
-using MySoft.Threading;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -13,25 +12,20 @@ namespace MySoft.IoC.HttpServer
     /// </summary>
     public class HttpServiceCaller
     {
-        private IWorkItemsGroup smart;
         private IServiceContainer container;
         private CastleServiceConfiguration config;
         private HttpCallerInfoCollection callers;
-        private IDictionary<string, int> callTimeouts;
 
         /// <summary>
         /// HttpServiceCaller初始化
         /// </summary>
-        /// <param name="group"></param>
         /// <param name="config"></param>
         /// <param name="container"></param>
-        public HttpServiceCaller(IWorkItemsGroup group, CastleServiceConfiguration config, IServiceContainer container)
+        public HttpServiceCaller(CastleServiceConfiguration config, IServiceContainer container)
         {
             this.config = config;
             this.container = container;
-            this.smart = group;
             this.callers = new HttpCallerInfoCollection();
-            this.callTimeouts = new Dictionary<string, int>();
         }
 
         /// <summary>
@@ -41,7 +35,6 @@ namespace MySoft.IoC.HttpServer
         public void InitCaller(IHttpApiResolver resolver)
         {
             //清理资源
-            callTimeouts.Clear();
             callers.Clear();
 
             //获取拥有ServiceContract约束的服务
@@ -52,13 +45,6 @@ namespace MySoft.IoC.HttpServer
             {
                 //状态服务跳过
                 if (type == typeof(IStatusService)) continue;
-
-                var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(type);
-                if (contract != null)
-                {
-                    if (contract.Timeout > 0)
-                        callTimeouts[type.FullName] = contract.Timeout;
-                }
 
                 if (resolver != null)
                 {
@@ -199,7 +185,7 @@ namespace MySoft.IoC.HttpServer
                     };
 
                     //创建服务
-                    var service = CreateService(appCaller);
+                    var service = ParseService(appCaller);
 
                     //初始化上下文
                     SetOperationContext(appCaller);
@@ -231,7 +217,12 @@ namespace MySoft.IoC.HttpServer
             return "null";
         }
 
-        private IService CreateService(AppCaller appCaller)
+        /// <summary>
+        /// Gets the service.
+        /// </summary>
+        /// <param name="appCaller"></param>
+        /// <returns></returns>
+        private IService ParseService(AppCaller appCaller)
         {
             //处理数据返回InvokeData
             IService service = null;
@@ -251,15 +242,7 @@ namespace MySoft.IoC.HttpServer
                 throw new WarningException(body);
             }
 
-            //等待超时
-            var timeSpan = TimeSpan.FromSeconds(config.Timeout);
-            if (callTimeouts.ContainsKey(appCaller.ServiceName))
-            {
-                timeSpan = TimeSpan.FromSeconds(callTimeouts[appCaller.ServiceName]);
-            }
-
-            //启用异步调用服务
-            return new AsyncService(smart, container, service, timeSpan);
+            return service;
         }
 
         /// <summary>

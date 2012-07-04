@@ -84,7 +84,7 @@ namespace MySoft.IoC
         /// <summary>
         /// 连接服务器
         /// </summary>
-        private void ConnectServer(RequestMessage reqMsg)
+        private void ConnectServer()
         {
             try
             {
@@ -109,7 +109,7 @@ namespace MySoft.IoC
             //如果连接断开，直接抛出异常
             if (client.CommunicationState == CommunicationStates.Disconnected)
             {
-                ConnectServer(reqMsg);
+                ConnectServer();
 
                 //发送客户端信息到服务端
                 var clientInfo = new AppClient
@@ -170,7 +170,6 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            client.Disconnect();
             client.Dispose();
         }
     }

@@ -1,8 +1,7 @@
-﻿using System.Runtime.Remoting.Messaging;
+﻿using System.ServiceModel.Web;
 using System.Threading;
-using System.ServiceModel;
-using System.ServiceModel.Web;
 using System.Web;
+using System.Runtime.Remoting.Messaging;
 
 namespace MySoft.Auth
 {

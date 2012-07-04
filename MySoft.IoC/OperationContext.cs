@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Net;
 using System.Runtime.Remoting.Messaging;
 using System.Threading;
-using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
-using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Callback;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 
 namespace MySoft.IoC
 {

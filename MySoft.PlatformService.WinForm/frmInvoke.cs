@@ -183,6 +183,10 @@ namespace MySoft.PlatformService.WinForm
                 var p = txtParameters.Values.FirstOrDefault();
                 p.Focus();
             }
+            else
+            {
+                button1.Focus();
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)

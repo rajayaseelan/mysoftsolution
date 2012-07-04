@@ -109,7 +109,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </summary>
         public void Reset()
         {
-            if (_receiveMemoryStream.Length > 0)
+            if (_receiveMemoryStream == null || _receiveMemoryStream.Length > 0)
             {
                 _receiveMemoryStream = new MemoryStream();
             }
