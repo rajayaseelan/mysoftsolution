@@ -5,6 +5,7 @@ using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {
@@ -38,10 +39,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
         private readonly TcpSocketAsyncEventArgsPool _pool;
 
-        //create byte array to store: ensure at least 1 byte!
-        const int BufferSize = 2 * 1024; //2kb
-
         const int SocketTimeout = 5 * 60 * 1000; //timeout 5 minutes
+
+        //create byte array to store: ensure at least 1 byte!
+        const int BufferSize = 1024; //1kb
 
         private readonly byte[] _buffer;
 
@@ -49,11 +50,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// A flag to control thread's running
         /// </summary>
         private volatile bool _running;
-
-        /// <summary>
-        /// This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private static readonly object _syncLock = new object();
 
         #endregion
 
@@ -110,10 +106,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 TcpSocketHelper.Release(e);
 
-                lock (_syncLock)
-                {
-                    OnDisconnected();
-                }
+                OnDisconnected();
             }
         }
 
@@ -143,30 +136,27 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            lock (_syncLock)
+            //Create a byte array from message according to current protocol
+            var messageBytes = WireProtocol.GetBytes(message);
+
+            //发送数据
+            TcpSocketAsyncEventArgs e = _pool.Pop(this);
+            e.UserToken = message;
+
+            try
             {
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
+                e.SetBuffer(messageBytes, 0, messageBytes.Length);
 
-                //发送数据
-                TcpSocketAsyncEventArgs e = _pool.Pop(this);
-                e.UserToken = message;
-
-                try
+                if (!_clientSocket.SendAsync(e))
                 {
-                    e.SetBuffer(messageBytes, 0, messageBytes.Length);
-
-                    if (!_clientSocket.SendAsync(e))
-                    {
-                        AsyncSendComplete(e);
-                    }
+                    AsyncSendComplete(e);
                 }
-                catch (Exception ex)
-                {
-                    TcpSocketHelper.Release(e);
+            }
+            catch (Exception ex)
+            {
+                TcpSocketHelper.Release(e);
 
-                    throw ex;
-                }
+                throw ex;
             }
         }
 
@@ -190,6 +180,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
+                Array.Clear(_buffer, 0, _buffer.Length);
                 e.SetBuffer(_buffer, 0, _buffer.Length);
 
                 if (!_clientSocket.ReceiveAsync(e))
@@ -275,34 +266,26 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     LastReceivedMessageTime = DateTime.Now;
 
-                    if (e.BytesTransferred > 0)
+                    try
                     {
                         //Copy received bytes to a new byte array
                         var receivedBytes = new byte[e.BytesTransferred];
                         Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, e.BytesTransferred);
 
-                        //Read messages according to current wire protocol
-                        var messages = WireProtocol.CreateMessages(receivedBytes);
-
-                        //Raise MessageReceived event for all received messages
-                        foreach (var message in messages)
-                        {
-                            OnMessageReceived(message);
-                        }
+                        //DespatchData
+                        DespatchData(receivedBytes);
+                    }
+                    catch (Exception ex)
+                    {
+                        OnMessageError(ex);
                     }
 
-                    if (!_running)
+                    Array.Clear(_buffer, 0, _buffer.Length);
+                    e.SetBuffer(_buffer, 0, _buffer.Length);
+
+                    if (!_clientSocket.ReceiveAsync(e))
                     {
-                        //释放资源
-                        TcpSocketHelper.Release(e);
-                    }
-                    else
-                    {
-                        //重新接收数据
-                        if (!_clientSocket.ReceiveAsync(e))
-                        {
-                            AsyncReceiveComplete(e);
-                        }
+                        AsyncReceiveComplete(e);
                     }
                 }
                 else
@@ -336,6 +319,18 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
         }
 
+        void DespatchData(byte[] receivedBytes)
+        {
+            //Read messages according to current wire protocol
+            var messages = WireProtocol.CreateMessages(receivedBytes);
+
+            //Raise MessageReceived event for all received messages
+            foreach (var message in messages)
+            {
+                OnMessageReceived(message);
+            }
+        }
+
         /// <summary>
         /// 异步完成
         /// </summary>
@@ -355,10 +350,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 //Dispose resource.
                 TcpSocketHelper.Release(e);
-            }
 
-            lock (_syncLock)
-            {
                 OnDisconnected();
             }
         }
