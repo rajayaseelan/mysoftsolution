@@ -17,7 +17,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="node"></param>
         /// <param name="logger"></param>
-        public InvokeProxy(ServerNode node, ILog logger)
+        public InvokeProxy(ServerNode node, IServiceContainer logger)
             : base(node, logger)
         {
             //TO DO

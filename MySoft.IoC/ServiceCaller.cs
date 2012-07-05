@@ -5,7 +5,7 @@ using System.Threading;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services.Async;
+using MySoft.IoC.Services.Tasks;
 
 namespace MySoft.IoC
 {
@@ -101,12 +101,13 @@ namespace MySoft.IoC
         private void AsyncCallback(IAsyncResult ar)
         {
             var arr = ar.AsyncState as ArrayList;
-            var asyncCaller = arr[0] as AsyncCaller;
-            var client = arr[1] as IScsServerClient;
-            var asyncArgs = arr[2] as AsyncCallerArgs;
 
             try
             {
+                var asyncCaller = arr[0] as AsyncCaller;
+                var client = arr[1] as IScsServerClient;
+                var asyncArgs = arr[2] as AsyncCallerArgs;
+
                 //返回响应数据
                 var resMsg = asyncCaller.EndDoTask(ar);
 
@@ -116,7 +117,8 @@ namespace MySoft.IoC
                     Caller = asyncArgs.Context.Caller,
                     ElapsedTime = asyncCaller.ElapsedMilliseconds,
                     Count = resMsg.Count,
-                    Error = resMsg.Error
+                    Error = resMsg.Error,
+                    Value = resMsg.Value
                 };
 
                 //响应计数
@@ -141,8 +143,7 @@ namespace MySoft.IoC
             finally
             {
                 //清理资源
-                asyncArgs = null;
-                asyncCaller = null;
+                arr = null;
             }
         }
 

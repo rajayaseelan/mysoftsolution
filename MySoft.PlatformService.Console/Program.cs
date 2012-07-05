@@ -16,6 +16,8 @@ namespace MySoft.PlatformService.Console
         //private static readonly IMongo mongo = new Mongo("mongodb://192.168.1.223");
         static void Main(string[] args)
         {
+            var color = System.Console.ForegroundColor;
+
             System.Console.BackgroundColor = ConsoleColor.DarkBlue;
             System.Console.ForegroundColor = ConsoleColor.White;
             Program_OnLog("Service ready started...", LogType.Normal);
@@ -29,6 +31,13 @@ namespace MySoft.PlatformService.Console
             Program_OnLog(string.Format("Tcp server started. {0}", server.ServerUrl), LogType.Normal);
             Program_OnLog(string.Format("Service count -> {0} services.", server.ServiceCount), LogType.Normal);
             Program_OnLog(string.Format("Press any key to exit and stop service..."), LogType.Normal);
+
+            System.Console.ForegroundColor = color;
+
+            System.Console.ReadLine();
+
+            server.Stop();
+
             System.Console.ReadLine();
         }
 
@@ -37,6 +46,8 @@ namespace MySoft.PlatformService.Console
             string message = "[" + DateTime.Now.ToString() + "] " + "=> <" + type + "> " + log;
             lock (syncobj)
             {
+                var color = System.Console.ForegroundColor;
+
                 if (type == LogType.Error)
                     System.Console.ForegroundColor = ConsoleColor.Red;
                 else if (type == LogType.Warning)
@@ -45,6 +56,8 @@ namespace MySoft.PlatformService.Console
                     System.Console.ForegroundColor = ConsoleColor.Green;
 
                 System.Console.WriteLine(message);
+
+                System.Console.ForegroundColor = color;
             }
         }
 
@@ -58,12 +71,16 @@ namespace MySoft.PlatformService.Console
 
             lock (syncobj)
             {
+                var color = System.Console.ForegroundColor;
+
                 if (error is WarningException)
                     System.Console.ForegroundColor = ConsoleColor.Yellow;
                 else
                     System.Console.ForegroundColor = ConsoleColor.Red;
 
                 System.Console.WriteLine(message);
+
+                System.Console.ForegroundColor = color;
             }
         }
     }

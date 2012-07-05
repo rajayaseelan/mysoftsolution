@@ -7,6 +7,7 @@ using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 using MySoft.IoC.Services;
+using MySoft.IoC.Communication;
 
 namespace MySoft.IoC
 {
@@ -25,14 +26,10 @@ namespace MySoft.IoC
         /// </summary>
         public event EventHandler<ErrorMessageEventArgs> OnError;
 
-        /// <summary>
-        /// This event is raised when client disconnected from server.
-        /// </summary>
-        public event EventHandler Disconnected;
-
         private RequestMessage reqMessage;
         private IScsClient client;
-        private ILog logger;
+        private IServiceContainer container;
+        private bool isCallback;
         private string node;
         private string ip;
         private int port;
@@ -41,16 +38,18 @@ namespace MySoft.IoC
         /// 实例化ServiceMessage
         /// </summary>
         /// <param name="node"></param>
-        /// <param name="logger"></param>
-        public ServiceRequest(ServerNode node, ILog logger, bool isTimeoutDisconnect)
+        /// <param name="container"></param>
+        public ServiceRequest(ServerNode node, IServiceContainer container, bool isCallback)
         {
-            this.logger = logger;
+            this.container = container;
             this.node = node.Key;
             this.ip = node.IP;
             this.port = node.Port;
+            this.isCallback = isCallback;
 
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
-            this.client.IsTimeoutDisconnect = isTimeoutDisconnect;
+            this.client.IsTimeoutDisconnect = !isCallback;
+            this.client.Connected += new EventHandler(client_Connected);
             this.client.Disconnected += client_Disconnected;
             this.client.MessageReceived += client_MessageReceived;
             this.client.MessageSent += client_MessageSent;
@@ -58,18 +57,32 @@ namespace MySoft.IoC
             this.client.WireProtocol = new CustomWireProtocol(node.Compress, node.Encrypt);
         }
 
+        /// <summary>
+        /// 连接成功
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void client_Connected(object sender, EventArgs e)
+        {
+            container.SendConnected(sender, new ConnectEventArgs(this.client)
+            {
+                Error = new SocketException((int)SocketError.Success),
+                IsCallback = isCallback
+            });
+        }
+
+        /// <summary>
+        /// 断开成功
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void client_Disconnected(object sender, EventArgs e)
         {
-            //输出错误信息
-            if (Disconnected != null)
+            container.SendDisconnected(sender, new ConnectEventArgs(this.client)
             {
-                Disconnected(sender, e);
-            }
-            else
-            {
-                var error = new SocketException((int)SocketError.ConnectionReset);
-                this.logger.WriteError(error);
-            }
+                Error = new SocketException((int)SocketError.ConnectionReset),
+                IsCallback = isCallback
+            });
         }
 
         void client_MessageError(object sender, ErrorEventArgs e)

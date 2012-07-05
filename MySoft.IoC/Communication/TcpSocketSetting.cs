@@ -19,7 +19,7 @@ namespace MySoft.IoC.Communication
         /// <summary>
         /// 最大等待连接数
         /// </summary>
-        public const int Backlog = 100; //100 连接
+        public const int Backlog = 1000; //1000 连接
 
         /// <summary>
         /// 连接池对象

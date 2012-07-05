@@ -13,8 +13,8 @@ namespace MySoft.IoC.Services
     {
         private object callback;
 
-        public CallbackProxy(object callback, ServerNode node, ILog logger)
-            : base(node, logger)
+        public CallbackProxy(object callback, ServerNode node, IServiceContainer container)
+            : base(node, container)
         {
             this.callback = callback;
         }
@@ -28,10 +28,9 @@ namespace MySoft.IoC.Services
 
             lock (this.reqPool)
             {
-                var reqService = new ServiceRequest(node, logger, false);
+                var reqService = new ServiceRequest(node, container, true);
                 reqService.OnCallback += reqService_OnCallback;
                 reqService.OnError += reqService_OnError;
-                reqService.Disconnected += reqService_Disconnected;
 
                 this.reqPool.Push(reqService);
             }
@@ -52,11 +51,6 @@ namespace MySoft.IoC.Services
         void reqService_OnError(object sender, ErrorMessageEventArgs e)
         {
             base.QueueError(e.Request, e.Error);
-        }
-
-        void reqService_Disconnected(object sender, EventArgs e)
-        {
-            this.logger.WriteError(new SocketException((int)SocketError.NotConnected));
         }
 
         /// <summary>

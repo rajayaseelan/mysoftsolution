@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.IoC.Services.Async
+namespace MySoft.IoC.Services.Tasks
 {
     internal class AsyncResult<TResult> : AsyncResultNoResult
     {

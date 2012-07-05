@@ -8,13 +8,14 @@ using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using MySoft.IoC.Communication;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// The service factory.
     /// </summary>
-    public class CastleFactory : ILogable, IErrorLogable
+    public class CastleFactory : ITcpConnection, ILogable, IErrorLogable
     {
         private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         private static CastleFactory singleton = null;
@@ -50,6 +51,14 @@ namespace MySoft.IoC
             container.OnError += error =>
             {
                 if (this.OnError != null) this.OnError(error);
+            };
+            container.OnConnected += (sender, args) =>
+            {
+                if (this.OnConnected != null) this.OnConnected(sender, args);
+            };
+            container.OnDisconnected += (sender, args) =>
+            {
+                if (this.OnDisconnected != null) this.OnDisconnected(sender, args);
             };
 
             this.proxies = new Dictionary<string, IService>();
@@ -265,20 +274,6 @@ namespace MySoft.IoC
 
             return (IServiceInterfaceType)hashtable[serviceKey];
         }
-
-        #endregion
-
-        #region ILogable Members
-
-        /// <summary>
-        /// OnLog event.
-        /// </summary>
-        public event LogEventHandler OnLog;
-
-        /// <summary>
-        /// OnError event.
-        /// </summary>
-        public event ErrorLogEventHandler OnError;
 
         #endregion
 
@@ -558,6 +553,34 @@ namespace MySoft.IoC
 
             return service;
         }
+
+        #endregion
+
+        #region ILogable Members
+
+        /// <summary>
+        /// OnLog event.
+        /// </summary>
+        public event LogEventHandler OnLog;
+
+        /// <summary>
+        /// OnError event.
+        /// </summary>
+        public event ErrorLogEventHandler OnError;
+
+        #endregion
+
+        #region ITcpConnection ≥…‘±
+
+        /// <summary>
+        /// OnConnected event
+        /// </summary>
+        public event EventHandler<ConnectEventArgs> OnConnected;
+
+        /// <summary>
+        /// OnDisconnected event
+        /// </summary>
+        public event EventHandler<ConnectEventArgs> OnDisconnected;
 
         #endregion
     }

@@ -14,6 +14,7 @@ using Castle.Windsor;
 using Castle.Windsor.Configuration.Interpreters;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using MySoft.IoC.Communication;
 
 namespace MySoft.IoC
 {
@@ -329,18 +330,6 @@ namespace MySoft.IoC
             get { return typeof(SimpleServiceContainer).FullName; }
         }
 
-        #region IDisposable Members
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            container.Dispose();
-        }
-
-        #endregion
-
         #region ILogable Members
 
         /// <summary>
@@ -356,6 +345,20 @@ namespace MySoft.IoC
         /// OnError event.
         /// </summary>
         public event ErrorLogEventHandler OnError;
+
+        #endregion
+
+        #region ITcpConnection ≥…‘±
+
+        /// <summary>
+        /// OnConnected event
+        /// </summary>
+        public event EventHandler<ConnectEventArgs> OnConnected;
+
+        /// <summary>
+        /// OnDisconnected event
+        /// </summary>
+        public event EventHandler<ConnectEventArgs> OnDisconnected;
 
         #endregion
 
@@ -386,6 +389,38 @@ namespace MySoft.IoC
             try
             {
                 if (OnError != null) OnError(error);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        /// <summary>
+        /// OnWriteConnected
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        public void SendConnected(object sender, ConnectEventArgs args)
+        {
+            try
+            {
+                if (OnConnected != null) OnConnected(sender, args);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        /// <summary>
+        /// OnWriteDisconnected
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        public void SendDisconnected(object sender, ConnectEventArgs args)
+        {
+            try
+            {
+                if (OnDisconnected != null) OnDisconnected(sender, args);
             }
             catch (Exception)
             {

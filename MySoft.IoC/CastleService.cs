@@ -190,8 +190,9 @@ namespace MySoft.IoC
             }
 
             server.Stop();
-            server.Clients.ClearAll();
-            container.Dispose();
+
+            httpServer = null;
+            server = null;
         }
 
         /// <summary>
@@ -199,6 +200,9 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
+            if (httpServer == null
+                || server == null) return;
+
             this.Stop();
         }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace MySoft.IoC.Services.Async
+namespace MySoft.IoC.Services.Tasks
 {
     internal class AsyncResultNoResult : IAsyncResult
     {

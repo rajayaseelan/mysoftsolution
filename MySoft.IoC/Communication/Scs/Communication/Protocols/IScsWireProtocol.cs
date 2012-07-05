@@ -7,7 +7,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols
     /// <summary>
     /// Represents a byte-level communication protocol between applications.
     /// </summary>
-    public interface IScsWireProtocol : IDisposable
+    public interface IScsWireProtocol
     {
         /// <summary>
         /// Serializes a message to a byte array to send to remote application.

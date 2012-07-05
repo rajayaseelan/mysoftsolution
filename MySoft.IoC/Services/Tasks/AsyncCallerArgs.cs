@@ -1,7 +1,7 @@
 ﻿using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
-namespace MySoft.IoC.Services.Async
+namespace MySoft.IoC.Services.Tasks
 {
     /// <summary>
     /// 调用参数

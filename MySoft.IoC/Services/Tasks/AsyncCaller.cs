@@ -5,7 +5,7 @@ using MySoft.IoC.Messages;
 using System.Diagnostics;
 using MySoft.IoC.Communication.Scs.Server;
 
-namespace MySoft.IoC.Services.Async
+namespace MySoft.IoC.Services.Tasks
 {
     /// <summary>
     /// Async method caller

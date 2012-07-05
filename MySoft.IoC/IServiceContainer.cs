@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using Castle.MicroKernel;
 using MySoft.Logger;
+using MySoft.IoC.Communication;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// The service container interface.
     /// </summary>
-    public interface IServiceContainer : IContainer, ILog, ILogable, IErrorLogable, IDisposable
+    public interface IServiceContainer : IContainer, ILog, ILogable, IErrorLogable, ITcpConnection
     {
         /// <summary>
         /// Gets the kernel.
@@ -44,5 +45,19 @@ namespace MySoft.IoC
         /// <param name="serviceName"></param>
         /// <returns></returns>
         bool Contains<ContractType>(string serviceName);
+
+        /// <summary>
+        /// OnWriteConnected
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        void SendConnected(object sender, ConnectEventArgs args);
+
+        /// <summary>
+        /// OnWriteDisconnected
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        void SendDisconnected(object sender, ConnectEventArgs args);
     }
 }

@@ -78,14 +78,16 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// </summary>
         public virtual void Stop()
         {
-            if (_connectionListener != null)
-            {
-                _connectionListener.Stop();
-            }
-
             foreach (var client in Clients.GetAllItems())
             {
                 client.Disconnect();
+            }
+
+            Clients.ClearAll();
+
+            if (_connectionListener != null)
+            {
+                _connectionListener.Stop();
             }
         }
 

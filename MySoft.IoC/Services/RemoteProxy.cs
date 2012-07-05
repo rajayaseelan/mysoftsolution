@@ -11,21 +11,22 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class RemoteProxy : IService
     {
-        protected ILog logger;
-        protected ServerNode node;
+        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+
         protected ServiceRequestPool reqPool;
         private volatile int poolSize;
-        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+        protected IServiceContainer container;
+        protected ServerNode node;
 
         /// <summary>
         /// 实例化RemoteProxy
         /// </summary>
         /// <param name="node"></param>
-        /// <param name="logger"></param>
-        public RemoteProxy(ServerNode node, ILog logger)
+        /// <param name="container"></param>
+        public RemoteProxy(ServerNode node, IServiceContainer container)
         {
             this.node = node;
-            this.logger = logger;
+            this.container = container;
 
             //初始化池
             TcpSocketSetting.Init(node.MaxPool * 10);
@@ -58,7 +59,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ServiceRequest CreateServiceRequest()
         {
-            var reqService = new ServiceRequest(node, logger, true);
+            var reqService = new ServiceRequest(node, container, false);
             reqService.OnCallback += reqService_OnCallback;
             reqService.OnError += reqService_OnError;
 

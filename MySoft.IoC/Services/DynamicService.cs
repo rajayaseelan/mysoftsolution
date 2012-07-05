@@ -78,7 +78,7 @@ namespace MySoft.IoC.Services
                 object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
 
                 //调用对应的服务
-                var value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
+                resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
 
                 //处理返回参数
                 IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
@@ -88,17 +88,13 @@ namespace MySoft.IoC.Services
                 {
                     resMsg.Value = new InvokeData
                     {
-                        Value = SerializationManager.SerializeJson(value),
+                        Value = SerializationManager.SerializeJson(resMsg.Value),
                         Count = resMsg.Count,
                         OutParameters = resMsg.Parameters.ToString()
                     };
 
                     //清除参数集合
                     resMsg.Parameters.Clear();
-                }
-                else
-                {
-                    resMsg.Value = value;
                 }
             }
             catch (Exception ex)

@@ -109,7 +109,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </summary>
         public void Reset()
         {
-            if (_receiveMemoryStream == null || _receiveMemoryStream.Length > 0)
+            if (_receiveMemoryStream.Length > 0)
             {
                 _receiveMemoryStream = new MemoryStream();
             }
@@ -307,28 +307,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
                 return (from assembly in AppDomain.CurrentDomain.GetAssemblies()
                         where assembly.FullName.Split(',')[0] == toAssemblyName
                         select assembly.GetType(typeName)).FirstOrDefault();
-            }
-        }
-
-        #endregion
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// Clear buffer resource.
-        /// </summary>
-        public void Dispose()
-        {
-            try
-            {
-                _receiveMemoryStream.Close();
-                _receiveMemoryStream.Dispose();
-
-                _receiveMemoryStream = null;
-            }
-            catch
-            {
-
             }
         }
 

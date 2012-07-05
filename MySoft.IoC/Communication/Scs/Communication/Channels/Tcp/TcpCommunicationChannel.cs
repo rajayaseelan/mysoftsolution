@@ -50,6 +50,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private volatile bool _running;
 
+        /// <summary>
+        /// This object is just used for thread synchronizing (locking).
+        /// </summary>
+        private static readonly object _syncLock = new object();
+
         #endregion
 
         #region Constructor
@@ -105,7 +110,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 TcpSocketHelper.Release(e);
 
-                OnDisconnected();
+                lock (_syncLock)
+                {
+                    OnDisconnected();
+                }
             }
         }
 
@@ -135,27 +143,30 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            //Create a byte array from message according to current protocol
-            var messageBytes = WireProtocol.GetBytes(message);
-
-            //发送数据
-            TcpSocketAsyncEventArgs e = _pool.Pop(this);
-            e.UserToken = message;
-
-            try
+            lock (_syncLock)
             {
-                e.SetBuffer(messageBytes, 0, messageBytes.Length);
+                //Create a byte array from message according to current protocol
+                var messageBytes = WireProtocol.GetBytes(message);
 
-                if (!_clientSocket.SendAsync(e))
+                //发送数据
+                TcpSocketAsyncEventArgs e = _pool.Pop(this);
+                e.UserToken = message;
+
+                try
                 {
-                    AsyncSendComplete(e);
-                }
-            }
-            catch (Exception ex)
-            {
-                TcpSocketHelper.Release(e);
+                    e.SetBuffer(messageBytes, 0, messageBytes.Length);
 
-                throw ex;
+                    if (!_clientSocket.SendAsync(e))
+                    {
+                        AsyncSendComplete(e);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TcpSocketHelper.Release(e);
+
+                    throw ex;
+                }
             }
         }
 
@@ -229,7 +240,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 TcpSocketHelper.Release(e);
 
-                Disconnect();
+                if ((ex.SocketErrorCode == SocketError.ConnectionReset)
+                     || (ex.SocketErrorCode == SocketError.ConnectionAborted)
+                     || (ex.SocketErrorCode == SocketError.NotConnected)
+                     || (ex.SocketErrorCode == SocketError.Shutdown)
+                     || (ex.SocketErrorCode == SocketError.Disconnecting)
+                     || (ex.SocketErrorCode == SocketError.OperationAborted))
+                {
+                    Disconnect();
+                }
+                else
+                {
+                    OnMessageError(ex);
+                }
             }
             catch (Exception ex)
             {
@@ -248,27 +271,38 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 //Get received bytes count
-                if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
+                if (e.SocketError == SocketError.Success)
                 {
                     LastReceivedMessageTime = DateTime.Now;
 
-                    //Copy received bytes to a new byte array
-                    var receivedBytes = new byte[e.BytesTransferred];
-                    Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, e.BytesTransferred);
-
-                    //Read messages according to current wire protocol
-                    var messages = WireProtocol.CreateMessages(receivedBytes);
-
-                    //Raise MessageReceived event for all received messages
-                    foreach (var message in messages)
+                    if (e.BytesTransferred > 0)
                     {
-                        OnMessageReceived(message);
+                        //Copy received bytes to a new byte array
+                        var receivedBytes = new byte[e.BytesTransferred];
+                        Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, e.BytesTransferred);
+
+                        //Read messages according to current wire protocol
+                        var messages = WireProtocol.CreateMessages(receivedBytes);
+
+                        //Raise MessageReceived event for all received messages
+                        foreach (var message in messages)
+                        {
+                            OnMessageReceived(message);
+                        }
                     }
 
-                    //重新接收数据
-                    if (!_clientSocket.ReceiveAsync(e))
+                    if (!_running)
                     {
-                        AsyncReceiveComplete(e);
+                        //释放资源
+                        TcpSocketHelper.Release(e);
+                    }
+                    else
+                    {
+                        //重新接收数据
+                        if (!_clientSocket.ReceiveAsync(e))
+                        {
+                            AsyncReceiveComplete(e);
+                        }
                     }
                 }
                 else
@@ -280,7 +314,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 TcpSocketHelper.Release(e);
 
-                Disconnect();
+                if ((ex.SocketErrorCode == SocketError.ConnectionReset)
+                     || (ex.SocketErrorCode == SocketError.ConnectionAborted)
+                     || (ex.SocketErrorCode == SocketError.NotConnected)
+                     || (ex.SocketErrorCode == SocketError.Shutdown)
+                     || (ex.SocketErrorCode == SocketError.Disconnecting)
+                     || (ex.SocketErrorCode == SocketError.OperationAborted))
+                {
+                    Disconnect();
+                }
+                else
+                {
+                    OnMessageError(ex);
+                }
             }
             catch (Exception ex)
             {
@@ -298,7 +344,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                _clientSocket.Shutdown(SocketShutdown.Both);
+                //_clientSocket.Shutdown(SocketShutdown.Both);
                 _clientSocket.Close();
             }
             catch
@@ -308,12 +354,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 //Dispose resource.
-                WireProtocol.Dispose();
-
                 TcpSocketHelper.Release(e);
             }
 
-            OnDisconnected();
+            lock (_syncLock)
+            {
+                OnDisconnected();
+            }
         }
 
         #endregion

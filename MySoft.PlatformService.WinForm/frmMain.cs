@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Linq;
 using System.Threading;
 using System.Configuration;
+using MySoft.IoC.Communication;
 
 namespace MySoft.PlatformService.WinForm
 {
@@ -25,41 +26,51 @@ namespace MySoft.PlatformService.WinForm
             InitializeComponent();
 
             CastleFactory.Create().OnError += new ErrorLogEventHandler(frmMain_OnError);
+            CastleFactory.Create().OnDisconnected += new EventHandler<ConnectEventArgs>(frmMain_OnDisconnected);
+        }
+
+        void frmMain_OnDisconnected(object sender, ConnectEventArgs e)
+        {
+            if (e.IsCallback)
+            {
+                lock (_syncLock)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        if (button1.Tag == null) return;
+
+                        StartMonitor(true);
+
+                        var args = new ParseMessageEventArgs
+                            {
+                                MessageType = ParseMessageType.Error,
+                                LineHeader = string.Format("【{0}】 当前监控已经从服务器断开...", DateTime.Now),
+                                MessageText = string.Format("({0}){1}", e.Error.ErrorCode, e.Error.Message)
+                            };
+
+                        listConnect.Items.Insert(0, args);
+
+                        listConnect.Invalidate();
+
+                        //发送错误邮件
+                        string errorMessage = string.Format("{0} - {1}", e.Error.ErrorCode, e.Error.Message);
+                        SendErrorMail(errorMessage, e.Error);
+
+                        //显示错误
+                        ShowError(new Exception(args.LineHeader));
+                    }));
+                }
+            }
         }
 
         void frmMain_OnError(Exception error)
         {
-            //发生错误SocketException为网络断开
-            if (error is SocketException)
+            lock (_syncLock)
             {
-                //未连接状态，自动断开为SocketError.ConnectionReset
-                if ((error as SocketException).SocketErrorCode == SocketError.NotConnected)
+                this.Invoke(new Action(() =>
                 {
-                    lock (_syncLock)
-                    {
-                        this.Invoke(new Action(() =>
-                        {
-                            if (button1.Tag == null) return;
-
-                            StartMonitor(true);
-
-                            listConnect.Items.Insert(0,
-                                new ParseMessageEventArgs
-                                {
-                                    MessageType = ParseMessageType.Error,
-                                    LineHeader = string.Format("【{0}】 当前网络已经从服务器断开...", DateTime.Now),
-                                    MessageText = string.Format("({0}){1}", (error as SocketException).ErrorCode, (error as SocketException).Message)
-                                });
-
-                            listConnect.Invalidate();
-
-                            //发送错误邮件
-                            var socketError = (error as SocketException);
-                            string errorMessage = string.Format("{0} - {1}", socketError.ErrorCode, socketError.Message);
-                            SendErrorMail(errorMessage, socketError);
-                        }));
-                    }
-                }
+                    ShowError(error);
+                }));
             }
         }
 
@@ -91,7 +102,7 @@ namespace MySoft.PlatformService.WinForm
             StartMonitor(false);
         }
 
-        private void StartMonitor(bool fromThread)
+        private void StartMonitor(bool socketError)
         {
             try
             {
@@ -103,7 +114,7 @@ namespace MySoft.PlatformService.WinForm
                         return;
                     }
 
-                    if (!fromThread)
+                    if (!socketError)
                     {
                         if (MessageBox.Show("确定开始监控吗？", "系统提示",
                             MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel) return;
@@ -173,20 +184,20 @@ namespace MySoft.PlatformService.WinForm
                 }
                 else
                 {
-                    if (!fromThread)
+                    if (!socketError)
                     {
                         if (MessageBox.Show("确定停止监控吗？", "系统提示",
                             MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel) return;
-                    }
 
-                    try
-                    {
-                        service.Unsubscribe();
-                    }
-                    catch (Exception ex)
-                    {
-                        SimpleLog.Instance.WriteLogForDir("Client", ex);
-                        ShowError(ex);
+                        try
+                        {
+                            service.Unsubscribe();
+                        }
+                        catch (Exception ex)
+                        {
+                            SimpleLog.Instance.WriteLogForDir("Client", ex);
+                            ShowError(ex);
+                        }
                     }
 
                     checkedListBox1.Items.Clear();
@@ -216,8 +227,14 @@ namespace MySoft.PlatformService.WinForm
                     numericUpDown1.Enabled = checkBox2.Enabled && checkBox2.Checked;
                     numericUpDown2.Enabled = checkBox3.Enabled && checkBox3.Checked;
 
-                    try { webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty; }
-                    catch { }
+                    try
+                    {
+                        webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+                    }
+                    catch
+                    {
+
+                    }
 
                     checkBox4.Enabled = true;
                     numericUpDown3.Enabled = true;
@@ -283,15 +300,27 @@ namespace MySoft.PlatformService.WinForm
         {
             if (listError.SelectedIndex < 0)
             {
-                try { webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty; }
-                catch { }
+                try
+                {
+                    webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+                }
+                catch
+                {
+
+                }
                 return;
             }
 
             var args = listError.SelectedItem as ParseMessageEventArgs;
             var source = args.Source as CallError;
-            try { webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty; }
-            catch { }
+            try
+            {
+                webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+            }
+            catch
+            {
+
+            }
             webBrowser1.Document.Write(source.HtmlError);
             AppendText(richTextBox2, source.Caller);
         }
@@ -590,6 +619,7 @@ namespace MySoft.PlatformService.WinForm
         void InitBrowser()
         {
             webBrowser1 = new WebBrowser();
+            webBrowser1.ScriptErrorsSuppressed = true;
             webBrowser1.Dock = DockStyle.Fill;
             splitContainer2.Panel2.Controls.Add(webBrowser1);
 
@@ -609,6 +639,7 @@ namespace MySoft.PlatformService.WinForm
             else
             {
                 webBrowser2 = new WebBrowser();
+                webBrowser2.ScriptErrorsSuppressed = true;
                 webBrowser2.Dock = DockStyle.Fill;
                 webBrowser2.Navigating += new WebBrowserNavigatingEventHandler(webBrowser2_Navigating);
                 webBrowser2.Navigate(url1);
@@ -625,6 +656,7 @@ namespace MySoft.PlatformService.WinForm
             else
             {
                 var webBrowser = new WebBrowser();
+                webBrowser.ScriptErrorsSuppressed = true;
                 webBrowser.Dock = DockStyle.Fill;
                 tabPage5.Controls.Add(webBrowser);
                 webBrowser.Navigate(url2);
@@ -638,6 +670,7 @@ namespace MySoft.PlatformService.WinForm
             else
             {
                 var webBrowser = new WebBrowser();
+                webBrowser.ScriptErrorsSuppressed = true;
                 webBrowser.Dock = DockStyle.Fill;
                 tabPage6.Controls.Add(webBrowser);
                 webBrowser.Navigate(url3);
@@ -654,6 +687,7 @@ namespace MySoft.PlatformService.WinForm
             formTimer.Stop();
 
             var webBrowser = new WebBrowser();
+            webBrowser.ScriptErrorsSuppressed = true;
             webBrowser.Dock = DockStyle.Fill;
             webBrowser.Navigating += new WebBrowserNavigatingEventHandler(webBrowser2_Navigating);
             webBrowser.Navigated += new WebBrowserNavigatedEventHandler(webBrowser2_Navigated);
@@ -1228,8 +1262,6 @@ namespace MySoft.PlatformService.WinForm
 
         void ShowError(Exception ex)
         {
-            if (ex is NullReferenceException) return;
-
             MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 

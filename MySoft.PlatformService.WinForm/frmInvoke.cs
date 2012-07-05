@@ -47,6 +47,7 @@ namespace MySoft.PlatformService.WinForm
             //自动生成列
             gridDataQuery.AutoGenerateColumns = true;
             webBrowser1.Url = new Uri("about:blank");
+            webBrowser1.ScriptErrorsSuppressed = true;
 
             lblServiceName.Text = serviceName;
             lblMethodName.Text = methodName;
@@ -304,6 +305,8 @@ namespace MySoft.PlatformService.WinForm
                         //写Document文档
                         InvokeMethod(new Action(() =>
                         {
+                            if (webBrowser1.IsBusy) return;
+
                             gridDataQuery.DataSource = null;
 
                             var html = container.ToString();
