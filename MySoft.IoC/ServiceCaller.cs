@@ -68,18 +68,25 @@ namespace MySoft.IoC
 
             try
             {
+                OperationContext.Current = context;
+
                 //创建服务
                 var service = ParseService(reqMsg);
 
-                //调用参数
-                var callerArgs = new AsyncCallerArgs
-                {
-                    Context = context,
-                    Request = reqMsg,
-                };
+                var resMsg = service.CallService(reqMsg);
 
-                var asyncCaller = new AsyncCaller(service, callerArgs);
-                asyncCaller.BeginDoTask(AsyncCallback, new ArrayList { asyncCaller, client, callerArgs });
+                //发送消息
+                SendMessage(client, reqMsg, resMsg, reqMsg.TransactionId.ToString());
+
+                //调用参数
+                //var callerArgs = new AsyncCallerArgs
+                //{
+                //    Context = context,
+                //    Request = reqMsg,
+                //};
+
+                //var asyncCaller = new AsyncCaller(service, callerArgs);
+                //asyncCaller.BeginDoTask(AsyncCallback, new ArrayList { asyncCaller, client, callerArgs });
             }
             catch (Exception ex)
             {
@@ -91,6 +98,10 @@ namespace MySoft.IoC
 
                 //发送消息
                 SendMessage(client, reqMsg, resMsg, reqMsg.TransactionId.ToString());
+            }
+            finally
+            {
+                OperationContext.Current = null;
             }
         }
 
