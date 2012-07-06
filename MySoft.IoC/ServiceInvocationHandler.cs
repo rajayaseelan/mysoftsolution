@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
@@ -152,16 +151,11 @@ namespace MySoft.IoC
                 //写日志开始
                 logger.BeginRequest(reqMsg);
 
-                //开始计时
-                var watch = Stopwatch.StartNew();
-
                 //调用服务
                 resMsg = service.CallService(reqMsg);
 
-                watch.Stop();
-
                 //写日志结束
-                logger.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
+                logger.EndRequest(reqMsg, resMsg, resMsg.ElapsedTime);
 
                 //如果有异常，向外抛出
                 if (resMsg.IsError) throw resMsg.Error;

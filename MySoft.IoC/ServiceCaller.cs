@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Server;
@@ -101,21 +100,16 @@ namespace MySoft.IoC
         /// <returns></returns>
         private ResponseMessage GetResponse(AppCaller caller, RequestMessage reqMsg)
         {
-            //开始计时
-            var watch = Stopwatch.StartNew();
-
             //调用服务
             var service = ParseService(reqMsg);
-            var resMsg = service.CallService(reqMsg);
 
-            //停止计时
-            watch.Stop();
+            var resMsg = service.CallService(reqMsg);
 
             //调用参数
             var callArgs = new CallEventArgs
             {
                 Caller = caller,
-                ElapsedTime = watch.ElapsedMilliseconds,
+                ElapsedTime = resMsg.ElapsedTime,
                 Count = resMsg.Count,
                 Error = resMsg.Error,
                 Value = resMsg.Value

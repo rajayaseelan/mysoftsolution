@@ -347,7 +347,7 @@ namespace MySoft.PlatformService.WinForm
 
             InvokeMethod(new Action(() =>
             {
-                label5.Text = data.ElapsedMilliseconds + " ms";
+                label5.Text = string.Format("{0} ms. / {1} ms.", data.ElapsedMilliseconds, data.ElapsedTime);
                 label5.Refresh();
 
                 button1.Enabled = true;

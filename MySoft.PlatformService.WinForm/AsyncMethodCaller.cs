@@ -32,6 +32,7 @@ namespace MySoft.PlatformService.WinForm
         {
             base.Count = data.Count;
             base.Value = data.Value;
+            base.ElapsedTime = data.ElapsedTime;
             base.OutParameters = data.OutParameters;
         }
 

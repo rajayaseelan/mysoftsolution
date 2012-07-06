@@ -41,7 +41,7 @@ namespace MySoft.PlatformService.UserService
             return Convert.ToString(value);
         }
 
-        //[AspectSwitcher(true)]
+        [AspectSwitcher(true)]
         public virtual UserInfo GetUserInfo(string name, out string userid, out Guid guid, out UserInfo user)
         {
             //Thread.Sleep(60000);
@@ -94,6 +94,8 @@ namespace MySoft.PlatformService.UserService
         public string GetUsersString()
         {
             //Thread.Sleep(10000);
+
+            Thread.Sleep(10);
 
             try
             {

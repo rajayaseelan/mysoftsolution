@@ -10,20 +10,20 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public class ResponseMessage : MessageBase
     {
-        private double elapsedMilliseconds;
+        private long elapsedTime;
 
         /// <summary>
         /// Gets or sets the value
         /// </summary>
-        public double ElapsedMilliseconds
+        public long ElapsedTime
         {
             get
             {
-                return elapsedMilliseconds;
+                return elapsedTime;
             }
             set
             {
-                elapsedMilliseconds = value;
+                elapsedTime = value;
             }
         }
 
@@ -98,11 +98,12 @@ namespace MySoft.IoC.Messages
             {
                 if (_error != null)
                 {
-                    return string.Format("Error: {0} (Type:{1}).", ErrorHelper.GetInnerException(_error).Message, base.ReturnType);
+                    var ex = ErrorHelper.GetInnerException(_error);
+                    return string.Format("(Type:{0}) Elapsed: {1} ms, Error: {2}", base.ReturnType, this.elapsedTime, ex.Message);
                 }
                 else
                 {
-                    return string.Format("RowCount: {0} (Type:{1}).", this.Count, base.ReturnType);
+                    return string.Format("(Type:{0}) Elapsed: {1} ms, RowCount: {2}", base.ReturnType, this.elapsedTime, this.Count);
                 }
             }
         }

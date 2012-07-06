@@ -66,18 +66,33 @@ namespace MySoft.IoC.Services
             watch.Stop();
 
             //设置耗时
-            resMsg.ElapsedMilliseconds = watch.ElapsedMilliseconds;
+            resMsg.ElapsedTime = watch.ElapsedMilliseconds;
 
             //如果出错，通知客户端
             if (resMsg.IsError)
             {
-                string body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\n\r\nParameters => {3}\r\nMessage => {4}",
+                string body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}\r\nMessage => {4}",
                     reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
 
                 //获取异常
                 var exception = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
 
                 logger.WriteError(exception);
+            }
+
+            //返回结果数据
+            if (reqMsg.InvokeMethod)
+            {
+                resMsg.Value = new InvokeData
+                {
+                    Value = SerializationManager.SerializeJson(resMsg.Value),
+                    Count = resMsg.Count,
+                    ElapsedTime = resMsg.ElapsedTime,
+                    OutParameters = resMsg.Parameters.ToString()
+                };
+
+                //清除参数集合
+                resMsg.Parameters.Clear();
             }
 
             return resMsg;

@@ -19,6 +19,11 @@ namespace MySoft.IoC.Messages
         public int Count { get; set; }
 
         /// <summary>
+        /// Gets or sets the value
+        /// </summary>
+        public long ElapsedTime { get; set; }
+
+        /// <summary>
         /// 参数
         /// </summary>
         public string OutParameters { get; set; }

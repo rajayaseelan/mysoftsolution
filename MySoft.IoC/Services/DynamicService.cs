@@ -88,20 +88,6 @@ namespace MySoft.IoC.Services
 
                 //处理返回参数
                 IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
-
-                //返回结果数据
-                if (reqMsg.InvokeMethod)
-                {
-                    resMsg.Value = new InvokeData
-                    {
-                        Value = SerializationManager.SerializeJson(resMsg.Value),
-                        Count = resMsg.Count,
-                        OutParameters = resMsg.Parameters.ToString()
-                    };
-
-                    //清除参数集合
-                    resMsg.Parameters.Clear();
-                }
             }
             catch (Exception ex)
             {

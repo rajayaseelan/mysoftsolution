@@ -54,7 +54,6 @@ namespace MySoft
             using (MemoryStream ms = new MemoryStream())
             {
                 BinaryFormatter bformatter = new BinaryFormatter();
-                //bformatter.TypeFormat = FormatterTypeStyle.TypesWhenNeeded;
                 bformatter.Serialize(ms, obj);
                 ms.Position = 0;
 
@@ -62,6 +61,7 @@ namespace MySoft
                 {
                     buffer = new byte[ms.Length];
                 }
+
                 buffer = ms.ToArray();
             }
 

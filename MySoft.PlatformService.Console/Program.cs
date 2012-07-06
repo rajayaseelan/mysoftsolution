@@ -33,11 +33,9 @@ namespace MySoft.PlatformService.Console
             Program_OnLog(string.Format("Press any key to exit and stop service..."), LogType.Normal);
 
             System.Console.ForegroundColor = color;
-
             System.Console.ReadLine();
 
             server.Stop();
-
             System.Console.ReadLine();
         }
 
