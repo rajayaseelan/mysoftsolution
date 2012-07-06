@@ -191,25 +191,6 @@ namespace MySoft.IoC
         /// 获取请求消息
         /// </summary>
         /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        public static ResponseMessage GetResponse(RequestMessage reqMsg)
-        {
-            var resMsg = new ResponseMessage
-            {
-                TransactionId = reqMsg.TransactionId,
-                ReturnType = reqMsg.ReturnType,
-                ServiceName = reqMsg.ServiceName,
-                MethodName = reqMsg.MethodName,
-                Parameters = reqMsg.Parameters
-            };
-
-            return resMsg;
-        }
-
-        /// <summary>
-        /// 获取请求消息
-        /// </summary>
-        /// <param name="reqMsg"></param>
         /// <param name="ex"></param>
         /// <returns></returns>
         public static ResponseMessage GetResponse(RequestMessage reqMsg, Exception ex)

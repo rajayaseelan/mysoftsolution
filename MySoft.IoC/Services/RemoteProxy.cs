@@ -168,8 +168,8 @@ namespace MySoft.IoC.Services
                 {
                     lock (reqPool)
                     {
-                        //一次性创建5个请求池
-                        for (int i = 0; i < 5; i++)
+                        //一次性创建10个请求池
+                        for (int i = 0; i < 10; i++)
                         {
                             if (poolSize < node.MaxPool)
                             {

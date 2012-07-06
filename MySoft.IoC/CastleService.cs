@@ -312,7 +312,7 @@ namespace MySoft.IoC
                     var reqMsg = message.MessageValue as RequestMessage;
 
                     //调用方法
-                    caller.CallMethod(client, reqMsg);
+                    caller.CallMethod(client, reqMsg, message.RepliedMessageId);
                 }
             }
             catch (Exception ex)

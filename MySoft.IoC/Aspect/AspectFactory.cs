@@ -10,7 +10,6 @@ namespace MySoft.IoC.Aspect
     public static class AspectFactory
     {
         private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
-        private static Hashtable instances = Hashtable.Synchronized(new Hashtable());
 
         /// <summary>
         /// 创建一个实例方式的拦截器（支持Aspect方式）
@@ -75,21 +74,10 @@ namespace MySoft.IoC.Aspect
             }
 
             var tmplist = hashtable[serviceType] as List<Castle.DynamicProxy.IInterceptor>;
-            if (tmplist.Count == 0)
-            {
-                return target;
-            }
+            if (tmplist.Count == 0) return target;
 
-            lock (instances.SyncRoot)
-            {
-                if (!instances.ContainsKey(serviceType))
-                {
-                    //创建代理服务
-                    instances[serviceType] = CreateProxy(serviceType, target, tmplist.ToArray());
-                }
-            }
-
-            return instances[serviceType];
+            //创建代理服务
+            return CreateProxy(serviceType, target, tmplist.ToArray());
         }
 
         /// <summary>

@@ -18,12 +18,6 @@ namespace MySoft.IoC.Communication
         void OnReceiveComplete(SocketAsyncEventArgs e);
 
         /// <summary>
-        /// Complete send
-        /// </summary>
-        /// <param name="e"></param>
-        void OnSendComplete(SocketAsyncEventArgs e);
-
-        /// <summary>
         /// Complete disconnection
         /// </summary>
         /// <param name="e"></param>

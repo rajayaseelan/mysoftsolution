@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services.Tasks;
 
 namespace MySoft.IoC
 {
@@ -57,8 +57,9 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="client"></param>
         /// <param name="reqMsg"></param>
+        /// <param name="messageId"></param>
         /// <returns></returns>
-        public void CallMethod(IScsServerClient client, RequestMessage reqMsg)
+        public void CallMethod(IScsServerClient client, RequestMessage reqMsg, string messageId)
         {
             //创建Caller;
             var caller = CreateCaller(client, reqMsg);
@@ -66,27 +67,14 @@ namespace MySoft.IoC
             //获取上下文
             var context = GetOperationContext(client, caller);
 
+            ResponseMessage resMsg = null;
+
             try
             {
                 OperationContext.Current = context;
 
-                //创建服务
-                var service = ParseService(reqMsg);
-
-                var resMsg = service.CallService(reqMsg);
-
-                //发送消息
-                SendMessage(client, reqMsg, resMsg, reqMsg.TransactionId.ToString());
-
-                //调用参数
-                //var callerArgs = new AsyncCallerArgs
-                //{
-                //    Context = context,
-                //    Request = reqMsg,
-                //};
-
-                //var asyncCaller = new AsyncCaller(service, callerArgs);
-                //asyncCaller.BeginDoTask(AsyncCallback, new ArrayList { asyncCaller, client, callerArgs });
+                //获取消息
+                resMsg = GetResponse(caller, reqMsg);
             }
             catch (Exception ex)
             {
@@ -94,67 +82,93 @@ namespace MySoft.IoC
                 status.Container.WriteError(ex);
 
                 //处理异常
-                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                //发送消息
-                SendMessage(client, reqMsg, resMsg, reqMsg.TransactionId.ToString());
+                resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {
                 OperationContext.Current = null;
             }
+
+            //发送消息
+            SendMessage(client, reqMsg, resMsg, messageId);
         }
 
         /// <summary>
-        /// 回调方法
+        /// 获取响应
         /// </summary>
-        /// <param name="ar"></param>
-        private void AsyncCallback(IAsyncResult ar)
+        /// <param name="caller"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponse(AppCaller caller, RequestMessage reqMsg)
         {
-            var arr = ar.AsyncState as ArrayList;
+            //开始计时
+            var watch = Stopwatch.StartNew();
 
+            //调用服务
+            var service = ParseService(reqMsg);
+            var resMsg = service.CallService(reqMsg);
+
+            //停止计时
+            watch.Stop();
+
+            //调用参数
+            var callArgs = new CallEventArgs
+            {
+                Caller = caller,
+                ElapsedTime = watch.ElapsedMilliseconds,
+                Count = resMsg.Count,
+                Error = resMsg.Error,
+                Value = resMsg.Value
+            };
+
+            //响应计数
+            NotifyEventArgs(callArgs);
+
+            //如果是Json方式调用，则需要处理异常
+            if (resMsg.IsError && reqMsg.InvokeMethod)
+            {
+                resMsg.Error = new ApplicationException(callArgs.Error.Message);
+            }
+
+            //返回消息
+            return resMsg;
+        }
+
+        /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="resMsg"></param>
+        /// <param name="messageId"></param>
+        private void SendMessage(IScsServerClient client, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
+        {
             try
             {
-                var asyncCaller = arr[0] as AsyncCaller;
-                var client = arr[1] as IScsServerClient;
-                var asyncArgs = arr[2] as AsyncCallerArgs;
-
-                //返回响应数据
-                var resMsg = asyncCaller.EndDoTask(ar);
-
-                //调用参数
-                var callArgs = new CallEventArgs
-                {
-                    Caller = asyncArgs.Context.Caller,
-                    ElapsedTime = asyncCaller.ElapsedMilliseconds,
-                    Count = resMsg.Count,
-                    Error = resMsg.Error,
-                    Value = resMsg.Value
-                };
-
-                //响应计数
-                NotifyEventArgs(callArgs);
-
-                var reqMsg = asyncArgs.Request;
-
-                //如果是Json方式调用，则需要处理异常
-                if (resMsg.IsError && reqMsg.InvokeMethod)
-                {
-                    resMsg.Error = new ApplicationException(callArgs.Error.Message);
-                }
+                var sendMsg = new ScsResultMessage(resMsg, messageId);
 
                 //发送消息
-                SendMessage(client, reqMsg, resMsg, reqMsg.TransactionId.ToString());
+                client.SendMessage(sendMsg);
             }
             catch (Exception ex)
             {
-                //将异常信息写出
+                //写异常日志
                 status.Container.WriteError(ex);
-            }
-            finally
-            {
-                //清理资源
-                arr = null;
+
+                try
+                {
+                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
+
+                    var sendMsg = new ScsResultMessage(resMsg, messageId);
+
+                    //发送消息
+                    client.SendMessage(sendMsg);
+                }
+                catch
+                {
+                    //写异常日志
+                    status.Container.WriteError(ex);
+                }
             }
         }
 
@@ -259,44 +273,6 @@ namespace MySoft.IoC
             }
 
             return service;
-        }
-
-        /// <summary>
-        /// 发送消息
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        /// <param name="messageId"></param>
-        private void SendMessage(IScsServerClient client, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
-        {
-            try
-            {
-                var sendMsg = new ScsResultMessage(resMsg, messageId);
-
-                //发送消息
-                client.SendMessage(sendMsg);
-            }
-            catch (Exception ex)
-            {
-                //写异常日志
-                status.Container.WriteError(ex);
-
-                try
-                {
-                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                    var sendMsg = new ScsResultMessage(resMsg, messageId);
-
-                    //发送消息
-                    client.SendMessage(sendMsg);
-                }
-                catch
-                {
-                    //写异常日志
-                    status.Container.WriteError(ex);
-                }
-            }
         }
     }
 }

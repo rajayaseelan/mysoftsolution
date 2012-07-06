@@ -10,6 +10,23 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public class ResponseMessage : MessageBase
     {
+        private double elapsedMilliseconds;
+
+        /// <summary>
+        /// Gets or sets the value
+        /// </summary>
+        public double ElapsedMilliseconds
+        {
+            get
+            {
+                return elapsedMilliseconds;
+            }
+            set
+            {
+                elapsedMilliseconds = value;
+            }
+        }
+
         private object _value;
 
         /// <summary>

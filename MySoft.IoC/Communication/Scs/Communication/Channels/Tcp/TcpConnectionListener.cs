@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using System.Collections.Generic;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {
@@ -12,6 +13,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// </summary>
     internal class TcpConnectionListener : ConnectionListenerBase
     {
+        private Stack<SocketAsyncEventArgs> _pool;
+
         /// <summary>
         /// The endpoint address of the server to listen incoming connections.
         /// </summary>
@@ -43,6 +46,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             StartSocket();
             _running = true;
+
+            _pool = new Stack<SocketAsyncEventArgs>(TcpSocketSetting.Backlog);
+
+            for (int i = 0; i < TcpSocketSetting.Backlog; i++)
+            {
+                var e = new SocketAsyncEventArgs();
+                e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+                _pool.Push(e);
+            }
 
             //开始接收请求
             for (int i = 0; i < TcpSocketSetting.AcceptThreads; i++)
@@ -79,19 +91,18 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             if (!_running) return;
 
-            SocketAsyncEventArgs e = new SocketAsyncEventArgs();
-            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+            SocketAsyncEventArgs e = PopSocketAsyncEventArgs();
 
             try
             {
                 if (!_listenerSocket.AcceptAsync(e))
                 {
-                    AsyncAcceptComplete(e);
+                    ThreadPool.QueueUserWorkItem(AsyncAcceptComplete, e);
                 }
             }
             catch (Exception ex)
             {
-                TcpSocketHelper.Dispose(e);
+                PushSocketAsyncEventArgs(e);
 
                 BeginAsyncAccept();
             }
@@ -101,7 +112,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             if (e.LastOperation == SocketAsyncOperation.Accept)
             {
-                AsyncAcceptComplete(e);
+                ThreadPool.QueueUserWorkItem(AsyncAcceptComplete, e);
             }
         }
 
@@ -109,13 +120,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Entrance point of the thread.
         /// This method is used by the thread to listen incoming requests.
         /// </summary>
-        void AsyncAcceptComplete(SocketAsyncEventArgs e)
+        void AsyncAcceptComplete(object state)
         {
+            SocketAsyncEventArgs e = state as SocketAsyncEventArgs;
+
             try
             {
                 if (e.SocketError == SocketError.Success)
                 {
-                    OnCommunicationChannelConnected(new TcpCommunicationChannel(e.AcceptSocket, true));
+                    var channel = new TcpCommunicationChannel(e.AcceptSocket, true);
+
+                    OnCommunicationChannelConnected(channel);
+
+                    //设置为null
+                    e.AcceptSocket = null;
                 }
             }
             catch (Exception ex)
@@ -124,7 +142,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
-                TcpSocketHelper.Dispose(e);
+                PushSocketAsyncEventArgs(e);
 
                 //重新进行接收
                 BeginAsyncAccept();
@@ -178,6 +196,22 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
 
             return endPoint;
+        }
+
+        private SocketAsyncEventArgs PopSocketAsyncEventArgs()
+        {
+            lock (_pool)
+            {
+                return _pool.Pop();
+            }
+        }
+
+        private void PushSocketAsyncEventArgs(SocketAsyncEventArgs e)
+        {
+            lock (_pool)
+            {
+                _pool.Push(e);
+            }
         }
     }
 }

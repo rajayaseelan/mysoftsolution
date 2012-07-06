@@ -111,10 +111,6 @@
     <Compile Include="IServiceResolver.cs" />
     <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
-    <Compile Include="Services\Tasks\AsyncCaller.cs" />
-    <Compile Include="Services\Tasks\AsyncResultNoResult.cs" />
-    <Compile Include="Services\Tasks\AsyncResult.cs" />
-    <Compile Include="Services\Tasks\AsyncCallerArgs.cs" />
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -120,7 +120,7 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// Default timeout value for connecting a server.
         /// </summary>
         private const int DefaultConnectionAttemptTimeout = 15000; //15 seconds.
-        private const int DefaultDisconnectionAttemptTimeout = 5 * 60 * 1000; //5 minutes.
+        private const int DefaultDisconnectionAttemptTimeout = 60000; //1 minutes.
 
         /// <summary>
         /// The communication channel that is used by client to send and receive messages.
@@ -283,9 +283,7 @@ namespace MySoft.IoC.Communication.Scs.Client
                     if (_communicationChannel.LastReceivedMessageTime < lastMinute && _communicationChannel.LastSentMessageTime < lastMinute)
                     {
                         //如果超过1分钟没响应，则断开链接
-                        this.Disconnect();
-
-                        return;
+                        Disconnect();
                     }
                 }
                 else

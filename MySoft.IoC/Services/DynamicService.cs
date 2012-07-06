@@ -35,7 +35,13 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         protected override ResponseMessage Run(RequestMessage reqMsg)
         {
-            var resMsg = IoCHelper.GetResponse(reqMsg);
+            var resMsg = new ResponseMessage
+            {
+                TransactionId = reqMsg.TransactionId,
+                ReturnType = reqMsg.ReturnType,
+                ServiceName = reqMsg.ServiceName,
+                MethodName = reqMsg.MethodName
+            };
 
             #region 获取相应的方法
 
