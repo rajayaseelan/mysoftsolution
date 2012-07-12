@@ -27,6 +27,22 @@ namespace MySoft.IoC
             }
         }
 
+        private int timeout = -1;
+        /// <summary>
+        /// Gets or sets the value of the timeout.
+        /// </summary>
+        public int Timeout
+        {
+            get
+            {
+                return timeout;
+            }
+            set
+            {
+                timeout = value;
+            }
+        }
+
         private string cacheKey;
         /// <summary>
         /// 获取或设置CacheKey

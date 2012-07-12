@@ -167,24 +167,8 @@ namespace MySoft.IoC
             {
                 //返回默认的缓存key
                 var cacheKey = string.Format("{0}${1}${2}", serviceType.FullName, method.ToString(), collection.ToString());
-                return string.Format("CastleCache_{0}", GetMD5String(cacheKey));
+                return string.Format("CastleCache_{0}", cacheKey);
             }
-        }
-
-        /// <summary>
-        /// 获取MD5值
-        /// </summary>
-        /// <param name="thisKey"></param>
-        /// <returns></returns>
-        public static string GetMD5String(string thisKey)
-        {
-            if (string.IsNullOrEmpty(thisKey))
-            {
-                return thisKey;
-            }
-
-            var formatKey = thisKey.Replace(" ", "").Replace("\r\n", "");
-            return MD5.HexHash(Encoding.Default.GetBytes(formatKey));
         }
 
         /// <summary>

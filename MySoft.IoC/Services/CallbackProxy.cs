@@ -80,10 +80,18 @@ namespace MySoft.IoC.Services
                         //判断类型是否相同
                         if (interfaces.Any(type => type.FullName == callbackMsg.ServiceName))
                         {
-                            var method = CoreHelper.GetMethodFromType(callbackType, callbackMsg.MethodName);
+                            try
+                            {
+                                var method = CoreHelper.GetMethodFromType(callbackType, callbackMsg.MethodName);
 
-                            //执行委托
-                            DynamicCalls.GetMethodInvoker(method).Invoke(callback, callbackMsg.Parameters);
+                                //执行委托
+                                DynamicCalls.GetMethodInvoker(method).Invoke(callback, callbackMsg.Parameters);
+                            }
+                            catch (Exception ex)
+                            {
+                                //调用异常，写异常信息
+                                container.WriteError(ex);
+                            }
                         }
                     }
                 }

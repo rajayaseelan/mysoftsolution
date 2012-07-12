@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MySoft.IoC.Aspect
 {
@@ -9,7 +10,7 @@ namespace MySoft.IoC.Aspect
     /// </summary>
     public static class AspectFactory
     {
-        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+        private static IDictionary<Type, object> services = new Dictionary<Type, object>();
 
         /// <summary>
         /// 创建一个实例方式的拦截器（支持Aspect方式）
@@ -19,65 +20,78 @@ namespace MySoft.IoC.Aspect
         /// <returns></returns>
         internal static object CreateProxyService(Type serviceType, object target)
         {
-            lock (hashtable.SyncRoot)
+            lock (services)
             {
-                if (!hashtable.ContainsKey(serviceType))
+                if (services.ContainsKey(serviceType))
                 {
-                    var interceptors = new List<Castle.DynamicProxy.IInterceptor>();
-                    var classType = target.GetType();
-                    var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(classType);
+                    return services[serviceType];
+                }
+                else
+                {
+                    var service = CreateService(serviceType, target);
+                    services[serviceType] = service;
 
-                    if (attributes != null && attributes.Length > 0)
+                    return service;
+                }
+            }
+        }
+
+        private static object CreateService(Type serviceType, object target)
+        {
+            var interceptors = new List<Castle.DynamicProxy.IInterceptor>();
+            var classType = target.GetType();
+            var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(classType);
+
+            if (attributes != null && attributes.Length > 0)
+            {
+                foreach (var attribute in attributes)
+                {
+                    if (typeof(Castle.DynamicProxy.IInterceptor).IsAssignableFrom(attribute.InterceptorType))
                     {
-                        foreach (var attribute in attributes)
+                        object value = null;
+                        if (attribute.Arguments == null)
+                            value = Activator.CreateInstance(attribute.InterceptorType);
+                        else
                         {
-                            if (typeof(Castle.DynamicProxy.IInterceptor).IsAssignableFrom(attribute.InterceptorType))
+
+                            var arguments = new List<object>();
+                            foreach (var argument in attribute.Arguments)
                             {
-                                object value = null;
-                                if (attribute.Arguments == null)
-                                    value = Activator.CreateInstance(attribute.InterceptorType);
-                                else
+                                if (argument == null)
                                 {
-
-                                    var arguments = new List<object>();
-                                    foreach (var argument in attribute.Arguments)
-                                    {
-                                        if (argument == null)
-                                        {
-                                            arguments.Add(argument);
-                                            continue;
-                                        }
-
-                                        //如果类，则创建实例
-                                        if (argument.GetType().IsClass)
-                                        {
-                                            var instance = Activator.CreateInstance(argument.GetType());
-                                            arguments.Add(instance);
-                                        }
-                                        else
-                                        {
-                                            arguments.Add(argument);
-                                        }
-                                    }
-
-                                    value = Activator.CreateInstance(attribute.InterceptorType, arguments.ToArray());
+                                    arguments.Add(argument);
+                                    continue;
                                 }
 
-                                interceptors.Add(value as Castle.DynamicProxy.IInterceptor);
+                                //如果类，则创建实例
+                                if (argument.GetType().IsClass)
+                                {
+                                    var instance = Activator.CreateInstance(argument.GetType());
+                                    arguments.Add(instance);
+                                }
+                                else
+                                {
+                                    arguments.Add(argument);
+                                }
                             }
-                        }
-                    }
 
-                    //不管有没有，都插入缓存中
-                    hashtable[serviceType] = interceptors;
+                            value = Activator.CreateInstance(attribute.InterceptorType, arguments.ToArray());
+                        }
+
+                        interceptors.Add(value as Castle.DynamicProxy.IInterceptor);
+                    }
                 }
             }
 
-            var tmplist = hashtable[serviceType] as List<Castle.DynamicProxy.IInterceptor>;
-            if (tmplist.Count == 0) return target;
-
-            //创建代理服务
-            return CreateProxy(serviceType, target, tmplist.ToArray());
+            if (interceptors.Count > 0)
+            {
+                //创建代理服务
+                return CreateProxy(serviceType, target, interceptors.ToArray());
+            }
+            else
+            {
+                return target;
+            }
         }
 
         /// <summary>

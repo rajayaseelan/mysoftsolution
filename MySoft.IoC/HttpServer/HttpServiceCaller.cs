@@ -166,7 +166,7 @@ namespace MySoft.IoC.HttpServer
                 };
 
                 string thisKey = string.Format("{0}${1}${2}", message.ServiceName, message.MethodName, message.Parameters);
-                var cacheKey = string.Format("HttpServiceCaller_{0}", IoCHelper.GetMD5String(thisKey));
+                var cacheKey = string.Format("HttpServiceCaller_{0}", thisKey);
 
                 var invokeData = CacheHelper.Get<InvokeData>(cacheKey);
                 if (invokeData == null)

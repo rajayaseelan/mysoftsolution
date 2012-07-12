@@ -76,23 +76,24 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
             //响应消息
             waitReset.Set();
 
-            try
-            {
-                Socket socket = e.UserToken as Socket;
+            Socket socket = e.UserToken as Socket;
 
-                if (e.SocketError != SocketError.Success)
+            if (e.SocketError != SocketError.Success)
+            {
+                try
                 {
-                    //socket.Shutdown(SocketShutdown.Both);
-                    socket.Close();
+                    socket.Shutdown(SocketShutdown.Both);
                 }
-            }
-            catch
-            {
+                catch
+                {
 
-            }
-            finally
-            {
-                TcpSocketHelper.Dispose(e);
+                }
+                finally
+                {
+                    socket.Close();
+
+                    TcpSocketHelper.Dispose(e);
+                }
             }
         }
     }

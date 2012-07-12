@@ -55,5 +55,10 @@ namespace MySoft.IoC.Messages
                        ? string.Format("ScsResultMessage [{0}]: ({1},{2})", MessageId, MessageValue.ServiceName, MessageValue.MethodName)
                        : string.Format("ScsResultMessage [{0}] Replied To [{1}]: ({2},{3})", MessageId, RepliedMessageId, MessageValue.ServiceName, MessageValue.MethodName);
         }
+
+        public override void Dispose()
+        {
+            this.MessageValue = null;
+        }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using MySoft.Mail;
+using System.Configuration;
 
 namespace MySoft.Logger
 {
@@ -16,11 +17,16 @@ namespace MySoft.Logger
         /// <summary>
         /// 简单日志的单例 (默认路径为根目录下的Logs目录)
         /// </summary>
-        public static readonly SimpleLog Instance = new SimpleLog(AppDomain.CurrentDomain.BaseDirectory);
+        public static readonly SimpleLog Instance;
         private static readonly Queue<LogInfo> logqueue;
 
         static SimpleLog()
         {
+            var dir = AppDomain.CurrentDomain.BaseDirectory;
+            var tmpdir = ConfigurationManager.AppSettings["SimpleLogDir"];
+            if (!string.IsNullOrEmpty(tmpdir)) dir = tmpdir;
+
+            Instance = new SimpleLog(dir);
             logqueue = new Queue<LogInfo>();
 
             //启动生成文件线程
@@ -48,8 +54,8 @@ namespace MySoft.Logger
                         {
                             try
                             {
-                                string dir = Path.GetDirectoryName(item.FilePath);
-                                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                                string dirPath = Path.GetDirectoryName(item.FilePath);
+                                if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
                                 File.AppendAllText(item.FilePath, item.Log, Encoding.UTF8);
                             }
                             catch (IOException)

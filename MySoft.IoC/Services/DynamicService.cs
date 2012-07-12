@@ -1,9 +1,8 @@
 using System;
-using System.Collections;
-using MySoft.IoC.Aspect;
-using MySoft.IoC.Messages;
 using System.Collections.Generic;
 using System.Linq;
+using MySoft.IoC.Aspect;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
@@ -35,14 +34,6 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         protected override ResponseMessage Run(RequestMessage reqMsg)
         {
-            var resMsg = new ResponseMessage
-            {
-                TransactionId = reqMsg.TransactionId,
-                ReturnType = reqMsg.ReturnType,
-                ServiceName = reqMsg.ServiceName,
-                MethodName = reqMsg.MethodName
-            };
-
             #region 获取相应的方法
 
             //判断方法是否存在
@@ -51,14 +42,21 @@ namespace MySoft.IoC.Services
                 string message = string.Format("The server【{2}({3})】not find matching method. ({0},{1})."
                     , reqMsg.ServiceName, reqMsg.MethodName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
 
-                resMsg.Error = new WarningException(message);
-                return resMsg;
+                throw new WarningException(message);
             }
 
             #endregion
 
             //容器实例对象
             object instance = null;
+
+            var resMsg = new ResponseMessage
+            {
+                TransactionId = reqMsg.TransactionId,
+                ReturnType = reqMsg.ReturnType,
+                ServiceName = reqMsg.ServiceName,
+                MethodName = reqMsg.MethodName
+            };
 
             try
             {
@@ -83,11 +81,19 @@ namespace MySoft.IoC.Services
                 //参数赋值
                 object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
 
-                //调用对应的服务
-                resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
+                try
+                {
+                    //调用对应的服务
+                    resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
 
-                //处理返回参数
-                IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
+                    //处理返回参数
+                    IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
+                }
+                finally
+                {
+                    parameters = null;
+                    service = null;
+                }
             }
             catch (Exception ex)
             {

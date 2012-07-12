@@ -19,7 +19,7 @@ namespace MySoft.Tools.EntityDesign
         {
             bool slient = false;
 
-            //args = new string[] { @"E:\QingdaoProject\Shumi.Qingdao.Design" };
+            //args = new string[] { @"E:\TestProject\MySoft.TestProject.Design" };
             if (args != null && args.Length > 0)
             {
                 string designRootPath = args[0];

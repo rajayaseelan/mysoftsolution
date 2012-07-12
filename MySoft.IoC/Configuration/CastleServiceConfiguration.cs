@@ -18,6 +18,7 @@ namespace MySoft.IoC.Configuration
         private bool compress = false;
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;        //默认记录1小时
         private int maxCalls = ServiceConfig.DEFAULT_MAX_CALL;              //默认的并发调用数
+        private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;         //超时时间为10秒
 
         /// <summary>
         /// 获取远程对象配置
@@ -64,6 +65,9 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["maxCalls"] != null && attribute["maxCalls"].Value.Trim() != string.Empty)
                 maxCalls = Convert.ToInt32(attribute["maxCalls"].Value);
+
+            if (attribute["timeout"] != null && attribute["timeout"].Value.Trim() != string.Empty)
+                timeout = Convert.ToInt32(attribute["timeout"].Value);
 
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
@@ -176,6 +180,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return maxCalls; }
             set { maxCalls = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the timeout
+        /// </summary>
+        public int Timeout
+        {
+            get { return timeout; }
+            set { timeout = value; }
         }
     }
 }

@@ -93,9 +93,24 @@ namespace MySoft.PlatformService.UserService
         private static readonly object syncRoot = new object();
         public string GetUsersString()
         {
-            //Thread.Sleep(10000);
+            //throw new Exception("fsdfsd");
 
-            Thread.Sleep(10);
+            //Thread.Sleep(10000);
+            //Thread.Sleep(new Random().Next(1, 6) * 1000);
+
+            //if (DateTime.Now.Ticks % 15 == 0)
+            //{
+            //    Thread.Sleep(11000);
+            //}
+            //else if (DateTime.Now.Ticks % 10 == 0)
+            //{
+            //    while (true)
+            //    {
+            //        //Thread.Sleep(1);
+            //    }
+            //}
+
+            Thread.Sleep(5100);
 
             try
             {

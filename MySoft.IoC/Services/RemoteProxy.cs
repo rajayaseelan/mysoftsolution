@@ -126,12 +126,15 @@ namespace MySoft.IoC.Services
                     //获取一个请求
                     reqProxy = GetServiceRequest();
 
+                    if (reqMsg.Timeout < 0) reqMsg.Timeout = node.Timeout;
+                    if (reqMsg.Timeout < 10) reqMsg.Timeout = 10;  //最小为10秒
+
+                    var elapsedTime = TimeSpan.FromSeconds(reqMsg.Timeout);
+
                     //发送消息
                     reqProxy.SendMessage(reqMsg);
 
                     //等待信号响应
-                    var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
-
                     if (!waitResult.Wait(elapsedTime))
                     {
                         throw new WarningException(string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"

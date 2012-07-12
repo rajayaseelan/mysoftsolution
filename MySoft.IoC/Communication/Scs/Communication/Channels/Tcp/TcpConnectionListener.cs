@@ -156,8 +156,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                //_listenerSocket.Shutdown(SocketShutdown.Both);
-                _listenerSocket.Close();
+                _listenerSocket.Shutdown(SocketShutdown.Both);
             }
             catch
             {
@@ -165,6 +164,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
+                _listenerSocket.Close();
+
                 _listenerSocket = null;
             }
         }

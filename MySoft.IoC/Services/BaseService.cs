@@ -1,7 +1,7 @@
 using System;
-using MySoft.IoC.Messages;
-using MySoft.Logger;
 using System.Diagnostics;
+using System.Threading;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
@@ -62,26 +62,44 @@ namespace MySoft.IoC.Services
 
             var resMsg = Run(reqMsg);
 
-            //停止计时
             watch.Stop();
 
-            //设置耗时
+            //计算超时
             resMsg.ElapsedTime = watch.ElapsedMilliseconds;
 
-            //如果出错，通知客户端
             if (resMsg.IsError)
             {
-                string body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}\r\nMessage => {4}",
-                    reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
+                Exception exception = null;
 
-                //获取异常
-                var exception = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
+                if (resMsg.Error is ThreadAbortException || resMsg.Error is ThreadInterruptedException)
+                {
+                    string body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}\r\nMessage => {4}",
+                          reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(),
+                            string.Format("Service call timeout {0} ms, the request was aborted initiative. ", watch.ElapsedMilliseconds));
 
-                logger.WriteError(exception);
+                    //获取异常
+                    exception = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
+
+                    //线程异步，设置返回值为null
+                    resMsg = null;
+                }
+                else
+                {
+                    string body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}\r\nMessage => {4}",
+                        reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
+
+                    //获取异常
+                    exception = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
+                }
+
+                if (exception != null)
+                {
+                    logger.WriteError(exception);
+                }
             }
 
             //返回结果数据
-            if (reqMsg.InvokeMethod)
+            if (resMsg != null && reqMsg.InvokeMethod)
             {
                 resMsg.Value = new InvokeData
                 {

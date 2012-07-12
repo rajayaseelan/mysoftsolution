@@ -14,6 +14,7 @@ namespace MySoft.IoC
     {
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
+        private IDictionary<string, int> callTimes;
         private IServiceContainer container;
         private IService service;
         private Type serviceType;
@@ -43,12 +44,20 @@ namespace MySoft.IoC
             this.ipAddress = DnsHelper.GetIPAddress();
 
             this.cacheTimes = new Dictionary<string, int>();
+            this.callTimes = new Dictionary<string, int>();
+
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)
             {
                 var contract = CoreHelper.GetMemberAttribute<OperationContractAttribute>(method);
-                if (contract != null && contract.CacheTime > 0)
-                    cacheTimes[method.ToString()] = contract.CacheTime;
+                if (contract != null)
+                {
+                    if (contract.CacheTime > 0)
+                        cacheTimes[method.ToString()] = contract.CacheTime;
+
+                    if (contract.Timeout > 0)
+                        callTimes[method.ToString()] = contract.Timeout;
+                }
             }
         }
 
@@ -118,6 +127,14 @@ namespace MySoft.IoC
         {
             #region 设置请求信息
 
+            int timeout = -1;
+
+            //获取超时时间
+            if (callTimes.ContainsKey(method.ToString()))
+            {
+                timeout = callTimes[method.ToString()];
+            }
+
             var reqMsg = new RequestMessage
             {
                 AppName = config.AppName,                       //应用名称
@@ -128,7 +145,8 @@ namespace MySoft.IoC
                 MethodName = method.ToString(),                 //方法名称
                 TransactionId = Guid.NewGuid(),                 //传输ID号
                 MethodInfo = method,                            //设置调用方法
-                Parameters = collection                         //设置参数
+                Parameters = collection,                        //设置参数
+                Timeout = timeout                               //超时时间（秒）
             };
 
             #endregion

@@ -229,7 +229,8 @@ namespace MySoft.IoC
 
         void Client_MessageSent(object sender, MessageEventArgs e)
         {
-            //暂不作处理
+            //将Message置null
+            e.Message.Dispose();
         }
 
         void server_ClientDisconnected(object sender, ServerClientEventArgs e)

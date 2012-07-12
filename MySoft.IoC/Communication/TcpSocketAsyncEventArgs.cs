@@ -36,6 +36,11 @@ namespace MySoft.IoC.Communication
 
             switch (e.LastOperation)
             {
+                case SocketAsyncOperation.Send:
+                    {
+                        Channel.OnSendComplete(e);
+                        break;
+                    }
                 case SocketAsyncOperation.Receive:
                     {
                         Channel.OnReceiveComplete(e);

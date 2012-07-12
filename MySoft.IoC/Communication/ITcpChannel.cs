@@ -12,6 +12,12 @@ namespace MySoft.IoC.Communication
     internal interface ITcpChannel
     {
         /// <summary>
+        /// Complete send
+        /// </summary>
+        /// <param name="e"></param>
+        void OnSendComplete(SocketAsyncEventArgs e);
+
+        /// <summary>
         /// Complete receive
         /// </summary>
         /// <param name="e"></param>
