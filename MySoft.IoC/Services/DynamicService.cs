@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
+using System.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -101,6 +102,11 @@ namespace MySoft.IoC.Services
 
                 //²¶»ñÈ«¾Ö´íÎó
                 resMsg.Error = ex;
+
+                if (ex is ThreadAbortException)
+                {
+                    Thread.ResetAbort();
+                }
             }
             finally
             {

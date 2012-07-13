@@ -137,7 +137,7 @@ namespace MySoft.IoC.Services
                     //µÈ´ýÐÅºÅÏìÓ¦
                     if (!waitResult.Wait(elapsedTime))
                     {
-                        throw new WarningException(string.Format("¡¾{0}:{1}¡¿ => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
+                        throw new TimeoutException(string.Format("¡¾{0}:{1}¡¿ => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
                            , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()));
                     }
 

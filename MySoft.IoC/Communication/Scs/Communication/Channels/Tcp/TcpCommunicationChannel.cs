@@ -42,9 +42,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         const int SocketTimeout = 5 * 60 * 1000; //timeout 5 minutes
 
         //create byte array to store: ensure at least 1 byte!
-        const int ReceiveBufferSize = 4 * 1024; //4kb
+        const int ReceiveBufferSize = 2 * 1024; //2kb
 
-        const int SendBufferSize = 16 * 1024; //16kb
+        const int SendBufferSize = 8 * 1024; //8kb
 
         private readonly byte[] _buffer;
 
@@ -153,13 +153,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 //Send message
                 var totalSent = 0;
 
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
-
-                //Send all bytes to the remote application
-                while (totalSent < messageBytes.Length)
+                try
                 {
-                    try
+                    //Create a byte array from message according to current protocol
+                    var messageBytes = WireProtocol.GetBytes(message);
+
+                    //Send all bytes to the remote application
+                    while (totalSent < messageBytes.Length)
                     {
                         var sent = _clientSocket.Send(messageBytes, totalSent, messageBytes.Length - totalSent, SocketFlags.None);
                         if (sent <= 0)
@@ -169,31 +169,29 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                         totalSent += sent;
                     }
-                    catch (SocketException ex)
-                    {
-                        if ((ex.SocketErrorCode == SocketError.ConnectionReset)
-                             || (ex.SocketErrorCode == SocketError.ConnectionAborted)
-                             || (ex.SocketErrorCode == SocketError.NotConnected)
-                             || (ex.SocketErrorCode == SocketError.Shutdown)
-                             || (ex.SocketErrorCode == SocketError.Disconnecting)
-                             || (ex.SocketErrorCode == SocketError.OperationAborted))
-                        {
-                            Disconnect();
-                        }
-                        else
-                        {
-                            OnMessageError(ex);
-                        }
-
-                        throw ex;
-                    }
                 }
+                catch (SocketException ex)
+                {
+                    if ((ex.SocketErrorCode == SocketError.ConnectionReset)
+                         || (ex.SocketErrorCode == SocketError.ConnectionAborted)
+                         || (ex.SocketErrorCode == SocketError.NotConnected)
+                         || (ex.SocketErrorCode == SocketError.Shutdown)
+                         || (ex.SocketErrorCode == SocketError.Disconnecting)
+                         || (ex.SocketErrorCode == SocketError.OperationAborted))
+                    {
+                        Disconnect();
+                    }
 
-                //Record last sent time
-                LastSentMessageTime = DateTime.Now;
+                    throw ex;
+                }
+                finally
+                {
+                    //Record last sent time
+                    LastSentMessageTime = DateTime.Now;
 
-                //Sent success
-                OnMessageSent(message);
+                    //Sent success
+                    OnMessageSent(message);
+                }
             }
         }
 
@@ -275,6 +273,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
+                Array.Clear(_buffer, 0, _buffer.Length);
                 e.SetBuffer(_buffer, 0, _buffer.Length);
 
                 if (!_clientSocket.ReceiveAsync(e))
@@ -324,6 +323,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     }
                     else
                     {
+                        Array.Clear(_buffer, 0, _buffer.Length);
+                        e.SetBuffer(_buffer, 0, _buffer.Length);
+
                         if (!_clientSocket.ReceiveAsync(e))
                         {
                             AsyncReceiveComplete(e);
@@ -332,7 +334,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 }
                 else
                 {
-                    if (e.BytesTransferred == 0)
+                    if (e.BytesTransferred == 0 && e.SocketError == SocketError.Success)
                         throw new SocketException((int)SocketError.ConnectionReset);
                     else
                         throw new SocketException((int)e.SocketError);
@@ -391,7 +393,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                _clientSocket.Shutdown(SocketShutdown.Both);
+                //_clientSocket.Shutdown(SocketShutdown.Both);
+                _clientSocket.Close();
             }
             catch
             {
@@ -399,8 +402,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
-                _clientSocket.Close();
-
                 //Dispose resource.
                 TcpSocketHelper.Release(e);
 

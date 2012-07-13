@@ -82,7 +82,8 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
             {
                 try
                 {
-                    socket.Shutdown(SocketShutdown.Both);
+                    //socket.Shutdown(SocketShutdown.Both);
+                    socket.Close();
                 }
                 catch
                 {
@@ -90,8 +91,6 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
                 }
                 finally
                 {
-                    socket.Close();
-
                     TcpSocketHelper.Dispose(e);
                 }
             }

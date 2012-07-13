@@ -200,21 +200,6 @@ namespace MySoft.IoC
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <param name="message"></param>
-        /// <returns></returns>
-        public static IoCException GetException(OperationContext context, RequestMessage reqMsg, string message)
-        {
-            var exception = new WarningException(message);
-
-            //获取警告异常
-            return GetException(context, reqMsg, exception);
-        }
-
-        /// <summary>
-        /// 获取IoCException
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="message"></param>
         /// <param name="inner"></param>
         /// <returns></returns>
         public static IoCException GetException(OperationContext context, RequestMessage reqMsg, string message, Exception inner)
@@ -232,7 +217,7 @@ namespace MySoft.IoC
         /// <param name="reqMsg"></param>
         /// <param name="exception"></param>
         /// <returns></returns>
-        private static IoCException GetException(OperationContext context, RequestMessage reqMsg, IoCException exception)
+        public static IoCException GetException(OperationContext context, RequestMessage reqMsg, IoCException exception)
         {
             exception.ApplicationName = reqMsg.AppName;
             exception.ServiceName = reqMsg.ServiceName;

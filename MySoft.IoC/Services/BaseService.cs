@@ -69,16 +69,16 @@ namespace MySoft.IoC.Services
 
             if (resMsg.IsError)
             {
-                Exception exception = null;
+                Exception error = resMsg.Error;
 
-                if (resMsg.Error is ThreadAbortException || resMsg.Error is ThreadInterruptedException)
+                if (error is ThreadAbortException || error is ThreadInterruptedException)
                 {
                     string body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}\r\nMessage => {4}",
                           reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(),
                             string.Format("Service call timeout {0} ms, the request was aborted initiative. ", watch.ElapsedMilliseconds));
 
                     //获取异常
-                    exception = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
+                    error = IoCHelper.GetException(OperationContext.Current, reqMsg, new ThreadException(body, error));
 
                     //线程异步，设置返回值为null
                     resMsg = null;
@@ -89,12 +89,12 @@ namespace MySoft.IoC.Services
                         reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
 
                     //获取异常
-                    exception = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
+                    error = IoCHelper.GetException(OperationContext.Current, reqMsg, body, error);
                 }
 
-                if (exception != null)
+                if (error != null)
                 {
-                    logger.WriteError(exception);
+                    logger.WriteError(error);
                 }
             }
 

@@ -13,7 +13,7 @@ namespace MySoft.IoC
     internal static class ThreadManager
     {
         //实例化队列
-        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+        private static IDictionary<Guid, Thread> hashtable = new Dictionary<Guid, Thread>();
 
         /// <summary>
         /// 当前线程总数
@@ -22,7 +22,7 @@ namespace MySoft.IoC
         {
             get
             {
-                lock (hashtable.SyncRoot)
+                lock (hashtable)
                 {
                     return hashtable.Count;
                 }
@@ -36,7 +36,7 @@ namespace MySoft.IoC
         /// <param name="thread"></param>
         public static void Add(Guid guid, Thread thread)
         {
-            lock (hashtable.SyncRoot)
+            lock (hashtable)
             {
                 //将当前线程放入队列中
                 hashtable[guid] = thread;
@@ -49,28 +49,39 @@ namespace MySoft.IoC
         /// <param name="guid"></param>
         public static void Cancel(Guid guid)
         {
-            lock (hashtable.SyncRoot)
+            Thread thread = null;
+
+            //获取指定Key的线程
+            lock (hashtable)
             {
                 if (hashtable.ContainsKey(guid))
                 {
-                    try
-                    {
-                        //中止当前线程
-                        var thread = hashtable[guid] as Thread;
-                        if ((thread.ThreadState & (ThreadState.Stopped | ThreadState.Unstarted)) == ThreadState.Running)
-                        {
-                            thread.Abort();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        //TODO
-                    }
-                    finally
-                    {
-                        hashtable.Remove(guid);
-                    }
+                    thread = hashtable[guid];
+
+                    //移除线程
+                    hashtable.Remove(guid);
                 }
+            }
+
+            if (thread == null) return;
+
+            try
+            {
+                //中止当前线程
+                var ts = GetThreadState(thread.ThreadState);
+
+                if (ts == ThreadState.WaitSleepJoin)
+                {
+                    thread.Interrupt();
+                }
+                else if (ts == ThreadState.Running)
+                {
+                    thread.Abort();
+                }
+            }
+            catch (Exception ex)
+            {
+                //TODO
             }
         }
 
@@ -80,13 +91,25 @@ namespace MySoft.IoC
         /// <param name="guid"></param>
         public static void Remove(Guid guid)
         {
-            lock (hashtable.SyncRoot)
+            lock (hashtable)
             {
                 if (hashtable.ContainsKey(guid))
                 {
                     hashtable.Remove(guid);
                 }
             }
+        }
+
+        /// <summary>
+        /// Get thread state
+        /// </summary>
+        /// <param name="ts"></param>
+        /// <returns></returns>
+        private static ThreadState GetThreadState(ThreadState ts)
+        {
+            return ts & (ThreadState.Aborted | ThreadState.AbortRequested |
+                         ThreadState.Stopped | ThreadState.Unstarted |
+                         ThreadState.WaitSleepJoin);
         }
     }
 }

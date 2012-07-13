@@ -18,6 +18,7 @@ namespace MySoft.IoC.Services
     {
         private IService service;
         private AsyncMethodCaller caller;
+        private AutoResetEvent autoEvent;
 
         /// <summary>
         /// Init async caller
@@ -27,12 +28,16 @@ namespace MySoft.IoC.Services
         public AsyncCaller(IService service)
         {
             this.service = service;
+            this.autoEvent = new AutoResetEvent(false);
         }
 
         // Asynchronous version of time-consuming method (Begin part)
         public IAsyncResult BeginDoTask(AsyncCallerArgs args, AsyncCallback callback, Object state)
         {
             this.caller = new AsyncMethodCaller(WorkCallback);
+
+            //Cancel callback
+            ThreadPool.QueueUserWorkItem(TimerCallback, args.ReqMsg);
 
             // Return the IAsyncResult to the caller
             return caller.BeginInvoke(args, callback, state);
@@ -44,8 +49,9 @@ namespace MySoft.IoC.Services
             // Wait for operation to complete, then return result or 
             var resMsg = caller.EndInvoke(ar);
 
-            ar.AsyncWaitHandle.SafeWaitHandle.Dispose();
             ar.AsyncWaitHandle.Close();
+
+            this.caller = null;
 
             return resMsg;
         }
@@ -62,76 +68,46 @@ namespace MySoft.IoC.Services
                          ThreadState.WaitSleepJoin);
         }
 
-        // Asynchronous version of time-consuming method (private part 
-        // to set completion result/exception)
-        private ResponseMessage WorkCallback(object state)
+        /// <summary>
+        /// Timer callback
+        /// </summary>
+        /// <param name="state"></param>
+        private void TimerCallback(object state)
         {
-            var args = state as AsyncCallerArgs;
+            var reqMsg = state as RequestMessage;
 
-            var context = args.Context;
-            var reqMsg = args.ReqMsg;
-
-            //Set operation context
-            OperationContext.Current = context;
-
-            try
+            //Sleep timeout
+            if (!autoEvent.WaitOne(TimeSpan.FromSeconds((reqMsg.Timeout * 1.0) / 2)))
             {
-                // Use a thread pool thread to perform the operation
-                var elapsedTime = TimeSpan.FromSeconds((reqMsg.Timeout * 1.0) / 2);
-
-                AutoResetEvent e = new AutoResetEvent(false);
-
-                try
-                {
-                    //Register cancel callback
-                    ThreadPool.RegisterWaitForSingleObject(e, TimerCallback, Thread.CurrentThread, elapsedTime, true);
-
-                    // Perform the operation; if sucessful set the result
-                    return service.CallService(reqMsg);
-                }
-                finally
-                {
-                    e.Set();
-                    e.SafeWaitHandle.Dispose();
-                    e = null;
-                }
+                //Cancel thread
+                ThreadManager.Cancel(reqMsg.TransactionId);
             }
-            finally
+            else
             {
-                //Set operation context
-                OperationContext.Current = null;
+                ThreadManager.Remove(reqMsg.TransactionId);
             }
         }
 
-        /// <summary>
-        /// Cancel callback
-        /// </summary>
-        /// <param name="state"></param>
-        /// <param name="timedOut"></param>
-        private void TimerCallback(object state, bool timedOut)
+        // Asynchronous version of time-consuming method (private part 
+        // to set completion result/exception)
+        private ResponseMessage WorkCallback(AsyncCallerArgs args)
         {
-            if (!timedOut) return;
-            if (state == null) return;
+            //Set operation context
+            OperationContext.Current = args.Context;
 
             try
             {
-                var thread = state as Thread;
+                ThreadManager.Add(args.ReqMsg.TransactionId, Thread.CurrentThread);
 
-                //中止当前线程
-                var ts = GetThreadState(thread.ThreadState);
-
-                if (ts == ThreadState.WaitSleepJoin)
-                {
-                    thread.Interrupt();
-                }
-                else if (ts == ThreadState.Running)
-                {
-                    thread.Abort();
-                }
+                // Perform the operation; if sucessful set the result
+                return service.CallService(args.ReqMsg);
             }
-            catch (Exception ex)
+            finally
             {
-                //TODO
+                autoEvent.Set();
+
+                //Set operation context
+                OperationContext.Current = null;
             }
         }
     }

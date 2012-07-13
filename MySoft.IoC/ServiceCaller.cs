@@ -109,13 +109,7 @@ namespace MySoft.IoC
             //响应结果，清理资源
             var resMsg = asyncCaller.EndDoTask(ar);
 
-            if (resMsg == null)
-            {
-                //断开连接
-                client.Disconnect();
-
-                return;
-            }
+            if (resMsg == null) return;
 
             //调用参数
             var callArgs = new CallEventArgs
@@ -134,7 +128,7 @@ namespace MySoft.IoC
             if (TimeSpan.FromMilliseconds(resMsg.ElapsedTime).TotalSeconds > status.Config.Timeout)
             {
                 //写超时日志
-                WriteTimeoutLog(reqMsg, resMsg);
+                WriteTimeoutLog(asyncArgs.Context, reqMsg, resMsg);
             }
 
             //如果是Json方式调用，则需要处理异常
@@ -188,26 +182,33 @@ namespace MySoft.IoC
         /// <summary>
         /// 写超时日志
         /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        private void WriteTimeoutLog(RequestMessage t_reqMsg, ResponseMessage t_resMsg)
+        /// <param name="context"></param>
+        /// <param name="t_reqMsg"></param>
+        /// <param name="t_resMsg"></param>
+        private void WriteTimeoutLog(OperationContext context, RequestMessage t_reqMsg, ResponseMessage t_resMsg)
         {
             //调用计数
             ThreadPool.QueueUserWorkItem(state =>
             {
-                var arr = state as ArrayList;
-                var reqMsg = arr[0] as RequestMessage;
-                var resMsg = arr[1] as ResponseMessage;
+                try
+                {
+                    var arr = state as ArrayList;
+                    var reqMsg = arr[0] as RequestMessage;
+                    var resMsg = arr[1] as ResponseMessage;
 
-                string body = string.Format("Remote client【{0}】call service ({1},{2}) timeout.\r\nParameters => {3}\r\nMessage => {4}",
-                    reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
+                    string body = string.Format("Remote client【{0}】call service ({1},{2}) timeout.\r\nParameters => {3}\r\nMessage => {4}",
+                        reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
 
-                //获取异常
-                var exception = IoCHelper.GetException(OperationContext.Current, reqMsg, body);
+                    //获取异常
+                    var exception = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
 
-                //写异常日志
-                status.Container.WriteError(exception);
-
+                    //写异常日志
+                    status.Container.WriteError(exception);
+                }
+                catch (Exception ex)
+                {
+                    //TODO
+                }
             }, new ArrayList { t_reqMsg, t_resMsg });
         }
 
@@ -309,7 +310,7 @@ namespace MySoft.IoC
                     , reqMsg.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
 
                 //获取异常
-                throw IoCHelper.GetException(context, reqMsg, body);
+                throw IoCHelper.GetException(context, reqMsg, new WarningException(body));
             }
 
             return service;
