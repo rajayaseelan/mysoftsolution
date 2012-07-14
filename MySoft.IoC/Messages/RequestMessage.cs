@@ -112,7 +112,7 @@ namespace MySoft.IoC.Messages
         private string hostName;
         private string requestAddress;
         private bool invokeMethod;
-        private int timeout;
+        private int timeout = -1;
 
         #endregion
 

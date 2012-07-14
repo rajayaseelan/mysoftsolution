@@ -126,7 +126,7 @@ namespace MySoft.IoC.Services
                     //获取一个请求
                     reqProxy = GetServiceRequest();
 
-                    if (reqMsg.Timeout < 0) reqMsg.Timeout = node.Timeout;
+                    if (reqMsg.Timeout <= 0) reqMsg.Timeout = node.Timeout;
                     if (reqMsg.Timeout < 10) reqMsg.Timeout = 10;  //最小为10秒
 
                     var elapsedTime = TimeSpan.FromSeconds(reqMsg.Timeout);
