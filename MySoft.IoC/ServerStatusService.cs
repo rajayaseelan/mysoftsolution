@@ -71,26 +71,12 @@ namespace MySoft.IoC
         {
             while (true)
             {
-                //启用线程来进行处理
-                ThreadPool.QueueUserWorkItem(obj =>
+                //响应定时信息
+                if (statuslist.Count > 0)
                 {
-                    //响应定时信息
-                    if (statuslist.Count > 0)
-                    {
-                        try
-                        {
-                            var status = GetServerStatus();
-
-                            MessageCenter.Instance.Notify(status);
-
-                            status = null;
-                        }
-                        catch (Exception ex)
-                        {
-                            //TODO
-                        }
-                    }
-                });
+                    var status = GetServerStatus();
+                    MessageCenter.Instance.Notify(status);
+                }
 
                 //每秒推送一次
                 Thread.Sleep(1000);

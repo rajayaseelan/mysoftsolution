@@ -120,6 +120,7 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             client.Disconnected += Client_Disconnected;
             Clients[client.ClientId] = client;
+            client.ConnectCount = Clients.Count;
             OnClientConnected(client);
             e.Channel.Start();
         }
@@ -133,6 +134,7 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             var client = (IScsServerClient)sender;
             Clients.Remove(client.ClientId);
+            client.ConnectCount = Clients.Count;
             OnClientDisconnected(client);
         }
 

@@ -6,6 +6,7 @@ using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
+using MySoft.IoC.Communication.Scs.Communication;
 
 namespace MySoft.IoC
 {
@@ -61,6 +62,10 @@ namespace MySoft.IoC
         /// <returns></returns>
         public void CallMethod(IScsServerClient client, RequestMessage reqMsg, string messageId)
         {
+            //如果是断开状态，直接返回
+            if (client.CommunicationState == CommunicationStates.Disconnected)
+                return;
+
             //创建Caller;
             var caller = CreateCaller(client, reqMsg);
 
@@ -73,7 +78,7 @@ namespace MySoft.IoC
                 var service = ParseService(reqMsg, context);
 
                 var asyncArgs = new AsyncCallerArgs { MessageId = messageId, Context = context, ReqMsg = reqMsg };
-                var asyncCaller = new AsyncCaller(service);
+                var asyncCaller = new AsyncCaller(client, service);
 
                 //异步调用
                 asyncCaller.BeginDoTask(asyncArgs, AsyncCallback, new ArrayList { asyncArgs, asyncCaller });
@@ -183,33 +188,19 @@ namespace MySoft.IoC
         /// 写超时日志
         /// </summary>
         /// <param name="context"></param>
-        /// <param name="t_reqMsg"></param>
-        /// <param name="t_resMsg"></param>
-        private void WriteTimeoutLog(OperationContext context, RequestMessage t_reqMsg, ResponseMessage t_resMsg)
+        /// <param name="reqMsg"></param>
+        /// <param name="resMsg"></param>
+        private void WriteTimeoutLog(OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
         {
             //调用计数
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                try
-                {
-                    var arr = state as ArrayList;
-                    var reqMsg = arr[0] as RequestMessage;
-                    var resMsg = arr[1] as ResponseMessage;
+            string body = string.Format("Remote client【{0}】call service ({1},{2}) timeout.\r\nParameters => {3}\r\nMessage => {4}",
+                reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
 
-                    string body = string.Format("Remote client【{0}】call service ({1},{2}) timeout.\r\nParameters => {3}\r\nMessage => {4}",
-                        reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
+            //获取异常
+            var exception = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
 
-                    //获取异常
-                    var exception = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
-
-                    //写异常日志
-                    status.Container.WriteError(exception);
-                }
-                catch (Exception ex)
-                {
-                    //TODO
-                }
-            }, new ArrayList { t_reqMsg, t_resMsg });
+            //写异常日志
+            status.Container.WriteError(exception);
         }
 
         /// <summary>
@@ -218,26 +209,11 @@ namespace MySoft.IoC
         /// <param name="callArgs"></param>
         private void NotifyEventArgs(CallEventArgs callArgs)
         {
-            //调用计数
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                try
-                {
-                    var arr = state as ArrayList;
-                    var statusService = arr[0] as ServerStatusService;
-                    var eventArgs = arr[1] as CallEventArgs;
+            //调用计数服务
+            status.Counter(callArgs);
 
-                    //调用计数服务
-                    statusService.Counter(eventArgs);
-
-                    //响应消息
-                    MessageCenter.Instance.Notify(eventArgs);
-                }
-                catch (Exception ex)
-                {
-                    //TODO
-                }
-            }, new ArrayList { status, callArgs });
+            //响应消息
+            MessageCenter.Instance.Notify(callArgs);
         }
 
         /// <summary>

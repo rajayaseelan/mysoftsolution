@@ -8,17 +8,22 @@ namespace MySoft.IoC.Communication.Scs.Server
     /// <summary>
     /// Represents a client from a perspective of a server.
     /// </summary>
-    public interface IScsServerClient : IMessenger
+    public interface IScsServerClient : IMessenger, IDisposable
     {
         /// <summary>
         /// This event is raised when client disconnected from server.
         /// </summary>
         event EventHandler Disconnected;
-        
+
         /// <summary>
         /// Unique identifier for this client in server.
         /// </summary>
         long ClientId { get; }
+
+        /// <summary>
+        /// Get or set server client count.
+        /// </summary>
+        int ConnectCount { get; set; }
 
         ///<summary>
         /// Gets endpoint of remote application.

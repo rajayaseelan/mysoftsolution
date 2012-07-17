@@ -45,6 +45,11 @@ namespace MySoft.IoC.Communication.Scs.Server
         public long ClientId { get; set; }
 
         /// <summary>
+        /// Get or set server client count.
+        /// </summary>
+        public int ConnectCount { get; set; }
+
+        /// <summary>
         /// Gets the communication state of the Client.
         /// </summary>
         public CommunicationStates CommunicationState
@@ -106,7 +111,7 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// <summary>
         /// The communication channel that is used by client to send and receive messages.
         /// </summary>
-        private readonly ICommunicationChannel _communicationChannel;
+        private ICommunicationChannel _communicationChannel;
 
         #endregion
 
@@ -269,6 +274,20 @@ namespace MySoft.IoC.Communication.Scs.Server
                 {
                 }
             }
+        }
+
+        #endregion
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// Dispose resource
+        /// </summary>
+        public void Dispose()
+        {
+            Disconnect();
+
+            this.State = null;
         }
 
         #endregion

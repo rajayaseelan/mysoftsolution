@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Communication.Scs.Server;
 
 namespace MySoft.IoC.Services
 {
@@ -16,6 +17,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class AsyncCaller
     {
+        private IScsServerClient client;
         private IService service;
         private AsyncMethodCaller caller;
         private AutoResetEvent autoEvent;
@@ -23,10 +25,11 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// Init async caller
         /// </summary>
+        /// <param name="client"></param>
         /// <param name="service"></param>
-        /// <param name="args"></param>
-        public AsyncCaller(IService service)
+        public AsyncCaller(IScsServerClient client, IService service)
         {
+            this.client = client;
             this.service = service;
             this.autoEvent = new AutoResetEvent(false);
         }
@@ -51,7 +54,7 @@ namespace MySoft.IoC.Services
 
             ar.AsyncWaitHandle.Close();
 
-            this.caller = null;
+            caller = null;
 
             return resMsg;
         }
@@ -76,14 +79,20 @@ namespace MySoft.IoC.Services
         {
             var reqMsg = state as RequestMessage;
 
-            //Sleep timeout
-            if (!autoEvent.WaitOne(TimeSpan.FromSeconds((reqMsg.Timeout * 1.0) / 2)))
+            try
             {
-                //Cancel thread
-                ThreadManager.Cancel(reqMsg.TransactionId);
+                //Sleep timeout
+                if (!autoEvent.WaitOne(TimeSpan.FromSeconds((reqMsg.Timeout * 1.0) / 2)))
+                {
+                    //Cancel thread
+                    ThreadManager.Cancel(reqMsg.TransactionId);
+
+                    Console.WriteLine("Thread manager count: {0}!", ThreadManager.Count);
+                }
             }
-            else
+            catch (Exception ex)
             {
+                //Remove thread
                 ThreadManager.Remove(reqMsg.TransactionId);
             }
         }
@@ -92,18 +101,22 @@ namespace MySoft.IoC.Services
         // to set completion result/exception)
         private ResponseMessage WorkCallback(AsyncCallerArgs args)
         {
+            var reqMsg = args.ReqMsg;
+
             //Set operation context
             OperationContext.Current = args.Context;
 
             try
             {
-                ThreadManager.Add(args.ReqMsg.TransactionId, Thread.CurrentThread);
+                ThreadManager.Add(reqMsg.TransactionId, Thread.CurrentThread);
 
                 // Perform the operation; if sucessful set the result
-                return service.CallService(args.ReqMsg);
+                return service.CallService(reqMsg);
             }
             finally
             {
+                ThreadManager.Remove(reqMsg.TransactionId);
+
                 autoEvent.Set();
 
                 //Set operation context

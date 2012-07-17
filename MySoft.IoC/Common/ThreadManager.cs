@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Collections;
 
 namespace MySoft.IoC
 {
@@ -16,7 +13,7 @@ namespace MySoft.IoC
         private static IDictionary<Guid, Thread> hashtable = new Dictionary<Guid, Thread>();
 
         /// <summary>
-        /// 当前线程总数
+        /// 当前队列总数
         /// </summary>
         public static int Count
         {
@@ -32,37 +29,48 @@ namespace MySoft.IoC
         /// <summary>
         /// 添加线程
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         /// <param name="thread"></param>
-        public static void Add(Guid guid, Thread thread)
+        public static void Add(Guid id, Thread thread)
         {
             lock (hashtable)
             {
                 //将当前线程放入队列中
-                hashtable[guid] = thread;
+                hashtable[id] = thread;
             }
         }
 
         /// <summary>
         /// 结束线程
         /// </summary>
-        /// <param name="guid"></param>
-        public static void Cancel(Guid guid)
+        /// <param name="id"></param>
+        public static void Cancel(Guid id)
         {
+            if (hashtable.Count == 0) return;
+
             Thread thread = null;
 
             //获取指定Key的线程
             lock (hashtable)
             {
-                if (hashtable.ContainsKey(guid))
+                if (hashtable.ContainsKey(id))
                 {
-                    thread = hashtable[guid];
+                    thread = hashtable[id];
 
-                    //移除线程
-                    hashtable.Remove(guid);
+                    hashtable.Remove(id);
                 }
             }
 
+            //Cancel thread
+            CancelThread(thread);
+        }
+
+        /// <summary>
+        /// Cancel thread
+        /// </summary>
+        /// <param name="thread"></param>
+        private static void CancelThread(Thread thread)
+        {
             if (thread == null) return;
 
             try
@@ -88,14 +96,17 @@ namespace MySoft.IoC
         /// <summary>
         /// 移除线程
         /// </summary>
-        /// <param name="guid"></param>
-        public static void Remove(Guid guid)
+        /// <param name="id"></param>
+        public static void Remove(Guid id)
         {
+            if (hashtable.Count == 0) return;
+
             lock (hashtable)
             {
-                if (hashtable.ContainsKey(guid))
+                if (hashtable.ContainsKey(id))
                 {
-                    hashtable.Remove(guid);
+                    //移除线程
+                    hashtable.Remove(id);
                 }
             }
         }
