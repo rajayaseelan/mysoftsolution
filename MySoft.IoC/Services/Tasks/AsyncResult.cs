@@ -24,8 +24,7 @@ namespace MySoft.IoC.Services.Tasks
         new public TResult EndInvoke()
         {
             base.EndInvoke(); // Wait until operation has completed 
-            return m_result;  // Return the result (if above didn't throw)
+            return m_result;  // Return the result (if above didn't throw)
         }
     }
-
 }

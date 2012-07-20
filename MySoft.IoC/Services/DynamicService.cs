@@ -82,31 +82,18 @@ namespace MySoft.IoC.Services
                 //参数赋值
                 object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
 
-                try
-                {
-                    //调用对应的服务
-                    resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
+                //调用对应的服务
+                resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
 
-                    //处理返回参数
-                    IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
-                }
-                finally
-                {
-                    parameters = null;
-                    service = null;
-                }
+                //处理返回参数
+                IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
             }
+            catch (ThreadInterruptedException) { }
+            catch (ThreadAbortException) { }
             catch (Exception ex)
             {
-                resMsg.Value = null;
-
                 //捕获全局错误
                 resMsg.Error = ex;
-
-                if (ex is ThreadAbortException)
-                {
-                    Thread.ResetAbort();
-                }
             }
             finally
             {

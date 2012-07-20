@@ -233,11 +233,11 @@ namespace MySoft.IoC.HttpServer
                 {
                     try
                     {
-                        obj[key] = JContainer.Parse(nvs[key]);
+                        obj[key] = nvs[key];
                     }
                     catch
                     {
-                        obj[key] = nvs[key];
+                        obj[key] = JContainer.Parse(nvs[key]);
                     }
                 }
             }

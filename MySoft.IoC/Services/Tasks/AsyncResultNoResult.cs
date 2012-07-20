@@ -29,11 +29,6 @@ namespace MySoft.IoC.Services.Tasks
             m_AsyncState = state;
         }
 
-        /// <summary>
-        /// Set completed
-        /// </summary>
-        /// <param name="exception"></param>
-        /// <param name="completedSynchronously"></param>
         public void SetAsCompleted(
            Exception exception, Boolean completedSynchronously)
         {
@@ -56,9 +51,6 @@ namespace MySoft.IoC.Services.Tasks
             if (m_AsyncCallback != null) m_AsyncCallback(this);
         }
 
-        /// <summary>
-        /// End invoke
-        /// </summary>
         public void EndInvoke()
         {
             // This method assumes that only 1 thread calls EndInvoke 
@@ -68,7 +60,7 @@ namespace MySoft.IoC.Services.Tasks
                 // If the operation isn't done, wait for it
                 AsyncWaitHandle.WaitOne();
                 AsyncWaitHandle.Close();
-                m_AsyncWaitHandle = null;  // Allow early GC
+                m_AsyncWaitHandle = null;  // Allow early GC
             }
 
             // Operation is done: if an exception occured, throw it
@@ -78,9 +70,6 @@ namespace MySoft.IoC.Services.Tasks
         #region Implementation of IAsyncResult
         public Object AsyncState { get { return m_AsyncState; } }
 
-        /// <summary>
-        /// Complete synchronously
-        /// </summary>
         public Boolean CompletedSynchronously
         {
             get
@@ -90,9 +79,6 @@ namespace MySoft.IoC.Services.Tasks
             }
         }
 
-        /// <summary>
-        /// Async wait handle
-        /// </summary>
         public WaitHandle AsyncWaitHandle
         {
             get
@@ -122,9 +108,6 @@ namespace MySoft.IoC.Services.Tasks
             }
         }
 
-        /// <summary>
-        /// Is completed
-        /// </summary>
         public Boolean IsCompleted
         {
             get
@@ -133,7 +116,6 @@ namespace MySoft.IoC.Services.Tasks
                     c_StatePending;
             }
         }
-
         #endregion
     }
 }

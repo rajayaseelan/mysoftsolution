@@ -81,9 +81,6 @@
     <Compile Include="Callback\CallbackInfo.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IoCHelper.cs" />
-    <Compile Include="Common\ThreadManager.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Communication\ITcpConnection.cs" />
     <Compile Include="Communication\ITcpChannel.cs" />
     <Compile Include="Communication\TcpSocketAsyncEventArgsPool.cs" />
@@ -202,6 +199,8 @@
     <Compile Include="Services\RemoteProxy.cs" />
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
+    <Compile Include="Services\Tasks\AsyncResult.cs" />
+    <Compile Include="Services\Tasks\AsyncResultNoResult.cs" />
     <Compile Include="Services\WaitResult.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
     <Compile Include="Messages\Status\CallInfo.cs" />

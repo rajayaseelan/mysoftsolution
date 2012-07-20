@@ -209,7 +209,6 @@ namespace MySoft.IoC
         void server_ClientConnected(object sender, ServerClientEventArgs e)
         {
             e.Client.MessageReceived += Client_MessageReceived;
-            e.Client.MessageSent += Client_MessageSent;
             e.Client.MessageError += Client_MessageError;
 
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
@@ -221,12 +220,6 @@ namespace MySoft.IoC
         void Client_MessageError(object sender, ErrorEventArgs e)
         {
             container.WriteError(e.Error);
-        }
-
-        void Client_MessageSent(object sender, MessageEventArgs e)
-        {
-            //将Message置null
-            e.Message.Dispose();
         }
 
         void server_ClientDisconnected(object sender, ServerClientEventArgs e)
@@ -271,6 +264,8 @@ namespace MySoft.IoC
         {
             try
             {
+                if (e.Message == null) return;
+
                 //不是指定消息不处理
                 if (e.Message is ScsClientMessage)
                 {
