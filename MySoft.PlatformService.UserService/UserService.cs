@@ -107,17 +107,17 @@ namespace MySoft.PlatformService.UserService
             {
                 Thread.Sleep(11000);
             }
-            else if (DateTime.Now.Ticks % 12 == 0)
-            {
-                while (true)
-                {
-                    //Thread.Sleep(1);
-                }
-            }
-            else if (DateTime.Now.Ticks % 10 == 0)
-            {
-                //throw new Exception("出错了！");
-            }
+            //else if (DateTime.Now.Ticks % 12 == 0)
+            //{
+            //    while (true)
+            //    {
+            //        //Thread.Sleep(1);
+            //    }
+            //}
+            //else if (DateTime.Now.Ticks % 10 == 0)
+            //{
+            //    //throw new Exception("出错了！");
+            //}
 
             try
             {

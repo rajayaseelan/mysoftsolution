@@ -73,11 +73,11 @@ namespace MySoft.RESTful.Utils
                 {
                     try
                     {
-                        obj[key] = JContainer.Parse(nvs[key]);
+                        obj[key] = nvs[key];
                     }
                     catch
                     {
-                        obj[key] = nvs[key];
+                        obj[key] = JContainer.Parse(nvs[key]);
                     }
                 }
             }
