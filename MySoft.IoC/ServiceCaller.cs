@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
@@ -68,17 +67,137 @@ namespace MySoft.IoC
             //创建Caller;
             var caller = CreateCaller(client, reqMsg);
 
-            //获取上下文
+            //如果是状态服务，直接响应
+            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
+            {
+                SyncCallMethod(client, caller, reqMsg, messageId);
+            }
+            else
+            {
+                AsyncCallMethod(client, caller, reqMsg, messageId);
+            }
+        }
+
+        /// <summary>
+        /// 同步调用方法
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="caller"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="messageId"></param>
+        private void SyncCallMethod(IScsServerClient client, AppCaller caller, RequestMessage reqMsg, string messageId)
+        {
+            //定义响应的消息
+            ResponseMessage resMsg = null;
+
             var context = GetOperationContext(client, caller);
 
             try
             {
-                //解析服务
-                var service = ParseService(reqMsg, context);
+                try
+                {
+                    //获取上下文
+                    OperationContext.Current = context;
 
-                //异步调用
-                var asyncCaller = new AsyncCaller(service, context, reqMsg);
-                asyncCaller.BeginDoTask(AsyncCallback, new ArrayList { asyncCaller, client, context, reqMsg, messageId });
+                    //解析服务
+                    var service = ParseService(reqMsg, context);
+
+                    resMsg = service.CallService(reqMsg);
+                }
+                catch (Exception ex)
+                {
+                    //将异常信息写出
+                    status.Container.WriteError(ex);
+
+                    //处理异常
+                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                }
+                finally
+                {
+                    OperationContext.Current = null;
+                }
+
+                //发送消息
+                SendMessage(client, reqMsg, resMsg, messageId);
+            }
+            finally
+            {
+                context = null;
+                client = null;
+                reqMsg = null;
+                resMsg = null;
+            }
+        }
+
+        /// <summary>
+        /// 异步调用方法
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="caller"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="messageId"></param>
+        private void AsyncCallMethod(IScsServerClient client, AppCaller caller, RequestMessage reqMsg, string messageId)
+        {
+            try
+            {
+                var cacheKey = string.Format("Caller_{0}_{1}_{2}", caller.ServiceName, caller.MethodName, caller.Parameters);
+                var resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
+
+                if (resMsg == null)
+                {
+                    //调用方法
+                    ThreadPool.QueueUserWorkItem(state =>
+                    {
+                        //获取上下文
+                        var context = GetOperationContext(client, caller);
+
+                        try
+                        {
+                            //获取响应
+                            resMsg = GetResponseMessage(context, reqMsg);
+
+                            //转换成毫秒判断
+                            if (resMsg.ElapsedTime > TimeSpan.FromSeconds(status.Config.Timeout).TotalMilliseconds)
+                            {
+                                //写超时日志
+                                WriteTimeout(context, reqMsg, resMsg);
+
+                                //超过超时时间的数据，插入本地缓存（非错误数据）
+                                if (!resMsg.IsError)
+                                {
+                                    CacheHelper.Insert(cacheKey, resMsg, status.Config.Timeout);
+                                }
+                            }
+
+                            //响应及写超时信息
+                            CounterCaller(context, resMsg);
+
+                            //如果是Json方式调用，则需要处理异常
+                            if (resMsg.IsError && reqMsg.InvokeMethod)
+                            {
+                                resMsg.Error = new ApplicationException(resMsg.Error.Message);
+                            }
+
+                            //发送消息
+                            SendMessage(client, reqMsg, resMsg, messageId);
+                        }
+                        finally
+                        {
+                            context = null;
+                            client = null;
+                            reqMsg = null;
+                            resMsg = null;
+                        }
+                    });
+                }
+                else
+                {
+                    //将传入的Id赋值给返回Id
+                    resMsg.TransactionId = reqMsg.TransactionId;
+
+                    //发送消息
+                    SendMessage(client, reqMsg, resMsg, messageId);
+                }
             }
             catch (Exception ex)
             {
@@ -94,54 +213,54 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 异步回调
+        /// 调用方法
         /// </summary>
-        /// <param name="ar"></param>
-        private void AsyncCallback(IAsyncResult ar)
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponseMessage(OperationContext context, RequestMessage reqMsg)
         {
-            var arr = ar.AsyncState as ArrayList;
+            //定义响应的消息
+            ResponseMessage resMsg = null;
 
-            var caller = arr[0] as AsyncCaller;
-            var client = arr[1] as IScsServerClient;
-            var context = arr[2] as OperationContext;
-            var reqMsg = arr[3] as RequestMessage;
-            var messageId = Convert.ToString(arr[4]);
+            OperationContext.Current = context;
 
             try
             {
-                //响应结果，清理资源
-                var resMsg = caller.EndDoTask(ar);
+                // Register wait for single object
+                if (reqMsg.Timeout <= 0) reqMsg.Timeout = ServiceConfig.DEFAULT_CALL_TIMEOUT;  //最小为30秒
 
-                if (resMsg == null) return;
+                var mre = new ManualResetEvent(false);
+                var timeout = (int)TimeSpan.FromSeconds(reqMsg.Timeout).TotalMilliseconds / 2;
+                ThreadPool.RegisterWaitForSingleObject(mre, TimerCallback, Thread.CurrentThread, timeout, true);
 
-                //调用参数
-                var callArgs = new CallEventArgs
+                try
                 {
-                    Caller = context.Caller,
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Count = resMsg.Count,
-                    Error = resMsg.Error,
-                    Value = resMsg.Value
-                };
+                    //解析服务
+                    var service = ParseService(reqMsg, context);
 
-                //响应计数
-                NotifyEventArgs(callArgs);
-
-                //转换成秒判断
-                if (TimeSpan.FromMilliseconds(resMsg.ElapsedTime).TotalSeconds > status.Config.Timeout)
-                {
-                    //写超时日志
-                    WriteTimeout(context, reqMsg, resMsg);
+                    //响应结果，清理资源
+                    resMsg = service.CallService(reqMsg);
                 }
-
-                //如果是Json方式调用，则需要处理异常
-                if (resMsg.IsError && reqMsg.InvokeMethod)
+                catch (ThreadAbortException e)
                 {
-                    resMsg.Error = new ApplicationException(callArgs.Error.Message);
-                }
+                    Thread.ResetAbort();
 
-                //发送消息
-                SendMessage(client, reqMsg, resMsg, messageId);
+                    string body = string.Format("Remote client【{0}】call service ({1},{2}) timeout {4} ms, the request is aborted.\r\nParameters => {3}",
+                                    reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), timeout);
+
+                    //获取异常
+                    var error = IoCHelper.GetException(context, reqMsg, new ThreadException(body, e));
+
+                    status.Container.WriteError(error);
+
+                    //处理异常
+                    resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(body));
+                }
+                finally
+                {
+                    mre.Set();
+                }
             }
             catch (Exception ex)
             {
@@ -149,11 +268,81 @@ namespace MySoft.IoC
                 status.Container.WriteError(ex);
 
                 //处理异常
-                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                //发送消息
-                SendMessage(client, reqMsg, resMsg, messageId);
+                resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
+            finally
+            {
+                OperationContext.Current = null;
+            }
+
+            return resMsg;
+        }
+
+        /// <summary>
+        /// Call method timer callback
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="timedOut"></param>
+        private void TimerCallback(object state, bool timedOut)
+        {
+            if (timedOut)
+            {
+                try
+                {
+                    var thread = state as Thread;
+                    var ts = SimpleThreadState(thread.ThreadState);
+
+                    if (ts == ThreadState.WaitSleepJoin || ts == ThreadState.Running)
+                    {
+                        thread.Abort();
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+        }
+
+        private ThreadState SimpleThreadState(ThreadState ts)
+        {
+            return ts & (ThreadState.Unstarted |
+                         ThreadState.WaitSleepJoin |
+                         ThreadState.Stopped);
+        }
+
+        /// <summary>
+        /// Counter caller
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="resMsg"></param>
+        private void CounterCaller(OperationContext context, ResponseMessage resMsg)
+        {
+            //调用参数
+            var callArgs = new CallEventArgs
+            {
+                Caller = context.Caller,
+                ElapsedTime = resMsg.ElapsedTime,
+                Count = resMsg.Count,
+                Error = resMsg.Error,
+                Value = resMsg.Value
+            };
+
+            //异步处理
+            ThreadPool.QueueUserWorkItem(obj =>
+            {
+                try
+                {
+                    //调用计数服务
+                    status.Counter(callArgs);
+
+                    //响应消息
+                    MessageCenter.Instance.Notify(callArgs);
+                }
+                finally
+                {
+                    callArgs = null;
+                }
+            });
         }
 
         /// <summary>
@@ -207,23 +396,10 @@ namespace MySoft.IoC
                 reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
 
             //获取异常
-            var exception = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
+            var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
 
             //写异常日志
-            status.Container.WriteError(exception);
-        }
-
-        /// <summary>
-        /// 响应计数事件
-        /// </summary>
-        /// <param name="callArgs"></param>
-        private void NotifyEventArgs(CallEventArgs callArgs)
-        {
-            //调用计数服务
-            status.Counter(callArgs);
-
-            //响应消息
-            MessageCenter.Instance.Notify(callArgs);
+            status.Container.WriteError(error);
         }
 
         /// <summary>
