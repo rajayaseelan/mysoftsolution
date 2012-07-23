@@ -111,7 +111,6 @@
     <Compile Include="IServiceResolver.cs" />
     <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
-    <Compile Include="Services\AsyncCaller.cs" />
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -199,8 +198,6 @@
     <Compile Include="Services\RemoteProxy.cs" />
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
-    <Compile Include="Services\Tasks\AsyncResult.cs" />
-    <Compile Include="Services\Tasks\AsyncResultNoResult.cs" />
     <Compile Include="Services\WaitResult.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
     <Compile Include="Messages\Status\CallInfo.cs" />

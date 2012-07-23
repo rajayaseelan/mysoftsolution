@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Threading;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
@@ -66,50 +65,40 @@ namespace MySoft.IoC.Services
             {
                 resMsg = Run(reqMsg);
 
-                watch.Stop();
-
-                //计算超时
-                resMsg.ElapsedTime = watch.ElapsedMilliseconds;
-
-                if (resMsg.IsError)
-                {
-                    string body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}\r\nMessage => {4}",
-                        reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
-
-                    //获取异常
-                    var error = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
-
-                    logger.WriteError(error);
-
-                    //返回结果数据
-                    if (reqMsg.InvokeMethod)
-                    {
-                        resMsg.Value = new InvokeData
-                        {
-                            Value = SerializationManager.SerializeJson(resMsg.Value),
-                            Count = resMsg.Count,
-                            ElapsedTime = resMsg.ElapsedTime,
-                            OutParameters = resMsg.Parameters.ToString()
-                        };
-
-                        //清除参数集合
-                        resMsg.Parameters.Clear();
-                    }
-                }
+                if (resMsg == null) return null;
             }
-            catch (ThreadAbortException ex)
+            finally
             {
-                //Reset thread abort.
-                Thread.ResetAbort();
+                watch.Stop();
+            }
 
+            //计算超时
+            resMsg.ElapsedTime = watch.ElapsedMilliseconds;
+
+            if (resMsg.IsError)
+            {
                 string body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}\r\nMessage => {4}",
-                  reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(),
-                    string.Format("Service call timeout {0} ms, the request was aborted initiative. ", watch.ElapsedMilliseconds));
+                    reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
 
                 //获取异常
-                var error = IoCHelper.GetException(OperationContext.Current, reqMsg, new ThreadException(body, ex));
+                var error = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
 
                 logger.WriteError(error);
+            }
+
+            //返回结果数据
+            if (reqMsg.InvokeMethod)
+            {
+                resMsg.Value = new InvokeData
+                {
+                    Value = SerializationManager.SerializeJson(resMsg.Value),
+                    Count = resMsg.Count,
+                    ElapsedTime = resMsg.ElapsedTime,
+                    OutParameters = resMsg.Parameters.ToString()
+                };
+
+                //清除参数集合
+                resMsg.Parameters.Clear();
             }
 
             return resMsg;

@@ -47,43 +47,49 @@ namespace MySoft.IoC
             this.statuslist = new TimeStatusCollection(config.RecordHours * 3600);
 
             //启动定义推送线程
-            ThreadPool.QueueUserWorkItem(DoPushWork);
+            var thread1 = new Thread(DoPushWork);
+            thread1.Start();
 
             //启动自动检测线程
-            ThreadPool.QueueUserWorkItem(DoCheckWork);
-
-            //启动回收线程
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                while (true)
-                {
-                    //暂停1分钟
-                    Thread.Sleep(TimeSpan.FromMinutes(1));
-
-                    //清理资源
-                    GC.Collect();
-                }
-            });
+            var thread2 = new Thread(DoCheckWork);
+            thread2.Start();
         }
 
-
-        void DoPushWork(object state)
+        void DoPushWork()
         {
             while (true)
             {
                 //响应定时信息
-                if (statuslist.Count > 0)
+                if (statuslist.Count > 0 && MessageCenter.Instance.Count > 0)
                 {
-                    var status = GetServerStatus();
-                    MessageCenter.Instance.Notify(status);
-                }
+                    ServerStatus status = null;
 
-                //每秒推送一次
-                Thread.Sleep(1000);
+                    try
+                    {
+                        status = GetServerStatus();
+                        MessageCenter.Instance.Notify(status);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO
+                    }
+                    finally
+                    {
+                        status = null;
+                    }
+
+                    //每秒推送一次
+                    Thread.Sleep(1000);
+                }
+                else
+                {
+                    //每秒推送一次
+                    Thread.Sleep(10000);
+                }
             }
         }
 
-        void DoCheckWork(object state)
+        void DoCheckWork()
         {
             while (true)
             {
@@ -97,14 +103,10 @@ namespace MySoft.IoC
 
                     foreach (var client in server.Clients.GetAllItems())
                     {
-                        //没有State表示非正常客户端连接
-                        if (client.State == null)
+                        if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
                         {
-                            if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
-                            {
-                                //如果超过5分钟没响应，则断开链接
-                                client.Disconnect();
-                            }
+                            //如果超过5分钟没响应，则断开链接
+                            client.Disconnect();
                         }
                     }
                 }

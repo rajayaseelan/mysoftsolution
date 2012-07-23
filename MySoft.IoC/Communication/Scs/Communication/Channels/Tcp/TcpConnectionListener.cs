@@ -13,8 +13,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// </summary>
     internal class TcpConnectionListener : ConnectionListenerBase
     {
-        private Stack<SocketAsyncEventArgs> _pool;
-
         /// <summary>
         /// The endpoint address of the server to listen incoming connections.
         /// </summary>
@@ -46,15 +44,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             StartSocket();
             _running = true;
-
-            _pool = new Stack<SocketAsyncEventArgs>(TcpSocketSetting.Backlog);
-
-            for (int i = 0; i < TcpSocketSetting.Backlog; i++)
-            {
-                var e = new SocketAsyncEventArgs();
-                e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-                _pool.Push(e);
-            }
 
             //开始接收请求
             for (int i = 0; i < TcpSocketSetting.AcceptThreads; i++)
@@ -91,7 +80,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             if (!_running) return;
 
-            SocketAsyncEventArgs e = PopSocketAsyncEventArgs();
+            var e = new SocketAsyncEventArgs();
+            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
 
             try
             {
@@ -102,8 +92,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                PushSocketAsyncEventArgs(e);
-
                 BeginAsyncAccept();
             }
         }
@@ -138,12 +126,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-
+                //TODO
             }
             finally
             {
-                PushSocketAsyncEventArgs(e);
-
                 //重新进行接收
                 BeginAsyncAccept();
             }
@@ -204,22 +190,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
 
             return endPoint;
-        }
-
-        private SocketAsyncEventArgs PopSocketAsyncEventArgs()
-        {
-            lock (_pool)
-            {
-                return _pool.Pop();
-            }
-        }
-
-        private void PushSocketAsyncEventArgs(SocketAsyncEventArgs e)
-        {
-            lock (_pool)
-            {
-                _pool.Push(e);
-            }
         }
     }
 }

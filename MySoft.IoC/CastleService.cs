@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
@@ -213,8 +212,14 @@ namespace MySoft.IoC
 
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
 
-            //推送ConnectInfo
-            PushConnectInfo(endPoint, true, e.Client.ConnectCount);
+            try
+            {
+                PushConnectInfo(endPoint, true, e.Client.ConnectCount);
+            }
+            finally
+            {
+                endPoint = null;
+            }
         }
 
         void Client_MessageError(object sender, ErrorEventArgs e)
@@ -226,11 +231,15 @@ namespace MySoft.IoC
         {
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
 
-            //推送ConnectInfo
-            PushConnectInfo(endPoint, false, e.Client.ConnectCount);
-
-            //清理资源
-            e.Client.Dispose();
+            try
+            {
+                PushConnectInfo(endPoint, false, e.Client.ConnectCount);
+            }
+            finally
+            {
+                endPoint = null;
+                e.Client.State = null;
+            }
         }
 
         void PushConnectInfo(ScsTcpEndPoint endPoint, bool connected, int count)
@@ -279,8 +288,15 @@ namespace MySoft.IoC
                         //响应客户端详细信息
                         var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
 
-                        //推送ConnectInfo
-                        PushAppClient(endPoint, appClient);
+                        try
+                        {
+                            PushAppClient(endPoint, appClient);
+                        }
+                        finally
+                        {
+                            endPoint = null;
+                            appClient = null;
+                        }
                     }
                 }
                 else if (e.Message is ScsResultMessage)

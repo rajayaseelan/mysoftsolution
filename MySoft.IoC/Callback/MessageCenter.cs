@@ -5,7 +5,6 @@ using System.Net.Sockets;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Callback
 {
@@ -38,6 +37,20 @@ namespace MySoft.IoC.Callback
                     }
                 }
                 return _instance;
+            }
+        }
+
+        /// <summary>
+        /// 监听数
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                lock (_syncLock)
+                {
+                    return _listeners.Count;
+                }
             }
         }
 

@@ -8,7 +8,7 @@ namespace MySoft.IoC.Communication.Scs.Server
     /// <summary>
     /// Represents a client from a perspective of a server.
     /// </summary>
-    public interface IScsServerClient : IMessenger, IDisposable
+    public interface IScsServerClient : IMessenger
     {
         /// <summary>
         /// This event is raised when client disconnected from server.

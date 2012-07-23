@@ -111,12 +111,10 @@ namespace MySoft.IoC.HttpServer
             try
             {
                 //调用方法
-                NameValueCollection nvs = null;
-                if (callMethod.HttpMethod == HttpMethod.GET)
-                {
-                    nvs = HttpUtility.ParseQueryString(paramString ?? string.Empty, Encoding.UTF8);
-                }
-                else
+                var get = HttpUtility.ParseQueryString(paramString ?? string.Empty, Encoding.UTF8);
+                var post = new NameValueCollection();
+
+                if (callMethod.HttpMethod == HttpMethod.POST)
                 {
                     //接收流内部数据
                     var stream = request.GetRequestStream();
@@ -126,7 +124,7 @@ namespace MySoft.IoC.HttpServer
                     string streamValue = sr.ReadToEnd();
 
                     //转换成NameValueCollection
-                    nvs = ConvertCollection(streamValue);
+                    post = ConvertCollection(streamValue);
                 }
 
                 if (callMethod.Authorized)
@@ -135,11 +133,11 @@ namespace MySoft.IoC.HttpServer
                         throw new AuthorizeException("Request header did not exist [X-AuthParameter] info.");
                     else
                         //调用认证的信息
-                        nvs[callMethod.AuthParameter] = request.Get("X-AuthParameter");
+                        get[callMethod.AuthParameter] = request.Get("X-AuthParameter");
                 }
 
                 //转换成JsonString
-                var parameters = ConvertJsonString(nvs);
+                var parameters = ConvertJsonString(get, post);
                 string jsonString = caller.CallMethod(methodName, parameters);
 
                 if (callMethod.TypeString)
@@ -222,22 +220,31 @@ namespace MySoft.IoC.HttpServer
         /// <summary>
         /// 转换成JObject
         /// </summary>
-        /// <param name="nvs"></param>
+        /// <param name="nvget"></param>
+        /// <param name="nvpost"></param>
         /// <returns></returns>
-        private string ConvertJsonString(NameValueCollection nvs)
+        private string ConvertJsonString(NameValueCollection nvget, NameValueCollection nvpost)
         {
             var obj = new JObject();
-            if (nvs.Count > 0)
+            if (nvget.Count > 0)
             {
-                foreach (var key in nvs.AllKeys)
+                foreach (var key in nvget.AllKeys)
+                {
+                    obj[key] = nvget[key];
+                }
+            }
+
+            if (nvpost.Count > 0)
+            {
+                foreach (var key in nvget.AllKeys)
                 {
                     try
                     {
-                        obj[key] = nvs[key];
+                        obj[key] = JContainer.Parse(nvget[key]);
                     }
                     catch
                     {
-                        obj[key] = JContainer.Parse(nvs[key]);
+                        obj[key] = nvget[key];
                     }
                 }
             }

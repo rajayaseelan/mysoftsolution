@@ -90,17 +90,20 @@ namespace MySoft.IoC
                     //处理参数
                     IoCHelper.SetRefParameterValues(method, resMsg.Parameters, parameters);
 
-                    //如果需要缓存，则存入本地缓存
-                    if (returnValue != null && cacheTimes.ContainsKey(method.ToString()))
+                    if (resMsg.Count > 0) //数据条数不为0进行缓存
                     {
-                        int cacheTime = cacheTimes[method.ToString()];
-                        cacheValue = new CacheObject
+                        //如果需要缓存，则存入本地缓存
+                        if (returnValue != null && cacheTimes.ContainsKey(method.ToString()))
                         {
-                            Value = resMsg.Value,
-                            Parameters = resMsg.Parameters
-                        };
+                            int cacheTime = cacheTimes[method.ToString()];
+                            cacheValue = new CacheObject
+                            {
+                                Value = resMsg.Value,
+                                Parameters = resMsg.Parameters
+                            };
 
-                        cache.InsertCache(cacheKey, cacheValue, cacheTime);
+                            cache.InsertCache(cacheKey, cacheValue, cacheTime);
+                        }
                     }
                 }
             }

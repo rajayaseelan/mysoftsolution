@@ -1,8 +1,7 @@
 using System;
 using System.Collections;
-using MySoft.IoC.Messages;
-using MySoft.Logger;
 using MySoft.IoC.Communication;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
@@ -126,13 +125,13 @@ namespace MySoft.IoC.Services
                     //获取一个请求
                     reqProxy = GetServiceRequest();
 
-                    if (reqMsg.Timeout <= 0) reqMsg.Timeout = node.Timeout;
-                    if (reqMsg.Timeout < 10) reqMsg.Timeout = 10;  //最小为10秒
-
-                    var elapsedTime = TimeSpan.FromSeconds(reqMsg.Timeout);
+                    //设置为节点超时时间
+                    if (reqMsg.Timeout < 0) reqMsg.Timeout = node.Timeout;
 
                     //发送消息
                     reqProxy.SendMessage(reqMsg);
+
+                    var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
 
                     //等待信号响应
                     if (!waitResult.Wait(elapsedTime))

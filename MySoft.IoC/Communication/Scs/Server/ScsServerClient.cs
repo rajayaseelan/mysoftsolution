@@ -277,19 +277,5 @@ namespace MySoft.IoC.Communication.Scs.Server
         }
 
         #endregion
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// Dispose resource
-        /// </summary>
-        public void Dispose()
-        {
-            Disconnect();
-
-            this.State = null;
-        }
-
-        #endregion
     }
 }
