@@ -77,6 +77,7 @@
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
+    <Compile Include="Services\AsyncCaller.cs" />
     <Compile Include="CacheObject.cs" />
     <Compile Include="Callback\CallbackInfo.cs" />
     <Compile Include="Common\Extensions.cs" />
