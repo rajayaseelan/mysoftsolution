@@ -20,10 +20,10 @@ namespace MySoft.RESTful.Utils
         /// <param name="paramters"></param>
         /// <param name="nvs"></param>
         /// <returns></returns>
-        public static object[] Convert(ParameterInfo[] paramters, NameValueCollection nvs)
+        public static object[] Convert(ParameterInfo[] paramters, NameValueCollection nvget, NameValueCollection nvpost)
         {
             List<object> args = new List<object>();
-            var obj = ConvertJsonObject(nvs);
+            var obj = ConvertJObject(nvget, nvpost);
 
             foreach (ParameterInfo info in paramters)
             {
@@ -62,22 +62,31 @@ namespace MySoft.RESTful.Utils
         /// <summary>
         /// 转换成JObject
         /// </summary>
-        /// <param name="nvs"></param>
+        /// <param name="get"></param>
+        /// <param name="post"></param>
         /// <returns></returns>
-        private static JObject ConvertJsonObject(NameValueCollection nvs)
+        private static JObject ConvertJObject(NameValueCollection get, NameValueCollection post)
         {
             var obj = new JObject();
-            if (nvs.Count > 0)
+            if (get.Count > 0)
             {
-                foreach (var key in nvs.AllKeys)
+                foreach (var key in get.AllKeys)
+                {
+                    obj[key] = get[key];
+                }
+            }
+
+            if (post.Count > 0)
+            {
+                foreach (var key in get.AllKeys)
                 {
                     try
                     {
-                        obj[key] = nvs[key];
+                        obj[key] = JContainer.Parse(get[key]);
                     }
                     catch
                     {
-                        obj[key] = JContainer.Parse(nvs[key]);
+                        obj[key] = get[key];
                     }
                 }
             }

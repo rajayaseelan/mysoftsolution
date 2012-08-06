@@ -69,7 +69,7 @@ namespace MySoft.RESTful
             }
             else
             {
-                string result = GetResponseString(ParameterFormat.Json, kind, method, query);
+                string result = GetResponseString(ParameterFormat.Json, kind, method, null, null);
                 result = string.Format("{0}({1});", jsoncallback, result ?? "{}");
                 return new MemoryStream(Encoding.UTF8.GetBytes(result));
             }
@@ -123,7 +123,7 @@ namespace MySoft.RESTful
             }
             else
             {
-                result = GetResponseString(ParameterFormat.Jsonp, kind, method, query);
+                result = GetResponseString(ParameterFormat.Jsonp, kind, method, null, null);
                 response.ContentType = "application/javascript;charset=utf-8";
                 result = string.Format("{0}({1});", callback, result ?? "{}");
             }
@@ -212,11 +212,7 @@ namespace MySoft.RESTful
             var response = WebOperationContext.Current.OutgoingResponse;
 
             NameValueCollection nvs = null;
-            if (stream == null)
-            {
-                nvs = request.UriTemplateMatch.QueryParameters;
-            }
-            else
+            if (stream != null)
             {
                 //接收流内部数据
                 var sr = new StreamReader(stream, Encoding.UTF8);
@@ -226,7 +222,7 @@ namespace MySoft.RESTful
                 nvs = ConvertCollection(streamValue);
             }
 
-            string result = GetResponseString(format, kind, method, nvs);
+            string result = GetResponseString(format, kind, method, null, nvs);
             if (string.IsNullOrEmpty(result)) return new MemoryStream();
 
             //转换成buffer
@@ -291,10 +287,13 @@ namespace MySoft.RESTful
             return values;
         }
 
-        private string GetResponseString(ParameterFormat format, string kind, string method, NameValueCollection parameters)
+        private string GetResponseString(ParameterFormat format, string kind, string method, NameValueCollection nvget, NameValueCollection nvpost)
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
+
+            if (nvget == null) nvget = request.UriTemplateMatch.QueryParameters;
+            if (nvpost == null) nvpost = new NameValueCollection();
 
             if (format == ParameterFormat.Json)
                 response.ContentType = "application/json;charset=utf-8";
@@ -330,7 +329,7 @@ namespace MySoft.RESTful
                     try
                     {
                         Type retType;
-                        result = Context.Invoke(kind, method, parameters, out retType);
+                        result = Context.Invoke(kind, method, nvget, nvpost, out retType);
 
                         //设置返回成功
                         response.StatusCode = HttpStatusCode.OK;
@@ -348,7 +347,7 @@ namespace MySoft.RESTful
                     catch (Exception ex)
                     {
                         RESTfulResult ret;
-                        var errorMessage = GetErrorMessage(ex, kind, method, parameters, out ret);
+                        var errorMessage = GetErrorMessage(ex, kind, method, nvget, nvpost, out ret);
 
                         result = ret;
 
@@ -382,7 +381,7 @@ namespace MySoft.RESTful
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        private string GetErrorMessage(Exception exception, string kind, string method, NameValueCollection nvs, out RESTfulResult ret)
+        private string GetErrorMessage(Exception exception, string kind, string method, NameValueCollection nvget, NameValueCollection nvpost, out RESTfulResult ret)
         {
             var response = WebOperationContext.Current.OutgoingResponse;
             var request = WebOperationContext.Current.IncomingRequest;
@@ -402,20 +401,17 @@ namespace MySoft.RESTful
             var errorMessage = string.Format("\r\n\tCode:[{0}]\r\n\tError:[{1}]\r\n\tMethod:[{2}.{3}]", code,
                     ErrorHelper.GetInnerException(exception).Message, kind, method);
 
-            //如果参数大于0
-            var coll = request.UriTemplateMatch.QueryParameters;
-
             //请求地址
             errorMessage = string.Format("{0}\r\n\tRequest Uri:{1}", errorMessage, GetRequestUri());
 
             if (request.Method.ToUpper() == "POST")
             {
                 errorMessage = string.Format("{0}\r\n\tGET Parameters:{1}\r\n\tPOST Parameters:{2}",
-                                                errorMessage, GetParameters(coll), GetParameters(nvs));
+                                                errorMessage, GetParameters(nvget), GetParameters(nvpost));
             }
             else
             {
-                errorMessage = string.Format("{0}\r\n\tGET Parameters:{1}", errorMessage, GetParameters(coll));
+                errorMessage = string.Format("{0}\r\n\tGET Parameters:{1}", errorMessage, GetParameters(nvget));
             }
 
             //加上认证的用户名

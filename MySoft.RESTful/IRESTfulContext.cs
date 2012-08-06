@@ -38,6 +38,6 @@ namespace MySoft.RESTful
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        object Invoke(string kind, string method, NameValueCollection parameters, out Type retType);
+        object Invoke(string kind, string method, NameValueCollection nvget, NameValueCollection nvpost, out Type retType);
     }
 }

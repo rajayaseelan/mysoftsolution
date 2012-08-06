@@ -96,7 +96,7 @@ namespace MySoft.RESTful.Business
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public object Invoke(string kind, string method, NameValueCollection parameters, out Type retType)
+        public object Invoke(string kind, string method, NameValueCollection nvget, NameValueCollection nvpost, out Type retType)
         {
             WebOperationContext context = WebOperationContext.Current;
             BusinessMethodModel metadata = pool.FindMethod(kind, method);
@@ -116,7 +116,7 @@ namespace MySoft.RESTful.Business
             try
             {
                 //调用方法
-                object[] arguments = ParameterHelper.Convert(metadata.Parameters, parameters);
+                object[] arguments = ParameterHelper.Convert(metadata.Parameters, nvget, nvpost);
                 instance = register.Resolve(metadata.Service);
                 return DynamicCalls.GetMethodInvoker(metadata.Method)(instance, arguments);
             }

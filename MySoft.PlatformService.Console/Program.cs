@@ -61,11 +61,6 @@ namespace MySoft.PlatformService.Console
 
         static void Program_OnError(Exception error)
         {
-            if (error is NullReferenceException)
-            {
-                var a = 1;
-            }
-
             string message = "[" + DateTime.Now.ToString() + "] => " + error.Message;
             if (error.InnerException != null)
             {

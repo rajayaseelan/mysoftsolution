@@ -250,7 +250,7 @@ namespace MySoft.PlatformService.Client
             are.Reset();
             var watch = Stopwatch.StartNew();
 
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
@@ -382,7 +382,7 @@ namespace MySoft.PlatformService.Client
             //service = new UserService.UserService();
             //var service1 = CastleFactory.Create().GetChannel<IStatusService>(node);
 
-            while (counter < 500000)
+            while (true)
             {
                 try
                 {
