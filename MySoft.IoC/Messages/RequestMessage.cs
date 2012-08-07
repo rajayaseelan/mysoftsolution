@@ -112,24 +112,8 @@ namespace MySoft.IoC.Messages
         private string hostName;
         private string requestAddress;
         private bool invokeMethod;
-        private int timeout = -1;
 
         #endregion
-
-        /// <summary>
-        /// Gets or sets the value of the timeout.
-        /// </summary>
-        public int Timeout
-        {
-            get
-            {
-                return timeout;
-            }
-            set
-            {
-                timeout = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the name of the appName.

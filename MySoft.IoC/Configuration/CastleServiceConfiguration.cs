@@ -18,7 +18,7 @@ namespace MySoft.IoC.Configuration
         private bool compress = false;
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;        //默认记录1小时
         private int maxCalls = ServiceConfig.DEFAULT_MAX_CALL;              //默认的并发调用数
-        private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;         //超时时间为10秒
+        private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;         //超时时间为5秒
 
         /// <summary>
         /// 获取远程对象配置

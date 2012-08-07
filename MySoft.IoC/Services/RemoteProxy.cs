@@ -28,7 +28,7 @@ namespace MySoft.IoC.Services
             this.container = container;
 
             //初始化池
-            TcpSocketSetting.Init(node.MaxPool * 10);
+            TcpSocketSetting.Init(node.MaxPool);
 
             InitServiceRequest();
         }
@@ -125,9 +125,6 @@ namespace MySoft.IoC.Services
                     //获取一个请求
                     reqProxy = GetServiceRequest();
 
-                    //设置为节点超时时间
-                    if (reqMsg.Timeout < 0) reqMsg.Timeout = node.Timeout;
-
                     //发送消息
                     reqProxy.SendMessage(reqMsg);
 
@@ -136,8 +133,13 @@ namespace MySoft.IoC.Services
                     //等待信号响应
                     if (!waitResult.Wait(elapsedTime))
                     {
-                        throw new TimeoutException(string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
-                           , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString()));
+                        var title = string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
+                           , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString());
+
+                        //获取异常
+                        var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
+
+                        waitResult.Set(resMsg);
                     }
 
                     return waitResult.Message;

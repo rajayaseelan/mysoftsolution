@@ -170,71 +170,64 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<ClientInfo> GetClientList()
         {
-            //从缓存获取数据
-            var clients = CacheHelper.Get<List<ClientInfo>>("GetClientList");
-            if (clients == null)
+            //客户端列表
+            var clients = new List<ClientInfo>();
+
+            try
             {
-                clients = new List<ClientInfo>();
+                var epServer = server.EndPoint as ScsTcpEndPoint;
+                var items = server.Clients.GetAllItems();
 
-                try
+                var list1 = items.Where(p => p.State != null).ToList();
+                var list2 = items.Where(p => p.State == null).ToList();
+
+                //如果list不为0
+                if (list1.Count > 0)
                 {
-                    var epServer = server.EndPoint as ScsTcpEndPoint;
-                    var items = server.Clients.GetAllItems();
+                    var ls = list1.Select(p => p.State as AppClient)
+                             .GroupBy(p => new
+                             {
+                                 AppName = p.AppName,
+                                 IPAddress = p.IPAddress,
+                                 AppPath = p.AppPath,
+                             })
+                             .Select(p => new ClientInfo
+                             {
+                                 AppPath = p.Key.AppPath,
+                                 AppName = p.Key.AppName,
+                                 IPAddress = p.Key.IPAddress,
+                                 HostName = p.Max(c => c.HostName),
+                                 ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                                 ServerPort = epServer.TcpPort,
+                                 Count = p.Count()
+                             }).ToList();
 
-                    var list1 = items.Where(p => p.State != null).ToList();
-                    var list2 = items.Where(p => p.State == null).ToList();
-
-                    //如果list不为0
-                    if (list1.Count > 0)
-                    {
-                        var ls = list1.Select(p => p.State as AppClient)
-                                 .GroupBy(p => new
-                                 {
-                                     AppName = p.AppName,
-                                     IPAddress = p.IPAddress,
-                                     AppPath = p.AppPath,
-                                 })
-                                 .Select(p => new ClientInfo
-                                 {
-                                     AppPath = p.Key.AppPath,
-                                     AppName = p.Key.AppName,
-                                     IPAddress = p.Key.IPAddress,
-                                     HostName = p.Max(c => c.HostName),
-                                     ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
-                                     ServerPort = epServer.TcpPort,
-                                     Count = p.Count()
-                                 }).ToList();
-
-                        clients.AddRange(ls);
-                    }
-
-                    //如果list不为0
-                    if (list2.Count > 0)
-                    {
-                        var ls = list2.Where(p => p.State == null)
-                                .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
-                                .GroupBy(p => p.IpAddress)
-                                .Select(g => new ClientInfo
-                                {
-                                    AppPath = "Unknown Path",
-                                    AppName = "Unknown",
-                                    IPAddress = g.Key,
-                                    ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
-                                    ServerPort = epServer.TcpPort,
-                                    HostName = "Unknown",
-                                    Count = g.Count()
-                                }).ToList();
-
-                        clients.AddRange(ls);
-                    }
-
-                    //缓存10秒
-                    CacheHelper.Insert("GetClientList", clients, 10);
+                    clients.AddRange(ls);
                 }
-                catch (Exception ex)
+
+                //如果list不为0
+                if (list2.Count > 0)
                 {
-                    container.WriteError(ex);
+                    var ls = list2.Where(p => p.State == null)
+                            .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
+                            .GroupBy(p => p.IpAddress)
+                            .Select(g => new ClientInfo
+                            {
+                                AppPath = "Unknown Path",
+                                AppName = "Unknown",
+                                IPAddress = g.Key,
+                                ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                                ServerPort = epServer.TcpPort,
+                                HostName = "Unknown",
+                                Count = g.Count()
+                            }).ToList();
+
+                    clients.AddRange(ls);
                 }
+            }
+            catch (Exception ex)
+            {
+                container.WriteError(ex);
             }
 
             return clients;
@@ -463,56 +456,48 @@ namespace MySoft.IoC
         /// <returns></returns>
         private HighestStatus GetHighestStatus()
         {
-            //从缓存获取数据
-            var highest = CacheHelper.Get<HighestStatus>("GetHighestStatus");
-            if (highest == null)
+            var highest = new HighestStatus();
+            var list = statuslist.ToList();
+
+            #region 处理最高值
+
+            //处理最高值 
+            if (list.Count > 0)
             {
-                highest = new HighestStatus();
-                var list = statuslist.ToList();
-
-                #region 处理最高值
-
-                //处理最高值 
-                if (list.Count > 0)
+                //成功
+                highest.SuccessCount = list.Max(p => p.SuccessCount);
+                if (highest.SuccessCount > 0)
                 {
-                    //成功
-                    highest.SuccessCount = list.Max(p => p.SuccessCount);
-                    if (highest.SuccessCount > 0)
-                    {
-                        var data = list.FirstOrDefault(p => p.SuccessCount == highest.SuccessCount);
-                        highest.SuccessCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
-                    }
-
-                    //失败
-                    highest.ErrorCount = list.Max(p => p.ErrorCount);
-                    if (highest.ErrorCount > 0)
-                    {
-                        var data = list.FirstOrDefault(p => p.ErrorCount == highest.ErrorCount);
-                        highest.ErrorCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
-                    }
-
-                    //请求总数
-                    highest.RequestCount = list.Max(p => p.RequestCount);
-                    if (highest.RequestCount > 0)
-                    {
-                        var data = list.FirstOrDefault(p => p.RequestCount == highest.RequestCount);
-                        highest.RequestCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
-                    }
-
-                    //耗时
-                    highest.ElapsedTime = list.Max(p => p.ElapsedTime);
-                    if (highest.ElapsedTime > 0)
-                    {
-                        var data = list.FirstOrDefault(p => p.ElapsedTime == highest.ElapsedTime);
-                        highest.ElapsedTimeCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
-                    }
+                    var data = list.FirstOrDefault(p => p.SuccessCount == highest.SuccessCount);
+                    highest.SuccessCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
                 }
 
-                #endregion
+                //失败
+                highest.ErrorCount = list.Max(p => p.ErrorCount);
+                if (highest.ErrorCount > 0)
+                {
+                    var data = list.FirstOrDefault(p => p.ErrorCount == highest.ErrorCount);
+                    highest.ErrorCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                }
 
-                //缓存10秒
-                CacheHelper.Insert("GetHighestStatus", highest, 10);
+                //请求总数
+                highest.RequestCount = list.Max(p => p.RequestCount);
+                if (highest.RequestCount > 0)
+                {
+                    var data = list.FirstOrDefault(p => p.RequestCount == highest.RequestCount);
+                    highest.RequestCountCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                }
+
+                //耗时
+                highest.ElapsedTime = list.Max(p => p.ElapsedTime);
+                if (highest.ElapsedTime > 0)
+                {
+                    var data = list.FirstOrDefault(p => p.ElapsedTime == highest.ElapsedTime);
+                    highest.ElapsedTimeCounterTime = data == null ? DateTime.MinValue : data.CounterTime;
+                }
             }
+
+            #endregion
 
             return highest;
         }
@@ -523,28 +508,18 @@ namespace MySoft.IoC
         /// <returns></returns>
         private SummaryStatus GetSummaryStatus()
         {
-            //从缓存获取数据
-            var status = CacheHelper.Get<SummaryStatus>("GetSummaryStatus");
-            if (status == null)
+            //获取状态列表
+            var list = GetTimeStatusList();
+
+            //统计状态信息
+            return new SummaryStatus
             {
-                //获取状态列表
-                var list = GetTimeStatusList();
-
-                //统计状态信息
-                status = new SummaryStatus
-                {
-                    RunningSeconds = list.Count,
-                    RequestCount = list.Sum(p => p.RequestCount),
-                    SuccessCount = list.Sum(p => p.SuccessCount),
-                    ErrorCount = list.Sum(p => p.ErrorCount),
-                    ElapsedTime = list.Sum(p => p.ElapsedTime)
-                };
-
-                //缓存10秒
-                CacheHelper.Insert("GetSummaryStatus", status, 10);
-            }
-
-            return status;
+                RunningSeconds = list.Count,
+                RequestCount = list.Sum(p => p.RequestCount),
+                SuccessCount = list.Sum(p => p.SuccessCount),
+                ErrorCount = list.Sum(p => p.ErrorCount),
+                ElapsedTime = list.Sum(p => p.ElapsedTime)
+            };
         }
 
         /// <summary>

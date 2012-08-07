@@ -16,22 +16,71 @@ namespace MySoft.IoC.Services
     /// <returns></returns>
     internal delegate ResponseMessage AsyncCaller(IService service, OperationContext context, RequestMessage reqMsg);
 
-    /// <summary>
-    /// 任务信息
-    /// </summary>
-    internal class TaskInfo
+    internal sealed class AsyncCallerPool
     {
         /// <summary>
-        /// 线程
+        /// Pool of AsyncCaller.
         /// </summary>
-        public Thread Thread { get; set; }
+        Stack<AsyncCaller> pool;
 
         /// <summary>
-        /// 信号量
+        /// Initializes the object pool to the specified size.
         /// </summary>
-        public WaitHandle WaitHandle { get; set; }
+        /// <param name="capacity">Maximum number of AsyncCaller objects the pool can hold.</param>
+        internal AsyncCallerPool(Int32 capacity)
+        {
+            this.pool = new Stack<AsyncCaller>(capacity);
+        }
 
-        //当前句柄
-        public RegisteredWaitHandle RegisteredHandle { get; set; }
+        /// <summary>
+        /// Get AsyncCaller instance count.
+        /// </summary>
+        internal int Count
+        {
+            get
+            {
+                lock (this.pool)
+                {
+                    return this.pool.Count;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes a AsyncCaller instance from the pool.
+        /// </summary>
+        /// <returns>AsyncCaller removed from the pool.</returns>
+        internal AsyncCaller Pop()
+        {
+            lock (this.pool)
+            {
+                if (this.pool.Count > 0)
+                {
+                    var item = this.pool.Pop();
+
+                    return item;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Add a SocketAsyncEventArg instance to the pool. 
+        /// </summary>
+        /// <param name="item">AsyncCaller instance to add to the pool.</param>
+        internal void Push(AsyncCaller item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException("Items added to a AsyncCallerPool cannot be null");
+            }
+            lock (this.pool)
+            {
+                this.pool.Push(item);
+            }
+        }
     }
 }

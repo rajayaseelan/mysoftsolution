@@ -6,6 +6,7 @@ using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
+using MySoft.Logger;
 
 namespace MySoft.IoC
 {
@@ -16,6 +17,7 @@ namespace MySoft.IoC
     {
         private IDictionary<string, Type> callbackTypes;
         private ServerStatusService status;
+        private AsyncCallerPool pool;
 
         /// <summary>
         /// 初始化ServiceCaller
@@ -35,6 +37,17 @@ namespace MySoft.IoC
 
             //注册组件
             status.Container.RegisterComponents(hashtable);
+
+            //实例化Pool池
+            pool = new AsyncCallerPool(status.Config.MaxCalls / 10);
+
+            for (int i = 0; i < status.Config.MaxCalls / 10; i++)
+            {
+                //异步调用
+                var asyncCaller = new AsyncCaller(GetResponse);
+
+                pool.Push(asyncCaller);
+            }
         }
 
         private void InitServiceCaller(IServiceContainer container)
@@ -50,6 +63,24 @@ namespace MySoft.IoC
                     callbackTypes[type.FullName] = contract.CallbackType;
                 }
             }
+        }
+
+        private AsyncCaller GetAsyncCaller()
+        {
+            while (pool.Count == 0)
+            {
+                //pause 100 ms
+                Thread.Sleep(100);
+            }
+
+            var item = pool.Pop();
+
+            if (item == null)
+            {
+                item = GetAsyncCaller();
+            }
+
+            return item;
         }
 
         /// <summary>
@@ -78,60 +109,59 @@ namespace MySoft.IoC
                 //解析服务
                 var service = ParseService(reqMsg, context);
 
+                var cacheKey = string.Format("Caller_{3}_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters, reqMsg.InvokeMethod);
+
                 //定义响应的消息
-                ResponseMessage resMsg = null;
+                ResponseMessage resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
 
-                //异步调用
-                var asyncCaller = new AsyncCaller(GetResponse);
-
-                try
+                if (resMsg == null)
                 {
-                    //开始异步调用
-                    IAsyncResult ar = asyncCaller.BeginInvoke(service, context, reqMsg, null, null);
-
-                    if (reqMsg.Timeout <= 0) reqMsg.Timeout = ServiceConfig.DEFAULT_CALL_TIMEOUT;  //最小为30秒
-                    var timeout = (int)TimeSpan.FromSeconds(reqMsg.Timeout / 2).TotalMilliseconds;
-
-                    if (!ar.AsyncWaitHandle.WaitOne(timeout))
+                    //如果是状态服务，直接返回
+                    if (reqMsg.InvokeMethod || reqMsg.ServiceName == typeof(IStatusService).FullName)
                     {
-                        var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout {4} ms, the request is aborted.\r\nParameters => {3}",
-                            reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), timeout);
-
-                        //获取异常
-                        var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
-
-                        status.Container.WriteError(error);
-
-                        var title = string.Format("Call remote service ({0},{1}) timeout {2} ms, the request is aborted.",
-                                    reqMsg.ServiceName, reqMsg.MethodName, timeout);
-
-                        //处理异常
-                        resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
+                        resMsg = GetResponse(service, context, reqMsg);
                     }
                     else
                     {
-                        //获取响应
-                        resMsg = asyncCaller.EndInvoke(ar);
-
-                        ar.AsyncWaitHandle.Close();
+                        resMsg = AsyncCallMethod(service, context, reqMsg);
                     }
 
+                    //判断返回的消息
                     if (resMsg != null)
                     {
-                        resMsg = HandleResponse(context, reqMsg, resMsg);
+                        //记录数大于100或者耗时超过5秒，则缓存5秒
+                        if (!resMsg.IsError && (resMsg.Count > 100 || resMsg.ElapsedTime > 5 * 1000))
+                        {
+                            var log = string.Format("Call service ({0},{1}) count {2} rows more then 100 or elapsed time {3} ms more then 5000 ms. Temporary cache 30000 ms.",
+                                                 reqMsg.ServiceName, reqMsg.MethodName, resMsg.Count, resMsg.ElapsedTime);
 
-                        //发送消息
-                        SendMessage(client, reqMsg, resMsg, messageId);
+                            status.Container.WriteLog(log, LogType.Warning);
+
+                            CacheHelper.Insert(cacheKey, resMsg, 30);
+                        }
+
+                        resMsg = HandleResponse(context, reqMsg, resMsg);
                     }
                 }
-                finally
+                else
                 {
-                    asyncCaller = null;
-                    service = null;
-                    caller = null;
-                    context = null;
-                    reqMsg = null;
-                    resMsg = null;
+                    resMsg.ElapsedTime = 0;
+
+                    //判断Invoke数据
+                    if (resMsg.Value is InvokeData)
+                    {
+                        (resMsg.Value as InvokeData).ElapsedTime = 0;
+                    }
+
+                    //传输ID
+                    resMsg.TransactionId = reqMsg.TransactionId;
+                }
+
+                //判断返回的消息
+                if (resMsg != null)
+                {
+                    //发送消息
+                    SendMessage(client, reqMsg, resMsg, messageId);
                 }
             }
             catch (Exception ex)
@@ -145,6 +175,60 @@ namespace MySoft.IoC
                 //发送消息
                 SendMessage(client, reqMsg, resMsg, messageId);
             }
+        }
+
+        /// <summary>
+        /// 异步调用服务
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage AsyncCallMethod(IService service, OperationContext context, RequestMessage reqMsg)
+        {
+            //定义响应的消息
+            ResponseMessage resMsg = null;
+
+            var asyncCaller = GetAsyncCaller();
+
+            try
+            {
+                //开始异步调用
+                IAsyncResult ar = asyncCaller.BeginInvoke(service, context, reqMsg, null, null);
+
+                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CALL_TIMEOUT);
+
+                if (!ar.AsyncWaitHandle.WaitOne(timeSpan))
+                {
+                    var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout {4} ms, the request is aborted.\r\nParameters => {3}",
+                        reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), timeSpan.TotalMilliseconds);
+
+                    //获取异常
+                    var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
+
+                    status.Container.WriteError(error);
+
+                    var title = string.Format("Call remote service ({0},{1}) timeout {2} ms, the request is aborted.",
+                                reqMsg.ServiceName, reqMsg.MethodName, timeSpan.TotalMilliseconds);
+
+                    //处理异常
+                    resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
+                }
+                else
+                {
+                    //获取响应
+                    resMsg = asyncCaller.EndInvoke(ar);
+
+                    ar.AsyncWaitHandle.Close();
+                }
+            }
+            finally
+            {
+                //入池
+                pool.Push(asyncCaller);
+            }
+
+            return resMsg;
         }
 
         /// <summary>
@@ -187,26 +271,12 @@ namespace MySoft.IoC
             //定义响应的消息
             ResponseMessage resMsg = null;
 
-            // Register wait for single object
-            if (reqMsg.Timeout <= 0) reqMsg.Timeout = ServiceConfig.DEFAULT_CALL_TIMEOUT;  //默认为60秒
-            var timeout = (int)TimeSpan.FromSeconds(reqMsg.Timeout).TotalMilliseconds;
-            var autoReset = new AutoResetEvent(false);
-
-            var task = new TaskInfo { Thread = Thread.CurrentThread, WaitHandle = autoReset };
-            var handle = ThreadPool.RegisterWaitForSingleObject(autoReset, TimerCallback, task, timeout, true);
-            task.RegisteredHandle = handle;
-
-            OperationContext.Current = context;
-
             try
             {
+                OperationContext.Current = context;
+
                 //响应结果，清理资源
                 resMsg = service.CallService(reqMsg);
-            }
-            catch (ThreadAbortException ex)
-            {
-                //线程重置
-                Thread.ResetAbort();
             }
             catch (Exception ex)
             {
@@ -218,50 +288,10 @@ namespace MySoft.IoC
             }
             finally
             {
-                autoReset.Set();
-
                 OperationContext.Current = null;
             }
 
             return resMsg;
-        }
-
-        /// <summary>
-        /// Call method timer callback
-        /// </summary>
-        /// <param name="state"></param>
-        /// <param name="timedOut"></param>
-        private void TimerCallback(object state, bool timedOut)
-        {
-            var task = state as TaskInfo;
-
-            try
-            {
-                if (timedOut)
-                {
-                    //判断是否为激活状态
-                    if (task.Thread.IsAlive)
-                    {
-                        task.Thread.Abort();
-                    }
-                }
-                else
-                {
-                    //未超时，进行注销操作
-                    if (task.RegisteredHandle != null)
-                    {
-                        task.RegisteredHandle.Unregister(task.WaitHandle);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                //TODO
-            }
-            finally
-            {
-                task = null;
-            }
         }
 
         /// <summary>
@@ -351,11 +381,8 @@ namespace MySoft.IoC
                 string body = string.Format("Remote client【{0}】call service ({1},{2}) timeout.\r\nParameters => {3}\r\nMessage => {4}",
                     reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
 
-                //获取异常
-                var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
-
                 //写异常日志
-                status.Container.WriteError(error);
+                SimpleLog.Instance.WriteLogForDir("Timeout\\" + reqMsg.ServiceName, body);
             }
             catch (Exception ex)
             {

@@ -42,6 +42,11 @@ namespace MySoft.IoC.Messages
             set
             {
                 _value = value;
+
+                if (_count < 0)
+                {
+                    _count = GetCount(_value);
+                }
             }
         }
 
@@ -74,6 +79,8 @@ namespace MySoft.IoC.Messages
             }
         }
 
+        private int _count = -1;
+
         /// <summary>
         /// ¼ÇÂ¼Êý
         /// </summary>
@@ -81,10 +88,12 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                if (_value == null)
-                    return 0;
-                else
-                    return GetCount(_value);
+                if (_count < 0)
+                {
+                    _count = GetCount(_value);
+                }
+
+                return _count;
             }
         }
 
@@ -99,11 +108,11 @@ namespace MySoft.IoC.Messages
                 if (_error != null)
                 {
                     var ex = ErrorHelper.GetInnerException(_error);
-                    return string.Format("(Type:{0}) Elapsed: {1} ms, Error: {2}", base.ReturnType, this.elapsedTime, ex.Message);
+                    return string.Format("(Type:{0}) Elapsed: {1} ms, Error: {2} row(s)", base.ReturnType, this.elapsedTime, ex.Message);
                 }
                 else
                 {
-                    return string.Format("(Type:{0}) Elapsed: {1} ms, RowCount: {2}", base.ReturnType, this.elapsedTime, this.Count);
+                    return string.Format("(Type:{0}) Elapsed: {1} ms, RowCount: {2} row(s)", base.ReturnType, this.elapsedTime, this.Count);
                 }
             }
         }

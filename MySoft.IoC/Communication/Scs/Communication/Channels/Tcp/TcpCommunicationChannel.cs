@@ -42,9 +42,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         const int SocketTimeout = 5 * 60 * 1000; //timeout 5 minutes
 
         //create byte array to store: ensure at least 1 byte!
-        const int ReceiveBufferSize = 2 * 1024; //2kb
+        const int ReceiveBufferSize = 8 * 1024; //8kb
 
-        const int SendBufferSize = 8 * 1024; //8kb
+        const int SendBufferSize = 16 * 1024; //16kb
 
         private readonly byte[] _buffer;
 
