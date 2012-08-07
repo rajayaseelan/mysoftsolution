@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Server;
@@ -16,8 +15,8 @@ namespace MySoft.IoC
     public class ServiceCaller
     {
         private IDictionary<string, Type> callbackTypes;
+        private IDictionary<string, AsyncCaller> asyncCallers;
         private ServerStatusService status;
-        private AsyncCallerPool pool;
 
         /// <summary>
         /// 初始化ServiceCaller
@@ -27,9 +26,7 @@ namespace MySoft.IoC
         {
             this.status = status;
             this.callbackTypes = new Dictionary<string, Type>();
-
-            //初始化服务
-            InitServiceCaller(status.Container);
+            this.asyncCallers = new Dictionary<string, AsyncCaller>();
 
             //注册状态服务
             var hashtable = new Dictionary<Type, object>();
@@ -38,16 +35,8 @@ namespace MySoft.IoC
             //注册组件
             status.Container.RegisterComponents(hashtable);
 
-            //实例化Pool池
-            pool = new AsyncCallerPool(status.Config.MaxCalls / 10);
-
-            for (int i = 0; i < status.Config.MaxCalls / 10; i++)
-            {
-                //异步调用
-                var asyncCaller = new AsyncCaller(GetResponse);
-
-                pool.Push(asyncCaller);
-            }
+            //初始化服务
+            InitServiceCaller(status.Container);
         }
 
         private void InitServiceCaller(IServiceContainer container)
@@ -62,25 +51,21 @@ namespace MySoft.IoC
                 {
                     callbackTypes[type.FullName] = contract.CallbackType;
                 }
+
+                IService service = null;
+                string serviceKey = "Service_" + type.FullName;
+
+                if (container.Kernel.HasComponent(serviceKey))
+                {
+                    service = container.Resolve<IService>(serviceKey);
+                }
+
+                if (service != null)
+                {
+                    //实例化AsyncCaller
+                    asyncCallers[type.FullName] = new AsyncCaller(container, service);
+                }
             }
-        }
-
-        private AsyncCaller GetAsyncCaller()
-        {
-            while (pool.Count == 0)
-            {
-                //pause 100 ms
-                Thread.Sleep(100);
-            }
-
-            var item = pool.Pop();
-
-            if (item == null)
-            {
-                item = GetAsyncCaller();
-            }
-
-            return item;
         }
 
         /// <summary>
@@ -98,68 +83,65 @@ namespace MySoft.IoC
 
             try
             {
-                //Console.WriteLine("{0} => {1}:{2}", DateTime.Now, reqMsg.ServiceName, reqMsg.MethodName);
-
                 //创建Caller;
                 var caller = CreateCaller(client, reqMsg);
 
-                //获取上下文
-                var context = GetOperationContext(client, caller);
+                //var cacheKey = string.Format("Caller_{0}${1}${2}_{3}", caller.ServiceName, caller.MethodName, caller.Parameters, reqMsg.InvokeMethod ? 1 : 0);
 
-                //解析服务
-                var service = ParseService(reqMsg, context);
+                //var resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
 
-                var cacheKey = string.Format("Caller_{3}_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters, reqMsg.InvokeMethod);
+                //if (resMsg != null)
+                //{
+                //    resMsg.ElapsedTime = 0;
 
-                //定义响应的消息
-                ResponseMessage resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
+                //    //判断Invoke数据
+                //    if (resMsg.Value is InvokeData)
+                //    {
+                //        (resMsg.Value as InvokeData).ElapsedTime = 0;
+                //    }
 
-                if (resMsg == null)
-                {
-                    //如果是状态服务，直接返回
-                    if (reqMsg.InvokeMethod || reqMsg.ServiceName == typeof(IStatusService).FullName)
+                //    //传输ID
+                //    resMsg.TransactionId = reqMsg.TransactionId;
+                //}
+                //else
+                //{
+                    //Console.WriteLine("{0} => {1}:{2}", DateTime.Now, reqMsg.ServiceName, reqMsg.MethodName);
+
+                    //获取上下文
+                    var context = GetOperationContext(client, caller);
+
+                    //解析服务
+                    var asyncCaller = GetAsyncCaller(reqMsg, context);
+
+                    lock (asyncCaller)
                     {
-                        resMsg = GetResponse(service, context, reqMsg);
-                    }
-                    else
-                    {
-                        resMsg = AsyncCallMethod(service, context, reqMsg);
-                    }
+                        //定义响应的消息
+                        resMsg = asyncCaller.Call(context, reqMsg);
 
-                    //判断返回的消息
-                    if (resMsg != null)
-                    {
-                        //记录数大于100或者耗时超过5秒，则缓存5秒
-                        if (!resMsg.IsError && (resMsg.Count > 100 || resMsg.ElapsedTime > 5 * 1000))
+                        //判断返回的消息
+                        if (resMsg != null)
                         {
-                            var log = string.Format("Call service ({0},{1}) count {2} rows more then 100 or elapsed time {3} ms more then 5000 ms. Temporary cache 30000 ms.",
-                                                 reqMsg.ServiceName, reqMsg.MethodName, resMsg.Count, resMsg.ElapsedTime);
+                            resMsg = HandleResponse(context, reqMsg, resMsg);
 
-                            status.Container.WriteLog(log, LogType.Warning);
+                            //记录数大于100或者耗时超过5秒，则缓存5秒
+                            if (!resMsg.IsError && (resMsg.Count > 100 || resMsg.ElapsedTime > 5 * 1000))
+                            {
+                                var log = string.Format("Call service ({0},{1}) count {2} rows more then 100 or elapsed time {3} ms more then 5000 ms. Temporary cache 30000 ms.",
+                                                     reqMsg.ServiceName, reqMsg.MethodName, resMsg.Count, resMsg.ElapsedTime);
 
-                            CacheHelper.Insert(cacheKey, resMsg, 30);
+                                status.Container.WriteLog(log, LogType.Warning);
+
+                                CacheHelper.Insert(cacheKey, resMsg, 30);
+                            }
                         }
-
-                        resMsg = HandleResponse(context, reqMsg, resMsg);
                     }
-                }
-                else
-                {
-                    resMsg.ElapsedTime = 0;
-
-                    //判断Invoke数据
-                    if (resMsg.Value is InvokeData)
-                    {
-                        (resMsg.Value as InvokeData).ElapsedTime = 0;
-                    }
-
-                    //传输ID
-                    resMsg.TransactionId = reqMsg.TransactionId;
                 }
 
                 //判断返回的消息
                 if (resMsg != null)
                 {
+                    SimpleLog.Instance.WriteLogForDir("GUID", reqMsg.TransactionId.ToString());
+
                     //发送消息
                     SendMessage(client, reqMsg, resMsg, messageId);
                 }
@@ -175,60 +157,6 @@ namespace MySoft.IoC
                 //发送消息
                 SendMessage(client, reqMsg, resMsg, messageId);
             }
-        }
-
-        /// <summary>
-        /// 异步调用服务
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage AsyncCallMethod(IService service, OperationContext context, RequestMessage reqMsg)
-        {
-            //定义响应的消息
-            ResponseMessage resMsg = null;
-
-            var asyncCaller = GetAsyncCaller();
-
-            try
-            {
-                //开始异步调用
-                IAsyncResult ar = asyncCaller.BeginInvoke(service, context, reqMsg, null, null);
-
-                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CALL_TIMEOUT);
-
-                if (!ar.AsyncWaitHandle.WaitOne(timeSpan))
-                {
-                    var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout {4} ms, the request is aborted.\r\nParameters => {3}",
-                        reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), timeSpan.TotalMilliseconds);
-
-                    //获取异常
-                    var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
-
-                    status.Container.WriteError(error);
-
-                    var title = string.Format("Call remote service ({0},{1}) timeout {2} ms, the request is aborted.",
-                                reqMsg.ServiceName, reqMsg.MethodName, timeSpan.TotalMilliseconds);
-
-                    //处理异常
-                    resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
-                }
-                else
-                {
-                    //获取响应
-                    resMsg = asyncCaller.EndInvoke(ar);
-
-                    ar.AsyncWaitHandle.Close();
-                }
-            }
-            finally
-            {
-                //入池
-                pool.Push(asyncCaller);
-            }
-
-            return resMsg;
         }
 
         /// <summary>
@@ -254,41 +182,6 @@ namespace MySoft.IoC
             if (resMsg.IsError && reqMsg.InvokeMethod)
             {
                 resMsg.Error = new ApplicationException(resMsg.Error.Message);
-            }
-
-            return resMsg;
-        }
-
-        /// <summary>
-        /// 调用方法
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponse(IService service, OperationContext context, RequestMessage reqMsg)
-        {
-            //定义响应的消息
-            ResponseMessage resMsg = null;
-
-            try
-            {
-                OperationContext.Current = context;
-
-                //响应结果，清理资源
-                resMsg = service.CallService(reqMsg);
-            }
-            catch (Exception ex)
-            {
-                //将异常信息写出
-                status.Container.WriteError(ex);
-
-                //处理异常
-                resMsg = IoCHelper.GetResponse(reqMsg, ex);
-            }
-            finally
-            {
-                OperationContext.Current = null;
             }
 
             return resMsg;
@@ -439,22 +332,14 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Gets the service.
+        /// Gets the asyncCaller.
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        private IService ParseService(RequestMessage reqMsg, OperationContext context)
+        private AsyncCaller GetAsyncCaller(RequestMessage reqMsg, OperationContext context)
         {
-            IService service = null;
-            string serviceKey = "Service_" + reqMsg.ServiceName;
-
-            if (status.Container.Kernel.HasComponent(serviceKey))
-            {
-                service = status.Container.Resolve<IService>(serviceKey);
-            }
-
-            if (service == null)
+            if (!asyncCallers.ContainsKey(reqMsg.ServiceName))
             {
                 string body = string.Format("The server【{1}({2})】not find matching service ({0})."
                     , reqMsg.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
@@ -463,7 +348,7 @@ namespace MySoft.IoC
                 throw IoCHelper.GetException(context, reqMsg, new WarningException(body));
             }
 
-            return service;
+            return asyncCallers[reqMsg.ServiceName];
         }
     }
 }
