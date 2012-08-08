@@ -36,7 +36,7 @@ namespace MySoft.IoC.Messages
         protected override byte[] SerializeMessage(IScsMessage message)
         {
             var bytes = base.SerializeMessage(message);
-            if (compress) bytes = CompressionManager.CompressGZip(bytes);
+            if (compress) bytes = CompressionManager.Compress7Zip(bytes);
             if (encrypt) bytes = XXTEA.Encrypt(bytes, keys);
 
             return bytes;
@@ -45,7 +45,7 @@ namespace MySoft.IoC.Messages
         protected override IScsMessage DeserializeMessage(byte[] bytes)
         {
             if (encrypt) bytes = XXTEA.Decrypt(bytes, keys);
-            if (compress) bytes = CompressionManager.DecompressGZip(bytes);
+            if (compress) bytes = CompressionManager.Decompress7Zip(bytes);
 
             return base.DeserializeMessage(bytes);
         }

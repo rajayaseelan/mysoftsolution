@@ -52,7 +52,6 @@ namespace MySoft.IoC
             this.client.Connected += new EventHandler(client_Connected);
             this.client.Disconnected += client_Disconnected;
             this.client.MessageReceived += client_MessageReceived;
-            this.client.MessageSent += client_MessageSent;
             this.client.MessageError += client_MessageError;
             this.client.WireProtocol = new CustomWireProtocol(node.Compress, node.Encrypt);
         }
@@ -64,9 +63,11 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         void client_Connected(object sender, EventArgs e)
         {
+            var error = new SocketException((int)SocketError.Success);
+
             container.SendConnected(sender, new ConnectEventArgs(this.client)
             {
-                Error = new SocketException((int)SocketError.Success),
+                Error = error,
                 IsCallback = isCallback
             });
         }
@@ -78,11 +79,16 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         void client_Disconnected(object sender, EventArgs e)
         {
+            var error = new SocketException((int)SocketError.ConnectionReset);
+
             container.SendDisconnected(sender, new ConnectEventArgs(this.client)
             {
-                Error = new SocketException((int)SocketError.ConnectionReset),
+                Error = error,
                 IsCallback = isCallback
             });
+
+            //断开时响应错误信息
+            client_MessageError(sender, new ErrorEventArgs(error));
         }
 
         void client_MessageError(object sender, ErrorEventArgs e)
@@ -144,11 +150,6 @@ namespace MySoft.IoC
         }
 
         #region Socket消息委托
-
-        void client_MessageSent(object sender, MessageEventArgs e)
-        {
-            //暂不作处理
-        }
 
         void client_MessageReceived(object sender, MessageEventArgs e)
         {

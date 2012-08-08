@@ -93,10 +93,14 @@ namespace MySoft.PlatformService.UserService
         private static readonly object syncRoot = new object();
         public string GetUsersString()
         {
-            if (DateTime.Now.Ticks % 15 == 0)
-            {
-                Thread.Sleep(18000);
-            }
+            //if (DateTime.Now.Ticks % 15 == 0)
+            //{
+            //    Thread.Sleep(10000);
+            //}
+            //else
+            //{
+            Thread.Sleep(1000);
+            //}
 
             try
             {

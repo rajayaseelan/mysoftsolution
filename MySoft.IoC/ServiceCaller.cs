@@ -86,61 +86,29 @@ namespace MySoft.IoC
                 //创建Caller;
                 var caller = CreateCaller(client, reqMsg);
 
-                //var cacheKey = string.Format("Caller_{0}${1}${2}_{3}", caller.ServiceName, caller.MethodName, caller.Parameters, reqMsg.InvokeMethod ? 1 : 0);
+                //获取上下文
+                var context = GetOperationContext(client, caller);
 
-                //var resMsg = CacheHelper.Get<ResponseMessage>(cacheKey);
+                //定义响应的消息
+                ResponseMessage resMsg = null;
 
-                //if (resMsg != null)
-                //{
-                //    resMsg.ElapsedTime = 0;
+                //解析服务
+                var asyncCaller = GetAsyncCaller(reqMsg, context);
 
-                //    //判断Invoke数据
-                //    if (resMsg.Value is InvokeData)
-                //    {
-                //        (resMsg.Value as InvokeData).ElapsedTime = 0;
-                //    }
-
-                //    //传输ID
-                //    resMsg.TransactionId = reqMsg.TransactionId;
-                //}
-                //else
-                //{
-                    //Console.WriteLine("{0} => {1}:{2}", DateTime.Now, reqMsg.ServiceName, reqMsg.MethodName);
-
-                    //获取上下文
-                    var context = GetOperationContext(client, caller);
-
-                    //解析服务
-                    var asyncCaller = GetAsyncCaller(reqMsg, context);
-
-                    lock (asyncCaller)
-                    {
-                        //定义响应的消息
-                        resMsg = asyncCaller.Call(context, reqMsg);
-
-                        //判断返回的消息
-                        if (resMsg != null)
-                        {
-                            resMsg = HandleResponse(context, reqMsg, resMsg);
-
-                            //记录数大于100或者耗时超过5秒，则缓存5秒
-                            if (!resMsg.IsError && (resMsg.Count > 100 || resMsg.ElapsedTime > 5 * 1000))
-                            {
-                                var log = string.Format("Call service ({0},{1}) count {2} rows more then 100 or elapsed time {3} ms more then 5000 ms. Temporary cache 30000 ms.",
-                                                     reqMsg.ServiceName, reqMsg.MethodName, resMsg.Count, resMsg.ElapsedTime);
-
-                                status.Container.WriteLog(log, LogType.Warning);
-
-                                CacheHelper.Insert(cacheKey, resMsg, 30);
-                            }
-                        }
-                    }
+                //Invoke服务与状态服务采用同步调用
+                if (reqMsg.InvokeMethod || reqMsg.ServiceName == typeof(IStatusService).FullName)
+                {
+                    resMsg = asyncCaller.SyncCall(context, reqMsg);
+                }
+                else
+                {
+                    resMsg = asyncCaller.AsyncCall(context, reqMsg);
                 }
 
                 //判断返回的消息
                 if (resMsg != null)
                 {
-                    SimpleLog.Instance.WriteLogForDir("GUID", reqMsg.TransactionId.ToString());
+                    resMsg = HandleResponse(context, reqMsg, resMsg);
 
                     //发送消息
                     SendMessage(client, reqMsg, resMsg, messageId);
@@ -275,7 +243,7 @@ namespace MySoft.IoC
                     reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
 
                 //写异常日志
-                SimpleLog.Instance.WriteLogForDir("Timeout\\" + reqMsg.ServiceName, body);
+                SimpleLog.Instance.WriteLogForDir(string.Format("Timeout\\{0}\\{1}", reqMsg.AppName, reqMsg.ServiceName), body);
             }
             catch (Exception ex)
             {

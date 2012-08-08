@@ -108,11 +108,11 @@ namespace MySoft.IoC.Messages
                 if (_error != null)
                 {
                     var ex = ErrorHelper.GetInnerException(_error);
-                    return string.Format("(Type:{0}) Elapsed: {1} ms, Error: {2} row(s)", base.ReturnType, this.elapsedTime, ex.Message);
+                    return string.Format("(Type: {0}) Elapsed Time: {1} ms, Error: {2} row(s)", base.ReturnType, this.elapsedTime, ex.Message);
                 }
                 else
                 {
-                    return string.Format("(Type:{0}) Elapsed: {1} ms, RowCount: {2} row(s)", base.ReturnType, this.elapsedTime, this.Count);
+                    return string.Format("(Type: {0}) Elapsed Time: {1} ms, RowCount: {2} row(s)", base.ReturnType, this.elapsedTime, this.Count);
                 }
             }
         }

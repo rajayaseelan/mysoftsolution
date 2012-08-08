@@ -78,8 +78,10 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// </summary>
         public virtual void Stop()
         {
+            int clientCount = Clients.Count;
             foreach (var client in Clients.GetAllItems())
             {
+                client.ConnectCount = --clientCount;
                 client.Disconnect();
             }
 
@@ -134,7 +136,6 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             var client = (IScsServerClient)sender;
             Clients.Remove(client.ClientId);
-            client.ConnectCount = Clients.Count;
             OnClientDisconnected(client);
         }
 

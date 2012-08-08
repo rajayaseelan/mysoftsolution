@@ -109,6 +109,27 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            //var list = new List<int>();
+            //for (int i = 0; i < 100; i++)
+            //{
+            //    list.Add(i);
+            //}
+
+            //var value = SerializationManager.SerializeBin(list);
+
+            //CacheHelper.Insert("Cache", value, 100);
+
+            //var obj = CacheHelper.Get<byte[]>("Cache");
+
+            //var l = SerializationManager.DeserializeBin<List<int>>(obj);
+            //l.Remove(1);
+            //l.Remove(2);
+
+            //l = SerializationManager.DeserializeBin<List<int>>(obj);
+            //Console.WriteLine(l.Count);
+
+            //Console.ReadLine();
+
             //var list = new List<User>();
             //for (int i = 0; i < 1000; i++)
             //{

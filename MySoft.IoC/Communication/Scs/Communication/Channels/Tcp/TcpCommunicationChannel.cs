@@ -39,12 +39,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
         private readonly TcpSocketAsyncEventArgsPool _pool;
 
-        const int SocketTimeout = 5 * 60 * 1000; //timeout 5 minutes
-
         //create byte array to store: ensure at least 1 byte!
-        const int ReceiveBufferSize = 8 * 1024; //8kb
-
-        const int SendBufferSize = 16 * 1024; //16kb
+        const int ReceiveBufferSize = 4 * 1024; //4kb
 
         private readonly byte[] _buffer;
 
@@ -71,12 +67,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             _clientSocket = clientSocket;
             _clientSocket.NoDelay = true;
-
-            _clientSocket.SendBufferSize = SendBufferSize;
-            _clientSocket.ReceiveBufferSize = ReceiveBufferSize;
-
-            _clientSocket.SendTimeout = SocketTimeout;
-            _clientSocket.ReceiveTimeout = SocketTimeout;
 
             var endPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
@@ -306,15 +296,26 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         var receivedBytes = new byte[e.BytesTransferred];
                         Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, e.BytesTransferred);
 
-                        //DespatchData
-                        DespatchData(receivedBytes);
+                        //Clear buffer
+                        Array.Clear(e.Buffer, 0, e.Buffer.Length);
 
-                        LastReceivedMessageTime = DateTime.Now;
+                        //Read messages according to current wire protocol
+                        var messages = WireProtocol.CreateMessages(receivedBytes);
+
+                        //Raise MessageReceived event for all received messages
+                        foreach (var message in messages)
+                        {
+                            OnMessageReceived(message);
+                        }
                     }
                     catch (Exception ex)
                     {
                         //deal error
                         OnMessageError(ex);
+                    }
+                    finally
+                    {
+                        LastReceivedMessageTime = DateTime.Now;
                     }
 
                     if (!_running)
@@ -363,25 +364,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 TcpSocketHelper.Release(e);
 
                 OnMessageError(ex);
-            }
-        }
-
-        void DespatchData(byte[] receivedBytes)
-        {
-            try
-            {
-                //Read messages according to current wire protocol
-                var messages = WireProtocol.CreateMessages(receivedBytes);
-
-                //Raise MessageReceived event for all received messages
-                foreach (var message in messages)
-                {
-                    OnMessageReceived(message);
-                }
-            }
-            catch (Exception ex)
-            {
-                //TODO
             }
         }
 

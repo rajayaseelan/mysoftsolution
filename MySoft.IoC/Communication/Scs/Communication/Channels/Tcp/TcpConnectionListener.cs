@@ -87,7 +87,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 if (!_listenerSocket.AcceptAsync(e))
                 {
-                    ThreadPool.QueueUserWorkItem(AsyncAcceptComplete, e);
+                    AsyncAcceptComplete(e);
                 }
             }
             catch (Exception ex)
@@ -100,7 +100,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             if (e.LastOperation == SocketAsyncOperation.Accept)
             {
-                ThreadPool.QueueUserWorkItem(AsyncAcceptComplete, e);
+                AsyncAcceptComplete(e);
             }
         }
 
@@ -108,10 +108,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Entrance point of the thread.
         /// This method is used by the thread to listen incoming requests.
         /// </summary>
-        void AsyncAcceptComplete(object state)
+        void AsyncAcceptComplete(SocketAsyncEventArgs e)
         {
-            SocketAsyncEventArgs e = state as SocketAsyncEventArgs;
-
             try
             {
                 if (e.SocketError == SocketError.Success)

@@ -7,27 +7,28 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 返回值对象
     /// </summary>
-    [Serializable]
     internal sealed class WaitResult : IDisposable
     {
-        private AutoResetEvent reset;
-        private ResponseMessage message;
+        private AutoResetEvent ev;
+        private RequestMessage reqMsg;
+        private ResponseMessage resMsg;
 
         /// <summary>
         /// 消息对象
         /// </summary>
         public ResponseMessage Message
         {
-            get { return message; }
+            get { return resMsg; }
         }
 
         /// <summary>
-        /// 实例化QueueResult
+        /// 实例化WaitResult
         /// </summary>
         /// <param name="reqMsg"></param>
         public WaitResult(RequestMessage reqMsg)
         {
-            this.reset = new AutoResetEvent(false);
+            this.reqMsg = reqMsg;
+            this.ev = new AutoResetEvent(false);
         }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Wait(TimeSpan timeSpan)
         {
-            return reset.WaitOne(timeSpan);
+            return ev.WaitOne(timeSpan);
         }
 
         /// <summary>
@@ -47,8 +48,16 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Set(ResponseMessage resMsg)
         {
-            this.message = resMsg;
-            return reset.Set();
+            if (ev == null) return false;
+
+            this.resMsg = resMsg;
+
+            if (resMsg.TransactionId != reqMsg.TransactionId)
+            {
+                resMsg.TransactionId = reqMsg.TransactionId;
+            }
+
+            return ev.Set();
         }
 
         #region IDisposable 成员
@@ -58,10 +67,11 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            this.reset.Reset();
+            this.ev.Reset();
 
-            this.reset = null;
-            this.message = null;
+            this.ev = null;
+            this.reqMsg = null;
+            this.resMsg = null;
         }
 
         #endregion

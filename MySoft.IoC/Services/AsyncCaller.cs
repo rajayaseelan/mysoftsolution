@@ -1,86 +1,126 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections;
 using MySoft.IoC.Messages;
-using System.Threading;
+using MySoft.Logger;
+using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
-    /// <summary>
-    /// 异步调用服务
-    /// </summary>
-    /// <param name="service"></param>
-    /// <param name="context"></param>
-    /// <param name="reqMsg"></param>
-    /// <returns></returns>
-    internal delegate ResponseMessage AsyncCaller(IService service, OperationContext context, RequestMessage reqMsg);
-
-    internal sealed class AsyncCallerPool
+    internal class AsyncCaller
     {
-        /// <summary>
-        /// Pool of AsyncCaller.
-        /// </summary>
-        Stack<AsyncCaller> pool;
+        private ILog logger;
+        private IService service;
 
         /// <summary>
-        /// Initializes the object pool to the specified size.
+        /// 实例化AsyncCaller
         /// </summary>
-        /// <param name="capacity">Maximum number of AsyncCaller objects the pool can hold.</param>
-        internal AsyncCallerPool(Int32 capacity)
+        /// <param name="logger"></param>
+        /// <param name="service"></param>
+        public AsyncCaller(ILog logger, IService service)
         {
-            this.pool = new Stack<AsyncCaller>(capacity);
+            this.logger = logger;
+            this.service = service;
         }
 
         /// <summary>
-        /// Get AsyncCaller instance count.
+        /// 同步调用
         /// </summary>
-        internal int Count
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        public ResponseMessage SyncCall(OperationContext context, RequestMessage reqMsg)
         {
-            get
+            return GetResponse(service, context, reqMsg);
+        }
+
+        /// <summary>
+        /// 异步调用服务
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        public ResponseMessage AsyncCall(OperationContext context, RequestMessage reqMsg)
+        {
+            using (var wr = new WaitResult(reqMsg))
             {
-                lock (this.pool)
+                ManagedThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { wr, context, reqMsg });
+
+                var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CALL_TIMEOUT);
+
+                if (!wr.Wait(elapsedTime))
                 {
-                    return this.pool.Count;
+                    var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout {4} ms.\r\nParameters => {3}",
+                        reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), (int)elapsedTime.TotalMilliseconds);
+
+                    //获取异常
+                    var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
+
+                    logger.WriteError(error);
+
+                    var title = string.Format("Call remote service ({0},{1}) timeout {2} ms.",
+                                reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds);
+
+                    //处理异常
+                    var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
+
+                    wr.Set(resMsg);
                 }
+
+                return wr.Message;
             }
         }
 
         /// <summary>
-        /// Removes a AsyncCaller instance from the pool.
+        /// 调用方法
         /// </summary>
-        /// <returns>AsyncCaller removed from the pool.</returns>
-        internal AsyncCaller Pop()
+        /// <param name="state"></param>
+        private void GetResponse(object state)
         {
-            lock (this.pool)
-            {
-                if (this.pool.Count > 0)
-                {
-                    var item = this.pool.Pop();
+            var arr = state as ArrayList;
 
-                    return item;
-                }
-                else
-                {
-                    return null;
-                }
-            }
+            var wr = arr[0] as WaitResult;
+            var context = arr[1] as OperationContext;
+            var reqMsg = arr[2] as RequestMessage;
+
+            //获取响应的消息
+            var resMsg = GetResponse(service, context, reqMsg);
+
+            wr.Set(resMsg);
         }
 
         /// <summary>
-        /// Add a SocketAsyncEventArg instance to the pool. 
+        /// 调用方法
         /// </summary>
-        /// <param name="item">AsyncCaller instance to add to the pool.</param>
-        internal void Push(AsyncCaller item)
+        /// <param name="service"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponse(IService service, OperationContext context, RequestMessage reqMsg)
         {
-            if (item == null)
+            //定义响应的消息
+            ResponseMessage resMsg = null;
+
+            try
             {
-                throw new ArgumentNullException("Items added to a AsyncCallerPool cannot be null");
+                OperationContext.Current = context;
+
+                //响应结果，清理资源
+                resMsg = service.CallService(reqMsg);
             }
-            lock (this.pool)
+            catch (Exception ex)
             {
-                this.pool.Push(item);
+                //将异常信息写出
+                logger.WriteError(ex);
+
+                //处理异常
+                resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
+            finally
+            {
+                OperationContext.Current = null;
+            }
+
+            return resMsg;
         }
     }
 }

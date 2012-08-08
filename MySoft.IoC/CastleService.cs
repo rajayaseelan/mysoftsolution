@@ -185,9 +185,6 @@ namespace MySoft.IoC
             }
 
             server.Stop();
-
-            httpServer = null;
-            server = null;
         }
 
         /// <summary>
@@ -195,9 +192,6 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            if (httpServer == null
-                || server == null) return;
-
             this.Stop();
         }
 
@@ -271,50 +265,41 @@ namespace MySoft.IoC
 
         void Client_MessageReceived(object sender, MessageEventArgs e)
         {
-            try
+            //不是指定消息不处理
+            if (e.Message is ScsClientMessage)
             {
-                if (e.Message == null) return;
-
-                //不是指定消息不处理
-                if (e.Message is ScsClientMessage)
+                var info = sender as IScsServerClient;
+                if (server.Clients.ContainsKey(info.ClientId))
                 {
-                    var info = sender as IScsServerClient;
-                    if (server.Clients.ContainsKey(info.ClientId))
+                    var client = server.Clients[info.ClientId];
+                    var appClient = (e.Message as ScsClientMessage).Client;
+                    client.State = appClient;
+
+                    //响应客户端详细信息
+                    var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
+
+                    try
                     {
-                        var client = server.Clients[info.ClientId];
-                        var appClient = (e.Message as ScsClientMessage).Client;
-                        client.State = appClient;
-
-                        //响应客户端详细信息
-                        var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
-
-                        try
-                        {
-                            PushAppClient(endPoint, appClient);
-                        }
-                        finally
-                        {
-                            endPoint = null;
-                            appClient = null;
-                        }
+                        PushAppClient(endPoint, appClient);
+                    }
+                    finally
+                    {
+                        endPoint = null;
+                        appClient = null;
                     }
                 }
-                else if (e.Message is ScsResultMessage)
-                {
-                    //获取client发送端
-                    var client = sender as IScsServerClient;
-
-                    //解析消息
-                    var message = e.Message as ScsResultMessage;
-                    var reqMsg = message.MessageValue as RequestMessage;
-
-                    //调用方法
-                    caller.CallMethod(client, reqMsg, message.RepliedMessageId);
-                }
             }
-            catch (Exception ex)
+            else if (e.Message is ScsResultMessage)
             {
-                container.WriteError(ex);
+                //获取client发送端
+                var client = sender as IScsServerClient;
+
+                //解析消息
+                var message = e.Message as ScsResultMessage;
+                var reqMsg = message.MessageValue as RequestMessage;
+
+                //调用方法
+                caller.CallMethod(client, reqMsg, message.RepliedMessageId);
             }
         }
 
