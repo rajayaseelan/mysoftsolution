@@ -95,8 +95,8 @@ namespace MySoft.IoC
                 //解析服务
                 var asyncCaller = GetAsyncCaller(reqMsg, context);
 
-                //Invoke服务与状态服务采用同步调用
-                if (reqMsg.InvokeMethod || reqMsg.ServiceName == typeof(IStatusService).FullName)
+                //状态服务采用同步调用
+                if (reqMsg.ServiceName == typeof(IStatusService).FullName)
                 {
                     resMsg = asyncCaller.SyncCall(context, reqMsg);
                 }

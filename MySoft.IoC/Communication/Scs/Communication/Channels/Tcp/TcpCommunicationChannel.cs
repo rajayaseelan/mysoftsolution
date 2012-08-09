@@ -40,7 +40,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private readonly TcpSocketAsyncEventArgsPool _pool;
 
         //create byte array to store: ensure at least 1 byte!
-        const int ReceiveBufferSize = 4 * 1024; //4kb
+        const int ReceiveBufferSize = 8 * 1024; //8kb
 
         private readonly byte[] _buffer;
 

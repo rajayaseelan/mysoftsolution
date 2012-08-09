@@ -50,11 +50,23 @@ namespace MySoft.IoC.Services
         {
             if (ev == null) return false;
 
-            this.resMsg = resMsg;
-
-            if (resMsg.TransactionId != reqMsg.TransactionId)
+            if (resMsg.TransactionId == reqMsg.TransactionId)
             {
-                resMsg.TransactionId = reqMsg.TransactionId;
+                this.resMsg = resMsg;
+            }
+            else
+            {
+                this.resMsg = new ResponseMessage
+                {
+                    TransactionId = reqMsg.TransactionId,
+                    ReturnType = resMsg.ReturnType,
+                    ServiceName = resMsg.ServiceName,
+                    MethodName = resMsg.MethodName,
+                    Parameters = resMsg.Parameters,
+                    ElapsedTime = resMsg.ElapsedTime,
+                    Value = resMsg.Value,
+                    Error = resMsg.Error
+                };
             }
 
             return ev.Set();

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Sockets;
+using MySoft.FastReflection;
 using MySoft.IoC.Messages;
-using MySoft.Logger;
 
 namespace MySoft.IoC.Services
 {
@@ -85,7 +84,7 @@ namespace MySoft.IoC.Services
                                 var method = CoreHelper.GetMethodFromType(callbackType, callbackMsg.MethodName);
 
                                 //执行委托
-                                DynamicCalls.GetMethodInvoker(method).Invoke(callback, callbackMsg.Parameters);
+                                method.FastInvoke(callback, callbackMsg.Parameters);
                             }
                             catch (Exception ex)
                             {

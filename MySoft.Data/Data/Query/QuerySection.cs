@@ -936,11 +936,9 @@ namespace MySoft.Data
                 {
                     SourceList<TResult> list = new SourceList<TResult>();
 
-                    FastCreateInstanceHandler creator = CoreHelper.GetFastInstanceCreator(typeof(TResult));
-
                     while (reader.Read())
                     {
-                        TResult entity = (TResult)creator();
+                        TResult entity = CoreHelper.CreateInstance<TResult>();
                         entity.SetDbValues(reader);
                         entity.Attach();
                         list.Add(entity);

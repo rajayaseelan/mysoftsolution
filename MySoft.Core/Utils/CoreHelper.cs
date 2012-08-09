@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,11 +13,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using MySoft.Converter;
+using MySoft.FastReflection;
 using Newtonsoft.Json.Utilities;
-using System.Collections.Specialized;
-using System.Data;
-using System.Collections;
-using System.Collections.ObjectModel;
 
 namespace MySoft
 {
@@ -170,35 +171,15 @@ namespace MySoft
         public static T CreateInstance<T>(Type type)
         {
             if (!type.IsPublic)
-                return (T)Activator.CreateInstance(type);
-            else
-                return (T)GetFastInstanceCreator(type)();
-        }
-
-        /// <summary>
-        /// 创建一个委托
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static FastCreateInstanceHandler GetFastInstanceCreator(Type type)
-        {
-            if (type.IsInterface)
             {
-                throw new MySoftException("可实例化的对象类型不能是接口！");
+                return (T)Activator.CreateInstance(type);
             }
-            FastCreateInstanceHandler creator = DynamicCalls.GetInstanceCreator(type);
-            return creator;
-        }
-
-        /// <summary>
-        /// 快速调用方法
-        /// </summary>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public static FastInvokeHandler GetFastMethodInvoke(MethodInfo method)
-        {
-            FastInvokeHandler invoke = DynamicCalls.GetMethodInvoker(method);
-            return invoke;
+            else
+            {
+                var constructorInfo = type.GetConstructor(Type.EmptyTypes);
+                var constructor = FastReflectionCaches.ConstructorInvokerCache.Get(constructorInfo);
+                return (T)constructor.Invoke(null);
+            }
         }
 
         #endregion
@@ -217,9 +198,8 @@ namespace MySoft
             if (!property.CanWrite) return;
             try
             {
-                FastPropertySetHandler setter = DynamicCalls.GetPropertySetter(property);
                 value = ConvertValue(property.PropertyType, value);
-                setter(obj, value);
+                property.FastSetValue(obj, value);
             }
             catch (Exception ex)
             {
@@ -255,8 +235,7 @@ namespace MySoft
             if (!property.CanRead) return null;
             try
             {
-                FastPropertyGetHandler getter = DynamicCalls.GetPropertyGetter(property);
-                return getter(obj);
+                return property.FastGetValue(obj);
             }
             catch (Exception ex)
             {

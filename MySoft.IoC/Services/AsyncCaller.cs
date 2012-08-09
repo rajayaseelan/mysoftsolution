@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 using MySoft.Threading;
+using System.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -10,6 +12,7 @@ namespace MySoft.IoC.Services
     {
         private ILog logger;
         private IService service;
+        private IDictionary<string, Queue<WaitResult>> results;
 
         /// <summary>
         /// 实例化AsyncCaller
@@ -20,6 +23,7 @@ namespace MySoft.IoC.Services
         {
             this.logger = logger;
             this.service = service;
+            this.results = new Dictionary<string, Queue<WaitResult>>();
         }
 
         /// <summary>
@@ -43,8 +47,23 @@ namespace MySoft.IoC.Services
         {
             using (var wr = new WaitResult(reqMsg))
             {
-                ManagedThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { wr, context, reqMsg });
+                lock (results)
+                {
+                    var caller = context.Caller;
+                    var callKey = string.Format("Caller_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
 
+                    if (!results.ContainsKey(callKey))
+                    {
+                        results[callKey] = new Queue<WaitResult>();
+                        ManagedThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { callKey, wr, context, reqMsg });
+                    }
+                    else
+                    {
+                        results[callKey].Enqueue(wr);
+                    }
+                }
+
+                //计算超时时间
                 var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CALL_TIMEOUT);
 
                 if (!wr.Wait(elapsedTime))
@@ -71,6 +90,34 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// 设置响应
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="resMsg"></param>
+        private void SetResponse(string callKey, ResponseMessage resMsg)
+        {
+            lock (results)
+            {
+                if (results.ContainsKey(callKey))
+                {
+                    var queue = results[callKey];
+
+                    //输出队列信息
+                    Console.WriteLine("【Queues: {0}】 => {1}, {2}.", queue.Count, resMsg.ServiceName, resMsg.MethodName);
+
+                    while (queue.Count > 0)
+                    {
+                        var item = queue.Dequeue();
+                        item.Set(resMsg);
+                    }
+
+                    //移除指定的Key
+                    results.Remove(callKey);
+                }
+            }
+        }
+
+        /// <summary>
         /// 调用方法
         /// </summary>
         /// <param name="state"></param>
@@ -78,14 +125,18 @@ namespace MySoft.IoC.Services
         {
             var arr = state as ArrayList;
 
-            var wr = arr[0] as WaitResult;
-            var context = arr[1] as OperationContext;
-            var reqMsg = arr[2] as RequestMessage;
+            var callKey = arr[0] as string;
+            var wr = arr[1] as WaitResult;
+            var context = arr[2] as OperationContext;
+            var reqMsg = arr[3] as RequestMessage;
 
             //获取响应的消息
             var resMsg = GetResponse(service, context, reqMsg);
 
             wr.Set(resMsg);
+
+            //设置响应
+            SetResponse(callKey, resMsg);
         }
 
         /// <summary>

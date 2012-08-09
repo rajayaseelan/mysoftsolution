@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using MySoft.FastReflection;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
-using System.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -83,13 +84,11 @@ namespace MySoft.IoC.Services
                 object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
 
                 //调用对应的服务
-                resMsg.Value = DynamicCalls.GetMethodInvoker(method).Invoke(service, parameters);
+                resMsg.Value = method.FastInvoke(service, parameters);
 
                 //处理返回参数
                 IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
             }
-            catch (ThreadInterruptedException) { }
-            catch (ThreadAbortException) { }
             catch (Exception ex)
             {
                 //捕获全局错误

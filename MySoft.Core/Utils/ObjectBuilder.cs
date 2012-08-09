@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reflection;
 using MySoft.Converter;
+using MySoft.FastReflection;
 
 namespace MySoft
 {
@@ -33,7 +34,7 @@ namespace MySoft
     {
         private Type mObjectType;
         private string mPrefix;
-        public IList<PropertyHandler> mProperties = new List<PropertyHandler>();
+        public IList<PropertyInfo> mProperties = new List<PropertyInfo>();
 
         public ObjectBuilder(Type objType)
         {
@@ -53,34 +54,34 @@ namespace MySoft
             object obj2 = Activator.CreateInstance(this.ObjectType);
             if (mPrefix == null) mPrefix = "";
 
-            foreach (PropertyHandler handler in this.Properties)
+            foreach (PropertyInfo property in this.Properties)
             {
-                if (handler.Property.CanWrite)
+                if (property.CanWrite)
                 {
-                    object obj3 = values[mPrefix + "." + handler.Property.Name];
+                    object obj3 = values[mPrefix + "." + property.Name];
                     if (obj3 == null)
                     {
-                        obj3 = values[mPrefix + "_" + handler.Property.Name];
+                        obj3 = values[mPrefix + "_" + property.Name];
                     }
                     if (obj3 == null)
                     {
-                        obj3 = values[mPrefix + handler.Property.Name];
+                        obj3 = values[mPrefix + property.Name];
                     }
-                    this.BindProperty(obj2, handler, (string)obj3);
+                    this.BindProperty(obj2, property, (string)obj3);
                 }
             }
             return obj2;
         }
 
-        private void BindProperty(object obj, PropertyHandler property, string value)
+        private void BindProperty(object obj, PropertyInfo property, string value)
         {
             bool succeeded = false;
-            if (ConverterFactory.Converters.ContainsKey(property.Property.PropertyType))
+            if (ConverterFactory.Converters.ContainsKey(property.PropertyType))
             {
-                object newobj = ConverterFactory.Converters[property.Property.PropertyType].ConvertTo(value, out succeeded);
+                object newobj = ConverterFactory.Converters[property.PropertyType].ConvertTo(value, out succeeded);
                 if (succeeded)
                 {
-                    property.Set(obj, newobj);
+                    property.FastSetValue(obj, newobj);
                 }
             }
         }
@@ -89,7 +90,7 @@ namespace MySoft
         {
             foreach (PropertyInfo info in CoreHelper.GetPropertiesFromType(this.ObjectType))
             {
-                this.Properties.Add(new PropertyHandler(info));
+                this.Properties.Add(info);
             }
         }
 
@@ -101,7 +102,7 @@ namespace MySoft
             }
         }
 
-        internal IList<PropertyHandler> Properties
+        internal IList<PropertyInfo> Properties
         {
             get
             {
