@@ -40,7 +40,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private readonly TcpSocketAsyncEventArgsPool _pool;
 
         //create byte array to store: ensure at least 1 byte!
-        const int ReceiveBufferSize = 8 * 1024; //8kb
+        const int BufferSize = 8 * 1024; //8kb
 
         private readonly byte[] _buffer;
 
@@ -67,12 +67,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             _clientSocket = clientSocket;
             _clientSocket.NoDelay = true;
+            _clientSocket.SendBufferSize = BufferSize;
+            _clientSocket.ReceiveBufferSize = BufferSize;
 
             var endPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
 
             _pool = TcpSocketSetting.SocketPool;
-            _buffer = new byte[ReceiveBufferSize];
+            _buffer = new byte[BufferSize];
             _syncLock = new object();
         }
 
@@ -140,48 +142,40 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             lock (_syncLock)
             {
-                //Send message
-                var totalSent = 0;
-
                 try
                 {
                     //Create a byte array from message according to current protocol
                     var messageBytes = WireProtocol.GetBytes(message);
 
                     //Send all bytes to the remote application
-                    while (totalSent < messageBytes.Length)
-                    {
-                        var sent = _clientSocket.Send(messageBytes, totalSent, messageBytes.Length - totalSent, SocketFlags.None);
-                        if (sent <= 0)
-                        {
-                            throw new CommunicationException("Message could not be sent via TCP socket. Only " + totalSent + " bytes of " + messageBytes.Length + " bytes are sent.");
-                        }
-
-                        totalSent += sent;
-                    }
+                    _clientSocket.BeginSend(messageBytes, 0, messageBytes.Length, SocketFlags.None, SendCallback, message);
                 }
                 catch (SocketException ex)
                 {
-                    if ((ex.SocketErrorCode == SocketError.ConnectionReset)
-                         || (ex.SocketErrorCode == SocketError.ConnectionAborted)
-                         || (ex.SocketErrorCode == SocketError.NotConnected)
-                         || (ex.SocketErrorCode == SocketError.Shutdown)
-                         || (ex.SocketErrorCode == SocketError.Disconnecting)
-                         || (ex.SocketErrorCode == SocketError.OperationAborted))
-                    {
-                        Disconnect();
-                    }
+                    OnSocketError(ex);
 
                     throw ex;
                 }
-                finally
-                {
-                    //Record last sent time
-                    LastSentMessageTime = DateTime.Now;
+            }
+        }
 
-                    //Sent success
-                    OnMessageSent(message);
-                }
+        private void SendCallback(IAsyncResult ar)
+        {
+            try
+            {
+                _clientSocket.EndSend(ar);
+            }
+            catch (SocketException ex)
+            {
+                OnSocketError(ex);
+            }
+            finally
+            {
+                //Record last sent time
+                LastSentMessageTime = DateTime.Now;
+
+                //Sent success
+                OnMessageSent(ar.AsyncState as IScsMessage);
             }
         }
 
@@ -221,19 +215,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 TcpSocketHelper.Release(e);
 
-                if ((ex.SocketErrorCode == SocketError.ConnectionReset)
-                     || (ex.SocketErrorCode == SocketError.ConnectionAborted)
-                     || (ex.SocketErrorCode == SocketError.NotConnected)
-                     || (ex.SocketErrorCode == SocketError.Shutdown)
-                     || (ex.SocketErrorCode == SocketError.Disconnecting)
-                     || (ex.SocketErrorCode == SocketError.OperationAborted))
-                {
-                    Disconnect();
-                }
-                else
-                {
-                    OnMessageError(ex);
-                }
+                OnSocketError(ex);
             }
             catch (Exception ex)
             {
@@ -345,19 +327,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 TcpSocketHelper.Release(e);
 
-                if ((ex.SocketErrorCode == SocketError.ConnectionReset)
-                     || (ex.SocketErrorCode == SocketError.ConnectionAborted)
-                     || (ex.SocketErrorCode == SocketError.NotConnected)
-                     || (ex.SocketErrorCode == SocketError.Shutdown)
-                     || (ex.SocketErrorCode == SocketError.Disconnecting)
-                     || (ex.SocketErrorCode == SocketError.OperationAborted))
-                {
-                    Disconnect();
-                }
-                else
-                {
-                    OnMessageError(ex);
-                }
+                OnSocketError(ex);
             }
             catch (Exception ex)
             {
@@ -423,5 +393,26 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         }
 
         #endregion
+
+        /// <summary>
+        /// Socket异常
+        /// </summary>
+        /// <param name="ex"></param>
+        private void OnSocketError(SocketException ex)
+        {
+            if ((ex.SocketErrorCode == SocketError.ConnectionReset)
+                 || (ex.SocketErrorCode == SocketError.ConnectionAborted)
+                 || (ex.SocketErrorCode == SocketError.NotConnected)
+                 || (ex.SocketErrorCode == SocketError.Shutdown)
+                 || (ex.SocketErrorCode == SocketError.Disconnecting)
+                 || (ex.SocketErrorCode == SocketError.OperationAborted))
+            {
+                Disconnect();
+            }
+            else
+            {
+                OnMessageError(ex);
+            }
+        }
     }
 }
