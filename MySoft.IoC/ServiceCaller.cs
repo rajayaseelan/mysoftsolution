@@ -81,6 +81,9 @@ namespace MySoft.IoC
             if (client.CommunicationState == CommunicationStates.Disconnected)
                 return;
 
+            //定义响应的消息
+            ResponseMessage resMsg = null;
+
             try
             {
                 //创建Caller;
@@ -88,9 +91,6 @@ namespace MySoft.IoC
 
                 //获取上下文
                 var context = GetOperationContext(client, caller);
-
-                //定义响应的消息
-                ResponseMessage resMsg = null;
 
                 //解析服务
                 var asyncCaller = GetAsyncCaller(reqMsg, context);
@@ -105,14 +105,8 @@ namespace MySoft.IoC
                     resMsg = asyncCaller.AsyncCall(context, reqMsg);
                 }
 
-                //判断返回的消息
-                if (resMsg != null)
-                {
-                    resMsg = HandleResponse(context, reqMsg, resMsg);
-
-                    //发送消息
-                    SendMessage(client, reqMsg, resMsg, messageId);
-                }
+                //处理响应信息
+                resMsg = HandleResponse(context, reqMsg, resMsg);
             }
             catch (Exception ex)
             {
@@ -120,8 +114,15 @@ namespace MySoft.IoC
                 status.Container.WriteError(ex);
 
                 //处理异常
-                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                resMsg = IoCHelper.GetResponse(reqMsg, ex);
 
+                //发送消息
+                SendMessage(client, reqMsg, resMsg, messageId);
+            }
+
+            //判断返回的消息
+            if (resMsg != null)
+            {
                 //发送消息
                 SendMessage(client, reqMsg, resMsg, messageId);
             }

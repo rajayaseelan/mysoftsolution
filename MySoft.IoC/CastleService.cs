@@ -36,9 +36,6 @@ namespace MySoft.IoC
         {
             this.config = config;
 
-            //初始化池
-            TcpSocketSetting.Init(config.MaxCalls);
-
             if (string.Compare(config.Host, "any", true) == 0)
             {
                 config.Host = IPAddress.Loopback.ToString();

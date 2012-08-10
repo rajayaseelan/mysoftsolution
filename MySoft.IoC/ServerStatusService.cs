@@ -21,7 +21,7 @@ namespace MySoft.IoC
         /// </summary>
         public event RefreshEventHandler OnRefresh;
 
-        private const int DefaultDisconnectionAttemptTimeout = 5 * 60 * 1000; //5 minutes.
+        private const int DefaultDisconnectionAttemptTimeout = 60; //60 minutes.
 
         private CastleServiceConfiguration config;
         private IScsServer server;
@@ -93,13 +93,13 @@ namespace MySoft.IoC
         {
             while (true)
             {
-                //每5分钟检测一次
-                Thread.Sleep(DefaultDisconnectionAttemptTimeout);
+                //每1分钟检测一次
+                Thread.Sleep(TimeSpan.FromMinutes(1));
 
                 try
                 {
                     //处理客户端连接
-                    var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
+                    var lastMinute = DateTime.Now.AddMinutes(-DefaultDisconnectionAttemptTimeout);
 
                     foreach (var client in server.Clients.GetAllItems())
                     {
@@ -113,6 +113,17 @@ namespace MySoft.IoC
                 catch (Exception ex)
                 {
                     //TODO
+                    container.WriteError(ex);
+                }
+                finally
+                {
+                    //回收垃圾
+                    ThreadPool.QueueUserWorkItem(state =>
+                    {
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                        GC.Collect();
+                    });
                 }
             }
         }

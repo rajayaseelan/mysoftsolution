@@ -1,14 +1,13 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MySoft.Cache;
+using MySoft.IoC.Communication;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using MySoft.IoC.Communication;
 
 namespace MySoft.IoC
 {
@@ -17,7 +16,7 @@ namespace MySoft.IoC
     /// </summary>
     public class CastleFactory : ITcpConnection, ILogable, IErrorLogable
     {
-        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+        private static IDictionary<string, object> hashtable = new Dictionary<string, object>();
         private static CastleFactory singleton = null;
 
         #region Create Service Factory
@@ -91,7 +90,7 @@ namespace MySoft.IoC
         {
             if (singleton == null)
             {
-                lock (hashtable.SyncRoot)
+                lock (hashtable)
                 {
                     if (singleton == null)
                     {
@@ -258,7 +257,7 @@ namespace MySoft.IoC
             Type serviceType = typeof(IServiceInterfaceType);
             string serviceKey = string.Format("{0}${1}", serviceType.FullName, proxy.ServiceName);
 
-            lock (hashtable.SyncRoot)
+            lock (hashtable)
             {
                 var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, cache, logger);
                 var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
@@ -481,20 +480,20 @@ namespace MySoft.IoC
                     //本地服务
                     if (container.Kernel.HasComponent(serviceKey))
                     {
-                        lock (hashtable.SyncRoot)
+                        lock (hashtable)
                         {
-                            if (!hashtable.ContainsKey(serviceType))
+                            if (!hashtable.ContainsKey(serviceKey))
                             {
                                 //返回本地服务
                                 var service = container.Resolve<IService>(serviceKey);
                                 var handler = new LocalInvocationHandler(config, container, service, serviceType, cache, logger);
                                 var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
-                                hashtable[serviceType] = dynamicProxy;
+                                hashtable[serviceKey] = dynamicProxy;
                             }
                         }
 
-                        ls = (IServiceInterfaceType)hashtable[serviceType];
+                        ls = (IServiceInterfaceType)hashtable[serviceKey];
                     }
                 }
 

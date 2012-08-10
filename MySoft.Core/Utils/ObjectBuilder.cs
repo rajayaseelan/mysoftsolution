@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reflection;
 using MySoft.Converter;
-using MySoft.FastReflection;
 
 namespace MySoft
 {
@@ -81,7 +80,8 @@ namespace MySoft
                 object newobj = ConverterFactory.Converters[property.PropertyType].ConvertTo(value, out succeeded);
                 if (succeeded)
                 {
-                    property.FastSetValue(obj, newobj);
+                    var setter = DynamicCalls.GetPropertySetter(property);
+                    setter(obj, newobj);
                 }
             }
         }

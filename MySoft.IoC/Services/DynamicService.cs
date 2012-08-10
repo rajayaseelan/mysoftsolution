@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using MySoft.FastReflection;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
 
@@ -84,7 +83,8 @@ namespace MySoft.IoC.Services
                 object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
 
                 //调用对应的服务
-                resMsg.Value = method.FastInvoke(service, parameters);
+                var invoke = DynamicCalls.GetMethodInvoker(method);
+                resMsg.Value = invoke(service, parameters);
 
                 //处理返回参数
                 IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);

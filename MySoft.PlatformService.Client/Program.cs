@@ -271,7 +271,7 @@ namespace MySoft.PlatformService.Client
             are.Reset();
             var watch = Stopwatch.StartNew();
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 200; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
@@ -418,7 +418,9 @@ namespace MySoft.PlatformService.Client
                     //Guid guid;
                     //UserInfo user;
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
-                    var value = service.GetUsersString();
+
+                    int length;
+                    var value = service.GetUsersString(out length);
 
                     //var users = service.GetUsers();
                     //var str = service.GetUsersString();
@@ -427,7 +429,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //var clients = service1.GetClientList();
 

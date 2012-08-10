@@ -16,11 +16,6 @@ namespace MySoft.IoC
         public const int DEFAULT_RECORD_HOUR = 3; //3小时
 
         /// <summary>
-        /// The default max call number.
-        /// </summary>
-        public const int DEFAULT_MAX_CALL = 1000; //1000次
-
-        /// <summary>
         /// The default client timeout number. 
         /// </summary>
         public const int DEFAULT_CLIENT_TIMEOUT = 2 * 60; //2*60秒

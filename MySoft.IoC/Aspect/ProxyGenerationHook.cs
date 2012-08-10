@@ -7,8 +7,6 @@ namespace MySoft.IoC.Aspect
 {
     public class ProxyGenerationHook : IProxyGenerationHook
     {
-        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
-
         #region IProxyGenerationHook 成员
 
         public void MethodsInspected() { }
@@ -17,21 +15,10 @@ namespace MySoft.IoC.Aspect
 
         public bool ShouldInterceptMethod(Type type, MethodInfo method)
         {
-            lock (hashtable.SyncRoot)
-            {
-                if (!hashtable.ContainsKey(method))
-                {
-                    var att = CoreHelper.GetMemberAttribute<AspectSwitcherAttribute>(method);
-                    if (att == null) return true;
-                    hashtable[method] = att.UseAspect;
-                }
-                else
-                {
-                    hashtable[method] = false;
-                }
-            }
+            var att = CoreHelper.GetMemberAttribute<AspectSwitcherAttribute>(method);
+            if (att == null) return true;
 
-            return Convert.ToBoolean(hashtable[method]);
+            return att.UseAspect;
         }
 
         #endregion

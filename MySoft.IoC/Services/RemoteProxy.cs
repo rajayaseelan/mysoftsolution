@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using MySoft.IoC.Communication;
 using MySoft.IoC.Messages;
 
@@ -10,7 +10,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class RemoteProxy : IService
     {
-        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+        private IDictionary<Guid, WaitResult> hashtable = new Dictionary<Guid, WaitResult>();
 
         protected ServiceRequestPool reqPool;
         private volatile int poolSize;
@@ -26,9 +26,6 @@ namespace MySoft.IoC.Services
         {
             this.node = node;
             this.container = container;
-
-            //初始化池
-            TcpSocketSetting.Init(node.MaxPool);
 
             InitServiceRequest();
         }
@@ -86,12 +83,15 @@ namespace MySoft.IoC.Services
         /// <param name="resMsg"></param>
         protected void QueueMessage(ResponseMessage resMsg)
         {
-            if (hashtable.ContainsKey(resMsg.TransactionId))
+            lock (hashtable)
             {
-                var waitResult = hashtable[resMsg.TransactionId] as WaitResult;
+                if (hashtable.ContainsKey(resMsg.TransactionId))
+                {
+                    var waitResult = hashtable[resMsg.TransactionId];
 
-                //数据响应
-                waitResult.Set(resMsg);
+                    //数据响应
+                    waitResult.Set(resMsg);
+                }
             }
         }
 
@@ -120,7 +120,10 @@ namespace MySoft.IoC.Services
                 //处理数据
                 using (var waitResult = new WaitResult(reqMsg))
                 {
-                    hashtable[reqMsg.TransactionId] = waitResult;
+                    lock (hashtable)
+                    {
+                        hashtable[reqMsg.TransactionId] = waitResult;
+                    }
 
                     //获取一个请求
                     reqProxy = GetServiceRequest();
@@ -153,8 +156,11 @@ namespace MySoft.IoC.Services
                     reqPool.Push(reqProxy);
                 }
 
-                //用完后移除
-                hashtable.Remove(reqMsg.TransactionId);
+                lock (hashtable)
+                {
+                    //用完后移除
+                    hashtable.Remove(reqMsg.TransactionId);
+                }
             }
         }
 

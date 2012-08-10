@@ -13,7 +13,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using MySoft.Converter;
-using MySoft.FastReflection;
 using Newtonsoft.Json.Utilities;
 
 namespace MySoft
@@ -176,9 +175,8 @@ namespace MySoft
             }
             else
             {
-                var constructorInfo = type.GetConstructor(Type.EmptyTypes);
-                var constructor = FastReflectionCaches.ConstructorInvokerCache.Get(constructorInfo);
-                return (T)constructor.Invoke(null);
+                var creator = DynamicCalls.GetInstanceCreator(type);
+                return (T)creator();
             }
         }
 
@@ -199,7 +197,8 @@ namespace MySoft
             try
             {
                 value = ConvertValue(property.PropertyType, value);
-                property.FastSetValue(obj, value);
+                var setter = DynamicCalls.GetPropertySetter(property);
+                setter(obj, value);
             }
             catch (Exception ex)
             {
@@ -235,7 +234,8 @@ namespace MySoft
             if (!property.CanRead) return null;
             try
             {
-                return property.FastGetValue(obj);
+                var getter = DynamicCalls.GetPropertyGetter(property);
+                return getter(obj);
             }
             catch (Exception ex)
             {

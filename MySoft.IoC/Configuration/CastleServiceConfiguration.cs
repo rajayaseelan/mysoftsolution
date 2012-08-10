@@ -17,7 +17,6 @@ namespace MySoft.IoC.Configuration
         private bool encrypt = false;
         private bool compress = false;
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;        //默认记录1小时
-        private int maxCalls = ServiceConfig.DEFAULT_MAX_CALL;              //默认的并发调用数
         private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;         //超时时间为5秒
 
         /// <summary>
@@ -62,9 +61,6 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["recordHours"] != null && attribute["recordHours"].Value.Trim() != string.Empty)
                 recordHours = Convert.ToInt32(attribute["recordHours"].Value);
-
-            if (attribute["maxCalls"] != null && attribute["maxCalls"].Value.Trim() != string.Empty)
-                maxCalls = Convert.ToInt32(attribute["maxCalls"].Value);
 
             if (attribute["timeout"] != null && attribute["timeout"].Value.Trim() != string.Empty)
                 timeout = Convert.ToInt32(attribute["timeout"].Value);
@@ -171,15 +167,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return recordHours; }
             set { recordHours = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the maxCalls
-        /// </summary>
-        public int MaxCalls
-        {
-            get { return maxCalls; }
-            set { maxCalls = value; }
         }
 
         /// <summary>

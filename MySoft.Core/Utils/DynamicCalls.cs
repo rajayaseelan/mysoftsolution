@@ -35,10 +35,10 @@ namespace MySoft
 
         public static FastInvokeHandler GetMethodInvoker(MethodInfo methodInfo)
         {
-            if (dictInvoker.ContainsKey(methodInfo)) return dictInvoker[methodInfo];
-
             lock (dictInvoker)
             {
+                if (dictInvoker.ContainsKey(methodInfo)) return dictInvoker[methodInfo];
+
                 // generates a dynamic method to generate a FastInvokeHandler delegate
                 DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new Type[] { typeof(object), typeof(object[]) }, methodInfo.DeclaringType.Module);
 
@@ -146,10 +146,10 @@ namespace MySoft
         /// <returns>A delegate that can be used to create the objects.</returns>
         public static FastCreateInstanceHandler GetInstanceCreator(Type type)
         {
-            if (dictCreator.ContainsKey(type)) return dictCreator[type];
-
             lock (dictCreator)
             {
+                if (dictCreator.ContainsKey(type)) return dictCreator[type];
+
                 // generates a dynamic method to generate a FastCreateInstanceHandler delegate
                 DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, type, new Type[0], typeof(DynamicCalls).Module);
 
@@ -177,10 +177,10 @@ namespace MySoft
 
         public static FastPropertyGetHandler GetPropertyGetter(PropertyInfo propInfo)
         {
-            if (dictGetter.ContainsKey(propInfo)) return dictGetter[propInfo];
-
             lock (dictGetter)
             {
+                if (dictGetter.ContainsKey(propInfo)) return dictGetter[propInfo];
+
                 // generates a dynamic method to generate a FastPropertyGetHandler delegate
                 DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new Type[] { typeof(object) }, propInfo.DeclaringType.Module);
 
@@ -214,10 +214,10 @@ namespace MySoft
 
         public static FastPropertySetHandler GetPropertySetter(PropertyInfo propInfo)
         {
-            if (dictSetter.ContainsKey(propInfo)) return dictSetter[propInfo];
-
             lock (dictSetter)
             {
+                if (dictSetter.ContainsKey(propInfo)) return dictSetter[propInfo];
+
                 // generates a dynamic method to generate a FastPropertySetHandler delegate
                 DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, null, new Type[] { typeof(object), typeof(object) }, propInfo.DeclaringType.Module);
 

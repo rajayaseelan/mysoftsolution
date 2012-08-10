@@ -77,17 +77,14 @@
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
+    <Compile Include="Communication\ITcpConnection.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Services\AsyncCaller.cs" />
     <Compile Include="CacheObject.cs" />
     <Compile Include="Callback\CallbackInfo.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IoCHelper.cs" />
-    <Compile Include="Communication\ITcpConnection.cs" />
-    <Compile Include="Communication\ITcpChannel.cs" />
-    <Compile Include="Communication\TcpSocketAsyncEventArgsPool.cs" />
-    <Compile Include="Communication\TcpSocketAsyncEventArgs.cs" />
-    <Compile Include="Communication\TcpSocketSetting.cs" />
-    <Compile Include="Communication\TcpSocketHelper.cs" />
     <Compile Include="HttpServer\HttpApi\DefaultApiResolver.cs" />
     <Compile Include="HttpServer\HttpApi\Config\HttpApiItem.cs" />
     <Compile Include="HttpServer\HttpApi\Config\HttpApiConfig.cs" />

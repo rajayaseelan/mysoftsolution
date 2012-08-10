@@ -91,7 +91,7 @@ namespace MySoft.PlatformService.UserService
 
         private static string value;
         private static readonly object syncRoot = new object();
-        public string GetUsersString()
+        public string GetUsersString(out int length)
         {
             //if (DateTime.Now.Ticks % 15 == 0)
             //{
@@ -114,6 +114,9 @@ namespace MySoft.PlatformService.UserService
                         }
                     }
                 }
+
+                length = value.Length;
+
                 return value;
             }
             catch (Exception ex)

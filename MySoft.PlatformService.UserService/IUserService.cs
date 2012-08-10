@@ -69,7 +69,7 @@ namespace MySoft.PlatformService.UserService
 
         //[HttpInvoke(Name = "user.getuserstr", Description = "获取用户")]
         //[OperationContract(Timeout = 10)]
-        string GetUsersString();
+        string GetUsersString(out int length);
     }
 
     /// <summary>

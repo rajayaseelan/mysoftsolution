@@ -1,9 +1,8 @@
-﻿using System;
-using System.Net;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
-using System.Collections.Generic;
+using System.Net;
+using System;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {
@@ -21,7 +20,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Server socket to listen incoming connection requests.
         /// </summary>
-        private Socket _listenerSocket;
+        private TcpListener _listenerSocket;
+
+        /// <summary>
+        /// The thread to listen socket
+        /// </summary>
+        private Thread _thread;
 
         /// <summary>
         /// A flag to control thread's running
@@ -44,12 +48,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             StartSocket();
             _running = true;
-
-            //开始接收请求
-            for (int i = 0; i < TcpSocketSetting.AcceptThreads; i++)
-            {
-                BeginAsyncAccept();
-            }
+            _thread = new Thread(DoListenAsThread);
+            _thread.Start();
         }
 
         /// <summary>
@@ -66,73 +66,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private void StartSocket()
         {
-            var endPoint = GetIPEndPoint(_endPoint.IpAddress, _endPoint.TcpPort);
-
-            _listenerSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            _listenerSocket.Bind(endPoint);
-            _listenerSocket.Listen(TcpSocketSetting.Backlog * TcpSocketSetting.AcceptThreads);
-        }
-
-        /// <summary>
-        /// Starts listening socket.
-        /// </summary>
-        private void BeginAsyncAccept()
-        {
-            if (!_running) return;
-
-            var e = new SocketAsyncEventArgs();
-            e.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-
-            try
-            {
-                if (!_listenerSocket.AcceptAsync(e))
-                {
-                    ThreadPool.QueueUserWorkItem(AsyncAcceptComplete, e);
-                }
-            }
-            catch (Exception ex)
-            {
-                BeginAsyncAccept();
-            }
-        }
-
-        void IO_Completed(object sender, SocketAsyncEventArgs e)
-        {
-            if (e.LastOperation == SocketAsyncOperation.Accept)
-            {
-                ThreadPool.QueueUserWorkItem(AsyncAcceptComplete, e);
-            }
-        }
-
-        /// <summary>
-        /// Entrance point of the thread.
-        /// This method is used by the thread to listen incoming requests.
-        /// </summary>
-        void AsyncAcceptComplete(object state)
-        {
-            SocketAsyncEventArgs e = state as SocketAsyncEventArgs;
-
-            try
-            {
-                if (e.SocketError == SocketError.Success)
-                {
-                    var channel = new TcpCommunicationChannel(e.AcceptSocket, true);
-
-                    OnCommunicationChannelConnected(channel);
-
-                    //设置为null
-                    e.AcceptSocket = null;
-                }
-            }
-            catch (Exception ex)
-            {
-                //TODO
-            }
-            finally
-            {
-                //重新进行接收
-                BeginAsyncAccept();
-            }
+            _listenerSocket = new TcpListener(System.Net.IPAddress.Any, _endPoint.TcpPort);
+            _listenerSocket.Start();
         }
 
         /// <summary>
@@ -142,54 +77,50 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                try
-                {
-
-                    _listenerSocket.Shutdown(SocketShutdown.Both);
-                }
-                catch
-                {
-                }
-
-                _listenerSocket.Close();
+                _listenerSocket.Stop();
             }
             catch
             {
 
             }
-            finally
-            {
-                _listenerSocket = null;
-            }
         }
 
         /// <summary>
-        /// GetIPEndPoint
+        /// Entrance point of the thread.
+        /// This method is used by the thread to listen incoming requests.
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="port"></param>
-        /// <returns></returns>
-        private IPEndPoint GetIPEndPoint(string host, int port)
+        private void DoListenAsThread()
         {
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
-
-            if (!string.IsNullOrEmpty(host))
+            while (_running)
             {
-                if (!host.Equals("any", StringComparison.CurrentCultureIgnoreCase))
+                try
                 {
-                    IPHostEntry p = Dns.GetHostEntry(Dns.GetHostName());
-                    foreach (IPAddress s in p.AddressList)
+                    var clientSocket = _listenerSocket.AcceptSocket();
+                    if (clientSocket.Connected)
                     {
-                        if (s.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            endPoint = new IPEndPoint(s, port);
-                            break;
-                        }
+                        OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
+                    }
+                }
+                catch
+                {
+                    //Disconnect, wait for a while and connect again.
+                    StopSocket();
+                    Thread.Sleep(1000);
+                    if (!_running)
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        StartSocket();
+                    }
+                    catch
+                    {
+
                     }
                 }
             }
-
-            return endPoint;
         }
     }
 }

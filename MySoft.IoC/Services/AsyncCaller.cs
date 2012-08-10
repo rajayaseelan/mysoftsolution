@@ -102,13 +102,16 @@ namespace MySoft.IoC.Services
                 {
                     var queue = results[callKey];
 
-                    //输出队列信息
-                    Console.WriteLine("【Queues: {0}】 => {1}, {2}.", queue.Count, resMsg.ServiceName, resMsg.MethodName);
-
-                    while (queue.Count > 0)
+                    if (queue.Count > 0)
                     {
-                        var item = queue.Dequeue();
-                        item.Set(resMsg);
+                        //输出队列信息
+                        logger.WriteLog(string.Format("【Queues: {0}】{1}, {2}.", queue.Count, resMsg.ServiceName, resMsg.MethodName), LogType.Normal);
+
+                        while (queue.Count > 0)
+                        {
+                            var item = queue.Dequeue();
+                            item.Set(resMsg);
+                        }
                     }
 
                     //移除指定的Key
