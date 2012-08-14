@@ -95,10 +95,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 try
                 {
-                    var clientSocket = _listenerSocket.AcceptSocket();
-                    if (clientSocket.Connected)
+                    var tcpClient = _listenerSocket.AcceptTcpClient();
+                    if (tcpClient.Connected)
                     {
-                        OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
+                        OnCommunicationChannelConnected(new TcpCommunicationChannel(tcpClient));
                     }
                 }
                 catch

@@ -133,8 +133,30 @@ namespace MySoft.IoC.Services
             var context = arr[2] as OperationContext;
             var reqMsg = arr[3] as RequestMessage;
 
-            //获取响应的消息
-            var resMsg = GetResponse(service, context, reqMsg);
+            //从缓存中获取数据
+            var resMsg = CacheHelper.Get<ResponseMessage>(callKey);
+
+            if (resMsg == null)
+            {
+                //获取响应的消息
+                resMsg = GetResponse(service, context, reqMsg);
+
+                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_TIMEOUT);
+                if (!resMsg.IsError && resMsg.Count > 0 && resMsg.ElapsedTime > timeSpan.TotalMilliseconds)
+                {
+                    //如果符合条件，则缓存30秒 【自动缓存功能】
+                    CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CALL_TIMEOUT);
+                }
+            }
+            else
+            {
+                resMsg.TransactionId = reqMsg.TransactionId;
+                resMsg.ElapsedTime = 0;
+                if (resMsg.Value is InvokeData)
+                {
+                    (resMsg.Value as InvokeData).ElapsedTime = 0;
+                }
+            }
 
             wr.Set(resMsg);
 

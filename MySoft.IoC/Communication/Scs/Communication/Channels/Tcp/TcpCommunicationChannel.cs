@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
+using MySoft.Threading;
+using System.Collections;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {
@@ -33,7 +36,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 8 * 1024; //8KB
+        private const int BufferSize = 8 * 1024; //8KB
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -43,17 +46,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Socket object to send/reveice messages.
         /// </summary>
-        private readonly Socket _clientSocket;
+        private readonly TcpClient _tcpClient;
 
         /// <summary>
         /// A flag to control thread's running
         /// </summary>
         private volatile bool _running;
-
-        /// <summary>
-        /// This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private readonly object _syncLock;
 
         #endregion
 
@@ -62,18 +60,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Creates a new TcpCommunicationChannel object.
         /// </summary>
-        /// <param name="clientSocket">A connected Socket object that is
+        /// <param name="tcpClient">A connected Socket object that is
         /// used to communicate over network</param>
-        public TcpCommunicationChannel(Socket clientSocket)
+        public TcpCommunicationChannel(TcpClient tcpClient)
         {
-            _clientSocket = clientSocket;
-            _clientSocket.NoDelay = true;
+            _tcpClient = tcpClient;
+            _tcpClient.NoDelay = true;
 
-            var ipEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
+            _tcpClient.SendBufferSize = BufferSize;
+            _tcpClient.ReceiveBufferSize = BufferSize;
+
+            var ipEndPoint = (IPEndPoint)_tcpClient.Client.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
 
-            _buffer = new byte[ReceiveBufferSize];
-            _syncLock = new object();
+            _buffer = new byte[BufferSize];
         }
 
         #endregion
@@ -91,11 +91,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
 
             _running = false;
+
             try
             {
-                if (_clientSocket.Connected)
+                if (_tcpClient.Connected)
                 {
-                    _clientSocket.Close();
+                    _tcpClient.Close();
                 }
 
                 //_clientSocket.Dispose();
@@ -120,7 +121,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             _running = true;
 
-            _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), null);
+            try
+            {
+                var _stream = _tcpClient.GetStream();
+                _stream.BeginRead(_buffer, 0, _buffer.Length, new AsyncCallback(ReceiveCallback), null);
+            }
+            catch (Exception ex)
+            {
+                OnMessageError(ex);
+
+                Disconnect();
+            }
         }
 
         /// <summary>
@@ -129,13 +140,38 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="message">Message to be sent</param>
         protected override void SendMessageInternal(IScsMessage message)
         {
-            lock (_syncLock)
+            if (!_running)
+            {
+                throw new SocketException((int)SocketError.ConnectionReset);
+            }
+
+            try
             {
                 //Create a byte array from message according to current protocol
                 var messageBytes = WireProtocol.GetBytes(message);
 
-                //Send all bytes to the remote application
-                _clientSocket.BeginSend(messageBytes, 0, messageBytes.Length, SocketFlags.None, SendCallback, message);
+                //Start from threadPool
+                ManagedThreadPool.QueueUserWorkItem(state =>
+                {
+                    try
+                    {
+                        //Send all bytes to the remote application
+                        var _stream = _tcpClient.GetStream();
+                        _stream.BeginWrite(messageBytes, 0, messageBytes.Length, new AsyncCallback(SendCallback), message);
+                    }
+                    catch (Exception ex)
+                    {
+                        OnMessageError(ex);
+
+                        Disconnect();
+                    }
+                });
+            }
+            catch (SerializationException ex)
+            {
+                OnMessageError(ex);
+
+                throw ex;
             }
         }
 
@@ -152,31 +188,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                var bytesSend = _clientSocket.EndSend(ar);
-                if (bytesSend > 0)
-                {
-                    //Record last sent time
-                    LastSentMessageTime = DateTime.Now;
+                var _stream = _tcpClient.GetStream();
+                _stream.EndWrite(ar);
 
-                    //Sent success
-                    OnMessageSent(ar.AsyncState as IScsMessage);
-                }
-                else
-                {
-                    throw new CommunicationException("Message could not be sent via TCP socket.");
-                }
-            }
-            catch (CommunicationException ex)
-            {
-                Disconnect();
-            }
-            catch (SocketException ex)
-            {
-                OnSocketError(ex);
+                //Record last sent time
+                LastSentMessageTime = DateTime.Now;
+
+                //Sent success
+                OnMessageSent(ar.AsyncState as IScsMessage);
             }
             catch (Exception ex)
             {
                 OnMessageError(ex);
+
+                Disconnect();
             }
         }
 
@@ -195,7 +220,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 //Get received bytes count
-                var bytesRead = _clientSocket.EndReceive(ar);
+                var _stream = _tcpClient.GetStream();
+                var bytesRead = _stream.EndRead(ar);
+
                 if (bytesRead > 0)
                 {
                     LastReceivedMessageTime = DateTime.Now;
@@ -221,44 +248,23 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 //Read more bytes if still running
                 if (_running)
                 {
-                    _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, new AsyncCallback(ReceiveCallback), null);
+                    _stream.BeginRead(_buffer, 0, _buffer.Length, new AsyncCallback(ReceiveCallback), null);
                 }
             }
-            catch (CommunicationException ex)
+            catch (SerializationException ex)
             {
-                Disconnect();
-            }
-            catch (SocketException ex)
-            {
-                OnSocketError(ex);
+                OnMessageError(ex);
+
+                throw ex;
             }
             catch (Exception ex)
             {
                 OnMessageError(ex);
+
+                Disconnect();
             }
         }
 
         #endregion
-
-        /// <summary>
-        /// Socket异常
-        /// </summary>
-        /// <param name="ex"></param>
-        private void OnSocketError(SocketException ex)
-        {
-            if ((ex.SocketErrorCode == SocketError.ConnectionReset)
-                 || (ex.SocketErrorCode == SocketError.ConnectionAborted)
-                 || (ex.SocketErrorCode == SocketError.NotConnected)
-                 || (ex.SocketErrorCode == SocketError.Shutdown)
-                 || (ex.SocketErrorCode == SocketError.Disconnecting)
-                 || (ex.SocketErrorCode == SocketError.OperationAborted))
-            {
-                Disconnect();
-            }
-            else
-            {
-                OnMessageError(ex);
-            }
-        }
     }
 }

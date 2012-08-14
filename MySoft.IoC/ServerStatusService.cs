@@ -115,16 +115,6 @@ namespace MySoft.IoC
                     //TODO
                     container.WriteError(ex);
                 }
-                finally
-                {
-                    //回收垃圾
-                    ThreadPool.QueueUserWorkItem(state =>
-                    {
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        GC.Collect();
-                    });
-                }
             }
         }
 

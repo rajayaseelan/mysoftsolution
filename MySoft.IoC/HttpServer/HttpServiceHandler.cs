@@ -92,6 +92,7 @@ namespace MySoft.IoC.HttpServer
             var methodName = array[0];
             var paramString = array.Length > 1 ? array[1] : null;
             var callMethod = caller.GetCaller(methodName);
+            var httpMethod = HttpMethod.GET;
 
             if (callMethod == null)
             {
@@ -107,6 +108,10 @@ namespace MySoft.IoC.HttpServer
                 SendResponse(response, error);
                 return;
             }
+            else if (callMethod.HttpMethod == HttpMethod.GET && request.Method.ToUpper() == "POST")
+            {
+                httpMethod = HttpMethod.POST;
+            }
 
             try
             {
@@ -114,7 +119,7 @@ namespace MySoft.IoC.HttpServer
                 var get = HttpUtility.ParseQueryString(paramString ?? string.Empty, Encoding.UTF8);
                 var post = new NameValueCollection();
 
-                if (callMethod.HttpMethod == HttpMethod.POST)
+                if (httpMethod == HttpMethod.POST)
                 {
                     //接收流内部数据
                     var stream = request.GetRequestStream();
@@ -236,15 +241,15 @@ namespace MySoft.IoC.HttpServer
 
             if (nvpost.Count > 0)
             {
-                foreach (var key in nvget.AllKeys)
+                foreach (var key in nvpost.AllKeys)
                 {
                     try
                     {
-                        obj[key] = JContainer.Parse(nvget[key]);
+                        obj[key] = JContainer.Parse(nvpost[key]);
                     }
                     catch
                     {
-                        obj[key] = nvget[key];
+                        obj[key] = nvpost[key];
                     }
                 }
             }

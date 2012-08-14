@@ -26,6 +26,16 @@ namespace MySoft.PlatformService.UserService
         //    this.startTime = DateTime.Now;
         //}
 
+        public User GetUserFromName(string name)
+        {
+            return new User { Id = name.Length, Name = name };
+        }
+
+        public User GetUser(int id)
+        {
+            return new User { Id = id, Name = "maoyong" + id };
+        }
+
         public string GetUser(UserInfo user)
         {
             return user.Name;
@@ -91,7 +101,7 @@ namespace MySoft.PlatformService.UserService
 
         private static string value;
         private static readonly object syncRoot = new object();
-        public string GetUsersString(out int length)
+        public string GetUsersString(int count, out int length)
         {
             //if (DateTime.Now.Ticks % 15 == 0)
             //{
@@ -115,9 +125,15 @@ namespace MySoft.PlatformService.UserService
                     }
                 }
 
-                length = value.Length;
+                var sb = new StringBuilder();
+                for (int i = 0; i < count; i++)
+                {
+                    sb.Append(value);
+                }
 
-                return value;
+                length = sb.Length;
+
+                return sb.ToString();
             }
             catch (Exception ex)
             {

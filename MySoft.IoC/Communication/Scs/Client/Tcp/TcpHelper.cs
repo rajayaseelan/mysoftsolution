@@ -16,32 +16,29 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
         /// <returns>Socket object connected to server</returns>
         /// <exception cref="SocketException">Throws SocketException if can not connect.</exception>
         /// <exception cref="TimeoutException">Throws TimeoutException if can not connect within specified timeoutMs</exception>
-        public static Socket ConnectToServer(EndPoint endPoint, int timeoutMs)
+        public static TcpClient ConnectToServer(EndPoint endPoint, int timeoutMs)
         {
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            var tcpClient = new TcpClient(AddressFamily.InterNetwork);
             try
             {
-                socket.Blocking = false;
-                socket.Connect(endPoint);
-                socket.Blocking = true;
-                return socket;
+                tcpClient.Connect(endPoint as IPEndPoint);
+                return tcpClient;
             }
             catch (SocketException socketException)
             {
                 if (socketException.ErrorCode != 10035)
                 {
-                    socket.Close();
+                    tcpClient.Close();
                     throw;
                 }
 
-                if (!socket.Poll(timeoutMs * 1000, SelectMode.SelectWrite))
+                if (!tcpClient.Client.Poll(timeoutMs * 1000, SelectMode.SelectWrite))
                 {
-                    socket.Close();
+                    tcpClient.Close();
                     throw new TimeoutException("The host failed to connect. Timeout occured.");
                 }
 
-                socket.Blocking = true;
-                return socket;
+                return tcpClient;
             }
         }
     }

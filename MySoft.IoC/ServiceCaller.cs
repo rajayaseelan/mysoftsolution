@@ -209,9 +209,6 @@ namespace MySoft.IoC
             }
             catch (Exception ex)
             {
-                //写异常日志
-                status.Container.WriteError(ex);
-
                 try
                 {
                     resMsg = IoCHelper.GetResponse(reqMsg, ex);
@@ -223,8 +220,7 @@ namespace MySoft.IoC
                 }
                 catch (Exception e)
                 {
-                    //写异常日志
-                    status.Container.WriteError(e);
+
                 }
             }
         }

@@ -62,31 +62,31 @@ namespace MySoft.RESTful.Utils
         /// <summary>
         /// 转换成JObject
         /// </summary>
-        /// <param name="get"></param>
-        /// <param name="post"></param>
+        /// <param name="nvget"></param>
+        /// <param name="nvpost"></param>
         /// <returns></returns>
-        private static JObject ConvertJObject(NameValueCollection get, NameValueCollection post)
+        private static JObject ConvertJObject(NameValueCollection nvget, NameValueCollection nvpost)
         {
             var obj = new JObject();
-            if (get.Count > 0)
+            if (nvget.Count > 0)
             {
-                foreach (var key in get.AllKeys)
+                foreach (var key in nvget.AllKeys)
                 {
-                    obj[key] = get[key];
+                    obj[key] = nvget[key];
                 }
             }
 
-            if (post.Count > 0)
+            if (nvpost.Count > 0)
             {
-                foreach (var key in get.AllKeys)
+                foreach (var key in nvpost.AllKeys)
                 {
                     try
                     {
-                        obj[key] = JContainer.Parse(get[key]);
+                        obj[key] = JContainer.Parse(nvpost[key]);
                     }
                     catch
                     {
-                        obj[key] = get[key];
+                        obj[key] = nvpost[key];
                     }
                 }
             }

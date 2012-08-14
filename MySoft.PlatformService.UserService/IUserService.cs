@@ -50,6 +50,10 @@ namespace MySoft.PlatformService.UserService
 
         string GetUser(UserInfo user);
 
+        User GetUserFromName(string name);
+
+        User GetUser(int id);
+
         //[HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         string GetSex(Sex value);
 
@@ -69,7 +73,7 @@ namespace MySoft.PlatformService.UserService
 
         //[HttpInvoke(Name = "user.getuserstr", Description = "获取用户")]
         //[OperationContract(Timeout = 10)]
-        string GetUsersString(out int length);
+        string GetUsersString(int count, out int length);
     }
 
     /// <summary>
