@@ -1,12 +1,11 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.Serialization;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.Threading;
-using System.Collections;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {
@@ -36,7 +35,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int BufferSize = 8 * 1024; //8KB
+        private const int BufferSize = 4 * 1024; //4KB
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -47,6 +46,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Socket object to send/reveice messages.
         /// </summary>
         private readonly TcpClient _tcpClient;
+
+        private readonly NetworkStream _netStream;
 
         /// <summary>
         /// A flag to control thread's running
@@ -69,6 +70,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _tcpClient.SendBufferSize = BufferSize;
             _tcpClient.ReceiveBufferSize = BufferSize;
+
+            _netStream = _tcpClient.GetStream();
 
             var ipEndPoint = (IPEndPoint)_tcpClient.Client.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
@@ -97,9 +100,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 if (_tcpClient.Connected)
                 {
                     _tcpClient.Close();
-                }
 
-                //_clientSocket.Dispose();
+                    _netStream.Close();
+                    _netStream.Dispose();
+                }
             }
             catch
             {
@@ -123,14 +127,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                var _stream = _tcpClient.GetStream();
-                _stream.BeginRead(_buffer, 0, _buffer.Length, new AsyncCallback(ReceiveCallback), null);
+                _netStream.BeginRead(_buffer, 0, _buffer.Length, new AsyncCallback(ReceiveCallback), null);
+            }
+            catch (IOException)
+            {
+                Disconnect();
             }
             catch (Exception ex)
             {
                 OnMessageError(ex);
-
-                Disconnect();
             }
         }
 
@@ -156,18 +161,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     try
                     {
                         //Send all bytes to the remote application
-                        var _stream = _tcpClient.GetStream();
-                        _stream.BeginWrite(messageBytes, 0, messageBytes.Length, new AsyncCallback(SendCallback), message);
+                        _netStream.BeginWrite(messageBytes, 0, messageBytes.Length, new AsyncCallback(SendCallback), message);
+                    }
+                    catch (IOException)
+                    {
+                        Disconnect();
                     }
                     catch (Exception ex)
                     {
                         OnMessageError(ex);
-
-                        Disconnect();
                     }
                 });
             }
-            catch (SerializationException ex)
+            catch (Exception ex)
             {
                 OnMessageError(ex);
 
@@ -188,8 +194,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                var _stream = _tcpClient.GetStream();
-                _stream.EndWrite(ar);
+                _netStream.EndWrite(ar);
 
                 //Record last sent time
                 LastSentMessageTime = DateTime.Now;
@@ -197,11 +202,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 //Sent success
                 OnMessageSent(ar.AsyncState as IScsMessage);
             }
+            catch (IOException)
+            {
+                Disconnect();
+            }
             catch (Exception ex)
             {
                 OnMessageError(ex);
-
-                Disconnect();
             }
         }
 
@@ -220,8 +227,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 //Get received bytes count
-                var _stream = _tcpClient.GetStream();
-                var bytesRead = _stream.EndRead(ar);
+                var bytesRead = _netStream.EndRead(ar);
 
                 if (bytesRead > 0)
                 {
@@ -242,26 +248,24 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 }
                 else
                 {
-                    throw new CommunicationException("Tcp socket is closed.");
+                    Disconnect();
+
+                    return;
                 }
 
                 //Read more bytes if still running
                 if (_running)
                 {
-                    _stream.BeginRead(_buffer, 0, _buffer.Length, new AsyncCallback(ReceiveCallback), null);
+                    _netStream.BeginRead(_buffer, 0, _buffer.Length, new AsyncCallback(ReceiveCallback), null);
                 }
             }
-            catch (SerializationException ex)
+            catch (IOException)
             {
-                OnMessageError(ex);
-
-                throw ex;
+                Disconnect();
             }
             catch (Exception ex)
             {
                 OnMessageError(ex);
-
-                Disconnect();
             }
         }
 

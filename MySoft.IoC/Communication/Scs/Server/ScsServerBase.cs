@@ -83,6 +83,8 @@ namespace MySoft.IoC.Communication.Scs.Server
                 client.Disconnect();
             }
 
+            Clients.ClearAll();
+
             if (_connectionListener != null)
             {
                 _connectionListener.Stop();
@@ -117,8 +119,11 @@ namespace MySoft.IoC.Communication.Scs.Server
             };
 
             client.Disconnected += Client_Disconnected;
-            Clients[client.ClientId] = client;
-            client.ConnectCount = Clients.Count;
+            lock (Clients)
+            {
+                Clients[client.ClientId] = client;
+                client.ConnectCount = Clients.Count;
+            }
             OnClientConnected(client);
             e.Channel.Start();
         }
@@ -131,8 +136,11 @@ namespace MySoft.IoC.Communication.Scs.Server
         private void Client_Disconnected(object sender, EventArgs e)
         {
             var client = (IScsServerClient)sender;
-            Clients.Remove(client.ClientId);
-            client.ConnectCount = Clients.Count;
+            lock (Clients)
+            {
+                Clients.Remove(client.ClientId);
+                client.ConnectCount = Clients.Count;
+            }
             OnClientDisconnected(client);
         }
 

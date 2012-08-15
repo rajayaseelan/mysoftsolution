@@ -21,7 +21,7 @@ namespace MySoft.IoC
         /// </summary>
         public event RefreshEventHandler OnRefresh;
 
-        private const int DefaultDisconnectionAttemptTimeout = 60; //60 minutes.
+        private const int DefaultDisconnectionAttemptTimeout = 15; //15 minutes.
 
         private CastleServiceConfiguration config;
         private IScsServer server;
@@ -105,7 +105,7 @@ namespace MySoft.IoC
                     {
                         if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
                         {
-                            //如果超过5分钟没响应，则断开链接
+                            //如果超过15分钟没响应，则断开链接
                             client.Disconnect();
                         }
                     }
@@ -114,6 +114,13 @@ namespace MySoft.IoC
                 {
                     //TODO
                     container.WriteError(ex);
+                }
+                finally
+                {
+                    //清理资源
+                    GC.Collect();
+                    Thread.Sleep(5000);
+                    GC.Collect();
                 }
             }
         }
