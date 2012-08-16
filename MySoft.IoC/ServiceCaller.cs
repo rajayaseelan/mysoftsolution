@@ -105,8 +105,12 @@ namespace MySoft.IoC
                     resMsg = asyncCaller.AsyncCall(context, reqMsg);
                 }
 
-                //处理响应信息
-                resMsg = HandleResponse(context, reqMsg, resMsg);
+                //判断返回的消息
+                if (resMsg != null)
+                {
+                    //处理响应信息
+                    resMsg = HandleResponse(context, reqMsg, resMsg);
+                }
             }
             catch (Exception ex)
             {

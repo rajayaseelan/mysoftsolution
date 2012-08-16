@@ -36,7 +36,6 @@ namespace MySoft.PlatformService.Console
             System.Console.ReadLine();
 
             server.Stop();
-            System.Console.ReadLine();
         }
 
         static void Program_OnLog(string log, LogType type)

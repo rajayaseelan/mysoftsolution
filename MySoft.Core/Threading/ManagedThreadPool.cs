@@ -101,7 +101,7 @@ namespace MySoft.Threading
     {
         #region Constants
         /// <summary>Maximum number of threads the thread pool has at its disposal.</summary>
-        private const int _maxWorkerThreads = 50;
+        private const int _maxWorkerThreads = 25;
         #endregion
 
         #region Member Variables

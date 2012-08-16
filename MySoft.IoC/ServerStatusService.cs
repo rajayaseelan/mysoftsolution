@@ -47,15 +47,13 @@ namespace MySoft.IoC
             this.statuslist = new TimeStatusCollection(config.RecordHours * 3600);
 
             //启动定义推送线程
-            var thread1 = new Thread(DoPushWork);
-            thread1.Start();
+            ThreadPool.QueueUserWorkItem(DoPushWork);
 
             //启动自动检测线程
-            var thread2 = new Thread(DoCheckWork);
-            thread2.Start();
+            ThreadPool.QueueUserWorkItem(DoCheckWork);
         }
 
-        void DoPushWork()
+        void DoPushWork(object state)
         {
             while (true)
             {
@@ -89,7 +87,7 @@ namespace MySoft.IoC
             }
         }
 
-        void DoCheckWork()
+        void DoCheckWork(object state)
         {
             while (true)
             {
@@ -114,13 +112,6 @@ namespace MySoft.IoC
                 {
                     //TODO
                     container.WriteError(ex);
-                }
-                finally
-                {
-                    //清理资源
-                    GC.Collect();
-                    Thread.Sleep(5000);
-                    GC.Collect();
                 }
             }
         }

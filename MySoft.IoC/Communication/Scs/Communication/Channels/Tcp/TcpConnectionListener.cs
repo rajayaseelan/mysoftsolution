@@ -48,6 +48,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             StartSocket();
             _running = true;
+
             _thread = new Thread(DoListenAsThread);
             _thread.Start();
         }
@@ -77,6 +78,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
+                _thread.Abort();
+            }
+            catch
+            {
+            }
+
+            try
+            {
                 _listenerSocket.Stop();
             }
             catch
@@ -95,17 +104,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 try
                 {
-                    var tcpClient = _listenerSocket.AcceptTcpClient();
-                    if (tcpClient.Connected)
+                    var _tcpClient = _listenerSocket.AcceptTcpClient();
+
+                    if (_tcpClient.Connected)
                     {
-                        OnCommunicationChannelConnected(new TcpCommunicationChannel(tcpClient));
+                        OnCommunicationChannelConnected(new TcpCommunicationChannel(_tcpClient));
                     }
                 }
                 catch
                 {
                     //Disconnect, wait for a while and connect again.
                     StopSocket();
-                    Thread.Sleep(1000);
+
+                    Thread.Sleep(5000);
+
                     if (!_running)
                     {
                         return;
