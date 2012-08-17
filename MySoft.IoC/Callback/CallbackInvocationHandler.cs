@@ -47,8 +47,15 @@ namespace MySoft.IoC.Callback
                 //回发消息
                 IScsMessage scsMessage = new ScsCallbackMessage(message);
 
-                //发送回调数据
-                client.SendMessage(scsMessage);
+                try
+                {
+                    //发送回调数据
+                    client.SendMessage(scsMessage);
+                }
+                finally
+                {
+                    scsMessage = null;
+                }
 
                 //返回null
                 return null;

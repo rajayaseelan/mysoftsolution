@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
@@ -204,12 +205,14 @@ namespace MySoft.IoC
         /// <param name="messageId"></param>
         private void SendMessage(IScsServerClient client, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
         {
+            IScsMessage scsMessage = null;
+
             try
             {
-                var sendMsg = new ScsResultMessage(resMsg, messageId);
+                scsMessage = new ScsResultMessage(resMsg, messageId);
 
                 //发送消息
-                client.SendMessage(sendMsg);
+                client.SendMessage(scsMessage);
             }
             catch (Exception ex)
             {
@@ -217,15 +220,22 @@ namespace MySoft.IoC
                 {
                     resMsg = IoCHelper.GetResponse(reqMsg, ex);
 
-                    var sendMsg = new ScsResultMessage(resMsg, messageId);
+                    scsMessage = new ScsResultMessage(resMsg, messageId);
 
                     //发送消息
-                    client.SendMessage(sendMsg);
+                    client.SendMessage(scsMessage);
                 }
                 catch (Exception e)
                 {
 
                 }
+            }
+            finally
+            {
+                scsMessage = null;
+
+                reqMsg = null;
+                resMsg = null;
             }
         }
 

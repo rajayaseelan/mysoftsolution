@@ -45,7 +45,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage AsyncCall(OperationContext context, RequestMessage reqMsg)
         {
-            using (var wr = new WaitResult(reqMsg))
+            using (var waitResult = new WaitResult(reqMsg))
             {
                 lock (results)
                 {
@@ -55,18 +55,21 @@ namespace MySoft.IoC.Services
                     if (!results.ContainsKey(callKey))
                     {
                         results[callKey] = new Queue<WaitResult>();
-                        ManagedThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { callKey, wr, context, reqMsg });
+                        ManagedThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { callKey, waitResult, context, reqMsg });
                     }
                     else
                     {
-                        results[callKey].Enqueue(wr);
+                        results[callKey].Enqueue(waitResult);
                     }
                 }
+
+                //定义响应消息
+                ResponseMessage resMsg = null;
 
                 //计算超时时间
                 var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CALL_TIMEOUT);
 
-                if (!wr.Wait(elapsedTime))
+                if (!waitResult.Wait(elapsedTime))
                 {
                     var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout {4} ms.\r\nParameters => {3}",
                         reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), (int)elapsedTime.TotalMilliseconds);
@@ -80,12 +83,14 @@ namespace MySoft.IoC.Services
                                 reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds);
 
                     //处理异常
-                    var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
-
-                    wr.Set(resMsg);
+                    resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
+                }
+                else
+                {
+                    resMsg = waitResult.Message;
                 }
 
-                return wr.Message;
+                return resMsg;
             }
         }
 

@@ -271,7 +271,7 @@ namespace MySoft.PlatformService.Client
             are.Reset();
             var watch = Stopwatch.StartNew();
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(are);
@@ -420,7 +420,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     int length;
-                    int count = new Random().Next(1, 100);
+                    int count = new Random().Next(1, 5);
                     var value = service.GetUsersString(count, out length);
 
                     //var user = service.GetUser(counter);
