@@ -84,6 +84,8 @@ namespace MySoft.IoC.Services
             this.ev = null;
             this.reqMsg = null;
             this.resMsg = null;
+
+            GC.SuppressFinalize(this);
         }
 
         #endregion
