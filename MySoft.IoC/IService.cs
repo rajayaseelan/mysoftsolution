@@ -6,7 +6,7 @@ namespace MySoft.IoC
     /// <summary>
     /// interface of all services.
     /// </summary>
-    public interface IService : IDisposable
+    public interface IService
     {
         /// <summary>
         /// Gets the name of the service.

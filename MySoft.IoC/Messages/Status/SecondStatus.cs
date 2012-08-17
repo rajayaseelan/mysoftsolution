@@ -31,10 +31,7 @@ namespace MySoft.IoC.Messages
             }
             set
             {
-                lock (this)
-                {
-                    successCount = value;
-                }
+                successCount = value;
             }
         }
 
@@ -50,10 +47,7 @@ namespace MySoft.IoC.Messages
             }
             set
             {
-                lock (this)
-                {
-                    errorCount = value;
-                }
+                errorCount = value;
             }
         }
 
@@ -69,10 +63,7 @@ namespace MySoft.IoC.Messages
             }
             set
             {
-                lock (this)
-                {
-                    elapsedTime = value;
-                }
+                elapsedTime = value;
             }
         }
 

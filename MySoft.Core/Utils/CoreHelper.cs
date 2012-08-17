@@ -450,7 +450,7 @@ namespace MySoft
         /// <returns></returns>
         public static MethodInfo GetMethodFromType(Type type, string methodName)
         {
-            return GetMethodsFromType(type).Where(p => p.ToString() == methodName).FirstOrDefault();
+            return type.GetAllMethods().FirstOrDefault(p => p.ToString() == methodName);
         }
 
         /// <summary>

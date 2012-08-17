@@ -16,7 +16,6 @@ namespace MySoft.Mail
     {
         public static readonly SmtpMail Instance = new SmtpMail();
 
-        private static readonly object lockObject = new object();
         private string smtpServer;
         /// <summary>
         /// 邮件发送服务器
@@ -113,11 +112,8 @@ namespace MySoft.Mail
         /// <returns></returns>
         public SendResult Send(string title, string body, string to)
         {
-            lock (lockObject)
-            {
-                string[] mailto = new string[] { to };
-                return Send(title, body, mailto);
-            }
+            string[] mailto = new string[] { to };
+            return Send(title, body, mailto);
         }
 
         /// <summary>
@@ -129,11 +125,8 @@ namespace MySoft.Mail
         /// <returns></returns>
         public void SendAsync(string title, string body, string to)
         {
-            lock (lockObject)
-            {
-                string[] mailto = new string[] { to };
-                SendAsync(title, body, mailto);
-            }
+            string[] mailto = new string[] { to };
+            SendAsync(title, body, mailto);
         }
 
         /// <summary>
@@ -145,16 +138,13 @@ namespace MySoft.Mail
         /// <returns></returns>
         public SendResult Send(string title, string body, string[] to)
         {
-            lock (lockObject)
-            {
-                if (isSystemMail) body += string.Format("<br/><br/>系统邮件，请勿直接回复！<span style=\"font-size:12px;\">({0})</span>", DateTime.Now);
-                SMTP smtp = new SMTP(this.mailFrom, to, title, body, this.smtpServer, userName, password);
-                smtp.SMTPPort = this.smtpPort;
-                smtp.MailDisplyName = this.displayName;
-                smtp.IsBodyHtml = true;
+            if (isSystemMail) body += string.Format("<br/><br/>系统邮件，请勿直接回复！<span style=\"font-size:12px;\">({0})</span>", DateTime.Now);
+            SMTP smtp = new SMTP(this.mailFrom, to, title, body, this.smtpServer, userName, password);
+            smtp.SMTPPort = this.smtpPort;
+            smtp.MailDisplyName = this.displayName;
+            smtp.IsBodyHtml = true;
 
-                return smtp.Send();
-            }
+            return smtp.Send();
         }
 
         /// <summary>
@@ -166,25 +156,22 @@ namespace MySoft.Mail
         /// <returns></returns>
         public void SendAsync(string title, string body, string[] to)
         {
-            lock (lockObject)
-            {
-                if (isSystemMail) body += string.Format("<br/><br/>系统邮件，请勿直接回复！<span style=\"font-size:12px;\">({0})</span>", DateTime.Now);
-                SMTP smtp = new SMTP(this.mailFrom, to, title, body, this.smtpServer, userName, password);
-                smtp.SMTPPort = this.smtpPort;
-                smtp.MailDisplyName = this.displayName;
-                smtp.IsBodyHtml = true;
+            if (isSystemMail) body += string.Format("<br/><br/>系统邮件，请勿直接回复！<span style=\"font-size:12px;\">({0})</span>", DateTime.Now);
+            SMTP smtp = new SMTP(this.mailFrom, to, title, body, this.smtpServer, userName, password);
+            smtp.SMTPPort = this.smtpPort;
+            smtp.MailDisplyName = this.displayName;
+            smtp.IsBodyHtml = true;
 
-                //启用线程池来实现异步发送
-                AsyncMailSender sender = new AsyncMailSender(mail => mail.SendAsync());
-                IAsyncResult result = sender.BeginInvoke(smtp, ar =>
+            //启用线程池来实现异步发送
+            AsyncMailSender sender = new AsyncMailSender(mail => mail.SendAsync());
+            IAsyncResult result = sender.BeginInvoke(smtp, ar =>
+            {
+                AsyncMailSender handler = ar.AsyncState as AsyncMailSender;
+                if (handler != null)
                 {
-                    AsyncMailSender handler = ar.AsyncState as AsyncMailSender;
-                    if (handler != null)
-                    {
-                        handler.EndInvoke(ar);
-                    }
-                }, sender);
-            }
+                    handler.EndInvoke(ar);
+                }
+            }, sender);
         }
 
         #region 发送错误
@@ -198,11 +185,8 @@ namespace MySoft.Mail
         /// <returns></returns>
         public SendResult SendException(Exception ex, string title, string to)
         {
-            lock (lockObject)
-            {
-                string msg = ErrorHelper.GetHtmlError(ex);
-                return Send(title, msg, to);
-            }
+            string msg = ErrorHelper.GetHtmlError(ex);
+            return Send(title, msg, to);
         }
 
         /// <summary>
@@ -214,11 +198,8 @@ namespace MySoft.Mail
         /// <returns></returns>
         public SendResult SendSampleException(Exception ex, string title, string to)
         {
-            lock (lockObject)
-            {
-                string msg = ErrorHelper.GetErrorWithoutHtml(ex);
-                return Send(title, msg, to);
-            }
+            string msg = ErrorHelper.GetErrorWithoutHtml(ex);
+            return Send(title, msg, to);
         }
 
         /// <summary>
@@ -230,13 +211,10 @@ namespace MySoft.Mail
         /// <returns></returns>
         public SendResult SendException(HttpContext current, string title, string to)
         {
-            lock (lockObject)
-            {
-                HttpContext ctx = HttpContext.Current;
-                Exception ex = ctx.Server.GetLastError();
+            HttpContext ctx = HttpContext.Current;
+            Exception ex = ctx.Server.GetLastError();
 
-                return SendException(ex, title, to);
-            }
+            return SendException(ex, title, to);
         }
 
         #endregion
@@ -252,11 +230,8 @@ namespace MySoft.Mail
         /// <returns></returns>
         public SendResult SendException(Exception ex, string title, string[] to)
         {
-            lock (lockObject)
-            {
-                string msg = ErrorHelper.GetHtmlError(ex);
-                return Send(title, msg, to);
-            }
+            string msg = ErrorHelper.GetHtmlError(ex);
+            return Send(title, msg, to);
         }
 
         /// <summary>
@@ -268,11 +243,8 @@ namespace MySoft.Mail
         /// <returns></returns>
         public SendResult SendSampleException(Exception ex, string title, string[] to)
         {
-            lock (lockObject)
-            {
-                string msg = ErrorHelper.GetErrorWithoutHtml(ex);
-                return Send(title, msg, to);
-            }
+            string msg = ErrorHelper.GetErrorWithoutHtml(ex);
+            return Send(title, msg, to);
         }
 
         /// <summary>
@@ -284,13 +256,10 @@ namespace MySoft.Mail
         /// <returns></returns>
         public SendResult SendException(HttpContext current, string title, string[] to)
         {
-            lock (lockObject)
-            {
-                HttpContext ctx = HttpContext.Current;
-                Exception ex = ctx.Server.GetLastError();
+            HttpContext ctx = HttpContext.Current;
+            Exception ex = ctx.Server.GetLastError();
 
-                return SendException(ex, title, to);
-            }
+            return SendException(ex, title, to);
         }
 
         #endregion
@@ -308,11 +277,8 @@ namespace MySoft.Mail
         /// <returns></returns>
         public void SendExceptionAsync(Exception ex, string title, string to)
         {
-            lock (lockObject)
-            {
-                string msg = ErrorHelper.GetHtmlError(ex);
-                SendAsync(title, msg, to);
-            }
+            string msg = ErrorHelper.GetHtmlError(ex);
+            SendAsync(title, msg, to);
         }
 
         /// <summary>
@@ -324,11 +290,8 @@ namespace MySoft.Mail
         /// <returns></returns>
         public void SendSampleExceptionAsync(Exception ex, string title, string to)
         {
-            lock (lockObject)
-            {
-                string msg = ErrorHelper.GetErrorWithoutHtml(ex);
-                SendAsync(title, msg, to);
-            }
+            string msg = ErrorHelper.GetErrorWithoutHtml(ex);
+            SendAsync(title, msg, to);
         }
 
         #endregion
@@ -344,11 +307,8 @@ namespace MySoft.Mail
         /// <returns></returns>
         public void SendExceptionAsync(Exception ex, string title, string[] to)
         {
-            lock (lockObject)
-            {
-                string msg = ErrorHelper.GetHtmlError(ex);
-                SendAsync(title, msg, to);
-            }
+            string msg = ErrorHelper.GetHtmlError(ex);
+            SendAsync(title, msg, to);
         }
 
         /// <summary>
@@ -360,11 +320,8 @@ namespace MySoft.Mail
         /// <returns></returns>
         public void SendSampleExceptionAsync(Exception ex, string title, string[] to)
         {
-            lock (lockObject)
-            {
-                string msg = ErrorHelper.GetErrorWithoutHtml(ex);
-                SendAsync(title, msg, to);
-            }
+            string msg = ErrorHelper.GetErrorWithoutHtml(ex);
+            SendAsync(title, msg, to);
         }
 
         #endregion

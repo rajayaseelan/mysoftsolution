@@ -125,14 +125,17 @@ namespace MySoft.IoC
             //获取或创建一个对象
             var status = statuslist.GetOrCreate(args.Caller.CallTime);
 
-            //处理时间
-            status.ElapsedTime += args.ElapsedTime;
+            lock (status)
+            {
+                //处理时间
+                status.ElapsedTime += args.ElapsedTime;
 
-            //错误及成功计数
-            if (args.IsError)
-                status.ErrorCount++;
-            else
-                status.SuccessCount++;
+                //错误及成功计数
+                if (args.IsError)
+                    status.ErrorCount++;
+                else
+                    status.SuccessCount++;
+            }
         }
 
         #region IStatusService 成员

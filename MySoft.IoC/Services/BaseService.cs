@@ -42,11 +42,6 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         protected abstract ResponseMessage Run(RequestMessage reqMsg);
 
-        /// <summary>
-        /// Dispose
-        /// </summary>
-        public abstract void Dispose();
-
         #region IService Members
 
         /// <summary>

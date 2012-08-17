@@ -14,7 +14,6 @@ namespace MySoft.IoC.Services
     {
         private IServiceContainer container;
         private Type serviceType;
-        private IDictionary<string, System.Reflection.MethodInfo> methods;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicService"/> class.
@@ -25,7 +24,6 @@ namespace MySoft.IoC.Services
         {
             this.container = container;
             this.serviceType = serviceType;
-            this.methods = CoreHelper.GetMethodsFromType(serviceType).ToDictionary(p => p.ToString());
         }
 
         /// <summary>
@@ -35,10 +33,13 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         protected override ResponseMessage Run(RequestMessage reqMsg)
         {
+            //获取Method
+            var callMethod = CoreHelper.GetMethodFromType(serviceType, reqMsg.MethodName);
+
             #region 获取相应的方法
 
             //判断方法是否存在
-            if (!methods.ContainsKey(reqMsg.MethodName))
+            if (callMethod == null)
             {
                 string message = string.Format("The server【{2}({3})】not find matching method. ({0},{1})."
                     , reqMsg.ServiceName, reqMsg.MethodName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
@@ -61,9 +62,6 @@ namespace MySoft.IoC.Services
 
             try
             {
-                //定义Method
-                var method = methods[reqMsg.MethodName];
-
                 //解析服务
                 instance = container.Resolve(serviceType);
 
@@ -76,18 +74,18 @@ namespace MySoft.IoC.Services
                     var jsonString = (objValue == null ? string.Empty : objValue.ToString());
 
                     //解析参数
-                    reqMsg.Parameters = IoCHelper.CreateParameters(method, jsonString);
+                    reqMsg.Parameters = IoCHelper.CreateParameters(callMethod, jsonString);
                 }
 
                 //参数赋值
-                object[] parameters = IoCHelper.CreateParameterValues(method, reqMsg.Parameters);
+                object[] parameters = IoCHelper.CreateParameterValues(callMethod, reqMsg.Parameters);
 
                 //调用对应的服务
-                var invoke = DynamicCalls.GetMethodInvoker(method);
+                var invoke = DynamicCalls.GetMethodInvoker(callMethod);
                 resMsg.Value = invoke(service, parameters);
 
                 //处理返回参数
-                IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
+                IoCHelper.SetRefParameters(callMethod, resMsg.Parameters, parameters);
             }
             catch (Exception ex)
             {
@@ -98,17 +96,11 @@ namespace MySoft.IoC.Services
             {
                 //释放资源
                 container.Release(instance);
+
+                instance = null;
             }
 
             return resMsg;
-        }
-
-        /// <summary>
-        /// Dispose
-        /// </summary>
-        public override void Dispose()
-        {
-            methods.Clear();
         }
     }
 }

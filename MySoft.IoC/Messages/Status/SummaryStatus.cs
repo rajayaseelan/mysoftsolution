@@ -20,10 +20,7 @@ namespace MySoft.IoC.Messages
             }
             set
             {
-                lock (this)
-                {
-                    runningSeconds = value;
-                }
+                runningSeconds = value;
             }
         }
 
@@ -39,10 +36,7 @@ namespace MySoft.IoC.Messages
             }
             set
             {
-                lock (this)
-                {
-                    requestCount = value;
-                }
+                requestCount = value;
             }
         }
 

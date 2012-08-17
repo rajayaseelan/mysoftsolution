@@ -15,7 +15,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务请求类
     /// </summary>
-    public class ServiceRequest : IDisposable
+    public class ServiceRequest
     {
         /// <summary>
         /// 数据回调
@@ -179,13 +179,5 @@ namespace MySoft.IoC
         }
 
         #endregion
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        public void Dispose()
-        {
-            client.Dispose();
-        }
     }
 }

@@ -230,25 +230,5 @@ namespace MySoft.IoC.Services
         }
 
         #endregion
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        public void Dispose()
-        {
-            try
-            {
-                while (reqPool.Count > 0)
-                {
-                    var reqService = reqPool.Pop();
-                    reqService.Dispose();
-                }
-            }
-            catch (Exception)
-            {
-            }
-
-            this.reqPool = null;
-        }
     }
 }
