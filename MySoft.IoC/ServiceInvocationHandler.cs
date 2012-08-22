@@ -4,6 +4,7 @@ using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
@@ -14,6 +15,7 @@ namespace MySoft.IoC
     {
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
+        private AsyncCaller asyncCaller;
         private IServiceContainer container;
         private IService service;
         private Type serviceType;
@@ -38,6 +40,12 @@ namespace MySoft.IoC
             this.service = service;
             this.cache = cache;
             this.logger = logger;
+
+            //计算超时时间
+            var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_TIMEOUT);
+
+            //实例化异步服务
+            this.asyncCaller = new AsyncCaller(container, service, elapsedTime);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -159,7 +167,16 @@ namespace MySoft.IoC
                 logger.BeginRequest(reqMsg);
 
                 //调用服务
-                resMsg = service.CallService(reqMsg);
+                var context = OperationContext.Current;
+
+                if (reqMsg.ServiceName == typeof(IStatusService).FullName)
+                {
+                    resMsg = asyncCaller.SyncCall(context, reqMsg);
+                }
+                else
+                {
+                    resMsg = asyncCaller.AsyncCall(context, reqMsg);
+                }
 
                 //写日志结束
                 logger.EndRequest(reqMsg, resMsg, resMsg.ElapsedTime);

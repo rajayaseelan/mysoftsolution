@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
-using MySoft.Threading;
-using System.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -12,6 +11,7 @@ namespace MySoft.IoC.Services
     {
         private ILog logger;
         private IService service;
+        private TimeSpan elapsedTime;
         private IDictionary<string, Queue<WaitResult>> results;
 
         /// <summary>
@@ -19,10 +19,12 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="service"></param>
-        public AsyncCaller(ILog logger, IService service)
+        /// <param name="elapsedTime"></param>
+        public AsyncCaller(ILog logger, IService service, TimeSpan elapsedTime)
         {
             this.logger = logger;
             this.service = service;
+            this.elapsedTime = elapsedTime;
             this.results = new Dictionary<string, Queue<WaitResult>>();
         }
 
@@ -47,15 +49,29 @@ namespace MySoft.IoC.Services
         {
             using (var waitResult = new WaitResult(reqMsg))
             {
+                AppCaller caller = null;
+                if (context == null)
+                {
+                    caller = new AppCaller
+                    {
+                        ServiceName = reqMsg.ServiceName,
+                        MethodName = reqMsg.MethodName,
+                        Parameters = reqMsg.Parameters.ToString()
+                    };
+                }
+                else
+                {
+                    caller = context.Caller;
+                }
+
+                var callKey = string.Format("Caller_{0}_{1}${2}${3}", service.ServiceName, caller.ServiceName, caller.MethodName, caller.Parameters);
+
                 lock (results)
                 {
-                    var caller = context.Caller;
-                    var callKey = string.Format("Caller_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
-
                     if (!results.ContainsKey(callKey))
                     {
                         results[callKey] = new Queue<WaitResult>();
-                        ManagedThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { callKey, waitResult, context, reqMsg });
+                        ThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { callKey, waitResult, context, reqMsg });
                     }
                     else
                     {
@@ -65,9 +81,6 @@ namespace MySoft.IoC.Services
 
                 //定义响应消息
                 ResponseMessage resMsg = null;
-
-                //计算超时时间
-                var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CALL_TIMEOUT);
 
                 if (!waitResult.Wait(elapsedTime))
                 {
@@ -89,6 +102,9 @@ namespace MySoft.IoC.Services
                 {
                     resMsg = waitResult.Message;
                 }
+
+                //设置响应
+                SetResponse(callKey, resMsg);
 
                 return resMsg;
             }
@@ -164,9 +180,6 @@ namespace MySoft.IoC.Services
             }
 
             wr.Set(resMsg);
-
-            //设置响应
-            SetResponse(callKey, resMsg);
         }
 
         /// <summary>

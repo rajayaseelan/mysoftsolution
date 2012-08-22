@@ -267,18 +267,14 @@ namespace MySoft.PlatformService.Client
             CastleFactory.Create().RegisterLogger(new ServiceLog());
             CastleFactory.Create().RegisterResolver(new ServiceResolver());
 
-            AutoResetEvent are = new AutoResetEvent(false);
-            are.Reset();
-            var watch = Stopwatch.StartNew();
+            //var watch = Stopwatch.StartNew();
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 200; i++)
             {
                 Thread thread = new Thread(DoWork1);
-                thread.Start(are);
+                thread.Start();
             }
 
-            are.WaitOne();
-
             //for (int i = 0; i < 100; i++)
             //{
             //    Thread thread = new Thread(DoWork1);
@@ -295,9 +291,9 @@ namespace MySoft.PlatformService.Client
 
             //are.WaitOne();
 
-            watch.Stop();
+            //watch.Stop();
 
-            Console.WriteLine("ElapsedMilliseconds => " + watch.ElapsedMilliseconds + " ms.");
+            //Console.WriteLine("ElapsedMilliseconds => " + watch.ElapsedMilliseconds + " ms.");
 
             //var node = CastleFactory.Create().GetDefaultNode();
             //var clients = CastleFactory.Create().GetChannel<IStatusService>(node).GetAppClients();
@@ -395,15 +391,12 @@ namespace MySoft.PlatformService.Client
             }
         }
 
-        static void DoWork1(object state)
+        static void DoWork1()
         {
-            var node = CastleFactory.Create().GetDefaultNode();
-
+            //var node = CastleFactory.Create().GetDefaultNode();
             var service = CastleFactory.Create().GetChannel<IUserService>();
-            //service = new UserService.UserService();
-            //var service1 = CastleFactory.Create().GetChannel<IStatusService>(node);
 
-            while (true)
+            while (counter < 1000000)
             {
                 try
                 {
@@ -420,7 +413,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     int length;
-                    int count = new Random().Next(1, 5);
+                    int count = new Random().Next(1, 100);
                     var value = service.GetUsersString(count, out length);
 
                     //var user = service.GetUser(counter);
@@ -446,9 +439,6 @@ namespace MySoft.PlatformService.Client
 
                 //Thread.Sleep(1000);
             }
-
-            AutoResetEvent are = state as AutoResetEvent;
-            are.Set();
         }
 
         static void Program_OnError(Exception error)

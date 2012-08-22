@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Timers;
 using MySoft.IoC.Communication.Scs.Communication;
-using MySoft.IoC.Communication.Threading;
 
 namespace MySoft.IoC.Communication.Scs.Client
 {
@@ -14,10 +14,10 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// Reconnect check period.
         /// Default: 20 seconds.
         /// </summary>
-        public int ReConnectCheckPeriod
+        public double ReConnectCheckPeriod
         {
-            get { return _reconnectTimer.Period; }
-            set { _reconnectTimer.Period = value; }
+            get { return _reconnectTimer.Interval; }
+            set { _reconnectTimer.Interval = value; }
         }
 
         /// <summary>
@@ -70,6 +70,7 @@ namespace MySoft.IoC.Communication.Scs.Client
             _disposed = true;
             _client.Disconnected -= Client_Disconnected;
             _reconnectTimer.Stop();
+            _reconnectTimer.Dispose();
         }
 
         /// <summary>
@@ -92,6 +93,7 @@ namespace MySoft.IoC.Communication.Scs.Client
             if (_disposed || _client.CommunicationState == CommunicationStates.Connected)
             {
                 _reconnectTimer.Stop();
+                _reconnectTimer.Dispose();
                 return;
             }
 
@@ -99,6 +101,7 @@ namespace MySoft.IoC.Communication.Scs.Client
             {
                 _client.Connect();
                 _reconnectTimer.Stop();
+                _reconnectTimer.Dispose();
             }
             catch
             {

@@ -34,7 +34,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 2 * 1024; //2KB
+        private const int ReceiveBufferSize = 8 * 1024; //8KB
 
         private const int SocketTimeout = 1; //1minutes
 
@@ -99,6 +99,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 _networkStream.Close();
                 _networkStream.Dispose();
+
+                WireProtocol.Reset();
             }
             catch
             {

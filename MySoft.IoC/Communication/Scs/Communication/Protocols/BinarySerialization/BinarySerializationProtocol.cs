@@ -111,7 +111,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         {
             if (_receiveMemoryStream.Length > 0)
             {
-                _receiveMemoryStream = new MemoryStream();
+                try
+                {
+                    _receiveMemoryStream.Close();
+                    _receiveMemoryStream.Dispose();
+                }
+                catch
+                {
+                    //TODO
+                }
+                finally
+                {
+                    _receiveMemoryStream = new MemoryStream();
+                }
             }
         }
 

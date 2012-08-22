@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Timers;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Channels;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Communication.Protocols;
-using MySoft.IoC.Communication.Threading;
 
 namespace MySoft.IoC.Communication.Scs.Client
 {
@@ -180,7 +180,15 @@ namespace MySoft.IoC.Communication.Scs.Client
                 return;
             }
 
-            _communicationChannel.Disconnect();
+            try
+            {
+                _communicationChannel.Disconnect();
+            }
+            finally
+            {
+                _pingTimer.Stop();
+                _pingTimer.Dispose();
+            }
         }
 
         /// <summary>

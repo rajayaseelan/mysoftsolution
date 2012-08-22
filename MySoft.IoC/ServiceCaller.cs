@@ -63,8 +63,11 @@ namespace MySoft.IoC
 
                 if (service != null)
                 {
+                    //计算超时时间
+                    var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CALL_TIMEOUT);
+
                     //实例化AsyncCaller
-                    asyncCallers[type.FullName] = new AsyncCaller(container, service);
+                    asyncCallers[type.FullName] = new AsyncCaller(container, service, elapsedTime);
                 }
             }
         }
