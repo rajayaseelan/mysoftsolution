@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Threading;
 using Castle.Core;
 using Castle.Core.Internal;
 using Castle.Core.Resource;
@@ -14,7 +12,6 @@ using Castle.Windsor;
 using Castle.Windsor.Configuration.Interpreters;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using MySoft.IoC.Communication;
 
 namespace MySoft.IoC
 {

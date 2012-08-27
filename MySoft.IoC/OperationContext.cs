@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Runtime.Remoting.Messaging;
 using System.Threading;
+using Hik.Communication.Scs.Server;
 using MySoft.IoC.Callback;
-using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC

@@ -77,7 +77,7 @@
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
-    <Compile Include="Communication\ITcpConnection.cs">
+    <Compile Include="ITcpConnection.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\AsyncCaller.cs" />
@@ -124,48 +124,6 @@
     <Compile Include="Messages\ScsClientMessage.cs" />
     <Compile Include="Mvp\Presenter.cs" />
     <Compile Include="Mvp\PresenterFactory.cs" />
-    <Compile Include="Communication\Scs\Client\ClientReConnecter.cs" />
-    <Compile Include="Communication\Scs\Client\IConnectableClient.cs" />
-    <Compile Include="Communication\Scs\Client\IScsClient.cs" />
-    <Compile Include="Communication\Scs\Client\ScsClientBase.cs" />
-    <Compile Include="Communication\Scs\Client\ScsClientFactory.cs" />
-    <Compile Include="Communication\Scs\Client\Tcp\ScsTcpClient.cs" />
-    <Compile Include="Communication\Scs\Client\Tcp\TcpHelper.cs" />
-    <Compile Include="Communication\Scs\Communication\Channels\CommunicationChannelBase.cs" />
-    <Compile Include="Communication\Scs\Communication\Channels\CommunicationChannelEventArgs.cs" />
-    <Compile Include="Communication\Scs\Communication\Channels\ConnectionListenerBase.cs" />
-    <Compile Include="Communication\Scs\Communication\Channels\ICommunicationChannel.cs" />
-    <Compile Include="Communication\Scs\Communication\Channels\IConnectionListener.cs" />
-    <Compile Include="Communication\Scs\Communication\Channels\Tcp\TcpCommunicationChannel.cs" />
-    <Compile Include="Communication\Scs\Communication\Channels\Tcp\TcpConnectionListener.cs" />
-    <Compile Include="Communication\Scs\Communication\CommunicationException.cs" />
-    <Compile Include="Communication\Scs\Communication\CommunicationStateException.cs" />
-    <Compile Include="Communication\Scs\Communication\CommunicationStates.cs" />
-    <Compile Include="Communication\Scs\Communication\EndPoints\ScsEndPoint.cs" />
-    <Compile Include="Communication\Scs\Communication\EndPoints\Tcp\ScsTcpEndPoint.cs" />
-    <Compile Include="Communication\Scs\Communication\Messages\IScsMessage.cs" />
-    <Compile Include="Communication\Scs\Communication\Messages\MessageEventArgs.cs" />
-    <Compile Include="Communication\Scs\Communication\Messages\PingMessage.cs" />
-    <Compile Include="Communication\Scs\Communication\Messages\ScsMessage.cs" />
-    <Compile Include="Communication\Scs\Communication\Messages\ScsRawDataMessage.cs" />
-    <Compile Include="Communication\Scs\Communication\Messages\ScsTextMessage.cs" />
-    <Compile Include="Communication\Scs\Communication\Messengers\IMessenger.cs" />
-    <Compile Include="Communication\Scs\Communication\Protocols\BinarySerialization\BinarySerializationProtocol.cs" />
-    <Compile Include="Communication\Scs\Communication\Protocols\BinarySerialization\BinarySerializationProtocolFactory.cs" />
-    <Compile Include="Communication\Scs\Communication\Protocols\IScsWireProtocol.cs" />
-    <Compile Include="Communication\Scs\Communication\Protocols\IScsWireProtocolFactory.cs" />
-    <Compile Include="Communication\Scs\Communication\Protocols\WireProtocolManager.cs" />
-    <Compile Include="Communication\Scs\Server\IScsServer.cs" />
-    <Compile Include="Communication\Scs\Server\IScsServerClient.cs" />
-    <Compile Include="Communication\Scs\Server\ScsServerBase.cs" />
-    <Compile Include="Communication\Scs\Server\ScsServerClient.cs" />
-    <Compile Include="Communication\Scs\Server\ScsServerFactory.cs" />
-    <Compile Include="Communication\Scs\Server\ScsServerManager.cs" />
-    <Compile Include="Communication\Scs\Server\ServerClientEventArgs.cs" />
-    <Compile Include="Communication\Scs\Server\Tcp\ScsTcpServer.cs" />
-    <Compile Include="Communication\Threading\ThreadSafeSortedList.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Messages\ScsResultMessage.cs" />
     <Compile Include="Messages\ServiceMessageEventArgs.cs" />
     <Compile Include="Callback\CallbackInvocationHandler.cs" />
@@ -221,6 +179,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HttpServer\Template\helpitem.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Communication\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

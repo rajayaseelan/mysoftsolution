@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using MySoft.IoC.Communication.Scs.Communication.EndPoints;
-using MySoft.IoC.Communication.Scs.Server;
+using Hik.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Callback

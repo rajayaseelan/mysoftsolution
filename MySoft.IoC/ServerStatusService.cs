@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Hik.Communication.Scs.Communication.EndPoints.Tcp;
+using Hik.Communication.Scs.Server;
 using MySoft.IoC.Callback;
-using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
-using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 
@@ -153,8 +153,8 @@ namespace MySoft.IoC
                 var items = server.Clients.GetAllItems();
 
                 //统计客户端数量
-                var list = items.Where(p => p.State != null)
-                      .Select(p => p.State as AppClient)
+                var list = items.Where(p => p.ClientState != null)
+                      .Select(p => p.ClientState as AppClient)
                       .Distinct(new AppClientComparer())
                       .ToList();
 
@@ -180,13 +180,13 @@ namespace MySoft.IoC
                 var epServer = server.EndPoint as ScsTcpEndPoint;
                 var items = server.Clients.GetAllItems();
 
-                var list1 = items.Where(p => p.State != null).ToList();
-                var list2 = items.Where(p => p.State == null).ToList();
+                var list1 = items.Where(p => p.ClientState != null).ToList();
+                var list2 = items.Where(p => p.ClientState == null).ToList();
 
                 //如果list不为0
                 if (list1.Count > 0)
                 {
-                    var ls = list1.Select(p => p.State as AppClient)
+                    var ls = list1.Select(p => p.ClientState as AppClient)
                              .GroupBy(p => new
                              {
                                  AppName = p.AppName,
@@ -210,7 +210,7 @@ namespace MySoft.IoC
                 //如果list不为0
                 if (list2.Count > 0)
                 {
-                    var ls = list2.Where(p => p.State == null)
+                    var ls = list2.Where(p => p.ClientState == null)
                             .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
                             .GroupBy(p => p.IpAddress)
                             .Select(g => new ClientInfo

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -71,7 +71,7 @@ namespace MySoft.IoC.Services
                     if (!results.ContainsKey(callKey))
                     {
                         results[callKey] = new Queue<WaitResult>();
-                        ThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { callKey, waitResult, context, reqMsg });
+                        ManagedThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { callKey, waitResult, context, reqMsg });
                     }
                     else
                     {

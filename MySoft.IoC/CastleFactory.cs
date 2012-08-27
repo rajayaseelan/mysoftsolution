@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MySoft.Cache;
-using MySoft.IoC.Communication;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;

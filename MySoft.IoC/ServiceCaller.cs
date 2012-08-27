@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Hik.Communication.Scs.Communication;
+using Hik.Communication.Scs.Communication.Messages;
+using Hik.Communication.Scs.Server;
 using MySoft.IoC.Callback;
-using MySoft.IoC.Communication.Scs.Communication;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
-using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
@@ -274,7 +274,7 @@ namespace MySoft.IoC
         private AppCaller CreateCaller(IScsServerClient client, RequestMessage reqMsg)
         {
             //获取AppPath
-            var appPath = (client.State == null) ? null : (client.State as AppClient).AppPath;
+            var appPath = (client.ClientState == null) ? null : (client.ClientState as AppClient).AppPath;
 
             //服务参数信息
             var caller = new AppCaller

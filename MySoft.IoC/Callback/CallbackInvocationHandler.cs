@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Net.Sockets;
-using System.Threading;
-using MySoft.IoC.Communication.Scs.Communication;
-using MySoft.IoC.Communication.Scs.Server;
+using Hik.Communication.Scs.Communication;
+using Hik.Communication.Scs.Communication.Messages;
+using Hik.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Callback
 {

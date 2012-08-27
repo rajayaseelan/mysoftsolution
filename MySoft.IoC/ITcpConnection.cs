@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MySoft.IoC.Communication.Scs.Client;
 using System.Net.Sockets;
+using Hik.Communication.Scs.Client;
 
-namespace MySoft.IoC.Communication
+namespace MySoft.IoC
 {
     /// <summary>
     /// Tcp connection
