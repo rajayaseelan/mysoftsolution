@@ -1,14 +1,32 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
+using System.Net.Sockets;
 using MySoft.IoC.Messages;
-using MySoft.Security;
 using Newtonsoft.Json.Linq;
 
 namespace MySoft.IoC
 {
     internal static class IoCHelper
     {
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="e"></param>
+        public static void Dispose(SocketAsyncEventArgs e)
+        {
+            try
+            {
+                e.SetBuffer(null, 0, 0);
+                e.AcceptSocket = null;
+                e.RemoteEndPoint = null;
+            }
+            finally
+            {
+                e.Dispose();
+                e = null;
+            }
+        }
+
         /// <summary>
         /// 设置参数值
         /// </summary>

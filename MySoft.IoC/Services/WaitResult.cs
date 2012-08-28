@@ -40,7 +40,7 @@ namespace MySoft.IoC.Services
         {
             try
             {
-                return ev.WaitOne(timeSpan, false);
+                return ev.WaitOne(timeSpan, true);
             }
             catch
             {

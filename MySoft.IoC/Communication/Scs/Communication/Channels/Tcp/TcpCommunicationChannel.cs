@@ -32,6 +32,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         #region Private fields
 
         /// <summary>
+        /// Socket object to send/reveice messages.
+        /// </summary>
+        private readonly Socket _clientSocket;
+
+        /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
         private const int ReceiveBufferSize = 4 * 1024; //4KB
@@ -39,12 +44,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// This buffer is used to receive bytes 
         /// </summary>
-        private readonly byte[] _buffer;
-
-        /// <summary>
-        /// Socket object to send/reveice messages.
-        /// </summary>
-        private readonly Socket _clientSocket;
+        private volatile byte[] _buffer;
 
         /// <summary>
         /// A flag to control thread's running
@@ -86,6 +86,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
 
             _running = false;
+            _buffer = null;
 
             WireProtocol.Reset();
 
@@ -184,9 +185,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 }
                 catch
                 {
-                    e.SetBuffer(null, 0, 0);
-                    e.Dispose();
-                    e = null;
+                    IoCHelper.Dispose(e);
 
                     throw;
                 }
@@ -226,9 +225,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
-                e.SetBuffer(null, 0, 0);
-                e.Dispose();
-                e = null;
+                IoCHelper.Dispose(e);
             }
         }
 
@@ -250,7 +247,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                     //Copy received bytes to a new byte array
                     var receivedBytes = new byte[bytesRead];
-                    Array.Copy(_buffer, 0, receivedBytes, 0, bytesRead);
+                    Array.Copy(e.Buffer, 0, receivedBytes, 0, bytesRead);
 
                     //Read messages according to current wire protocol
                     var messages = WireProtocol.CreateMessages(receivedBytes);
@@ -282,9 +279,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
-                e.SetBuffer(null, 0, 0);
-                e.Dispose();
-                e = null;
+                IoCHelper.Dispose(e);
             }
         }
 
@@ -307,9 +302,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch
             {
-                e.SetBuffer(null, 0, 0);
-                e.Dispose();
-                e = null;
+                IoCHelper.Dispose(e);
 
                 throw;
             }
