@@ -1,5 +1,5 @@
 ﻿using System;
-using Hik.Communication.Scs.Client;
+using MySoft.IoC.Communication.Scs.Client;
 
 namespace MySoft.IoC.Messages
 {

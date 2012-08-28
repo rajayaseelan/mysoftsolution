@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
-using Hik.Communication.Scs.Server;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 

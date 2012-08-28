@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Net.Sockets;
-using Hik.Communication.Scs.Client;
-using Hik.Communication.Scs.Communication;
-using Hik.Communication.Scs.Communication.EndPoints.Tcp;
-using Hik.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Client;
+using MySoft.IoC.Communication.Scs.Communication;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC

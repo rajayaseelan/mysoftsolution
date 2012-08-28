@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-using Hik.Communication.Scs.Communication.EndPoints.Tcp;
-using Hik.Communication.Scs.Communication.Messages;
-using Hik.Communication.Scs.Server;
 using MySoft.IoC.Callback;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
@@ -204,7 +204,7 @@ namespace MySoft.IoC
 
             try
             {
-                PushConnectInfo(endPoint, true, e.Client.ConnectCount);
+                PushConnectInfo(endPoint, true, e.ConnectCount);
             }
             finally
             {
@@ -223,7 +223,7 @@ namespace MySoft.IoC
 
             try
             {
-                PushConnectInfo(endPoint, false, e.Client.ConnectCount);
+                PushConnectInfo(endPoint, false, e.ConnectCount);
             }
             finally
             {

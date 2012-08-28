@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Hik.Communication.Scs.Communication;
-using Hik.Communication.Scs.Communication.Messages;
-using Hik.Communication.Scs.Server;
+using MySoft.IoC.Communication.Scs.Communication;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;

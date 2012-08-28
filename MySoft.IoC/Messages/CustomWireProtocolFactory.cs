@@ -1,4 +1,4 @@
-﻿using Hik.Communication.Scs.Communication.Protocols;
+﻿using MySoft.IoC.Communication.Scs.Communication.Protocols;
 
 namespace MySoft.IoC.Messages
 {

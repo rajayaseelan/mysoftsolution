@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net.Sockets;
-using Hik.Communication.Scs.Communication;
-using Hik.Communication.Scs.Communication.Messages;
-using Hik.Communication.Scs.Server;
+using MySoft.IoC.Communication.Scs.Communication;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Callback
