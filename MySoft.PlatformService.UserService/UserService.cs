@@ -17,7 +17,7 @@ namespace MySoft.PlatformService.UserService
         }
     }
 
-    [AspectProxy(typeof(AspectLog))]
+    //[AspectProxy(typeof(AspectLog))]
     public class UserService : IUserService, IInitializable, IStartable
     {
         //private DateTime startTime;
@@ -33,6 +33,7 @@ namespace MySoft.PlatformService.UserService
 
         public User GetUser(int id)
         {
+            Thread.Sleep(100);
             return new User { Id = id, Name = "maoyong" + id };
         }
 

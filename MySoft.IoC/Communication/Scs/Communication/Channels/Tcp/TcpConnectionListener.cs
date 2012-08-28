@@ -48,7 +48,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             StartSocket();
             _running = true;
-
             _thread = new Thread(DoListenAsThread);
             _thread.Start();
         }
@@ -67,7 +66,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private void StartSocket()
         {
-            _listenerSocket = new TcpListener(System.Net.IPAddress.Any, _endPoint.TcpPort);
+            if (string.IsNullOrEmpty(_endPoint.IpAddress))
+                _listenerSocket = new TcpListener(System.Net.IPAddress.Any, _endPoint.TcpPort);
+            else
+                _listenerSocket = new TcpListener(IPAddress.Parse(_endPoint.IpAddress), _endPoint.TcpPort);
+
             _listenerSocket.Start();
         }
 
@@ -78,20 +81,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                _thread.Abort();
-            }
-            catch
-            {
-            }
-
-            try
-            {
                 _listenerSocket.Stop();
             }
             catch
             {
 
             }
+
+            _listenerSocket = null;
         }
 
         /// <summary>
@@ -104,11 +101,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 try
                 {
-                    var _tcpClient = _listenerSocket.AcceptTcpClient();
-
-                    if (_tcpClient.Connected)
+                    var clientSocket = _listenerSocket.AcceptSocket();
+                    if (clientSocket.Connected)
                     {
-                        OnCommunicationChannelConnected(new TcpCommunicationChannel(_tcpClient));
+                        OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
                     }
                 }
                 catch
@@ -116,7 +112,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     //Disconnect, wait for a while and connect again.
                     StopSocket();
 
-                    Thread.Sleep(5000);
+                    Thread.Sleep(1000);
 
                     if (!_running)
                     {

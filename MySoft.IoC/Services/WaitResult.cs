@@ -38,7 +38,14 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Wait(TimeSpan timeSpan)
         {
-            return ev.WaitOne(timeSpan);
+            try
+            {
+                return ev.WaitOne(timeSpan, false);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -79,9 +86,9 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            this.ev.Reset();
-
+            this.ev.Close();
             this.ev = null;
+
             this.reqMsg = null;
             this.resMsg = null;
 

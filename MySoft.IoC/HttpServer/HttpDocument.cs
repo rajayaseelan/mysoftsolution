@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using System.Net;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -56,7 +57,7 @@ namespace MySoft.IoC.HttpServer
         /// <returns></returns>
         public string MakeDocument(string name)
         {
-            string uri = string.Format("http://{0}:{1}/", DnsHelper.GetIPAddress(), port);
+            string uri = string.Format("http://{0}:{1}/", IPAddress.Loopback, port);
             var html = htmlTemplate.Replace("${uri}", uri);
 
             StringBuilder sbUrl = new StringBuilder();

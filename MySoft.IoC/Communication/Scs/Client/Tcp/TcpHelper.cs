@@ -17,68 +17,32 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
         /// <returns>Socket object connected to server</returns>
         /// <exception cref="SocketException">Throws SocketException if can not connect.</exception>
         /// <exception cref="TimeoutException">Throws TimeoutException if can not connect within specified timeoutMs</exception>
-        public static TcpClient ConnectToServer(EndPoint endPoint, int timeoutMs)
+        public static Socket ConnectToServer(EndPoint endPoint, int timeoutMs)
         {
-            var _tcpClient = new TcpClient(AddressFamily.InterNetwork);
-
+            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
             {
-                var ipEndPoint = endPoint as IPEndPoint;
-                _tcpClient.Connect(ipEndPoint);
-
-                return _tcpClient;
+                socket.Blocking = false;
+                socket.Connect(endPoint);
+                socket.Blocking = true;
+                return socket;
             }
             catch (SocketException socketException)
             {
                 if (socketException.ErrorCode != 10035)
                 {
-                    try
-                    {
-                        var _networkStream = _tcpClient.GetStream();
-
-                        _networkStream.Close();
-                        _networkStream.Dispose();
-                    }
-                    catch
-                    {
-                    }
-
-                    try
-                    {
-                        _tcpClient.Close();
-                    }
-                    catch
-                    {
-                    }
-
+                    socket.Close();
                     throw;
                 }
 
-                if (!_tcpClient.Client.Poll(timeoutMs * 1000, SelectMode.SelectWrite))
+                if (!socket.Poll(timeoutMs * 1000, SelectMode.SelectWrite))
                 {
-                    try
-                    {
-                        var _networkStream = _tcpClient.GetStream();
-
-                        _networkStream.Close();
-                        _networkStream.Dispose();
-                    }
-                    catch
-                    {
-                    }
-
-                    try
-                    {
-                        _tcpClient.Close();
-                    }
-                    catch
-                    {
-                    }
-
+                    socket.Close();
                     throw new TimeoutException("The host failed to connect. Timeout occured.");
                 }
 
-                return _tcpClient;
+                socket.Blocking = true;
+                return socket;
             }
         }
     }

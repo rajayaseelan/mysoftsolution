@@ -107,8 +107,51 @@ namespace MySoft.PlatformService.Client
         private static readonly object syncobj = new object();
         private static int counter = 0;
 
+        public class Test
+        {
+            public void Show()
+            {
+                Thread.Sleep(10);
+            }
+        }
+
         static void Main(string[] args)
         {
+            #region test
+
+            //var watch = Stopwatch.StartNew();
+
+            //var t = new Test();
+            //for (int i = 0; i < 1000; i++)
+            //{
+            //    t.Show();
+            //}
+
+            //watch.Stop();
+
+            //Console.WriteLine("timeout: {0}.", watch.ElapsedMilliseconds);
+
+            //watch = Stopwatch.StartNew();
+
+            //var instance = DynamicCalls.GetInstanceCreator(typeof(Test));
+            //var invoke = DynamicCalls.GetMethodInvoker(typeof(Test).GetMethod("Show"));
+            //for (int i = 0; i < 1000; i++)
+            //{
+            //    //t.Show();
+            //    invoke(t, null);
+            //}
+
+            //watch.Stop();
+
+            //Console.WriteLine("timeout: {0}.", watch.ElapsedMilliseconds);
+
+            //Console.ReadLine();
+            //return;
+
+            #endregion
+
+            #region test1
+
             //var list = new List<int>();
             //for (int i = 0; i < 100; i++)
             //{
@@ -165,6 +208,9 @@ namespace MySoft.PlatformService.Client
             //watch.Stop();
             //Console.WriteLine(lb.Count + " - " + watch.ElapsedMilliseconds);
 
+            #endregion
+
+            #region test2
 
             //CastleFactoryConfiguration config = CastleFactoryConfiguration.GetConfig();
 
@@ -264,16 +310,24 @@ namespace MySoft.PlatformService.Client
 
             //return;
 
+            #endregion
+
             CastleFactory.Create().RegisterLogger(new ServiceLog());
             CastleFactory.Create().RegisterResolver(new ServiceResolver());
 
             //var watch = Stopwatch.StartNew();
 
-            for (int i = 0; i < 200; i++)
+            var e = new ManualResetEvent(false);
+
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
-                thread.Start();
+                thread.Start(e);
             }
+
+            e.Set();
+
+            #region test3
 
             //for (int i = 0; i < 100; i++)
             //{
@@ -338,6 +392,8 @@ namespace MySoft.PlatformService.Client
             //    Console.WriteLine(str);
             //}
 
+            #endregion
+
             Console.ReadKey();
         }
 
@@ -391,10 +447,15 @@ namespace MySoft.PlatformService.Client
             }
         }
 
-        static void DoWork1()
+        static void DoWork1(object state)
         {
+            var e = state as ManualResetEvent;
+            e.WaitOne();
+
             //var node = CastleFactory.Create().GetDefaultNode();
             var service = CastleFactory.Create().GetChannel<IUserService>();
+
+            //var service = new MySoft.PlatformService.UserService.UserService();
 
             while (counter < 1000000)
             {
@@ -412,9 +473,11 @@ namespace MySoft.PlatformService.Client
                     //UserInfo user;
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
-                    int length;
+                    //int length;
                     int count = new Random().Next(1, 100);
-                    var value = service.GetUsersString(count, out length);
+                    //var value = service.GetUsersString(count, out length);
+
+                    var value = service.GetUser(counter);
 
                     //var user = service.GetUser(counter);
 
@@ -425,7 +488,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Name + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //var clients = service1.GetClientList();
 

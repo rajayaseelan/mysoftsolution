@@ -36,10 +36,9 @@ namespace MySoft.IoC
             this.config = config;
 
             if (string.Compare(config.Host, "any", true) == 0)
-            {
-                config.Host = IPAddress.Loopback.ToString();
                 epServer = new ScsTcpEndPoint(config.Port);
-            }
+            else if (string.Compare(config.Host, "localhost", true) == 0)
+                epServer = new ScsTcpEndPoint(IPAddress.Loopback.ToString(), config.Port);
             else
                 epServer = new ScsTcpEndPoint(config.Host, config.Port);
 
@@ -129,7 +128,7 @@ namespace MySoft.IoC
         {
             if (config.HttpEnabled)
             {
-                httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://{1}:{2}/", DateTime.Now, DnsHelper.GetIPAddress(), config.HttpPort); };
+                httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://{1}:{2}/", DateTime.Now, IPAddress.Loopback, config.HttpPort); };
                 httpServer.OnServerStop += () => { Console.WriteLine("[{0}] => Http server stoped.", DateTime.Now); };
 
                 httpServer.OnServerException += httpServer_OnServerException;

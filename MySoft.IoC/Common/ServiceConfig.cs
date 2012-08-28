@@ -13,7 +13,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default record hour
         /// </summary>
-        public const int DEFAULT_RECORD_HOUR = 12; //12小时
+        public const int DEFAULT_RECORD_HOUR = 6; //6小时
 
         /// <summary>
         /// The default client timeout number. 
@@ -28,17 +28,17 @@ namespace MySoft.IoC
         /// <summary>
         /// The default min timeout number. 
         /// </summary>
-        public const int DEFAULT_CALL_TIMEOUT = 30; //30秒
+        public const int DEFAULT_CALL_TIMEOUT = 60; //60秒
 
         /// <summary>
         /// The default pool number.
         /// </summary>
-        public const int DEFAULT_CLIENT_MINPOOL = 50; //默认为50
+        public const int DEFAULT_CLIENT_MINPOOL = 10; //默认为10
 
         /// <summary>
         /// The default pool number.
         /// </summary>
-        public const int DEFAULT_CLIENT_MAXPOOL = 500; //默认为500，一般情况下500足矣
+        public const int DEFAULT_CLIENT_MAXPOOL = 100; //默认为100，一般情况下100足矣
 
         #endregion
     }

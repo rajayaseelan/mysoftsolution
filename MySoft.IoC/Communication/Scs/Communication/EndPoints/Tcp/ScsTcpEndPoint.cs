@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using MySoft.IoC.Communication.Scs.Client;
 using MySoft.IoC.Communication.Scs.Client.Tcp;
 using MySoft.IoC.Communication.Scs.Server;
@@ -78,7 +79,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp
         /// <returns>String representation of this end point object</returns>
         public override string ToString()
         {
-            return string.Format("tcp://{0}:{1}/", (IpAddress ?? DnsHelper.GetIPAddress()), TcpPort);
+            return string.Format("tcp://{0}:{1}/", (IpAddress ?? IPAddress.Loopback.ToString()), TcpPort);
         }
     }
 }
