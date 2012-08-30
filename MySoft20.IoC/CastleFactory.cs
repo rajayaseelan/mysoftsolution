@@ -159,7 +159,7 @@ namespace MySoft.IoC
         {
             try
             {
-                var invoke = DynamicCalls.GetInstanceCreator(invokeType)();
+                var invoke = DynamicCalls.GetInstanceInvoker(invokeType)();
                 DynamicCalls.GetPropertySetter(serviceProperty).Invoke(invoke, serviceType.FullName);
                 DynamicCalls.GetPropertySetter(methodProperty).Invoke(invoke, method.ToString());
 
