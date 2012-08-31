@@ -12,7 +12,7 @@ namespace MySoft.IoC
         private int port;
         private string key;
         private bool compress = false;
-        private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
+        private int timeout = ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT;
         private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
         private int minpool = ServiceConfig.DEFAULT_CLIENT_MINPOOL;
         private TransferType format = TransferType.Binary;

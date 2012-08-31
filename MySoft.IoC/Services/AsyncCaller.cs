@@ -51,13 +51,19 @@ namespace MySoft.IoC.Services
         {
             AppCaller caller = context.Caller;
 
-            var callKey = string.Format("Caller_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
+            var callKey = string.Format("Caller_{0}${1}${2}_{3}", caller.ServiceName, caller.MethodName,
+                                        caller.Parameters, reqMsg.InvokeMethod ? 1 : 0);
 
             //从缓存中获取数据
             var resMsg = CacheHelper.Get<ResponseMessage>(callKey);
 
             if (resMsg != null)
             {
+                if (resMsg.Value is InvokeData)
+                {
+                    (resMsg.Value as InvokeData).ElapsedTime = 0;
+                }
+
                 return new ResponseMessage
                 {
                     TransactionId = reqMsg.TransactionId,
@@ -65,7 +71,7 @@ namespace MySoft.IoC.Services
                     ServiceName = resMsg.ServiceName,
                     MethodName = resMsg.MethodName,
                     Parameters = resMsg.Parameters,
-                    ElapsedTime = resMsg.ElapsedTime,
+                    ElapsedTime = 0,
                     Value = resMsg.Value,
                     Error = resMsg.Error
                 };
@@ -166,31 +172,33 @@ namespace MySoft.IoC.Services
             wr.Set(resMsg);
 
             //只缓存服务端数据
-            if (byServer && resMsg != null)
+            if (resMsg != null)
             {
-                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_TIMEOUT);
+                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
 
-                if (!resMsg.IsError && resMsg.Count > 0 && resMsg.ElapsedTime > timeSpan.TotalMilliseconds)
+                //如果符合条件，则自动缓存 【自动缓存功能】
+                if (!resMsg.IsError && resMsg.ElapsedTime > timeSpan.TotalMilliseconds)
                 {
-                    //如果符合条件，则自动缓存 【自动缓存功能】
-                    resMsg.ElapsedTime = 0;
-
-                    if (resMsg.Value is InvokeData)
+                    //服务端记入临时缓存
+                    if (byServer)
                     {
-                        (resMsg.Value as InvokeData).ElapsedTime = 0;
+                        //临时缓存
+                        CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_RECORD_TIMEOUT * 10);
                     }
-
-                    CacheHelper.Permanent(callKey, resMsg);
-
-                    //Add worker item
-                    var worker = new WorkerItem
+                    else
                     {
-                        Service = service,
-                        Context = context,
-                        Request = reqMsg
-                    };
+                        CacheHelper.Permanent(callKey, resMsg);
 
-                    ThreadManager.AddWorker(callKey, worker);
+                        //Add worker item
+                        var worker = new WorkerItem
+                        {
+                            Service = service,
+                            Context = context,
+                            Request = reqMsg
+                        };
+
+                        ThreadManager.AddWorker(callKey, worker);
+                    }
                 }
             }
         }

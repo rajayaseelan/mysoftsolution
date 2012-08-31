@@ -22,7 +22,7 @@ namespace MySoft.IoC
 
         private static void DoWorkerItem(object state)
         {
-            var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_TIMEOUT);
+            var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
 
             while (true)
             {
@@ -51,13 +51,6 @@ namespace MySoft.IoC
                                 //不为null而且未出错
                                 if (resMsg != null && !resMsg.IsError)
                                 {
-                                    resMsg.ElapsedTime = 0;
-
-                                    if (resMsg.Value is InvokeData)
-                                    {
-                                        (resMsg.Value as InvokeData).ElapsedTime = 0;
-                                    }
-
                                     CacheHelper.Permanent(callKey, resMsg);
                                 }
 

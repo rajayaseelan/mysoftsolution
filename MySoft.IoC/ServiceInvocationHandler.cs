@@ -47,7 +47,7 @@ namespace MySoft.IoC
             this.cacheTimes = new Dictionary<string, int>();
 
             //计算超时时间
-            var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_TIMEOUT);
+            var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT);
 
             //实例化异步服务
             this.asyncCaller = new AsyncCaller(container, service, elapsedTime, false);
