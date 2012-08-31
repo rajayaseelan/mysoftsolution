@@ -111,19 +111,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         {
             if (_receiveMemoryStream.Length > 0)
             {
-                try
-                {
-                    _receiveMemoryStream.Close();
-                    _receiveMemoryStream.Dispose();
-                }
-                catch
-                {
-                    //TODO
-                }
-                finally
-                {
-                    _receiveMemoryStream = new MemoryStream();
-                }
+                _receiveMemoryStream = new MemoryStream();
             }
         }
 
@@ -223,6 +211,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
 
                 //Create a new memory stream from current except first 4-bytes.
                 var bytes = _receiveMemoryStream.ToArray();
+
                 _receiveMemoryStream = new MemoryStream();
                 _receiveMemoryStream.Write(bytes, 4, bytes.Length - 4);
                 return true;

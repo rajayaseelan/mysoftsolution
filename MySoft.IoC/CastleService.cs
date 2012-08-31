@@ -45,7 +45,7 @@ namespace MySoft.IoC
             this.server = ScsServerFactory.CreateServer(epServer);
             this.server.ClientConnected += server_ClientConnected;
             this.server.ClientDisconnected += server_ClientDisconnected;
-            this.server.WireProtocolFactory = new CustomWireProtocolFactory(config.Compress, config.Encrypt);
+            this.server.WireProtocolFactory = new CustomWireProtocolFactory(config.Compress);
 
             //服务端注入内存处理
             this.container = new SimpleServiceContainer(CastleFactoryType.Local);
@@ -188,6 +188,13 @@ namespace MySoft.IoC
         public void Dispose()
         {
             this.Stop();
+
+            this.config = null;
+            this.container = null;
+            this.httpServer = null;
+            this.server = null;
+            this.epServer = null;
+            this.caller = null;
         }
 
         #endregion

@@ -83,8 +83,7 @@ namespace MySoft.IoC.Services
                                 var method = CoreHelper.GetMethodFromType(callbackType, callbackMsg.MethodName);
 
                                 //执行委托
-                                var invoke = DynamicCalls.GetMethodInvoker(method);
-                                invoke(callback, callbackMsg.Parameters);
+                                method.FastInvoke(callback, callbackMsg.Parameters);
                             }
                             catch (Exception ex)
                             {

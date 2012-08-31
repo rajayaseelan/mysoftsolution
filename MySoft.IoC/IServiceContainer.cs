@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Castle.MicroKernel;
+using MySoft.IoC.Communication;
 using MySoft.Logger;
 
 namespace MySoft.IoC

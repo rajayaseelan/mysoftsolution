@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
+using MySoft.IoC.Communication;
 using MySoft.IoC.Communication.Scs.Client;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
@@ -23,13 +24,11 @@ namespace MySoft.IoC
         /// </summary>
         public event EventHandler<ErrorMessageEventArgs> OnError;
 
-        private RequestMessage reqMessage;
+        private RequestMessage reqMsg;
         private IScsClient client;
         private IServiceContainer container;
+        private ServerNode node;
         private bool isCallback;
-        private string node;
-        private string ip;
-        private int port;
 
         /// <summary>
         /// 实例化ServiceMessage
@@ -39,18 +38,16 @@ namespace MySoft.IoC
         public ServiceRequest(ServerNode node, IServiceContainer container, bool isCallback)
         {
             this.container = container;
-            this.node = node.Key;
-            this.ip = node.IP;
-            this.port = node.Port;
+            this.node = node;
             this.isCallback = isCallback;
 
-            this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(ip, port));
+            this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(node.IP, node.Port));
             this.client.IsTimeoutDisconnect = !isCallback;
             this.client.Connected += new EventHandler(client_Connected);
             this.client.Disconnected += client_Disconnected;
             this.client.MessageReceived += client_MessageReceived;
             this.client.MessageError += client_MessageError;
-            this.client.WireProtocol = new CustomWireProtocol(node.Compress, node.Encrypt);
+            this.client.WireProtocol = new CustomWireProtocol(node.Compress);
         }
 
         /// <summary>
@@ -93,7 +90,7 @@ namespace MySoft.IoC
             //输出错误信息
             if (OnError != null)
             {
-                OnError(sender, new ErrorMessageEventArgs { Request = reqMessage, Error = e.Error });
+                OnError(sender, new ErrorMessageEventArgs { Request = reqMsg, Error = e.Error });
             }
         }
 
@@ -109,7 +106,7 @@ namespace MySoft.IoC
             }
             catch (Exception e)
             {
-                throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", ip, port, node, e.Message));
+                throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", node.IP, node.Port, node.Key, e.Message));
             }
         }
 
@@ -120,7 +117,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public void SendMessage(RequestMessage reqMsg)
         {
-            this.reqMessage = reqMsg;
+            this.reqMsg = reqMsg;
 
             //如果连接断开，直接抛出异常
             if (client.CommunicationState == CommunicationStates.Disconnected)
@@ -140,6 +137,7 @@ namespace MySoft.IoC
                 client.SendMessage(new ScsClientMessage(clientInfo));
             }
 
+            //设置压缩与加密
             IScsMessage message = new ScsResultMessage(reqMsg, reqMsg.TransactionId.ToString());
 
             //发送消息
@@ -153,7 +151,7 @@ namespace MySoft.IoC
             var message = new ServiceMessageEventArgs
             {
                 Client = client,
-                Request = reqMessage
+                Request = reqMsg
             };
 
             //不是指定消息不处理

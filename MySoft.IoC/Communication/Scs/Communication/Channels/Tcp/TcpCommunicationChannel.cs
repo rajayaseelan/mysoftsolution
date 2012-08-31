@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
@@ -51,6 +50,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private volatile bool _running;
 
+        /// <summary>
+        /// This object is just used for thread synchronizing (locking).
+        /// </summary>
+        private readonly object _syncLock;
+
         #endregion
 
         #region Constructor
@@ -69,6 +73,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
 
             _buffer = new byte[ReceiveBufferSize];
+            _syncLock = new object();
         }
 
         #endregion
@@ -160,47 +165,45 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="message">Message to be sent</param>
         protected override void SendMessageInternal(IScsMessage message)
         {
-            if (!_running)
+            lock (_syncLock)
             {
-                return;
-            }
-
-            try
-            {
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
-
-                var e = new SocketAsyncEventArgs();
-                e.UserToken = message;
-                e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
-                e.SetBuffer(messageBytes, 0, messageBytes.Length);
-
                 try
                 {
-                    //Send all bytes to the remote application
-                    if (!_clientSocket.SendAsync(e))
+                    //Create a byte array from message according to current protocol
+                    var messageBytes = WireProtocol.GetBytes(message);
+
+                    var e = new SocketAsyncEventArgs();
+                    e.UserToken = message;
+                    e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                    e.SetBuffer(messageBytes, 0, messageBytes.Length);
+
+                    try
                     {
-                        OnReceiveCompleted(e);
+                        //Send all bytes to the remote application
+                        if (!_clientSocket.SendAsync(e))
+                        {
+                            OnReceiveCompleted(e);
+                        }
+                    }
+                    catch
+                    {
+                        e.Dispose();
+
+                        throw;
                     }
                 }
-                catch
+                catch (SocketException ex)
                 {
-                    IoCHelper.Dispose(e);
+                    Disconnect();
 
-                    throw;
+                    throw ex;
                 }
-            }
-            catch (SocketException ex)
-            {
-                Disconnect();
+                catch (Exception ex)
+                {
+                    OnMessageError(ex);
 
-                throw ex;
-            }
-            catch (Exception ex)
-            {
-                OnMessageError(ex);
-
-                throw ex;
+                    throw ex;
+                }
             }
         }
 
@@ -225,7 +228,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
-                IoCHelper.Dispose(e);
+                e.Dispose();
             }
         }
 
@@ -279,7 +282,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
-                IoCHelper.Dispose(e);
+                e.Dispose();
             }
         }
 
@@ -302,7 +305,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch
             {
-                IoCHelper.Dispose(e);
+                e.Dispose();
 
                 throw;
             }

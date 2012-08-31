@@ -10,6 +10,7 @@ using Castle.MicroKernel;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Castle.Windsor.Configuration.Interpreters;
+using MySoft.IoC.Communication;
 using MySoft.IoC.Services;
 using MySoft.Logger;
 
@@ -59,17 +60,20 @@ namespace MySoft.IoC
             if (windsorContainer.Kernel.GraphNodes.Length > 0)
             {
                 var models = GetComponentModels<ServiceContractAttribute>(windsorContainer);
+                var components = new List<IRegistration>();
                 foreach (var model in models)
                 {
                     //注册服务
                     var component = Component.For(model.Services.First()).Named(model.Name).ImplementedBy(model.Implementation);
                     if (model.LifestyleType == LifestyleType.Undefined)
-                        component = component.LifeStyle.Singleton;
+                        component = component.LifeStyle.PerThread;
                     else
                         component = component.LifeStyle.Is(model.LifestyleType);
 
-                    container.Register(component);
+                    components.Add(component);
                 }
+
+                container.Register(components.ToArray());
 
                 //销毁资源
                 windsorContainer.Dispose();

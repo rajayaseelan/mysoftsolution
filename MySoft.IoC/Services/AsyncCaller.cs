@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
-using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -12,6 +12,7 @@ namespace MySoft.IoC.Services
         private ILog logger;
         private IService service;
         private TimeSpan elapsedTime;
+        private bool byServer;
         private IDictionary<string, Queue<WaitResult>> results;
 
         /// <summary>
@@ -20,11 +21,12 @@ namespace MySoft.IoC.Services
         /// <param name="logger"></param>
         /// <param name="service"></param>
         /// <param name="elapsedTime"></param>
-        public AsyncCaller(ILog logger, IService service, TimeSpan elapsedTime)
+        public AsyncCaller(ILog logger, IService service, TimeSpan elapsedTime, bool byServer)
         {
             this.logger = logger;
             this.service = service;
             this.elapsedTime = elapsedTime;
+            this.byServer = byServer;
             this.results = new Dictionary<string, Queue<WaitResult>>();
         }
 
@@ -36,7 +38,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage SyncCall(OperationContext context, RequestMessage reqMsg)
         {
-            return GetResponse(service, context, reqMsg);
+            return ThreadManager.GetResponse(service, context, reqMsg);
         }
 
         /// <summary>
@@ -47,31 +49,37 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage AsyncCall(OperationContext context, RequestMessage reqMsg)
         {
+            AppCaller caller = context.Caller;
+
+            var callKey = string.Format("Caller_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
+
+            //从缓存中获取数据
+            var resMsg = CacheHelper.Get<ResponseMessage>(callKey);
+
+            if (resMsg != null)
+            {
+                return new ResponseMessage
+                {
+                    TransactionId = reqMsg.TransactionId,
+                    ReturnType = resMsg.ReturnType,
+                    ServiceName = resMsg.ServiceName,
+                    MethodName = resMsg.MethodName,
+                    Parameters = resMsg.Parameters,
+                    ElapsedTime = resMsg.ElapsedTime,
+                    Value = resMsg.Value,
+                    Error = resMsg.Error
+                };
+            }
+
+            //等待响应消息
             using (var waitResult = new WaitResult(reqMsg))
             {
-                AppCaller caller = null;
-                if (context == null)
-                {
-                    caller = new AppCaller
-                    {
-                        ServiceName = reqMsg.ServiceName,
-                        MethodName = reqMsg.MethodName,
-                        Parameters = reqMsg.Parameters.ToString()
-                    };
-                }
-                else
-                {
-                    caller = context.Caller;
-                }
-
-                var callKey = string.Format("Caller_{0}_{1}${2}${3}", service.ServiceName, caller.ServiceName, caller.MethodName, caller.Parameters);
-
                 lock (results)
                 {
                     if (!results.ContainsKey(callKey))
                     {
                         results[callKey] = new Queue<WaitResult>();
-                        ManagedThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { callKey, waitResult, context, reqMsg });
+                        ThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { callKey, waitResult, context, reqMsg });
                     }
                     else
                     {
@@ -79,12 +87,9 @@ namespace MySoft.IoC.Services
                     }
                 }
 
-                //定义响应消息
-                ResponseMessage resMsg = null;
-
                 if (!waitResult.Wait(elapsedTime))
                 {
-                    var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout {4} ms.\r\nParameters => {3}",
+                    var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
                         reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), (int)elapsedTime.TotalMilliseconds);
 
                     //获取异常
@@ -92,7 +97,7 @@ namespace MySoft.IoC.Services
 
                     logger.WriteError(error);
 
-                    var title = string.Format("Call remote service ({0},{1}) timeout {2} ms.",
+                    var title = string.Format("Call remote service ({0},{1}) timeout ({2}) ms.",
                                 reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds);
 
                     //处理异常
@@ -130,8 +135,9 @@ namespace MySoft.IoC.Services
 
                         while (queue.Count > 0)
                         {
-                            var item = queue.Dequeue();
-                            item.Set(resMsg);
+                            var wr = queue.Dequeue();
+
+                            wr.Set(resMsg);
                         }
                     }
 
@@ -154,67 +160,39 @@ namespace MySoft.IoC.Services
             var context = arr[2] as OperationContext;
             var reqMsg = arr[3] as RequestMessage;
 
-            //从缓存中获取数据
-            var resMsg = CacheHelper.Get<ResponseMessage>(callKey);
-
-            if (resMsg == null)
-            {
-                //获取响应的消息
-                resMsg = GetResponse(service, context, reqMsg);
-
-                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_TIMEOUT);
-                if (!resMsg.IsError && resMsg.Count > 0 && resMsg.ElapsedTime > timeSpan.TotalMilliseconds)
-                {
-                    //如果符合条件，则缓存30秒 【自动缓存功能】
-                    CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CALL_TIMEOUT);
-                }
-            }
-            else
-            {
-                resMsg.TransactionId = reqMsg.TransactionId;
-                resMsg.ElapsedTime = 0;
-                if (resMsg.Value is InvokeData)
-                {
-                    (resMsg.Value as InvokeData).ElapsedTime = 0;
-                }
-            }
+            //获取响应的消息
+            var resMsg = ThreadManager.GetResponse(service, context, reqMsg);
 
             wr.Set(resMsg);
-        }
 
-        /// <summary>
-        /// 调用方法
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponse(IService service, OperationContext context, RequestMessage reqMsg)
-        {
-            //定义响应的消息
-            ResponseMessage resMsg = null;
-
-            try
+            //只缓存服务端数据
+            if (byServer && resMsg != null)
             {
-                OperationContext.Current = context;
+                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_TIMEOUT);
 
-                //响应结果，清理资源
-                resMsg = service.CallService(reqMsg);
-            }
-            catch (Exception ex)
-            {
-                //将异常信息写出
-                logger.WriteError(ex);
+                if (!resMsg.IsError && resMsg.Count > 0 && resMsg.ElapsedTime > timeSpan.TotalMilliseconds)
+                {
+                    //如果符合条件，则自动缓存 【自动缓存功能】
+                    resMsg.ElapsedTime = 0;
 
-                //处理异常
-                resMsg = IoCHelper.GetResponse(reqMsg, ex);
-            }
-            finally
-            {
-                OperationContext.Current = null;
-            }
+                    if (resMsg.Value is InvokeData)
+                    {
+                        (resMsg.Value as InvokeData).ElapsedTime = 0;
+                    }
 
-            return resMsg;
+                    CacheHelper.Permanent(callKey, resMsg);
+
+                    //Add worker item
+                    var worker = new WorkerItem
+                    {
+                        Service = service,
+                        Context = context,
+                        Request = reqMsg
+                    };
+
+                    ThreadManager.AddWorker(callKey, worker);
+                }
+            }
         }
     }
 }

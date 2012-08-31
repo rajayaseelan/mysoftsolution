@@ -11,7 +11,6 @@ namespace MySoft.IoC
         private string ip;
         private int port;
         private string key;
-        private bool encrypt = false;
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
         private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
@@ -46,16 +45,6 @@ namespace MySoft.IoC
         {
             get { return port; }
             set { port = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the encrypt.
-        /// </summary>
-        /// <value>The encrypt.</value>
-        public bool Encrypt
-        {
-            get { return encrypt; }
-            set { encrypt = value; }
         }
 
         /// <summary>

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Runtime.Remoting.Messaging;
 using System.Threading;
-using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Callback;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
@@ -19,13 +19,38 @@ namespace MySoft.IoC
         {
             get
             {
-                string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
-                return CallContext.GetData(name) as OperationContext;
+                try
+                {
+                    string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
+
+                    return CallContext.GetData(name) as OperationContext;
+                }
+                catch (Exception ex)
+                {
+                    //TODO
+                }
+
+                return null;
             }
             set
             {
-                string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
-                CallContext.SetData(name, value);
+                try
+                {
+                    string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
+
+                    if (value == null)
+                    {
+                        CallContext.FreeNamedDataSlot(name);
+                    }
+                    else
+                    {
+                        CallContext.SetData(name, value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //TODO
+                }
             }
         }
 

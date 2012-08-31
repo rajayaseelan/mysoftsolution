@@ -70,7 +70,6 @@ namespace MySoft.IoC.Communication.Scs.Client
             _disposed = true;
             _client.Disconnected -= Client_Disconnected;
             _reconnectTimer.Stop();
-            _reconnectTimer.Dispose();
         }
 
         /// <summary>
@@ -80,7 +79,14 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// <param name="e">Event arguments</param>
         private void Client_Disconnected(object sender, EventArgs e)
         {
-            _reconnectTimer.Start();
+            try
+            {
+                _reconnectTimer.Start();
+            }
+            catch
+            {
+                //No need to catch since it will try to re-connect again
+            }
         }
 
         /// <summary>
@@ -93,7 +99,6 @@ namespace MySoft.IoC.Communication.Scs.Client
             if (_disposed || _client.CommunicationState == CommunicationStates.Connected)
             {
                 _reconnectTimer.Stop();
-                _reconnectTimer.Dispose();
                 return;
             }
 
@@ -101,7 +106,6 @@ namespace MySoft.IoC.Communication.Scs.Client
             {
                 _client.Connect();
                 _reconnectTimer.Stop();
-                _reconnectTimer.Dispose();
             }
             catch
             {

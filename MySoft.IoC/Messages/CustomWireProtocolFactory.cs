@@ -8,12 +8,10 @@ namespace MySoft.IoC.Messages
     public class CustomWireProtocolFactory : IScsWireProtocolFactory
     {
         private bool compress;
-        private bool encrypt;
 
-        public CustomWireProtocolFactory(bool compress, bool encrypt)
+        public CustomWireProtocolFactory(bool compress)
         {
             this.compress = compress;
-            this.encrypt = encrypt;
         }
 
         #region IScsWireProtocolFactory 成员
@@ -24,7 +22,7 @@ namespace MySoft.IoC.Messages
         /// <returns></returns>
         public IScsWireProtocol CreateWireProtocol()
         {
-            return new CustomWireProtocol(compress, encrypt);
+            return new CustomWireProtocol(compress);
         }
 
         #endregion

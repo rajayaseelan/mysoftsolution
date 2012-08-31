@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.DynamicProxy;
 
 namespace MySoft.IoC.Aspect
 {
@@ -10,7 +11,7 @@ namespace MySoft.IoC.Aspect
     /// </summary>
     public static class AspectFactory
     {
-        private static IDictionary<Type, object> services = new Dictionary<Type, object>();
+        private static IDictionary<Type, object> hashtable = new Dictionary<Type, object>();
 
         /// <summary>
         /// 创建一个实例方式的拦截器（支持Aspect方式）
@@ -18,27 +19,35 @@ namespace MySoft.IoC.Aspect
         /// <param name="serviceType"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        internal static object CreateProxyService(Type serviceType, object target)
+        public static object CreateProxy(Type serviceType, object target)
         {
-            lock (services)
+            lock (hashtable)
             {
-                if (services.ContainsKey(serviceType))
+                if (!hashtable.ContainsKey(serviceType))
                 {
-                    return services[serviceType];
-                }
-                else
-                {
-                    var service = CreateService(serviceType, target);
-                    services[serviceType] = service;
+                    var interceptors = GetInterceptorList(target);
 
-                    return service;
+                    //创建代理服务
+                    var service = CreateProxy(serviceType, target, interceptors.ToArray());
+
+                    hashtable[serviceType] = service;
                 }
             }
+
+            return hashtable[serviceType];
         }
 
-        private static object CreateService(Type serviceType, object target)
+        /// <summary>
+        /// 获取拦截器列表
+        /// </summary>
+        /// <param name="target"></param>
+        private static IList<IInterceptor> GetInterceptorList(object target)
         {
-            var interceptors = new List<Castle.DynamicProxy.IInterceptor>();
+            var interceptors = new List<IInterceptor>();
+
+            //判断对象是否为null
+            if (target == null) return interceptors;
+
             var classType = target.GetType();
             var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(classType);
 
@@ -46,27 +55,25 @@ namespace MySoft.IoC.Aspect
             {
                 foreach (var attribute in attributes)
                 {
-                    if (typeof(Castle.DynamicProxy.IInterceptor).IsAssignableFrom(attribute.InterceptorType))
+                    if (typeof(IInterceptor).IsAssignableFrom(attribute.InterceptorType))
                     {
                         object value = null;
                         if (attribute.Arguments == null)
+                        {
                             value = Activator.CreateInstance(attribute.InterceptorType);
+                        }
                         else
                         {
-
                             var arguments = new List<object>();
                             foreach (var argument in attribute.Arguments)
                             {
-                                if (argument == null)
-                                {
-                                    arguments.Add(argument);
-                                    continue;
-                                }
+                                if (argument == null) continue;
 
                                 //如果类，则创建实例
-                                if (argument.GetType().IsClass)
+                                var type = argument.GetType();
+                                if (type.IsClass)
                                 {
-                                    var instance = Activator.CreateInstance(argument.GetType());
+                                    var instance = Activator.CreateInstance(type);
                                     arguments.Add(instance);
                                 }
                                 else
@@ -78,20 +85,12 @@ namespace MySoft.IoC.Aspect
                             value = Activator.CreateInstance(attribute.InterceptorType, arguments.ToArray());
                         }
 
-                        interceptors.Add(value as Castle.DynamicProxy.IInterceptor);
+                        interceptors.Add(value as IInterceptor);
                     }
                 }
             }
 
-            if (interceptors.Count > 0)
-            {
-                //创建代理服务
-                return CreateProxy(serviceType, target, interceptors.ToArray());
-            }
-            else
-            {
-                return target;
-            }
+            return interceptors;
         }
 
         /// <summary>
@@ -101,21 +100,21 @@ namespace MySoft.IoC.Aspect
         /// <param name="target"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static object CreateProxy(Type proxyType, object target, params Castle.DynamicProxy.IInterceptor[] interceptors)
+        public static object CreateProxy(Type proxyType, object target, params IInterceptor[] interceptors)
         {
             //如果拦截器为0
-            if (interceptors.Length == 0)
+            if (interceptors == null || interceptors.Length == 0)
             {
                 return target;
             }
 
-            Castle.DynamicProxy.ProxyGenerator proxy = new Castle.DynamicProxy.ProxyGenerator();
-            Castle.DynamicProxy.ProxyGenerationOptions options = new Castle.DynamicProxy.ProxyGenerationOptions(new ProxyGenerationHook())
+            ProxyGenerator proxy = new ProxyGenerator();
+            ProxyGenerationOptions options = new ProxyGenerationOptions(new ProxyGenerationHook())
             {
                 Selector = new InterceptorSelector()
             };
 
-            return proxy.CreateInterfaceProxyWithTargetInterface(proxyType, target, options, interceptors);
+            return proxy.CreateInterfaceProxyWithTarget(proxyType, target, options, interceptors);
         }
 
         /// <summary>
@@ -124,7 +123,7 @@ namespace MySoft.IoC.Aspect
         /// <param name="classType"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static object CreateProxy(Type classType, params Castle.DynamicProxy.IInterceptor[] interceptors)
+        public static object CreateProxy(Type classType, params IInterceptor[] interceptors)
         {
             return CreateProxy(classType, new object[0], interceptors);
         }
@@ -136,7 +135,7 @@ namespace MySoft.IoC.Aspect
         /// <param name="arguments"></param>
         /// <param name="interceptors"></param>
         /// <returns></returns>
-        public static object CreateProxy(Type classType, object[] arguments, params Castle.DynamicProxy.IInterceptor[] interceptors)
+        public static object CreateProxy(Type classType, object[] arguments, params IInterceptor[] interceptors)
         {
             //如果拦截器为0
             if (interceptors.Length == 0)
@@ -144,8 +143,8 @@ namespace MySoft.IoC.Aspect
                 return Activator.CreateInstance(classType, arguments);
             }
 
-            Castle.DynamicProxy.ProxyGenerator proxy = new Castle.DynamicProxy.ProxyGenerator();
-            Castle.DynamicProxy.ProxyGenerationOptions options = new Castle.DynamicProxy.ProxyGenerationOptions(new ProxyGenerationHook())
+            ProxyGenerator proxy = new ProxyGenerator();
+            ProxyGenerationOptions options = new ProxyGenerationOptions(new ProxyGenerationHook())
             {
                 Selector = new InterceptorSelector()
             };

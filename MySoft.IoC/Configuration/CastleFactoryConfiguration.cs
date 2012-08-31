@@ -88,9 +88,6 @@ namespace MySoft.IoC.Configuration
                     if (childattribute["minpool"] != null && childattribute["minpool"].Value.Trim() != string.Empty)
                         node.MinPool = Convert.ToInt32(childattribute["minpool"].Value);
 
-                    if (childattribute["encrypt"] != null && childattribute["encrypt"].Value.Trim() != string.Empty)
-                        node.Encrypt = Convert.ToBoolean(childattribute["encrypt"].Value);
-
                     if (childattribute["compress"] != null && childattribute["compress"].Value.Trim() != string.Empty)
                         node.Compress = Convert.ToBoolean(childattribute["compress"].Value);
 

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
-using MySoft.IoC.Callback;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
@@ -67,7 +67,7 @@ namespace MySoft.IoC
                     var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CALL_TIMEOUT);
 
                     //实例化AsyncCaller
-                    asyncCallers[type.FullName] = new AsyncCaller(container, service, elapsedTime);
+                    asyncCallers[type.FullName] = new AsyncCaller(container, service, elapsedTime, true);
                 }
             }
         }
@@ -123,9 +123,6 @@ namespace MySoft.IoC
 
                 //处理异常
                 resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                //发送消息
-                SendMessage(client, reqMsg, resMsg, messageId);
             }
 
             //判断返回的消息

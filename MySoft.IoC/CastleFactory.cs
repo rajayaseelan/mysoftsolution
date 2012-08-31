@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MySoft.Cache;
+using MySoft.IoC.Communication;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
@@ -485,7 +486,7 @@ namespace MySoft.IoC
                             {
                                 //返回本地服务
                                 var service = container.Resolve<IService>(serviceKey);
-                                var handler = new LocalInvocationHandler(config, container, service, serviceType, cache, logger);
+                                var handler = new ServiceInvocationHandler(config, container, service, serviceType, cache, logger);
                                 var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                                 hashtable[serviceKey] = dynamicProxy;

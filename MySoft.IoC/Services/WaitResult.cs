@@ -56,6 +56,7 @@ namespace MySoft.IoC.Services
         public bool Set(ResponseMessage resMsg)
         {
             if (ev == null) return false;
+            if (resMsg == null) return ev.Set();
 
             if (resMsg.TransactionId == reqMsg.TransactionId)
             {

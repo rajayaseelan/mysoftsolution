@@ -15,8 +15,8 @@ namespace MySoft.IoC
     {
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
-        private AsyncCaller asyncCaller;
         private IServiceContainer container;
+        private AsyncCaller asyncCaller;
         private IService service;
         private Type serviceType;
         private ICacheStrategy cache;
@@ -41,16 +41,16 @@ namespace MySoft.IoC
             this.cache = cache;
             this.logger = logger;
 
-            //计算超时时间
-            var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_TIMEOUT);
-
-            //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service, elapsedTime);
-
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
 
             this.cacheTimes = new Dictionary<string, int>();
+
+            //计算超时时间
+            var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_TIMEOUT);
+
+            //实例化异步服务
+            this.asyncCaller = new AsyncCaller(container, service, elapsedTime, false);
 
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)
@@ -166,9 +166,10 @@ namespace MySoft.IoC
                 //写日志开始
                 logger.BeginRequest(reqMsg);
 
-                //调用服务
-                var context = OperationContext.Current;
+                //获取上下文
+                var context = GetOperationContext(reqMsg);
 
+                //调用服务
                 if (reqMsg.ServiceName == typeof(IStatusService).FullName)
                 {
                     resMsg = asyncCaller.SyncCall(context, reqMsg);
@@ -197,6 +198,32 @@ namespace MySoft.IoC
             }
 
             return resMsg;
+        }
+
+        /// <summary>
+        /// 获取上下文对象
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private OperationContext GetOperationContext(RequestMessage reqMsg)
+        {
+            var caller = new AppCaller
+            {
+                AppPath = AppDomain.CurrentDomain.BaseDirectory,
+                AppName = reqMsg.AppName,
+                IPAddress = reqMsg.IPAddress,
+                HostName = reqMsg.HostName,
+                ServiceName = reqMsg.ServiceName,
+                MethodName = reqMsg.MethodName,
+                Parameters = reqMsg.Parameters.ToString(),
+                CallTime = DateTime.Now
+            };
+
+            return new OperationContext
+            {
+                Container = container,
+                Caller = caller
+            };
         }
 
         #endregion

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
 
@@ -65,12 +64,6 @@ namespace MySoft.IoC.Services
             {
                 var callMethod = methods[reqMsg.MethodName];
 
-                //解析服务
-                instance = container.Resolve(serviceType);
-
-                //返回拦截服务
-                var service = AspectFactory.CreateProxyService(serviceType, instance);
-
                 if (reqMsg.InvokeMethod)
                 {
                     var objValue = reqMsg.Parameters["InvokeParameter"];
@@ -83,8 +76,14 @@ namespace MySoft.IoC.Services
                 //参数赋值
                 object[] parameters = IoCHelper.CreateParameterValues(callMethod, reqMsg.Parameters);
 
+                //解析服务
+                instance = container.Resolve(serviceType);
+
+                //返回拦截服务
+                var service = AspectFactory.CreateProxy(serviceType, instance);
+
                 //调用对应的服务
-                resMsg.Value = DynamicCalls.GetMethodInvoker(callMethod)(service, parameters);
+                resMsg.Value = callMethod.FastInvoke(service, parameters);
 
                 //处理返回参数
                 IoCHelper.SetRefParameters(callMethod, resMsg.Parameters, parameters);
@@ -98,8 +97,6 @@ namespace MySoft.IoC.Services
             {
                 //释放资源
                 container.Release(instance);
-
-                instance = null;
             }
 
             return resMsg;

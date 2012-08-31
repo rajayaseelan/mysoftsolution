@@ -187,7 +187,6 @@ namespace MySoft.IoC.Communication.Scs.Client
             finally
             {
                 _pingTimer.Stop();
-                _pingTimer.Dispose();
             }
         }
 

@@ -14,7 +14,6 @@ namespace MySoft.IoC.Configuration
         private int httpPort = 8080;
         private bool httpEnabled = false;
         private Type httpType;
-        private bool encrypt = false;
         private bool compress = false;
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;        //默认记录1小时
         private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;         //超时时间为5秒
@@ -52,9 +51,6 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["port"] != null && attribute["port"].Value.Trim() != string.Empty)
                 port = Convert.ToInt32(attribute["port"].Value);
-
-            if (attribute["encrypt"] != null && attribute["encrypt"].Value.Trim() != string.Empty)
-                encrypt = Convert.ToBoolean(attribute["encrypt"].Value);
 
             if (attribute["compress"] != null && attribute["compress"].Value.Trim() != string.Empty)
                 compress = Convert.ToBoolean(attribute["compress"].Value);
@@ -137,16 +133,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return port; }
             set { port = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the encrypt.
-        /// </summary>
-        /// <value>The encrypt.</value>
-        public bool Encrypt
-        {
-            get { return encrypt; }
-            set { encrypt = value; }
         }
 
         /// <summary>

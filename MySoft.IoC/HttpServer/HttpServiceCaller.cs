@@ -188,10 +188,13 @@ namespace MySoft.IoC.HttpServer
                     var service = ParseService(appCaller);
 
                     //初始化上下文
-                    SetOperationContext(appCaller);
+                    var context = GetOperationContext(appCaller);
 
                     try
                     {
+                        //初始化上下文
+                        OperationContext.Current = context;
+
                         //使用Invoke方式调用
                         var invoke = new InvokeCaller(appCaller.AppName, service);
                         invokeData = invoke.CallMethod(message);
@@ -249,9 +252,9 @@ namespace MySoft.IoC.HttpServer
         /// 设置上下文
         /// </summary>
         /// <param name="caller"></param>
-        private void SetOperationContext(AppCaller caller)
+        private OperationContext GetOperationContext(AppCaller caller)
         {
-            OperationContext.Current = new OperationContext
+            return new OperationContext
             {
                 Container = container,
                 Caller = caller
