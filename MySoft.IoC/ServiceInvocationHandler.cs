@@ -101,7 +101,7 @@ namespace MySoft.IoC
                             int cacheTime = cacheTimes[method.ToString()];
                             cacheValue = new CacheObject
                             {
-                                Value = SerializationManager.SerializeBin(resMsg.Value),
+                                Value = resMsg.Value,
                                 Parameters = resMsg.Parameters
                             };
 
@@ -113,7 +113,7 @@ namespace MySoft.IoC
             else
             {
                 //处理返回值
-                returnValue = SerializationManager.DeserializeBin(cacheValue.Value);
+                returnValue = cacheValue.Value;
 
                 //处理参数
                 IoCHelper.SetRefParameterValues(method, cacheValue.Parameters, parameters);
@@ -143,7 +143,8 @@ namespace MySoft.IoC
                 MethodName = method.ToString(),                 //方法名称
                 TransactionId = Guid.NewGuid(),                 //传输ID号
                 MethodInfo = method,                            //设置调用方法
-                Parameters = collection                         //设置参数
+                Parameters = collection,                        //设置参数
+                TransferType = TransferType.Binary              //数据类型
             };
 
             #endregion
@@ -169,15 +170,8 @@ namespace MySoft.IoC
                 //获取上下文
                 var context = GetOperationContext(reqMsg);
 
-                //调用服务
-                if (reqMsg.ServiceName == typeof(IStatusService).FullName)
-                {
-                    resMsg = asyncCaller.SyncCall(context, reqMsg);
-                }
-                else
-                {
-                    resMsg = asyncCaller.AsyncCall(context, reqMsg);
-                }
+                //异步调用服务
+                resMsg = asyncCaller.AsyncCall(context, reqMsg);
 
                 //写日志结束
                 logger.EndRequest(reqMsg, resMsg, resMsg.ElapsedTime);

@@ -1,5 +1,6 @@
 ﻿using System;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
@@ -12,16 +13,26 @@ namespace MySoft.IoC
         private IService service;
         private string hostName;
         private string ipAddress;
+        private IServiceContainer container;
+        private AsyncCaller asyncCaller;
 
         /// <summary>
         /// 实例化InvokeCaller
         /// </summary>
         /// <param name="appName"></param>
+        /// <param name="container"></param>
         /// <param name="service"></param>
-        public InvokeCaller(string appName, IService service)
+        public InvokeCaller(string appName, IServiceContainer container, IService service)
         {
             this.appName = appName;
             this.service = service;
+            this.container = container;
+
+            //计算超时时间
+            var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT);
+
+            //实例化异步服务
+            this.asyncCaller = new AsyncCaller(container, service, elapsedTime, false);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -36,29 +47,61 @@ namespace MySoft.IoC
         {
             #region 设置请求信息
 
-            RequestMessage reqMsg = new RequestMessage();
-            reqMsg.InvokeMethod = true;
-            reqMsg.AppName = appName;                                       //应用名称
-            reqMsg.HostName = hostName;                                     //客户端名称
-            reqMsg.IPAddress = ipAddress;                                   //客户端IP地址
-            reqMsg.ServiceName = message.ServiceName;                       //服务名称
-            reqMsg.MethodName = message.MethodName;                         //方法名称
-            reqMsg.ReturnType = typeof(string);                             //返回类型
-            reqMsg.TransactionId = Guid.NewGuid();                          //传输ID号
+            var reqMsg = new RequestMessage
+            {
+                InvokeMethod = true,
+                AppName = appName,                                      //应用名称
+                HostName = hostName,                                    //客户端名称
+                IPAddress = ipAddress,                                  //客户端IP地址
+                ServiceName = message.ServiceName,                      //服务名称
+                MethodName = message.MethodName,                        //方法名称
+                ReturnType = typeof(string),                            //返回类型
+                TransactionId = Guid.NewGuid(),
+                TransferType = TransferType.Json                        //数据类型
+            };
 
             #endregion
 
             //给参数赋值
             reqMsg.Parameters["InvokeParameter"] = message.Parameters;
 
-            //调用服务
-            var resMsg = service.CallService(reqMsg);
+            //获取上下文
+            var context = GetOperationContext(reqMsg);
+
+            //异步调用服务
+            var resMsg = asyncCaller.AsyncCall(context, reqMsg);
 
             //如果有异常，向外抛出
             if (resMsg.IsError) throw resMsg.Error;
 
             //返回数据
             return resMsg.Value as InvokeData;
+        }
+
+        /// <summary>
+        /// 获取上下文对象
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private OperationContext GetOperationContext(RequestMessage reqMsg)
+        {
+            var caller = new AppCaller
+            {
+                AppPath = AppDomain.CurrentDomain.BaseDirectory,
+                AppName = reqMsg.AppName,
+                IPAddress = reqMsg.IPAddress,
+                HostName = reqMsg.HostName,
+                ServiceName = reqMsg.ServiceName,
+                MethodName = reqMsg.MethodName,
+                Parameters = reqMsg.Parameters.ToString(),
+                CallTime = DateTime.Now
+            };
+
+            return new OperationContext
+            {
+                Container = container,
+                Caller = caller
+            };
         }
     }
 }

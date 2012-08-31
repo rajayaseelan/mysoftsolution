@@ -177,6 +177,8 @@ namespace MySoft.IoC.Messages
             }
         }
 
+        #region 额外的参数
+
         [NonSerialized]
         private System.Reflection.MethodInfo method;
 
@@ -194,6 +196,26 @@ namespace MySoft.IoC.Messages
                 method = value;
             }
         }
+
+        [NonSerialized]
+        private TransferType type;
+
+        /// <summary>
+        /// 传输的数据类型
+        /// </summary>
+        internal TransferType TransferType
+        {
+            get
+            {
+                return type;
+            }
+            set
+            {
+                type = value;
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 请求的消息

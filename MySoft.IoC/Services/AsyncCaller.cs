@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
@@ -31,17 +32,6 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 同步调用
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        public ResponseMessage SyncCall(OperationContext context, RequestMessage reqMsg)
-        {
-            return ThreadManager.GetResponse(service, context, reqMsg);
-        }
-
-        /// <summary>
         /// 异步调用服务
         /// </summary>
         /// <param name="context"></param>
@@ -51,8 +41,7 @@ namespace MySoft.IoC.Services
         {
             AppCaller caller = context.Caller;
 
-            var callKey = string.Format("Caller_{0}${1}${2}_{3}", caller.ServiceName, caller.MethodName,
-                                        caller.Parameters, reqMsg.InvokeMethod ? 1 : 0);
+            var callKey = string.Format("Caller_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
 
             //从缓存中获取数据
             var resMsg = CacheHelper.Get<ResponseMessage>(callKey);
@@ -166,39 +155,37 @@ namespace MySoft.IoC.Services
             var context = arr[2] as OperationContext;
             var reqMsg = arr[3] as RequestMessage;
 
+            var watch = Stopwatch.StartNew();
+
             //获取响应的消息
             var resMsg = ThreadManager.GetResponse(service, context, reqMsg);
+
+            watch.Stop();
 
             wr.Set(resMsg);
 
             //只缓存服务端数据
             if (resMsg != null)
             {
-                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
+                var timeout = ServiceConfig.DEFAULT_RECORD_TIMEOUT;
+                if (!byServer) timeout *= 2;
+
+                var timeSpan = TimeSpan.FromSeconds(timeout);
 
                 //如果符合条件，则自动缓存 【自动缓存功能】
-                if (!resMsg.IsError && resMsg.ElapsedTime > timeSpan.TotalMilliseconds)
+                if (!resMsg.IsError && watch.ElapsedMilliseconds > timeSpan.TotalMilliseconds)
                 {
-                    //服务端记入临时缓存
-                    if (byServer)
-                    {
-                        //临时缓存
-                        CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_RECORD_TIMEOUT * 10);
-                    }
-                    else
-                    {
-                        CacheHelper.Permanent(callKey, resMsg);
+                    CacheHelper.Permanent(callKey, resMsg);
 
-                        //Add worker item
-                        var worker = new WorkerItem
-                        {
-                            Service = service,
-                            Context = context,
-                            Request = reqMsg
-                        };
+                    //Add worker item
+                    var worker = new WorkerItem
+                    {
+                        Service = service,
+                        Context = context,
+                        Request = reqMsg
+                    };
 
-                        ThreadManager.AddWorker(callKey, worker);
-                    }
+                    ThreadManager.AddWorker(callKey, worker);
                 }
             }
         }

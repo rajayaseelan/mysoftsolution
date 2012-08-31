@@ -12,7 +12,7 @@ namespace MySoft.IoC
         /// <summary>
         /// 返回值
         /// </summary>
-        public byte[] Value { get; set; }
+        public object Value { get; set; }
 
         /// <summary>
         /// 参数集合

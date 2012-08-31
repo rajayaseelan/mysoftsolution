@@ -18,10 +18,7 @@ namespace MySoft.IoC.Services
         /// <param name="node"></param>
         /// <param name="logger"></param>
         public InvokeProxy(ServerNode node, IServiceContainer logger)
-            : base(node, logger)
-        {
-            //TO DO
-        }
+            : base(node, logger) { }
 
         /// <summary>
         /// Calls the service.
@@ -30,14 +27,13 @@ namespace MySoft.IoC.Services
         /// <returns>The result.</returns>
         public override ResponseMessage CallService(RequestMessage reqMsg)
         {
-            //如果已经是Invoke调用，则直接返回
-            if (reqMsg.InvokeMethod)
+            if (reqMsg.TransferType == TransferType.Json)
             {
                 return base.CallService(reqMsg);
             }
             else
             {
-                var method = GetInvokeMethod(reqMsg);
+                var method = reqMsg.MethodInfo;
 
                 //处理开始
                 HandleBegin(reqMsg, method);
@@ -50,19 +46,6 @@ namespace MySoft.IoC.Services
 
                 return resMsg;
             }
-        }
-
-        /// <summary>
-        /// 获取Invoke方法
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private System.Reflection.MethodInfo GetInvokeMethod(RequestMessage reqMsg)
-        {
-            var method = reqMsg.MethodInfo;
-            reqMsg.MethodInfo = null;
-
-            return method;
         }
 
         /// <summary>

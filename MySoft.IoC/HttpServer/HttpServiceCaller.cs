@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -171,50 +169,25 @@ namespace MySoft.IoC.HttpServer
                 var invokeData = CacheHelper.Get<InvokeData>(cacheKey);
                 if (invokeData == null)
                 {
-                    //获取当前调用者信息
-                    var appCaller = new AppCaller
-                    {
-                        AppPath = AppDomain.CurrentDomain.BaseDirectory,
-                        AppName = "HttpServer",
-                        HostName = DnsHelper.GetHostName(),
-                        IPAddress = DnsHelper.GetIPAddress(),
-                        ServiceName = message.ServiceName,
-                        MethodName = message.MethodName,
-                        Parameters = message.Parameters,
-                        CallTime = DateTime.Now
-                    };
-
                     //创建服务
-                    var service = ParseService(appCaller);
+                    var service = ParseService(message.ServiceName);
 
-                    //初始化上下文
-                    var context = GetOperationContext(appCaller);
+                    //使用Invoke方式调用
+                    var invoke = new InvokeCaller("HttpServer", container, service);
+                    invokeData = invoke.CallMethod(message);
 
-                    try
+                    //插入缓存
+                    if (invokeData != null && caller.CacheTime > 0)
                     {
-                        //初始化上下文
-                        OperationContext.Current = context;
-
-                        //使用Invoke方式调用
-                        var invoke = new InvokeCaller(appCaller.AppName, service);
-                        invokeData = invoke.CallMethod(message);
-
-                        //插入缓存
-                        if (invokeData != null && caller.CacheTime > 0)
-                        {
-                            CacheHelper.Insert(cacheKey, invokeData, caller.CacheTime);
-                        }
-                    }
-                    finally
-                    {
-                        //初始化上下文
-                        OperationContext.Current = null;
+                        CacheHelper.Insert(cacheKey, invokeData, caller.CacheTime);
                     }
                 }
 
                 //如果缓存不为null，则返回缓存数据
                 if (invokeData != null)
+                {
                     return invokeData.Value;
+                }
             }
 
             return "null";
@@ -223,13 +196,13 @@ namespace MySoft.IoC.HttpServer
         /// <summary>
         /// Gets the service.
         /// </summary>
-        /// <param name="appCaller"></param>
+        /// <param name="serviceName"></param>
         /// <returns></returns>
-        private IService ParseService(AppCaller appCaller)
+        private IService ParseService(string serviceName)
         {
             //处理数据返回InvokeData
             IService service = null;
-            string serviceKey = "Service_" + appCaller.ServiceName;
+            string serviceKey = "Service_" + serviceName;
 
             if (container.Kernel.HasComponent(serviceKey))
             {
@@ -239,26 +212,13 @@ namespace MySoft.IoC.HttpServer
             if (service == null)
             {
                 string body = string.Format("The server【{1}({2})】not find matching service ({0})."
-                    , appCaller.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
+                    , serviceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
 
                 //返回异常信息
                 throw new WarningException(body);
             }
 
             return service;
-        }
-
-        /// <summary>
-        /// 设置上下文
-        /// </summary>
-        /// <param name="caller"></param>
-        private OperationContext GetOperationContext(AppCaller caller)
-        {
-            return new OperationContext
-            {
-                Container = container,
-                Caller = caller
-            };
         }
     }
 }

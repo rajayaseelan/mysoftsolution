@@ -99,15 +99,8 @@ namespace MySoft.IoC
                 //解析服务
                 var asyncCaller = GetAsyncCaller(reqMsg, context);
 
-                //状态服务采用同步调用
-                if (reqMsg.ServiceName == typeof(IStatusService).FullName)
-                {
-                    resMsg = asyncCaller.SyncCall(context, reqMsg);
-                }
-                else
-                {
-                    resMsg = asyncCaller.AsyncCall(context, reqMsg);
-                }
+                //异步调用服务
+                resMsg = asyncCaller.AsyncCall(context, reqMsg);
 
                 //判断返回的消息
                 if (resMsg != null)
