@@ -50,7 +50,7 @@ namespace MySoft.IoC
             var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT);
 
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service, elapsedTime, false);
+            this.asyncCaller = new AsyncCaller(container, service, elapsedTime);
 
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)

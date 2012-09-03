@@ -26,6 +26,16 @@ namespace MySoft.IoC
         public const int DEFAULT_RECORD_TIMEOUT = 1; //1秒
 
         /// <summary>
+        /// The default sync time number.
+        /// </summary>
+        public const int DEFAULT_SYNC_CACHE_TIME = 5; //5秒
+
+        /// <summary>
+        /// The default time number.
+        /// </summary>
+        public const int DEFAULT_CACHE_TIME = 5 * 60; //5*60秒
+
+        /// <summary>
         /// The default server call timeout number. 
         /// </summary>
         public const int DEFAULT_SERVER_CALL_TIMEOUT = 60; //60秒

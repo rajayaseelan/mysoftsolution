@@ -13,7 +13,6 @@ namespace MySoft.IoC.Services
         private ILog logger;
         private IService service;
         private TimeSpan elapsedTime;
-        private bool byServer;
         private IDictionary<string, Queue<WaitResult>> results;
 
         /// <summary>
@@ -22,12 +21,11 @@ namespace MySoft.IoC.Services
         /// <param name="logger"></param>
         /// <param name="service"></param>
         /// <param name="elapsedTime"></param>
-        public AsyncCaller(ILog logger, IService service, TimeSpan elapsedTime, bool byServer)
+        public AsyncCaller(ILog logger, IService service, TimeSpan elapsedTime)
         {
             this.logger = logger;
             this.service = service;
             this.elapsedTime = elapsedTime;
-            this.byServer = byServer;
             this.results = new Dictionary<string, Queue<WaitResult>>();
         }
 
@@ -48,6 +46,9 @@ namespace MySoft.IoC.Services
 
             if (resMsg != null)
             {
+                //刷新工作项
+                ThreadManager.RefreshWorker(callKey);
+
                 if (resMsg.Value is InvokeData)
                 {
                     (resMsg.Value as InvokeData).ElapsedTime = 0;
@@ -167,15 +168,12 @@ namespace MySoft.IoC.Services
             //只缓存服务端数据
             if (resMsg != null)
             {
-                var timeout = ServiceConfig.DEFAULT_RECORD_TIMEOUT;
-                if (!byServer) timeout *= 2;
-
-                var timeSpan = TimeSpan.FromSeconds(timeout);
+                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
 
                 //如果符合条件，则自动缓存 【自动缓存功能】
                 if (!resMsg.IsError && watch.ElapsedMilliseconds > timeSpan.TotalMilliseconds)
                 {
-                    CacheHelper.Permanent(callKey, resMsg);
+                    CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CACHE_TIME);
 
                     //Add worker item
                     var worker = new WorkerItem

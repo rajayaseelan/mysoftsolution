@@ -67,7 +67,7 @@ namespace MySoft.IoC
                     var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_CALL_TIMEOUT);
 
                     //实例化AsyncCaller
-                    asyncCallers[type.FullName] = new AsyncCaller(container, service, elapsedTime, true);
+                    asyncCallers[type.FullName] = new AsyncCaller(container, service, elapsedTime);
                 }
             }
         }

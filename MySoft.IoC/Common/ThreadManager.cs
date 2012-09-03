@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using MySoft.IoC.Messages;
-using System.Collections;
 using MySoft.Threading;
 
 namespace MySoft.IoC
@@ -14,57 +14,6 @@ namespace MySoft.IoC
     {
         //实例化队列
         private static IDictionary<string, WorkerItem> hashtable = new Dictionary<string, WorkerItem>();
-
-        static ThreadManager()
-        {
-            ThreadPool.QueueUserWorkItem(DoWorkerItem);
-        }
-
-        private static void DoWorkerItem(object state)
-        {
-            var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
-
-            while (true)
-            {
-                //Sleep second
-                Thread.Sleep(timeSpan);
-
-                if (hashtable.Count == 0) continue;
-
-                lock (hashtable)
-                {
-                    foreach (var kvp in hashtable)
-                    {
-                        if (kvp.Value.IsRunning) continue;
-                        kvp.Value.IsRunning = true;
-
-                        ManagedThreadPool.QueueUserWorkItem(obj =>
-                        {
-                            var arr = obj as ArrayList;
-                            var callKey = arr[0] as string;
-                            var worker = arr[1] as WorkerItem;
-
-                            try
-                            {
-                                var resMsg = GetResponse(worker.Service, worker.Context, worker.Request);
-
-                                //不为null而且未出错
-                                if (resMsg != null && !resMsg.IsError)
-                                {
-                                    CacheHelper.Permanent(callKey, resMsg);
-                                }
-
-                                worker.IsRunning = false;
-                            }
-                            catch (Exception ex)
-                            {
-                                //no exception
-                            }
-                        }, new ArrayList { kvp.Key, kvp.Value });
-                    }
-                }
-            }
-        }
 
         /// <summary>
         /// 添加工作项
@@ -79,6 +28,60 @@ namespace MySoft.IoC
 
                 //将当前线程放入队列中
                 hashtable[key] = item;
+            }
+        }
+
+        /// <summary>
+        /// 刷新工作项
+        /// </summary>
+        /// <param name="key"></param>
+        public static void RefreshWorker(string key)
+        {
+            lock (hashtable)
+            {
+                if (hashtable.ContainsKey(key))
+                {
+                    var item = hashtable[key];
+
+                    lock (item)
+                    {
+                        if (item.IsRunning) return;
+                        item.IsRunning = true;
+
+                        ManagedThreadPool.QueueUserWorkItem(RefreshData, new ArrayList { key, item });
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 刷新数据
+        /// </summary>
+        /// <param name="state"></param>
+        private static void RefreshData(object state)
+        {
+            var arr = state as ArrayList;
+            var callKey = arr[0] as string;
+            var worker = arr[1] as WorkerItem;
+
+            try
+            {
+                var resMsg = GetResponse(worker.Service, worker.Context, worker.Request);
+
+                //不为null而且未出错
+                if (resMsg != null && !resMsg.IsError)
+                {
+                    CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CACHE_TIME);
+                }
+
+                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SYNC_CACHE_TIME);
+                Thread.Sleep(timeSpan);
+
+                worker.IsRunning = false;
+            }
+            catch (Exception ex)
+            {
+                //no exception
             }
         }
 
