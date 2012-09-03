@@ -319,7 +319,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -477,7 +477,9 @@ namespace MySoft.PlatformService.Client
                     int count = new Random().Next(1, 100);
                     //var value = service.GetUsersString(count, out length);
 
-                    var value = service.GetUser(counter);
+                    //var value = service.GetUser(new Random().Next(1, 10000));
+
+                    var value = service.GetUser(10);
 
                     //var user = service.GetUser(counter);
 

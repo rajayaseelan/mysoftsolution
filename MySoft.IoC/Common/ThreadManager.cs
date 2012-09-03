@@ -15,6 +15,45 @@ namespace MySoft.IoC
         //实例化队列
         private static IDictionary<string, WorkerItem> hashtable = new Dictionary<string, WorkerItem>();
 
+        static ThreadManager()
+        {
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                while (true)
+                {
+                    //1分钟检测一次
+                    var timeSpan = TimeSpan.FromMinutes(1);
+                    Thread.Sleep(timeSpan);
+
+                    var list = new List<string>();
+                    lock (hashtable)
+                    {
+                        if (hashtable.Count == 0) continue;
+                        list = new List<string>(hashtable.Keys);
+                    }
+
+                    //清理项
+                    foreach (var key in list)
+                    {
+                        lock (hashtable)
+                        {
+                            if (hashtable.ContainsKey(key))
+                            {
+                                var item = hashtable[key];
+                                timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_DATA_CACHE_TIME);
+
+                                //如果超过指定时间，则移除项
+                                if (DateTime.Now.Subtract(item.UpdateTime) > timeSpan)
+                                {
+                                    hashtable.Remove(key);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         /// <summary>
         /// 添加工作项
         /// </summary>
@@ -71,17 +110,20 @@ namespace MySoft.IoC
                 //不为null而且未出错
                 if (resMsg != null && !resMsg.IsError)
                 {
-                    CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CACHE_TIME);
+                    CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_DATA_CACHE_TIME);
                 }
-
-                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SYNC_CACHE_TIME);
-                Thread.Sleep(timeSpan);
-
-                worker.IsRunning = false;
             }
             catch (Exception ex)
             {
                 //no exception
+            }
+            finally
+            {
+                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SYNC_CACHE_TIME);
+                Thread.Sleep(timeSpan);
+
+                worker.UpdateTime = DateTime.Now;
+                worker.IsRunning = false;
             }
         }
 
@@ -142,5 +184,15 @@ namespace MySoft.IoC
         /// 是否在运行
         /// </summary>
         public bool IsRunning { get; set; }
+
+        /// <summary>
+        /// 更新时间
+        /// </summary>
+        public DateTime UpdateTime { get; set; }
+
+        public WorkerItem()
+        {
+            this.UpdateTime = DateTime.Now;
+        }
     }
 }

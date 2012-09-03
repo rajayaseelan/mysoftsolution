@@ -180,8 +180,7 @@ namespace MySoft.Web.UI
                 }
 
                 var method = ajaxMethods[MethodName].Method;
-                var handler = DynamicCalls.GetMethodInvoker(method);
-                object value = handler.Invoke(invokeObject, plist.ToArray());
+                object value = method.FastInvoke(invokeObject, plist.ToArray());
                 return new AjaxCallbackParam(value);
             }
             else

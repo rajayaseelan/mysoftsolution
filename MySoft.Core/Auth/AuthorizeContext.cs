@@ -1,7 +1,8 @@
-﻿using System.ServiceModel.Web;
+﻿using System;
+using System.Runtime.Remoting.Messaging;
+using System.ServiceModel.Web;
 using System.Threading;
 using System.Web;
-using System.Runtime.Remoting.Messaging;
 
 namespace MySoft.Auth
 {
@@ -65,13 +66,38 @@ namespace MySoft.Auth
         {
             get
             {
-                string name = string.Format("AuthorizeContext_{0}", Thread.CurrentThread.ManagedThreadId);
-                return CallContext.GetData(name) as AuthorizeContext;
+                try
+                {
+                    string name = string.Format("AuthorizeContext_{0}", Thread.CurrentThread.ManagedThreadId);
+
+                    return CallContext.GetData(name) as AuthorizeContext;
+                }
+                catch (Exception ex)
+                {
+                    //TODO
+                }
+
+                return null;
             }
             set
             {
-                string name = string.Format("AuthorizeContext_{0}", Thread.CurrentThread.ManagedThreadId);
-                CallContext.SetData(name, value);
+                try
+                {
+                    string name = string.Format("AuthorizeContext_{0}", Thread.CurrentThread.ManagedThreadId);
+
+                    if (value == null)
+                    {
+                        CallContext.FreeNamedDataSlot(name);
+                    }
+                    else
+                    {
+                        CallContext.SetData(name, value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //TODO
+                }
             }
         }
     }

@@ -54,6 +54,8 @@ namespace MySoft.PlatformService.UserService
 
         User GetUser(int id);
 
+        User GetUserForName(string name);
+
         //[HttpInvoke(Name = "user.getuser", Description = "获取用户")]
         string GetSex(Sex value);
 

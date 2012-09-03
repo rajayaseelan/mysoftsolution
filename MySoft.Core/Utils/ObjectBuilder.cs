@@ -80,8 +80,7 @@ namespace MySoft
                 object newobj = ConverterFactory.Converters[property.PropertyType].ConvertTo(value, out succeeded);
                 if (succeeded)
                 {
-                    var setter = DynamicCalls.GetPropertySetter(property);
-                    setter(obj, newobj);
+                    property.FastSetValue(obj, newobj);
                 }
             }
         }

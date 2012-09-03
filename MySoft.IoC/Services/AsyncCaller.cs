@@ -168,22 +168,26 @@ namespace MySoft.IoC.Services
             //只缓存服务端数据
             if (resMsg != null)
             {
-                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
-
                 //如果符合条件，则自动缓存 【自动缓存功能】
-                if (!resMsg.IsError && watch.ElapsedMilliseconds > timeSpan.TotalMilliseconds)
+                if (!resMsg.IsError && resMsg.Count > 0)
                 {
-                    CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CACHE_TIME);
+                    var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
 
-                    //Add worker item
-                    var worker = new WorkerItem
+                    if (resMsg.Count > ServiceConfig.DEFAULT_RECORD_COUNT ||
+                         watch.ElapsedMilliseconds > timeSpan.TotalMilliseconds)
                     {
-                        Service = service,
-                        Context = context,
-                        Request = reqMsg
-                    };
+                        CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_DATA_CACHE_TIME);
 
-                    ThreadManager.AddWorker(callKey, worker);
+                        //Add worker item
+                        var worker = new WorkerItem
+                        {
+                            Service = service,
+                            Context = context,
+                            Request = reqMsg
+                        };
+
+                        ThreadManager.AddWorker(callKey, worker);
+                    }
                 }
             }
         }

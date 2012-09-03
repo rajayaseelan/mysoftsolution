@@ -409,6 +409,7 @@
     <Compile Include="Threading\WorkItemsGroupBase.cs" />
     <Compile Include="Threading\WorkItemsQueue.cs" />
     <Compile Include="Utils\DynamicCalls.cs" />
+    <Compile Include="Utils\DynamicReflectionExtentions.cs" />
     <Compile Include="Utils\ErrorHelper.cs" />
     <Compile Include="Mail\SMTP.cs" />
     <Compile Include="Mail\SmtpMail.cs" />

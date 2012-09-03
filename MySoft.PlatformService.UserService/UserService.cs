@@ -17,7 +17,7 @@ namespace MySoft.PlatformService.UserService
         }
     }
 
-    //[AspectProxy(typeof(AspectLog))]
+    [AspectProxy(typeof(AspectLog))]
     public class UserService : IUserService, IInitializable, IStartable
     {
         //private DateTime startTime;
@@ -33,8 +33,21 @@ namespace MySoft.PlatformService.UserService
 
         public User GetUser(int id)
         {
-            Thread.Sleep(100);
-            return new User { Id = id, Name = "maoyong" + id };
+            if (id % 10 == 0)
+            {
+                Thread.Sleep(1000 * 6);
+            }
+            else
+            {
+                Thread.Sleep(1000);
+            }
+
+            return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id };
+        }
+
+        public User GetUserForName(string name)
+        {
+            return new User { Id = name.Length, Name = name };
         }
 
         public string GetUser(UserInfo user)
@@ -155,8 +168,8 @@ namespace MySoft.PlatformService.UserService
             }
 
             Console.WriteLine("{0} => {1}", DateTime.Now, Thread.CurrentThread.ManagedThreadId);
-            int value = new Random().Next(1, 10);
-            Thread.Sleep(value * 1000);
+            //int value = new Random().Next(1, 10);
+            Thread.Sleep(5 * 1000);
 
             return list;
         }

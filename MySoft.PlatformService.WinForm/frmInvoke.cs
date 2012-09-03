@@ -283,70 +283,19 @@ namespace MySoft.PlatformService.WinForm
             var value = caller.EndInvoke(ar);
             var data = value as InvokeResponse;
 
-            if (!data.IsError)
-            {
-                InvokeMethod(new Action(() =>
-                {
-                    richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
-                        data.Count, data.Value, data.OutParameters);
-                    richTextBox1.Refresh();
-                }));
-
-                //启用线程来处理数据
-                ThreadPool.QueueUserWorkItem(state =>
-                {
-                    var invokeData = state as InvokeData;
-                    var container = JContainer.Parse(invokeData.Value);
-
-                    //获取DataView数据
-                    var table = GetDataTable(container);
-                    if (table == null)
-                    {
-                        //写Document文档
-                        InvokeMethod(new Action(() =>
-                        {
-                            if (webBrowser1.IsBusy) return;
-
-                            gridDataQuery.DataSource = null;
-
-                            var html = container.ToString();
-                            webBrowser1.Url = new Uri("about:blank");
-                            webBrowser1.DocumentCompleted += (sender, e) =>
-                            {
-                                if (this.IsDisposed) return;
-
-                                try
-                                {
-                                    webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
-                                    webBrowser1.Document.Write(html);
-                                }
-                                catch
-                                {
-                                }
-                            };
-                        }));
-                    }
-                    else
-                    {
-                        InvokeMethod(new Action(() =>
-                        {
-                            gridDataQuery.DataSource = table;
-
-                            table = null;
-                        }));
-                    }
-                }, data);
-            }
-            else
-            {
-                InvokeMethod(new Action(() =>
-                {
-                    richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
-                }));
-            }
-
             InvokeMethod(new Action(() =>
             {
+                if (data.IsError)
+                {
+                    richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
+                }
+                else
+                {
+                    richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
+                                        data.Count, data.Value, data.OutParameters);
+                    richTextBox1.Refresh();
+                }
+
                 label5.Text = string.Format("{0} ms. / {1} ms.", data.ElapsedMilliseconds, data.ElapsedTime);
                 label5.Refresh();
 
@@ -362,6 +311,54 @@ namespace MySoft.PlatformService.WinForm
                     button1.Focus();
                 }
             }));
+
+            if (!data.IsError)
+            {
+                ThreadPool.QueueUserWorkItem(InvokeTable, data);
+            }
+        }
+
+        private void InvokeTable(object state)
+        {
+            var invokeData = state as InvokeResponse;
+            var container = JContainer.Parse(invokeData.Value);
+
+            //获取DataView数据
+            var table = GetDataTable(container);
+
+            if (table == null)
+            {
+                //写Document文档
+                InvokeMethod(new Action(() =>
+                {
+                    if (webBrowser1.IsBusy) return;
+
+                    gridDataQuery.DataSource = null;
+
+                    var html = container.ToString();
+                    webBrowser1.Url = new Uri("about:blank");
+                    webBrowser1.DocumentCompleted += (sender, e) =>
+                    {
+                        if (this.IsDisposed) return;
+
+                        try
+                        {
+                            webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+                            webBrowser1.Document.Write(html);
+                        }
+                        catch
+                        {
+                        }
+                    };
+                }));
+            }
+            else
+            {
+                InvokeMethod(new Action(() =>
+                {
+                    gridDataQuery.DataSource = table;
+                }));
+            }
         }
 
         private void InvokeMethod(Action action)
@@ -372,8 +369,7 @@ namespace MySoft.PlatformService.WinForm
             {
                 if (this.InvokeRequired)
                 {
-                    var ar = this.BeginInvoke(action);
-                    this.EndInvoke(ar);
+                    this.Invoke(action);
                 }
                 else
                 {

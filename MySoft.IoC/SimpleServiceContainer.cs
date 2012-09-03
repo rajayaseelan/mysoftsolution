@@ -66,7 +66,7 @@ namespace MySoft.IoC
                     //×¢²á·þÎñ
                     var component = Component.For(model.Services.First()).Named(model.Name).ImplementedBy(model.Implementation);
                     if (model.LifestyleType == LifestyleType.Undefined)
-                        component = component.LifeStyle.Pooled;
+                        component = component.LifeStyle.Singleton;
                     else
                         component = component.LifeStyle.Is(model.LifestyleType);
 

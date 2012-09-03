@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -13,7 +12,7 @@ namespace MySoft
 
     /// <summary>Delegate for creating and object at runtime using the default constructor.</summary>
     /// <returns>the newly created object.</returns>
-    public delegate object FastCreateInstanceHandler();
+    public delegate object FastInstanceHandler();
 
     /// <summary>Delegate to get an arbitraty property at runtime.</summary>
     /// <param name="target">the object instance whose property will be obtained.</param>
@@ -28,223 +27,175 @@ namespace MySoft
     /// <summary>Class with helper methods for dynamic invocation generating IL on the fly.</summary>
     public static class DynamicCalls
     {
-        /// <summary>
-        /// 用于存放GetMethodInvoker的Dictionary
-        /// </summary>
-        private static IDictionary<MethodInfo, FastInvokeHandler> dictInvoker = new Dictionary<MethodInfo, FastInvokeHandler>();
-
         public static FastInvokeHandler GetMethodInvoker(MethodInfo methodInfo)
         {
-            lock (dictInvoker)
+            // generates a dynamic method to generate a FastInvokeHandler delegate
+            DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new Type[] { typeof(object), typeof(object[]) }, methodInfo.DeclaringType.Module);
+
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+
+            ParameterInfo[] parameters = methodInfo.GetParameters();
+
+            Type[] paramTypes = new Type[parameters.Length];
+
+            // copies the parameter types to an array
+            for (int i = 0; i < paramTypes.Length; i++)
             {
-                if (dictInvoker.ContainsKey(methodInfo)) return dictInvoker[methodInfo];
+                if (parameters[i].ParameterType.IsByRef)
+                    paramTypes[i] = parameters[i].ParameterType.GetElementType();
+                else
+                    paramTypes[i] = parameters[i].ParameterType;
+            }
 
-                // generates a dynamic method to generate a FastInvokeHandler delegate
-                DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new Type[] { typeof(object), typeof(object[]) }, methodInfo.DeclaringType.Module);
+            LocalBuilder[] locals = new LocalBuilder[paramTypes.Length];
 
-                ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+            // generates a local variable for each parameter
+            for (int i = 0; i < paramTypes.Length; i++)
+            {
+                locals[i] = ilGenerator.DeclareLocal(paramTypes[i], true);
+            }
 
-                ParameterInfo[] parameters = methodInfo.GetParameters();
+            // creates code to copy the parameters to the local variables
+            for (int i = 0; i < paramTypes.Length; i++)
+            {
+                ilGenerator.Emit(OpCodes.Ldarg_1);
+                EmitFastInt(ilGenerator, i);
+                ilGenerator.Emit(OpCodes.Ldelem_Ref);
+                EmitCastToReference(ilGenerator, paramTypes[i]);
+                ilGenerator.Emit(OpCodes.Stloc, locals[i]);
+            }
 
-                Type[] paramTypes = new Type[parameters.Length];
+            if (!methodInfo.IsStatic)
+            {
+                // loads the object into the stack
+                ilGenerator.Emit(OpCodes.Ldarg_0);
+            }
 
-                // copies the parameter types to an array
-                for (int i = 0; i < paramTypes.Length; i++)
-                {
-                    if (parameters[i].ParameterType.IsByRef)
-                        paramTypes[i] = parameters[i].ParameterType.GetElementType();
-                    else
-                        paramTypes[i] = parameters[i].ParameterType;
-                }
+            // loads the parameters copied to the local variables into the stack
+            for (int i = 0; i < paramTypes.Length; i++)
+            {
+                if (parameters[i].ParameterType.IsByRef)
+                    ilGenerator.Emit(OpCodes.Ldloca_S, locals[i]);
+                else
+                    ilGenerator.Emit(OpCodes.Ldloc, locals[i]);
+            }
 
-                LocalBuilder[] locals = new LocalBuilder[paramTypes.Length];
+            // calls the method
+            if (!methodInfo.IsStatic)
+            {
+                ilGenerator.EmitCall(OpCodes.Callvirt, methodInfo, null);
+            }
+            else
+            {
+                ilGenerator.EmitCall(OpCodes.Call, methodInfo, null);
+            }
 
-                // generates a local variable for each parameter
-                for (int i = 0; i < paramTypes.Length; i++)
-                {
-                    locals[i] = ilGenerator.DeclareLocal(paramTypes[i], true);
-                }
+            // creates code for handling the return value
+            if (methodInfo.ReturnType == typeof(void))
+            {
+                ilGenerator.Emit(OpCodes.Ldnull);
+            }
+            else
+            {
+                EmitBoxIfNeeded(ilGenerator, methodInfo.ReturnType);
+            }
 
-                // creates code to copy the parameters to the local variables
-                for (int i = 0; i < paramTypes.Length; i++)
+            // iterates through the parameters updating the parameters passed by ref
+            for (int i = 0; i < paramTypes.Length; i++)
+            {
+                if (parameters[i].ParameterType.IsByRef)
                 {
                     ilGenerator.Emit(OpCodes.Ldarg_1);
                     EmitFastInt(ilGenerator, i);
-                    ilGenerator.Emit(OpCodes.Ldelem_Ref);
-                    EmitCastToReference(ilGenerator, paramTypes[i]);
-                    ilGenerator.Emit(OpCodes.Stloc, locals[i]);
+                    ilGenerator.Emit(OpCodes.Ldloc, locals[i]);
+                    if (locals[i].LocalType.IsValueType)
+                        ilGenerator.Emit(OpCodes.Box, locals[i].LocalType);
+                    ilGenerator.Emit(OpCodes.Stelem_Ref);
                 }
-
-                if (!methodInfo.IsStatic)
-                {
-                    // loads the object into the stack
-                    ilGenerator.Emit(OpCodes.Ldarg_0);
-                }
-
-                // loads the parameters copied to the local variables into the stack
-                for (int i = 0; i < paramTypes.Length; i++)
-                {
-                    if (parameters[i].ParameterType.IsByRef)
-                        ilGenerator.Emit(OpCodes.Ldloca_S, locals[i]);
-                    else
-                        ilGenerator.Emit(OpCodes.Ldloc, locals[i]);
-                }
-
-                // calls the method
-                if (!methodInfo.IsStatic)
-                {
-                    ilGenerator.EmitCall(OpCodes.Callvirt, methodInfo, null);
-                }
-                else
-                {
-                    ilGenerator.EmitCall(OpCodes.Call, methodInfo, null);
-                }
-
-                // creates code for handling the return value
-                if (methodInfo.ReturnType == typeof(void))
-                {
-                    ilGenerator.Emit(OpCodes.Ldnull);
-                }
-                else
-                {
-                    EmitBoxIfNeeded(ilGenerator, methodInfo.ReturnType);
-                }
-
-                // iterates through the parameters updating the parameters passed by ref
-                for (int i = 0; i < paramTypes.Length; i++)
-                {
-                    if (parameters[i].ParameterType.IsByRef)
-                    {
-                        ilGenerator.Emit(OpCodes.Ldarg_1);
-                        EmitFastInt(ilGenerator, i);
-                        ilGenerator.Emit(OpCodes.Ldloc, locals[i]);
-                        if (locals[i].LocalType.IsValueType)
-                            ilGenerator.Emit(OpCodes.Box, locals[i].LocalType);
-                        ilGenerator.Emit(OpCodes.Stelem_Ref);
-                    }
-                }
-
-                // returns the value to the caller
-                ilGenerator.Emit(OpCodes.Ret);
-
-                // converts the DynamicMethod to a FastInvokeHandler delegate to call to the method
-                FastInvokeHandler invoker = (FastInvokeHandler)dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
-
-                dictInvoker[methodInfo] = invoker;
-
-                return invoker;
             }
-        }
 
-        /// <summary>
-        /// 用于存放GetInstanceCreator的Dictionary
-        /// </summary>
-        private static IDictionary<Type, FastCreateInstanceHandler> dictCreator = new Dictionary<Type, FastCreateInstanceHandler>();
+            // returns the value to the caller
+            ilGenerator.Emit(OpCodes.Ret);
+
+            // converts the DynamicMethod to a FastInvokeHandler delegate to call to the method
+            FastInvokeHandler invoker = (FastInvokeHandler)dynamicMethod.CreateDelegate(typeof(FastInvokeHandler));
+
+            return invoker;
+        }
 
         /// <summary>Gets the instance creator delegate that can be use to create instances of the specified type.</summary>
         /// <param name="type">The type of the objects we want to create.</param>
         /// <returns>A delegate that can be used to create the objects.</returns>
-        public static FastCreateInstanceHandler GetInstanceCreator(Type type)
+        public static FastInstanceHandler GetInstanceInvoker(Type type)
         {
-            lock (dictCreator)
-            {
-                if (dictCreator.ContainsKey(type)) return dictCreator[type];
+            // generates a dynamic method to generate a FastCreateInstanceHandler delegate
+            DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, type, new Type[0], typeof(DynamicCalls).Module);
 
-                // generates a dynamic method to generate a FastCreateInstanceHandler delegate
-                DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, type, new Type[0], typeof(DynamicCalls).Module);
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
 
-                ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+            // generates code to create a new object of the specified type using the default constructor
+            ilGenerator.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
 
-                // generates code to create a new object of the specified type using the default constructor
-                ilGenerator.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
+            // returns the value to the caller
+            ilGenerator.Emit(OpCodes.Ret);
 
-                // returns the value to the caller
-                ilGenerator.Emit(OpCodes.Ret);
+            // converts the DynamicMethod to a FastCreateInstanceHandler delegate to create the object
+            FastInstanceHandler creator = (FastInstanceHandler)dynamicMethod.CreateDelegate(typeof(FastInstanceHandler));
 
-                // converts the DynamicMethod to a FastCreateInstanceHandler delegate to create the object
-                FastCreateInstanceHandler creator = (FastCreateInstanceHandler)dynamicMethod.CreateDelegate(typeof(FastCreateInstanceHandler));
-
-                dictCreator[type] = creator;
-
-                return creator;
-            }
+            return creator;
         }
-
-        /// <summary>
-        /// 用于存放GetPropertyGetter的Dictionary
-        /// </summary>
-        private static IDictionary<PropertyInfo, FastPropertyGetHandler> dictGetter = new Dictionary<PropertyInfo, FastPropertyGetHandler>();
 
         public static FastPropertyGetHandler GetPropertyGetter(PropertyInfo propInfo)
         {
-            lock (dictGetter)
-            {
-                if (dictGetter.ContainsKey(propInfo)) return dictGetter[propInfo];
+            // generates a dynamic method to generate a FastPropertyGetHandler delegate
+            DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new Type[] { typeof(object) }, propInfo.DeclaringType.Module);
 
-                // generates a dynamic method to generate a FastPropertyGetHandler delegate
-                DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new Type[] { typeof(object) }, propInfo.DeclaringType.Module);
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
 
-                ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+            // loads the object into the stack
+            ilGenerator.Emit(OpCodes.Ldarg_0);
 
-                // loads the object into the stack
-                ilGenerator.Emit(OpCodes.Ldarg_0);
+            // calls the getter
+            ilGenerator.EmitCall(OpCodes.Callvirt, propInfo.GetGetMethod(), null);
 
-                // calls the getter
-                ilGenerator.EmitCall(OpCodes.Callvirt, propInfo.GetGetMethod(), null);
+            // creates code for handling the return value
+            EmitBoxIfNeeded(ilGenerator, propInfo.PropertyType);
 
-                // creates code for handling the return value
-                EmitBoxIfNeeded(ilGenerator, propInfo.PropertyType);
+            // returns the value to the caller
+            ilGenerator.Emit(OpCodes.Ret);
 
-                // returns the value to the caller
-                ilGenerator.Emit(OpCodes.Ret);
+            // converts the DynamicMethod to a FastPropertyGetHandler delegate to get the property
+            FastPropertyGetHandler getter = (FastPropertyGetHandler)dynamicMethod.CreateDelegate(typeof(FastPropertyGetHandler));
 
-                // converts the DynamicMethod to a FastPropertyGetHandler delegate to get the property
-                FastPropertyGetHandler getter = (FastPropertyGetHandler)dynamicMethod.CreateDelegate(typeof(FastPropertyGetHandler));
-
-                dictGetter[propInfo] = getter;
-
-                return getter;
-            }
+            return getter;
         }
-
-        /// <summary>
-        /// 用于存放SetPropertySetter的Dictionary
-        /// </summary>
-        private static IDictionary<PropertyInfo, FastPropertySetHandler> dictSetter = new Dictionary<PropertyInfo, FastPropertySetHandler>();
 
         public static FastPropertySetHandler GetPropertySetter(PropertyInfo propInfo)
         {
-            lock (dictSetter)
-            {
-                if (dictSetter.ContainsKey(propInfo)) return dictSetter[propInfo];
+            // generates a dynamic method to generate a FastPropertySetHandler delegate
+            DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, null, new Type[] { typeof(object), typeof(object) }, propInfo.DeclaringType.Module);
 
-                // generates a dynamic method to generate a FastPropertySetHandler delegate
-                DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, null, new Type[] { typeof(object), typeof(object) }, propInfo.DeclaringType.Module);
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
 
-                ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+            // loads the object into the stack
+            ilGenerator.Emit(OpCodes.Ldarg_0);
 
-                // loads the object into the stack
-                ilGenerator.Emit(OpCodes.Ldarg_0);
+            // loads the parameter from the stack
+            ilGenerator.Emit(OpCodes.Ldarg_1);
 
-                // loads the parameter from the stack
-                ilGenerator.Emit(OpCodes.Ldarg_1);
+            // cast to the proper type (unboxing if needed)
+            EmitCastToReference(ilGenerator, propInfo.PropertyType);
 
-                // cast to the proper type (unboxing if needed)
-                EmitCastToReference(ilGenerator, propInfo.PropertyType);
+            // calls the setter
+            ilGenerator.EmitCall(OpCodes.Callvirt, propInfo.GetSetMethod(), null);
 
-                // calls the setter
-                ilGenerator.EmitCall(OpCodes.Callvirt, propInfo.GetSetMethod(), null);
+            // terminates the call
+            ilGenerator.Emit(OpCodes.Ret);
 
-                // terminates the call
-                ilGenerator.Emit(OpCodes.Ret);
+            // converts the DynamicMethod to a FastPropertyGetHandler delegate to get the property
+            FastPropertySetHandler setter = (FastPropertySetHandler)dynamicMethod.CreateDelegate(typeof(FastPropertySetHandler));
 
-                // converts the DynamicMethod to a FastPropertyGetHandler delegate to get the property
-                FastPropertySetHandler setter = (FastPropertySetHandler)dynamicMethod.CreateDelegate(typeof(FastPropertySetHandler));
-
-                dictSetter[propInfo] = setter;
-
-                return setter;
-            }
+            return setter;
         }
 
         /// <summary>Emits the cast to a reference, unboxing if needed.</summary>

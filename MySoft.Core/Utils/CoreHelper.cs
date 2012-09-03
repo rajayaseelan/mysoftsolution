@@ -13,7 +13,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using MySoft.Converter;
-using Newtonsoft.Json.Utilities;
 
 namespace MySoft
 {
@@ -175,8 +174,7 @@ namespace MySoft
             }
             else
             {
-                var creator = DynamicCalls.GetInstanceCreator(type);
-                return (T)creator();
+                return (T)type.FastInvoke();
             }
         }
 
@@ -197,8 +195,7 @@ namespace MySoft
             try
             {
                 value = ConvertValue(property.PropertyType, value);
-                var setter = DynamicCalls.GetPropertySetter(property);
-                setter(obj, value);
+                property.FastSetValue(obj, value);
             }
             catch (Exception ex)
             {
@@ -234,8 +231,7 @@ namespace MySoft
             if (!property.CanRead) return null;
             try
             {
-                var getter = DynamicCalls.GetPropertyGetter(property);
-                return getter(obj);
+                return property.FastGetValue(obj);
             }
             catch (Exception ex)
             {
@@ -418,7 +414,7 @@ namespace MySoft
         /// <returns></returns>
         public static MethodInfo[] GetMethodsFromType(Type type)
         {
-            return type.GetAllMethods().ToArray();
+            return type.GetMethods(BindingFlags.Instance | BindingFlags.Public);
         }
 
         /// <summary>
@@ -450,7 +446,7 @@ namespace MySoft
         /// <returns></returns>
         public static MethodInfo GetMethodFromType(Type type, string methodName)
         {
-            return type.GetAllMethods().FirstOrDefault(p => p.ToString() == methodName);
+            return GetMethodsFromType(type).FirstOrDefault(p => p.ToString() == methodName);
         }
 
         /// <summary>

@@ -272,8 +272,7 @@ namespace MySoft.Web.UI
             }
             try
             {
-                FastInvokeHandler handler = DynamicCalls.GetMethodInvoker(method);
-                return handler.Invoke(obj, values);
+                return method.FastInvoke(obj, values);
             }
             catch
             {
