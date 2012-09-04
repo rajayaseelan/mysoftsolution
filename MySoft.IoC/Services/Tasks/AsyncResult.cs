@@ -13,6 +13,8 @@ namespace MySoft.IoC.Services.Tasks
         public void SetAsCompleted(TResult result,
            Boolean completedSynchronously)
         {
+            if (base.IsCompleted) return;
+
             // Save the asynchronous operation's result
             m_result = result;
 
