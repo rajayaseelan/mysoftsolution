@@ -61,17 +61,13 @@ namespace MySoft.IoC.Services.Tasks
             //Set operation context
             OperationContext.Current = context;
 
-            // Register wait for single object
-            if (reqMsg.Timeout <= 0)
-            {
-                reqMsg.Timeout = ServiceConfig.DEFAULT_CALL_TIMEOUT;  //最小为30秒
-            }
-
             // We know that it's really an AsyncResult<DateTime> object
             AsyncResult<ResponseMessage> ar = (AsyncResult<ResponseMessage>)asyncResult;
 
             var mre = new ManualResetEvent(false);
-            var timeout = (int)TimeSpan.FromSeconds(reqMsg.Timeout).TotalMilliseconds / 2;
+            var timeout = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_CALL_TIMEOUT);
+
+            // Register wait for single object
             ThreadPool.RegisterWaitForSingleObject(mre, TimerCallback, Thread.CurrentThread, timeout, true);
 
             try
@@ -91,7 +87,7 @@ namespace MySoft.IoC.Services.Tasks
                 ar.SetAsCompleted(new TimeoutException(body), false);
 
                 //获取异常
-                var error = IoCHelper.GetException(OperationContext.Current, reqMsg, new ThreadException(body, e));
+                var error = IoCHelper.GetException(OperationContext.Current, reqMsg, new TimeoutException(body));
 
                 logger.WriteError(error);
             }
