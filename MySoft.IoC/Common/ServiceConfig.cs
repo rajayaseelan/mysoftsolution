@@ -23,22 +23,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default record timeout number. 
         /// </summary>
-        public const int DEFAULT_RECORD_TIMEOUT = 2; //2秒
-
-        /// <summary>
-        /// The default record count number.
-        /// </summary>
-        public const int DEFAULT_RECORD_COUNT = 100; //100条
-
-        /// <summary>
-        /// The default sync time number.
-        /// </summary>
-        public const int DEFAULT_SYNC_CACHE_TIME = 5; //5秒
-
-        /// <summary>
-        /// The default cache time number.
-        /// </summary>
-        public const int DEFAULT_DATA_CACHE_TIME = 30 * 60; //30*60秒，默认缓存30分钟
+        public const int DEFAULT_RECORD_TIMEOUT = 1; //1秒
 
         /// <summary>
         /// The default server call timeout number. 

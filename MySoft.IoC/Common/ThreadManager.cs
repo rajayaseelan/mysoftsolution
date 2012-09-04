@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using MySoft.IoC.Messages;
-using MySoft.Threading;
+using System.Diagnostics;
 
 namespace MySoft.IoC
 {
@@ -13,45 +13,18 @@ namespace MySoft.IoC
     internal static class ThreadManager
     {
         //实例化队列
-        private static IDictionary<string, WorkerItem> hashtable = new Dictionary<string, WorkerItem>();
+        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
-        static ThreadManager()
+        /// <summary>
+        /// 移除工作项
+        /// </summary>
+        /// <param name="key"></param>
+        private static void RemoveWorker(string key)
         {
-            ThreadPool.QueueUserWorkItem(state =>
+            if (hashtable.ContainsKey(key))
             {
-                while (true)
-                {
-                    //1分钟检测一次
-                    var timeSpan = TimeSpan.FromMinutes(1);
-                    Thread.Sleep(timeSpan);
-
-                    var list = new List<string>();
-                    lock (hashtable)
-                    {
-                        if (hashtable.Count == 0) continue;
-                        list = new List<string>(hashtable.Keys);
-                    }
-
-                    //清理项
-                    foreach (var key in list)
-                    {
-                        lock (hashtable)
-                        {
-                            if (hashtable.ContainsKey(key))
-                            {
-                                var item = hashtable[key];
-                                timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_DATA_CACHE_TIME);
-
-                                //如果超过指定时间，则移除项
-                                if (DateTime.Now.Subtract(item.UpdateTime) > timeSpan)
-                                {
-                                    hashtable.Remove(key);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+                hashtable.Remove(key);
+            }
         }
 
         /// <summary>
@@ -61,12 +34,16 @@ namespace MySoft.IoC
         /// <param name="item"></param>
         public static void AddWorker(string key, WorkerItem item)
         {
-            lock (hashtable)
+            if (hashtable.ContainsKey(key))
             {
-                if (hashtable.ContainsKey(key)) return;
-
+                RefreshWorker(key);
+            }
+            else
+            {
                 //将当前线程放入队列中
                 hashtable[key] = item;
+
+                Console.WriteLine("[{0}] => Worker item count: {1}.", DateTime.Now, hashtable.Count);
             }
         }
 
@@ -76,20 +53,14 @@ namespace MySoft.IoC
         /// <param name="key"></param>
         public static void RefreshWorker(string key)
         {
-            lock (hashtable)
+            if (hashtable.ContainsKey(key))
             {
-                if (hashtable.ContainsKey(key))
-                {
-                    var item = hashtable[key];
+                var item = hashtable[key] as WorkerItem;
 
-                    lock (item)
-                    {
-                        if (item.IsRunning) return;
-                        item.IsRunning = true;
+                if (item.IsRunning) return;
+                item.IsRunning = true;
 
-                        ManagedThreadPool.QueueUserWorkItem(RefreshData, new ArrayList { key, item });
-                    }
-                }
+                ThreadPool.QueueUserWorkItem(RefreshData, new ArrayList { key, item });
             }
         }
 
@@ -105,12 +76,34 @@ namespace MySoft.IoC
 
             try
             {
+                var watch = Stopwatch.StartNew();
+
                 var resMsg = GetResponse(worker.Service, worker.Context, worker.Request);
 
+                watch.Stop();
+
                 //不为null而且未出错
-                if (resMsg != null && !resMsg.IsError)
+                if (resMsg != null)
                 {
-                    CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_DATA_CACHE_TIME);
+                    if (resMsg.IsError)
+                    {
+                        Thread.Sleep(TimeSpan.FromSeconds(5));
+                    }
+                    else
+                    {
+                        var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
+                        var elapsedMilliseconds = watch.ElapsedMilliseconds;
+
+                        if (elapsedMilliseconds < timeSpan.TotalMilliseconds)
+                        {
+                            CacheHelper.Remove(callKey);
+                            RemoveWorker(callKey);
+                        }
+                        else
+                        {
+                            CacheHelper.Permanent(callKey, resMsg);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -119,8 +112,7 @@ namespace MySoft.IoC
             }
             finally
             {
-                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SYNC_CACHE_TIME);
-                Thread.Sleep(timeSpan);
+                Thread.Sleep(TimeSpan.FromSeconds(1));
 
                 worker.UpdateTime = DateTime.Now;
                 worker.IsRunning = false;

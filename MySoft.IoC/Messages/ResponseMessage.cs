@@ -24,6 +24,14 @@ namespace MySoft.IoC.Messages
             set
             {
                 elapsedTime = value;
+
+                if (_value != null)
+                {
+                    if (_value is InvokeData)
+                    {
+                        (_value as InvokeData).ElapsedTime = value;
+                    }
+                }
             }
         }
 
@@ -119,6 +127,8 @@ namespace MySoft.IoC.Messages
 
         private int GetCount(object val)
         {
+            if (val == null) return 0;
+
             if (val is ICollection)
             {
                 return (val as ICollection).Count;

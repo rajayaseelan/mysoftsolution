@@ -97,33 +97,20 @@ namespace MySoft.IoC.Messages
             {
                 return "{}";
             }
+            else if (parmValues.ContainsKey("InvokeParameter"))
+            {
+                return parmValues["InvokeParameter"].ToString();
+            }
             else
             {
                 try
                 {
                     return SerializationManager.SerializeJson(parmValues);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    JObject json = new JObject();
-                    foreach (string key in new List<string>(parmValues.Keys))
-                    {
-                        //将数据进行系列化
-                        var jsonString = string.Empty;
-                        try
-                        {
-                            jsonString = SerializationManager.SerializeJson(parmValues[key]);
-                        }
-                        catch (Exception ex)
-                        {
-                            jsonString = SerializationManager.SerializeJson(ex.Message);
-                        }
-
-                        //添加到json对象
-                        json.Add(key, JToken.Parse(jsonString));
-                    }
-
-                    return json.ToString(Formatting.Indented);
+                    var error = ErrorHelper.GetInnerException(ex);
+                    return SerializationManager.SerializeJson(error.Message);
                 }
             }
         }
