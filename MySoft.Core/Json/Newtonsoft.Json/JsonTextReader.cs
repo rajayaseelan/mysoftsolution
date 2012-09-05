@@ -55,7 +55,6 @@ namespace Newtonsoft.Json
     private const char UnicodeReplacementChar = '\uFFFD';
 
     private readonly TextReader _reader;
-
     private char[] _chars;
     private int _charsUsed;
     private int _charPos;
@@ -76,7 +75,6 @@ namespace Newtonsoft.Json
 
       _reader = reader;
       _lineNumber = 1;
-
       _chars = new char[4097];
     }
 
@@ -324,6 +322,7 @@ namespace Newtonsoft.Json
       int attemptCharReadCount = _chars.Length - _charsUsed - 1;
 
       int charsRead = _reader.Read(_chars, _charsUsed, attemptCharReadCount);
+
       _charsUsed += charsRead;
 
       if (charsRead == 0)

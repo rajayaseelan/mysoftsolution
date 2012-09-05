@@ -53,12 +53,14 @@ namespace Newtonsoft.Json
     internal const DateTimeZoneHandling DefaultDateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind;
     internal const DateParseHandling DefaultDateParseHandling = DateParseHandling.DateTime;
     internal static readonly CultureInfo DefaultCulture;
+    internal const bool DefaultCheckAdditionalContent = false;
 
     internal Formatting? _formatting;
     internal DateFormatHandling? _dateFormatHandling;
     internal DateTimeZoneHandling? _dateTimeZoneHandling;
     internal DateParseHandling? _dateParseHandling;
     internal CultureInfo _culture;
+    internal bool? _checkAdditionalContent;
     internal int? _maxDepth;
     internal bool _maxDepthSet;
 
@@ -212,6 +214,18 @@ namespace Newtonsoft.Json
     {
       get { return _culture ?? DefaultCulture; }
       set { _culture = value; }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether there will be a check for additional content after deserializing an object.
+    /// </summary>
+    /// <value>
+    /// 	<c>true</c> if there will be a check for additional content after deserializing an object; otherwise, <c>false</c>.
+    /// </value>
+    public bool CheckAdditionalContent
+    {
+      get { return _checkAdditionalContent ?? DefaultCheckAdditionalContent; }
+      set { _checkAdditionalContent = value; }
     }
 
     static JsonSerializerSettings()

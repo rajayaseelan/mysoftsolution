@@ -36,7 +36,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="timeSpan"></param>
         /// <returns></returns>
-        public bool Wait(TimeSpan timeSpan)
+        public bool WaitOne(TimeSpan timeSpan)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        public bool Set(ResponseMessage resMsg)
+        public bool SetResponse(ResponseMessage resMsg)
         {
             if (ev == null) return false;
             if (resMsg == null) return ev.Set();

@@ -16,14 +16,19 @@ namespace MySoft.IoC
         public const int DEFAULT_RECORD_HOUR = 6; //6小时
 
         /// <summary>
-        /// The default client  call timeout number. 
-        /// </summary>
-        public const int DEFAULT_CLIENT_CALL_TIMEOUT = 2 * 60; //2*60秒
-
-        /// <summary>
         /// The default record timeout number. 
         /// </summary>
         public const int DEFAULT_RECORD_TIMEOUT = 1; //1秒
+
+        /// <summary>
+        /// The default cache timeout number. 
+        /// </summary>
+        public const int DEFAULT_CACHE_TIMEOUT = 60 * 60; //60分钟
+
+        /// <summary>
+        /// The default client  call timeout number. 
+        /// </summary>
+        public const int DEFAULT_CLIENT_CALL_TIMEOUT = 2 * 60; //2*60秒
 
         /// <summary>
         /// The default server call timeout number. 

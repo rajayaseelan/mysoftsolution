@@ -41,6 +41,7 @@ using IConvertible = Newtonsoft.Json.Utilities.Convertible;
 
 namespace Newtonsoft.Json.Utilities
 {
+#if NETFX_CORE
   internal class Convertible
   {
     private object _underlyingValue;
@@ -120,6 +121,7 @@ namespace Newtonsoft.Json.Utilities
       return Convert.ToUInt64(_underlyingValue, provider);
     }
   }
+#endif
 
   internal static class ConvertUtils
   {
@@ -328,7 +330,7 @@ namespace Newtonsoft.Json.Utilities
         if (targetType == typeof (Guid))
           return new Guid((string) initialValue);
         if (targetType == typeof (Uri))
-          return new Uri((string) initialValue);
+          return new Uri((string) initialValue, UriKind.RelativeOrAbsolute);
         if (targetType == typeof (TimeSpan))
 #if !(NET35 || NET20 || SILVERLIGHT || PORTABLE)
           return TimeSpan.Parse((string) initialValue, CultureInfo.InvariantCulture);

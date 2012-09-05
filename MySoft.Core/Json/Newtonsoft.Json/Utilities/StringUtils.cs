@@ -45,6 +45,21 @@ namespace Newtonsoft.Json.Utilities
     public const char LineFeed = '\n';
     public const char Tab = '\t';
 
+    public static string FormatWith(this string format, IFormatProvider provider, object arg0)
+    {
+      return format.FormatWith(provider, new[] { arg0 });
+    }
+
+    public static string FormatWith(this string format, IFormatProvider provider, object arg0, object arg1)
+    {
+      return format.FormatWith(provider, new[] { arg0, arg1 });
+    }
+
+    public static string FormatWith(this string format, IFormatProvider provider, object arg0, object arg1, object arg2)
+    {
+      return format.FormatWith(provider, new[] { arg0, arg1, arg2 });
+    }
+
     public static string FormatWith(this string format, IFormatProvider provider, params object[] args)
     {
       ValidationUtils.ArgumentNotNull(format, "format");
@@ -102,14 +117,14 @@ namespace Newtonsoft.Json.Utilities
         return value.Length;
     }
 
-    public static string ToCharAsUnicode(char c)
+    public static void ToCharAsUnicode(char c, char[] buffer)
     {
-      char h1 = MathUtils.IntToHex((c >> 12) & '\x000f');
-      char h2 = MathUtils.IntToHex((c >> 8) & '\x000f');
-      char h3 = MathUtils.IntToHex((c >> 4) & '\x000f');
-      char h4 = MathUtils.IntToHex(c & '\x000f');
-
-      return new string(new[] { '\\', 'u', h1, h2, h3, h4 });
+      buffer[0] = '\\';
+      buffer[1] = 'u';
+      buffer[2] = MathUtils.IntToHex((c >> 12) & '\x000f');
+      buffer[3] = MathUtils.IntToHex((c >> 8) & '\x000f');
+      buffer[4] = MathUtils.IntToHex((c >> 4) & '\x000f');
+      buffer[5] = MathUtils.IntToHex(c & '\x000f');
     }
 
     public static TSource ForgivingCaseSensitiveFind<TSource>(this IEnumerable<TSource> source, Func<TSource, string> valueSelector, string testValue)

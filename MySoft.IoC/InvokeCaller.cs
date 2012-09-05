@@ -28,11 +28,8 @@ namespace MySoft.IoC
             this.service = service;
             this.container = container;
 
-            //计算超时时间
-            var elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT);
-
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service, elapsedTime, true);
+            this.asyncCaller = new AsyncCaller(container, service, true, false);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();

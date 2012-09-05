@@ -25,8 +25,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.Serialization;
 using System.Text;
+using Newtonsoft.Json.Utilities;
 
 namespace Newtonsoft.Json
 {
@@ -79,5 +81,28 @@ namespace Newtonsoft.Json
     {
     }
 #endif
+
+    internal static string FormatExceptionMessage(IJsonLineInfo lineInfo, string path, string message)
+    {
+      // don't add a fullstop and space when message ends with a new line
+      if (!message.EndsWith(Environment.NewLine))
+      {
+        message = message.Trim();
+
+        if (!message.EndsWith("."))
+          message += ".";
+
+        message += " ";
+      }
+
+      message += "Path '{0}'".FormatWith(CultureInfo.InvariantCulture, path);
+
+      if (lineInfo != null && lineInfo.HasLineInfo())
+        message += ", line {0}, position {1}".FormatWith(CultureInfo.InvariantCulture, lineInfo.LineNumber, lineInfo.LinePosition);
+
+      message += ".";
+
+      return message;
+    }
   }
 }

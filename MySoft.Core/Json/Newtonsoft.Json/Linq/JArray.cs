@@ -34,6 +34,9 @@ namespace Newtonsoft.Json.Linq
   /// <summary>
   /// Represents a JSON array.
   /// </summary>
+  /// <example>
+  ///   <code lang="cs" source="..\Src\Newtonsoft.Json.Tests\Documentation\LinqToJsonTests.cs" region="LinqToJsonCreateParseArray" title="Parsing a JSON Array from Text" />
+  /// </example>
   public class JArray : JContainer, IList<JToken>
   {
     private readonly IList<JToken> _values = new List<JToken>();
@@ -113,6 +116,12 @@ namespace Newtonsoft.Json.Linq
         if (!reader.Read())
           throw JsonReaderException.Create(reader, "Error reading JArray from JsonReader.");
       }
+
+      while (reader.TokenType == JsonToken.Comment)
+      {
+        reader.Read();
+      }
+
       if (reader.TokenType != JsonToken.StartArray)
         throw JsonReaderException.Create(reader, "Error reading JArray from JsonReader. Current JsonReader item is not an array: {0}".FormatWith(CultureInfo.InvariantCulture, reader.TokenType));
 
@@ -129,6 +138,9 @@ namespace Newtonsoft.Json.Linq
     /// </summary>
     /// <param name="json">A <see cref="String"/> that contains JSON.</param>
     /// <returns>A <see cref="JArray"/> populated from the string that contains JSON.</returns>
+    /// <example>
+    ///   <code lang="cs" source="..\Src\Newtonsoft.Json.Tests\Documentation\LinqToJsonTests.cs" region="LinqToJsonCreateParseArray" title="Parsing a JSON Array from Text" />
+    /// </example>
     public static new JArray Parse(string json)
     {
       JsonReader reader = new JsonTextReader(new StringReader(json));

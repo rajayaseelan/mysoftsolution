@@ -1167,6 +1167,7 @@ namespace Newtonsoft.Json.Linq
     /// <summary>
     /// Creates the specified .NET type from the <see cref="JToken"/>.
     /// </summary>
+    /// <typeparam name="T">The object type that the token will be deserialized to.</typeparam>
     /// <returns>The new object created from the JSON value.</returns>
     public T ToObject<T>()
     {
@@ -1176,6 +1177,7 @@ namespace Newtonsoft.Json.Linq
     /// <summary>
     /// Creates the specified .NET type from the <see cref="JToken"/> using the specified <see cref="JsonSerializer"/>.
     /// </summary>
+    /// <typeparam name="T">The object type that the token will be deserialized to.</typeparam>
     /// <param name="jsonSerializer">The <see cref="JsonSerializer"/> that will be used when creating the object.</param>
     /// <returns>The new object created from the JSON value.</returns>
     public T ToObject<T>(JsonSerializer jsonSerializer)
@@ -1222,7 +1224,6 @@ namespace Newtonsoft.Json.Linq
       if (!JsonReader.IsStartToken(reader.TokenType))
         return new JValue(reader.Value);
 
-      // TODO: loading constructor and parameters?
       throw JsonReaderException.Create(reader, "Error reading JToken from JsonReader. Unexpected token: {0}".FormatWith(CultureInfo.InvariantCulture, reader.TokenType));
     }
 

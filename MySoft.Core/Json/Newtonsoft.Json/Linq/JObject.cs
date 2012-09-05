@@ -48,6 +48,9 @@ namespace Newtonsoft.Json.Linq
   /// <summary>
   /// Represents a JSON object.
   /// </summary>
+  /// <example>
+  ///   <code lang="cs" source="..\Src\Newtonsoft.Json.Tests\Documentation\LinqToJsonTests.cs" region="LinqToJsonCreateParse" title="Parsing a JSON Object from Text" />
+  /// </example>
   public class JObject : JContainer, IDictionary<string, JToken>, INotifyPropertyChanged
 #if !(SILVERLIGHT || NETFX_CORE || PORTABLE)
     , ICustomTypeDescriptor
@@ -292,6 +295,11 @@ namespace Newtonsoft.Json.Linq
           throw JsonReaderException.Create(reader, "Error reading JObject from JsonReader.");
       }
 
+      while (reader.TokenType == JsonToken.Comment)
+      {
+        reader.Read();
+      }
+
       if (reader.TokenType != JsonToken.StartObject)
       {
         throw JsonReaderException.Create(reader, "Error reading JObject from JsonReader. Current JsonReader item is not an object: {0}".FormatWith(CultureInfo.InvariantCulture, reader.TokenType));
@@ -310,6 +318,9 @@ namespace Newtonsoft.Json.Linq
     /// </summary>
     /// <param name="json">A <see cref="String"/> that contains JSON.</param>
     /// <returns>A <see cref="JObject"/> populated from the string that contains JSON.</returns>
+    /// <example>
+    ///   <code lang="cs" source="..\Src\Newtonsoft.Json.Tests\Documentation\LinqToJsonTests.cs" region="LinqToJsonCreateParse" title="Parsing a JSON Object from Text" />
+    /// </example>
     public static new JObject Parse(string json)
     {
       JsonReader reader = new JsonTextReader(new StringReader(json));

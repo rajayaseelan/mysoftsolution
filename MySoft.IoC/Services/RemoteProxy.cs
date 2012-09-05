@@ -89,7 +89,7 @@ namespace MySoft.IoC.Services
                     var waitResult = hashtable[resMsg.TransactionId];
 
                     //数据响应
-                    waitResult.Set(resMsg);
+                    waitResult.SetResponse(resMsg);
                 }
             }
         }
@@ -136,7 +136,7 @@ namespace MySoft.IoC.Services
                     var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
 
                     //等待信号响应
-                    if (!waitResult.Wait(elapsedTime))
+                    if (!waitResult.WaitOne(elapsedTime))
                     {
                         var title = string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
                            , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString());

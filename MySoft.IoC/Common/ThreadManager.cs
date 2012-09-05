@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
-using System.Linq;
-using System.Threading;
-using MySoft.IoC.Messages;
 using System.Diagnostics;
+using System.Threading;
+using System.Linq;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {
@@ -14,6 +14,44 @@ namespace MySoft.IoC
     {
         //实例化队列
         private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+
+        static ThreadManager()
+        {
+            //刷新30分钟未更新的数据
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                while (true)
+                {
+                    //1分钟检测一次
+                    Thread.Sleep(TimeSpan.FromMinutes(1));
+
+                    try
+                    {
+                        var keys = hashtable.Keys.Cast<string>().ToList();
+
+                        foreach (var key in keys)
+                        {
+                            if (hashtable.ContainsKey(key))
+                            {
+                                var item = hashtable[key] as WorkerItem;
+
+                                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CACHE_TIMEOUT / 2);
+
+                                //如果超过指定时间未刷新数据，则自动刷新
+                                if (DateTime.Now.Subtract(item.UpdateTime) > timeSpan)
+                                {
+                                    RefreshWorker(key);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO
+                    }
+                }
+            });
+        }
 
         /// <summary>
         /// 移除工作项
@@ -92,16 +130,15 @@ namespace MySoft.IoC
                     else
                     {
                         var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
-                        var elapsedMilliseconds = watch.ElapsedMilliseconds;
 
-                        if (elapsedMilliseconds < timeSpan.TotalMilliseconds)
+                        if (watch.ElapsedMilliseconds < timeSpan.TotalMilliseconds)
                         {
                             CacheHelper.Remove(callKey);
                             RemoveWorker(callKey);
                         }
                         else
                         {
-                            CacheHelper.Permanent(callKey, resMsg);
+                            CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CACHE_TIMEOUT);
                         }
                     }
                 }
