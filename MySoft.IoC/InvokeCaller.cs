@@ -29,7 +29,7 @@ namespace MySoft.IoC
             this.container = container;
 
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service, true, false);
+            this.asyncCaller = new AsyncCaller(container, service);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();

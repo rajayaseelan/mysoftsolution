@@ -39,7 +39,7 @@ namespace MySoft.PlatformService.UserService
             }
             else
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(1030);
             }
 
             return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id };

@@ -47,7 +47,7 @@ namespace MySoft.IoC
             this.cacheTimes = new Dictionary<string, int>();
 
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service, true, false);
+            this.asyncCaller = new AsyncCaller(container, service);
 
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)

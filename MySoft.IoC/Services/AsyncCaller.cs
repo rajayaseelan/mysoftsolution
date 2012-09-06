@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
@@ -13,22 +12,36 @@ namespace MySoft.IoC.Services
         private ILog logger;
         private IService service;
         private bool enableCache;
-        private bool byServer;
+        private TimeSpan waitTime, elapsedTime;
         private IDictionary<string, Queue<WaitResult>> results;
+
+        //默认等待10分钟
+        private const int DEFAULT_WAIT_TIME = 10 * 60;
 
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="service"></param>
+        public AsyncCaller(ILog logger, IService service)
+            : this(logger, service, TimeSpan.FromSeconds(DEFAULT_WAIT_TIME), false, TimeSpan.Zero)
+        { }
+
+        /// <summary>
+        /// 实例化AsyncCaller
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="service"></param>
+        /// <param name="waitTime"></param>
         /// <param name="enableCache"></param>
-        /// <param name="byServer"></param>
-        public AsyncCaller(ILog logger, IService service, bool enableCache, bool byServer)
+        /// <param name="elapsedTime"></param>
+        public AsyncCaller(ILog logger, IService service, TimeSpan waitTime, bool enableCache, TimeSpan elapsedTime)
         {
             this.logger = logger;
             this.service = service;
+            this.waitTime = waitTime;
             this.enableCache = enableCache;
-            this.byServer = byServer;
+            this.elapsedTime = elapsedTime;
             this.results = new Dictionary<string, Queue<WaitResult>>();
         }
 
@@ -54,9 +67,9 @@ namespace MySoft.IoC.Services
             if (enableCache)
             {
                 //从缓存中获取数据
-                if (GetResponseFromCache(callKey, out resMsg))
+                if (GetResponseFromCache(callKey, reqMsg, out resMsg))
                 {
-                    return CreateNewMessage(reqMsg, resMsg);
+                    return resMsg;
                 }
             }
 
@@ -76,17 +89,10 @@ namespace MySoft.IoC.Services
                     }
                 }
 
-                //计算超时时间
-                TimeSpan elapsedTime = TimeSpan.MaxValue;
-
-                if (byServer)
-                    elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_CALL_TIMEOUT);
-                else
-                    elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT);
-
-                if (!waitResult.WaitOne(elapsedTime))
+                //等待指定超时时间
+                if (!waitResult.WaitOne(waitTime))
                 {
-                    var body = string.Format("Client【{0}】async call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
+                    var body = string.Format("Client【{0}】async call remote service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
                         reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), (int)elapsedTime.TotalMilliseconds);
 
                     //获取异常
@@ -121,50 +127,6 @@ namespace MySoft.IoC.Services
         {
             var cacheKey = string.Format("Caller_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
             return cacheKey.Replace(" ", "").Replace("\r\n", "").Replace("\t", "").ToLower();
-        }
-
-        /// <summary>
-        /// 创建一个新的消息
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage CreateNewMessage(RequestMessage reqMsg, ResponseMessage resMsg)
-        {
-            //服务端返回或是Invoke方式调用
-            if (byServer || reqMsg.InvokeMethod)
-            {
-                return new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = resMsg.ReturnType,
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Error = resMsg.Error,
-                    Value = resMsg.Value
-                };
-            }
-            else
-            {
-                var watch = Stopwatch.StartNew();
-                var cloneObject = CoreHelper.CloneObject(resMsg.Value);
-                watch.Stop();
-
-                //客户端
-                return new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = resMsg.ReturnType,
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = watch.ElapsedMilliseconds,
-                    Error = resMsg.Error,
-                    Value = cloneObject
-                };
-            }
         }
 
         /// <summary>
@@ -212,26 +174,15 @@ namespace MySoft.IoC.Services
             var context = arr[2] as OperationContext;
             var reqMsg = arr[3] as RequestMessage;
 
+            //获取响应的消息
+            var resMsg = ThreadManager.GetResponse(service, context, reqMsg);
+
+            wr.SetResponse(resMsg);
+
             if (enableCache)
             {
-                var watch = Stopwatch.StartNew();
-
-                //获取响应的消息
-                var resMsg = ThreadManager.GetResponse(service, context, reqMsg);
-
-                watch.Stop();
-
-                wr.SetResponse(resMsg);
-
                 //设置响应信息到缓存
-                SetResponseToCache(callKey, context, reqMsg, resMsg, watch.ElapsedMilliseconds);
-            }
-            else
-            {
-                //获取响应的消息
-                var resMsg = ThreadManager.GetResponse(service, context, reqMsg);
-
-                wr.SetResponse(resMsg);
+                SetResponseToCache(callKey, context, reqMsg, resMsg);
             }
         }
 
@@ -242,15 +193,12 @@ namespace MySoft.IoC.Services
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
-        /// <param name="elapsedMilliseconds"></param>
-        private void SetResponseToCache(string callKey, OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg, long elapsedMilliseconds)
+        private void SetResponseToCache(string callKey, OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
         {
             //如果符合条件，则自动缓存 【自动缓存功能】
             if (resMsg != null && !resMsg.IsError && resMsg.Count > 0)
             {
-                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
-
-                if (elapsedMilliseconds > timeSpan.TotalMilliseconds)
+                if (resMsg.ElapsedTime > elapsedTime.TotalMilliseconds)
                 {
                     CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CACHE_TIMEOUT);
 
@@ -259,7 +207,10 @@ namespace MySoft.IoC.Services
                     {
                         Service = service,
                         Context = context,
-                        Request = reqMsg
+                        Request = reqMsg,
+                        ElapsedTime = elapsedTime,
+                        UpdateTime = DateTime.Now,
+                        IsRunning = false
                     };
 
                     ThreadManager.AddWorker(callKey, worker);
@@ -271,9 +222,10 @@ namespace MySoft.IoC.Services
         /// 从缓存中获取数据
         /// </summary>
         /// <param name="callKey"></param>
+        /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        private bool GetResponseFromCache(string callKey, out ResponseMessage resMsg)
+        private bool GetResponseFromCache(string callKey, RequestMessage reqMsg, out ResponseMessage resMsg)
         {
             //从缓存中获取数据
             resMsg = CacheHelper.Get<ResponseMessage>(callKey);
@@ -284,6 +236,18 @@ namespace MySoft.IoC.Services
                 ThreadManager.RefreshWorker(callKey);
 
                 resMsg.ElapsedTime = 0;
+
+                resMsg = new ResponseMessage
+                {
+                    TransactionId = reqMsg.TransactionId,
+                    ReturnType = resMsg.ReturnType,
+                    ServiceName = resMsg.ServiceName,
+                    MethodName = resMsg.MethodName,
+                    Parameters = resMsg.Parameters,
+                    ElapsedTime = resMsg.ElapsedTime,
+                    Error = resMsg.Error,
+                    Value = resMsg.Value
+                };
 
                 return true;
             }

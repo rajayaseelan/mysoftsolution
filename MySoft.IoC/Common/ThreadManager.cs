@@ -35,12 +35,12 @@ namespace MySoft.IoC
                             {
                                 var item = hashtable[key] as WorkerItem;
 
-                                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CACHE_TIMEOUT / 2);
+                                var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CACHE_TIMEOUT);
 
                                 //如果超过指定时间未刷新数据，则自动刷新
                                 if (DateTime.Now.Subtract(item.UpdateTime) > timeSpan)
                                 {
-                                    RefreshWorker(key);
+                                    RemoveWorker(key);
                                 }
                             }
                         }
@@ -72,11 +72,7 @@ namespace MySoft.IoC
         /// <param name="item"></param>
         public static void AddWorker(string key, WorkerItem item)
         {
-            if (hashtable.ContainsKey(key))
-            {
-                RefreshWorker(key);
-            }
-            else
+            if (!hashtable.ContainsKey(key))
             {
                 //将当前线程放入队列中
                 hashtable[key] = item;
@@ -95,10 +91,13 @@ namespace MySoft.IoC
             {
                 var item = hashtable[key] as WorkerItem;
 
-                if (item.IsRunning) return;
-                item.IsRunning = true;
+                lock (item)
+                {
+                    if (item.IsRunning) return;
+                    item.IsRunning = true;
 
-                ThreadPool.QueueUserWorkItem(RefreshData, new ArrayList { key, item });
+                    ThreadPool.QueueUserWorkItem(RefreshData, new ArrayList { key, item });
+                }
             }
         }
 
@@ -114,32 +113,20 @@ namespace MySoft.IoC
 
             try
             {
-                var watch = Stopwatch.StartNew();
-
                 var resMsg = GetResponse(worker.Service, worker.Context, worker.Request);
 
-                watch.Stop();
-
                 //不为null而且未出错
-                if (resMsg != null)
+                if (resMsg != null && !resMsg.IsError && resMsg.Count > 0)
                 {
-                    if (resMsg.IsError)
+                    var elapsedTime = worker.ElapsedTime;
+                    if (resMsg.ElapsedTime > elapsedTime.TotalMilliseconds)
                     {
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
+                        CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CACHE_TIMEOUT);
                     }
                     else
                     {
-                        var timeSpan = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
-
-                        if (watch.ElapsedMilliseconds < timeSpan.TotalMilliseconds)
-                        {
-                            CacheHelper.Remove(callKey);
-                            RemoveWorker(callKey);
-                        }
-                        else
-                        {
-                            CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CACHE_TIMEOUT);
-                        }
+                        //如果耗时小于设置的值，则移除
+                        RemoveWorker(callKey);
                     }
                 }
             }
@@ -219,8 +206,14 @@ namespace MySoft.IoC
         /// </summary>
         public DateTime UpdateTime { get; set; }
 
+        /// <summary>
+        /// 耗时时间
+        /// </summary>
+        public TimeSpan ElapsedTime { get; set; }
+
         public WorkerItem()
         {
+            this.ElapsedTime = TimeSpan.Zero;
             this.UpdateTime = DateTime.Now;
         }
     }

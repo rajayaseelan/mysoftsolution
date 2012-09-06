@@ -137,6 +137,8 @@ namespace MySoft
         /// <returns></returns>
         public static object CloneObject(object obj)
         {
+            if (obj == null) return null;
+
             using (MemoryStream stream = new MemoryStream())
             {
                 BinaryFormatter formatter = new BinaryFormatter();

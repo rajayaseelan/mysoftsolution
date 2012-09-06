@@ -18,6 +18,7 @@ namespace MySoft.IoC
         private IDictionary<string, Type> callbackTypes;
         private IDictionary<string, AsyncCaller> asyncCallers;
         private ServerStatusService status;
+        private TimeSpan elapsedTime;
 
         /// <summary>
         /// 初始化ServiceCaller
@@ -28,6 +29,7 @@ namespace MySoft.IoC
             this.status = status;
             this.callbackTypes = new Dictionary<string, Type>();
             this.asyncCallers = new Dictionary<string, AsyncCaller>();
+            this.elapsedTime = TimeSpan.FromSeconds(status.Config.Timeout);
 
             //注册状态服务
             var hashtable = new Dictionary<Type, object>();
@@ -45,6 +47,8 @@ namespace MySoft.IoC
             callbackTypes[typeof(IStatusService).FullName] = typeof(IStatusListener);
 
             var types = container.GetServiceTypes<ServiceContractAttribute>();
+            var waitTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_CALL_TIMEOUT);
+
             foreach (var type in types)
             {
                 var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(type);
@@ -59,12 +63,9 @@ namespace MySoft.IoC
                 if (container.Kernel.HasComponent(serviceKey))
                 {
                     service = container.Resolve<IService>(serviceKey);
-                }
 
-                if (service != null)
-                {
                     //实例化AsyncCaller
-                    asyncCallers[type.FullName] = new AsyncCaller(container, service, true, true);
+                    asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime, true, elapsedTime);
                 }
             }
         }
@@ -133,7 +134,7 @@ namespace MySoft.IoC
         private ResponseMessage HandleResponse(OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
         {
             //转换成毫秒判断
-            if (resMsg.ElapsedTime > TimeSpan.FromSeconds(status.Config.Timeout).TotalMilliseconds)
+            if (resMsg.ElapsedTime > elapsedTime.TotalMilliseconds)
             {
                 //写超时日志
                 WriteTimeout(context, reqMsg, resMsg);
