@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
@@ -11,12 +12,13 @@ namespace MySoft.IoC.Services
     {
         private ILog logger;
         private IService service;
-        private bool enableCache;
+        private int totalCount;
+        private bool enabledCache;
         private TimeSpan waitTime, elapsedTime;
         private IDictionary<string, Queue<WaitResult>> results;
 
-        //默认等待10分钟
-        private const int DEFAULT_WAIT_TIME = 10 * 60;
+        //默认等待5分钟
+        private const int DEFAULT_WAIT_TIME = 5 * 60;
 
         /// <summary>
         /// 实例化AsyncCaller
@@ -24,8 +26,10 @@ namespace MySoft.IoC.Services
         /// <param name="logger"></param>
         /// <param name="service"></param>
         public AsyncCaller(ILog logger, IService service)
-            : this(logger, service, TimeSpan.FromSeconds(DEFAULT_WAIT_TIME), false, TimeSpan.Zero)
-        { }
+            : this(logger, service, TimeSpan.FromSeconds(DEFAULT_WAIT_TIME))
+        {
+            this.enabledCache = false;
+        }
 
         /// <summary>
         /// 实例化AsyncCaller
@@ -33,15 +37,16 @@ namespace MySoft.IoC.Services
         /// <param name="logger"></param>
         /// <param name="service"></param>
         /// <param name="waitTime"></param>
-        /// <param name="enableCache"></param>
-        /// <param name="elapsedTime"></param>
-        public AsyncCaller(ILog logger, IService service, TimeSpan waitTime, bool enableCache, TimeSpan elapsedTime)
+        public AsyncCaller(ILog logger, IService service, TimeSpan waitTime)
         {
             this.logger = logger;
             this.service = service;
             this.waitTime = waitTime;
-            this.enableCache = enableCache;
-            this.elapsedTime = elapsedTime;
+
+            this.enabledCache = true;
+            this.totalCount = ServiceConfig.DEFAULT_RECORD_COUNT;
+            this.elapsedTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_RECORD_TIMEOUT);
+
             this.results = new Dictionary<string, Queue<WaitResult>>();
         }
 
@@ -64,7 +69,7 @@ namespace MySoft.IoC.Services
 
             var callKey = GetServiceCallKey(context.Caller);
 
-            if (enableCache)
+            if (enabledCache)
             {
                 //从缓存中获取数据
                 if (GetResponseFromCache(callKey, reqMsg, out resMsg))
@@ -175,14 +180,28 @@ namespace MySoft.IoC.Services
             var reqMsg = arr[3] as RequestMessage;
 
             //获取响应的消息
-            var resMsg = ThreadManager.GetResponse(service, context, reqMsg);
+            var watch = Stopwatch.StartNew();
 
-            wr.SetResponse(resMsg);
-
-            if (enableCache)
+            try
             {
-                //设置响应信息到缓存
-                SetResponseToCache(callKey, context, reqMsg, resMsg);
+                var resMsg = ThreadManager.GetResponse(service, context, reqMsg);
+
+                watch.Stop();
+
+                resMsg.ElapsedTime = watch.ElapsedMilliseconds;
+
+                wr.SetResponse(resMsg);
+
+                if (enabledCache)
+                {
+                    //设置响应信息到缓存
+                    SetResponseToCache(callKey, context, reqMsg, resMsg);
+                }
+            }
+            catch (Exception ex)
+            {
+                watch.Stop();
+                //no exception
             }
         }
 
@@ -196,7 +215,7 @@ namespace MySoft.IoC.Services
         private void SetResponseToCache(string callKey, OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
         {
             //如果符合条件，则自动缓存 【自动缓存功能】
-            if (resMsg != null && !resMsg.IsError && resMsg.Count > 0)
+            if (resMsg != null && !resMsg.IsError && resMsg.Count > totalCount)
             {
                 if (resMsg.ElapsedTime > elapsedTime.TotalMilliseconds)
                 {
@@ -210,6 +229,7 @@ namespace MySoft.IoC.Services
                         Request = reqMsg,
                         ElapsedTime = elapsedTime,
                         UpdateTime = DateTime.Now,
+                        TotalCount = totalCount,
                         IsRunning = false
                     };
 

@@ -21,6 +21,11 @@ namespace MySoft.IoC
         public const int DEFAULT_RECORD_TIMEOUT = 1; //1秒
 
         /// <summary>
+        /// The default record count number. 
+        /// </summary>
+        public const int DEFAULT_RECORD_COUNT = 1; //1行，大于1行的数据表示为列表
+
+        /// <summary>
         /// The default cache timeout number. 
         /// </summary>
         public const int DEFAULT_CACHE_TIMEOUT = 60 * 60; //60分钟

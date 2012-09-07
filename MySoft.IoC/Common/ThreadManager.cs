@@ -111,20 +111,31 @@ namespace MySoft.IoC
             var callKey = arr[0] as string;
             var worker = arr[1] as WorkerItem;
 
+            var watch = Stopwatch.StartNew();
+
             try
             {
                 var resMsg = GetResponse(worker.Service, worker.Context, worker.Request);
 
+                watch.Stop();
+
                 //不为null而且未出错
-                if (resMsg != null && !resMsg.IsError && resMsg.Count > 0)
+                if (resMsg != null && !resMsg.IsError)
                 {
+                    resMsg.ElapsedTime = watch.ElapsedMilliseconds;
+
                     var elapsedTime = worker.ElapsedTime;
-                    if (resMsg.ElapsedTime > elapsedTime.TotalMilliseconds)
+                    var count = worker.TotalCount;
+
+                    //记录数大于指定的记录数，而且时间大于指定的时间，则重新缓存
+                    if (resMsg.Count > count && resMsg.ElapsedTime > elapsedTime.TotalMilliseconds)
                     {
                         CacheHelper.Insert(callKey, resMsg, ServiceConfig.DEFAULT_CACHE_TIMEOUT);
                     }
                     else
                     {
+                        CacheHelper.Remove(callKey);
+
                         //如果耗时小于设置的值，则移除
                         RemoveWorker(callKey);
                     }
@@ -132,6 +143,7 @@ namespace MySoft.IoC
             }
             catch (Exception ex)
             {
+                watch.Stop();
                 //no exception
             }
             finally
@@ -210,6 +222,11 @@ namespace MySoft.IoC
         /// 耗时时间
         /// </summary>
         public TimeSpan ElapsedTime { get; set; }
+
+        /// <summary>
+        /// 记录数
+        /// </summary>
+        public int TotalCount { get; set; }
 
         public WorkerItem()
         {
