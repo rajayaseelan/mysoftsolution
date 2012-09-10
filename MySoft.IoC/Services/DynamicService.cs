@@ -67,14 +67,13 @@ namespace MySoft.IoC.Services
                 if (reqMsg.InvokeMethod)
                 {
                     var objValue = reqMsg.Parameters["InvokeParameter"];
-                    var jsonString = (objValue == null ? string.Empty : objValue.ToString());
 
-                    //解析参数
-                    reqMsg.Parameters = IoCHelper.CreateParameters(callMethod, jsonString);
+                    if (objValue != null)
+                    {
+                        //解析参数
+                        reqMsg.Parameters = IoCHelper.CreateParameters(callMethod, objValue.ToString());
+                    }
                 }
-
-                //参数赋值
-                object[] parameters = IoCHelper.CreateParameterValues(callMethod, reqMsg.Parameters);
 
                 //解析服务
                 instance = container.Resolve(serviceType);
@@ -82,11 +81,14 @@ namespace MySoft.IoC.Services
                 //返回拦截服务
                 var service = AspectFactory.CreateProxy(serviceType, instance);
 
+                //参数赋值
+                object[] parameters = IoCHelper.CreateParameters(callMethod, reqMsg.Parameters);
+
                 //调用对应的服务
                 resMsg.Value = callMethod.FastInvoke(service, parameters);
 
                 //处理返回参数
-                IoCHelper.SetRefParameters(callMethod, resMsg.Parameters, parameters);
+                IoCHelper.SetRefParameters(callMethod, parameters, resMsg.Parameters);
             }
             catch (Exception ex)
             {

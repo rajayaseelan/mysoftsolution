@@ -63,10 +63,9 @@ namespace MySoft.IoC
                 if (container.Kernel.HasComponent(serviceKey))
                 {
                     service = container.Resolve<IService>(serviceKey);
-                    var count = ServiceConfig.DEFAULT_RECORD_COUNT;
 
                     //实例化AsyncCaller
-                    asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime);
+                    asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime, null, true);
                 }
             }
         }

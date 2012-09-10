@@ -38,7 +38,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 4 * 1024; //4KB
+        private const int ReceiveBufferSize = 1024; //1KB
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -49,11 +49,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// A flag to control thread's running
         /// </summary>
         private volatile bool _running;
-
-        /// <summary>
-        /// This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private readonly object _syncLock;
 
         #endregion
 
@@ -73,7 +68,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
 
             _buffer = new byte[ReceiveBufferSize];
-            _syncLock = new object();
         }
 
         #endregion
@@ -147,7 +141,56 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
         }
 
-        void IOCompleted(object sender, SocketAsyncEventArgs e)
+        /// <summary>
+        /// Sends a message to the remote application.
+        /// </summary>
+        /// <param name="message">Message to be sent</param>
+        protected override void SendMessageInternal(IScsMessage message)
+        {
+            try
+            {
+                //Create a byte array from message according to current protocol
+                var messageBytes = WireProtocol.GetBytes(message);
+
+                var e = new SocketAsyncEventArgs();
+                e.UserToken = message;
+                e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                e.SetBuffer(messageBytes, 0, messageBytes.Length);
+
+                try
+                {
+                    //Send all bytes to the remote application
+                    if (!_clientSocket.SendAsync(e))
+                    {
+                        OnReceiveCompleted(e);
+                    }
+                }
+                catch
+                {
+                    Dispose(e);
+
+                    throw;
+                }
+            }
+            catch (SocketException ex)
+            {
+                Disconnect();
+
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                OnMessageError(ex);
+
+                throw ex;
+            }
+        }
+
+        #endregion
+
+        #region Private methods
+
+        private void IOCompleted(object sender, SocketAsyncEventArgs e)
         {
             if (e.LastOperation == SocketAsyncOperation.Send)
             {
@@ -158,58 +201,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 OnReceiveCompleted(e);
             }
         }
-
-        /// <summary>
-        /// Sends a message to the remote application.
-        /// </summary>
-        /// <param name="message">Message to be sent</param>
-        protected override void SendMessageInternal(IScsMessage message)
-        {
-            lock (_syncLock)
-            {
-                try
-                {
-                    //Create a byte array from message according to current protocol
-                    var messageBytes = WireProtocol.GetBytes(message);
-
-                    var e = new SocketAsyncEventArgs();
-                    e.UserToken = message;
-                    e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
-                    e.SetBuffer(messageBytes, 0, messageBytes.Length);
-
-                    try
-                    {
-                        //Send all bytes to the remote application
-                        if (!_clientSocket.SendAsync(e))
-                        {
-                            OnReceiveCompleted(e);
-                        }
-                    }
-                    catch
-                    {
-                        e.Dispose();
-
-                        throw;
-                    }
-                }
-                catch (SocketException ex)
-                {
-                    Disconnect();
-
-                    throw ex;
-                }
-                catch (Exception ex)
-                {
-                    OnMessageError(ex);
-
-                    throw ex;
-                }
-            }
-        }
-
-        #endregion
-
-        #region Private methods
 
         /// <summary>
         /// This method is used as callback method in _clientSocket's BeginReceive method.
@@ -228,7 +219,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
-                e.Dispose();
+                Dispose(e);
             }
         }
 
@@ -282,7 +273,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
-                e.Dispose();
+                Dispose(e);
             }
         }
 
@@ -305,9 +296,32 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch
             {
-                e.Dispose();
+                Dispose(e);
 
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Dispose socket async event args.
+        /// </summary>
+        /// <param name="e"></param>
+        private void Dispose(SocketAsyncEventArgs e)
+        {
+            if (e == null) return;
+
+            try
+            {
+                e.SetBuffer(null, 0, 0);
+            }
+            catch (Exception ex)
+            {
+                //Do Something
+            }
+            finally
+            {
+                e.Dispose();
+                e = null;
             }
         }
 

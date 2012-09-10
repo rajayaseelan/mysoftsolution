@@ -1,6 +1,7 @@
 ﻿using System;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
+using MySoft.Cache;
 
 namespace MySoft.IoC
 {
@@ -28,8 +29,10 @@ namespace MySoft.IoC
             this.service = service;
             this.container = container;
 
+            var waitTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_WAIT_TIMEOUT);
+
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service);
+            this.asyncCaller = new AsyncCaller(container, service, waitTime);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();

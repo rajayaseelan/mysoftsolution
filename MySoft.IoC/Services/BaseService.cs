@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
@@ -50,10 +51,24 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            //获取响应的消息
-            var resMsg = Run(reqMsg);
+            ResponseMessage resMsg = null;
 
-            if (resMsg == null) return null;
+            //开始计时
+            var watch = Stopwatch.StartNew();
+
+            try
+            {
+                resMsg = Run(reqMsg);
+
+                if (resMsg == null) return null;
+            }
+            finally
+            {
+                watch.Stop();
+            }
+
+            //计算超时
+            resMsg.ElapsedTime = watch.ElapsedMilliseconds;
 
             if (resMsg.IsError)
             {

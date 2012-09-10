@@ -19,7 +19,6 @@ namespace MySoft.IoC
         private AsyncCaller asyncCaller;
         private IService service;
         private Type serviceType;
-        private ICacheStrategy cache;
         private IServiceLog logger;
         private string hostName;
         private string ipAddress;
@@ -38,7 +37,6 @@ namespace MySoft.IoC
             this.container = container;
             this.serviceType = serviceType;
             this.service = service;
-            this.cache = cache;
             this.logger = logger;
 
             this.hostName = DnsHelper.GetHostName();
@@ -46,8 +44,10 @@ namespace MySoft.IoC
 
             this.cacheTimes = new Dictionary<string, int>();
 
+            var waitTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_WAIT_TIMEOUT);
+
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service);
+            this.asyncCaller = new AsyncCaller(container, service, waitTime, cache, false);
 
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)
@@ -72,63 +72,9 @@ namespace MySoft.IoC
         /// <returns></returns>
         public object Invoke(object proxy, System.Reflection.MethodInfo method, object[] parameters)
         {
-            object returnValue = null;
-            var collection = IoCHelper.CreateParameters(method, parameters);
-            string cacheKey = IoCHelper.GetCacheKey(serviceType, method, collection);
-            var cacheValue = cache.GetCache<CacheObject>(cacheKey);
-
-            //缓存无值
-            if (cacheValue == null)
-            {
-                //调用方法
-                var resMsg = InvokeMethod(method, collection);
-
-                if (resMsg != null)
-                {
-                    returnValue = resMsg.Value;
-
-                    //处理参数
-                    IoCHelper.SetRefParameterValues(method, resMsg.Parameters, parameters);
-
-                    if (resMsg.Count > 0) //数据条数不为0进行缓存
-                    {
-                        //如果需要缓存，则存入本地缓存
-                        if (returnValue != null && cacheTimes.ContainsKey(method.ToString()))
-                        {
-                            int cacheTime = cacheTimes[method.ToString()];
-                            cacheValue = new CacheObject
-                            {
-                                Value = resMsg.Value,
-                                Parameters = resMsg.Parameters
-                            };
-
-                            cache.InsertCache(cacheKey, cacheValue, cacheTime);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                //处理返回值
-                returnValue = CoreHelper.CloneObject(cacheValue.Value);
-
-                //处理参数
-                IoCHelper.SetRefParameterValues(method, cacheValue.Parameters, parameters);
-            }
-
-            //返回结果
-            return returnValue;
-        }
-
-        /// <summary>
-        /// 调用方法返回
-        /// </summary>
-        /// <param name="method"></param>
-        /// <param name="collection"></param>
-        /// <returns></returns>
-        private ResponseMessage InvokeMethod(System.Reflection.MethodInfo method, ParameterCollection collection)
-        {
             #region 设置请求信息
+
+            var collection = IoCHelper.CreateParameters(method, parameters);
 
             var reqMsg = new RequestMessage
             {
@@ -144,10 +90,30 @@ namespace MySoft.IoC
                 TransferType = TransferType.Binary              //数据类型
             };
 
+            //设置缓存时间
+            if (cacheTimes.ContainsKey(method.ToString()))
+            {
+                reqMsg.CacheTime = cacheTimes[method.ToString()];
+            }
+
             #endregion
 
-            //调用服务
-            return CallService(reqMsg);
+            //调用方法
+            var resMsg = CallService(reqMsg);
+
+            //定义返回值
+            object returnValue = null;
+
+            if (resMsg != null)
+            {
+                returnValue = resMsg.Value;
+
+                //处理参数
+                IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
+            }
+
+            //返回结果
+            return returnValue;
         }
 
         /// <summary>

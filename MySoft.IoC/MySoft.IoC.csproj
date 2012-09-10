@@ -78,6 +78,7 @@
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
     <Compile Include="Common\ThreadManager.cs" />
+    <Compile Include="Common\WorkerItem.cs" />
     <Compile Include="Communication\ITcpConnection.cs" />
     <Compile Include="Communication\Scs\Client\ClientReConnecter.cs" />
     <Compile Include="Communication\Scs\Client\IConnectableClient.cs" />
@@ -127,7 +128,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\AsyncCaller.cs" />
-    <Compile Include="CacheObject.cs" />
     <Compile Include="Callback\CallbackInfo.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IoCHelper.cs" />

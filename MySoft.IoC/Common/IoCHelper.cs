@@ -9,13 +9,35 @@ namespace MySoft.IoC
     internal static class IoCHelper
     {
         /// <summary>
+        /// 控制台输出
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="format"></param>
+        /// <param name="args"></param>
+        public static void WriteLine(ConsoleColor color, string format, params object[] args)
+        {
+            if (Console.Out != null)
+            {
+                lock (Console.Out)
+                {
+                    var oldColor = Console.ForegroundColor;
+                    Console.ForegroundColor = color;
+                    Console.WriteLine(format, args);
+                    Console.ForegroundColor = oldColor;
+                }
+            }
+        }
+
+        /// <summary>
         /// 设置参数值
         /// </summary>
         /// <param name="method"></param>
         /// <param name="collection"></param>
         /// <param name="parameters"></param>
-        public static void SetRefParameterValues(System.Reflection.MethodInfo method, ParameterCollection collection, object[] parameters)
+        public static void SetRefParameters(System.Reflection.MethodInfo method, ParameterCollection collection, object[] parameters)
         {
+            if (collection.Count == 0) return;
+
             var index = 0;
             foreach (var p in method.GetParameters())
             {
@@ -31,9 +53,11 @@ namespace MySoft.IoC
         /// 设置参数值
         /// </summary>
         /// <param name="method"></param>
-        /// <param name="reqMsg"></param>
-        public static object[] CreateParameterValues(System.Reflection.MethodInfo method, ParameterCollection collection)
+        /// <param name="collection"></param>
+        public static object[] CreateParameters(System.Reflection.MethodInfo method, ParameterCollection collection)
         {
+            if (collection.Count == 0) return new object[0];
+
             var index = 0;
             var pis = method.GetParameters();
             var parameters = new object[pis.Length];
@@ -55,13 +79,16 @@ namespace MySoft.IoC
         /// 设置ParameterCollection值
         /// </summary>
         /// <param name="method"></param>
-        /// <param name="collection"></param>
         /// <param name="parameters"></param>
-        public static void SetRefParameters(System.Reflection.MethodInfo method, ParameterCollection collection, object[] parameters)
+        /// <param name="collection"></param>
+        public static void SetRefParameters(System.Reflection.MethodInfo method, object[] parameters, ParameterCollection collection)
         {
+            if (parameters == null || parameters.Length == 0) return;
+
             int index = 0;
             foreach (var p in method.GetParameters())
             {
+                //给参数赋值
                 if (p.ParameterType.IsByRef)
                     collection[p.Name] = parameters[index];
 
@@ -77,6 +104,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static ParameterCollection CreateParameters(System.Reflection.MethodInfo method, string jsonString)
         {
+            var collection = new ParameterCollection();
+
             if (!string.IsNullOrEmpty(jsonString))
             {
                 JObject obj = JObject.Parse(jsonString);
@@ -100,12 +129,12 @@ namespace MySoft.IoC
                     }
 
                     //创建参数集合
-                    return CreateParameters(method, parameters);
+                    collection = CreateParameters(method, parameters);
                 }
             }
 
             //如果json检测不通过，返回空的参数集合
-            return new ParameterCollection();
+            return collection;
         }
 
         /// <summary>
@@ -117,6 +146,7 @@ namespace MySoft.IoC
         public static ParameterCollection CreateParameters(System.Reflection.MethodInfo method, object[] parameters)
         {
             var collection = new ParameterCollection();
+
             int index = 0;
             foreach (var p in method.GetParameters())
             {
@@ -129,45 +159,6 @@ namespace MySoft.IoC
             }
 
             return collection;
-        }
-
-        /// <summary>
-        /// 获取缓存Key值
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="method"></param>
-        /// <param name="collection"></param>
-        /// <returns></returns>
-        public static string GetCacheKey(Type serviceType, System.Reflection.MethodInfo method, ParameterCollection collection)
-        {
-            var opContract = CoreHelper.GetMemberAttribute<OperationContractAttribute>(method);
-            if (opContract != null && !string.IsNullOrEmpty(opContract.CacheKey))
-            {
-                string cacheKey = opContract.CacheKey;
-                var index = 0;
-                foreach (var key in collection.Keys)
-                {
-                    string name = "{" + key + "}";
-                    if (cacheKey.Contains(name))
-                    {
-                        var parameter = collection[key];
-                        if (parameter != null)
-                            cacheKey = cacheKey.Replace(name, "|" + parameter.ToString() + "|");
-                        else
-                            cacheKey = cacheKey.Replace(name, "|");
-                    }
-
-                    index++;
-                }
-
-                return string.Format("{0}_{1}", serviceType.FullName, cacheKey);
-            }
-            else
-            {
-                //返回默认的缓存key
-                var cacheKey = string.Format("{0}${1}${2}", serviceType.FullName, method.ToString(), collection.ToString());
-                return string.Format("CastleCache_{0}", cacheKey);
-            }
         }
 
         /// <summary>

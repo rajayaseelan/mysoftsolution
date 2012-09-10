@@ -177,6 +177,22 @@ namespace MySoft.IoC.Messages
             }
         }
 
+        private int cacheTime = -1;
+        /// <summary>
+        /// 数据缓存时间（单位：秒）
+        /// </summary>
+        public int CacheTime
+        {
+            get
+            {
+                return cacheTime;
+            }
+            set
+            {
+                cacheTime = value;
+            }
+        }
+
         #region 额外的参数
 
         [NonSerialized]
