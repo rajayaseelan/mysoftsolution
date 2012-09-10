@@ -271,7 +271,7 @@ namespace MySoft.RESTful
                     values.Clear();
 
                     //保持与Json兼容处理
-                    var jobj = JObject.Parse(data);
+                    var jobj = JObject.Parse(HttpUtility.UrlDecode(data, Encoding.UTF8));
                     foreach (var kvp in jobj)
                     {
                         values[kvp.Key] = kvp.Value.ToString();

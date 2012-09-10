@@ -29,14 +29,15 @@ namespace MySoft.IoC
             this.func = func;
 
             //定时更新数据
-            ThreadPool.QueueUserWorkItem(DoRefreshData);
+            var thread = new Thread(DoRefreshData);
+            thread.IsBackground = true;
+            thread.Start();
         }
 
         /// <summary>
         /// 刷新数据
         /// </summary>
-        /// <param name="state"></param>
-        private void DoRefreshData(object state)
+        private void DoRefreshData()
         {
             while (true)
             {
@@ -55,33 +56,17 @@ namespace MySoft.IoC
                         {
                             var worker = hashtable[key] as WorkerItem;
 
-                            try
+                            lock (worker)
                             {
+                                if (worker.IsRunning) continue;
+
                                 if (DateTime.Now.Subtract(worker.UpdateTime).TotalSeconds >= 0)
                                 {
-                                    //自动刷新缓存
-                                    if (worker.IsRefresh)
-                                    {
-                                        //最后更新时间
-                                        worker.UpdateTime = DateTime.MaxValue;
+                                    //正在运行
+                                    worker.IsRunning = true;
 
-                                        ThreadPool.QueueUserWorkItem(UpdateData, worker);
-                                    }
-                                    else
-                                    {
-                                        //失效时移除缓存
-                                        cache.RemoveCache(key);
-
-                                        //不刷新项进行移除
-                                        RemoveWorker(key);
-
-                                        IoCHelper.WriteLine(ConsoleColor.Red, "[{0}] => Remove worker item: {1}.", DateTime.Now, key);
-                                    }
+                                    ThreadPool.QueueUserWorkItem(UpdateData, worker);
                                 }
-                            }
-                            catch (Exception ex)
-                            {
-                                //不处理的异常
                             }
                         }
                     }
@@ -106,23 +91,6 @@ namespace MySoft.IoC
                 hashtable[key] = item;
 
                 IoCHelper.WriteLine(ConsoleColor.Blue, "[{0}] => Worker item count: {1}.", DateTime.Now, hashtable.Count);
-            }
-        }
-
-        /// <summary>
-        /// 刷新工作项
-        /// </summary>
-        /// <param name="key"></param>
-        public void RefreshWorker(string key)
-        {
-            if (hashtable.ContainsKey(key))
-            {
-                //将当前线程放入队列中
-                var worker = hashtable[key] as WorkerItem;
-
-                if (worker.IsRefresh) return;
-
-                worker.IsRefresh = true;
             }
         }
 
@@ -163,8 +131,8 @@ namespace MySoft.IoC
                 //下次更新时间
                 worker.UpdateTime = DateTime.Now.AddSeconds(worker.SlidingTime);
 
-                //重置刷新状态为false
-                worker.IsRefresh = false;
+                //重置运行状态为false
+                worker.IsRunning = false;
             }
         }
     }

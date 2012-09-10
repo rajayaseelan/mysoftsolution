@@ -138,7 +138,7 @@ namespace MySoft.IoC.HttpServer
                         throw new AuthorizeException("Request header did not exist [X-AuthParameter] info.");
                     else
                         //调用认证的信息
-                        get[callMethod.AuthParameter] = request.Get("X-AuthParameter");
+                        get[callMethod.AuthParameter] = HttpUtility.UrlDecode(request.Get("X-AuthParameter"), Encoding.UTF8);
                 }
 
                 //转换成JsonString
@@ -206,7 +206,7 @@ namespace MySoft.IoC.HttpServer
                     values.Clear();
 
                     //保持与Json兼容处理
-                    var jobj = JObject.Parse(data);
+                    var jobj = JObject.Parse(HttpUtility.UrlDecode(data, Encoding.UTF8));
                     foreach (var kvp in jobj)
                     {
                         values[kvp.Key] = kvp.Value.ToString();

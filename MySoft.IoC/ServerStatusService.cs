@@ -47,13 +47,17 @@ namespace MySoft.IoC
             this.statuslist = new TimeStatusCollection(config.RecordHours * 3600);
 
             //启动定义推送线程
-            ThreadPool.QueueUserWorkItem(DoPushWork);
+            var thread1 = new Thread(DoPushWork);
+            thread1.IsBackground = true;
+            thread1.Start();
 
             //启动自动检测线程
-            ThreadPool.QueueUserWorkItem(DoCheckWork);
+            var thread2 = new Thread(DoCheckWork);
+            thread2.IsBackground = true;
+            thread2.Start();
         }
 
-        void DoPushWork(object state)
+        void DoPushWork()
         {
             while (true)
             {
@@ -87,7 +91,7 @@ namespace MySoft.IoC
             }
         }
 
-        void DoCheckWork(object state)
+        void DoCheckWork()
         {
             while (true)
             {

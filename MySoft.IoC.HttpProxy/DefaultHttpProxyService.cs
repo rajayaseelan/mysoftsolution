@@ -122,8 +122,7 @@ namespace MySoft.IoC.HttpProxy
                     var url = string.Empty;
                     if (query.Count > 0)
                     {
-                        var parameters = HttpUtility.UrlDecode(query.ToString());
-                        url = string.Format(HTTP_PROXY_URL, proxyServer, name, parameters);
+                        url = string.Format(HTTP_PROXY_URL, proxyServer, name, query.ToString());
                     }
                     else
                     {
@@ -252,8 +251,7 @@ namespace MySoft.IoC.HttpProxy
                     var url = string.Empty;
                     if (query.Count > 0)
                     {
-                        var parameters = HttpUtility.UrlDecode(query.ToString());
-                        url = string.Format(HTTP_PROXY_URL, proxyServer, name, parameters);
+                        url = string.Format(HTTP_PROXY_URL, proxyServer, name, query.ToString());
                     }
                     else
                     {
@@ -413,7 +411,7 @@ namespace MySoft.IoC.HttpProxy
                 var token = Authorize();
                 if (token.Succeed && !string.IsNullOrEmpty(token.Name))
                 {
-                    header["X-AuthParameter"] = token.Name;
+                    header["X-AuthParameter"] = HttpUtility.UrlEncode(token.Name);
                     response.StatusCode = HttpStatusCode.OK;
 
                     //认证信息

@@ -33,14 +33,14 @@ namespace MySoft.PlatformService.UserService
 
         public User GetUser(int id)
         {
-            if (id % 10 == 0)
-            {
-                Thread.Sleep(1000 * 6);
-            }
-            else
-            {
-                Thread.Sleep(1030);
-            }
+            //if (id % 10 == 0)
+            //{
+            Thread.Sleep(1000 * 6);
+            //}
+            //else
+            //{
+            //    Thread.Sleep(1030);
+            //}
 
             return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id };
         }

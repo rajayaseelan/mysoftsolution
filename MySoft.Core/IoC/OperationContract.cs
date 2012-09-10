@@ -26,21 +26,5 @@ namespace MySoft.IoC
                 cacheTime = value;
             }
         }
-
-        private string cacheKey;
-        /// <summary>
-        /// 获取或设置CacheKey
-        /// </summary>
-        public string CacheKey
-        {
-            get
-            {
-                return cacheKey;
-            }
-            set
-            {
-                cacheKey = value;
-            }
-        }
     }
 }

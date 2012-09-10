@@ -39,14 +39,14 @@ namespace MySoft.IoC
         public int SlidingTime { get; set; }
 
         /// <summary>
-        /// 是否刷新数据
+        /// 是否正在运行
         /// </summary>
-        public bool IsRefresh { get; set; }
+        public bool IsRunning { get; set; }
 
         public WorkerItem()
         {
             this.UpdateTime = DateTime.Now;
-            this.IsRefresh = true;
+            this.IsRunning = false;
         }
     }
 }

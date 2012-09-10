@@ -248,9 +248,9 @@ namespace MySoft.IoC.Services
                     Service = service,
                     Context = context,
                     Request = reqMsg,
-                    SlidingTime = byServer ? reqMsg.CacheTime * 2 : reqMsg.CacheTime,
+                    SlidingTime = reqMsg.CacheTime,
                     UpdateTime = DateTime.Now.AddSeconds(reqMsg.CacheTime),
-                    IsRefresh = true
+                    IsRunning = false
                 };
 
                 manager.AddWorker(callKey, worker);
@@ -271,9 +271,6 @@ namespace MySoft.IoC.Services
 
             if (resMsg != null)
             {
-                //刷新工作项
-                manager.RefreshWorker(callKey);
-
                 resMsg.ElapsedTime = 0;
 
                 resMsg = new ResponseMessage

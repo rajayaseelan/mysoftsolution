@@ -52,7 +52,7 @@ namespace MySoft.PlatformService.UserService
 
         User GetUserFromName(string name);
 
-        [OperationContract(CacheTime = 10)]
+        [OperationContract(CacheTime = 5)]
         User GetUser(int id);
 
         User GetUserForName(string name);
