@@ -5,6 +5,7 @@ using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using System.Diagnostics;
 
 namespace MySoft.IoC.Services
 {
@@ -182,13 +183,13 @@ namespace MySoft.IoC.Services
 
             var resMsg = GetResponse(service, context, reqMsg);
 
-            wr.SetResponse(resMsg);
-
             if (enabledCache)
             {
                 //设置响应信息到缓存
                 SetResponseToCache(callKey, context, reqMsg, resMsg);
             }
+
+            wr.SetResponse(resMsg);
         }
 
         /// <summary>
@@ -235,7 +236,10 @@ namespace MySoft.IoC.Services
             //如果符合条件，则自动缓存 【自动缓存功能】
             if (resMsg != null && !resMsg.IsError && reqMsg.CacheTime > 0)
             {
-                cache.InsertCache(callKey, resMsg, reqMsg.CacheTime * 10);
+                //克隆一个新的对象
+                var newMsg = NewResponseMessage(reqMsg, resMsg);
+
+                cache.InsertCache(callKey, newMsg, reqMsg.CacheTime * 10);
 
                 //Add worker item
                 var worker = new WorkerItem
@@ -267,13 +271,55 @@ namespace MySoft.IoC.Services
 
             if (resMsg != null)
             {
-                resMsg.ElapsedTime = 0;
-                resMsg.TransactionId = reqMsg.TransactionId;
+                //克隆一个新的对象
+                resMsg = NewResponseMessage(reqMsg, resMsg);
 
                 return true;
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 产生一个新的对象
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="resMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage NewResponseMessage(RequestMessage reqMsg, ResponseMessage resMsg)
+        {
+            var watch = Stopwatch.StartNew();
+
+            try
+            {
+                var returnValue = resMsg.Value;
+
+                //如果不是Invoke方式调用，则返回克隆的对象
+                if (!reqMsg.InvokeMethod)
+                {
+                    returnValue = CoreHelper.CloneObject(resMsg.Value);
+                }
+
+                watch.Stop();
+
+                return new ResponseMessage
+                {
+                    TransactionId = reqMsg.TransactionId,
+                    ReturnType = resMsg.ReturnType,
+                    ServiceName = resMsg.ServiceName,
+                    MethodName = resMsg.MethodName,
+                    Parameters = resMsg.Parameters,
+                    ElapsedTime = watch.ElapsedMilliseconds,
+                    Error = resMsg.Error,
+                    Value = returnValue
+                };
+            }
+            catch
+            {
+                watch.Stop();
+
+                return resMsg;
+            }
         }
     }
 }
