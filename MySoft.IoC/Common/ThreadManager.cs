@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Linq;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
@@ -27,55 +26,6 @@ namespace MySoft.IoC
         {
             this.cache = cache;
             this.func = func;
-
-            //定时更新数据
-            var thread = new Thread(DoRefreshData);
-            thread.IsBackground = true;
-            thread.Start();
-        }
-
-        /// <summary>
-        /// 刷新数据
-        /// </summary>
-        private void DoRefreshData()
-        {
-            while (true)
-            {
-                //1秒钟检测一次
-                Thread.Sleep(TimeSpan.FromSeconds(1));
-
-                try
-                {
-                    if (hashtable.Keys.Count == 0) continue;
-
-                    var keys = hashtable.Keys.Cast<string>().ToList();
-
-                    foreach (var key in keys)
-                    {
-                        if (hashtable.ContainsKey(key))
-                        {
-                            var worker = hashtable[key] as WorkerItem;
-
-                            lock (worker)
-                            {
-                                if (worker.IsRunning) continue;
-
-                                if (DateTime.Now.Subtract(worker.UpdateTime).TotalSeconds >= 0)
-                                {
-                                    //正在运行
-                                    worker.IsRunning = true;
-
-                                    ThreadPool.QueueUserWorkItem(UpdateData, worker);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    //TODO
-                }
-            }
         }
 
         /// <summary>
@@ -95,14 +45,28 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 移除工作项
+        /// 刷新工作项
         /// </summary>
         /// <param name="key"></param>
-        private void RemoveWorker(string key)
+        public void RefreshWorker(string key)
         {
             if (hashtable.ContainsKey(key))
             {
-                hashtable.Remove(key);
+                //将当前线程放入队列中
+                var worker = hashtable[key] as WorkerItem;
+
+                lock (worker)
+                {
+                    if (worker.IsRunning) return;
+
+                    if (DateTime.Now.Subtract(worker.UpdateTime).TotalSeconds >= 0)
+                    {
+                        //正在运行
+                        worker.IsRunning = true;
+
+                        ThreadPool.QueueUserWorkItem(UpdateData, worker);
+                    }
+                }
             }
         }
 
@@ -121,9 +85,13 @@ namespace MySoft.IoC
                 //不为null而且未出错
                 if (resMsg != null && !resMsg.IsError)
                 {
-                    cache.InsertCache(worker.CallKey, resMsg, worker.SlidingTime * 5);
+                    cache.InsertCache(worker.CallKey, resMsg, worker.SlidingTime * 10);
 
                     IoCHelper.WriteLine(ConsoleColor.Green, "[{0}] => Refresh worker item: {1}.", DateTime.Now, worker.CallKey);
+                }
+                else
+                {
+                    Thread.Sleep(TimeSpan.FromMinutes(1));
                 }
             }
             finally

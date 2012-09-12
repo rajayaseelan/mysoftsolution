@@ -15,7 +15,6 @@ namespace MySoft.IoC.Services
         private ICacheStrategy cache;
         private TimeSpan waitTime;
         private bool enabledCache;
-        private bool byServer;
         private ThreadManager manager;
         private IDictionary<string, Queue<WaitResult>> results;
 
@@ -31,7 +30,6 @@ namespace MySoft.IoC.Services
             this.service = service;
             this.waitTime = waitTime;
             this.enabledCache = false;
-            this.byServer = false;
             this.results = new Dictionary<string, Queue<WaitResult>>();
         }
 
@@ -42,13 +40,11 @@ namespace MySoft.IoC.Services
         /// <param name="service"></param>
         /// <param name="waitTime"></param>
         /// <param name="cache"></param>
-        /// <param name="byServer"></param>
-        public AsyncCaller(ILog logger, IService service, TimeSpan waitTime, ICacheStrategy cache, bool byServer)
+        public AsyncCaller(ILog logger, IService service, TimeSpan waitTime, ICacheStrategy cache)
             : this(logger, service, waitTime)
         {
             this.cache = cache;
             this.enabledCache = true;
-            this.byServer = byServer;
             this.manager = new ThreadManager(cache, GetResponse);
         }
 
@@ -76,6 +72,9 @@ namespace MySoft.IoC.Services
                 //从缓存中获取数据
                 if (GetResponseFromCache(callKey, reqMsg, out resMsg))
                 {
+                    //刷新数据
+                    manager.RefreshWorker(callKey);
+
                     return resMsg;
                 }
             }
@@ -183,13 +182,13 @@ namespace MySoft.IoC.Services
 
             var resMsg = GetResponse(service, context, reqMsg);
 
+            wr.SetResponse(resMsg);
+
             if (enabledCache)
             {
                 //设置响应信息到缓存
                 SetResponseToCache(callKey, context, reqMsg, resMsg);
             }
-
-            wr.SetResponse(resMsg);
         }
 
         /// <summary>
@@ -236,10 +235,7 @@ namespace MySoft.IoC.Services
             //如果符合条件，则自动缓存 【自动缓存功能】
             if (resMsg != null && !resMsg.IsError && reqMsg.CacheTime > 0)
             {
-                //如果不是服务端，需要克隆对象存储
-                if (!byServer) resMsg.Value = CoreHelper.CloneObject(resMsg.Value);
-
-                cache.InsertCache(callKey, resMsg, reqMsg.CacheTime * 5);
+                cache.InsertCache(callKey, resMsg, reqMsg.CacheTime * 10);
 
                 //Add worker item
                 var worker = new WorkerItem
@@ -272,21 +268,7 @@ namespace MySoft.IoC.Services
             if (resMsg != null)
             {
                 resMsg.ElapsedTime = 0;
-
-                resMsg = new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = resMsg.ReturnType,
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Error = resMsg.Error,
-                    Value = resMsg.Value
-                };
-
-                //如果不是服务端，需要克隆对象存储
-                if (!byServer) resMsg.Value = CoreHelper.CloneObject(resMsg.Value);
+                resMsg.TransactionId = reqMsg.TransactionId;
 
                 return true;
             }

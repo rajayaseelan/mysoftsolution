@@ -65,7 +65,7 @@ namespace MySoft.IoC
                     service = container.Resolve<IService>(serviceKey);
 
                     //实例化AsyncCaller
-                    asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime, null, true);
+                    asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime);
                 }
             }
         }
