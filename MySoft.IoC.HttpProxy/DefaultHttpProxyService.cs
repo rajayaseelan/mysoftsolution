@@ -411,7 +411,7 @@ namespace MySoft.IoC.HttpProxy
                 var token = Authorize();
                 if (token.Succeed && !string.IsNullOrEmpty(token.Name))
                 {
-                    header["X-AuthParameter"] = HttpUtility.UrlEncode(token.Name);
+                    header["X-AuthParameter"] = HttpUtility.UrlEncode(token.Name, Encoding.UTF8);
                     response.StatusCode = HttpStatusCode.OK;
 
                     //认证信息

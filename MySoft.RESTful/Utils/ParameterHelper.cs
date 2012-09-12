@@ -4,6 +4,9 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Text;
+using System.Web;
+using MySoft.Logger;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -72,7 +75,7 @@ namespace MySoft.RESTful.Utils
             {
                 foreach (var key in nvget.AllKeys)
                 {
-                    obj[key] = nvget[key];
+                    obj[key] = UrlDecodeString(nvget[key]);
                 }
             }
 
@@ -82,17 +85,65 @@ namespace MySoft.RESTful.Utils
                 {
                     try
                     {
-                        obj[key] = JContainer.Parse(nvpost[key]);
+                        obj[key] = JContainer.Parse(UrlDecodeString(nvpost[key]));
                     }
                     catch
                     {
-                        obj[key] = nvpost[key];
+                        obj[key] = UrlDecodeString(nvpost[key]);
                     }
                 }
             }
 
             //转换成Json对象
             return obj;
+        }
+
+        /// <summary>
+        /// 转换成NameValueCollection
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static NameValueCollection ConvertCollection(string data)
+        {
+            //处理成Form方式
+            var values = HttpUtility.ParseQueryString(data, Encoding.UTF8);
+
+            //为0表示为json方式
+            if (values.Count == 0 || (values.Count == 1 && values.AllKeys[0] == null))
+            {
+                try
+                {
+                    //清除所的值
+                    values.Clear();
+
+                    //保持与Json兼容处理
+                    var jobj = JObject.Parse(UrlDecodeString(data));
+                    foreach (var kvp in jobj)
+                    {
+                        values[kvp.Key] = kvp.Value.ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //TODO 不做处理
+                    SimpleLog.Instance.WriteLogForDir("DataConvert", ex);
+                }
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// 反编码字符串
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static string UrlDecodeString(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return value;
+
+            return HttpUtility.UrlDecode(value, Encoding.UTF8);
         }
     }
 }

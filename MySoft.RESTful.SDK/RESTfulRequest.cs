@@ -177,7 +177,7 @@ namespace MySoft.RESTful.SDK
                     foreach (var kvp in parameter.DataObject)
                     {
                         var value = SerializationManager.SerializeJson(kvp.Value);
-                        sb.AppendFormat("&{0}={1}", kvp.Key, HttpUtility.UrlEncode(value));
+                        sb.AppendFormat("&{0}={1}", kvp.Key, HttpUtility.UrlEncode(value, Encoding.UTF8));
                     }
 
                     if (sb.Length > 0) sb.Remove(0, 1);

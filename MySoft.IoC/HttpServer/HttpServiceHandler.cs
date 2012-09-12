@@ -206,7 +206,7 @@ namespace MySoft.IoC.HttpServer
                     values.Clear();
 
                     //保持与Json兼容处理
-                    var jobj = JObject.Parse(HttpUtility.UrlDecode(data, Encoding.UTF8));
+                    var jobj = JObject.Parse(UrlDecodeString(data));
                     foreach (var kvp in jobj)
                     {
                         values[kvp.Key] = kvp.Value.ToString();
@@ -235,7 +235,7 @@ namespace MySoft.IoC.HttpServer
             {
                 foreach (var key in nvget.AllKeys)
                 {
-                    obj[key] = nvget[key];
+                    obj[key] = UrlDecodeString(nvget[key]);
                 }
             }
 
@@ -245,17 +245,30 @@ namespace MySoft.IoC.HttpServer
                 {
                     try
                     {
-                        obj[key] = JContainer.Parse(nvpost[key]);
+                        obj[key] = JContainer.Parse(UrlDecodeString(nvpost[key]));
                     }
                     catch
                     {
-                        obj[key] = nvpost[key];
+                        obj[key] = UrlDecodeString(nvpost[key]);
                     }
                 }
             }
 
             //转换成Json字符串
             return obj.ToString(Formatting.Indented);
+        }
+
+        /// <summary>
+        /// 反编码字符串
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private string UrlDecodeString(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return value;
+
+            return HttpUtility.UrlDecode(value, Encoding.UTF8);
         }
 
         #endregion
