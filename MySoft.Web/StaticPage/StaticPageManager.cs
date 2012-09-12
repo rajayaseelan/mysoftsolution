@@ -383,7 +383,22 @@ namespace MySoft.Web
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
             //将内容写入文件中
-            File.WriteAllText(savePath, content, outEncoding);
+            var newSavePath = string.Format("{0}.tmp", savePath);
+            File.WriteAllText(newSavePath, content, outEncoding);
+
+            while (true)
+            {
+                try
+                {
+                    if (File.Exists(savePath)) File.Delete(savePath);
+                    File.Move(newSavePath, savePath);
+                    break;
+                }
+                catch
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                }
+            }
 
             //生成文件成功写日志
             SaveLog(string.Format("生成文件【{0}】成功！", savePath), LogType.Information);
