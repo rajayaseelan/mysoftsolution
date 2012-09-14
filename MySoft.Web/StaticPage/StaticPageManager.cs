@@ -98,31 +98,22 @@ namespace MySoft.Web
                     //需要生成才启动线程
                     if (sti.NeedUpdate(updateTime))
                     {
-                        ThreadPool.QueueUserWorkItem(state =>
+                        try
                         {
-                            if (state == null) return;
-
-                            ArrayList arr = state as ArrayList;
-                            IStaticPageItem item = arr[0] as IStaticPageItem;
-                            DateTime time = (DateTime)arr[1];
-
-                            try
+                            sti.Update(updateTime);
+                        }
+                        catch (Exception ex)
+                        {
+                            var exception = new StaticPageException("执行页面生成出现异常：" + ex.Message, ex);
+                            if (OnError != null)
                             {
-                                item.Update(time);
-                            }
-                            catch (Exception ex)
-                            {
-                                var exception = new StaticPageException("执行页面生成出现异常：" + ex.Message, ex);
-                                if (OnError != null)
+                                try
                                 {
-                                    try
-                                    {
-                                        OnError(exception);
-                                    }
-                                    catch { }
+                                    OnError(exception);
                                 }
+                                catch { }
                             }
-                        }, new ArrayList { sti, updateTime });
+                        }
                     }
                 }
             }

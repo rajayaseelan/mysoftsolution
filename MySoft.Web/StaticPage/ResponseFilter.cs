@@ -38,24 +38,11 @@ namespace MySoft.Web
             string content = ReplaceContext(pageContent.ToString());
             string path = HttpContext.Current.Request.Url.PathAndQuery;
 
-            //启动生成线程
-            ThreadPool.QueueUserWorkItem(WriteFile, new ArrayList { content, path });
-        }
-
-        /// <summary>
-        /// 写文件
-        /// </summary>
-        /// <param name="state"></param>
-        private void WriteFile(object state)
-        {
-            ArrayList arr = state as ArrayList;
-            string content = arr[0].ToString();
-
             //如果页面内容中包含指定的验证字符串则生成
             if (string.IsNullOrEmpty(validateString) || content.Contains(validateString))
             {
                 //内容进行编码处理
-                string dynamicurl = arr[1].ToString();
+                string dynamicurl = path;
                 string staticurl = filePath;
 
                 string extension = Path.GetExtension(staticurl);

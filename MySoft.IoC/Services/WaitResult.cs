@@ -88,12 +88,9 @@ namespace MySoft.IoC.Services
         public void Dispose()
         {
             this.ev.Close();
-            this.ev = null;
 
             this.reqMsg = null;
             this.resMsg = null;
-
-            GC.SuppressFinalize(this);
         }
 
         #endregion

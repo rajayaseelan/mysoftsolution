@@ -11,6 +11,16 @@ namespace MySoft.IoC
         #region Const Members
 
         /// <summary>
+        /// The default cache count
+        /// </summary>
+        public const int DEFAULT_CACHE_COUNT = 100; //100条记录
+
+        /// <summary>
+        /// The default cache timeout
+        /// </summary>
+        public const int DEFAULT_CACHE_TIMEOUT = 5 * 60; //5分钟
+
+        /// <summary>
         /// The default record hour
         /// </summary>
         public const int DEFAULT_RECORD_HOUR = 6; //6小时

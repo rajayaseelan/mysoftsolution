@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
+using System.Diagnostics;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
-using System.Diagnostics;
 
 namespace MySoft.IoC.Services
 {
@@ -17,6 +16,7 @@ namespace MySoft.IoC.Services
         private TimeSpan waitTime;
         private bool enabledCache;
         private ThreadManager manager;
+        private Func<IService, OperationContext, RequestMessage, ResponseMessage> caller;
         private IDictionary<string, Queue<WaitResult>> results;
 
         /// <summary>
@@ -31,6 +31,7 @@ namespace MySoft.IoC.Services
             this.service = service;
             this.waitTime = waitTime;
             this.enabledCache = false;
+            this.caller = GetResponse;
             this.results = new Dictionary<string, Queue<WaitResult>>();
         }
 
@@ -46,7 +47,7 @@ namespace MySoft.IoC.Services
         {
             this.cache = cache;
             this.enabledCache = true;
-            this.manager = new ThreadManager(cache, GetResponse);
+            this.manager = new ThreadManager(cache, caller);
         }
 
         /// <summary>
@@ -88,7 +89,9 @@ namespace MySoft.IoC.Services
                     if (!results.ContainsKey(callKey))
                     {
                         results[callKey] = new Queue<WaitResult>();
-                        ThreadPool.QueueUserWorkItem(GetResponse, new ArrayList { callKey, waitResult, context, reqMsg });
+
+                        //开始调用服务
+                        caller.BeginInvoke(service, context, reqMsg, AsyncCallback, new ArrayList { callKey, waitResult, context, reqMsg });
                     }
                     else
                     {
@@ -171,17 +174,18 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 调用方法
         /// </summary>
-        /// <param name="state"></param>
-        private void GetResponse(object state)
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
         {
-            var arr = state as ArrayList;
+            var arr = ar.AsyncState as ArrayList;
 
             var callKey = arr[0] as string;
             var wr = arr[1] as WaitResult;
             var context = arr[2] as OperationContext;
             var reqMsg = arr[3] as RequestMessage;
 
-            var resMsg = GetResponse(service, context, reqMsg);
+            var resMsg = caller.EndInvoke(ar);
+            ar.AsyncWaitHandle.Close();
 
             if (enabledCache)
             {
@@ -234,26 +238,36 @@ namespace MySoft.IoC.Services
         private void SetResponseToCache(string callKey, OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
         {
             //如果符合条件，则自动缓存 【自动缓存功能】
-            if (resMsg != null && !resMsg.IsError && reqMsg.CacheTime > 0)
+            if (resMsg != null && !resMsg.IsError && resMsg.Count > 0)
             {
-                //克隆一个新的对象
-                var newMsg = NewResponseMessage(reqMsg, resMsg);
-
-                cache.InsertCache(callKey, newMsg, reqMsg.CacheTime * 10);
-
-                //Add worker item
-                var worker = new WorkerItem
+                //记录数大于100条
+                if (reqMsg.CacheTime <= 0 && resMsg.Count > ServiceConfig.DEFAULT_CACHE_COUNT)
                 {
-                    CallKey = callKey,
-                    Service = service,
-                    Context = context,
-                    Request = reqMsg,
-                    SlidingTime = reqMsg.CacheTime,
-                    UpdateTime = DateTime.Now.AddSeconds(reqMsg.CacheTime),
-                    IsRunning = false
-                };
+                    //缓存5分钟
+                    reqMsg.CacheTime = ServiceConfig.DEFAULT_CACHE_TIMEOUT;
+                }
 
-                manager.AddWorker(callKey, worker);
+                if (reqMsg.CacheTime > 0)
+                {
+                    //克隆一个新的对象
+                    var newMsg = NewResponseMessage(reqMsg, resMsg);
+
+                    cache.InsertCache(callKey, newMsg, reqMsg.CacheTime * 10);
+
+                    //Add worker item
+                    var worker = new WorkerItem
+                    {
+                        CallKey = callKey,
+                        Service = service,
+                        Context = context,
+                        Request = reqMsg,
+                        SlidingTime = reqMsg.CacheTime,
+                        UpdateTime = DateTime.Now.AddSeconds(reqMsg.CacheTime),
+                        IsRunning = false
+                    };
+
+                    manager.AddWorker(callKey, worker);
+                }
             }
         }
 
@@ -288,38 +302,42 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage NewResponseMessage(RequestMessage reqMsg, ResponseMessage resMsg)
         {
+            var newMsg = new ResponseMessage
+            {
+                TransactionId = reqMsg.TransactionId,
+                ReturnType = resMsg.ReturnType,
+                ServiceName = resMsg.ServiceName,
+                MethodName = resMsg.MethodName,
+                Parameters = resMsg.Parameters,
+                Error = resMsg.Error,
+                Value = resMsg.Value
+            };
+
             var watch = Stopwatch.StartNew();
 
             try
             {
-                var returnValue = resMsg.Value;
-
                 //如果不是Invoke方式调用，则返回克隆的对象
                 if (!reqMsg.InvokeMethod)
                 {
-                    returnValue = CoreHelper.CloneObject(resMsg.Value);
+                    newMsg.Value = CoreHelper.CloneObject(resMsg.Value);
                 }
 
                 watch.Stop();
-
-                return new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = resMsg.ReturnType,
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = watch.ElapsedMilliseconds,
-                    Error = resMsg.Error,
-                    Value = returnValue
-                };
             }
-            catch
+            catch (Exception ex)
+            {
+                //TODO
+            }
+            finally
             {
                 watch.Stop();
-
-                return resMsg;
             }
+
+            //计算耗时
+            newMsg.ElapsedTime = watch.ElapsedMilliseconds;
+
+            return newMsg;
         }
     }
 }

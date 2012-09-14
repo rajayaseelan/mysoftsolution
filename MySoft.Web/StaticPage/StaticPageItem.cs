@@ -425,13 +425,11 @@ namespace MySoft.Web
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
-                ArrayList arr = state as ArrayList;
-                IStaticPageItem item = (IStaticPageItem)arr[0];
-                TimeSpan span = (TimeSpan)arr[1];
+                TimeSpan span = (TimeSpan)state;
                 Thread.Sleep(span);
 
-                item.Update();
-            }, new ArrayList { this, timeSpan });
+                (this as IUpdateItem).Update(DateTime.MaxValue);
+            }, timeSpan);
         }
     }
 

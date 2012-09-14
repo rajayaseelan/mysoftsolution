@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
 
@@ -12,7 +11,7 @@ namespace MySoft.IoC
     internal class ThreadManager
     {
         private ICacheStrategy cache;
-        private Func<IService, OperationContext, RequestMessage, ResponseMessage> func;
+        private Func<IService, OperationContext, RequestMessage, ResponseMessage> caller;
 
         //实例化队列
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
@@ -21,11 +20,11 @@ namespace MySoft.IoC
         /// 实例化线程管理器
         /// </summary>
         /// <param name="cache"></param>
-        /// <param name="func"></param>
-        public ThreadManager(ICacheStrategy cache, Func<IService, OperationContext, RequestMessage, ResponseMessage> func)
+        /// <param name="caller"></param>
+        public ThreadManager(ICacheStrategy cache, Func<IService, OperationContext, RequestMessage, ResponseMessage> caller)
         {
             this.cache = cache;
-            this.func = func;
+            this.caller = caller;
         }
 
         /// <summary>
@@ -64,7 +63,11 @@ namespace MySoft.IoC
                         //正在运行
                         worker.IsRunning = true;
 
-                        ThreadPool.QueueUserWorkItem(UpdateData, worker);
+                        //开始调用服务
+                        IoCHelper.WriteLine(ConsoleColor.Green, "[{0}] => Begin refresh worker item: {1}.", DateTime.Now, worker.CallKey);
+
+                        //异步调用服务
+                        caller.BeginInvoke(worker.Service, worker.Context, worker.Request, AsyncCallback, worker);
                     }
                 }
             }
@@ -73,25 +76,23 @@ namespace MySoft.IoC
         /// <summary>
         /// 刷新数据
         /// </summary>
-        /// <param name="state"></param>
-        private void UpdateData(object state)
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
         {
-            var worker = state as WorkerItem;
+            var worker = ar.AsyncState as WorkerItem;
 
             try
             {
-                var resMsg = func(worker.Service, worker.Context, worker.Request);
+                var resMsg = caller.EndInvoke(ar);
+                ar.AsyncWaitHandle.Close();
 
                 //不为null而且未出错
-                if (resMsg != null && !resMsg.IsError)
+                if (resMsg != null && !resMsg.IsError && resMsg.Count > 0)
                 {
                     cache.InsertCache(worker.CallKey, resMsg, worker.SlidingTime * 10);
 
-                    IoCHelper.WriteLine(ConsoleColor.Green, "[{0}] => Refresh worker item: {1}.", DateTime.Now, worker.CallKey);
-                }
-                else
-                {
-                    Thread.Sleep(TimeSpan.FromMinutes(1));
+                    //结束调用服务
+                    IoCHelper.WriteLine(ConsoleColor.Green, "[{0}] => End refresh worker item: {1}, Elapsed time {2} ms.", DateTime.Now, worker.CallKey, resMsg.ElapsedTime);
                 }
             }
             finally
