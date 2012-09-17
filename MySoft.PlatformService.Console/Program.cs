@@ -26,6 +26,7 @@ namespace MySoft.PlatformService.Console
             var server = new CastleService(config);
             server.OnLog += new LogEventHandler(Program_OnLog);
             server.OnError += new ErrorLogEventHandler(Program_OnError);
+            server.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
             server.Start();
 
             Program_OnLog(string.Format("Tcp server started. {0}", server.ServerUrl), LogType.Normal);
@@ -36,6 +37,12 @@ namespace MySoft.PlatformService.Console
             System.Console.ReadLine();
 
             server.Stop();
+        }
+
+        static void server_OnCalling(object sender, CallEventArgs e)
+        {
+            //µ÷ÓÃÊ±
+            //throw new NotImplementedException();
         }
 
         static void Program_OnLog(string log, LogType type)

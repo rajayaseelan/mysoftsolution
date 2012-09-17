@@ -15,6 +15,7 @@ namespace MySoft.IoC
     /// </summary>
     public class ServiceCaller
     {
+        internal event EventHandler<CallEventArgs> Handler;
         private IDictionary<string, Type> callbackTypes;
         private IDictionary<string, AsyncCaller> asyncCallers;
         private ServerStatusService status;
@@ -65,7 +66,7 @@ namespace MySoft.IoC
                     service = container.Resolve<IService>(serviceKey);
 
                     //实例化AsyncCaller
-                    asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime, null);
+                    asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime);
                 }
             }
         }
@@ -176,6 +177,19 @@ namespace MySoft.IoC
 
                 //响应消息
                 MessageCenter.Instance.Notify(callArgs);
+
+                //输出信息
+                if (Handler != null)
+                {
+                    try
+                    {
+                        Handler(this, callArgs);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO
+                    }
+                }
             }
             catch (Exception ex)
             {

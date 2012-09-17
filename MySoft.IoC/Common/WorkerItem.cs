@@ -14,11 +14,6 @@ namespace MySoft.IoC
         public string CallKey { get; set; }
 
         /// <summary>
-        /// Service
-        /// </summary>
-        public IService Service { get; set; }
-
-        /// <summary>
         /// Request
         /// </summary>
         public RequestMessage Request { get; set; }

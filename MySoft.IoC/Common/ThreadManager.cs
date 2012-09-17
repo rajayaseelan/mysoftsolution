@@ -10,8 +10,9 @@ namespace MySoft.IoC
     /// </summary>
     internal class ThreadManager
     {
+        private IService service;
         private ICacheStrategy cache;
-        private Func<IService, OperationContext, RequestMessage, ResponseMessage> caller;
+        private Func<OperationContext, RequestMessage, ResponseMessage> caller;
 
         //实例化队列
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
@@ -19,11 +20,13 @@ namespace MySoft.IoC
         /// <summary>
         /// 实例化线程管理器
         /// </summary>
-        /// <param name="cache"></param>
+        /// <param name="service"></param>
         /// <param name="caller"></param>
-        public ThreadManager(ICacheStrategy cache, Func<IService, OperationContext, RequestMessage, ResponseMessage> caller)
+        /// <param name="cache"></param>
+        public ThreadManager(IService service, Func<OperationContext, RequestMessage, ResponseMessage> caller, ICacheStrategy cache)
         {
             this.cache = cache;
+            this.service = service;
             this.caller = caller;
         }
 
@@ -67,7 +70,7 @@ namespace MySoft.IoC
                         IoCHelper.WriteLine(ConsoleColor.Green, "[{0}] => Begin refresh worker item: {1}.", DateTime.Now, worker.CallKey);
 
                         //异步调用服务
-                        caller.BeginInvoke(worker.Service, worker.Context, worker.Request, AsyncCallback, worker);
+                        caller.BeginInvoke(worker.Context, worker.Request, AsyncCallback, worker);
                     }
                 }
             }

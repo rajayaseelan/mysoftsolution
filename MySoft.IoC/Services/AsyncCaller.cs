@@ -16,7 +16,7 @@ namespace MySoft.IoC.Services
         private TimeSpan waitTime;
         private bool enabledCache;
         private ThreadManager manager;
-        private Func<IService, OperationContext, RequestMessage, ResponseMessage> caller;
+        private Func<OperationContext, RequestMessage, ResponseMessage> caller;
         private IDictionary<string, Queue<WaitResult>> results;
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace MySoft.IoC.Services
         {
             this.cache = cache;
             this.enabledCache = true;
-            this.manager = new ThreadManager(cache, caller);
+            this.manager = new ThreadManager(service, caller, cache);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace MySoft.IoC.Services
             //如果是状态服务，则同步响应
             if (reqMsg.ServiceName == typeof(IStatusService).FullName)
             {
-                return GetResponse(service, context, reqMsg);
+                return GetResponse(context, reqMsg);
             }
 
             //定义一个响应值
@@ -90,8 +90,16 @@ namespace MySoft.IoC.Services
                     {
                         results[callKey] = new Queue<WaitResult>();
 
+                        //工作项
+                        var worker = new WorkerItem
+                        {
+                            CallKey = callKey,
+                            Context = context,
+                            Request = reqMsg
+                        };
+
                         //开始调用服务
-                        caller.BeginInvoke(service, context, reqMsg, AsyncCallback, new ArrayList { callKey, waitResult, context, reqMsg });
+                        caller.BeginInvoke(context, reqMsg, AsyncCallback, new ArrayList { waitResult, worker });
                     }
                     else
                     {
@@ -179,31 +187,32 @@ namespace MySoft.IoC.Services
         {
             var arr = ar.AsyncState as ArrayList;
 
-            var callKey = arr[0] as string;
-            var wr = arr[1] as WaitResult;
-            var context = arr[2] as OperationContext;
-            var reqMsg = arr[3] as RequestMessage;
+            var wr = arr[0] as WaitResult;
+            var worker = arr[1] as WorkerItem;
 
             var resMsg = caller.EndInvoke(ar);
             ar.AsyncWaitHandle.Close();
 
-            if (enabledCache)
+            //这里的resMsg居然会为null
+            if (resMsg != null)
             {
-                //设置响应信息到缓存
-                SetResponseToCache(callKey, context, reqMsg, resMsg);
-            }
+                if (enabledCache)
+                {
+                    //设置响应信息到缓存
+                    SetResponseToCache(worker.CallKey, worker.Context, worker.Request, resMsg);
+                }
 
-            wr.SetResponse(resMsg);
+                wr.SetResponse(resMsg);
+            }
         }
 
         /// <summary>
         /// 调用方法
         /// </summary>
-        /// <param name="service"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(IService service, OperationContext context, RequestMessage reqMsg)
+        private ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
         {
             //定义响应的消息
             ResponseMessage resMsg = null;
@@ -258,7 +267,6 @@ namespace MySoft.IoC.Services
                     var worker = new WorkerItem
                     {
                         CallKey = callKey,
-                        Service = service,
                         Context = context,
                         Request = reqMsg,
                         SlidingTime = reqMsg.CacheTime,

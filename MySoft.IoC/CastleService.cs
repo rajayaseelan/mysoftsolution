@@ -55,6 +55,7 @@ namespace MySoft.IoC
             //实例化调用者
             var status = new ServerStatusService(server, config, container);
             this.caller = new ServiceCaller(status);
+            this.caller.Handler += (sender, args) => { if (OnCalling != null) OnCalling(sender, args); };
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -326,6 +327,11 @@ namespace MySoft.IoC
         /// OnError event.
         /// </summary>
         public event ErrorLogEventHandler OnError;
+
+        /// <summary>
+        /// OnCalling event.
+        /// </summary>
+        public event EventHandler<CallEventArgs> OnCalling;
 
         #endregion
     }
