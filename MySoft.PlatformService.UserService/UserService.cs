@@ -42,7 +42,7 @@ namespace MySoft.PlatformService.UserService
             //    Thread.Sleep(1030);
             //}
 
-            throw new NullReferenceException();
+            //throw new NullReferenceException();
 
             return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id };
         }

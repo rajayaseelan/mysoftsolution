@@ -15,6 +15,7 @@ namespace MySoft.IoC.Configuration
         private string defaultKey;                                  //默认服务
         private string appname;                                     //host名称
         private bool throwError = true;                             //抛出异常
+        private bool enableCache = true;                            //是否缓存
 
         /// <summary>
         /// 实例化CastleFactoryConfiguration
@@ -57,6 +58,9 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["throwError"] != null && attribute["throwError"].Value.Trim() != string.Empty)
                 throwError = Convert.ToBoolean(attribute["throwError"].Value);
+
+            if (attribute["enableCache"] != null && attribute["enableCache"].Value.Trim() != string.Empty)
+                enableCache = Convert.ToBoolean(attribute["enableCache"].Value);
 
             if (attribute["default"] != null && attribute["default"].Value.Trim() != string.Empty)
                 defaultKey = attribute["default"].Value;
@@ -167,6 +171,16 @@ namespace MySoft.IoC.Configuration
         {
             get { return throwError; }
             set { throwError = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the enableCache
+        /// </summary>
+        /// <value>The enableCache.</value>
+        public bool EnableCache
+        {
+            get { return enableCache; }
+            set { enableCache = value; }
         }
 
         /// <summary>

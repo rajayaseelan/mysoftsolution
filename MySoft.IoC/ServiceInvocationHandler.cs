@@ -49,7 +49,10 @@ namespace MySoft.IoC
             var waitTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_WAIT_TIMEOUT);
 
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service, waitTime, cache);
+            if (config.EnableCache)
+                this.asyncCaller = new AsyncCaller(container, service, waitTime, cache);
+            else
+                this.asyncCaller = new AsyncCaller(container, service, waitTime);
 
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)
