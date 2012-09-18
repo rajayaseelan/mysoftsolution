@@ -381,7 +381,6 @@ namespace MySoft.Web
             {
                 try
                 {
-                    if (File.Exists(savePath)) File.Delete(savePath);
                     File.Move(newSavePath, savePath);
                     break;
                 }

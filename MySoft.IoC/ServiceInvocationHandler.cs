@@ -15,6 +15,7 @@ namespace MySoft.IoC
     {
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
+        private IDictionary<string, string> errors;
         private IServiceContainer container;
         private AsyncCaller asyncCaller;
         private IService service;
@@ -43,6 +44,7 @@ namespace MySoft.IoC
             this.ipAddress = DnsHelper.GetIPAddress();
 
             this.cacheTimes = new Dictionary<string, int>();
+            this.errors = new Dictionary<string, string>();
 
             var waitTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_WAIT_TIMEOUT);
 
@@ -57,6 +59,9 @@ namespace MySoft.IoC
                 {
                     if (contract.CacheTime > 0)
                         cacheTimes[method.ToString()] = contract.CacheTime;
+
+                    if (!string.IsNullOrEmpty(contract.ErrorMessage))
+                        errors[method.ToString()] = contract.ErrorMessage;
                 }
             }
         }
@@ -149,9 +154,17 @@ namespace MySoft.IoC
             catch (Exception ex)
             {
                 if (config.ThrowError)
-                    throw ex;
+                {
+                    //判断是否有自定义异常
+                    if (errors.ContainsKey(reqMsg.MethodName))
+                        throw new BusinessException(errors[reqMsg.MethodName]);
+                    else
+                        throw ex;
+                }
                 else
+                {
                     container.WriteError(ex);
+                }
             }
 
             return resMsg;

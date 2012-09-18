@@ -26,5 +26,21 @@ namespace MySoft.IoC
                 cacheTime = value;
             }
         }
+
+        private string errorMessage;
+        /// <summary>
+        /// 异常信息（当方法出现错误时抛出此异常信息，默认抛出系统异常）
+        /// </summary>
+        public string ErrorMessage
+        {
+            get
+            {
+                return errorMessage;
+            }
+            set
+            {
+                errorMessage = value;
+            }
+        }
     }
 }
