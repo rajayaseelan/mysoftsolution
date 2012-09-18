@@ -4,12 +4,6 @@ using System.Web;
 namespace MySoft.Mail
 {
     /// <summary>
-    /// 异步邮件发送
-    /// </summary>
-    /// <param name="smtp"></param>
-    public delegate void AsyncMailSender(SMTP smtp);
-
-    /// <summary>
     /// 邮件发送
     /// </summary>
     public class SmtpMail
@@ -162,16 +156,7 @@ namespace MySoft.Mail
             smtp.MailDisplyName = this.displayName;
             smtp.IsBodyHtml = true;
 
-            //启用线程池来实现异步发送
-            AsyncMailSender sender = new AsyncMailSender(mail => mail.SendAsync());
-            IAsyncResult result = sender.BeginInvoke(smtp, ar =>
-            {
-                AsyncMailSender handler = ar.AsyncState as AsyncMailSender;
-                if (handler != null)
-                {
-                    handler.EndInvoke(ar);
-                }
-            }, sender);
+            smtp.SendAsync();
         }
 
         #region 发送错误
