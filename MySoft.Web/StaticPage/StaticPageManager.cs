@@ -379,14 +379,29 @@ namespace MySoft.Web
 
             while (true)
             {
-                try
+                if (File.Exists(newSavePath))
                 {
-                    File.Move(newSavePath, savePath);
-                    break;
+                    try
+                    {
+                        using (var sr = new StreamReader(newSavePath, outEncoding))
+                        using (var sw = new StreamWriter(savePath, false, outEncoding))
+                        {
+                            sw.Write(sr.ReadToEnd());
+                            sw.Flush();
+                        }
+
+                        File.Delete(newSavePath);
+
+                        break;
+                    }
+                    catch
+                    {
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
+                    }
                 }
-                catch
+                else
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                    break;
                 }
             }
 

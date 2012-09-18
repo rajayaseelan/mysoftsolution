@@ -58,6 +58,7 @@ namespace MySoft.IoC.Services
             if (ev == null) return false;
             if (resMsg == null) return ev.Set();
 
+            //判断是否两个消息是一致的
             if (resMsg.TransactionId == reqMsg.TransactionId)
             {
                 this.resMsg = resMsg;
@@ -88,6 +89,7 @@ namespace MySoft.IoC.Services
         public void Dispose()
         {
             this.ev.Close();
+            this.ev = null;
 
             this.reqMsg = null;
             this.resMsg = null;
