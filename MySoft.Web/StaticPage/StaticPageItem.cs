@@ -399,15 +399,9 @@ namespace MySoft.Web
             }
             finally
             {
-                //设置最后更新时间
-                //staticPageDependency.LastUpdateTime = updateTime;
-            }
-
-            //全部生成成功才设置最后更新时间
-            if (updateTime == DateTime.MaxValue)
+                //全部生成成功才设置最后更新时间
                 staticPageDependency.LastUpdateTime = DateTime.Now;
-            else
-                staticPageDependency.LastUpdateTime = updateTime;
+            }
 
             if (!staticPageDependency.UpdateSuccess)
             {
@@ -840,10 +834,7 @@ namespace MySoft.Web
             }
 
             //全部生成成功才设置最后更新时间
-            if (updateTime == DateTime.MaxValue)
-                staticPageDependency.LastUpdateTime = DateTime.Now;
-            else
-                staticPageDependency.LastUpdateTime = updateTime;
+            staticPageDependency.LastUpdateTime = DateTime.Now;
 
             if (!staticPageDependency.UpdateSuccess)
             {

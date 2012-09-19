@@ -5,6 +5,7 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
+using System.Diagnostics;
 
 namespace MySoft.IoC
 {
@@ -141,11 +142,21 @@ namespace MySoft.IoC
                 //获取上下文
                 var context = GetOperationContext(reqMsg);
 
-                //异步调用服务
-                resMsg = asyncCaller.AsyncCall(context, reqMsg);
+                //开始计时
+                var watch = Stopwatch.StartNew();
+
+                try
+                {
+                    //异步调用服务
+                    resMsg = asyncCaller.AsyncCall(context, reqMsg);
+                }
+                finally
+                {
+                    watch.Stop();
+                }
 
                 //写日志结束
-                logger.EndRequest(reqMsg, resMsg, resMsg.ElapsedTime);
+                logger.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
 
                 //如果有异常，向外抛出
                 if (resMsg.IsError) throw resMsg.Error;
