@@ -8,6 +8,7 @@ using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using System.Collections;
 
 namespace MySoft.IoC
 {
@@ -16,7 +17,8 @@ namespace MySoft.IoC
     /// </summary>
     public class CastleFactory : ITcpConnection, ILogable, IErrorLogable
     {
-        private static IDictionary<string, object> hashtable = new Dictionary<string, object>();
+        //线程同步锁；
+        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         private static CastleFactory singleton = null;
 
         #region Create Service Factory
@@ -45,19 +47,20 @@ namespace MySoft.IoC
 
             container.OnLog += (log, type) =>
             {
-                if (this.OnLog != null) this.OnLog(log, type);
+                if (this.OnLog != null) OnLog(log, type);
             };
             container.OnError += error =>
             {
-                if (this.OnError != null) this.OnError(error);
+                if (OnError != null) OnError(error);
+                else SimpleLog.Instance.WriteLog(error);
             };
             container.OnConnected += (sender, args) =>
             {
-                if (this.OnConnected != null) this.OnConnected(sender, args);
+                if (OnConnected != null) OnConnected(sender, args);
             };
             container.OnDisconnected += (sender, args) =>
             {
-                if (this.OnDisconnected != null) this.OnDisconnected(sender, args);
+                if (OnDisconnected != null) OnDisconnected(sender, args);
             };
 
             this.proxies = new Dictionary<string, IService>();
@@ -90,7 +93,7 @@ namespace MySoft.IoC
         {
             if (singleton == null)
             {
-                lock (hashtable)
+                lock (hashtable.SyncRoot)
                 {
                     if (singleton == null)
                     {
@@ -257,7 +260,7 @@ namespace MySoft.IoC
             Type serviceType = typeof(IServiceInterfaceType);
             string serviceKey = string.Format("{0}${1}", serviceType.FullName, proxy.ServiceName);
 
-            lock (hashtable)
+            lock (hashtable.SyncRoot)
             {
                 var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, cache, logger);
                 var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
@@ -480,7 +483,7 @@ namespace MySoft.IoC
                     //本地服务
                     if (container.Kernel.HasComponent(serviceKey))
                     {
-                        lock (hashtable)
+                        lock (hashtable.SyncRoot)
                         {
                             if (!hashtable.ContainsKey(serviceKey))
                             {

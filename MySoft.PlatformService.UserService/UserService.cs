@@ -35,7 +35,8 @@ namespace MySoft.PlatformService.UserService
         {
             //if (id % 10 == 0)
             //{
-            Thread.Sleep(1000 * 6);
+            //Thread.Sleep(1000 * 6);
+            //Thread.Sleep(100);
             //}
             //else
             //{
@@ -44,7 +45,10 @@ namespace MySoft.PlatformService.UserService
 
             //throw new NullReferenceException();
 
-            return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id };
+            //Thread.Sleep(1000 * 10);
+
+            //.PadRight(id, '*')
+            return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id.ToString() };
         }
 
         public User GetUserForName(string name)

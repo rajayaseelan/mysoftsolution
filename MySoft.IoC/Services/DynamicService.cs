@@ -20,7 +20,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="serviceType">Type of the service interface.</param>
         public DynamicService(IServiceContainer container, Type serviceType)
-            : base(container, serviceType)
+            : base(serviceType)
         {
             this.container = container;
             this.serviceType = serviceType;

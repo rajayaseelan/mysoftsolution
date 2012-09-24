@@ -11,7 +11,8 @@ namespace MySoft.IoC.Aspect
     /// </summary>
     public static class AspectFactory
     {
-        private static IDictionary<Type, object> hashtable = new Dictionary<Type, object>();
+        //线程同步锁；
+        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
         /// <summary>
         /// 创建一个实例方式的拦截器（支持Aspect方式）
@@ -21,17 +22,14 @@ namespace MySoft.IoC.Aspect
         /// <returns></returns>
         public static object CreateProxy(Type serviceType, object target)
         {
-            lock (hashtable)
+            if (!hashtable.ContainsKey(serviceType))
             {
-                if (!hashtable.ContainsKey(serviceType))
-                {
-                    var interceptors = GetInterceptorList(target);
+                var interceptors = GetInterceptorList(target);
 
-                    //创建代理服务
-                    var service = CreateProxy(serviceType, target, interceptors.ToArray());
+                //创建代理服务
+                var service = CreateProxy(serviceType, target, interceptors.ToArray());
 
-                    hashtable[serviceType] = service;
-                }
+                hashtable[serviceType] = service;
             }
 
             return hashtable[serviceType];

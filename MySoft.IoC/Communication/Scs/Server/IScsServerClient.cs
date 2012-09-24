@@ -33,7 +33,7 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// <summary>
         /// Client state info.
         /// </summary>
-        object ClientState { get; set; }
+        object UserToken { get; set; }
 
         /// <summary>
         /// Disconnects from server.

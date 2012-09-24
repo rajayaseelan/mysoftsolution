@@ -2,23 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Collections;
 
 namespace MySoft.IoC.HttpServer
 {
     /// <summary>
     /// CallInfo集合
     /// </summary>
-    public sealed class HttpCallerInfoCollection : IEnumerable<KeyValuePair<string, HttpCallerInfo>>
+    public sealed class HttpCallerInfoCollection
     {
-        private IDictionary<string, HttpCallerInfo> callers;
-
-        /// <summary>
-        /// 实例化HttpCallerInfoCollection
-        /// </summary>
-        public HttpCallerInfoCollection()
-        {
-            this.callers = new Dictionary<string, HttpCallerInfo>();
-        }
+        private Hashtable callers = Hashtable.Synchronized(new Hashtable());
 
         /// <summary>
         /// 判断是否存在
@@ -27,11 +20,8 @@ namespace MySoft.IoC.HttpServer
         /// <returns></returns>
         public bool ContainsKey(string key)
         {
-            lock (callers)
-            {
-                key = key.ToLower();
-                return callers.ContainsKey(key);
-            }
+            key = key.ToLower();
+            return callers.ContainsKey(key);
         }
 
         /// <summary>
@@ -39,10 +29,16 @@ namespace MySoft.IoC.HttpServer
         /// </summary>
         public void Clear()
         {
-            lock (callers)
-            {
-                callers.Clear();
-            }
+            callers.Clear();
+        }
+
+        /// <summary>
+        /// 返回集合
+        /// </summary>
+        /// <returns></returns>
+        public IList<HttpCallerInfo> ToValueList()
+        {
+            return callers.Values.Cast<HttpCallerInfo>().ToList();
         }
 
         /// <summary>
@@ -55,7 +51,7 @@ namespace MySoft.IoC.HttpServer
             get
             {
                 key = key.ToLower();
-                return callers[key];
+                return callers[key] as HttpCallerInfo;
             }
             set
             {
@@ -63,31 +59,5 @@ namespace MySoft.IoC.HttpServer
                 callers[key] = value;
             }
         }
-
-        #region IEnumerable<KeyValuePair<string,HttpCallerInfo>> 成员
-
-        /// <summary>
-        /// 获取集合枚举
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<KeyValuePair<string, HttpCallerInfo>> GetEnumerator()
-        {
-            return callers.GetEnumerator();
-        }
-
-        #endregion
-
-        #region IEnumerable 成员
-
-        /// <summary>
-        /// 获取集合枚举
-        /// </summary>
-        /// <returns></returns>
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return callers.GetEnumerator();
-        }
-
-        #endregion
     }
 }

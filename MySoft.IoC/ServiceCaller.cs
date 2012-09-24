@@ -66,7 +66,7 @@ namespace MySoft.IoC
                     service = container.Resolve<IService>(serviceKey);
 
                     //实例化AsyncCaller
-                    asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime);
+                    asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime, null, true);
                 }
             }
         }
@@ -276,7 +276,7 @@ namespace MySoft.IoC
         private AppCaller CreateCaller(IScsServerClient client, RequestMessage reqMsg)
         {
             //获取AppPath
-            var appPath = (client.ClientState == null) ? null : (client.ClientState as AppClient).AppPath;
+            var appPath = (client.UserToken == null) ? null : (client.UserToken as AppClient).AppPath;
 
             //服务参数信息
             var caller = new AppCaller

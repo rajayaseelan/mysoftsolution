@@ -11,9 +11,8 @@ namespace MySoft.IoC.Services
     public abstract class BaseService : IService
     {
         /// <summary>
-        ///  The service logger
+        ///  The service type
         /// </summary>
-        private IServiceContainer logger;
         private Type serviceType;
 
         /// <summary>
@@ -29,9 +28,8 @@ namespace MySoft.IoC.Services
         /// Initializes a new instance of the <see cref="BaseService"/> class.
         /// </summary>
         /// <param name="serviceName">Name of the service.</param>
-        public BaseService(IServiceContainer logger, Type serviceType)
+        public BaseService(Type serviceType)
         {
-            this.logger = logger;
             this.serviceType = serviceType;
         }
 
@@ -69,17 +67,6 @@ namespace MySoft.IoC.Services
 
             //计算超时
             resMsg.ElapsedTime = watch.ElapsedMilliseconds;
-
-            if (resMsg.IsError)
-            {
-                string body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}\r\nMessage => {4}",
-                    reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
-
-                //获取异常
-                var error = IoCHelper.GetException(OperationContext.Current, reqMsg, body, resMsg.Error);
-
-                logger.WriteError(error);
-            }
 
             //返回结果数据
             if (reqMsg.InvokeMethod)

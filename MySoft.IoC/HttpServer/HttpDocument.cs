@@ -61,9 +61,9 @@ namespace MySoft.IoC.HttpServer
             var html = htmlTemplate.Replace("${uri}", uri);
 
             StringBuilder sbUrl = new StringBuilder();
-            foreach (var kv in callers)
+            foreach (var caller in callers.ToValueList())
             {
-                sbUrl.Append(GetItemDocument(kv.Value, name));
+                sbUrl.Append(GetItemDocument(caller, name));
             }
 
             html = html.Replace("${body}", sbUrl.ToString());

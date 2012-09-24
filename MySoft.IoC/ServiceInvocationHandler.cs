@@ -51,9 +51,9 @@ namespace MySoft.IoC
 
             //实例化异步服务
             if (config.EnableCache)
-                this.asyncCaller = new AsyncCaller(container, service, waitTime, cache);
+                this.asyncCaller = new AsyncCaller(container, service, waitTime, cache, false);
             else
-                this.asyncCaller = new AsyncCaller(container, service, waitTime);
+                this.asyncCaller = new AsyncCaller(container, service, waitTime, false);
 
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)
@@ -174,10 +174,6 @@ namespace MySoft.IoC
                         throw new BusinessException(errors[reqMsg.MethodName]);
                     else
                         throw ex;
-                }
-                else
-                {
-                    container.WriteError(ex);
                 }
             }
 

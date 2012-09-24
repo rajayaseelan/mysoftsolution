@@ -9,7 +9,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal sealed class WaitResult : IDisposable
     {
-        private AutoResetEvent ev;
+        private ManualResetEvent ev;
         private RequestMessage reqMsg;
         private ResponseMessage resMsg;
 
@@ -28,7 +28,7 @@ namespace MySoft.IoC.Services
         public WaitResult(RequestMessage reqMsg)
         {
             this.reqMsg = reqMsg;
-            this.ev = new AutoResetEvent(false);
+            this.ev = new ManualResetEvent(false);
         }
 
         /// <summary>
@@ -40,7 +40,8 @@ namespace MySoft.IoC.Services
         {
             try
             {
-                return ev.WaitOne(timeSpan, false);
+                //return ev.WaitOne(timeSpan, false);
+                return WaitHandle.WaitAll(new WaitHandle[] { ev }, timeSpan, false);
             }
             catch
             {
@@ -55,30 +56,37 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool SetResponse(ResponseMessage resMsg)
         {
-            if (ev == null) return false;
-            if (resMsg == null) return ev.Set();
+            try
+            {
+                if (ev == null) return false;
+                if (resMsg == null) return ev.Set();
 
-            //判断是否两个消息是一致的
-            if (resMsg.TransactionId == reqMsg.TransactionId)
-            {
-                this.resMsg = resMsg;
-            }
-            else
-            {
-                this.resMsg = new ResponseMessage
+                //判断是否两个消息是一致的
+                if (resMsg.TransactionId == reqMsg.TransactionId)
                 {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = resMsg.ReturnType,
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Value = resMsg.Value,
-                    Error = resMsg.Error
-                };
-            }
+                    this.resMsg = resMsg;
+                }
+                else
+                {
+                    this.resMsg = new ResponseMessage
+                    {
+                        TransactionId = reqMsg.TransactionId,
+                        ReturnType = resMsg.ReturnType,
+                        ServiceName = resMsg.ServiceName,
+                        MethodName = resMsg.MethodName,
+                        Parameters = resMsg.Parameters,
+                        ElapsedTime = resMsg.ElapsedTime,
+                        Value = resMsg.Value,
+                        Error = resMsg.Error
+                    };
+                }
 
-            return ev.Set();
+                return ev.Set();
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         #region IDisposable 成员

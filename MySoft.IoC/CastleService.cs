@@ -49,13 +49,23 @@ namespace MySoft.IoC
 
             //服务端注入内存处理
             this.container = new SimpleServiceContainer(CastleFactoryType.Local);
-            this.container.OnError += error => { if (OnError != null) OnError(error); };
-            this.container.OnLog += (log, type) => { if (OnLog != null) OnLog(log, type); };
+            this.container.OnError += error =>
+            {
+                if (OnError != null) OnError(error);
+                else SimpleLog.Instance.WriteLog(error);
+            };
+            this.container.OnLog += (log, type) =>
+            {
+                if (OnLog != null) OnLog(log, type);
+            };
 
             //实例化调用者
             var status = new ServerStatusService(server, config, container);
             this.caller = new ServiceCaller(status);
-            this.caller.Handler += (sender, args) => { if (OnCalling != null) OnCalling(sender, args); };
+            this.caller.Handler += (sender, args) =>
+            {
+                if (OnCalling != null) OnCalling(sender, args);
+            };
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -235,7 +245,7 @@ namespace MySoft.IoC
             finally
             {
                 endPoint = null;
-                e.Client.ClientState = null;
+                e.Client.UserToken = null;
             }
         }
 
@@ -276,7 +286,7 @@ namespace MySoft.IoC
                 {
                     var client = server.Clients[info.ClientId];
                     var appClient = (e.Message as ScsClientMessage).Client;
-                    client.ClientState = appClient;
+                    client.UserToken = appClient;
 
                     //响应客户端详细信息
                     var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);

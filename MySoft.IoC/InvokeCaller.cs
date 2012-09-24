@@ -32,7 +32,7 @@ namespace MySoft.IoC
             var waitTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_WAIT_TIMEOUT);
 
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service, waitTime);
+            this.asyncCaller = new AsyncCaller(container, service, waitTime, false);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();

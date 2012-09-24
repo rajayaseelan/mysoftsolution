@@ -77,8 +77,8 @@
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
-    <Compile Include="Common\ThreadManager.cs" />
-    <Compile Include="Common\WorkerItem.cs" />
+    <Compile Include="Services\ThreadManager.cs" />
+    <Compile Include="Services\WorkerItem.cs" />
     <Compile Include="Communication\ITcpConnection.cs" />
     <Compile Include="Communication\Scs\Client\ClientReConnecter.cs" />
     <Compile Include="Communication\Scs\Client\IConnectableClient.cs" />

@@ -52,7 +52,8 @@ namespace MySoft.PlatformService.UserService
 
         User GetUserFromName(string name);
 
-        [OperationContract(CacheTime = 5, ErrorMessage = "获取用户信息失败")]
+        //, ErrorMessage = "获取用户信息失败"
+        [OperationContract(CacheTime = 5)]
         User GetUser(int id);
 
         User GetUserForName(string name);

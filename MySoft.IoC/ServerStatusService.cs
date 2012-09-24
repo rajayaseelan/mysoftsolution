@@ -21,7 +21,7 @@ namespace MySoft.IoC
         /// </summary>
         public event RefreshEventHandler OnRefresh;
 
-        private const int DefaultDisconnectionAttemptTimeout = 15; //15 minutes.
+        private const int DefaultDisconnectionAttemptTimeout = 5; //5 minutes.
 
         private CastleServiceConfiguration config;
         private IScsServer server;
@@ -74,6 +74,7 @@ namespace MySoft.IoC
                     catch (Exception ex)
                     {
                         //TODO
+                        container.WriteError(ex);
                     }
                     finally
                     {
@@ -105,6 +106,9 @@ namespace MySoft.IoC
 
                     foreach (var client in server.Clients.GetAllItems())
                     {
+                        //不为null表示是组件传递的客户端，则不处理r
+                        if (client.UserToken != null) continue;
+
                         if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
                         {
                             //如果超过15分钟没响应，则断开链接
@@ -157,8 +161,8 @@ namespace MySoft.IoC
                 var items = server.Clients.GetAllItems();
 
                 //统计客户端数量
-                var list = items.Where(p => p.ClientState != null)
-                      .Select(p => p.ClientState as AppClient)
+                var list = items.Where(p => p.UserToken != null)
+                      .Select(p => p.UserToken as AppClient)
                       .Distinct(new AppClientComparer())
                       .ToList();
 
@@ -179,61 +183,54 @@ namespace MySoft.IoC
             //客户端列表
             var clients = new List<ClientInfo>();
 
-            try
+            var epServer = server.EndPoint as ScsTcpEndPoint;
+            var items = server.Clients.GetAllItems();
+
+            var list1 = items.Where(p => p.UserToken != null).ToList();
+            var list2 = items.Where(p => p.UserToken == null).ToList();
+
+            //如果list不为0
+            if (list1.Count > 0)
             {
-                var epServer = server.EndPoint as ScsTcpEndPoint;
-                var items = server.Clients.GetAllItems();
+                var ls = list1.Select(p => p.UserToken as AppClient)
+                         .GroupBy(p => new
+                         {
+                             AppName = p.AppName,
+                             IPAddress = p.IPAddress,
+                             AppPath = p.AppPath,
+                         })
+                         .Select(p => new ClientInfo
+                         {
+                             AppPath = p.Key.AppPath,
+                             AppName = p.Key.AppName,
+                             IPAddress = p.Key.IPAddress,
+                             HostName = p.Max(c => c.HostName),
+                             ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                             ServerPort = epServer.TcpPort,
+                             Count = p.Count()
+                         }).ToList();
 
-                var list1 = items.Where(p => p.ClientState != null).ToList();
-                var list2 = items.Where(p => p.ClientState == null).ToList();
-
-                //如果list不为0
-                if (list1.Count > 0)
-                {
-                    var ls = list1.Select(p => p.ClientState as AppClient)
-                             .GroupBy(p => new
-                             {
-                                 AppName = p.AppName,
-                                 IPAddress = p.IPAddress,
-                                 AppPath = p.AppPath,
-                             })
-                             .Select(p => new ClientInfo
-                             {
-                                 AppPath = p.Key.AppPath,
-                                 AppName = p.Key.AppName,
-                                 IPAddress = p.Key.IPAddress,
-                                 HostName = p.Max(c => c.HostName),
-                                 ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
-                                 ServerPort = epServer.TcpPort,
-                                 Count = p.Count()
-                             }).ToList();
-
-                    clients.AddRange(ls);
-                }
-
-                //如果list不为0
-                if (list2.Count > 0)
-                {
-                    var ls = list2.Where(p => p.ClientState == null)
-                            .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
-                            .GroupBy(p => p.IpAddress)
-                            .Select(g => new ClientInfo
-                            {
-                                AppPath = "Unknown Path",
-                                AppName = "Unknown",
-                                IPAddress = g.Key,
-                                ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
-                                ServerPort = epServer.TcpPort,
-                                HostName = "Unknown",
-                                Count = g.Count()
-                            }).ToList();
-
-                    clients.AddRange(ls);
-                }
+                clients.AddRange(ls);
             }
-            catch (Exception ex)
+
+            //如果list不为0
+            if (list2.Count > 0)
             {
-                container.WriteError(ex);
+                var ls = list2.Where(p => p.UserToken == null)
+                        .Select(p => p.RemoteEndPoint).Cast<ScsTcpEndPoint>()
+                        .GroupBy(p => p.IpAddress)
+                        .Select(g => new ClientInfo
+                        {
+                            AppPath = "Unknown Path",
+                            AppName = "Unknown",
+                            IPAddress = g.Key,
+                            ServerIPAddress = epServer.IpAddress ?? DnsHelper.GetIPAddress(),
+                            ServerPort = epServer.TcpPort,
+                            HostName = "Unknown",
+                            Count = g.Count()
+                        }).ToList();
+
+                clients.AddRange(ls);
             }
 
             return clients;

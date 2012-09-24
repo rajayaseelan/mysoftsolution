@@ -116,13 +116,13 @@ namespace MySoft.IoC.HttpServer
         public string GetAPIText()
         {
             var array = new ArrayList();
-            foreach (var kvp in callers)
+            foreach (var caller in callers.ToValueList())
             {
                 array.Add(new
                 {
-                    Name = kvp.Value.CallerName,
-                    Authorized = kvp.Value.Authorized,
-                    TypeString = kvp.Value.TypeString
+                    Name = caller.CallerName,
+                    Authorized = caller.Authorized,
+                    TypeString = caller.TypeString
                 });
             }
 

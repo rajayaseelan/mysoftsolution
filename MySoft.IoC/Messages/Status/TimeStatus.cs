@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -34,7 +35,7 @@ namespace MySoft.IoC.Messages
     internal class TimeStatusCollection
     {
         private int maxCount;
-        private IDictionary<string, TimeStatus> hashtable = new Dictionary<string, TimeStatus>();
+        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         public TimeStatusCollection(int maxCount)
         {
             this.maxCount = maxCount;
@@ -49,22 +50,19 @@ namespace MySoft.IoC.Messages
         {
             string key = value.ToString("yyyyMMddHHmmss");
 
-            lock (hashtable)
+            if (!hashtable.ContainsKey(key))
             {
-                if (!hashtable.ContainsKey(key))
+                //如果总数大于传入的总数
+                if (hashtable.Count > 0 && hashtable.Count >= maxCount)
                 {
-                    //如果总数大于传入的总数
-                    if (hashtable.Count > 0 && hashtable.Count >= maxCount)
-                    {
-                        var firstKey = hashtable.Keys.Cast<string>().Min();
-                        if (firstKey != null) hashtable.Remove(firstKey);
-                    }
-
-                    hashtable[key] = new TimeStatus { CounterTime = value };
+                    var firstKey = hashtable.Keys.Cast<string>().Min();
+                    if (firstKey != null) hashtable.Remove(firstKey);
                 }
+
+                hashtable[key] = new TimeStatus { CounterTime = value };
             }
 
-            return hashtable[key];
+            return hashtable[key] as TimeStatus;
         }
 
         /// <summary>
@@ -74,10 +72,7 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                lock (hashtable)
-                {
-                    return hashtable.Count;
-                }
+                return hashtable.Count;
             }
         }
 
@@ -87,10 +82,7 @@ namespace MySoft.IoC.Messages
         /// <returns></returns>
         public IList<TimeStatus> ToList()
         {
-            lock (hashtable)
-            {
-                return hashtable.Values.Cast<TimeStatus>().ToList();
-            }
+            return hashtable.Values.Cast<TimeStatus>().ToList();
         }
 
         /// <summary>
@@ -99,12 +91,12 @@ namespace MySoft.IoC.Messages
         /// <returns></returns>
         public TimeStatus GetNewest()
         {
-            lock (hashtable)
+            if (hashtable.Count > 0)
             {
-                if (hashtable.Count > 0)
+                var lastKey = hashtable.Keys.Cast<string>().Max();
+                if (lastKey != null)
                 {
-                    var lastKey = hashtable.Keys.Cast<string>().Max();
-                    if (lastKey != null) return hashtable[lastKey];
+                    return hashtable[lastKey] as TimeStatus;
                 }
             }
 
@@ -116,10 +108,7 @@ namespace MySoft.IoC.Messages
         /// </summary>
         public void Clear()
         {
-            lock (hashtable)
-            {
-                hashtable.Clear();
-            }
+            hashtable.Clear();
         }
     }
 }

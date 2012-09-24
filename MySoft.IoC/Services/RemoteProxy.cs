@@ -130,9 +130,6 @@ namespace MySoft.IoC.Services
                     //发送消息
                     reqProxy.SendMessage(reqMsg);
 
-                    //定义响应消息
-                    ResponseMessage resMsg = null;
-
                     var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
 
                     //等待信号响应
@@ -142,14 +139,12 @@ namespace MySoft.IoC.Services
                            , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString());
 
                         //获取异常
-                        resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
-                    }
-                    else
-                    {
-                        resMsg = waitResult.Message;
+                        var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
+
+                        waitResult.SetResponse(resMsg);
                     }
 
-                    return resMsg;
+                    return waitResult.Message;
                 }
             }
             finally

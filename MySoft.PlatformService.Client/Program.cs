@@ -336,7 +336,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -491,7 +491,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random().Next(1, 5);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 10000);
                     //var value = service.GetUsersString(count, out length);
 
                     //var value = service.GetUser(new Random().Next(1, 10000));
@@ -507,7 +507,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Name + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Id + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //var clients = service1.GetClientList();
 

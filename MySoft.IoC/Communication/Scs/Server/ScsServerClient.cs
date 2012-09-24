@@ -58,7 +58,7 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// <summary>
         /// Get or Set client state.
         /// </summary>
-        public object ClientState { get; set; }
+        public object UserToken { get; set; }
 
         /// <summary>
         /// Gets/sets wire protocol that is used while reading and writing messages.
