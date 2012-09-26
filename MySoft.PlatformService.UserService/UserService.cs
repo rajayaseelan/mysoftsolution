@@ -9,14 +9,6 @@ using System.Collections.Specialized;
 
 namespace MySoft.PlatformService.UserService
 {
-    public class AspectLog : AspectInterceptor
-    {
-        protected override void PreProceed(IInvocation invocation)
-        {
-            base.PreProceed(invocation);
-        }
-    }
-
     [AspectProxy(typeof(AspectLog))]
     public class UserService : IUserService, IInitializable, IStartable
     {
@@ -45,7 +37,7 @@ namespace MySoft.PlatformService.UserService
 
             //throw new NullReferenceException();
 
-            //Thread.Sleep(1000 * 10);
+            Thread.Sleep(1000 * 10);
 
             //.PadRight(id, '*')
             return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id.ToString() };
@@ -167,7 +159,7 @@ namespace MySoft.PlatformService.UserService
         {
             var list = new List<UserInfo>();
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
                 list.Add(new UserInfo { Name = "test_" + count, Description = "test_" + count + "_" + Thread.CurrentThread.ManagedThreadId });
@@ -218,5 +210,13 @@ namespace MySoft.PlatformService.UserService
         }
 
         #endregion
+    }
+
+    public class AspectLog : AspectInterceptor
+    {
+        protected override void PreProceed(IInvocation invocation)
+        {
+            base.PreProceed(invocation);
+        }
     }
 }

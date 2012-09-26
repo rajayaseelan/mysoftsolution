@@ -89,7 +89,7 @@ namespace MySoft.IoC.Services
                     var waitResult = hashtable[resMsg.TransactionId];
 
                     //数据响应
-                    waitResult.SetResponse(resMsg);
+                    waitResult.SetResult(resMsg);
                 }
             }
         }
@@ -117,7 +117,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //处理数据
-                using (var waitResult = new WaitResult(reqMsg))
+                using (var waitResult = new WaitResult())
                 {
                     lock (hashtable)
                     {
@@ -133,15 +133,9 @@ namespace MySoft.IoC.Services
                     var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
 
                     //等待信号响应
-                    if (!waitResult.WaitOne(elapsedTime))
+                    if (!waitResult.Wait(elapsedTime))
                     {
-                        var title = string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
-                           , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)elapsedTime.TotalMilliseconds, reqMsg.Parameters.ToString());
-
-                        //获取异常
-                        var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
-
-                        waitResult.SetResponse(resMsg);
+                        return GetTimeoutResponse(reqMsg, (int)elapsedTime.TotalMilliseconds);
                     }
 
                     return waitResult.Message;
@@ -161,6 +155,21 @@ namespace MySoft.IoC.Services
                     hashtable.Remove(reqMsg.TransactionId);
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取超时响应信息
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="elapsedTime"></param>
+        /// <returns></returns>
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, int elapsedTime)
+        {
+            var title = string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
+               , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, elapsedTime, reqMsg.Parameters.ToString());
+
+            //获取异常
+            return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
         }
 
         /// <summary>
@@ -207,10 +216,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 远程节点
         /// </summary>
-        public ServerNode Node
-        {
-            get { return node; }
-        }
+        public ServerNode Node { get { return node; } }
 
         /// <summary>
         /// 服务名称

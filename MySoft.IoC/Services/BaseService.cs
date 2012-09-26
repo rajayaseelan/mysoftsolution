@@ -49,41 +49,27 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            ResponseMessage resMsg = null;
-
             //开始计时
             var watch = Stopwatch.StartNew();
 
             try
             {
-                resMsg = Run(reqMsg);
+                var resMsg = Run(reqMsg);
 
-                if (resMsg == null) return null;
+                watch.Stop();
+
+                //计算超时
+                resMsg.ElapsedTime = watch.ElapsedMilliseconds;
+
+                return resMsg;
             }
             finally
             {
-                watch.Stop();
-            }
-
-            //计算超时
-            resMsg.ElapsedTime = watch.ElapsedMilliseconds;
-
-            //返回结果数据
-            if (reqMsg.InvokeMethod)
-            {
-                resMsg.Value = new InvokeData
+                if (watch.IsRunning)
                 {
-                    Value = SerializationManager.SerializeJson(resMsg.Value),
-                    Count = resMsg.Count,
-                    ElapsedTime = resMsg.ElapsedTime,
-                    OutParameters = resMsg.Parameters.ToString()
-                };
-
-                //清除参数集合
-                resMsg.Parameters.Clear();
+                    watch.Stop();
+                }
             }
-
-            return resMsg;
         }
 
         #endregion

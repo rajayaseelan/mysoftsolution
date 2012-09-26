@@ -17,6 +17,7 @@ namespace MySoft.IoC.Configuration
         private bool compress = false;
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;        //默认记录1小时
         private int timeout = ServiceConfig.DEFAULT_RECORD_TIMEOUT;         //超时时间为1秒
+        private bool enableCache = false;                                   //是否缓存
 
         /// <summary>
         /// 获取远程对象配置
@@ -60,6 +61,9 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["timeout"] != null && attribute["timeout"].Value.Trim() != string.Empty)
                 timeout = Convert.ToInt32(attribute["timeout"].Value);
+
+            if (attribute["enableCache"] != null && attribute["enableCache"].Value.Trim() != string.Empty)
+                enableCache = Convert.ToBoolean(attribute["enableCache"].Value);
 
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
@@ -162,6 +166,16 @@ namespace MySoft.IoC.Configuration
         {
             get { return timeout; }
             set { timeout = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the enableCache
+        /// </summary>
+        /// <value>The enableCache.</value>
+        public bool EnableCache
+        {
+            get { return enableCache; }
+            set { enableCache = value; }
         }
     }
 }

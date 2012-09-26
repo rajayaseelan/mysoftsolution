@@ -175,7 +175,6 @@ namespace MySoft.IoC
                 ReturnType = reqMsg.ReturnType,
                 ServiceName = reqMsg.ServiceName,
                 MethodName = reqMsg.MethodName,
-                Parameters = reqMsg.Parameters,
                 Error = ex
             };
 

@@ -13,7 +13,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default cache count
         /// </summary>
-        public const int DEFAULT_CACHE_COUNT = 100; //100条记录
+        public const int DEFAULT_CACHE_COUNT = 500; //500条记录
 
         /// <summary>
         /// The default cache timeout

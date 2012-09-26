@@ -515,5 +515,29 @@ namespace MySoft.PlatformService.WinForm
         {
             checkBox1_CheckedChanged(sender, e);
         }
+
+        private void lblMethodName_DoubleClick(object sender, EventArgs e)
+        {
+            try
+            {
+                Clipboard.SetData(DataFormats.StringFormat, lblMethodName.Text);
+                MessageBox.Show("内容成功复制到剪切板！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private void lblServiceName_DoubleClick(object sender, EventArgs e)
+        {
+            try
+            {
+                Clipboard.SetData(DataFormats.StringFormat, lblServiceName.Text);
+                MessageBox.Show("内容成功复制到剪切板！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+            }
+        }
     }
 }

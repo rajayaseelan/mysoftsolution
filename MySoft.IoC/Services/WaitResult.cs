@@ -9,8 +9,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal sealed class WaitResult : IDisposable
     {
-        private ManualResetEvent ev;
-        private RequestMessage reqMsg;
+        private AutoResetEvent ev;
         private ResponseMessage resMsg;
 
         /// <summary>
@@ -24,11 +23,9 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 实例化WaitResult
         /// </summary>
-        /// <param name="reqMsg"></param>
-        public WaitResult(RequestMessage reqMsg)
+        public WaitResult()
         {
-            this.reqMsg = reqMsg;
-            this.ev = new ManualResetEvent(false);
+            this.ev = new AutoResetEvent(false);
         }
 
         /// <summary>
@@ -36,12 +33,11 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="timeSpan"></param>
         /// <returns></returns>
-        public bool WaitOne(TimeSpan timeSpan)
+        public bool Wait(TimeSpan timeSpan)
         {
             try
             {
-                //return ev.WaitOne(timeSpan, false);
-                return WaitHandle.WaitAll(new WaitHandle[] { ev }, timeSpan, false);
+                return ev.WaitOne(timeSpan, false);
             }
             catch
             {
@@ -54,33 +50,11 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        public bool SetResponse(ResponseMessage resMsg)
+        public bool SetResult(ResponseMessage resMsg)
         {
             try
             {
-                if (ev == null) return false;
-                if (resMsg == null) return ev.Set();
-
-                //判断是否两个消息是一致的
-                if (resMsg.TransactionId == reqMsg.TransactionId)
-                {
-                    this.resMsg = resMsg;
-                }
-                else
-                {
-                    this.resMsg = new ResponseMessage
-                    {
-                        TransactionId = reqMsg.TransactionId,
-                        ReturnType = resMsg.ReturnType,
-                        ServiceName = resMsg.ServiceName,
-                        MethodName = resMsg.MethodName,
-                        Parameters = resMsg.Parameters,
-                        ElapsedTime = resMsg.ElapsedTime,
-                        Value = resMsg.Value,
-                        Error = resMsg.Error
-                    };
-                }
-
+                this.resMsg = resMsg;
                 return ev.Set();
             }
             catch
@@ -96,11 +70,14 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            this.ev.Close();
-            this.ev = null;
-
-            this.reqMsg = null;
-            this.resMsg = null;
+            try
+            {
+                this.ev.Close();
+            }
+            catch
+            {
+                //TODO
+            }
         }
 
         #endregion

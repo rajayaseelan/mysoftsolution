@@ -4,19 +4,9 @@ using System.Diagnostics;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
-using System.Runtime.Remoting.Messaging;
-using System.Threading;
 
 namespace MySoft.IoC.Services
 {
-    /// <summary>
-    /// 异步调用方法
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="reqMsg"></param>
-    /// <returns></returns>
-    internal delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
-
     /// <summary>
     /// 异步调用器
     /// </summary>
@@ -29,6 +19,10 @@ namespace MySoft.IoC.Services
         private bool enabledCache;
         private bool fromServer;
         private ThreadManager manager;
+
+        /// <summary>
+        /// Lock object
+        /// </summary>
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
         /// <summary>
@@ -64,23 +58,12 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 获取缓存的Key
-        /// </summary>
-        /// <param name="caller"></param>
-        /// <returns></returns>
-        private string GetServiceCallKey(AppCaller caller)
-        {
-            var cacheKey = string.Format("Caller_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
-            return cacheKey.Replace(" ", "").Replace("\r\n", "").Replace("\t", "").ToLower();
-        }
-
-        /// <summary>
         /// 异步调用服务
         /// </summary>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        public ResponseMessage AsyncCall(OperationContext context, RequestMessage reqMsg)
+        public ResponseMessage Run(OperationContext context, RequestMessage reqMsg)
         {
             //如果是状态服务，则同步响应
             if (reqMsg.ServiceName == typeof(IStatusService).FullName)
@@ -88,137 +71,107 @@ namespace MySoft.IoC.Services
                 return GetResponse(context, reqMsg);
             }
 
-            var callKey = GetServiceCallKey(context.Caller);
+            //获取MethodCaller
+            var caller = GetMethodCaller(context.Caller);
 
-            if (enabledCache)
+            lock (caller)
             {
-                //定义一个响应值
-                ResponseMessage resMsg = null;
+                //获取CallerKey
+                var callKey = GetCallerKey(context.Caller);
 
-                //从缓存中获取数据
-                if (GetResponseFromCache(callKey, reqMsg, out resMsg))
+                if (enabledCache)
                 {
-                    //刷新数据
-                    manager.RefreshWorker(callKey);
+                    //定义一个响应值
+                    ResponseMessage resMsg = null;
+
+                    //从缓存中获取数据
+                    if (GetResponseFromCache(callKey, reqMsg, out resMsg))
+                    {
+                        //刷新数据
+                        manager.RefreshWorker(callKey);
+
+                        return resMsg;
+                    }
+                }
+
+                //开始调用服务
+                var ar = caller.BeginInvoke(context, reqMsg, null, null);
+
+                //等待指定超时时间
+                if (!ar.AsyncWaitHandle.WaitOne(waitTime))
+                {
+                    //获取超时响应信息
+                    return GetTimeoutResponse(context, reqMsg);
+                }
+                else
+                {
+                    var resMsg = caller.EndInvoke(ar);
+                    ar.AsyncWaitHandle.Close();
+
+                    if (enabledCache)
+                    {
+                        //设置响应信息到缓存
+                        SetResponseToCache(callKey, context, reqMsg, resMsg);
+                    }
 
                     return resMsg;
                 }
             }
-
-            //等待响应消息
-            using (var waitResult = new WaitResult(reqMsg))
-            {
-                if (!hashtable.ContainsKey(callKey))
-                {
-                    //初始化队列
-                    hashtable[callKey] = Queue.Synchronized(new Queue());
-
-                    //工作项
-                    var worker = new WorkerItem
-                    {
-                        CallKey = callKey,
-                        Context = context,
-                        Request = reqMsg
-                    };
-
-                    //开始调用服务
-                    var caller = new AsyncMethodCaller(GetResponse);
-                    caller.BeginInvoke(context, reqMsg, AsyncCallback, new ArrayList { waitResult, worker });
-                }
-                else
-                {
-                    //加入队列中
-                    (hashtable[callKey] as Queue).Enqueue(waitResult);
-                }
-
-                //等待指定超时时间
-                if (!waitResult.WaitOne(waitTime))
-                {
-                    var body = string.Format("Remote client【{0}】async call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
-                        reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), (int)waitTime.TotalMilliseconds);
-
-                    //获取异常
-                    var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
-
-                    logger.WriteError(error);
-
-                    var title = string.Format("Async call service ({0},{1}) timeout ({2}) ms.",
-                                reqMsg.ServiceName, reqMsg.MethodName, (int)waitTime.TotalMilliseconds);
-
-                    //处理异常
-                    var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
-
-                    waitResult.SetResponse(resMsg);
-                }
-
-                //返回响应消息
-                return waitResult.Message;
-            }
         }
 
         /// <summary>
-        /// 设置响应
+        /// 获取CallerKey
         /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="resMsg"></param>
-        private void SetResponse(string callKey, ResponseMessage resMsg)
+        /// <param name="caller"></param>
+        /// <returns></returns>
+        private string GetCallerKey(AppCaller caller)
         {
-            if (hashtable.ContainsKey(callKey))
-            {
-                var queue = hashtable[callKey] as Queue;
-
-                if (queue.Count > 0)
-                {
-                    //输出队列信息
-                    IoCHelper.WriteLine(ConsoleColor.Magenta, "[{0}] => Caller count: {1} ({2}, {3}).", DateTime.Now, queue.Count, resMsg.ServiceName, resMsg.MethodName);
-
-                    while (queue.Count > 0)
-                    {
-                        var wr = queue.Dequeue() as WaitResult;
-
-                        wr.SetResponse(resMsg);
-                    }
-                }
-            }
+            //对Key进行组装
+            return string.Format("Caller_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters)
+                    .Replace(" ", "").Replace("\r\n", "").Replace("\t", "").ToLower();
         }
 
         /// <summary>
-        /// 调用方法
+        /// 获取方法调用对象
         /// </summary>
-        /// <param name="ar"></param>
-        private void AsyncCallback(IAsyncResult ar)
+        /// <param name="caller"></param>
+        /// <returns></returns>
+        private AsyncMethodCaller GetMethodCaller(AppCaller caller)
         {
-            var caller = (ar as AsyncResult).AsyncDelegate;
-            var arr = ar.AsyncState as ArrayList;
-            var wr = arr[0] as WaitResult;
-            var worker = arr[1] as WorkerItem;
+            //获取ServiceKey
+            var serviceKey = string.Format("Service_{0}${1}", caller.ServiceName, caller.MethodName);
 
-            try
+            //判断是否有锁Key存在
+            if (!hashtable.ContainsKey(serviceKey))
             {
-                var resMsg = (caller as AsyncMethodCaller).EndInvoke(ar);
-                ar.AsyncWaitHandle.Close();
-
-                //这里的resMsg居然会为null
-                if (resMsg != null)
-                {
-                    if (enabledCache)
-                    {
-                        //设置响应信息到缓存
-                        SetResponseToCache(worker.CallKey, worker.Context, worker.Request, resMsg);
-                    }
-
-                    //设置响应
-                    wr.SetResponse(resMsg);
-
-                    //设置队列响应信息
-                    SetResponse(worker.CallKey, resMsg);
-                }
+                hashtable[serviceKey] = new AsyncMethodCaller(GetResponse);
             }
-            finally
-            {
-                //移除指定的Key
-                hashtable.Remove(worker.CallKey);
-            }
+
+            return hashtable[serviceKey] as AsyncMethodCaller;
+        }
+
+        /// <summary>
+        /// 获取超时响应信息
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetTimeoutResponse(OperationContext context, RequestMessage reqMsg)
+        {
+            var body = string.Format("Remote client【{0}】async call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
+                reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), (int)waitTime.TotalMilliseconds);
+
+            //获取异常
+            var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
+
+            //写异常日志
+            logger.WriteError(error);
+
+            var title = string.Format("Async call service ({0},{1}) timeout ({2}) ms.",
+                        reqMsg.ServiceName, reqMsg.MethodName, (int)waitTime.TotalMilliseconds);
+
+            //处理异常
+            return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
         }
 
         /// <summary>
@@ -241,6 +194,9 @@ namespace MySoft.IoC.Services
             }
             catch (Exception ex)
             {
+                //写异常日志
+                logger.WriteError(ex);
+
                 //处理异常
                 resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
@@ -262,7 +218,7 @@ namespace MySoft.IoC.Services
         private void SetResponseToCache(string callKey, OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
         {
             //如果符合条件，则自动缓存 【自动缓存功能】
-            if (resMsg != null && !resMsg.IsError && resMsg.Count > 0)
+            if (resMsg != null && resMsg.Value != null && !resMsg.IsError && resMsg.Count > 0)
             {
                 //记录数大于100条
                 if (reqMsg.CacheTime <= 0 && resMsg.Count > ServiceConfig.DEFAULT_CACHE_COUNT)
@@ -274,7 +230,7 @@ namespace MySoft.IoC.Services
                 if (reqMsg.CacheTime > 0)
                 {
                     //克隆一个新的对象
-                    var newMsg = NewResponseMessage(reqMsg, resMsg, true);
+                    var newMsg = NewResponseMessage(reqMsg, resMsg);
 
                     cache.InsertCache(callKey, newMsg, reqMsg.CacheTime * 10);
 
@@ -309,7 +265,7 @@ namespace MySoft.IoC.Services
             if (resMsg != null)
             {
                 //克隆一个新的对象
-                resMsg = NewResponseMessage(reqMsg, resMsg, false);
+                resMsg = NewResponseMessage(reqMsg, resMsg);
 
                 return true;
             }
@@ -322,66 +278,45 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
-        /// <param name="isSerialize"></param>
         /// <returns></returns>
-        private ResponseMessage NewResponseMessage(RequestMessage reqMsg, ResponseMessage resMsg, bool isSerialize)
+        private ResponseMessage NewResponseMessage(RequestMessage reqMsg, ResponseMessage resMsg)
         {
-            //如果是服务端，直接返回对象
-            if (fromServer)
+            var newMsg = new ResponseMessage
             {
-                return new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = resMsg.ReturnType,
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = 0,
-                    Error = resMsg.Error,
-                    Value = resMsg.Value
-                };
-            }
-            else
-            {
-                //新值
-                var newValue = resMsg.Value;
+                TransactionId = reqMsg.TransactionId,
+                ReturnType = resMsg.ReturnType,
+                ServiceName = resMsg.ServiceName,
+                MethodName = resMsg.MethodName,
+                Parameters = resMsg.Parameters,
+                Error = resMsg.Error,
+                Value = resMsg.Value,
+                ElapsedTime = 0
+            };
 
+            //如果是服务端，直接返回对象
+            if (!fromServer && !reqMsg.InvokeMethod)
+            {
                 var watch = Stopwatch.StartNew();
 
                 try
                 {
-                    if (!reqMsg.InvokeMethod)
-                    {
-                        if (isSerialize)
-                            newValue = SerializationManager.SerializeBin(newValue);
-                        else
-                            newValue = SerializationManager.DeserializeBin((byte[])newValue);
-                    }
+                    newMsg.Value = CoreHelper.CloneObject(newMsg.Value);
 
                     watch.Stop();
-                }
-                catch (Exception ex)
-                {
-                    //TODO
+
+                    //设置耗时时间
+                    newMsg.ElapsedTime = watch.ElapsedMilliseconds;
                 }
                 finally
                 {
-                    watch.Stop();
+                    if (watch.IsRunning)
+                    {
+                        watch.Stop();
+                    }
                 }
-
-                //计算耗时
-                return new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ReturnType = resMsg.ReturnType,
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = watch.ElapsedMilliseconds,
-                    Error = resMsg.Error,
-                    Value = newValue
-                };
             }
+
+            return newMsg;
         }
     }
 }

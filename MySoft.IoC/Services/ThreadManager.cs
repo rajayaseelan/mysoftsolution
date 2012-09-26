@@ -1,9 +1,18 @@
 ﻿using System;
 using System.Collections;
 using MySoft.Cache;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
+    /// <summary>
+    /// 异步响应方法
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="reqMsg"></param>
+    /// <returns></returns>
+    internal delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
+
     /// <summary>
     /// 线程管理
     /// </summary>
@@ -89,7 +98,7 @@ namespace MySoft.IoC.Services
                 ar.AsyncWaitHandle.Close();
 
                 //不为null而且未出错
-                if (resMsg != null && !resMsg.IsError && resMsg.Count > 0)
+                if (resMsg != null && resMsg.Value != null && !resMsg.IsError && resMsg.Count > 0)
                 {
                     cache.InsertCache(worker.CallKey, resMsg, worker.SlidingTime * 10);
 

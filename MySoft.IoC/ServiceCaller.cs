@@ -66,7 +66,10 @@ namespace MySoft.IoC
                     service = container.Resolve<IService>(serviceKey);
 
                     //实例化AsyncCaller
-                    asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime, null, true);
+                    if (status.Config.EnableCache)
+                        asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime, null, true);
+                    else
+                        asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime, true);
                 }
             }
         }
@@ -99,7 +102,7 @@ namespace MySoft.IoC
                 var asyncCaller = GetAsyncCaller(reqMsg, context);
 
                 //异步调用服务
-                resMsg = asyncCaller.AsyncCall(context, reqMsg);
+                resMsg = asyncCaller.Run(context, reqMsg);
 
                 //判断返回的消息
                 if (resMsg != null)

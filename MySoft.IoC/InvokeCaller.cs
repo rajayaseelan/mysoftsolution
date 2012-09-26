@@ -69,7 +69,7 @@ namespace MySoft.IoC
             var context = GetOperationContext(reqMsg);
 
             //异步调用服务
-            var resMsg = asyncCaller.AsyncCall(context, reqMsg);
+            var resMsg = asyncCaller.Run(context, reqMsg);
 
             //如果有异常，向外抛出
             if (resMsg.IsError) throw resMsg.Error;

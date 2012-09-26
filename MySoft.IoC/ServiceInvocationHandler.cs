@@ -148,11 +148,16 @@ namespace MySoft.IoC
                 try
                 {
                     //异步调用服务
-                    resMsg = asyncCaller.AsyncCall(context, reqMsg);
+                    resMsg = asyncCaller.Run(context, reqMsg);
+
+                    watch.Stop();
                 }
                 finally
                 {
-                    watch.Stop();
+                    if (watch.IsRunning)
+                    {
+                        watch.Stop();
+                    }
                 }
 
                 //写日志结束

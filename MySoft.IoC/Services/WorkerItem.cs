@@ -14,14 +14,14 @@ namespace MySoft.IoC.Services
         public string CallKey { get; set; }
 
         /// <summary>
-        /// Request
-        /// </summary>
-        public RequestMessage Request { get; set; }
-
-        /// <summary>
         /// Context
         /// </summary>
         public OperationContext Context { get; set; }
+
+        /// <summary>
+        /// Request
+        /// </summary>
+        public RequestMessage Request { get; set; }
 
         /// <summary>
         /// 更新时间

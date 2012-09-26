@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
@@ -49,9 +50,28 @@ namespace MySoft.IoC.Services
 
             #endregion
 
-            //容器实例对象
-            object instance = null;
+            var callMethod = methods[reqMsg.MethodName];
 
+            //解析参数
+            ResolveParameters(callMethod, reqMsg);
+
+            //调用方法
+            var resMsg = InvokeMethod(callMethod, reqMsg);
+
+            //处理消息
+            HandleMessage(reqMsg, resMsg);
+
+            return resMsg;
+        }
+
+        /// <summary>
+        /// 调用方法
+        /// </summary>
+        /// <param name="callMethod"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage InvokeMethod(System.Reflection.MethodInfo callMethod, RequestMessage reqMsg)
+        {
             var resMsg = new ResponseMessage
             {
                 TransactionId = reqMsg.TransactionId,
@@ -60,24 +80,11 @@ namespace MySoft.IoC.Services
                 MethodName = reqMsg.MethodName
             };
 
+            //解析服务
+            var instance = container.Resolve(serviceType);
+
             try
             {
-                var callMethod = methods[reqMsg.MethodName];
-
-                if (reqMsg.InvokeMethod)
-                {
-                    var objValue = reqMsg.Parameters["InvokeParameter"];
-
-                    if (objValue != null)
-                    {
-                        //解析参数
-                        reqMsg.Parameters = IoCHelper.CreateParameters(callMethod, objValue.ToString());
-                    }
-                }
-
-                //解析服务
-                instance = container.Resolve(serviceType);
-
                 //返回拦截服务
                 var service = AspectFactory.CreateProxy(serviceType, instance);
 
@@ -90,11 +97,6 @@ namespace MySoft.IoC.Services
                 //处理返回参数
                 IoCHelper.SetRefParameters(callMethod, parameters, resMsg.Parameters);
             }
-            catch (Exception ex)
-            {
-                //捕获全局错误
-                resMsg.Error = ex;
-            }
             finally
             {
                 //释放资源
@@ -102,6 +104,48 @@ namespace MySoft.IoC.Services
             }
 
             return resMsg;
+        }
+
+        /// <summary>
+        /// 解析参数
+        /// </summary>
+        /// <param name="callMethod"></param>
+        /// <param name="reqMsg"></param>
+        private void ResolveParameters(System.Reflection.MethodInfo callMethod, RequestMessage reqMsg)
+        {
+            if (reqMsg.InvokeMethod)
+            {
+                var objValue = reqMsg.Parameters["InvokeParameter"];
+
+                if (objValue != null)
+                {
+                    //解析参数
+                    reqMsg.Parameters = IoCHelper.CreateParameters(callMethod, objValue.ToString());
+                }
+            }
+        }
+
+        /// <summary>
+        /// 处理消息
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="resMsg"></param>
+        private void HandleMessage(RequestMessage reqMsg, ResponseMessage resMsg)
+        {
+            //返回结果数据
+            if (reqMsg.InvokeMethod)
+            {
+                resMsg.Value = new InvokeData
+                {
+                    Value = SerializationManager.SerializeJson(resMsg.Value),
+                    Count = resMsg.Count,
+                    ElapsedTime = resMsg.ElapsedTime,
+                    OutParameters = resMsg.Parameters.ToString()
+                };
+
+                //清除参数集合
+                resMsg.Parameters.Clear();
+            }
         }
     }
 }

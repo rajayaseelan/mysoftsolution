@@ -336,7 +336,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -467,7 +467,7 @@ namespace MySoft.PlatformService.Client
         static void DoWork1(object state)
         {
             var e = state as ManualResetEvent;
-            e.WaitOne();
+            //e.WaitOne();
 
             //var node = CastleFactory.Create().GetDefaultNode();
             var service = CastleFactory.Create().GetChannel<IUserService>();
@@ -491,7 +491,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 10000);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 10);
                     //var value = service.GetUsersString(count, out length);
 
                     //var value = service.GetUser(new Random().Next(1, 10000));

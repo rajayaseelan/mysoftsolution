@@ -110,6 +110,8 @@
             this.lblMethodName.Size = new System.Drawing.Size(295, 42);
             this.lblMethodName.TabIndex = 0;
             this.lblMethodName.Text = "label1";
+            this.toolTip1.SetToolTip(this.lblMethodName, "双击复制内容到剪切板");
+            this.lblMethodName.DoubleClick += new System.EventHandler(this.lblMethodName_DoubleClick);
             // 
             // lblServiceName
             // 
@@ -120,6 +122,8 @@
             this.lblServiceName.Size = new System.Drawing.Size(295, 28);
             this.lblServiceName.TabIndex = 0;
             this.lblServiceName.Text = "label1";
+            this.toolTip1.SetToolTip(this.lblServiceName, "双击复制内容到剪切板");
+            this.lblServiceName.DoubleClick += new System.EventHandler(this.lblServiceName_DoubleClick);
             // 
             // tabPage1
             // 
