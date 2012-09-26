@@ -77,7 +77,7 @@ namespace MySoft.IoC.Services
             lock (caller)
             {
                 //获取CallerKey
-                var callKey = GetCallerKey(context.Caller);
+                var callKey = GetCallerKey(reqMsg, context.Caller);
 
                 if (enabledCache)
                 {
@@ -122,12 +122,14 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取CallerKey
         /// </summary>
+        /// <param name="reqMsg"></param>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private string GetCallerKey(AppCaller caller)
+        private string GetCallerKey(RequestMessage reqMsg, AppCaller caller)
         {
             //对Key进行组装
-            return string.Format("Caller_{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters)
+            return string.Format("{0}_Caller_{1}${2}${3}", (reqMsg.InvokeMethod ? "Invoke" : "Direct"),
+                                caller.ServiceName, caller.MethodName, caller.Parameters)
                     .Replace(" ", "").Replace("\r\n", "").Replace("\t", "").ToLower();
         }
 
@@ -151,30 +153,6 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 获取超时响应信息
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(OperationContext context, RequestMessage reqMsg)
-        {
-            var body = string.Format("Remote client【{0}】async call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
-                reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), (int)waitTime.TotalMilliseconds);
-
-            //获取异常
-            var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
-
-            //写异常日志
-            logger.WriteError(error);
-
-            var title = string.Format("Async call service ({0},{1}) timeout ({2}) ms.",
-                        reqMsg.ServiceName, reqMsg.MethodName, (int)waitTime.TotalMilliseconds);
-
-            //处理异常
-            return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
-        }
-
-        /// <summary>
         /// 调用方法
         /// </summary>
         /// <param name="context"></param>
@@ -194,11 +172,8 @@ namespace MySoft.IoC.Services
             }
             catch (Exception ex)
             {
-                //写异常日志
-                logger.WriteError(ex);
-
-                //处理异常
-                resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                //获取异常响应信息
+                resMsg = GetErrorResponse(context, reqMsg, ex);
             }
             finally
             {
@@ -206,6 +181,50 @@ namespace MySoft.IoC.Services
             }
 
             return resMsg;
+        }
+
+        /// <summary>
+        /// 获取超时响应信息
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetTimeoutResponse(OperationContext context, RequestMessage reqMsg)
+        {
+            var body = string.Format("Remote client【{0}】async call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
+                reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), (int)waitTime.TotalMilliseconds);
+
+            var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
+
+            //写异常日志
+            logger.WriteError(error);
+
+            var title = string.Format("Async call service ({0},{1}) timeout ({2}) ms.",
+                        reqMsg.ServiceName, reqMsg.MethodName, (int)waitTime.TotalMilliseconds);
+
+            //处理异常
+            return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
+        }
+
+        /// <summary>
+        /// 获取异常响应信息
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        private ResponseMessage GetErrorResponse(OperationContext context, RequestMessage reqMsg, Exception ex)
+        {
+            var body = string.Format("Remote client【{0}】async call service ({1},{2}) error.\r\nParameters => {3}",
+                reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString());
+
+            var error = IoCHelper.GetException(context, reqMsg, body, ex);
+
+            //写异常日志
+            logger.WriteError(error);
+
+            //处理异常
+            return IoCHelper.GetResponse(reqMsg, ex);
         }
 
         /// <summary>
