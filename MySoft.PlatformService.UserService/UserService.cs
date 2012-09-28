@@ -37,7 +37,7 @@ namespace MySoft.PlatformService.UserService
 
             //throw new NullReferenceException();
 
-            Thread.Sleep(1000 * 10);
+            //Thread.Sleep(1000 * 10);
 
             //.PadRight(id, '*')
             return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id.ToString() };
