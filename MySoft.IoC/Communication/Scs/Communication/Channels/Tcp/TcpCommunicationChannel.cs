@@ -38,7 +38,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 2 * 1024; //2KB
+        private const int ReceiveBufferSize = 4 * 1024; //4KB
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -86,26 +86,29 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            WireProtocol.Reset();
-
-            if (_clientSocket.Connected)
+            try
             {
-                try
+                if (_clientSocket.Connected)
                 {
                     _clientSocket.Shutdown(SocketShutdown.Both);
                 }
-                catch
-                {
+            }
+            catch (Exception ex)
+            {
+            }
 
-                }
-                finally
+            try
+            {
+                if (_clientSocket.Connected)
                 {
-                    if (_clientSocket.Connected)
-                    {
-                        _clientSocket.Close();
-                    }
+                    _clientSocket.Close();
                 }
             }
+            catch (Exception ex)
+            {
+            }
+
+            WireProtocol.Reset();
 
             CommunicationState = CommunicationStates.Disconnected;
             OnDisconnected();
@@ -121,7 +124,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         protected override void StartInternal()
         {
             var e = new SocketAsyncEventArgs();
-            e.RemoteEndPoint = _clientSocket.RemoteEndPoint;
             e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
 
             try
@@ -133,6 +135,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     OnReceiveCompleted(e);
                 }
             }
+            catch (ObjectDisposedException)
+            {
+                Dispose(e);
+            }
             catch (SocketException ex)
             {
                 Disconnect(e);
@@ -141,6 +147,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
+                Dispose(e);
+
                 OnMessageError(ex);
 
                 throw ex;
@@ -153,15 +161,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="message">Message to be sent</param>
         protected override void SendMessageInternal(IScsMessage message)
         {
+            //Create a byte array from message according to current protocol
+            var messageBytes = WireProtocol.GetBytes(message);
+
             var e = new SocketAsyncEventArgs();
             e.UserToken = message;
             e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
 
             try
             {
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
-
                 e.SetBuffer(messageBytes, 0, messageBytes.Length);
 
                 //Send all bytes to the remote application
@@ -169,6 +177,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     OnSendCompleted(e);
                 }
+            }
+            catch (ObjectDisposedException)
+            {
+                Dispose(e);
             }
             catch (SocketException ex)
             {
@@ -178,6 +190,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
+                Dispose(e);
+
                 OnMessageError(ex);
 
                 throw ex;
@@ -240,22 +254,32 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     //Copy received bytes to a new byte array
                     var receivedBytes = new byte[bytesRead];
                     Array.Copy(e.Buffer, 0, receivedBytes, 0, bytesRead);
-
-                    //Read messages according to current wire protocol
-                    var messages = WireProtocol.CreateMessages(receivedBytes);
-
                     Array.Clear(_buffer, 0, _buffer.Length);
 
-                    //Raise MessageReceived event for all received messages
-                    foreach (var message in messages)
+                    try
                     {
-                        OnMessageReceived(message);
+                        //Read messages according to current wire protocol
+                        var messages = WireProtocol.CreateMessages(receivedBytes);
+
+                        //Raise MessageReceived event for all received messages
+                        foreach (var message in messages)
+                        {
+                            OnMessageReceived(message);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
                     }
 
-                    //Read more bytes if still running
-                    if (!_clientSocket.ReceiveAsync(e))
+                    if (CommunicationState == CommunicationStates.Connected)
                     {
-                        OnReceiveCompleted(e);
+                        e.SetBuffer(_buffer, 0, _buffer.Length);
+
+                        //Read more bytes if still running
+                        if (!_clientSocket.ReceiveAsync(e))
+                        {
+                            OnReceiveCompleted(e);
+                        }
                     }
                 }
                 else
@@ -263,12 +287,18 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     throw new SocketException((int)SocketError.ConnectionReset);
                 }
             }
+            catch (ObjectDisposedException)
+            {
+                Dispose(e);
+            }
             catch (SocketException ex)
             {
                 Disconnect(e);
             }
             catch (Exception ex)
             {
+                Dispose(e);
+
                 OnMessageError(ex);
             }
         }
@@ -281,8 +311,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             if (e == null) return;
 
-            e.Dispose();
-            e = null;
+            try
+            {
+                e.SetBuffer(null, 0, 0);
+                e.Dispose();
+                e = null;
+            }
+            catch (ObjectDisposedException)
+            {
+            }
         }
 
         #endregion

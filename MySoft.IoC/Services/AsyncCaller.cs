@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
+using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
@@ -12,6 +13,11 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class AsyncCaller
     {
+        /// <summary>
+        /// Lock count is 5.
+        /// </summary>
+        private const int LOCK_COUNT = 5;
+
         private ILog logger;
         private IService service;
         private ICacheStrategy cache;
@@ -19,6 +25,7 @@ namespace MySoft.IoC.Services
         private bool enabledCache;
         private bool fromServer;
         private ThreadManager manager;
+        private Random random;
 
         /// <summary>
         /// Lock object
@@ -39,6 +46,7 @@ namespace MySoft.IoC.Services
             this.waitTime = waitTime;
             this.enabledCache = false;
             this.fromServer = fromServer;
+            this.random = new Random();
         }
 
         /// <summary>
@@ -141,7 +149,8 @@ namespace MySoft.IoC.Services
         private AsyncMethodCaller GetMethodCaller(AppCaller caller)
         {
             //获取ServiceKey
-            var serviceKey = string.Format("Service_{0}${1}", caller.ServiceName, caller.MethodName);
+            var lockIndex = random.Next(0, LOCK_COUNT);
+            var serviceKey = string.Format("Service_{0}${1}_{2}", caller.ServiceName, caller.MethodName, lockIndex);
 
             //判断是否有锁Key存在
             if (!hashtable.ContainsKey(serviceKey))
@@ -169,6 +178,14 @@ namespace MySoft.IoC.Services
 
                 //响应结果，清理资源
                 resMsg = service.CallService(reqMsg);
+            }
+            catch (ThreadAbortException ex)
+            {
+                //重置线程
+                Thread.ResetAbort();
+
+                //获取异常响应信息
+                resMsg = GetErrorResponse(context, reqMsg, ex);
             }
             catch (Exception ex)
             {
