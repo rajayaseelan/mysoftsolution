@@ -106,7 +106,7 @@ namespace MySoft.IoC.Services
                 var ar = caller.BeginInvoke(context, reqMsg, null, null);
 
                 //等待指定超时时间
-                if (!ar.AsyncWaitHandle.WaitOne(waitTime))
+                if (!ar.AsyncWaitHandle.WaitOne(waitTime, false))
                 {
                     //获取超时响应信息
                     return GetTimeoutResponse(context, reqMsg);

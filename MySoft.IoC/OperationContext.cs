@@ -19,37 +19,19 @@ namespace MySoft.IoC
         {
             get
             {
-                try
-                {
-                    string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
-
-                    return CallContext.GetData(name) as OperationContext;
-                }
-                catch (Exception ex)
-                {
-                    //TODO
-                }
-
-                return null;
+                string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
+                return CallContext.GetData(name) as OperationContext;
             }
             set
             {
-                try
+                string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
+                if (value == null)
                 {
-                    string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
-
-                    if (value == null)
-                    {
-                        CallContext.FreeNamedDataSlot(name);
-                    }
-                    else
-                    {
-                        CallContext.SetData(name, value);
-                    }
+                    CallContext.FreeNamedDataSlot(name);
                 }
-                catch (Exception ex)
+                else
                 {
-                    //TODO
+                    CallContext.SetData(name, value);
                 }
             }
         }

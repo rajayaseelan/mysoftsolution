@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net;
 
-namespace MySoft.Auth
+namespace MySoft.RESTful
 {
     /// <summary>
     /// 认证异常信息

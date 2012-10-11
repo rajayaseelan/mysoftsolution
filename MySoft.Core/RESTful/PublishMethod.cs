@@ -24,6 +24,11 @@ namespace MySoft.RESTful
         public bool Authorized { get; set; }
 
         /// <summary>
+        /// 资源类型（此参数当Authorized为true时有效）
+        /// </summary>
+        public ResourceType ResourceType { get; set; }
+
+        /// <summary>
         /// 实例化PublishMethod
         /// </summary>
         public PublishMethodAttribute() { }
@@ -35,6 +40,7 @@ namespace MySoft.RESTful
         public PublishMethodAttribute(string name)
         {
             this.Name = name;
+            this.ResourceType = ResourceType.User;
         }
     }
 }

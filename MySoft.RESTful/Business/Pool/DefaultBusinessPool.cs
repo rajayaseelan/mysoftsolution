@@ -86,27 +86,6 @@ namespace MySoft.RESTful.Business.Pool
         }
 
         /// <summary>
-        /// 检查方法
-        /// </summary>
-        /// <param name="businessKindName"></param>
-        /// <param name="businessMethodName"></param>
-        /// <returns></returns>
-        public bool CheckAuthorized(string businessKindName, string businessMethodName)
-        {
-            BusinessKindModel kind = businessPool.Where(e => e.Key.Equals(businessKindName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
-            if (kind != null)
-            {
-                BusinessMethodModel method = kind.MethodModels.Where(e => e.Key.Equals(businessMethodName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
-                if (method != null)
-                {
-                    return method.Authorized;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// 查找方法
         /// </summary>
         /// <param name="businessKindName"></param>

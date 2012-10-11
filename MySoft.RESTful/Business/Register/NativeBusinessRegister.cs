@@ -121,6 +121,7 @@ namespace MySoft.RESTful.Business.Register
                                 Description = method.Description,
                                 HttpMethod = HttpMethod.GET,
                                 Authorized = method.Authorized,
+                                ResourceType = method.ResourceType,
                                 Method = info,
                                 Parameters = info.GetParameters(),
                                 ParametersCount = info.GetParameters().Count(),

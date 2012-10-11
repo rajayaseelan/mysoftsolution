@@ -3,12 +3,12 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Text;
 using System.Web;
-using MySoft.Auth;
 using MySoft.IoC.Configuration;
 using MySoft.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using MySoft.Logger;
+using MySoft.RESTful;
 
 namespace MySoft.IoC.HttpServer
 {

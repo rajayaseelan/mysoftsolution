@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.IO;
 using System.Net;
 using System.ServiceModel;
@@ -7,7 +8,6 @@ using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using System.Text;
 using System.Web;
-using MySoft.Auth;
 using MySoft.Logger;
 using MySoft.RESTful.Business;
 using MySoft.RESTful.Utils;
@@ -22,6 +22,7 @@ namespace MySoft.RESTful
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public class DefaultRESTfulService : IRESTfulService
     {
+        private string host;
         /// <summary>
         /// 上下文处理
         /// </summary>
@@ -34,6 +35,7 @@ namespace MySoft.RESTful
         {
             //创建上下文
             this.Context = new BusinessRESTfulContext();
+            this.host = ConfigurationManager.AppSettings["HttpProxyServer"];
         }
 
         #region IRESTfulService 成员
@@ -185,26 +187,6 @@ namespace MySoft.RESTful
 
         #endregion
 
-        /// <summary>
-        /// 获取请求Uri
-        /// </summary>
-        /// <returns></returns>
-        private Uri GetRequestUri()
-        {
-            Uri uri = null;
-            if (HttpContext.Current != null)
-            {
-                uri = HttpContext.Current.Request.Url;
-            }
-            else if (WebOperationContext.Current != null)
-            {
-                var request = WebOperationContext.Current.IncomingRequest;
-                uri = request.UriTemplateMatch.RequestUri;
-            }
-
-            return uri;
-        }
-
         private Stream GetResponseStream(ParameterFormat format, string kind, string method, Stream stream)
         {
             var request = WebOperationContext.Current.IncomingRequest;
@@ -282,9 +264,10 @@ namespace MySoft.RESTful
                 RESTfulResult authResult = new RESTfulResult { Code = (int)HttpStatusCode.OK };
 
                 //进行认证处理
-                if (Context != null && Context.IsAuthorized(kind, method))
+                ResourceType type = ResourceType.User;
+                if (Context != null && Context.IsAuthorized(kind, method, ref type))
                 {
-                    authResult = AuthorizeRequest();
+                    authResult = AuthorizeRequest(type);
                 }
 
                 //认证成功
@@ -379,9 +362,9 @@ namespace MySoft.RESTful
             }
 
             //加上认证的用户名
-            if (AuthorizeContext.Current != null && AuthorizeContext.Current.Token.Succeed)
+            if (AuthorizeContext.Current != null && !string.IsNullOrEmpty(AuthorizeContext.Current.UserName))
             {
-                errorMessage = string.Format("{0}\r\n\tUser:[{1}]", errorMessage, AuthorizeContext.Current.Token.Name);
+                errorMessage = string.Format("{0}\r\n\tUser:[{1}]", errorMessage, AuthorizeContext.Current.UserName);
             }
 
             //返回结果
@@ -403,39 +386,40 @@ namespace MySoft.RESTful
         /// 进行认证
         /// </summary>
         /// <returns></returns>
-        private RESTfulResult AuthorizeRequest()
+        private RESTfulResult AuthorizeRequest(ResourceType type)
         {
+            var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
             response.StatusCode = HttpStatusCode.Unauthorized;
 
-            //认证成功，设置上下文
-            AuthorizeContext.Current = new AuthorizeContext
+            var token = new AuthorizeToken
             {
-                OperationContext = WebOperationContext.Current,
-                HttpContext = HttpContext.Current
+                RequestUri = GetRequestUri(),
+                Method = request.Method,
+                Headers = request.Headers,
+                Parameters = request.UriTemplateMatch.QueryParameters,
+                Cookies = GetCookies(),
+                ResourceType = type
             };
+
+            //认证成功，设置上下文
+            AuthorizeContext.Current = new AuthorizeContext { Token = token };
 
             //实例化一个结果
             var restResult = new RESTfulResult { Code = (int)response.StatusCode };
 
             try
             {
-                var token = Authorize();
-                if (token.Succeed)
-                {
-                    response.StatusCode = HttpStatusCode.OK;
+                var user = Authorize(token);
+                response.StatusCode = HttpStatusCode.OK;
 
-                    //认证成功
-                    restResult.Code = (int)response.StatusCode;
-                    restResult.Message = "Authentication request success.";
+                //认证成功
+                restResult.Code = (int)response.StatusCode;
+                restResult.Message = "Authentication request success.";
 
-                    //认证信息
-                    AuthorizeContext.Current.Token = token;
-                }
-                else
-                {
-                    restResult.Message = "Authentication request fail.";
-                }
+                //认证信息
+                AuthorizeContext.Current.UserName = user.UserName;
+                AuthorizeContext.Current.UserState = user.UserState;
             }
             catch (AuthorizeException ex)
             {
@@ -453,15 +437,82 @@ namespace MySoft.RESTful
         /// <summary>
         /// 进行认证处理
         /// </summary>
+        /// <param name="token"></param>
         /// <returns></returns>
-        protected virtual AuthorizeToken Authorize()
+        protected virtual AuthorizeUser Authorize(AuthorizeToken token)
         {
             //返回认证失败
-            return new AuthorizeToken
-            {
-                Succeed = false,
-                Name = "Unknown"
-            };
+            throw new AuthorizeException(401, "Authentication request fail.");
         }
+
+        #region 获取Uri及Cookie
+
+        /// <summary>
+        /// 获取请求Uri
+        /// </summary>
+        /// <returns></returns>
+        private Uri GetRequestUri()
+        {
+            Uri uri = null;
+            if (HttpContext.Current != null)
+            {
+                uri = HttpContext.Current.Request.Url;
+
+                if (!string.IsNullOrEmpty(host))
+                {
+                    uri = new Uri(host + HttpContext.Current.Request.RawUrl);
+                }
+            }
+            else if (WebOperationContext.Current != null)
+            {
+                var request = WebOperationContext.Current.IncomingRequest;
+                uri = request.UriTemplateMatch.RequestUri;
+
+                if (!string.IsNullOrEmpty(host))
+                {
+                    uri = new Uri(host + uri.ToString().Replace(uri.GetLeftPart(UriPartial.Authority), ""));
+                }
+            }
+
+            return uri;
+        }
+
+        /// <summary>
+        /// 获取Cookie信息
+        /// </summary>
+        /// <returns></returns>
+        private HttpCookieCollection GetCookies()
+        {
+            if (HttpContext.Current != null)
+                return HttpContext.Current.Request.Cookies;
+
+            HttpCookieCollection collection = new HttpCookieCollection();
+
+            var request = WebOperationContext.Current.IncomingRequest;
+            var cookie = request.Headers[HttpRequestHeader.Cookie];
+
+            //从头中获取Cookie
+            if (!string.IsNullOrEmpty(cookie))
+            {
+                string[] cookies = cookie.Split(';');
+                HttpCookie cook = null;
+                foreach (string e in cookies)
+                {
+                    if (!string.IsNullOrEmpty(e))
+                    {
+                        string[] values = e.Split(new char[] { '=' }, 2);
+                        if (values.Length == 2)
+                        {
+                            cook = new HttpCookie(values[0], values[1]);
+                        }
+                        collection.Add(cook);
+                    }
+                }
+            }
+
+            return collection;
+        }
+
+        #endregion
     }
 }

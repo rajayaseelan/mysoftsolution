@@ -16,6 +16,10 @@ namespace MySoft.RESTful.Business
         /// </summary>
         public bool Authorized { get; set; }
         /// <summary>
+        /// 资源类型，此类型当Authorized为true时有效
+        /// </summary>
+        public ResourceType ResourceType { get; set; }
+        /// <summary>
         /// 方法调用类型
         /// </summary>
         public HttpMethod HttpMethod { get; set; }
@@ -39,6 +43,7 @@ namespace MySoft.RESTful.Business
         public BusinessMethodModel()
         {
             this.Authorized = true;
+            this.ResourceType = ResourceType.User;
         }
     }
 }

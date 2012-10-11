@@ -17,13 +17,6 @@ namespace MySoft.RESTful.Business.Pool
         /// <returns>返回该业务类别下的业务模型实例</returns>
         void AddKindModel(string businessKindName, BusinessKindModel businessKindModel);
         /// <summary>
-        /// 检查方法
-        /// </summary>
-        /// <param name="businessKindName"></param>
-        /// <param name="businessMethodName"></param>
-        /// <returns></returns>
-        bool CheckAuthorized(string businessKindName, string businessMethodName);
-        /// <summary>
         /// 查找业务元数据对象
         /// </summary>
         /// <param name="businessKindName">业务员类型名称</param>

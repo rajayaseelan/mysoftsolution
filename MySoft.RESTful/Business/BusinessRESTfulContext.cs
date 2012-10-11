@@ -83,10 +83,16 @@ namespace MySoft.RESTful.Business
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
+        /// <param name="type"></param>
         /// <returns></returns>
-        public bool IsAuthorized(string kind, string method)
+        public bool IsAuthorized(string kind, string method, ref ResourceType type)
         {
-            return pool.CheckAuthorized(kind, method);
+            var model = pool.FindMethod(kind, method);
+            if (model.Authorized)
+            {
+                type = model.ResourceType;
+            }
+            return model.Authorized;
         }
 
         /// <summary>
