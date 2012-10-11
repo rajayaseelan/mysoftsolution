@@ -28,9 +28,8 @@ namespace MySoft.RESTful
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="type"></param>
         /// <returns></returns>
-        bool IsAuthorized(string kind, string method, ref ResourceType type);
+        AuthorizeType IsAuthorized(string kind, string method);
 
         /// <summary>
         /// 方法调用

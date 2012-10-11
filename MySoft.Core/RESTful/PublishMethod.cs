@@ -19,14 +19,9 @@ namespace MySoft.RESTful
         public string Description { get; set; }
 
         /// <summary>
-        /// 是否认证
+        /// 认证类型
         /// </summary>
-        public bool Authorized { get; set; }
-
-        /// <summary>
-        /// 资源类型（此参数当Authorized为true时有效）
-        /// </summary>
-        public ResourceType ResourceType { get; set; }
+        public AuthorizeType AuthorizeType { get; set; }
 
         /// <summary>
         /// 实例化PublishMethod
@@ -40,7 +35,7 @@ namespace MySoft.RESTful
         public PublishMethodAttribute(string name)
         {
             this.Name = name;
-            this.ResourceType = ResourceType.User;
+            this.AuthorizeType = AuthorizeType.User;
         }
     }
 }

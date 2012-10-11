@@ -83,16 +83,14 @@ namespace MySoft.RESTful.Business
         /// </summary>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="type"></param>
         /// <returns></returns>
-        public bool IsAuthorized(string kind, string method, ref ResourceType type)
+        public AuthorizeType IsAuthorized(string kind, string method)
         {
             var model = pool.FindMethod(kind, method);
-            if (model.Authorized)
-            {
-                type = model.ResourceType;
-            }
-            return model.Authorized;
+            if (model == null)
+                return AuthorizeType.User;
+
+            return model.AuthorizeType;
         }
 
         /// <summary>
@@ -233,7 +231,7 @@ namespace MySoft.RESTful.Business
                         template = template.Replace("${parameter}", strParameter);
 
                     template = template.Replace("${type}", model.HttpMethod == HttpMethod.GET ? "GET<br/>POST" : "<font color='red'>POST</font>");
-                    template = template.Replace("${auth}", model.Authorized ? "<font color='red'>是</font>" : "&nbsp;");
+                    template = template.Replace("${auth}", model.AuthorizeType == AuthorizeType.App ? "<font color='red'>App</font>" : "<font color='blue'>User</font>");
 
                     StringBuilder anchor = new StringBuilder();
                     anchor.Append(CreateAnchorHtml(requestUri, e, model, plist, model.HttpMethod, "xml"));

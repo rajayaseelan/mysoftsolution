@@ -36,9 +36,9 @@ namespace MySoft.RESTful
         public HttpCookieCollection Cookies { get; set; }
 
         /// <summary>
-        /// 资源类型
+        /// 认证类型
         /// </summary>
-        public ResourceType ResourceType { get; set; }
+        public AuthorizeType AuthorizeType { get; set; }
 
         /// <summary>
         /// 实例化AuthorizeToken
@@ -47,7 +47,22 @@ namespace MySoft.RESTful
         {
             this.Parameters = new NameValueCollection();
             this.Cookies = new HttpCookieCollection();
-            this.ResourceType = ResourceType.User;
+            this.AuthorizeType = AuthorizeType.User;
         }
+    }
+
+    /// <summary>
+    /// 认证类型
+    /// </summary>
+    public enum AuthorizeType
+    {
+        /// <summary>
+        /// App
+        /// </summary>
+        App,
+        /// <summary>
+        /// User
+        /// </summary>
+        User
     }
 }

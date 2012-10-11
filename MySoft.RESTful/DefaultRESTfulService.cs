@@ -264,9 +264,9 @@ namespace MySoft.RESTful
                 RESTfulResult authResult = new RESTfulResult { Code = (int)HttpStatusCode.OK };
 
                 //进行认证处理
-                ResourceType type = ResourceType.User;
-                if (Context != null && Context.IsAuthorized(kind, method, ref type))
+                if (Context != null)
                 {
+                    var type = Context.IsAuthorized(kind, method);
                     authResult = AuthorizeRequest(type);
                 }
 
@@ -386,7 +386,7 @@ namespace MySoft.RESTful
         /// 进行认证
         /// </summary>
         /// <returns></returns>
-        private RESTfulResult AuthorizeRequest(ResourceType type)
+        private RESTfulResult AuthorizeRequest(AuthorizeType type)
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
@@ -399,7 +399,7 @@ namespace MySoft.RESTful
                 Headers = request.Headers,
                 Parameters = request.UriTemplateMatch.QueryParameters,
                 Cookies = GetCookies(),
-                ResourceType = type
+                AuthorizeType = type
             };
 
             //认证成功，设置上下文

@@ -12,13 +12,9 @@ namespace MySoft.RESTful.Business
     public class BusinessMethodModel : BusinessStateModel
     {
         /// <summary>
-        /// 是否认证
+        /// 认证类型
         /// </summary>
-        public bool Authorized { get; set; }
-        /// <summary>
-        /// 资源类型，此类型当Authorized为true时有效
-        /// </summary>
-        public ResourceType ResourceType { get; set; }
+        public AuthorizeType AuthorizeType { get; set; }
         /// <summary>
         /// 方法调用类型
         /// </summary>
@@ -42,8 +38,7 @@ namespace MySoft.RESTful.Business
 
         public BusinessMethodModel()
         {
-            this.Authorized = true;
-            this.ResourceType = ResourceType.User;
+            this.AuthorizeType = AuthorizeType.User;
         }
     }
 }

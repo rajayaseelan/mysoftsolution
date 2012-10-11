@@ -6,21 +6,6 @@ using System.Web;
 namespace MySoft.RESTful
 {
     /// <summary>
-    /// 资源类型
-    /// </summary>
-    public enum ResourceType
-    {
-        /// <summary>
-        /// System
-        /// </summary>
-        System,
-        /// <summary>
-        /// User
-        /// </summary>
-        User
-    }
-
-    /// <summary>
     /// 认证User结果
     /// </summary>
     public class AuthorizeUser
