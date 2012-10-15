@@ -4,7 +4,6 @@ using System.Linq;
 using System.Web;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
-using MySoft.Auth;
 
 namespace MySoft.RESTful.Web
 {
@@ -15,12 +14,11 @@ namespace MySoft.RESTful.Web
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     public class AuthorizeRESTfulService : DefaultRESTfulService
     {
-        protected override AuthorizeUser Authorize()
+        protected override AuthorizeUser Authorize(AuthorizeToken token)
         {
             return new AuthorizeUser
             {
-                Succeed = true,
-                Name = "my181"
+                UserName = "my181"
             };
         }
     }

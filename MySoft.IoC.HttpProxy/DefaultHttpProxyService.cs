@@ -9,10 +9,10 @@ using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
-using MySoft.Auth;
-using MySoft.Security;
 using System.Threading;
+using System.Web;
+using MySoft.RESTful;
+using MySoft.Security;
 
 namespace MySoft.IoC.HttpProxy
 {
@@ -334,26 +334,6 @@ namespace MySoft.IoC.HttpProxy
             return new MemoryStream(Encoding.UTF8.GetBytes(html));
         }
 
-        /// <summary>
-        /// 获取请求Uri
-        /// </summary>
-        /// <returns></returns>
-        private Uri GetRequestUri()
-        {
-            Uri uri = null;
-            if (HttpContext.Current != null)
-            {
-                uri = HttpContext.Current.Request.Url;
-            }
-            else if (WebOperationContext.Current != null)
-            {
-                var request = WebOperationContext.Current.IncomingRequest;
-                uri = request.UriTemplateMatch.RequestUri;
-            }
-
-            return uri;
-        }
-
         private string AuthorizeMethod(string name, WebHeaderCollection header, out ServiceItem service)
         {
             service = null;
@@ -396,33 +376,37 @@ namespace MySoft.IoC.HttpProxy
 
         private HttpProxyResult AuthorizeHeader(WebHeaderCollection header)
         {
+            var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
             response.StatusCode = HttpStatusCode.Unauthorized;
 
             //认证成功，设置上下文
-            AuthorizeContext.Current = new AuthorizeContext
+            var token = new AuthorizeToken
             {
-                OperationContext = WebOperationContext.Current,
-                HttpContext = HttpContext.Current
+                RequestUri = GetRequestUri(),
+                Method = request.Method,
+                Headers = request.Headers,
+                Parameters = request.UriTemplateMatch.QueryParameters,
+                Cookies = GetCookies(),
+                AuthorizeType = AuthorizeType.User
             };
+
+            //认证成功，设置上下文
+            AuthorizeContext.Current = new AuthorizeContext { Token = token };
 
             try
             {
-                var token = Authorize();
-                if (token.Succeed && !string.IsNullOrEmpty(token.Name))
-                {
-                    header["X-AuthParameter"] = HttpUtility.UrlEncode(token.Name, Encoding.UTF8);
-                    response.StatusCode = HttpStatusCode.OK;
+                var user = Authorize(token);
+                response.StatusCode = HttpStatusCode.OK;
 
-                    //认证信息
-                    AuthorizeContext.Current.Token = token;
+                header["X-AuthParameter"] = HttpUtility.UrlEncode(user.UserName, Encoding.UTF8);
+                response.StatusCode = HttpStatusCode.OK;
 
-                    return new HttpProxyResult { Code = (int)response.StatusCode };
-                }
-                else
-                {
-                    return new HttpProxyResult { Code = (int)response.StatusCode, Message = "Unauthorized or authorize name is empty." };
-                }
+                //认证信息
+                AuthorizeContext.Current.UserName = user.UserName;
+                AuthorizeContext.Current.UserState = user.UserState;
+
+                return new HttpProxyResult { Code = (int)response.StatusCode, Message = "Authentication request success." };
             }
             catch (Exception ex)
             {
@@ -443,15 +427,72 @@ namespace MySoft.IoC.HttpProxy
         /// <summary>
         /// 进行认证处理
         /// </summary>
+        /// <param name="token"></param>
         /// <returns></returns>
-        protected virtual AuthorizeToken Authorize()
+        protected virtual AuthorizeUser Authorize(AuthorizeToken token)
         {
             //返回认证失败
-            return new AuthorizeToken
-            {
-                Succeed = false,
-                Name = "Unknown"
-            };
+            throw new AuthorizeException(401, "Authentication request fail.");
         }
+
+        #region 获取Uri及Cookie
+
+        /// <summary>
+        /// 获取请求Uri
+        /// </summary>
+        /// <returns></returns>
+        private Uri GetRequestUri()
+        {
+            Uri uri = null;
+            if (HttpContext.Current != null)
+            {
+                uri = HttpContext.Current.Request.Url;
+            }
+            else if (WebOperationContext.Current != null)
+            {
+                var request = WebOperationContext.Current.IncomingRequest;
+                uri = request.UriTemplateMatch.RequestUri;
+            }
+
+            return uri;
+        }
+
+        /// <summary>
+        /// 获取Cookie信息
+        /// </summary>
+        /// <returns></returns>
+        private HttpCookieCollection GetCookies()
+        {
+            if (HttpContext.Current != null)
+                return HttpContext.Current.Request.Cookies;
+
+            HttpCookieCollection collection = new HttpCookieCollection();
+
+            var request = WebOperationContext.Current.IncomingRequest;
+            var cookie = request.Headers[HttpRequestHeader.Cookie];
+
+            //从头中获取Cookie
+            if (!string.IsNullOrEmpty(cookie))
+            {
+                string[] cookies = cookie.Split(';');
+                HttpCookie cook = null;
+                foreach (string e in cookies)
+                {
+                    if (!string.IsNullOrEmpty(e))
+                    {
+                        string[] values = e.Split(new char[] { '=' }, 2);
+                        if (values.Length == 2)
+                        {
+                            cook = new HttpCookie(values[0], values[1]);
+                        }
+                        collection.Add(cook);
+                    }
+                }
+            }
+
+            return collection;
+        }
+
+        #endregion
     }
 }

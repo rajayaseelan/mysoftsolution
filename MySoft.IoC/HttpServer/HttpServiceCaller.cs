@@ -94,7 +94,7 @@ namespace MySoft.IoC.HttpServer
         /// 获取Http方法
         /// </summary>
         /// <returns></returns>
-        public string GetDocument(string name)
+        public string GetHttpDocument(string name)
         {
             var dicCaller = new HttpCallerInfoCollection();
             if (!string.IsNullOrEmpty(name))
@@ -107,6 +107,16 @@ namespace MySoft.IoC.HttpServer
 
             var doc = new HttpDocument(dicCaller, config.HttpPort);
             return doc.MakeDocument(name);
+        }
+
+        /// <summary>
+        /// 获取服务文档
+        /// </summary>
+        /// <returns></returns>
+        public string GetTcpDocument()
+        {
+            var doc = new TcpDocument(container, config.Port);
+            return doc.MakeDocument();
         }
 
         /// <summary>

@@ -1,7 +1,7 @@
 ﻿using System.ServiceModel;
 using System.ServiceModel.Activation;
 using MySoft.IoC.HttpProxy;
-using MySoft.Auth;
+using MySoft.RESTful;
 
 namespace MySoft.WebAPI
 {
@@ -16,12 +16,11 @@ namespace MySoft.WebAPI
         /// 进行认证处理，如用户认证
         /// </summary>
         /// <returns></returns>
-        protected override AuthorizeToken Authorize()
+        protected override AuthorizeUser Authorize(AuthorizeToken token)
         {
-            return new AuthorizeToken
+            return new AuthorizeUser
             {
-                Succeed = true,
-                Name = "my181"
+                UserName = "my181"
             };
         }
     }

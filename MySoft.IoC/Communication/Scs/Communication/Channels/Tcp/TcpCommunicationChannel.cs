@@ -38,7 +38,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 4 * 1024; //4KB
+        private const int ReceiveBufferSize = 1024; //1KB
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -108,6 +108,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
             }
 
+            _buffer = null;
             WireProtocol.Reset();
 
             CommunicationState = CommunicationStates.Disconnected;
@@ -251,13 +252,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     LastReceivedMessageTime = DateTime.Now;
 
-                    //Copy received bytes to a new byte array
-                    var receivedBytes = new byte[bytesRead];
-                    Array.Copy(e.Buffer, 0, receivedBytes, 0, bytesRead);
-                    Array.Clear(_buffer, 0, _buffer.Length);
-
                     try
                     {
+                        //Copy received bytes to a new byte array
+                        var receivedBytes = new byte[bytesRead];
+                        Array.Copy(e.Buffer, 0, receivedBytes, 0, bytesRead);
+
                         //Read messages according to current wire protocol
                         var messages = WireProtocol.CreateMessages(receivedBytes);
 
@@ -273,13 +273,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                     if (CommunicationState == CommunicationStates.Connected)
                     {
-                        e.SetBuffer(_buffer, 0, _buffer.Length);
-
                         //Read more bytes if still running
                         if (!_clientSocket.ReceiveAsync(e))
                         {
                             OnReceiveCompleted(e);
                         }
+                    }
+                    else
+                    {
+                        e.SetBuffer(null, 0, 0);
                     }
                 }
                 else
@@ -313,7 +315,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                e.SetBuffer(null, 0, 0);
+                e.UserToken = null;
                 e.Dispose();
                 e = null;
             }

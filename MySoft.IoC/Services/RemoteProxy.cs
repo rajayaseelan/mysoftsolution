@@ -133,7 +133,7 @@ namespace MySoft.IoC.Services
                     var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
 
                     //µ»¥˝–≈∫≈œÏ”¶
-                    if (!waitResult.Wait(elapsedTime))
+                    if (!waitResult.WaitOne(elapsedTime))
                     {
                         return GetTimeoutResponse(reqMsg, (int)elapsedTime.TotalMilliseconds);
                     }

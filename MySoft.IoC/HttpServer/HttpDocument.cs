@@ -59,6 +59,7 @@ namespace MySoft.IoC.HttpServer
         {
             string uri = string.Format("http://{0}:{1}/", IPAddress.Loopback, port);
             var html = htmlTemplate.Replace("${uri}", uri);
+            html = html.Replace("${count}", callers.Count.ToString());
 
             StringBuilder sbUrl = new StringBuilder();
             foreach (var caller in callers.ToValueList())

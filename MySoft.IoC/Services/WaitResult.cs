@@ -33,7 +33,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="timeSpan"></param>
         /// <returns></returns>
-        public bool Wait(TimeSpan timeSpan)
+        public bool WaitOne(TimeSpan timeSpan)
         {
             try
             {

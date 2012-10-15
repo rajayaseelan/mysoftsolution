@@ -294,7 +294,7 @@ namespace MySoft.IoC
                     //读取方法
                     foreach (var method in CoreHelper.GetMethodsFromType(type))
                     {
-                        var contract2 = CoreHelper.GetMemberAttribute<OperationContractAttribute>(type);
+                        var contract2 = CoreHelper.GetMemberAttribute<OperationContractAttribute>(method);
                         var m = new MethodInfo
                         {
                             Name = method.Name,

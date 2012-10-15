@@ -60,7 +60,14 @@ namespace MySoft.IoC.HttpServer
                 //发送文档帮助信息
                 response.ContentType = "text/html;charset=utf-8";
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_OK;
-                SendResponse(response, caller.GetDocument(null));
+                SendResponse(response, caller.GetHttpDocument(null));
+            }
+            else if (request.URI.ToLower() == "/tcp")
+            {
+                //发送服务帮助信息
+                response.ContentType = "text/html;charset=utf-8";
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_OK;
+                SendResponse(response, caller.GetTcpDocument());
             }
             else if (request.URI.ToLower().IndexOf("/help/") == 0)
             {
@@ -68,7 +75,7 @@ namespace MySoft.IoC.HttpServer
                 response.ContentType = "text/html;charset=utf-8";
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_OK;
                 var name = request.URI.Substring(request.URI.IndexOf("/help/") + 6);
-                SendResponse(response, caller.GetDocument(name));
+                SendResponse(response, caller.GetHttpDocument(name));
             }
             else if (request.URI.Substring(request.URI.IndexOf('/') + 1).Length > 5)
             {

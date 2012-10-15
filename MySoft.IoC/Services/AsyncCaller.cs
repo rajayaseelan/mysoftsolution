@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using MySoft.Cache;
@@ -16,7 +17,12 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// Lock count is 5.
         /// </summary>
-        private const int LOCK_COUNT = 5;
+        private const int CALLER_LOCK_COUNT = 5;
+
+        /// <summary>
+        /// Cache timeout is 30.
+        /// </summary>
+        private const int CALLER_CACHE_TIMEOUT = 30;
 
         private ILog logger;
         private IService service;
@@ -73,35 +79,65 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage Run(OperationContext context, RequestMessage reqMsg)
         {
-            //如果是状态服务，则同步响应
-            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
+            if (reqMsg.CacheTime <= 0)
             {
+                //直接返回响应信息
                 return GetResponse(context, reqMsg);
             }
 
+            //获取CallerKey
+            var callKey = GetCallerKey(reqMsg, context.Caller);
+
+            if (enabledCache)
+            {
+                //定义一个响应值
+                ResponseMessage resMsg = null;
+
+                //从缓存中获取数据
+                if (GetResponseFromCache(callKey, reqMsg, out resMsg))
+                {
+                    //刷新数据
+                    manager.RefreshWorker(callKey);
+
+                    return resMsg;
+                }
+            }
+
+            //从队列中获取
+            var waitResult = CacheHelper.Get<AsyncResult>(callKey);
+
+            if (waitResult == null)
+            {
+                waitResult = new AsyncResult();
+
+                //合并缓存过期时间内的请求
+                CacheHelper.Insert(callKey, waitResult, Math.Min(reqMsg.CacheTime, CALLER_CACHE_TIMEOUT));
+
+                //获取响应信息
+                var resMsg = InvokeRequest(callKey, context, reqMsg);
+
+                //设置响应信息
+                waitResult.SetResult(resMsg);
+            }
+
+            //返回响应信息
+            return waitResult.GetResult(reqMsg);
+        }
+
+        /// <summary>
+        /// 运行请求
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage InvokeRequest(string callKey, OperationContext context, RequestMessage reqMsg)
+        {
             //获取MethodCaller
             var caller = GetMethodCaller(context.Caller);
 
             lock (caller)
             {
-                //获取CallerKey
-                var callKey = GetCallerKey(reqMsg, context.Caller);
-
-                if (enabledCache)
-                {
-                    //定义一个响应值
-                    ResponseMessage resMsg = null;
-
-                    //从缓存中获取数据
-                    if (GetResponseFromCache(callKey, reqMsg, out resMsg))
-                    {
-                        //刷新数据
-                        manager.RefreshWorker(callKey);
-
-                        return resMsg;
-                    }
-                }
-
                 //开始调用服务
                 var ar = caller.BeginInvoke(context, reqMsg, null, null);
 
@@ -149,7 +185,7 @@ namespace MySoft.IoC.Services
         private AsyncMethodCaller GetMethodCaller(AppCaller caller)
         {
             //获取ServiceKey
-            var lockIndex = random.Next(0, LOCK_COUNT);
+            var lockIndex = random.Next(0, CALLER_LOCK_COUNT);
             var serviceKey = string.Format("Service_{0}${1}_{2}", caller.ServiceName, caller.MethodName, lockIndex);
 
             //判断是否有锁Key存在
@@ -253,36 +289,28 @@ namespace MySoft.IoC.Services
         /// <param name="resMsg"></param>
         private void SetResponseToCache(string callKey, OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
         {
+            if (reqMsg.CacheTime <= 0) return;
+
             //如果符合条件，则自动缓存 【自动缓存功能】
             if (resMsg != null && resMsg.Value != null && !resMsg.IsError && resMsg.Count > 0)
             {
-                //记录数大于100条
-                if (reqMsg.CacheTime <= 0 && resMsg.Count > ServiceConfig.DEFAULT_CACHE_COUNT)
+                //克隆一个新的对象
+                var newMsg = NewResponseMessage(reqMsg, resMsg);
+
+                cache.InsertCache(callKey, newMsg, reqMsg.CacheTime * 10);
+
+                //Add worker item
+                var worker = new WorkerItem
                 {
-                    //缓存5分钟
-                    reqMsg.CacheTime = ServiceConfig.DEFAULT_CACHE_TIMEOUT;
-                }
+                    CallKey = callKey,
+                    Context = context,
+                    Request = reqMsg,
+                    SlidingTime = reqMsg.CacheTime,
+                    UpdateTime = DateTime.Now.AddSeconds(reqMsg.CacheTime),
+                    IsRunning = false
+                };
 
-                if (reqMsg.CacheTime > 0)
-                {
-                    //克隆一个新的对象
-                    var newMsg = NewResponseMessage(reqMsg, resMsg);
-
-                    cache.InsertCache(callKey, newMsg, reqMsg.CacheTime * 10);
-
-                    //Add worker item
-                    var worker = new WorkerItem
-                    {
-                        CallKey = callKey,
-                        Context = context,
-                        Request = reqMsg,
-                        SlidingTime = reqMsg.CacheTime,
-                        UpdateTime = DateTime.Now.AddSeconds(reqMsg.CacheTime),
-                        IsRunning = false
-                    };
-
-                    manager.AddWorker(callKey, worker);
-                }
+                manager.AddWorker(callKey, worker);
             }
         }
 

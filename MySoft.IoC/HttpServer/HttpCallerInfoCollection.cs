@@ -25,6 +25,14 @@ namespace MySoft.IoC.HttpServer
         }
 
         /// <summary>
+        /// 总数量
+        /// </summary>
+        public int Count
+        {
+            get { return callers.Count; }
+        }
+
+        /// <summary>
         /// 清除集合
         /// </summary>
         public void Clear()

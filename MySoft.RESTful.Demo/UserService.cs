@@ -33,7 +33,7 @@ namespace MySoft.RESTful.Demo
         /// 获取一组用户
         /// </summary>
         /// <returns></returns>
-        [PublishMethod("getusers", Description = "获取一组用户")]
+        [PublishMethod("getusers", Description = "获取一组用户", AuthorizeType = AuthorizeType.App)]
         IList<User> GetUsers();
 
         /// <summary>

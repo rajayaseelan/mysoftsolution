@@ -39,7 +39,7 @@ namespace MySoft.PlatformService.UserService
         }
     }
 
-    [ServiceContract]
+    [ServiceContract(Description = "用户服务")]
     public interface IUserService
     {
         //[OperationContract(ClientCacheTime = 10, ServerCacheTime = 20, CacheKey = "User_{name}")]
@@ -53,7 +53,7 @@ namespace MySoft.PlatformService.UserService
         User GetUserFromName(string name);
 
         //, ErrorMessage = "获取用户信息失败"
-        [OperationContract(CacheTime = 5)]
+        [OperationContract(CacheTime = -1, Description = "获取用户")]
         User GetUser(int id);
 
         User GetUserForName(string name);
