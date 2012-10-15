@@ -104,14 +104,15 @@ namespace MySoft.IoC.Services
             }
 
             //从队列中获取
-            var waitResult = CacheHelper.Get<AsyncResult>(callKey);
+            var asyncKey = string.Format("AsyncResult_{0}", callKey);
+            var waitResult = CacheHelper.Get<AsyncResult>(asyncKey);
 
             if (waitResult == null)
             {
                 waitResult = new AsyncResult();
 
                 //合并缓存过期时间内的请求
-                CacheHelper.Insert(callKey, waitResult, Math.Min(reqMsg.CacheTime, CALLER_CACHE_TIMEOUT));
+                CacheHelper.Insert(asyncKey, waitResult, Math.Min(reqMsg.CacheTime, CALLER_CACHE_TIMEOUT));
 
                 //获取响应信息
                 var resMsg = InvokeRequest(callKey, context, reqMsg);

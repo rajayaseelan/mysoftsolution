@@ -26,16 +26,19 @@ namespace MySoft.RESTful
         /// <summary>
         /// 实例化PublishMethod
         /// </summary>
-        public PublishMethodAttribute() { }
+        public PublishMethodAttribute()
+        {
+            this.AuthorizeType = AuthorizeType.User;
+        }
 
         /// <summary>
         /// 实例化PublishMethod
         /// </summary>
         /// <param name="name"></param>
         public PublishMethodAttribute(string name)
+            : this()
         {
             this.Name = name;
-            this.AuthorizeType = AuthorizeType.User;
         }
     }
 }
