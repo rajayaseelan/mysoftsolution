@@ -38,7 +38,7 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
                 if (!socket.Poll(timeoutMs * 1000, SelectMode.SelectWrite))
                 {
                     socket.Close();
-                    throw new TimeoutException("The host failed to connect. Timeout occured.");
+                    throw new System.TimeoutException("The host failed to connect. Timeout occured.");
                 }
 
                 socket.Blocking = true;

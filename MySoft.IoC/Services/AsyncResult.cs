@@ -26,11 +26,11 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        public ResponseMessage GetResult(RequestMessage reqMsg)
+        public ResponseMessage GetResponse(RequestMessage reqMsg)
         {
             try
             {
-                ev.WaitOne();
+                ev.WaitOne(-1, false);
             }
             catch
             {
@@ -67,7 +67,7 @@ namespace MySoft.IoC.Services
         /// <param name="resMsg"></param>
         /// <param name="isSet"></param>
         /// <returns></returns>
-        public bool SetResult(ResponseMessage resMsg)
+        public bool SetResponse(ResponseMessage resMsg)
         {
             try
             {

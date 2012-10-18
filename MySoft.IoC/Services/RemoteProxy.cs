@@ -89,7 +89,7 @@ namespace MySoft.IoC.Services
                     var waitResult = hashtable[resMsg.TransactionId];
 
                     //数据响应
-                    waitResult.SetResult(resMsg);
+                    waitResult.SetResponse(resMsg);
                 }
             }
         }
@@ -117,7 +117,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //处理数据
-                using (var waitResult = new WaitResult())
+                using (var waitResult = new WaitResult(reqMsg))
                 {
                     lock (hashtable)
                     {
@@ -169,7 +169,7 @@ namespace MySoft.IoC.Services
                , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, elapsedTime, reqMsg.Parameters.ToString());
 
             //获取异常
-            return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
+            return IoCHelper.GetResponse(reqMsg, new System.TimeoutException(title));
         }
 
         /// <summary>

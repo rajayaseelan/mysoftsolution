@@ -78,7 +78,9 @@
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="Aspect\ProxyGenerationHook.cs" />
     <Compile Include="HttpServer\TcpDocument.cs" />
-    <Compile Include="Services\AsyncResult.cs" />
+    <Compile Include="Services\AsyncResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Services\ThreadManager.cs" />
     <Compile Include="Services\WorkerItem.cs" />
     <Compile Include="Communication\ITcpConnection.cs" />

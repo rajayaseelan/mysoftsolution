@@ -56,7 +56,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private SocketAsyncEventArgs _receiveEventArgs;
 
-        private readonly ManualResetEvent _willRaiseEvent;
+        private ManualResetEvent _willRaiseEvent;
 
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
@@ -143,6 +143,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 _receiveEventArgs = null;
                 _receiveEventArgs = null;
+                _willRaiseEvent = null;
             }
 
             CommunicationState = CommunicationStates.Disconnected;
@@ -167,9 +168,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     OnReceiveCompleted(_receiveEventArgs);
                 }
             }
-            catch (ObjectDisposedException)
-            {
-            }
+            catch (ObjectDisposedException) { }
             catch (Exception ex)
             {
                 Disconnect();
@@ -201,14 +200,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         OnSendCompleted(_sendEventArgs);
                     }
 
-                    if (_willRaiseEvent.WaitOne())
+                    if (_willRaiseEvent.WaitOne(-1, false))
                     {
                         _willRaiseEvent.Reset();
                     }
                 }
-                catch (ObjectDisposedException)
-                {
-                }
+                catch (ObjectDisposedException) { }
                 catch (Exception ex)
                 {
                     Disconnect();
@@ -224,13 +221,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
         private void IOCompleted(object sender, SocketAsyncEventArgs e)
         {
-            if (e.LastOperation == SocketAsyncOperation.Send)
+            try
             {
-                OnSendCompleted(e);
+                if (e.LastOperation == SocketAsyncOperation.Send)
+                {
+                    OnSendCompleted(e);
+                }
+                else if (e.LastOperation == SocketAsyncOperation.Receive)
+                {
+                    OnReceiveCompleted(e);
+                }
             }
-            else if (e.LastOperation == SocketAsyncOperation.Receive)
+            catch (Exception ex)
             {
-                OnReceiveCompleted(e);
             }
         }
 
@@ -243,23 +246,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                if (e.SocketError == SocketError.Success)
-                {
-                    //Record last sent time
-                    LastSentMessageTime = DateTime.Now;
+                //Record last sent time
+                LastSentMessageTime = DateTime.Now;
 
-                    //Sent success
-                    OnMessageSent(e.UserToken as IScsMessage);
+                //Sent success
+                OnMessageSent(e.UserToken as IScsMessage);
 
-                    e.UserToken = null;
-                    e.SetBuffer(null, 0, 0);
-                }
-                else
-                {
-                    Disconnect();
-                }
+                e.UserToken = null;
+                e.SetBuffer(null, 0, 0);
             }
-            catch (ObjectDisposedException)
+            catch (ObjectDisposedException) { }
+            catch (Exception ex)
             {
             }
             finally
@@ -286,8 +283,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                     //Copy received bytes to a new byte array
                     var receivedBytes = new byte[bytesRead];
-                    Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesRead);
-                    Array.Clear(e.Buffer, 0, bytesRead);
+
+                    if (e.Buffer != null)
+                    {
+                        Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesRead);
+                        Array.Clear(e.Buffer, 0, bytesRead);
+                    }
 
                     try
                     {
@@ -315,9 +316,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     throw new CommunicationException("Tcp socket is closed.");
                 }
             }
-            catch (ObjectDisposedException)
-            {
-            }
+            catch (ObjectDisposedException) { }
             catch (Exception ex)
             {
                 Disconnect();

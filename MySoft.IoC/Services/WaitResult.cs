@@ -10,6 +10,7 @@ namespace MySoft.IoC.Services
     internal sealed class WaitResult : IDisposable
     {
         private AutoResetEvent ev;
+        private RequestMessage reqMsg;
         private ResponseMessage resMsg;
 
         /// <summary>
@@ -23,21 +24,23 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 实例化WaitResult
         /// </summary>
-        public WaitResult()
+        /// <param name="reqMsg"></param>
+        public WaitResult(RequestMessage reqMsg)
         {
             this.ev = new AutoResetEvent(false);
+            this.reqMsg = reqMsg;
         }
 
         /// <summary>
         /// 等待信号
         /// </summary>
-        /// <param name="timeSpan"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        public bool WaitOne(TimeSpan timeSpan)
+        public bool WaitOne(TimeSpan timeout)
         {
             try
             {
-                return ev.WaitOne(timeSpan, false);
+                return ev.WaitOne(timeout, false);
             }
             catch
             {
@@ -50,11 +53,27 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        public bool SetResult(ResponseMessage resMsg)
+        public bool SetResponse(ResponseMessage resMsg)
         {
             try
             {
                 this.resMsg = resMsg;
+
+                if (resMsg != null && resMsg.TransactionId != reqMsg.TransactionId)
+                {
+                    this.resMsg = new ResponseMessage
+                    {
+                        TransactionId = reqMsg.TransactionId,
+                        ReturnType = resMsg.ReturnType,
+                        ServiceName = resMsg.ServiceName,
+                        MethodName = resMsg.MethodName,
+                        Parameters = resMsg.Parameters,
+                        ElapsedTime = resMsg.ElapsedTime,
+                        Error = resMsg.Error,
+                        Value = resMsg.Value
+                    };
+                }
+
                 return ev.Set();
             }
             catch
