@@ -47,16 +47,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private volatile byte[] _buffer;
 
         /// <summary>
-        /// The socket is send event args.
+        /// The socket is send/receive event args.
         /// </summary>
-        private SocketAsyncEventArgs _sendEventArgs;
+        private SocketAsyncEventArgs _sendEventArgs, _receiveEventArgs;
 
-        /// <summary>
-        /// The socket is receive event args.
-        /// </summary>
-        private SocketAsyncEventArgs _receiveEventArgs;
-
-        private ManualResetEvent _willRaiseEvent;
+        private readonly AutoResetEvent _willRaiseEvent;
 
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
@@ -90,7 +85,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _receiveEventArgs = new SocketAsyncEventArgs();
             _receiveEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
 
-            _willRaiseEvent = new ManualResetEvent(false);
+            _willRaiseEvent = new AutoResetEvent(false);
             _syncLock = new object();
         }
 
@@ -107,6 +102,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 return;
             }
+
+            CommunicationState = CommunicationStates.Disconnected;
+            OnDisconnected();
 
             try
             {
@@ -128,26 +126,25 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 WireProtocol.Reset();
 
-                _sendEventArgs.SetBuffer(null, 0, 0);
-                _receiveEventArgs.SetBuffer(null, 0, 0);
+                _willRaiseEvent.Close();
+            }
+            catch (Exception ex)
+            {
+            }
 
+            try
+            {
                 _sendEventArgs.Dispose();
                 _receiveEventArgs.Dispose();
-
-                _willRaiseEvent.Close();
             }
             catch (Exception ex)
             {
             }
             finally
             {
+                _sendEventArgs = null;
                 _receiveEventArgs = null;
-                _receiveEventArgs = null;
-                _willRaiseEvent = null;
             }
-
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
         }
 
         #endregion
@@ -183,11 +180,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="message">Message to be sent</param>
         protected override void SendMessageInternal(IScsMessage message)
         {
-            //Create a byte array from message according to current protocol
-            var messageBytes = WireProtocol.GetBytes(message);
-
             lock (_syncLock)
             {
+                //Create a byte array from message according to current protocol
+                var messageBytes = WireProtocol.GetBytes(message);
+
                 _sendEventArgs.UserToken = message;
 
                 try
@@ -200,10 +197,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         OnSendCompleted(_sendEventArgs);
                     }
 
-                    if (_willRaiseEvent.WaitOne(-1, false))
-                    {
-                        _willRaiseEvent.Reset();
-                    }
+                    //Wait
+                    _willRaiseEvent.WaitOne(-1, false);
                 }
                 catch (ObjectDisposedException) { }
                 catch (Exception ex)
@@ -251,9 +246,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                 //Sent success
                 OnMessageSent(e.UserToken as IScsMessage);
-
-                e.UserToken = null;
-                e.SetBuffer(null, 0, 0);
             }
             catch (ObjectDisposedException) { }
             catch (Exception ex)
@@ -281,17 +273,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     LastReceivedMessageTime = DateTime.Now;
 
-                    //Copy received bytes to a new byte array
-                    var receivedBytes = new byte[bytesRead];
-
-                    if (e.Buffer != null)
-                    {
-                        Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesRead);
-                        Array.Clear(e.Buffer, 0, bytesRead);
-                    }
-
                     try
                     {
+                        //Copy received bytes to a new byte array
+                        var receivedBytes = new byte[bytesRead];
+
+                        Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesRead);
+
                         //Read messages according to current wire protocol
                         var messages = WireProtocol.CreateMessages(receivedBytes);
 
