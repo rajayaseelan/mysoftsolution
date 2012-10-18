@@ -122,6 +122,10 @@
       <Project>{7B603EE2-B9F0-445E-817F-F058F43E5F48}</Project>
       <Name>MySoft.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MySoft.IoC.DataReport\MySoft.IoC.DataReport.csproj">
+      <Project>{CE90D9E4-560C-4B8D-B344-9E225FAC8D65}</Project>
+      <Name>MySoft.IoC.DataReport</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MySoft.IoC\MySoft.IoC.csproj">
       <Project>{075BD20E-ABD5-4754-8C40-58E3EC025E42}</Project>
       <Name>MySoft.IoC</Name>

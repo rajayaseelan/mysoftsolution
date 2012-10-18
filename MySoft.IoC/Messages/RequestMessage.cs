@@ -214,20 +214,20 @@ namespace MySoft.IoC.Messages
         }
 
         [NonSerialized]
-        private TransferType type;
+        private ResponseType resptype;
 
         /// <summary>
         /// 传输的数据类型
         /// </summary>
-        internal TransferType TransferType
+        internal ResponseType RespType
         {
             get
             {
-                return type;
+                return resptype;
             }
             set
             {
-                type = value;
+                resptype = value;
             }
         }
 

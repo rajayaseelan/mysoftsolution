@@ -78,17 +78,17 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// </summary>
         public virtual void Stop()
         {
+            if (_connectionListener != null)
+            {
+                _connectionListener.Stop();
+            }
+
             foreach (var client in Clients.GetAllItems())
             {
                 client.Disconnect();
             }
 
             Clients.ClearAll();
-
-            if (_connectionListener != null)
-            {
-                _connectionListener.Stop();
-            }
         }
 
         #endregion
@@ -120,11 +120,9 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             client.Disconnected += Client_Disconnected;
 
-            lock (Clients)
-            {
-                Clients[client.ClientId] = client;
-                OnClientConnected(client);
-            }
+            Clients[client.ClientId] = client;
+
+            OnClientConnected(client);
 
             e.Channel.Start();
         }
@@ -138,11 +136,9 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             var client = (IScsServerClient)sender;
 
-            lock (Clients)
-            {
-                Clients.Remove(client.ClientId);
-                OnClientDisconnected(client);
-            }
+            Clients.Remove(client.ClientId);
+
+            OnClientDisconnected(client);
         }
 
         #endregion

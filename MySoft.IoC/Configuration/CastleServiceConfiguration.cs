@@ -15,9 +15,9 @@ namespace MySoft.IoC.Configuration
         private bool httpEnabled = false;
         private Type httpType;
         private bool compress = false;
-        private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;        //默认记录1小时
-        private int timeout = ServiceConfig.DEFAULT_RECORD_TIMEOUT;         //超时时间为1秒
-        private bool enableCache = false;                                   //是否缓存
+        private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;            //默认记录1小时
+        private int timeout = ServiceConfig.DEFAULT_SERVER_CALL_TIMEOUT;        //超时时间为30秒
+        private bool enableCache = false;                                       //是否缓存
 
         /// <summary>
         /// 获取远程对象配置

@@ -1,21 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using MySoft.IoC;
-using MySoft.Remoting;
-using System.Threading;
 using System.Diagnostics;
-using MySoft.PlatformService.UserService;
-using MySoft.Logger;
-using MySoft.Cache;
-using System.Net;
 using System.IO;
-using System.Collections.Specialized;
-using MySoft.IoC.Messages;
-using System.Collections;
+using System.Net;
+using System.Text;
+using System.Threading;
+using MySoft.IoC;
 using MySoft.IoC.Logger;
-using System.Web;
-using MySoft.RESTful.SDK;
+using MySoft.IoC.Messages;
+using MySoft.Logger;
+using MySoft.PlatformService.UserService;
 
 namespace MySoft.PlatformService.Client
 {
@@ -491,7 +485,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 10);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(0, 100);
                     //var value = service.GetUsersString(count, out length);
 
                     //var value = service.GetUser(new Random().Next(1, 10000));

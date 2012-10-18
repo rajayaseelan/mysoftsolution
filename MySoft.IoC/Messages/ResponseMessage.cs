@@ -127,7 +127,7 @@ namespace MySoft.IoC.Messages
 
         private int GetCount(object val)
         {
-            if (val == null) return -1;
+            if (val == null) return 0;
 
             if (val is ICollection)
             {

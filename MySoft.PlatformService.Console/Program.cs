@@ -1,71 +1,105 @@
 using System;
-using MySoft.Cache;
 using MySoft.IoC;
 using MySoft.IoC.Configuration;
-using MySoft.IoC.HttpServer;
-using MySoft.Logger;
-using MySoft.Net.Http;
-using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.PlatformService.Console
 {
     class Program
     {
-        private static readonly object syncobj = new object();
-        //private static readonly IMongo mongo = new Mongo("mongodb://192.168.1.223");
         static void Main(string[] args)
         {
             var color = System.Console.ForegroundColor;
 
             System.Console.BackgroundColor = ConsoleColor.DarkBlue;
             System.Console.ForegroundColor = ConsoleColor.White;
-            Program_OnLog("Service ready started...", LogType.Normal);
+            server_OnLog("Server ready started...", LogType.Normal);
 
             var config = CastleServiceConfiguration.GetConfig();
             var server = new CastleService(config);
-            server.OnLog += new LogEventHandler(Program_OnLog);
-            server.OnError += new ErrorLogEventHandler(Program_OnError);
+            server.OnLog += new LogEventHandler(server_OnLog);
+            server.OnError += new ErrorLogEventHandler(server_OnError);
             server.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
             server.Start();
 
-            Program_OnLog(string.Format("Tcp server started. {0}", server.ServerUrl), LogType.Normal);
-            Program_OnLog(string.Format("Service count -> {0} services.", server.ServiceCount), LogType.Normal);
-            Program_OnLog(string.Format("Press any key to exit and stop service..."), LogType.Normal);
+            MySoft.IoC.DataReport.CallingReport.Init(config, server);
+
+            server_OnLog(string.Format("Tcp server host -> {0}", server.ServerUrl), LogType.Normal);
+            server_OnLog(string.Format("Server publish ({0}) services.", server.ServiceCount), LogType.Normal);
+            server_OnLog(string.Format("Press any key to exit and stop service..."), LogType.Normal);
 
             System.Console.ForegroundColor = color;
             System.Console.ReadLine();
 
+            server_OnLog("Server ready stopped...", LogType.Normal);
             server.Stop();
+
+            System.Console.ReadLine();
         }
 
+        /// <summary>
+        /// 服务调用
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         static void server_OnCalling(object sender, CallEventArgs e)
         {
-            //调用时
-            //throw new NotImplementedException();
-        }
-
-        static void Program_OnLog(string log, LogType type)
-        {
-            string message = "[" + DateTime.Now.ToString() + "] " + "=> <" + type + "> " + log;
-            lock (syncobj)
+            if (e.IsTimeout)
             {
-                var color = System.Console.ForegroundColor;
+                var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
+                var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
+                            message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.ElapsedTime);
 
-                if (type == LogType.Error)
-                    System.Console.ForegroundColor = ConsoleColor.Red;
-                else if (type == LogType.Warning)
-                    System.Console.ForegroundColor = ConsoleColor.Yellow;
-                else if (type == LogType.Information)
-                    System.Console.ForegroundColor = ConsoleColor.Green;
+                var error = IoCHelper.GetException(e.Caller, new System.TimeoutException(body));
 
-                System.Console.WriteLine(message);
+                //写异常日志
+                server_OnError(error);
+            }
+            else if (e.IsError)
+            {
+                var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
+                var body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}",
+                            message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters);
 
-                System.Console.ForegroundColor = color;
+                var error = IoCHelper.GetException(e.Caller, body, e.Error);
+
+                //写异常日志
+                server_OnError(error);
+            }
+            else
+            {
+                var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
+                var body = string.Format("Remote client【{0}】call service ({1},{2}), result ({4}) rows, elapsed time ({5}) ms.\r\nParameters => {3}",
+                            message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.Count, e.ElapsedTime);
+
+                server_OnLog(body, LogType.Information);
             }
         }
 
-        static void Program_OnError(Exception error)
+        static void server_OnLog(string log, LogType type)
+        {
+            string message = "[" + DateTime.Now.ToString() + "] " + "=> <" + type + "> " + log;
+
+            if (type == LogType.Error)
+            {
+                IoCHelper.WriteLine(ConsoleColor.Red, message);
+            }
+            else if (type == LogType.Warning)
+            {
+                IoCHelper.WriteLine(ConsoleColor.Yellow, message);
+            }
+            else if (type == LogType.Information)
+            {
+                IoCHelper.WriteLine(ConsoleColor.Green, message);
+            }
+            else
+            {
+                IoCHelper.WriteLine(message);
+            }
+        }
+
+        static void server_OnError(Exception error)
         {
             string message = "[" + DateTime.Now.ToString() + "] => " + error.Message;
             if (error.InnerException != null)
@@ -73,18 +107,13 @@ namespace MySoft.PlatformService.Console
                 message += "\r\n错误信息 => " + ErrorHelper.GetInnerException(error).Message;
             }
 
-            lock (syncobj)
+            if (error is WarningException)
             {
-                var color = System.Console.ForegroundColor;
-
-                if (error is WarningException)
-                    System.Console.ForegroundColor = ConsoleColor.Yellow;
-                else
-                    System.Console.ForegroundColor = ConsoleColor.Red;
-
-                System.Console.WriteLine(message);
-
-                System.Console.ForegroundColor = color;
+                IoCHelper.WriteLine(ConsoleColor.Yellow, message);
+            }
+            else
+            {
+                IoCHelper.WriteLine(ConsoleColor.Red, message);
             }
         }
     }

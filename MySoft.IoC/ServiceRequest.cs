@@ -28,21 +28,21 @@ namespace MySoft.IoC
         private IScsClient client;
         private IServiceContainer container;
         private ServerNode node;
-        private bool isCallback;
+        private bool subscribed;
 
         /// <summary>
         /// 实例化ServiceMessage
         /// </summary>
         /// <param name="node"></param>
         /// <param name="container"></param>
-        public ServiceRequest(ServerNode node, IServiceContainer container, bool isCallback)
+        public ServiceRequest(ServerNode node, IServiceContainer container, bool subscribed)
         {
             this.container = container;
             this.node = node;
-            this.isCallback = isCallback;
+            this.subscribed = subscribed;
 
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(node.IP, node.Port));
-            this.client.IsTimeoutDisconnect = !isCallback;
+            this.client.IsTimeoutDisconnect = !subscribed;
             this.client.Connected += new EventHandler(client_Connected);
             this.client.Disconnected += client_Disconnected;
             this.client.MessageReceived += client_MessageReceived;
@@ -62,7 +62,7 @@ namespace MySoft.IoC
             container.SendConnected(sender, new ConnectEventArgs(this.client)
             {
                 Error = error,
-                IsCallback = isCallback
+                Subscribed = subscribed
             });
         }
 
@@ -78,7 +78,7 @@ namespace MySoft.IoC
             container.SendDisconnected(sender, new ConnectEventArgs(this.client)
             {
                 Error = error,
-                IsCallback = isCallback
+                Subscribed = subscribed
             });
 
             //断开时响应错误信息

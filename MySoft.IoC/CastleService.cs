@@ -61,7 +61,7 @@ namespace MySoft.IoC
 
             //实例化调用者
             var status = new ServerStatusService(server, config, container);
-            this.caller = new ServiceCaller(status);
+            this.caller = new ServiceCaller(status, config, container);
             this.caller.Handler += (sender, args) =>
             {
                 if (OnCalling != null) OnCalling(sender, args);
@@ -133,14 +133,20 @@ namespace MySoft.IoC
         #region 启动停止服务
 
         /// <summary>
-        /// 启用服务
+        /// 启动服务
         /// </summary>
         public void Start()
         {
             if (config.HttpEnabled)
             {
-                httpServer.OnServerStart += () => { Console.WriteLine("[{0}] => Http server started. http://{1}:{2}/", DateTime.Now, IPAddress.Loopback, config.HttpPort); };
-                httpServer.OnServerStop += () => { Console.WriteLine("[{0}] => Http server stoped.", DateTime.Now); };
+                httpServer.OnServerStart += () =>
+                {
+                    container.WriteLog(string.Format("Http server host -> http://{0}:{1}/", IPAddress.Loopback, config.HttpPort), LogType.Normal);
+                };
+                httpServer.OnServerStop += () =>
+                {
+                    container.WriteLog("Http server stoped.", LogType.Normal);
+                };
 
                 httpServer.OnServerException += httpServer_OnServerException;
                 httpServer.Start();
@@ -174,9 +180,8 @@ namespace MySoft.IoC
         {
             get
             {
-                //获取拥有ServiceContract约束的服务
-                var types = container.GetServiceTypes<ServiceContractAttribute>();
-                return types.Where(type => type != typeof(IStatusService)).Count();
+                var service = container.Resolve<IStatusService>();
+                return service.GetServiceList().Count;
             }
         }
 

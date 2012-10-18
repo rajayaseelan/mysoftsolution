@@ -210,26 +210,23 @@ namespace MySoft.PlatformService.WinForm
                 foreach (var p in txtParameters)
                 {
                     var text = p.Value.Text.Trim();
-                    if (!string.IsNullOrEmpty(text))
+                    var info = p.Value.Tag as ParameterInfo;
+                    if (info.IsPrimitive)
                     {
-                        var info = p.Value.Tag as ParameterInfo;
-                        if (info.IsPrimitive)
+                        //如果字符串包含引号，则不处理。
+                        if (!(text.StartsWith("\"") && text.EndsWith("\"")))
                         {
-                            //如果字符串包含引号，则不处理。
-                            if (!(text.StartsWith("\"") && text.EndsWith("\"")))
-                            {
-                                text = string.Format("\"{0}\"", text);
-                            }
+                            text = string.Format("\"{0}\"", text);
                         }
+                    }
 
-                        try
-                        {
-                            jValue[p.Key] = JToken.Parse(text);
-                        }
-                        catch
-                        {
-                            jValue[p.Key] = text;
-                        }
+                    try
+                    {
+                        jValue[p.Key] = JToken.Parse(text);
+                    }
+                    catch
+                    {
+                        jValue[p.Key] = text;
                     }
                 }
             }

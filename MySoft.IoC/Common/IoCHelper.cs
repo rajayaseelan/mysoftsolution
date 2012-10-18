@@ -6,8 +6,33 @@ using Newtonsoft.Json.Linq;
 
 namespace MySoft.IoC
 {
-    internal static class IoCHelper
+    /// <summary>
+    /// IoC帮助类
+    /// </summary>
+    public static class IoCHelper
     {
+        /// <summary>
+        /// 控制台输出
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="args"></param>
+        public static void WriteLine(string format, params object[] args)
+        {
+            WriteLine(string.Format(format, args));
+        }
+
+        /// <summary>
+        /// 控制台输出
+        /// </summary>
+        /// <param name="message"></param>
+        public static void WriteLine(string message)
+        {
+            if (Console.Out != null)
+            {
+                Console.WriteLine(message);
+            }
+        }
+
         /// <summary>
         /// 控制台输出
         /// </summary>
@@ -16,13 +41,23 @@ namespace MySoft.IoC
         /// <param name="args"></param>
         public static void WriteLine(ConsoleColor color, string format, params object[] args)
         {
+            WriteLine(color, string.Format(format, args));
+        }
+
+        /// <summary>
+        /// 控制台输出
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="message"></param>
+        public static void WriteLine(ConsoleColor color, string message)
+        {
             if (Console.Out != null)
             {
                 lock (Console.Out)
                 {
                     var oldColor = Console.ForegroundColor;
                     Console.ForegroundColor = color;
-                    Console.WriteLine(format, args);
+                    Console.WriteLine(message);
                     Console.ForegroundColor = oldColor;
                 }
             }
@@ -186,43 +221,70 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取IoCException
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
+        /// <param name="caller"></param>
         /// <param name="message"></param>
-        /// <param name="inner"></param>
         /// <returns></returns>
-        public static IoCException GetException(OperationContext context, RequestMessage reqMsg, string message, Exception inner)
+        public static IoCException GetException(AppCaller caller, string message)
         {
-            var exception = new IoCException(message, inner);
+            //创建IoC异常
+            var exception = new WarningException(message);
 
-            //获取IoC异常
-            return GetException(context, reqMsg, exception);
+            //设置调用信息
+            SetAppCaller(caller, exception);
+
+            return exception;
         }
 
         /// <summary>
         /// 获取异常
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="exception"></param>
+        /// <param name="caller"></param>
+        /// <param name="error"></param>
         /// <returns></returns>
-        public static IoCException GetException(OperationContext context, RequestMessage reqMsg, IoCException exception)
+        public static IoCException GetException(AppCaller caller, System.TimeoutException error)
         {
-            exception.ApplicationName = reqMsg.AppName;
-            exception.ServiceName = reqMsg.ServiceName;
-            exception.ErrorHeader = string.Format("App【{0}】occurs error, comes from {1}({2}).", reqMsg.AppName, reqMsg.HostName, reqMsg.IPAddress);
+            //创建IoC异常
+            var exception = new TimeoutException(error.Message);
 
-            //上下文不为null
-            if (context != null && context.Caller != null)
-            {
-                var caller = context.Caller;
-                if (!string.IsNullOrEmpty(caller.AppPath))
-                {
-                    exception.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", exception.ErrorHeader, caller.AppPath);
-                }
-            }
+            //设置调用信息
+            SetAppCaller(caller, exception);
 
             return exception;
+        }
+
+        /// <summary>
+        /// 获取IoCException
+        /// </summary>
+        /// <param name="caller"></param>
+        /// <param name="message"></param>
+        /// <param name="inner"></param>
+        /// <returns></returns>
+        public static IoCException GetException(AppCaller caller, string message, Exception inner)
+        {
+            //创建IoC异常
+            var exception = new IoCException(message, inner);
+
+            //设置调用信息
+            SetAppCaller(caller, exception);
+
+            return exception;
+        }
+
+        /// <summary>
+        /// 设置调用信息
+        /// </summary>
+        /// <param name="caller"></param>
+        /// <param name="error"></param>
+        private static void SetAppCaller(AppCaller caller, IoCException error)
+        {
+            error.ApplicationName = caller.AppName;
+            error.ServiceName = caller.ServiceName;
+            error.ErrorHeader = string.Format("App【{0}】occurs error, comes from {1}({2}).", caller.AppName, caller.HostName, caller.IPAddress);
+
+            if (!string.IsNullOrEmpty(caller.AppPath))
+            {
+                error.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", error.ErrorHeader, caller.AppPath);
+            }
         }
 
         #endregion

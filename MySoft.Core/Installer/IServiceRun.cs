@@ -15,17 +15,13 @@ namespace MySoft.Installer
         /// <summary>
         /// 启动服务
         /// </summary>
-        void Start();
+        /// <param name="startMode">启用模式</param>
+        void Start(StartMode startMode);
 
         /// <summary>
         /// 停止服务
         /// </summary>
         void Stop();
-
-        /// <summary>
-        /// 设置运行类型
-        /// </summary>
-        StartMode StartMode { set; get; }
     }
 
     /// <summary>
@@ -37,10 +33,13 @@ namespace MySoft.Installer
         /// 服务
         /// </summary>
         Service,
-
         /// <summary>
         /// 控制台
         /// </summary>
-        Console
+        Console,
+        /// <summary>
+        /// 调试模式
+        /// </summary>
+        Debug
     }
 }

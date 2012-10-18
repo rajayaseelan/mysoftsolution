@@ -15,7 +15,7 @@ namespace MySoft.IoC
         private int timeout = ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT;
         private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
         private int minpool = ServiceConfig.DEFAULT_CLIENT_MINPOOL;
-        private TransferType format = TransferType.Binary;
+        private ResponseType resptype = ResponseType.Binary;
 
         /// <summary>
         /// Gets or sets the key.
@@ -88,13 +88,13 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Gets or sets the format
+        /// Gets or sets the resptype
         /// </summary>
-        /// <value>The format.</value>
-        public TransferType Format
+        /// <value>The resptype.</value>
+        public ResponseType RespType
         {
-            get { return format; }
-            set { format = value; }
+            get { return resptype; }
+            set { resptype = value; }
         }
 
         /// <summary>

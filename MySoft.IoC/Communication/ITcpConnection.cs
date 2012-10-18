@@ -42,7 +42,7 @@ namespace MySoft.IoC.Communication
         /// <summary>
         /// Get is callback
         /// </summary>
-        public bool IsCallback { get; set; }
+        public bool Subscribed { get; set; }
 
         public ConnectEventArgs(IScsClient channel)
         {

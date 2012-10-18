@@ -47,13 +47,13 @@ namespace MySoft.IoC
             this.cacheTimes = new Dictionary<string, int>();
             this.errors = new Dictionary<string, string>();
 
-            var waitTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_WAIT_TIMEOUT);
+            var timeout = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT * 5);
 
             //实例化异步服务
             if (config.EnableCache)
-                this.asyncCaller = new AsyncCaller(container, service, waitTime, cache, false);
+                this.asyncCaller = new AsyncCaller(service, timeout, cache, false);
             else
-                this.asyncCaller = new AsyncCaller(container, service, waitTime, false);
+                this.asyncCaller = new AsyncCaller(service, timeout, false);
 
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)
@@ -96,7 +96,7 @@ namespace MySoft.IoC
                 TransactionId = Guid.NewGuid(),                 //传输ID号
                 MethodInfo = method,                            //设置调用方法
                 Parameters = collection,                        //设置参数
-                TransferType = TransferType.Binary              //数据类型
+                RespType = ResponseType.Binary              //数据类型
             };
 
             //设置缓存时间

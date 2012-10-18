@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
@@ -45,6 +46,23 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private volatile byte[] _buffer;
 
+        /// <summary>
+        /// The socket is send event args.
+        /// </summary>
+        private SocketAsyncEventArgs _sendEventArgs;
+
+        /// <summary>
+        /// The socket is receive event args.
+        /// </summary>
+        private SocketAsyncEventArgs _receiveEventArgs;
+
+        private readonly ManualResetEvent _willRaiseEvent;
+
+        /// <summary>
+        /// This object is just used for thread synchronizing (locking).
+        /// </summary>
+        private readonly object _syncLock;
+
         #endregion
 
         #region Constructor
@@ -63,18 +81,22 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
 
             _buffer = new byte[ReceiveBufferSize];
+
+            //send async event args
+            _sendEventArgs = new SocketAsyncEventArgs();
+            _sendEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+
+            //receive async event args
+            _receiveEventArgs = new SocketAsyncEventArgs();
+            _receiveEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+
+            _willRaiseEvent = new ManualResetEvent(false);
+            _syncLock = new object();
         }
 
         #endregion
 
         #region Public methods
-
-        private void Disconnect(SocketAsyncEventArgs e)
-        {
-            Dispose(e);
-
-            Disconnect();
-        }
 
         /// <summary>
         /// Disconnects from remote application and closes channel.
@@ -88,10 +110,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                if (_clientSocket.Connected)
-                {
-                    _clientSocket.Shutdown(SocketShutdown.Both);
-                }
+                _clientSocket.Shutdown(SocketShutdown.Both);
             }
             catch (Exception ex)
             {
@@ -99,17 +118,32 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                if (_clientSocket.Connected)
-                {
-                    _clientSocket.Close();
-                }
+                _clientSocket.Close();
             }
             catch (Exception ex)
             {
             }
 
-            _buffer = null;
-            WireProtocol.Reset();
+            try
+            {
+                WireProtocol.Reset();
+
+                _sendEventArgs.SetBuffer(null, 0, 0);
+                _receiveEventArgs.SetBuffer(null, 0, 0);
+
+                _sendEventArgs.Dispose();
+                _receiveEventArgs.Dispose();
+
+                _willRaiseEvent.Close();
+            }
+            catch (Exception ex)
+            {
+            }
+            finally
+            {
+                _receiveEventArgs = null;
+                _receiveEventArgs = null;
+            }
 
             CommunicationState = CommunicationStates.Disconnected;
             OnDisconnected();
@@ -124,33 +158,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         protected override void StartInternal()
         {
-            var e = new SocketAsyncEventArgs();
-            e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
-
             try
             {
-                e.SetBuffer(_buffer, 0, _buffer.Length);
+                _receiveEventArgs.SetBuffer(_buffer, 0, _buffer.Length);
 
-                if (!_clientSocket.ReceiveAsync(e))
+                if (!_clientSocket.ReceiveAsync(_receiveEventArgs))
                 {
-                    OnReceiveCompleted(e);
+                    OnReceiveCompleted(_receiveEventArgs);
                 }
             }
             catch (ObjectDisposedException)
             {
-                Dispose(e);
-            }
-            catch (SocketException ex)
-            {
-                Disconnect(e);
-
-                throw ex;
             }
             catch (Exception ex)
             {
-                Dispose(e);
-
-                OnMessageError(ex);
+                Disconnect();
 
                 throw ex;
             }
@@ -165,37 +187,34 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Create a byte array from message according to current protocol
             var messageBytes = WireProtocol.GetBytes(message);
 
-            var e = new SocketAsyncEventArgs();
-            e.UserToken = message;
-            e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
-
-            try
+            lock (_syncLock)
             {
-                e.SetBuffer(messageBytes, 0, messageBytes.Length);
+                _sendEventArgs.UserToken = message;
 
-                //Send all bytes to the remote application
-                if (!_clientSocket.SendAsync(e))
+                try
                 {
-                    OnSendCompleted(e);
+                    _sendEventArgs.SetBuffer(messageBytes, 0, messageBytes.Length);
+
+                    //Send all bytes to the remote application
+                    if (!_clientSocket.SendAsync(_sendEventArgs))
+                    {
+                        OnSendCompleted(_sendEventArgs);
+                    }
+
+                    if (_willRaiseEvent.WaitOne())
+                    {
+                        _willRaiseEvent.Reset();
+                    }
                 }
-            }
-            catch (ObjectDisposedException)
-            {
-                Dispose(e);
-            }
-            catch (SocketException ex)
-            {
-                Disconnect(e);
+                catch (ObjectDisposedException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    Disconnect();
 
-                throw ex;
-            }
-            catch (Exception ex)
-            {
-                Dispose(e);
-
-                OnMessageError(ex);
-
-                throw ex;
+                    throw ex;
+                }
             }
         }
 
@@ -224,15 +243,28 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                //Record last sent time
-                LastSentMessageTime = DateTime.Now;
+                if (e.SocketError == SocketError.Success)
+                {
+                    //Record last sent time
+                    LastSentMessageTime = DateTime.Now;
 
-                //Sent success
-                OnMessageSent(e.UserToken as IScsMessage);
+                    //Sent success
+                    OnMessageSent(e.UserToken as IScsMessage);
+
+                    e.UserToken = null;
+                    e.SetBuffer(null, 0, 0);
+                }
+                else
+                {
+                    Disconnect();
+                }
+            }
+            catch (ObjectDisposedException)
+            {
             }
             finally
             {
-                Dispose(e);
+                _willRaiseEvent.Set();
             }
         }
 
@@ -252,12 +284,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     LastReceivedMessageTime = DateTime.Now;
 
+                    //Copy received bytes to a new byte array
+                    var receivedBytes = new byte[bytesRead];
+                    Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesRead);
+                    Array.Clear(e.Buffer, 0, bytesRead);
+
                     try
                     {
-                        //Copy received bytes to a new byte array
-                        var receivedBytes = new byte[bytesRead];
-                        Array.Copy(e.Buffer, 0, receivedBytes, 0, bytesRead);
-
                         //Read messages according to current wire protocol
                         var messages = WireProtocol.CreateMessages(receivedBytes);
 
@@ -271,56 +304,23 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     {
                     }
 
-                    if (CommunicationState == CommunicationStates.Connected)
+                    //Read more bytes if still running
+                    if (!_clientSocket.ReceiveAsync(e))
                     {
-                        //Read more bytes if still running
-                        if (!_clientSocket.ReceiveAsync(e))
-                        {
-                            OnReceiveCompleted(e);
-                        }
-                    }
-                    else
-                    {
-                        e.SetBuffer(null, 0, 0);
+                        OnReceiveCompleted(e);
                     }
                 }
                 else
                 {
-                    throw new SocketException((int)SocketError.ConnectionReset);
+                    throw new CommunicationException("Tcp socket is closed.");
                 }
             }
             catch (ObjectDisposedException)
             {
-                Dispose(e);
-            }
-            catch (SocketException ex)
-            {
-                Disconnect(e);
             }
             catch (Exception ex)
             {
-                Dispose(e);
-
-                OnMessageError(ex);
-            }
-        }
-
-        /// <summary>
-        /// Dispose socket async event args.
-        /// </summary>
-        /// <param name="e"></param>
-        private void Dispose(SocketAsyncEventArgs e)
-        {
-            if (e == null) return;
-
-            try
-            {
-                e.UserToken = null;
-                e.Dispose();
-                e = null;
-            }
-            catch (ObjectDisposedException)
-            {
+                Disconnect();
             }
         }
 

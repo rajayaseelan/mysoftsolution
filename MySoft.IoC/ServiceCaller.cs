@@ -4,6 +4,7 @@ using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
+using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
@@ -13,42 +14,45 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务调用者
     /// </summary>
-    public class ServiceCaller
+    internal class ServiceCaller
     {
-        internal event EventHandler<CallEventArgs> Handler;
+        public event EventHandler<CallEventArgs> Handler;
+
         private IDictionary<string, Type> callbackTypes;
         private IDictionary<string, AsyncCaller> asyncCallers;
         private ServerStatusService status;
-        private TimeSpan elapsedTime;
+        private IServiceContainer container;
 
         /// <summary>
         /// 初始化ServiceCaller
         /// </summary>
         /// <param name="status"></param>
-        public ServiceCaller(ServerStatusService status)
+        /// <param name="config"></param>
+        /// <param name="container"></param>
+        public ServiceCaller(ServerStatusService status, CastleServiceConfiguration config, IServiceContainer container)
         {
             this.status = status;
+            this.container = container;
             this.callbackTypes = new Dictionary<string, Type>();
             this.asyncCallers = new Dictionary<string, AsyncCaller>();
-            this.elapsedTime = TimeSpan.FromSeconds(status.Config.Timeout);
 
             //注册状态服务
             var hashtable = new Dictionary<Type, object>();
             hashtable[typeof(IStatusService)] = status;
 
             //注册组件
-            status.Container.RegisterComponents(hashtable);
+            container.RegisterComponents(hashtable);
 
             //初始化服务
-            InitServiceCaller(status.Container);
+            InitServiceCaller(container, config);
         }
 
-        private void InitServiceCaller(IServiceContainer container)
+        private void InitServiceCaller(IServiceContainer container, CastleServiceConfiguration config)
         {
             callbackTypes[typeof(IStatusService).FullName] = typeof(IStatusListener);
 
             var types = container.GetServiceTypes<ServiceContractAttribute>();
-            var waitTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_CALL_TIMEOUT);
+            var timeout = TimeSpan.FromSeconds(config.Timeout);
 
             foreach (var type in types)
             {
@@ -66,10 +70,10 @@ namespace MySoft.IoC
                     service = container.Resolve<IService>(serviceKey);
 
                     //实例化AsyncCaller
-                    if (status.Config.EnableCache)
-                        asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime, null, true);
+                    if (config.EnableCache)
+                        asyncCallers[type.FullName] = new AsyncCaller(service, timeout, null, true);
                     else
-                        asyncCallers[type.FullName] = new AsyncCaller(container, service, waitTime, true);
+                        asyncCallers[type.FullName] = new AsyncCaller(service, timeout, true);
                 }
             }
         }
@@ -90,32 +94,22 @@ namespace MySoft.IoC
             //定义响应的消息
             ResponseMessage resMsg = null;
 
+            //创建Caller;
+            var caller = CreateCaller(client, reqMsg);
+
             try
             {
-                //创建Caller;
-                var caller = CreateCaller(client, reqMsg);
+                //解析服务
+                var asyncCaller = GetAsyncCaller(caller);
 
                 //获取上下文
                 var context = GetOperationContext(client, caller);
 
-                //解析服务
-                var asyncCaller = GetAsyncCaller(reqMsg, context);
-
                 //异步调用服务
                 resMsg = asyncCaller.Run(context, reqMsg);
-
-                //判断返回的消息
-                if (resMsg != null)
-                {
-                    //处理响应信息
-                    resMsg = HandleResponse(context, reqMsg, resMsg);
-                }
             }
             catch (Exception ex)
             {
-                //将异常信息写出
-                status.Container.WriteError(ex);
-
                 //处理异常
                 resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
@@ -123,6 +117,9 @@ namespace MySoft.IoC
             //判断返回的消息
             if (resMsg != null)
             {
+                //处理响应信息
+                resMsg = HandleResponse(caller, reqMsg, resMsg);
+
                 //发送消息
                 SendMessage(client, reqMsg, resMsg, messageId);
             }
@@ -131,21 +128,14 @@ namespace MySoft.IoC
         /// <summary>
         /// 处理消息
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="caller"></param>
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        private ResponseMessage HandleResponse(OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
+        private ResponseMessage HandleResponse(AppCaller caller, RequestMessage reqMsg, ResponseMessage resMsg)
         {
-            //转换成毫秒判断
-            if (resMsg.ElapsedTime > elapsedTime.TotalMilliseconds)
-            {
-                //写超时日志
-                WriteTimeout(context, reqMsg, resMsg);
-            }
-
             //响应及写超时信息
-            CounterCaller(context, resMsg);
+            CounterCaller(caller, resMsg);
 
             //如果是Json方式调用，则需要处理异常
             if (resMsg.IsError && reqMsg.InvokeMethod)
@@ -159,14 +149,14 @@ namespace MySoft.IoC
         /// <summary>
         /// Counter caller
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="caller"></param>
         /// <param name="resMsg"></param>
-        private void CounterCaller(OperationContext context, ResponseMessage resMsg)
+        private void CounterCaller(AppCaller caller, ResponseMessage resMsg)
         {
             //调用参数
             var callArgs = new CallEventArgs
             {
-                Caller = context.Caller,
+                Caller = caller,
                 ElapsedTime = resMsg.ElapsedTime,
                 Count = resMsg.Count,
                 Error = resMsg.Error,
@@ -186,7 +176,7 @@ namespace MySoft.IoC
                 {
                     try
                     {
-                        Handler(this, callArgs);
+                        Handler(container, callArgs);
                     }
                     catch (Exception ex)
                     {
@@ -238,36 +228,6 @@ namespace MySoft.IoC
 
                 }
             }
-            finally
-            {
-                scsMessage = null;
-
-                reqMsg = null;
-                resMsg = null;
-            }
-        }
-
-        /// <summary>
-        /// 写超时日志
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        private void WriteTimeout(OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
-        {
-            try
-            {
-                //调用计数
-                string body = string.Format("Remote client【{0}】call service ({1},{2}) timeout.\r\nParameters => {3}\r\nMessage => {4}",
-                    reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), resMsg.Message);
-
-                //写异常日志
-                SimpleLog.Instance.WriteLogForDir(string.Format("Timeout\\{0}\\{1}", reqMsg.AppName, reqMsg.ServiceName), body);
-            }
-            catch (Exception ex)
-            {
-                //TODO
-            }
         }
 
         /// <summary>
@@ -313,7 +273,7 @@ namespace MySoft.IoC
 
             return new OperationContext(client, callbackType)
             {
-                Container = status.Container,
+                Container = container,
                 Caller = caller
             };
         }
@@ -321,21 +281,20 @@ namespace MySoft.IoC
         /// <summary>
         /// Gets the asyncCaller.
         /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="context"></param>
+        /// <param name="caller"></param>
         /// <returns></returns>
-        private AsyncCaller GetAsyncCaller(RequestMessage reqMsg, OperationContext context)
+        private AsyncCaller GetAsyncCaller(AppCaller caller)
         {
-            if (!asyncCallers.ContainsKey(reqMsg.ServiceName))
+            if (!asyncCallers.ContainsKey(caller.ServiceName))
             {
                 string body = string.Format("The server【{1}({2})】not find matching service ({0})."
-                    , reqMsg.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
+                    , caller.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
 
                 //获取异常
-                throw IoCHelper.GetException(context, reqMsg, new WarningException(body));
+                throw IoCHelper.GetException(caller, body);
             }
 
-            return asyncCallers[reqMsg.ServiceName];
+            return asyncCallers[caller.ServiceName];
         }
     }
 }

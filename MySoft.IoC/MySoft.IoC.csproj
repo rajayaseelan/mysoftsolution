@@ -210,7 +210,7 @@
     <Compile Include="Messages\Status\HighestStatus.cs" />
     <Compile Include="Messages\Status\TimeStatus.cs" />
     <Compile Include="SubscribeOptions.cs" />
-    <Compile Include="TransferType.cs" />
+    <Compile Include="ResponseType.cs" />
     <Compile Include="WarningException.cs" />
   </ItemGroup>
   <ItemGroup>

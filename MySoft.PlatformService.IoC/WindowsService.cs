@@ -4,9 +4,8 @@ using System.Threading;
 using MySoft.Installer;
 using MySoft.IoC;
 using MySoft.IoC.Configuration;
+using MySoft.IoC.Messages;
 using MySoft.Logger;
-using System.Net.Sockets;
-using System.IO;
 
 namespace MySoft.PlatformService.IoC
 {
@@ -15,8 +14,6 @@ namespace MySoft.PlatformService.IoC
     /// </summary>
     public class WindowsService : IServiceRun
     {
-        private readonly object syncobj = new object();
-        private CastleServiceConfiguration config;
         private StartMode startMode = StartMode.Service;
         private CastleService server;
         private string[] mailTo;
@@ -48,11 +45,12 @@ namespace MySoft.PlatformService.IoC
         /// </summary>
         public void Init()
         {
-            this.config = CastleServiceConfiguration.GetConfig();
+            var config = CastleServiceConfiguration.GetConfig();
             this.server = new CastleService(config);
 
             this.server.OnLog += new LogEventHandler(server_OnLog);
             this.server.OnError += new ErrorLogEventHandler(server_OnError);
+            this.server.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
 
             //处理邮件地址
             string address = ConfigurationManager.AppSettings["SendMailAddress"];
@@ -60,30 +58,22 @@ namespace MySoft.PlatformService.IoC
         }
 
         /// <summary>
-        /// 设置运行类型
+        /// 启动服务
         /// </summary>
-        public StartMode StartMode
+        /// <param name="startMode"></param>
+        public void Start(StartMode startMode)
         {
-            get
-            {
-                return this.startMode;
-            }
-            set
-            {
-                this.startMode = value;
-            }
-        }
+            this.startMode = startMode;
 
-        public void Start()
-        {
-            if (startMode == StartMode.Console)
+            if (startMode != StartMode.Service)
             {
-                server_OnLog("Service ready started...", LogType.Normal);
+                server_OnLog("Server ready started...", LogType.Normal);
 
                 StartService();
 
-                server_OnLog(string.Format("Server host: {0}", server.ServerUrl), LogType.Normal);
-                server_OnLog("Press enter to exit and stop service...", LogType.Normal);
+                server_OnLog(string.Format("Tcp server host -> {0}", server.ServerUrl), LogType.Normal);
+                server_OnLog(string.Format("Server publish ({0}) services.", server.ServiceCount), LogType.Normal);
+                server_OnLog("Press enter to exit and stop server...", LogType.Normal);
             }
             else
             {
@@ -98,9 +88,9 @@ namespace MySoft.PlatformService.IoC
 
         public void Stop()
         {
-            if (startMode == StartMode.Console)
+            if (startMode != StartMode.Service)
             {
-                server_OnLog("Service ready stopped...", LogType.Normal);
+                server_OnLog("Server ready stopped...", LogType.Normal);
             }
 
             server.Stop();
@@ -108,62 +98,94 @@ namespace MySoft.PlatformService.IoC
 
         #endregion
 
+        /// <summary>
+        /// 服务调用
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void server_OnCalling(object sender, CallEventArgs e)
+        {
+            if (e.IsTimeout)
+            {
+                var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
+                var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
+                            message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.ElapsedTime);
+
+                var error = IoCHelper.GetException(e.Caller, new System.TimeoutException(body));
+
+                //写异常日志
+                server_OnError(error);
+            }
+            else if (e.IsError)
+            {
+                var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
+                var body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}",
+                            message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters);
+
+                var error = IoCHelper.GetException(e.Caller, body, e.Error);
+
+                //写异常日志
+                server_OnError(error);
+            }
+            else
+            {
+                if (startMode == StartMode.Debug)
+                {
+                    var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
+                    var body = string.Format("Remote client【{0}】call service ({1},{2}), result ({4}) rows, elapsed time ({5}) ms.\r\nParameters => {3}",
+                                message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.Count, e.ElapsedTime);
+
+                    server_OnLog(body, LogType.Information);
+                }
+            }
+        }
+
         void server_OnLog(string log, LogType type)
         {
-            if (startMode == StartMode.Console)
+            if (startMode != StartMode.Service)
             {
                 string message = string.Format("[{0}] => ({1}) {2}", DateTime.Now, type, log);
-                lock (syncobj)
+
+                if (type == LogType.Error)
                 {
-                    //保存当前颜色
-                    var color = Console.ForegroundColor;
-
-                    if (type == LogType.Error)
-                        Console.ForegroundColor = ConsoleColor.Red;
-                    else if (type == LogType.Warning)
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                    else if (type == LogType.Information)
-                        Console.ForegroundColor = ConsoleColor.Green;
-
-                    Console.WriteLine(message);
-
-                    //恢复当前颜色
-                    Console.ForegroundColor = color;
+                    IoCHelper.WriteLine(ConsoleColor.Red, message);
+                }
+                else if (type == LogType.Warning)
+                {
+                    IoCHelper.WriteLine(ConsoleColor.Yellow, message);
+                }
+                else if (type == LogType.Information)
+                {
+                    IoCHelper.WriteLine(ConsoleColor.Green, message);
+                }
+                else
+                {
+                    IoCHelper.WriteLine(message);
                 }
             }
         }
 
         void server_OnError(Exception error)
         {
-            if (startMode == StartMode.Console)
+            if (startMode != StartMode.Service)
             {
                 string message = string.Format("[{0}] => {1}", DateTime.Now, error.Message);
                 if (error.InnerException != null)
                 {
                     message += string.Format("\r\n错误信息 => {0}", ErrorHelper.GetInnerException(error.InnerException));
                 }
-                lock (syncobj)
+
+                if (error is WarningException)
                 {
-                    //保存当前颜色
-                    var color = Console.ForegroundColor;
-
-                    if (error is WarningException)
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                    else
-                        Console.ForegroundColor = ConsoleColor.Red;
-
-                    Console.WriteLine(message);
-
-                    //恢复当前颜色
-                    Console.ForegroundColor = color;
+                    IoCHelper.WriteLine(ConsoleColor.Yellow, message);
+                }
+                else
+                {
+                    IoCHelper.WriteLine(ConsoleColor.Red, message);
                 }
             }
             else
             {
-                //如果是以下异常，则不发送邮件
-                if (error is SocketException) return;
-                if (error is IOException) return;
-
                 SimpleLog.Instance.WriteLogWithSendMail(error, mailTo);
             }
         }

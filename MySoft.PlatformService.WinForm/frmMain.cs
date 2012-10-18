@@ -31,7 +31,7 @@ namespace MySoft.PlatformService.WinForm
 
         void frmMain_OnDisconnected(object sender, ConnectEventArgs e)
         {
-            if (e.IsCallback)
+            if (e.Subscribed)
             {
                 lock (_syncLock)
                 {

@@ -30,10 +30,7 @@ namespace MySoft.IoC.Services
         {
             try
             {
-                if (resMsg == null)
-                {
-                    ev.WaitOne();
-                }
+                ev.WaitOne();
             }
             catch
             {

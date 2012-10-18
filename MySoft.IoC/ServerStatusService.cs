@@ -29,9 +29,6 @@ namespace MySoft.IoC
         private TimeStatusCollection statuslist;
         private DateTime startTime;
 
-        internal IServiceContainer Container { get { return container; } }
-        internal CastleServiceConfiguration Config { get { return config; } }
-
         /// <summary>
         /// 实例化ServerStatusService
         /// </summary>

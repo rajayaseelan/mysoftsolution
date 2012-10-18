@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
-using MySoft.Logger;
 
 namespace MySoft.IoC.Services
 {
@@ -15,41 +13,28 @@ namespace MySoft.IoC.Services
     internal class AsyncCaller
     {
         /// <summary>
-        /// Lock count is 5.
+        /// Wait result table.
         /// </summary>
-        private const int CALLER_LOCK_COUNT = 5;
+        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
 
-        /// <summary>
-        /// Cache timeout is 30.
-        /// </summary>
-        private const int CALLER_CACHE_TIMEOUT = 30;
-
-        private ILog logger;
         private IService service;
         private ICacheStrategy cache;
-        private TimeSpan waitTime;
+        private TimeSpan timeout;
         private bool enabledCache;
         private bool fromServer;
         private ThreadManager manager;
         private Random random;
 
         /// <summary>
-        /// Lock object
-        /// </summary>
-        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
-
-        /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
-        /// <param name="logger"></param>
         /// <param name="service"></param>
-        /// <param name="waitTime"></param>
+        /// <param name="timeout"></param>
         /// <param name="fromServer"></param>
-        public AsyncCaller(ILog logger, IService service, TimeSpan waitTime, bool fromServer)
+        public AsyncCaller(IService service, TimeSpan timeout, bool fromServer)
         {
-            this.logger = logger;
             this.service = service;
-            this.waitTime = waitTime;
+            this.timeout = timeout;
             this.enabledCache = false;
             this.fromServer = fromServer;
             this.random = new Random();
@@ -58,13 +43,12 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
-        /// <param name="logger"></param>
         /// <param name="service"></param>
-        /// <param name="waitTime"></param>
+        /// <param name="timeout"></param>
         /// <param name="cache"></param>
         /// <param name="fromServer"></param>
-        public AsyncCaller(ILog logger, IService service, TimeSpan waitTime, ICacheStrategy cache, bool fromServer)
-            : this(logger, service, waitTime, fromServer)
+        public AsyncCaller(IService service, TimeSpan timeout, ICacheStrategy cache, bool fromServer)
+            : this(service, timeout, fromServer)
         {
             this.cache = cache;
             this.enabledCache = true;
@@ -79,20 +63,14 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage Run(OperationContext context, RequestMessage reqMsg)
         {
-            if (reqMsg.CacheTime <= 0)
-            {
-                //直接返回响应信息
-                return GetResponse(context, reqMsg);
-            }
+            //定义一个响应值
+            ResponseMessage resMsg = null;
 
             //获取CallerKey
             var callKey = GetCallerKey(reqMsg, context.Caller);
 
             if (enabledCache)
             {
-                //定义一个响应值
-                ResponseMessage resMsg = null;
-
                 //从缓存中获取数据
                 if (GetResponseFromCache(callKey, reqMsg, out resMsg))
                 {
@@ -103,26 +81,44 @@ namespace MySoft.IoC.Services
                 }
             }
 
-            //从队列中获取
-            var asyncKey = string.Format("AsyncResult_{0}", callKey);
-            var waitResult = CacheHelper.Get<AsyncResult>(asyncKey);
+            //定义一个等待对象
+            AsyncResult waitResult = null;
 
+            //判断是否存在
+            if (hashtable.ContainsKey(callKey))
+            {
+                waitResult = hashtable[callKey] as AsyncResult;
+            }
+
+            //判断是否存在
             if (waitResult == null)
             {
+                //实例化等待对象
                 waitResult = new AsyncResult();
 
                 //合并缓存过期时间内的请求
-                CacheHelper.Insert(asyncKey, waitResult, Math.Min(reqMsg.CacheTime, CALLER_CACHE_TIMEOUT));
+                hashtable[callKey] = waitResult;
 
-                //获取响应信息
-                var resMsg = InvokeRequest(callKey, context, reqMsg);
+                try
+                {
+                    //获取响应信息
+                    resMsg = InvokeRequest(callKey, context, reqMsg);
 
-                //设置响应信息
-                waitResult.SetResult(resMsg);
+                    //设置响应信息
+                    waitResult.SetResult(resMsg);
+                }
+                finally
+                {
+                    hashtable.Remove(callKey);
+                }
+            }
+            else
+            {
+                //返回响应信息
+                resMsg = waitResult.GetResult(reqMsg);
             }
 
-            //返回响应信息
-            return waitResult.GetResult(reqMsg);
+            return resMsg;
         }
 
         /// <summary>
@@ -135,32 +131,37 @@ namespace MySoft.IoC.Services
         private ResponseMessage InvokeRequest(string callKey, OperationContext context, RequestMessage reqMsg)
         {
             //获取MethodCaller
-            var caller = GetMethodCaller(context.Caller);
+            var caller = new AsyncMethodCaller(GetResponse);
 
-            lock (caller)
+            //开始调用服务
+            var ar = caller.BeginInvoke(context, reqMsg, null, null);
+
+            //等待指定超时时间
+            if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
             {
-                //开始调用服务
-                var ar = caller.BeginInvoke(context, reqMsg, null, null);
+                //获取异常响应信息
+                var title = string.Format("Async call service ({0},{1}) timeout ({2}) ms.",
+                            reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
 
-                //等待指定超时时间
-                if (!ar.AsyncWaitHandle.WaitOne(waitTime, false))
+                var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
+
+                //设置耗时时间
+                resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;
+
+                return resMsg;
+            }
+            else
+            {
+                var resMsg = caller.EndInvoke(ar);
+                ar.AsyncWaitHandle.Close();
+
+                if (enabledCache)
                 {
-                    //获取超时响应信息
-                    return GetTimeoutResponse(context, reqMsg);
+                    //设置响应信息到缓存
+                    SetResponseToCache(callKey, context, reqMsg, resMsg);
                 }
-                else
-                {
-                    var resMsg = caller.EndInvoke(ar);
-                    ar.AsyncWaitHandle.Close();
 
-                    if (enabledCache)
-                    {
-                        //设置响应信息到缓存
-                        SetResponseToCache(callKey, context, reqMsg, resMsg);
-                    }
-
-                    return resMsg;
-                }
+                return resMsg;
             }
         }
 
@@ -176,26 +177,6 @@ namespace MySoft.IoC.Services
             return string.Format("{0}_Caller_{1}${2}${3}", (reqMsg.InvokeMethod ? "Invoke" : "Direct"),
                                 caller.ServiceName, caller.MethodName, caller.Parameters)
                     .Replace(" ", "").Replace("\r\n", "").Replace("\t", "").ToLower();
-        }
-
-        /// <summary>
-        /// 获取方法调用对象
-        /// </summary>
-        /// <param name="caller"></param>
-        /// <returns></returns>
-        private AsyncMethodCaller GetMethodCaller(AppCaller caller)
-        {
-            //获取ServiceKey
-            var lockIndex = random.Next(0, CALLER_LOCK_COUNT);
-            var serviceKey = string.Format("Service_{0}${1}_{2}", caller.ServiceName, caller.MethodName, lockIndex);
-
-            //判断是否有锁Key存在
-            if (!hashtable.ContainsKey(serviceKey))
-            {
-                hashtable[serviceKey] = new AsyncMethodCaller(GetResponse);
-            }
-
-            return hashtable[serviceKey] as AsyncMethodCaller;
         }
 
         /// <summary>
@@ -222,12 +203,12 @@ namespace MySoft.IoC.Services
                 Thread.ResetAbort();
 
                 //获取异常响应信息
-                resMsg = GetErrorResponse(context, reqMsg, ex);
+                resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
             catch (Exception ex)
             {
                 //获取异常响应信息
-                resMsg = GetErrorResponse(context, reqMsg, ex);
+                resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {
@@ -235,50 +216,6 @@ namespace MySoft.IoC.Services
             }
 
             return resMsg;
-        }
-
-        /// <summary>
-        /// 获取超时响应信息
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(OperationContext context, RequestMessage reqMsg)
-        {
-            var body = string.Format("Remote client【{0}】async call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
-                reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString(), (int)waitTime.TotalMilliseconds);
-
-            var error = IoCHelper.GetException(context, reqMsg, new TimeoutException(body));
-
-            //写异常日志
-            logger.WriteError(error);
-
-            var title = string.Format("Async call service ({0},{1}) timeout ({2}) ms.",
-                        reqMsg.ServiceName, reqMsg.MethodName, (int)waitTime.TotalMilliseconds);
-
-            //处理异常
-            return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
-        }
-
-        /// <summary>
-        /// 获取异常响应信息
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="ex"></param>
-        /// <returns></returns>
-        private ResponseMessage GetErrorResponse(OperationContext context, RequestMessage reqMsg, Exception ex)
-        {
-            var body = string.Format("Remote client【{0}】async call service ({1},{2}) error.\r\nParameters => {3}",
-                reqMsg.Message, reqMsg.ServiceName, reqMsg.MethodName, reqMsg.Parameters.ToString());
-
-            var error = IoCHelper.GetException(context, reqMsg, body, ex);
-
-            //写异常日志
-            logger.WriteError(error);
-
-            //处理异常
-            return IoCHelper.GetResponse(reqMsg, ex);
         }
 
         /// <summary>
@@ -371,6 +308,10 @@ namespace MySoft.IoC.Services
 
                     //设置耗时时间
                     newMsg.ElapsedTime = watch.ElapsedMilliseconds;
+                }
+                catch (Exception ex)
+                {
+                    //TODO
                 }
                 finally
                 {

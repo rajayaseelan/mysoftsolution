@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ServiceProcess;
 using System.Threading;
+using MySoft.Installer;
 using MySoft.Logger;
 
 namespace MySoft.PlatformService
@@ -66,7 +67,23 @@ namespace MySoft.PlatformService
                         case "-c":
                         case "-console":
                             {
-                                if (server.StartConsole())
+                                if (server.StartConsole(StartMode.Console))
+                                {
+                                    Console.ReadLine();
+                                    server.StopConsole();
+                                }
+                                else
+                                {
+                                    Console.ReadLine();
+                                }
+                            }
+                            break;
+                        case "/d":
+                        case "/debug":
+                        case "-d":
+                        case "-debug":
+                            {
+                                if (server.StartConsole(StartMode.Debug))
                                 {
                                     Console.ReadLine();
                                     server.StopConsole();
@@ -149,6 +166,7 @@ namespace MySoft.PlatformService
             Console.WriteLine(@"/p | /stop [服务名称] : 停止指定服务");
             Console.WriteLine(@"/r | /restart [服务名称] : 重启指定服务");
             Console.WriteLine(@"/c | /console : 启动控制台 (仅当前配置有效)");
+            Console.WriteLine(@"/d | /debug : 启动控制台(调试模式）(仅当前配置有效)");
             Console.WriteLine(@"/i | /install : 安装为windows服务 (仅当前配置有效)");
             Console.WriteLine(@"/u | /uninstall : 卸载windows服务 (仅当前配置有效)");
             Console.WriteLine("----------------------------------------------");

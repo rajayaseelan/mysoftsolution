@@ -27,7 +27,7 @@ namespace MySoft.IoC.Services
         /// <returns>The result.</returns>
         public override ResponseMessage CallService(RequestMessage reqMsg)
         {
-            if (reqMsg.TransferType == TransferType.Json)
+            if (reqMsg.RespType == ResponseType.Json)
             {
                 return base.CallService(reqMsg);
             }

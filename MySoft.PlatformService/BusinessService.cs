@@ -10,12 +10,7 @@ namespace MySoft.PlatformService
         private readonly IServiceRun service;
         public BusinessService(IServiceRun service)
         {
-            if (service != null)
-            {
-                this.service = service;
-                this.service.StartMode = StartMode.Service;
-            }
-
+            this.service = service;
             InitializeComponent();
         }
 
@@ -30,7 +25,7 @@ namespace MySoft.PlatformService
 
                 string serviceName = service.GetType().FullName;
                 SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("正在启动服务{0}......", serviceName));
-                service.Start();
+                service.Start(StartMode.Service);
                 SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("服务{0}启动成功！", serviceName));
             }
             catch (Exception ex)

@@ -42,6 +42,17 @@ namespace MySoft.IoC.Messages
         }
 
         /// <summary>
+        /// 是否超时
+        /// </summary>
+        public bool IsTimeout
+        {
+            get
+            {
+                return IsError && (this.Error is TimeoutException);
+            }
+        }
+
+        /// <summary>
         /// 实例化CallEventArgs
         /// </summary>
         public CallEventArgs()

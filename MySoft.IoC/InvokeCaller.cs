@@ -23,16 +23,15 @@ namespace MySoft.IoC
         /// <param name="appName"></param>
         /// <param name="container"></param>
         /// <param name="service"></param>
-        public InvokeCaller(string appName, IServiceContainer container, IService service)
+        /// <param name="timeout"></param>
+        public InvokeCaller(string appName, IServiceContainer container, IService service, TimeSpan timeout)
         {
             this.appName = appName;
             this.service = service;
             this.container = container;
 
-            var waitTime = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_WAIT_TIMEOUT);
-
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service, waitTime, false);
+            this.asyncCaller = new AsyncCaller(service, timeout, false);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -57,7 +56,7 @@ namespace MySoft.IoC
                 MethodName = message.MethodName,                        //方法名称
                 ReturnType = typeof(string),                            //返回类型
                 TransactionId = Guid.NewGuid(),
-                TransferType = TransferType.Json                        //数据类型
+                RespType = ResponseType.Json                        //数据类型
             };
 
             #endregion

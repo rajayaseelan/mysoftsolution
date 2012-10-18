@@ -25,9 +25,10 @@ namespace MySoft.PlatformService.UserService
 
         public User GetUser(int id)
         {
-            throw new Exception("出错了。");
+            Thread.Sleep(100);
+            //throw new Exception("出错了。");
 
-            //Thread.Sleep(1000);
+            //Thread.Sleep(2100);
 
             //if (id % 10 == 0)
             //{
@@ -44,6 +45,8 @@ namespace MySoft.PlatformService.UserService
             //Thread.Sleep(1000 * 10);
 
             //.PadRight(id, '*')
+            if (id % 100 == 0) return null;
+
             return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id.ToString() };
         }
 
@@ -125,7 +128,7 @@ namespace MySoft.PlatformService.UserService
             //}
             //else
             //{
-            Thread.Sleep(1000);
+            //Thread.Sleep(2100);
             //}
 
             try

@@ -182,8 +182,10 @@ namespace MySoft.IoC.HttpServer
                     //创建服务
                     var service = ParseService(message.ServiceName);
 
+                    var timeout = TimeSpan.FromSeconds(config.Timeout);
+
                     //使用Invoke方式调用
-                    var invoke = new InvokeCaller("HttpServer", container, service);
+                    var invoke = new InvokeCaller("HttpServer", container, service, timeout);
                     invokeData = invoke.CallMethod(message);
 
                     //插入缓存
