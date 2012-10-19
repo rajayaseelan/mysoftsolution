@@ -39,7 +39,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 1024 * 2; //2KB
+        private const int ReceiveBufferSize = 1024; //1KB
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -138,6 +138,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
+                _sendEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                _receiveEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+
+                _sendEventArgs.SetBuffer(null, 0, 0);
+                _receiveEventArgs.SetBuffer(null, 0, 0);
+
                 _sendEventArgs.Dispose();
                 _receiveEventArgs.Dispose();
             }
@@ -204,7 +210,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     //Wait
                     try
                     {
-                        WaitHandle.WaitAny(new[] { _willRaiseEvent });
+                        _willRaiseEvent.WaitOne();
                     }
                     catch (Exception ex)
                     {

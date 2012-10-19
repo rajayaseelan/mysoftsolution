@@ -182,6 +182,7 @@ namespace MySoft.IoC.Services
             {
                 if (hashtable.ContainsKey(callKey))
                 {
+                    //获取队列
                     var waitQueue = hashtable[callKey] as Queue;
 
                     while (waitQueue.Count > 0)
