@@ -23,7 +23,7 @@ namespace MySoft.PlatformService.Console
             server.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
             server.Start();
 
-            MySoft.IoC.DataReport.CallingReport.Init(config, server);
+            //MySoft.IoC.DataReport.CallingReport.Init(config, server);
 
             server_OnLog(string.Format("Tcp server host -> {0}", server.ServerUrl), LogType.Normal);
             server_OnLog(string.Format("Server publish ({0}) services.", server.ServiceCount), LogType.Normal);

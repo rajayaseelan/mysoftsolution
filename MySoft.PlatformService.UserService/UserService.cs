@@ -45,7 +45,10 @@ namespace MySoft.PlatformService.UserService
             //Thread.Sleep(1000 * 10);
 
             //.PadRight(id, '*')
-            if (id % 100 == 0) return null;
+            if (id % 100 == 0)
+            {
+                return null;
+            }
 
             return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id.ToString() };
         }

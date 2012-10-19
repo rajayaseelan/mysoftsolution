@@ -44,6 +44,8 @@ namespace MySoft.PlatformService.WinForm
 
         private void frmInvoke_Load(object sender, EventArgs e)
         {
+            this.Text += string.Format("【当前服务器节点({0}:{1})】", node.IP, node.Port);
+
             //自动生成列
             gridDataQuery.AutoGenerateColumns = true;
             webBrowser1.Url = new Uri("about:blank");

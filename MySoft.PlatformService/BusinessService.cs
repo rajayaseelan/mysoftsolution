@@ -25,7 +25,7 @@ namespace MySoft.PlatformService
 
                 string serviceName = service.GetType().FullName;
                 SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("正在启动服务{0}......", serviceName));
-                service.Start(StartMode.Service);
+                service.Start(StartMode.Service, null);
                 SimpleLog.Instance.WriteLogForDir("ServiceRun", string.Format("服务{0}启动成功！", serviceName));
             }
             catch (Exception ex)

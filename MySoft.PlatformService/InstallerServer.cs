@@ -161,7 +161,10 @@ namespace MySoft.PlatformService
         /// <summary>
         /// 从控制台运行
         /// </summary>
-        public bool StartConsole(StartMode startMode)
+        /// <param name="startMode"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public bool StartConsole(StartMode startMode, object state)
         {
             if (InstallerConfig == null)
             {
@@ -181,7 +184,7 @@ namespace MySoft.PlatformService
 
             if (WindowsService != null)
             {
-                WindowsService.Start(startMode);
+                WindowsService.Start(startMode, state);
 
                 Console.WriteLine("控制台已经启动......");
                 return true;

@@ -23,8 +23,15 @@ namespace MySoft.Logger
         static SimpleLog()
         {
             var dir = AppDomain.CurrentDomain.BaseDirectory;
-            var tmpdir = ConfigurationManager.AppSettings["SimpleLogDir"];
-            if (!string.IsNullOrEmpty(tmpdir)) dir = tmpdir;
+
+            try
+            {
+                var tmpdir = ConfigurationManager.AppSettings["SimpleLogDir"];
+                if (!string.IsNullOrEmpty(tmpdir)) dir = tmpdir;
+            }
+            catch (Exception ex)
+            {
+            }
 
             Instance = new SimpleLog(dir);
             logqueue = new Queue<LogInfo>();

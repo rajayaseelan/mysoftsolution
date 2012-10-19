@@ -44,6 +44,8 @@ namespace MySoft.IoC.DataReport
 
         static void server_OnCalling(object sender, CallEventArgs e)
         {
+            e.Value = null;
+
             if (e.IsError)
             {
                 errors.Add(e);

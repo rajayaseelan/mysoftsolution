@@ -428,7 +428,7 @@ namespace MySoft.PlatformService.WinForm
                 if (methods.ContainsKey(key))
                 {
                     var service = methods[key];
-                    SingletonMul.Show(string.Format("FORM_{0}_{1}", service.ServiceName, service.MethodName), () =>
+                    SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", service.ServiceName, service.MethodName, defaultNode), () =>
                     {
                         frmInvoke frm = new frmInvoke(defaultNode, service.ServiceName, service.MethodName, service.Parameters);
                         return frm;
@@ -605,7 +605,7 @@ namespace MySoft.PlatformService.WinForm
                 var service = item1.Source as ServiceInfo;
                 var method = item2.Source as MethodInfo;
 
-                SingletonMul.Show(string.Format("FORM_{0}_{1}", service.FullName, method.FullName), () =>
+                SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", service.FullName, method.FullName, defaultNode), () =>
                 {
                     frmInvoke frm = new frmInvoke(defaultNode, service.FullName, method.FullName, method.Parameters);
                     return frm;
@@ -1021,7 +1021,7 @@ namespace MySoft.PlatformService.WinForm
             var service = services.First(p => p.FullName == caller.ServiceName);
             var method = service.Methods.First(p => p.FullName == caller.MethodName);
 
-            SingletonMul.Show(string.Format("FORM_{0}_{1}", service.FullName, method.FullName), () =>
+            SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", service.FullName, method.FullName, defaultNode), () =>
             {
                 frmInvoke frm = new frmInvoke(defaultNode, service.FullName, method.FullName, method.Parameters, caller.Parameters);
                 return frm;

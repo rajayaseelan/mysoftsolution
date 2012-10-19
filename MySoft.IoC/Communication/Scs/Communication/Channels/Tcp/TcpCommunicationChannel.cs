@@ -204,7 +204,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     //Wait
                     try
                     {
-                        WaitHandle.WaitAll(new[] { _willRaiseEvent });
+                        WaitHandle.WaitAny(new[] { _willRaiseEvent });
                     }
                     catch (Exception ex)
                     {

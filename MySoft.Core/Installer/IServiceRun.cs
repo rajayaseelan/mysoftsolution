@@ -15,8 +15,9 @@ namespace MySoft.Installer
         /// <summary>
         /// 启动服务
         /// </summary>
-        /// <param name="startMode">启用模式</param>
-        void Start(StartMode startMode);
+        /// <param name="startMode"></param>
+        /// <param name="state"></param>
+        void Start(StartMode startMode, object state);
 
         /// <summary>
         /// 停止服务

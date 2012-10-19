@@ -67,7 +67,7 @@ namespace MySoft.PlatformService
                         case "-c":
                         case "-console":
                             {
-                                if (server.StartConsole(StartMode.Console))
+                                if (server.StartConsole(StartMode.Console, null))
                                 {
                                     Console.ReadLine();
                                     server.StopConsole();
@@ -83,7 +83,17 @@ namespace MySoft.PlatformService
                         case "-d":
                         case "-debug":
                             {
-                                if (server.StartConsole(StartMode.Debug))
+                                object state = null;
+                                if (args.Length >= 2)
+                                {
+                                    int timeout = -1;
+                                    if (int.TryParse(args[1].Trim(), out timeout))
+                                    {
+                                        if (timeout > 0) state = timeout;
+                                    }
+                                }
+
+                                if (server.StartConsole(StartMode.Debug, state))
                                 {
                                     Console.ReadLine();
                                     server.StopConsole();

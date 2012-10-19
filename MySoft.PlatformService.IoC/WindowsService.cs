@@ -14,6 +14,7 @@ namespace MySoft.PlatformService.IoC
     /// </summary>
     public class WindowsService : IServiceRun
     {
+        private int timeout = -1;
         private StartMode startMode = StartMode.Service;
         private CastleService server;
         private string[] mailTo;
@@ -61,9 +62,15 @@ namespace MySoft.PlatformService.IoC
         /// 启动服务
         /// </summary>
         /// <param name="startMode"></param>
-        public void Start(StartMode startMode)
+        /// <param name="state"></param>
+        public void Start(StartMode startMode, object state)
         {
             this.startMode = startMode;
+            if (state != null)
+            {
+                this.timeout = Convert.ToInt32(state);
+                server_OnLog(string.Format("Display caller more than timeout ({0}) ms...", timeout), LogType.Normal);
+            }
 
             if (startMode != StartMode.Service)
             {
