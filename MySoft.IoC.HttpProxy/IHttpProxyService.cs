@@ -41,7 +41,7 @@ namespace MySoft.IoC.HttpProxy
         /// <returns>字节数据流</returns>
         [SM.OperationContract]
         [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "help")]
-        Stream GetDocument();
+        Stream GetHttpDocument();
 
         /// <summary>
         /// GET入口
@@ -50,6 +50,14 @@ namespace MySoft.IoC.HttpProxy
         /// <returns>字节数据流</returns>
         [SM.OperationContract]
         [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "help/{kind}")]
-        Stream GetDocumentFromKind(string kind);
+        Stream GetHttpDocumentFromKind(string kind);
+
+        /// <summary>
+        /// GET入口
+        /// </summary>
+        /// <returns>字节数据流</returns>
+        [SM.OperationContract]
+        [WebGet(BodyStyle = WebMessageBodyStyle.Bare, UriTemplate = "tcp")]
+        Stream GetTcpDocument();
     }
 }

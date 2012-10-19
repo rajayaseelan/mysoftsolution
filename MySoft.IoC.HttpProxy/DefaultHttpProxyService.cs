@@ -301,9 +301,18 @@ namespace MySoft.IoC.HttpProxy
         /// GET入口
         /// </summary>
         /// <returns>字节数据流</returns>
-        public Stream GetDocument()
+        public Stream GetTcpDocument()
         {
-            return GetDocumentFromKind(null);
+            return GetHelpStream("tcp");
+        }
+
+        /// <summary>
+        /// GET入口
+        /// </summary>
+        /// <returns>字节数据流</returns>
+        public Stream GetHttpDocument()
+        {
+            return GetHelpStream("help");
         }
 
         /// <summary>
@@ -311,12 +320,23 @@ namespace MySoft.IoC.HttpProxy
         /// </summary>
         /// <param name="kind"></param>
         /// <returns>字节数据流</returns>
-        public Stream GetDocumentFromKind(string kind)
+        public Stream GetHttpDocumentFromKind(string kind)
+        {
+            var method = "help";
+            if (!string.IsNullOrEmpty(kind)) method += ("/" + kind);
+
+            return GetHelpStream(method);
+        }
+
+        /// <summary>
+        /// 获取文档流
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        private Stream GetHelpStream(string method)
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
-            var method = "help";
-            if (!string.IsNullOrEmpty(kind)) method += ("/" + kind);
 
             //文档缓存1分钟
             var url = string.Format(HTTP_PROXY_API, proxyServer, method);
