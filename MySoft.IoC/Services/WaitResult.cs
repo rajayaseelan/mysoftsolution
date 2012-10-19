@@ -96,11 +96,14 @@ namespace MySoft.IoC.Services
             try
             {
                 this.ev.Close();
-                this.ev = null;
             }
-            catch
+            catch (Exception ex)
             {
                 //TODO
+            }
+            finally
+            {
+                this.ev = null;
             }
         }
 
