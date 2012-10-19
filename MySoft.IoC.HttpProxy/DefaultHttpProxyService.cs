@@ -493,7 +493,7 @@ namespace MySoft.IoC.HttpProxy
         protected virtual AuthorizeUser Authorize(AuthorizeToken token)
         {
             //返回认证失败
-            throw new AuthorizeException("40199", "Authentication request fail.");
+            throw new AuthorizeException(401, "Authentication request fail.");
         }
 
         #region 获取Uri及Cookie
