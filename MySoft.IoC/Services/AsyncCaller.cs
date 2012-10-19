@@ -182,16 +182,16 @@ namespace MySoft.IoC.Services
             {
                 if (hashtable.ContainsKey(callKey))
                 {
-                    var queue = hashtable[callKey] as Queue;
+                    var waitQueue = hashtable[callKey] as Queue;
 
-                    while (queue.Count > 0)
+                    while (waitQueue.Count > 0)
                     {
                         try
                         {
                             //响应队列中的请求
-                            var item = queue.Dequeue() as WaitResult;
+                            var waitItem = waitQueue.Dequeue() as WaitResult;
 
-                            item.SetResponse(resMsg);
+                            waitItem.SetResponse(resMsg);
                         }
                         catch (Exception ex)
                         {
