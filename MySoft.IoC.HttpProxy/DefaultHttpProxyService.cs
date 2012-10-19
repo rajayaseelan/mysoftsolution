@@ -369,6 +369,11 @@ namespace MySoft.IoC.HttpProxy
 
             foreach (var proxyServer in proxyServers)
             {
+                if (services.Count(p => p.ProxyServer == proxyServer) == 0)
+                {
+                    continue;
+                }
+
                 //文档缓存1分钟
                 var url = string.Format(HTTP_PROXY_API, proxyServer, method);
                 string html = helper.Reader(url, 60);
@@ -385,6 +390,7 @@ namespace MySoft.IoC.HttpProxy
                 sb.Append(html);
             }
 
+            response.ContentType = "text/html;charset=utf-8";
             return new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
         }
 
@@ -487,7 +493,7 @@ namespace MySoft.IoC.HttpProxy
         protected virtual AuthorizeUser Authorize(AuthorizeToken token)
         {
             //返回认证失败
-            throw new AuthorizeException(401, "Authentication request fail.");
+            throw new AuthorizeException("40199", "Authentication request fail.");
         }
 
         #region 获取Uri及Cookie
