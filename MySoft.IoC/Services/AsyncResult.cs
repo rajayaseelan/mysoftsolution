@@ -30,10 +30,11 @@ namespace MySoft.IoC.Services
         {
             try
             {
-                ev.WaitOne(-1, false);
+                WaitHandle.WaitAll(new[] { ev });
             }
-            catch
+            catch (Exception ex)
             {
+                ev = new ManualResetEvent(false);
             }
 
             //如果返回值为null

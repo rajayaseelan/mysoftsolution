@@ -136,6 +136,8 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             var client = (IScsServerClient)sender;
 
+            client.Disconnected -= Client_Disconnected;
+
             Clients.Remove(client.ClientId);
 
             OnClientDisconnected(client);

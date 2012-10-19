@@ -39,7 +39,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 1024; //1KB
+        private const int ReceiveBufferSize = 1024 * 2; //2KB
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -51,7 +51,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private SocketAsyncEventArgs _sendEventArgs, _receiveEventArgs;
 
-        private readonly AutoResetEvent _willRaiseEvent;
+        private AutoResetEvent _willRaiseEvent;
 
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
@@ -131,6 +131,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex)
             {
             }
+            finally
+            {
+                _willRaiseEvent = null;
+            }
 
             try
             {
@@ -198,7 +202,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     }
 
                     //Wait
-                    _willRaiseEvent.WaitOne(-1, false);
+                    try
+                    {
+                        WaitHandle.WaitAll(new[] { _willRaiseEvent });
+                    }
+                    catch (Exception ex)
+                    {
+                        _willRaiseEvent = new AutoResetEvent(false);
+                    }
                 }
                 catch (ObjectDisposedException) { }
                 catch (Exception ex)

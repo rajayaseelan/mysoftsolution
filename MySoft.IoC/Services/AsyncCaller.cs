@@ -86,27 +86,22 @@ namespace MySoft.IoC.Services
             //定义一个异步并发对象
             AsyncResult waitResult = null;
 
-            lock (hashtable.SyncRoot)
+            //判断是否存在
+            if (hashtable.ContainsKey(callKey))
             {
-                //判断是否存在
-                if (hashtable.ContainsKey(callKey))
-                {
-                    //获取异步并发对象
-                    waitResult = hashtable[callKey] as AsyncResult;
-                }
+                //获取异步并发对象
+                waitResult = hashtable[callKey] as AsyncResult;
             }
 
             if (waitResult == null)
             {
-                lock (hashtable.SyncRoot)
-                {
-                    //设置异步并发对象
-                    waitResult = new AsyncResult();
-                    hashtable[callKey] = waitResult;
-                }
+                //设置异步并发对象
+                waitResult = new AsyncResult();
 
                 try
                 {
+                    hashtable[callKey] = waitResult;
+
                     //开始调用服务
                     var resMsg = InvokeRequest(callKey, context, reqMsg);
 
@@ -117,10 +112,9 @@ namespace MySoft.IoC.Services
                 }
                 finally
                 {
-                    lock (hashtable.SyncRoot)
-                    {
-                        hashtable.Remove(callKey);
-                    }
+                    waitResult = null;
+
+                    hashtable.Remove(callKey);
                 }
             }
             else

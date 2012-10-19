@@ -140,6 +140,7 @@ namespace MySoft.IoC.Communication.Scs.Server
         public void Disconnect()
         {
             _communicationChannel.Disconnect();
+            _communicationChannel = null;
         }
 
         /// <summary>

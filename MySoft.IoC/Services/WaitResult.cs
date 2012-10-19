@@ -40,6 +40,8 @@ namespace MySoft.IoC.Services
         {
             try
             {
+                if (ev == null) return true;
+
                 return ev.WaitOne(timeout, false);
             }
             catch
@@ -74,6 +76,8 @@ namespace MySoft.IoC.Services
                     };
                 }
 
+                if (ev == null) return true;
+
                 return ev.Set();
             }
             catch
@@ -92,6 +96,7 @@ namespace MySoft.IoC.Services
             try
             {
                 this.ev.Close();
+                this.ev = null;
             }
             catch
             {

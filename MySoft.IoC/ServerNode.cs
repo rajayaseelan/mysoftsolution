@@ -118,5 +118,14 @@ namespace MySoft.IoC
             var strs = value.Split(':');
             return Parse(strs[0], Convert.ToInt32(strs[1]));
         }
+
+        /// <summary>
+        /// 返回字符串形式
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return string.Format("{0}:{1}", ip, port);
+        }
     }
 }

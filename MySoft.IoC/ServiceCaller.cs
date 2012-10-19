@@ -228,6 +228,10 @@ namespace MySoft.IoC
 
                 }
             }
+            finally
+            {
+                scsMessage = null;
+            }
         }
 
         /// <summary>
