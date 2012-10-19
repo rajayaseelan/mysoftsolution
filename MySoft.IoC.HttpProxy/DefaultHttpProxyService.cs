@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
+using MySoft.Logger;
 using MySoft.RESTful;
 using MySoft.Security;
 
@@ -25,19 +26,30 @@ namespace MySoft.IoC.HttpProxy
     {
         const string HTTP_PROXY_API = "{0}/{1}";
         const string HTTP_PROXY_URL = "{0}/{1}?{2}";
-        private string proxyServer;
         private HttpHelper helper;
+        private IList<string> proxyServers;
         private IList<ServiceItem> services;
 
-        // TODO: Implement the collection resource that will contain the SampleItem instances
+        /// <summary>
+        /// TODO: Implement the collection resource that will contain the SampleItem instances
+        /// </summary>
         public DefaultHttpProxyService()
         {
-            var url = ConfigurationManager.AppSettings["HttpProxyServer"];
-            if (string.IsNullOrEmpty(url))
+            var proxyServer = ConfigurationManager.AppSettings["HttpProxyServer"];
+            if (string.IsNullOrEmpty(proxyServer))
                 throw new ArgumentNullException("Http proxy server can't for empty.");
-            else
-                proxyServer = url;
 
+            var urls = proxyServer.Split(';', '|').ToList();
+            this.proxyServers = new List<string>();
+            foreach (var url in urls)
+            {
+                if (!this.proxyServers.Contains(url.TrimEnd('/')))
+                {
+                    this.proxyServers.Add(url.TrimEnd('/'));
+                }
+            }
+
+            this.helper = new HttpHelper(Encoding.UTF8, 30);
             this.services = new List<ServiceItem>();
 
             //更新服务
@@ -52,13 +64,24 @@ namespace MySoft.IoC.HttpProxy
         {
             while (true)
             {
-                bool isError = false;
-                var items = ReaderService(out isError);
+                var proxyServices = new List<ServiceItem>();
 
-                //判断是否有更新
-                if (!isError && items.Count != services.Count)
+                foreach (var proxyServer in proxyServers)
                 {
-                    this.services = items;
+                    bool isError = false;
+                    var items = ReaderService(proxyServer, out isError);
+
+                    //判断是否有更新
+                    if (!isError && items.Count != services.Count)
+                    {
+                        items.ForEach(p => p.ProxyServer = proxyServer);
+                        proxyServices.AddRange(items);
+                    }
+                }
+
+                if (proxyServices.Count > 0)
+                {
+                    this.services = proxyServices;
                 }
 
                 //一分钟检测一次
@@ -69,7 +92,10 @@ namespace MySoft.IoC.HttpProxy
         /// <summary>
         /// 读取服务
         /// </summary>
-        private IList<ServiceItem> ReaderService(out bool isError)
+        /// <param name="proxyServer"></param>
+        /// <param name="isError"></param>
+        /// <returns></returns>
+        private List<ServiceItem> ReaderService(string proxyServer, out bool isError)
         {
             var serviceItems = new List<ServiceItem>();
 
@@ -122,16 +148,16 @@ namespace MySoft.IoC.HttpProxy
                     var url = string.Empty;
                     if (query.Count > 0)
                     {
-                        url = string.Format(HTTP_PROXY_URL, proxyServer, name, query.ToString());
+                        url = string.Format(HTTP_PROXY_URL, service.ProxyServer, name, query.ToString());
                     }
                     else
                     {
-                        url = string.Format(HTTP_PROXY_API, proxyServer, name);
+                        url = string.Format(HTTP_PROXY_API, service.ProxyServer, name);
                     }
 
                     jsonString = helper.Reader(url, 5, header);
 
-                    if (service != null && service.TypeString)
+                    if (service.TypeString)
                     {
                         //如果返回是字符串类型，则设置为文本返回
                         var format = query["format"] ?? "text";
@@ -233,9 +259,9 @@ namespace MySoft.IoC.HttpProxy
             response.ContentType = "application/json;charset=utf-8";
 
             //认证用户信息
-            ServiceItem item;
+            ServiceItem service;
             var header = new WebHeaderCollection();
-            var jsonString = AuthorizeMethod(name, header, out item);
+            var jsonString = AuthorizeMethod(name, header, out service);
 
             //如果jsonString为null，则继续处理
             if (string.IsNullOrEmpty(jsonString))
@@ -251,15 +277,15 @@ namespace MySoft.IoC.HttpProxy
                     var url = string.Empty;
                     if (query.Count > 0)
                     {
-                        url = string.Format(HTTP_PROXY_URL, proxyServer, name, query.ToString());
+                        url = string.Format(HTTP_PROXY_URL, service.ProxyServer, name, query.ToString());
                     }
                     else
                     {
-                        url = string.Format(HTTP_PROXY_API, proxyServer, name);
+                        url = string.Format(HTTP_PROXY_API, service.ProxyServer, name);
                     }
 
                     jsonString = helper.Poster(url, postValue, header);
-                    if (item != null && item.TypeString)
+                    if (service.TypeString)
                     {
                         //如果返回是字符串类型，则设置为文本返回
                         var format = query["format"] ?? "text";
@@ -338,20 +364,28 @@ namespace MySoft.IoC.HttpProxy
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
 
-            //文档缓存1分钟
-            var url = string.Format(HTTP_PROXY_API, proxyServer, method);
-            string html = helper.Reader(url, 60);
+            //获取代理服务地址
+            var sb = new StringBuilder();
 
-            //转换成utf8返回
-            response.ContentType = "text/html;charset=utf-8";
-            var regex = new Regex(@"<title>([\s\S]+) 处的操作</title>", RegexOptions.IgnoreCase);
-            if (regex.IsMatch(html))
+            foreach (var proxyServer in proxyServers)
             {
-                url = string.Format("http://{0}/", GetRequestUri().Authority);
-                html = html.Replace(regex.Match(html).Result("$1"), url);
+                //文档缓存1分钟
+                var url = string.Format(HTTP_PROXY_API, proxyServer, method);
+                string html = helper.Reader(url, 60);
+
+                //转换成utf8返回
+                response.ContentType = "text/html;charset=utf-8";
+                var regex = new Regex(@"<title>([\s\S]+) 处的操作</title>", RegexOptions.IgnoreCase);
+                if (regex.IsMatch(html))
+                {
+                    url = GetRequestUri().GetLeftPart(UriPartial.Authority);
+                    html = html.Replace(regex.Match(html).Result("$1"), url);
+                }
+
+                sb.Append(html);
             }
 
-            return new MemoryStream(Encoding.UTF8.GetBytes(html));
+            return new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
         }
 
         private string AuthorizeMethod(string name, WebHeaderCollection header, out ServiceItem service)
@@ -430,6 +464,7 @@ namespace MySoft.IoC.HttpProxy
             }
             catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("Authorize", ex);
                 return new HttpProxyResult { Code = (int)response.StatusCode, Message = "Unauthorized - " + ex.Message };
             }
         }

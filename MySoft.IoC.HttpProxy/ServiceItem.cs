@@ -12,6 +12,11 @@ namespace MySoft.IoC.HttpProxy
     public class ServiceItem
     {
         /// <summary>
+        /// 代理服务器
+        /// </summary>
+        public string ProxyServer { get; set; }
+
+        /// <summary>
         /// 方法名称
         /// </summary>
         public string Name { get; set; }
