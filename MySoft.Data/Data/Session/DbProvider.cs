@@ -258,6 +258,10 @@ namespace MySoft.Data
                 else
                     retVal = default(int);
             }
+            finally
+            {
+                cmd.Dispose();
+            }
 
             return retVal;
         }
@@ -302,6 +306,10 @@ namespace MySoft.Data
                 else
                     retVal = default(SourceReader);
             }
+            finally
+            {
+                cmd.Dispose();
+            }
 
             return retVal;
         }
@@ -343,6 +351,10 @@ namespace MySoft.Data
                     throw new DataException(DataHelper.GetCommandLog(cmd), ex);
                 else
                     retVal = default(DataSet);
+            }
+            finally
+            {
+                cmd.Dispose();
             }
 
             return retVal;
@@ -386,6 +398,10 @@ namespace MySoft.Data
                 else
                     retVal = default(DataTable);
             }
+            finally
+            {
+                cmd.Dispose();
+            }
 
             return retVal;
         }
@@ -427,6 +443,10 @@ namespace MySoft.Data
                     throw new DataException(DataHelper.GetCommandLog(cmd), ex);
                 else
                     retVal = default(object);
+            }
+            finally
+            {
+                cmd.Dispose();
             }
 
             return retVal;
@@ -631,9 +651,9 @@ namespace MySoft.Data
                 {
                     SQLParameter p = null;
                     if (CoreHelper.CheckStructType(fv.Value))
-                        p = CreateOrmParameter(DataHelper.FormatValue(fv.Value));
+                        p = CreateSQLParameter(DataHelper.FormatValue(fv.Value));
                     else
-                        p = CreateOrmParameter(fv.Value);
+                        p = CreateSQLParameter(fv.Value);
 
                     sbparam.Append(p.Name);
                     plist.Add(p);
@@ -743,9 +763,9 @@ namespace MySoft.Data
                     {
                         SQLParameter p = null;
                         if (CoreHelper.CheckStructType(fv.Value))
-                            p = CreateOrmParameter(DataHelper.FormatValue(fv.Value));
+                            p = CreateSQLParameter(DataHelper.FormatValue(fv.Value));
                         else
-                            p = CreateOrmParameter(fv.Value);
+                            p = CreateSQLParameter(fv.Value);
 
                         sb.Append(fv.Field.At((string)null).Name + " = " + p.Name);
                         plist.Add(p);
@@ -975,7 +995,7 @@ namespace MySoft.Data
         /// ´´½¨OrmParameter
         /// </summary>
         /// <returns></returns>
-        private SQLParameter CreateOrmParameter(object value)
+        private SQLParameter CreateSQLParameter(object value)
         {
             string pName = CoreHelper.MakeUniqueKey(100, "$");
             return new SQLParameter(pName, value);
