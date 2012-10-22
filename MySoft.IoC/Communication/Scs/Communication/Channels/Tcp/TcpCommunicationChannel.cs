@@ -103,25 +103,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
-
-            try
-            {
-                _clientSocket.Shutdown(SocketShutdown.Both);
-            }
-            catch (Exception ex)
-            {
-            }
-
-            try
-            {
-                _clientSocket.Close();
-            }
-            catch (Exception ex)
-            {
-            }
-
             try
             {
                 WireProtocol.Reset();
@@ -141,9 +122,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 _sendEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
                 _receiveEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
 
-                _sendEventArgs.SetBuffer(null, 0, 0);
-                _receiveEventArgs.SetBuffer(null, 0, 0);
-
                 _sendEventArgs.Dispose();
                 _receiveEventArgs.Dispose();
             }
@@ -155,6 +133,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 _sendEventArgs = null;
                 _receiveEventArgs = null;
             }
+
+            try
+            {
+                _clientSocket.Close();
+            }
+            catch (Exception ex)
+            {
+            }
+
+            CommunicationState = CommunicationStates.Disconnected;
+            OnDisconnected();
         }
 
         #endregion

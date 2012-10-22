@@ -141,6 +141,8 @@ namespace MySoft.IoC.Communication.Scs.Server
             Clients.Remove(client.ClientId);
 
             OnClientDisconnected(client);
+
+            client.Dispose();
         }
 
         #endregion

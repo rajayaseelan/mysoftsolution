@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
-using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -24,6 +24,7 @@ namespace MySoft.IoC.Services
         private bool enabledCache;
         private bool fromServer;
         private ThreadManager manager;
+        private AsyncMethodCaller caller;
         private Random random;
 
         /// <summary>
@@ -39,6 +40,7 @@ namespace MySoft.IoC.Services
             this.enabledCache = false;
             this.fromServer = fromServer;
             this.random = new Random();
+            this.caller = new AsyncMethodCaller(GetInvokeResponse);
         }
 
         /// <summary>
@@ -54,7 +56,6 @@ namespace MySoft.IoC.Services
             this.cache = cache;
             this.enabledCache = true;
 
-            var caller = new AsyncMethodCaller(GetInvokeResponse);
             this.manager = new ThreadManager(service, caller, cache);
         }
 
@@ -91,15 +92,27 @@ namespace MySoft.IoC.Services
                 {
                     if (!hashtable.ContainsKey(callKey))
                     {
-                        hashtable[callKey] = Queue.Synchronized(new Queue());
+                        //将waitResult加入队列中
+                        var waitQueue = new Queue<WaitResult>();
+                        waitQueue.Enqueue(waitResult);
 
-                        //获取响应信息
-                        ManagedThreadPool.QueueUserWorkItem(AsyncCallback, new ArrayList { callKey, context, reqMsg, waitResult });
+                        hashtable[callKey] = waitQueue;
+
+                        //开始异步请求
+                        var callerItem = new CallerItem
+                        {
+                            CallKey = callKey,
+                            Context = context,
+                            Request = reqMsg
+                        };
+
+                        caller.BeginInvoke(context, reqMsg, AsyncCallback, callerItem);
                     }
                     else
                     {
                         //加入队列中
-                        (hashtable[callKey] as Queue).Enqueue(waitResult);
+                        var waitQueue = hashtable[callKey] as Queue<WaitResult>;
+                        waitQueue.Enqueue(waitResult);
                     }
                 }
 
@@ -128,46 +141,43 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 运行请求
         /// </summary>
-        /// <param name="state"></param>
-        private void AsyncCallback(object state)
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
         {
-            var arr = state as ArrayList;
+            var callerItem = ar.AsyncState as CallerItem;
 
             try
             {
-                var callKey = Convert.ToString(arr[0]);
-                var context = arr[1] as OperationContext;
-                var reqMsg = arr[2] as RequestMessage;
-                var waitResult = arr[3] as WaitResult;
-
                 //获取响应信息
-                var resMsg = GetInvokeResponse(context, reqMsg);
+                var resMsg = caller.EndInvoke(ar);
+                ar.AsyncWaitHandle.Close();
 
                 if (enabledCache)
                 {
                     //设置响应信息到缓存
-                    SetResponseToCache(callKey, context, reqMsg, resMsg);
+                    SetResponseToCache(callerItem, resMsg);
                 }
 
                 try
                 {
                     //设置响应信息
-                    SetInvokeResponse(callKey, resMsg);
-
-                    //设置响应信息
-                    waitResult.SetResponse(resMsg);
+                    SetInvokeResponse(callerItem.CallKey, resMsg);
                 }
                 finally
                 {
                     //移除队列
                     lock (hashtable.SyncRoot)
                     {
-                        hashtable.Remove(callKey);
+                        hashtable.Remove(callerItem.CallKey);
                     }
                 }
             }
             catch (Exception ex)
             {
+            }
+            finally
+            {
+                ar = null;
             }
         }
 
@@ -183,14 +193,14 @@ namespace MySoft.IoC.Services
                 if (hashtable.ContainsKey(callKey))
                 {
                     //获取队列
-                    var waitQueue = hashtable[callKey] as Queue;
+                    var waitQueue = hashtable[callKey] as Queue<WaitResult>;
 
                     while (waitQueue.Count > 0)
                     {
                         try
                         {
                             //响应队列中的请求
-                            var waitItem = waitQueue.Dequeue() as WaitResult;
+                            var waitItem = waitQueue.Dequeue();
 
                             waitItem.SetResponse(resMsg);
                         }
@@ -277,12 +287,14 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 设置响应信息到缓存
         /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
+        /// <param name="callerItem"></param>
         /// <param name="resMsg"></param>
-        private void SetResponseToCache(string callKey, OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
+        private void SetResponseToCache(CallerItem callerItem, ResponseMessage resMsg)
         {
+            var callKey = callerItem.CallKey;
+            var reqMsg = callerItem.Request;
+            var context = callerItem.Context;
+
             if (reqMsg.CacheTime <= 0) return;
 
             //如果符合条件，则自动缓存 【自动缓存功能】

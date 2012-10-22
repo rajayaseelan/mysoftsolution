@@ -139,17 +139,18 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// </summary>
         public void Disconnect()
         {
-            if (CommunicationState != CommunicationStates.Connected)
+            if (_communicationChannel.CommunicationState != CommunicationStates.Connected)
             {
                 return;
             }
 
-            _communicationChannel.Disconnect();
-
-            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
-            _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
-            _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
-            _communicationChannel.MessageError -= CommunicationChannel_MessageError;
+            try
+            {
+                _communicationChannel.Disconnect();
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
         /// <summary>
@@ -159,7 +160,15 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             Disconnect();
 
-            _communicationChannel = null;
+            if (_communicationChannel != null)
+            {
+                _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
+                _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
+                _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
+                _communicationChannel.MessageError -= CommunicationChannel_MessageError;
+
+                _communicationChannel = null;
+            }
         }
 
         /// <summary>
