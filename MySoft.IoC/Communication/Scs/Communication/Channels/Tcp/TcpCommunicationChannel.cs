@@ -266,6 +266,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                 //Sent success
                 OnMessageSent(e.UserToken as IScsMessage);
+
+                e.UserToken = null;
+                e.SetBuffer(null, 0, 0);
             }
             catch (ObjectDisposedException) { }
             catch (Exception ex)
@@ -312,6 +315,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     catch (Exception ex)
                     {
                     }
+
+                    //设置缓冲区
+                    Array.Clear(_buffer, 0, _buffer.Length);
+                    e.SetBuffer(_buffer, 0, _buffer.Length);
 
                     //Read more bytes if still running
                     if (!_clientSocket.ReceiveAsync(e))
