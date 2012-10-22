@@ -119,23 +119,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                _sendEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
-                _receiveEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                //Dispose socket event args.
+                Dispose(_sendEventArgs);
+                Dispose(_receiveEventArgs);
 
-                _sendEventArgs.Dispose();
-                _receiveEventArgs.Dispose();
-            }
-            catch (Exception ex)
-            {
-            }
-            finally
-            {
-                _sendEventArgs = null;
-                _receiveEventArgs = null;
-            }
-
-            try
-            {
                 _clientSocket.Close();
             }
             catch (Exception ex)
@@ -144,6 +131,33 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             CommunicationState = CommunicationStates.Disconnected;
             OnDisconnected();
+        }
+
+        /// <summary>
+        /// Dispose Event Args.
+        /// </summary>
+        /// <param name="e"></param>
+        private void Dispose(SocketAsyncEventArgs e)
+        {
+            if (e == null) return;
+
+            try
+            {
+                e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                e.UserToken = null;
+                e.AcceptSocket = null;
+                e.RemoteEndPoint = null;
+                e.BufferList = null;
+                e.SetBuffer(null, 0, 0);
+                e.Dispose();
+            }
+            catch (Exception ex)
+            {
+            }
+            finally
+            {
+                e = null;
+            }
         }
 
         #endregion
