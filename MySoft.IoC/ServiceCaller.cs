@@ -14,7 +14,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务调用者
     /// </summary>
-    internal class ServiceCaller
+    internal class ServiceCaller : IDisposable
     {
         public event EventHandler<CallEventArgs> Handler;
 
@@ -300,5 +300,22 @@ namespace MySoft.IoC
 
             return asyncCallers[caller.ServiceName];
         }
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// Disposes this object and closes underlying connection.
+        /// </summary>
+        public void Dispose()
+        {
+            Handler = null;
+            callbackTypes.Clear();
+            asyncCallers.Clear();
+
+            callbackTypes = null;
+            asyncCallers = null;
+        }
+
+        #endregion
     }
 }

@@ -183,6 +183,11 @@ namespace MySoft.IoC.Communication.Scs.Client
             try
             {
                 _communicationChannel.Disconnect();
+
+                _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
+                _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
+                _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
+                _communicationChannel.MessageError -= CommunicationChannel_MessageError;
             }
             finally
             {
@@ -196,6 +201,8 @@ namespace MySoft.IoC.Communication.Scs.Client
         public void Dispose()
         {
             Disconnect();
+
+            _communicationChannel = null;
         }
 
         /// <summary>

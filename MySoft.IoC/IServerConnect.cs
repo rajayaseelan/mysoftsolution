@@ -5,9 +5,9 @@ using MySoft.IoC.Communication.Scs.Client;
 namespace MySoft.IoC
 {
     /// <summary>
-    /// Tcp connection
+    /// Server connection
     /// </summary>
-    public interface ITcpConnection
+    public interface IServerConnect
     {
         /// <summary>
         /// Connected
@@ -39,7 +39,7 @@ namespace MySoft.IoC
         /// <summary>
         /// Get is callback
         /// </summary>
-        public bool IsCallback { get; set; }
+        public bool Subscribed { get; set; }
 
         public ConnectEventArgs(IScsClient channel)
         {

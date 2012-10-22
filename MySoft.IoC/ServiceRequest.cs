@@ -12,7 +12,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务请求类
     /// </summary>
-    public class ServiceRequest
+    public class ServiceRequest : IServerConnect, IDisposable
     {
         /// <summary>
         /// 数据回调
@@ -23,6 +23,20 @@ namespace MySoft.IoC
         /// 错误回调
         /// </summary>
         public event EventHandler<ErrorMessageEventArgs> OnError;
+
+        #region IServerConnect 成员
+
+        /// <summary>
+        /// 连接服务器
+        /// </summary>
+        public event EventHandler<ConnectEventArgs> OnConnected;
+
+        /// <summary>
+        /// 断开服务器
+        /// </summary>
+        public event EventHandler<ConnectEventArgs> OnDisconnected;
+
+        #endregion
 
         private RequestMessage reqMsg;
         private IScsClient client;
@@ -43,7 +57,7 @@ namespace MySoft.IoC
 
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(node.IP, node.Port));
             this.client.IsTimeoutDisconnect = !subscribed;
-            this.client.Connected += new EventHandler(client_Connected);
+            this.client.Connected += client_Connected;
             this.client.Disconnected += client_Disconnected;
             this.client.MessageReceived += client_MessageReceived;
             this.client.MessageError += client_MessageError;
@@ -59,11 +73,14 @@ namespace MySoft.IoC
         {
             var error = new SocketException((int)SocketError.Success);
 
-            container.SendConnected(sender, new ConnectEventArgs(this.client)
+            if (OnConnected != null)
             {
-                Error = error,
-                Subscribed = subscribed
-            });
+                OnConnected(sender, new ConnectEventArgs(this.client)
+                {
+                    Error = error,
+                    Subscribed = subscribed
+                });
+            }
         }
 
         /// <summary>
@@ -75,11 +92,14 @@ namespace MySoft.IoC
         {
             var error = new SocketException((int)SocketError.ConnectionReset);
 
-            container.SendDisconnected(sender, new ConnectEventArgs(this.client)
+            if (OnDisconnected != null)
             {
-                Error = error,
-                Subscribed = subscribed
-            });
+                OnDisconnected(sender, new ConnectEventArgs(this.client)
+                {
+                    Error = error,
+                    Subscribed = subscribed
+                });
+            }
 
             //断开时响应错误信息
             client_MessageError(sender, new ErrorEventArgs(error));
@@ -170,6 +190,24 @@ namespace MySoft.IoC
 
             //把数据发送到客户端
             if (OnCallback != null) OnCallback(this, message);
+        }
+
+        #endregion
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            client.Connected -= client_Connected;
+            client.Disconnected -= client_Disconnected;
+            client.MessageReceived -= client_MessageReceived;
+            client.MessageError -= client_MessageError;
+
+            client.Dispose();
+            client = null;
         }
 
         #endregion

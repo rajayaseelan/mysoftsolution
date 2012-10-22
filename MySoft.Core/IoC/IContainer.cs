@@ -8,7 +8,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 容器接口
     /// </summary>
-    public interface IContainer
+    public interface IContainer : IDisposable
     {
         /// <summary>
         /// Releases the specified obj.

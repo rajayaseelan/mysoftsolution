@@ -199,18 +199,21 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 资源释放
+        /// 释放资源
         /// </summary>
         public void Dispose()
         {
-            this.Stop();
+            Stop();
 
-            this.config = null;
-            this.container = null;
-            this.httpServer = null;
-            this.server = null;
-            this.epServer = null;
-            this.caller = null;
+            container.Dispose();
+            caller.Dispose();
+
+            container = null;
+            httpServer = null;
+            server = null;
+            epServer = null;
+            caller = null;
+            config = null;
         }
 
         #endregion
@@ -241,6 +244,9 @@ namespace MySoft.IoC
 
         void server_ClientDisconnected(object sender, ServerClientEventArgs e)
         {
+            e.Client.MessageReceived -= Client_MessageReceived;
+            e.Client.MessageError -= Client_MessageError;
+
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
 
             try

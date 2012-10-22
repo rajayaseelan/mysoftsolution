@@ -34,6 +34,7 @@ namespace MySoft.PlatformService.Console
 
             server_OnLog("Server ready stopped...", LogType.Normal);
             server.Stop();
+            server.Dispose();
 
             System.Console.ReadLine();
         }

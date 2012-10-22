@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MySoft.IoC.Communication;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
@@ -7,8 +8,22 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 服务代理
     /// </summary>
-    public class RemoteProxy : IService
+    public class RemoteProxy : IService, IServerConnect, IDisposable
     {
+        #region IServerConnect 成员
+
+        /// <summary>
+        /// 连接服务器
+        /// </summary>
+        public event EventHandler<ConnectEventArgs> OnConnected;
+
+        /// <summary>
+        /// 断开服务器
+        /// </summary>
+        public event EventHandler<ConnectEventArgs> OnDisconnected;
+
+        #endregion
+
         private IDictionary<Guid, WaitResult> hashtable = new Dictionary<Guid, WaitResult>();
 
         protected ServiceRequestPool reqPool;
@@ -57,6 +72,15 @@ namespace MySoft.IoC.Services
             var reqService = new ServiceRequest(node, container, false);
             reqService.OnCallback += reqService_OnCallback;
             reqService.OnError += reqService_OnError;
+            reqService.OnConnected += (sender, args) =>
+            {
+                if (OnConnected != null) OnConnected(sender, args);
+            }; ;
+
+            reqService.OnDisconnected += (sender, args) =>
+            {
+                if (OnDisconnected != null) OnDisconnected(sender, args);
+            }; ;
 
             return reqService;
         }
@@ -227,6 +251,31 @@ namespace MySoft.IoC.Services
             {
                 return string.Format("{0}_{1}", typeof(RemoteProxy).FullName, node.Key);
             }
+        }
+
+        #endregion
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// Disposes this object and closes underlying connection.
+        /// </summary>
+        public void Dispose()
+        {
+            while (reqPool.Count > 0)
+            {
+                var req = reqPool.Pop();
+
+                try
+                {
+                    req.Dispose();
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+
+            hashtable.Clear();
         }
 
         #endregion

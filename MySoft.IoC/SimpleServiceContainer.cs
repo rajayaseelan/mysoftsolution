@@ -349,20 +349,6 @@ namespace MySoft.IoC
 
         #endregion
 
-        #region ITcpConnection 成员
-
-        /// <summary>
-        /// OnConnected event
-        /// </summary>
-        public event EventHandler<ConnectEventArgs> OnConnected;
-
-        /// <summary>
-        /// OnDisconnected event
-        /// </summary>
-        public event EventHandler<ConnectEventArgs> OnDisconnected;
-
-        #endregion
-
         #region IServiceContainer 成员
 
         /// <summary>
@@ -397,35 +383,12 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// OnWriteConnected
+        /// Disposes this object and closes underlying connection.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        public void SendConnected(object sender, ConnectEventArgs args)
+        public void Dispose()
         {
-            try
-            {
-                if (OnConnected != null) OnConnected(sender, args);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        /// <summary>
-        /// OnWriteDisconnected
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        public void SendDisconnected(object sender, ConnectEventArgs args)
-        {
-            try
-            {
-                if (OnDisconnected != null) OnDisconnected(sender, args);
-            }
-            catch (Exception)
-            {
-            }
+            container.Dispose();
+            container = null;
         }
 
         #endregion

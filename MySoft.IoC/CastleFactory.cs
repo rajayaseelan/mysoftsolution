@@ -1,21 +1,20 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MySoft.Cache;
-using MySoft.IoC.Communication;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using System.Collections;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// The service factory.
     /// </summary>
-    public class CastleFactory : ITcpConnection, ILogable, IErrorLogable
+    public class CastleFactory : IServerConnect, ILogable, IErrorLogable
     {
         //线程同步锁；
         private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
@@ -54,14 +53,6 @@ namespace MySoft.IoC
                 if (OnError != null) OnError(error);
                 else SimpleLog.Instance.WriteLog(error);
             };
-            container.OnConnected += (sender, args) =>
-            {
-                if (OnConnected != null) OnConnected(sender, args);
-            };
-            container.OnDisconnected += (sender, args) =>
-            {
-                if (OnDisconnected != null) OnDisconnected(sender, args);
-            };
 
             this.proxies = new Dictionary<string, IService>();
 
@@ -72,11 +63,20 @@ namespace MySoft.IoC
                     if (p.Value.MaxPool < 10) throw new WarningException("Minimum pool size 10.");
                     if (p.Value.MaxPool > 500) throw new WarningException("Maximum pool size 500.");
 
-                    IService proxy = null;
+                    RemoteProxy proxy = null;
                     if (p.Value.RespType == ResponseType.Json)
                         proxy = new InvokeProxy(p.Value, container);
                     else
                         proxy = new RemoteProxy(p.Value, container);
+
+                    proxy.OnConnected += (sender, args) =>
+                    {
+                        if (OnConnected != null) OnConnected(sender, args);
+                    };
+                    proxy.OnDisconnected += (sender, args) =>
+                    {
+                        if (OnDisconnected != null) OnDisconnected(sender, args);
+                    };
 
                     this.proxies[p.Key.ToLower()] = proxy;
                 }
@@ -223,29 +223,42 @@ namespace MySoft.IoC
             }
 
             //获取本地服务
-            var service = GetLocalService<IServiceInterfaceType>();
+            var channel = GetLocalService<IServiceInterfaceType>();
 
-            if (service == null)
+            if (channel == null)
             {
-                IService proxy = null;
+                IService service = null;
+
                 var isCacheService = true;
                 if (singleton.proxies.ContainsKey(node.Key.ToLower()))
-                    proxy = singleton.proxies[node.Key.ToLower()];
+                    service = singleton.proxies[node.Key.ToLower()];
                 else
                 {
+                    RemoteProxy proxy = null;
                     if (node.RespType == ResponseType.Json)
                         proxy = new InvokeProxy(node, container);
                     else
                         proxy = new RemoteProxy(node, container);
 
+                    proxy.OnConnected += (sender, args) =>
+                    {
+                        if (OnConnected != null) OnConnected(sender, args);
+                    };
+                    proxy.OnDisconnected += (sender, args) =>
+                    {
+                        if (OnDisconnected != null) OnDisconnected(sender, args);
+                    };
+
+                    service = proxy;
+
                     isCacheService = false;
                 }
 
-                service = GetProxyChannel<IServiceInterfaceType>(proxy, isCacheService);
+                channel = GetProxyChannel<IServiceInterfaceType>(service, isCacheService);
             }
 
-            //返回服务
-            return service;
+            //返回通道服务
+            return channel;
         }
 
         /// <summary>
@@ -405,10 +418,22 @@ namespace MySoft.IoC
                     service = singleton.proxies[node.Key.ToLower()];
                 else
                 {
+                    RemoteProxy proxy = null;
                     if (node.RespType == ResponseType.Json)
-                        service = new InvokeProxy(node, container);
+                        proxy = new InvokeProxy(node, container);
                     else
-                        service = new RemoteProxy(node, container);
+                        proxy = new RemoteProxy(node, container);
+
+                    proxy.OnConnected += (sender, args) =>
+                    {
+                        if (OnConnected != null) OnConnected(sender, args);
+                    };
+                    proxy.OnDisconnected += (sender, args) =>
+                    {
+                        if (OnDisconnected != null) OnDisconnected(sender, args);
+                    };
+
+                    service = proxy;
                 }
             }
 

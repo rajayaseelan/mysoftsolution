@@ -326,11 +326,13 @@ namespace MySoft.PlatformService.Client
             CastleFactory.Create().RegisterLogger(new ServiceLog());
             CastleFactory.Create().RegisterResolver(new ServiceResolver());
 
+            CastleFactory.Create().OnDisconnected += new EventHandler<ConnectEventArgs>(Program_OnDisconnected);
+
             //var watch = Stopwatch.StartNew();
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -406,6 +408,11 @@ namespace MySoft.PlatformService.Client
             #endregion
 
             Console.ReadKey();
+        }
+
+        static void Program_OnDisconnected(object sender, ConnectEventArgs e)
+        {
+            Console.WriteLine(e.Channel.CommunicationState);
         }
 
         static Program()

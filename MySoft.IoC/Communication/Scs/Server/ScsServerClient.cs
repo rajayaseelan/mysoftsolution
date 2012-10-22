@@ -139,7 +139,26 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// </summary>
         public void Disconnect()
         {
+            if (CommunicationState != CommunicationStates.Connected)
+            {
+                return;
+            }
+
             _communicationChannel.Disconnect();
+
+            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
+            _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
+            _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
+            _communicationChannel.MessageError -= CommunicationChannel_MessageError;
+        }
+
+        /// <summary>
+        /// Disposes this object and closes underlying connection.
+        /// </summary>
+        public void Dispose()
+        {
+            Disconnect();
+
             _communicationChannel = null;
         }
 

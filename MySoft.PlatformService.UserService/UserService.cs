@@ -210,13 +210,13 @@ namespace MySoft.PlatformService.UserService
         public void Start()
         {
             //throw new NotImplementedException();
-            Console.WriteLine("{0}: Start...", DateTime.Now);
+            //Console.WriteLine("{0}: Start...", DateTime.Now);
         }
 
         public void Stop()
         {
             //throw new NotImplementedException();
-            Console.WriteLine("{0}: Stop...", DateTime.Now);
+            //Console.WriteLine("{0}: Stop...", DateTime.Now);
         }
 
         #endregion
