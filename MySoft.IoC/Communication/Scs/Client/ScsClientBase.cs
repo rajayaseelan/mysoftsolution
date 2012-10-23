@@ -202,6 +202,8 @@ namespace MySoft.IoC.Communication.Scs.Client
 
             if (_communicationChannel != null)
             {
+                _pingTimer.Elapsed -= PingTimer_Elapsed;
+
                 _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
                 _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
                 _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;

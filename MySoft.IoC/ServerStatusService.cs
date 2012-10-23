@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Server;
-using MySoft.IoC.Callback;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 
@@ -108,8 +108,15 @@ namespace MySoft.IoC
 
                         if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
                         {
-                            //如果超过15分钟没响应，则断开链接
-                            client.Disconnect();
+                            try
+                            {
+                                //如果超过5分钟没响应，则断开链接
+                                client.Dispose();
+                            }
+                            finally
+                            {
+                                server.Clients.Remove(client.ClientId);
+                            }
                         }
                     }
                 }

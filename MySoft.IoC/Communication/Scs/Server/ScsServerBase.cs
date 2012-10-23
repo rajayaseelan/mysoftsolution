@@ -85,7 +85,7 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             foreach (var client in Clients.GetAllItems())
             {
-                client.Disconnect();
+                client.Dispose();
             }
 
             Clients.ClearAll();

@@ -274,24 +274,23 @@ namespace MySoft
                 if (encoding == Encoding.Default)
                 {
                     StringBuilder sb = new StringBuilder();
-                    StringWriter sw = new StringWriter(sb);
-                    XmlSerializer serializer = new XmlSerializer(obj.GetType());
-                    serializer.Serialize(sw, obj);
-                    sw.Close();
-                    return sb.ToString();
+                    using (StringWriter sw = new StringWriter(sb))
+                    {
+                        XmlSerializer serializer = new XmlSerializer(obj.GetType());
+                        serializer.Serialize(sw, obj);
+                        return sb.ToString();
+                    }
                 }
                 else
                 {
-                    MemoryStream ms = new MemoryStream();
-                    XmlTextWriter xw = new XmlTextWriter(ms, encoding);
-                    xw.Formatting = System.Xml.Formatting.Indented;
-                    xw.WriteStartDocument();
-                    XmlSerializer serializer = new XmlSerializer(obj.GetType());
-                    serializer.Serialize(xw, obj);
-                    xw.Close();
-                    var serializedObject = ms.ToArray();
-                    ms.Close();
-                    return encoding.GetString(serializedObject);
+                    using (MemoryStream ms = new MemoryStream())
+                    using (XmlTextWriter xw = new XmlTextWriter(ms, encoding))
+                    {
+                        xw.Formatting = System.Xml.Formatting.Indented;
+                        XmlSerializer serializer = new XmlSerializer(obj.GetType());
+                        serializer.Serialize(xw, obj);
+                        return encoding.GetString(ms.ToArray());
+                    }
                 }
             }
         }
@@ -304,7 +303,7 @@ namespace MySoft
         /// <returns></returns>
         public static T DeserializeXml<T>(string data)
         {
-            return (T)DeserializeXml(typeof(T), data);
+            return DeserializeXml<T>(data, Encoding.Default);
         }
 
         /// <summary>
@@ -315,22 +314,50 @@ namespace MySoft
         /// <returns></returns>
         public static object DeserializeXml(Type returnType, string data)
         {
+            return DeserializeXml(returnType, data, Encoding.Default);
+        }
+
+        /// <summary>
+        /// Deserializes the specified return type.
+        /// </summary>
+        /// <param name="returnType">Type of the return.</param>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
+        public static T DeserializeXml<T>(string data, Encoding encoding)
+        {
+            return (T)DeserializeXml(typeof(T), data, encoding);
+        }
+
+        /// <summary>
+        /// Deserializes the specified return type.
+        /// </summary>
+        /// <param name="returnType">Type of the return.</param>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
+        public static object DeserializeXml(Type returnType, string data, Encoding encoding)
+        {
             if (data == null)
             {
                 return null;
             }
 
-            if (handlers.ContainsKey(returnType))
+            if (encoding == Encoding.Default)
             {
-                return handlers[returnType].Value(data);
+                using (StringReader sr = new StringReader(data))
+                {
+                    XmlSerializer serializer = new XmlSerializer(returnType);
+                    return serializer.Deserialize(sr);
+                }
             }
             else
             {
-                StringReader sr = new StringReader(data);
-                XmlSerializer serializer = new XmlSerializer(returnType);
-                object obj = serializer.Deserialize(sr);
-                sr.Close();
-                return obj;
+                using (MemoryStream ms = new MemoryStream(encoding.GetBytes(data)))
+                using (StreamReader sr = new StreamReader(ms, encoding))
+                using (XmlReader xr = XmlReader.Create(sr))
+                {
+                    XmlSerializer serializer = new XmlSerializer(returnType);
+                    return serializer.Deserialize(xr);
+                }
             }
         }
 

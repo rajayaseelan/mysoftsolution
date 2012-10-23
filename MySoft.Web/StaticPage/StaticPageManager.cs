@@ -76,9 +76,16 @@ namespace MySoft.Web
                 if (state == null) return;
 
                 var timeSpan = TimeSpan.FromSeconds(Convert.ToInt32(state));
+
                 while (true)
                 {
-                    RunUpdate(DateTime.Now);
+                    try
+                    {
+                        RunUpdate(DateTime.Now);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
 
                     //ÐÝÃß¼ä¸ô
                     Thread.Sleep(timeSpan);

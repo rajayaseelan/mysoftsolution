@@ -51,7 +51,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private SocketAsyncEventArgs _sendEventArgs, _receiveEventArgs;
 
-        private AutoResetEvent _willRaiseEvent;
+        private ManualResetEvent _willRaiseEvent;
 
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
@@ -85,7 +85,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _receiveEventArgs = new SocketAsyncEventArgs();
             _receiveEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
 
-            _willRaiseEvent = new AutoResetEvent(false);
+            _willRaiseEvent = new ManualResetEvent(false);
             _syncLock = new object();
         }
 
@@ -105,6 +105,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
+                _buffer = null;
+
                 WireProtocol.Reset();
 
                 _willRaiseEvent.Close();
@@ -114,6 +116,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             finally
             {
+                WireProtocol = null;
                 _willRaiseEvent = null;
             }
 
@@ -123,6 +126,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 Dispose(_sendEventArgs);
                 Dispose(_receiveEventArgs);
 
+                _clientSocket.Shutdown(SocketShutdown.Both);
                 _clientSocket.Close();
             }
             catch (Exception ex)
@@ -213,11 +217,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     //Wait
                     try
                     {
-                        _willRaiseEvent.WaitOne();
+                        if (_willRaiseEvent.WaitOne())
+                        {
+                            _willRaiseEvent.Reset();
+                        }
                     }
                     catch (Exception ex)
                     {
-                        _willRaiseEvent = new AutoResetEvent(false);
                     }
                 }
                 catch (ObjectDisposedException) { }
@@ -226,6 +232,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     Disconnect();
 
                     throw ex;
+                }
+                finally
+                {
+                    message.Dispose();
                 }
             }
         }
@@ -265,7 +275,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 LastSentMessageTime = DateTime.Now;
 
                 //Sent success
-                OnMessageSent(e.UserToken as IScsMessage);
+                var message = e.UserToken as IScsMessage;
+
+                try
+                {
+                    OnMessageSent(message);
+                }
+                finally
+                {
+                    message.Dispose();
+                }
 
                 e.UserToken = null;
                 e.SetBuffer(null, 0, 0);
@@ -274,9 +293,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex)
             {
             }
-            finally
+
+            try
             {
                 _willRaiseEvent.Set();
+            }
+            catch (Exception ex)
+            {
             }
         }
 

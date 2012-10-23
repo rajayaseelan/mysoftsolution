@@ -125,34 +125,66 @@ namespace MySoft.IoC.Messages
             }
         }
 
+        /// <summary>
+        /// Dispose this message.
+        /// </summary>
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            if (_value != null)
+            {
+                try
+                {
+                    if (_value is IDisposable)
+                    {
+                        (_value as IDisposable).Dispose();
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    _value = null;
+                }
+            }
+        }
+
         private int GetCount(object val)
         {
             if (val == null) return 0;
 
-            if (val is ICollection)
+            try
             {
-                return (val as ICollection).Count;
-            }
-            else if (val is Array)
-            {
-                return (val as Array).Length;
-            }
-            else if (val is DataTable)
-            {
-                return (val as DataTable).Rows.Count;
-            }
-            else if (val is DataSet)
-            {
-                var ds = val as DataSet;
-                if (ds.Tables.Count > 0)
+                if (val is ICollection)
                 {
-                    int count = 0;
-                    foreach (DataTable table in ds.Tables)
-                    {
-                        count += table.Rows.Count;
-                    }
-                    return count;
+                    return (val as ICollection).Count;
                 }
+                else if (val is Array)
+                {
+                    return (val as Array).Length;
+                }
+                else if (val is DataTable)
+                {
+                    return (val as DataTable).Rows.Count;
+                }
+                else if (val is DataSet)
+                {
+                    var ds = val as DataSet;
+                    if (ds.Tables.Count > 0)
+                    {
+                        int count = 0;
+                        foreach (DataTable table in ds.Tables)
+                        {
+                            count += table.Rows.Count;
+                        }
+                        return count;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
             }
 
             return 1;

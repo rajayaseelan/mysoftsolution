@@ -1,7 +1,6 @@
 ﻿using System;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
-using MySoft.Cache;
 
 namespace MySoft.IoC
 {

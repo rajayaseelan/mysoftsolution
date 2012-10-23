@@ -26,5 +26,10 @@ namespace MySoft.IoC.Messages
         {
             this.client = client;
         }
+
+        public override void Dispose()
+        {
+            this.client = null;
+        }
     }
 }

@@ -1,8 +1,7 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
-using System.Net;
-using System;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {

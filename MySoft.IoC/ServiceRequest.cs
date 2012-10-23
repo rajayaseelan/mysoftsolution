@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Sockets;
-using MySoft.IoC.Communication;
 using MySoft.IoC.Communication.Scs.Client;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;

@@ -10,7 +10,6 @@ using Castle.MicroKernel;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Castle.Windsor.Configuration.Interpreters;
-using MySoft.IoC.Communication;
 using MySoft.IoC.Services;
 using MySoft.Logger;
 

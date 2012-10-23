@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
+using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -24,7 +25,6 @@ namespace MySoft.IoC.Services
         private bool enabledCache;
         private bool fromServer;
         private ThreadManager manager;
-        private AsyncMethodCaller caller;
         private Random random;
 
         /// <summary>
@@ -40,7 +40,6 @@ namespace MySoft.IoC.Services
             this.enabledCache = false;
             this.fromServer = fromServer;
             this.random = new Random();
-            this.caller = new AsyncMethodCaller(GetInvokeResponse);
         }
 
         /// <summary>
@@ -56,6 +55,7 @@ namespace MySoft.IoC.Services
             this.cache = cache;
             this.enabledCache = true;
 
+            var caller = new AsyncMethodCaller(GetInvokeResponse);
             this.manager = new ThreadManager(service, caller, cache);
         }
 
@@ -106,7 +106,8 @@ namespace MySoft.IoC.Services
                             Request = reqMsg
                         };
 
-                        caller.BeginInvoke(context, reqMsg, AsyncCallback, callerItem);
+                        //启动线程调用
+                        ManagedThreadPool.QueueUserWorkItem(WaitCallback, callerItem);
                     }
                     else
                     {
@@ -141,16 +142,15 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 运行请求
         /// </summary>
-        /// <param name="ar"></param>
-        private void AsyncCallback(IAsyncResult ar)
+        /// <param name="state"></param>
+        private void WaitCallback(object state)
         {
-            var callerItem = ar.AsyncState as CallerItem;
+            var callerItem = state as CallerItem;
 
             try
             {
                 //获取响应信息
-                var resMsg = caller.EndInvoke(ar);
-                ar.AsyncWaitHandle.Close();
+                var resMsg = GetInvokeResponse(callerItem.Context, callerItem.Request);
 
                 if (enabledCache)
                 {
@@ -174,10 +174,6 @@ namespace MySoft.IoC.Services
             }
             catch (Exception ex)
             {
-            }
-            finally
-            {
-                ar = null;
             }
         }
 

@@ -7,7 +7,6 @@ using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
-using MySoft.Logger;
 
 namespace MySoft.IoC
 {

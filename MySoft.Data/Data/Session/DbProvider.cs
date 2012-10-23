@@ -258,10 +258,6 @@ namespace MySoft.Data
                 else
                     retVal = default(int);
             }
-            finally
-            {
-                cmd.Dispose();
-            }
 
             return retVal;
         }
@@ -306,10 +302,6 @@ namespace MySoft.Data
                 else
                     retVal = default(SourceReader);
             }
-            finally
-            {
-                cmd.Dispose();
-            }
 
             return retVal;
         }
@@ -351,10 +343,6 @@ namespace MySoft.Data
                     throw new DataException(DataHelper.GetCommandLog(cmd), ex);
                 else
                     retVal = default(DataSet);
-            }
-            finally
-            {
-                cmd.Dispose();
             }
 
             return retVal;
@@ -398,10 +386,6 @@ namespace MySoft.Data
                 else
                     retVal = default(DataTable);
             }
-            finally
-            {
-                cmd.Dispose();
-            }
 
             return retVal;
         }
@@ -443,10 +427,6 @@ namespace MySoft.Data
                     throw new DataException(DataHelper.GetCommandLog(cmd), ex);
                 else
                     retVal = default(object);
-            }
-            finally
-            {
-                cmd.Dispose();
             }
 
             return retVal;
@@ -1012,6 +992,7 @@ namespace MySoft.Data
             {
                 return true;
             }
+
             return false;
         }
     }
