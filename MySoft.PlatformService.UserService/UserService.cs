@@ -25,7 +25,7 @@ namespace MySoft.PlatformService.UserService
 
         public User GetUser(int id)
         {
-            Thread.Sleep(100);
+            Thread.Sleep(5000);
             //throw new Exception("出错了。");
 
             //Thread.Sleep(2100);

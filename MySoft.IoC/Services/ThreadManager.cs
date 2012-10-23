@@ -23,7 +23,7 @@ namespace MySoft.IoC.Services
         private AsyncMethodCaller caller;
 
         //实例化队列
-        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+        private Hashtable hashtable = new Hashtable();
 
         /// <summary>
         /// 实例化线程管理器
@@ -45,12 +45,15 @@ namespace MySoft.IoC.Services
         /// <param name="item"></param>
         public void AddWorker(string key, WorkerItem item)
         {
-            if (!hashtable.ContainsKey(key))
+            lock (hashtable.SyncRoot)
             {
-                //将当前线程放入队列中
-                hashtable[key] = item;
+                if (!hashtable.ContainsKey(key))
+                {
+                    //将当前线程放入队列中
+                    hashtable[key] = item;
 
-                IoCHelper.WriteLine(ConsoleColor.Blue, "[{0}] => Worker item count: {1}.", DateTime.Now, hashtable.Count);
+                    IoCHelper.WriteLine(ConsoleColor.Blue, "[{0}] => Worker item count: {1}.", DateTime.Now, hashtable.Count);
+                }
             }
         }
 
@@ -60,13 +63,13 @@ namespace MySoft.IoC.Services
         /// <param name="key"></param>
         public void RefreshWorker(string key)
         {
-            if (hashtable.ContainsKey(key))
+            lock (hashtable.SyncRoot)
             {
-                //将当前线程放入队列中
-                var worker = hashtable[key] as WorkerItem;
-
-                lock (worker)
+                if (hashtable.ContainsKey(key))
                 {
+                    //将当前线程放入队列中
+                    var worker = hashtable[key] as WorkerItem;
+
                     if (worker.IsRunning) return;
 
                     if (DateTime.Now.Subtract(worker.UpdateTime).TotalSeconds >= 0)

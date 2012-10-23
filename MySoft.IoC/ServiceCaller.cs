@@ -86,23 +86,21 @@ namespace MySoft.IoC
         /// <returns></returns>
         public void CallMethod(IScsServerClient client, RequestMessage reqMsg, string messageId)
         {
-            //如果是断开状态，直接返回
-            if (client.CommunicationState == CommunicationStates.Disconnected)
-                return;
-
             //定义响应的消息
             ResponseMessage resMsg = null;
-
-            //创建Caller;
-            var caller = CreateCaller(client, reqMsg);
+            AppCaller caller = null;
+            OperationContext context = null;
 
             try
             {
+                //创建Caller
+                caller = CreateCaller(client, reqMsg);
+
                 //解析服务
                 var asyncCaller = GetAsyncCaller(caller);
 
                 //获取上下文
-                var context = GetOperationContext(client, caller);
+                context = GetOperationContext(client, caller);
 
                 //异步调用服务
                 resMsg = asyncCaller.Run(context, reqMsg);
@@ -113,14 +111,27 @@ namespace MySoft.IoC
                 resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
 
-            //判断返回的消息
-            if (resMsg != null)
+            try
             {
-                //处理响应信息
-                resMsg = HandleResponse(caller, reqMsg, resMsg);
+                //判断返回的消息
+                if (resMsg != null)
+                {
+                    //处理响应信息
+                    resMsg = HandleResponse(caller, reqMsg, resMsg);
 
-                //发送消息
-                SendMessage(client, reqMsg, resMsg, messageId);
+                    //发送消息
+                    SendMessage(client, reqMsg, resMsg, messageId);
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            finally
+            {
+                reqMsg = null;
+                resMsg = null;
+                caller = null;
+                context = null;
             }
         }
 
@@ -226,10 +237,6 @@ namespace MySoft.IoC
                 {
 
                 }
-            }
-            finally
-            {
-                scsMessage = null;
             }
         }
 

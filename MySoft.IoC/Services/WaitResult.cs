@@ -103,6 +103,8 @@ namespace MySoft.IoC.Services
             }
             finally
             {
+                this.reqMsg = null;
+                this.resMsg = null;
                 this.ev = null;
             }
         }

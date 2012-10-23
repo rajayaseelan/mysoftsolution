@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
-using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -17,7 +16,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 用于存储并发队列信息
         /// </summary>
-        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+        private Hashtable hashtable = new Hashtable();
 
         private IService service;
         private ICacheStrategy cache;
@@ -25,6 +24,7 @@ namespace MySoft.IoC.Services
         private bool enabledCache;
         private bool fromServer;
         private ThreadManager manager;
+        private AsyncMethodCaller caller;
         private Random random;
 
         /// <summary>
@@ -40,6 +40,7 @@ namespace MySoft.IoC.Services
             this.enabledCache = false;
             this.fromServer = fromServer;
             this.random = new Random();
+            this.caller = new AsyncMethodCaller(GetInvokeResponse);
         }
 
         /// <summary>
@@ -54,8 +55,6 @@ namespace MySoft.IoC.Services
         {
             this.cache = cache;
             this.enabledCache = true;
-
-            var caller = new AsyncMethodCaller(GetInvokeResponse);
             this.manager = new ThreadManager(service, caller, cache);
         }
 
@@ -84,52 +83,52 @@ namespace MySoft.IoC.Services
                     return resMsg;
                 }
             }
-
             //异步响应
             using (var waitResult = new WaitResult(reqMsg))
             {
-                lock (hashtable.SyncRoot)
+                //开始异步请求
+                var item = new CallerItem
                 {
-                    if (!hashtable.ContainsKey(callKey))
-                    {
-                        //将waitResult加入队列中
-                        var waitQueue = new Queue<WaitResult>();
-                        waitQueue.Enqueue(waitResult);
+                    CallKey = callKey,
+                    Context = context,
+                    Request = reqMsg
+                };
 
-                        hashtable[callKey] = waitQueue;
-
-                        //开始异步请求
-                        var callerItem = new CallerItem
-                        {
-                            CallKey = callKey,
-                            Context = context,
-                            Request = reqMsg
-                        };
-
-                        //启动线程调用
-                        ManagedThreadPool.QueueUserWorkItem(WaitCallback, callerItem);
-                    }
-                    else
-                    {
-                        //加入队列中
-                        var waitQueue = hashtable[callKey] as Queue<WaitResult>;
-                        waitQueue.Enqueue(waitResult);
-                    }
-                }
+                //获取异步结果
+                var ar = GetAsyncResult(item, waitResult);
 
                 //等待超时
                 if (!waitResult.WaitOne(timeout))
                 {
+                    //清理资源
+                    if (ar != null)
+                    {
+                        try
+                        {
+                            caller.EndInvoke(ar);
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+
                     try
                     {
-                        return GetTimeoutResponse(reqMsg);
+                        //获取超时响应
+                        var resMsg = GetTimeoutResponse(reqMsg);
+
+                        //设置响应信息
+                        waitResult.SetResponse(resMsg);
                     }
                     finally
                     {
                         //超时时也移除
                         lock (hashtable.SyncRoot)
                         {
-                            hashtable.Remove(callKey);
+                            if (hashtable.ContainsKey(callKey))
+                            {
+                                hashtable.Remove(callKey);
+                            }
                         }
                     }
                 }
@@ -140,17 +139,52 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// 获取异常结果
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="waitResult"></param>
+        /// <returns></returns>
+        private IAsyncResult GetAsyncResult(CallerItem item, WaitResult waitResult)
+        {
+            IAsyncResult ar = null;
+
+            lock (hashtable.SyncRoot)
+            {
+                if (!hashtable.ContainsKey(item.CallKey))
+                {
+                    //将waitResult加入队列中
+                    var waitQueue = new Queue<WaitResult>();
+                    waitQueue.Enqueue(waitResult);
+
+                    hashtable[item.CallKey] = waitQueue;
+
+                    //启动线程调用
+                    ar = caller.BeginInvoke(item.Context, item.Request, AsyncCallback, item);
+                }
+                else
+                {
+                    //加入队列中
+                    var waitQueue = hashtable[item.CallKey] as Queue<WaitResult>;
+                    waitQueue.Enqueue(waitResult);
+                }
+            }
+
+            return ar;
+        }
+
+        /// <summary>
         /// 运行请求
         /// </summary>
-        /// <param name="state"></param>
-        private void WaitCallback(object state)
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
         {
-            var callerItem = state as CallerItem;
+            var callerItem = ar.AsyncState as CallerItem;
 
             try
             {
                 //获取响应信息
-                var resMsg = GetInvokeResponse(callerItem.Context, callerItem.Request);
+                var resMsg = caller.EndInvoke(ar);
+                ar.AsyncWaitHandle.Close();
 
                 if (enabledCache)
                 {
@@ -158,19 +192,8 @@ namespace MySoft.IoC.Services
                     SetResponseToCache(callerItem, resMsg);
                 }
 
-                try
-                {
-                    //设置响应信息
-                    SetInvokeResponse(callerItem.CallKey, resMsg);
-                }
-                finally
-                {
-                    //移除队列
-                    lock (hashtable.SyncRoot)
-                    {
-                        hashtable.Remove(callerItem.CallKey);
-                    }
-                }
+                //设置响应信息
+                SetInvokeResponse(callerItem.CallKey, resMsg);
             }
             catch (Exception ex)
             {
@@ -191,18 +214,26 @@ namespace MySoft.IoC.Services
                     //获取队列
                     var waitQueue = hashtable[callKey] as Queue<WaitResult>;
 
-                    while (waitQueue.Count > 0)
+                    try
                     {
-                        try
+                        while (waitQueue.Count > 0)
                         {
-                            //响应队列中的请求
-                            var waitItem = waitQueue.Dequeue();
+                            try
+                            {
+                                //响应队列中的请求
+                                var waitItem = waitQueue.Dequeue();
 
-                            waitItem.SetResponse(resMsg);
+                                waitItem.SetResponse(resMsg);
+                            }
+                            catch (Exception ex)
+                            {
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                        }
+                    }
+                    finally
+                    {
+                        //移除队列
+                        hashtable.Remove(callKey);
                     }
                 }
             }
