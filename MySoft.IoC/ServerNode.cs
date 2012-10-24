@@ -17,6 +17,8 @@ namespace MySoft.IoC
         private int minpool = ServiceConfig.DEFAULT_CLIENT_MINPOOL;
         private ResponseType resptype = ResponseType.Binary;
 
+        private ServerNode() { }
+
         /// <summary>
         /// Gets or sets the key.
         /// </summary>

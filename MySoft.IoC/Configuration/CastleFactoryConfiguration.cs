@@ -75,10 +75,11 @@ namespace MySoft.IoC.Configuration
                 XmlAttributeCollection childattribute = child.Attributes;
                 if (child.Name == "serverNode")
                 {
-                    var node = new ServerNode();
+                    var ip = childattribute["ip"].Value;
+                    var port = Convert.ToInt32(childattribute["port"].Value);
+
+                    var node = ServerNode.Parse(ip, port);
                     node.Key = childattribute["key"].Value;
-                    node.IP = childattribute["ip"].Value;
-                    node.Port = Convert.ToInt32(childattribute["port"].Value);
 
                     //超时时间，默认为1分钟
                     if (childattribute["timeout"] != null && childattribute["timeout"].Value.Trim() != string.Empty)
