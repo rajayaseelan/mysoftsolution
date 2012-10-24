@@ -87,38 +87,29 @@ namespace MySoft.IoC.Services
             using (var waitResult = new WaitResult(reqMsg))
             {
                 //开始异步请求
-                var callerItem = new ThreadItem
-                {
-                    CallKey = callKey,
-                    Context = context,
-                    Request = reqMsg
-                };
-
-                //获取异步结果
-                var ar = GetAsyncResult(callerItem, waitResult);
+                var callerItem = GetAsyncCallerItem(callKey, context, reqMsg, waitResult);
 
                 //等待超时
                 if (!waitResult.WaitOne(timeout))
                 {
-                    try
-                    {
-                        //关闭句柄
-                        CloseHandle(ar, callerItem);
+                    //结束线程
+                    CancelThread(callerItem as ThreadItem);
 
-                        //获取超时响应
-                        return GetTimeoutResponse(reqMsg);
-                    }
-                    finally
-                    {
-                        lock (hashtable.SyncRoot)
-                        {
-                            //超时时也移除
-                            if (hashtable.ContainsKey(callKey))
-                            {
-                                hashtable.Remove(callKey);
-                            }
-                        }
-                    }
+                    //获取超时响应
+                    var resMsg = GetTimeoutResponse(reqMsg);
+
+                    //设置响应信息
+                    waitResult.SetResponse(resMsg);
+                }
+
+                try
+                {
+                    //设置响应信息
+                    SetInvokeResponse(callKey, waitResult.Message);
+                }
+                finally
+                {
+                    callerItem = null;
                 }
 
                 //返回响应结果
@@ -127,25 +118,11 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 结束句柄
+        /// 结束线程
         /// </summary>
-        /// <param name="ar"></param>
         /// <param name="callerItem"></param>
-        private void CloseHandle(IAsyncResult ar, ThreadItem callerItem)
+        private void CancelThread(ThreadItem callerItem)
         {
-            //清理资源
-            if (ar != null)
-            {
-                try
-                {
-                    caller.EndInvoke(ar);
-                    ar.AsyncWaitHandle.Close();
-                }
-                catch (Exception ex)
-                {
-                }
-            }
-
             //结束线程
             if (callerItem.Thread != null)
             {
@@ -162,25 +139,29 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取异常结果
         /// </summary>
-        /// <param name="callerItem"></param>
+        /// <param name="callKey"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
         /// <param name="waitResult"></param>
         /// <returns></returns>
-        private IAsyncResult GetAsyncResult(CallerItem callerItem, WaitResult waitResult)
+        private CallerItem GetAsyncCallerItem(string callKey, OperationContext context, RequestMessage reqMsg, WaitResult waitResult)
         {
-            IAsyncResult ar = null;
+            var callerItem = new ThreadItem
+            {
+                CallKey = callKey,
+                Context = context,
+                Request = reqMsg
+            };
 
             lock (hashtable.SyncRoot)
             {
                 if (!hashtable.ContainsKey(callerItem.CallKey))
                 {
                     //将waitResult加入队列中
-                    var waitQueue = new Queue<WaitResult>();
-                    waitQueue.Enqueue(waitResult);
-
-                    hashtable[callerItem.CallKey] = waitQueue;
+                    hashtable[callerItem.CallKey] = new Queue<WaitResult>();
 
                     //启动线程调用
-                    ar = caller.BeginInvoke(callerItem, AsyncCallback, callerItem);
+                    caller.BeginInvoke(callerItem, AsyncCallback, new ArrayList { waitResult, callerItem });
                 }
                 else
                 {
@@ -190,7 +171,7 @@ namespace MySoft.IoC.Services
                 }
             }
 
-            return ar;
+            return callerItem;
         }
 
         /// <summary>
@@ -199,13 +180,15 @@ namespace MySoft.IoC.Services
         /// <param name="ar"></param>
         private void AsyncCallback(IAsyncResult ar)
         {
-            var callerItem = ar.AsyncState as CallerItem;
+            var arr = ar.AsyncState as ArrayList;
 
             try
             {
+                var waitResult = arr[0] as WaitResult;
+                var callerItem = arr[1] as CallerItem;
+
                 //获取响应信息
                 var resMsg = caller.EndInvoke(ar);
-                ar.AsyncWaitHandle.Close();
 
                 if (resMsg != null)
                 {
@@ -216,11 +199,15 @@ namespace MySoft.IoC.Services
                     }
 
                     //设置响应信息
-                    SetInvokeResponse(callerItem.CallKey, resMsg);
+                    waitResult.SetResponse(resMsg);
                 }
             }
             catch (Exception ex)
             {
+            }
+            finally
+            {
+                ar.AsyncWaitHandle.Close();
             }
         }
 

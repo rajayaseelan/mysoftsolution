@@ -39,7 +39,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 1024; //1KB
+        private const int ReceiveBufferSize = 4 * 1024; //4KB
 
         /// <summary>
         /// This buffer is used to receive bytes 

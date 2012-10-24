@@ -84,15 +84,7 @@ namespace MySoft.PlatformService
                         case "-debug":
                             {
                                 object state = null;
-                                if (args.Length >= 2)
-                                {
-                                    int timeout = -1;
-                                    if (int.TryParse(args[1].Trim(), out timeout))
-                                    {
-                                        if (timeout > 0) state = timeout;
-                                    }
-                                }
-
+                                if (args.Length >= 2) state = args[1].Trim();
                                 if (server.StartConsole(StartMode.Debug, state))
                                 {
                                     Console.ReadLine();

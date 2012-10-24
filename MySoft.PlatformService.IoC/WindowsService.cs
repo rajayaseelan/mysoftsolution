@@ -68,8 +68,16 @@ namespace MySoft.PlatformService.IoC
             this.startMode = startMode;
             if (state != null)
             {
+                int value = -1;
+                if (int.TryParse(state.ToString(), out value))
+                {
+                    if (value > 0)
+                    {
+                        this.timeout = value;
+                        server_OnLog(string.Format("Display caller more than timeout ({0}) ms...", timeout), LogType.Normal);
+                    }
+                }
                 this.timeout = Convert.ToInt32(state);
-                server_OnLog(string.Format("Display caller more than timeout ({0}) ms...", timeout), LogType.Normal);
             }
 
             if (startMode != StartMode.Service)
