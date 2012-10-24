@@ -8,10 +8,9 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 异步响应方法
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="reqMsg"></param>
+    /// <param name="caller"></param>
     /// <returns></returns>
-    internal delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
+    internal delegate ResponseMessage AsyncMethodCaller(CallerItem caller);
 
     /// <summary>
     /// 线程管理
@@ -81,7 +80,7 @@ namespace MySoft.IoC.Services
                         IoCHelper.WriteLine(ConsoleColor.Green, "[{0}] => Begin refresh worker item: {1}.", DateTime.Now, worker.CallKey);
 
                         //异步调用服务
-                        caller.BeginInvoke(worker.Context, worker.Request, AsyncCallback, worker);
+                        caller.BeginInvoke(worker, AsyncCallback, worker);
                     }
                 }
             }

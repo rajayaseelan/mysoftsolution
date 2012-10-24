@@ -87,7 +87,7 @@ namespace MySoft.IoC.Services
             using (var waitResult = new WaitResult(reqMsg))
             {
                 //开始异步请求
-                var item = new CallerItem
+                var callerItem = new ThreadItem
                 {
                     CallKey = callKey,
                     Context = context,
@@ -95,36 +95,24 @@ namespace MySoft.IoC.Services
                 };
 
                 //获取异步结果
-                var ar = GetAsyncResult(item, waitResult);
+                var ar = GetAsyncResult(callerItem, waitResult);
 
                 //等待超时
                 if (!waitResult.WaitOne(timeout))
                 {
-                    //清理资源
-                    if (ar != null)
-                    {
-                        try
-                        {
-                            caller.EndInvoke(ar);
-                        }
-                        catch (Exception ex)
-                        {
-                        }
-                    }
-
                     try
                     {
-                        //获取超时响应
-                        var resMsg = GetTimeoutResponse(reqMsg);
+                        //关闭句柄
+                        CloseHandle(ar, callerItem);
 
-                        //设置响应信息
-                        waitResult.SetResponse(resMsg);
+                        //获取超时响应
+                        return GetTimeoutResponse(reqMsg);
                     }
                     finally
                     {
-                        //超时时也移除
                         lock (hashtable.SyncRoot)
                         {
+                            //超时时也移除
                             if (hashtable.ContainsKey(callKey))
                             {
                                 hashtable.Remove(callKey);
@@ -139,32 +127,65 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// 结束句柄
+        /// </summary>
+        /// <param name="ar"></param>
+        /// <param name="callerItem"></param>
+        private void CloseHandle(IAsyncResult ar, ThreadItem callerItem)
+        {
+            //清理资源
+            if (ar != null)
+            {
+                try
+                {
+                    caller.EndInvoke(ar);
+                    ar.AsyncWaitHandle.Close();
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+
+            //结束线程
+            if (callerItem.Thread != null)
+            {
+                try
+                {
+                    callerItem.Thread.Abort();
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+        }
+
+        /// <summary>
         /// 获取异常结果
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="callerItem"></param>
         /// <param name="waitResult"></param>
         /// <returns></returns>
-        private IAsyncResult GetAsyncResult(CallerItem item, WaitResult waitResult)
+        private IAsyncResult GetAsyncResult(CallerItem callerItem, WaitResult waitResult)
         {
             IAsyncResult ar = null;
 
             lock (hashtable.SyncRoot)
             {
-                if (!hashtable.ContainsKey(item.CallKey))
+                if (!hashtable.ContainsKey(callerItem.CallKey))
                 {
                     //将waitResult加入队列中
                     var waitQueue = new Queue<WaitResult>();
                     waitQueue.Enqueue(waitResult);
 
-                    hashtable[item.CallKey] = waitQueue;
+                    hashtable[callerItem.CallKey] = waitQueue;
 
                     //启动线程调用
-                    ar = caller.BeginInvoke(item.Context, item.Request, AsyncCallback, item);
+                    ar = caller.BeginInvoke(callerItem, AsyncCallback, callerItem);
                 }
                 else
                 {
                     //加入队列中
-                    var waitQueue = hashtable[item.CallKey] as Queue<WaitResult>;
+                    var waitQueue = hashtable[callerItem.CallKey] as Queue<WaitResult>;
                     waitQueue.Enqueue(waitResult);
                 }
             }
@@ -186,14 +207,17 @@ namespace MySoft.IoC.Services
                 var resMsg = caller.EndInvoke(ar);
                 ar.AsyncWaitHandle.Close();
 
-                if (enabledCache)
+                if (resMsg != null)
                 {
-                    //设置响应信息到缓存
-                    SetResponseToCache(callerItem, resMsg);
-                }
+                    if (enabledCache)
+                    {
+                        //设置响应信息到缓存
+                        SetResponseToCache(callerItem, resMsg);
+                    }
 
-                //设置响应信息
-                SetInvokeResponse(callerItem.CallKey, resMsg);
+                    //设置响应信息
+                    SetInvokeResponse(callerItem.CallKey, resMsg);
+                }
             }
             catch (Exception ex)
             {
@@ -275,33 +299,36 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 调用方法
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
+        /// <param name="caller"></param>
         /// <returns></returns>
-        private ResponseMessage GetInvokeResponse(OperationContext context, RequestMessage reqMsg)
+        private ResponseMessage GetInvokeResponse(CallerItem caller)
         {
             //定义响应的消息
             ResponseMessage resMsg = null;
 
+            if (caller is ThreadItem)
+            {
+                //设置线程
+                (caller as ThreadItem).Thread = Thread.CurrentThread;
+            }
+
             try
             {
-                OperationContext.Current = context;
+                OperationContext.Current = caller.Context;
 
                 //响应结果，清理资源
-                resMsg = service.CallService(reqMsg);
+                resMsg = service.CallService(caller.Request);
             }
+            catch (ThreadInterruptedException ex) { }
             catch (ThreadAbortException ex)
             {
-                //重置线程
+                //恢复线程
                 Thread.ResetAbort();
-
-                //获取异常响应信息
-                resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
             catch (Exception ex)
             {
                 //获取异常响应信息
-                resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                resMsg = IoCHelper.GetResponse(caller.Request, ex);
             }
             finally
             {

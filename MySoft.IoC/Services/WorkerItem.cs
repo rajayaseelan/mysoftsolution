@@ -1,12 +1,13 @@
 ﻿using System;
 using MySoft.IoC.Messages;
+using System.Threading;
 
 namespace MySoft.IoC.Services
 {
     /// <summary>
     /// Caller item.
     /// </summary>
-    internal class CallerItem
+    internal abstract class CallerItem
     {
         /// <summary>
         /// 调用的Key
@@ -22,6 +23,14 @@ namespace MySoft.IoC.Services
         /// Request
         /// </summary>
         public RequestMessage Request { get; set; }
+    }
+
+    /// <summary>
+    /// Thread item
+    /// </summary>
+    internal class ThreadItem : CallerItem
+    {
+        public Thread Thread { get; set; }
     }
 
     /// <summary>
