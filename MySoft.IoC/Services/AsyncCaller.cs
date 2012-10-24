@@ -83,6 +83,20 @@ namespace MySoft.IoC.Services
                     return resMsg;
                 }
             }
+
+            //异步调用
+            return AsyncRun(callKey, context, reqMsg);
+        }
+
+        /// <summary>
+        /// 异步调用
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage AsyncRun(string callKey, OperationContext context, RequestMessage reqMsg)
+        {
             //异步响应
             using (var waitResult = new WaitResult(reqMsg))
             {
