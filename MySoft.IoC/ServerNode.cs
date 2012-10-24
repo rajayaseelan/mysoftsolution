@@ -36,7 +36,7 @@ namespace MySoft.IoC
         public string IP
         {
             get { return ip; }
-            set { ip = value; }
+            internal set { ip = value; }
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace MySoft.IoC
         public int Port
         {
             get { return port; }
-            set { port = value; }
+            internal set { port = value; }
         }
 
         /// <summary>
