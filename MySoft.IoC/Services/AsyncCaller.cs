@@ -116,15 +116,8 @@ namespace MySoft.IoC.Services
                     waitResult.SetResponse(resMsg);
                 }
 
-                try
-                {
-                    //设置响应信息
-                    SetInvokeResponse(callKey, waitResult.Message);
-                }
-                finally
-                {
-                    callerItem = null;
-                }
+                //设置响应信息
+                SetInvokeResponse(callKey, waitResult.Message);
 
                 //返回响应结果
                 return waitResult.Message;
@@ -146,6 +139,10 @@ namespace MySoft.IoC.Services
                 }
                 catch (Exception ex)
                 {
+                }
+                finally
+                {
+                    callerItem.Thread = null;
                 }
             }
         }
@@ -169,10 +166,10 @@ namespace MySoft.IoC.Services
 
             lock (hashtable.SyncRoot)
             {
-                if (!hashtable.ContainsKey(callerItem.CallKey))
+                if (!hashtable.ContainsKey(callKey))
                 {
                     //将waitResult加入队列中
-                    hashtable[callerItem.CallKey] = new Queue<WaitResult>();
+                    hashtable[callKey] = new Queue<WaitResult>();
 
                     //启动线程调用
                     caller.BeginInvoke(callerItem, AsyncCallback, new ArrayList { waitResult, callerItem });
@@ -180,7 +177,7 @@ namespace MySoft.IoC.Services
                 else
                 {
                     //加入队列中
-                    var waitQueue = hashtable[callerItem.CallKey] as Queue<WaitResult>;
+                    var waitQueue = hashtable[callKey] as Queue<WaitResult>;
                     waitQueue.Enqueue(waitResult);
                 }
             }

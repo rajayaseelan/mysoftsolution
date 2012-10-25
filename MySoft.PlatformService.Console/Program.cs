@@ -70,6 +70,8 @@ namespace MySoft.PlatformService.Console
             }
             else
             {
+                return;
+
                 var message = string.Format("{0}£º{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
                 var body = string.Format("Remote client¡¾{0}¡¿call service ({1},{2}), result ({4}) rows, elapsed time ({5}) ms.\r\nParameters => {3}",
                             message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.Count, e.ElapsedTime);

@@ -39,21 +39,6 @@ namespace MySoft.IoC.Services
     internal class WorkerItem : CallerItem
     {
         /// <summary>
-        /// 调用的Key
-        /// </summary>
-        public string CallKey { get; set; }
-
-        /// <summary>
-        /// Context
-        /// </summary>
-        public OperationContext Context { get; set; }
-
-        /// <summary>
-        /// Request
-        /// </summary>
-        public RequestMessage Request { get; set; }
-
-        /// <summary>
         /// 更新时间
         /// </summary>
         public DateTime UpdateTime { get; set; }

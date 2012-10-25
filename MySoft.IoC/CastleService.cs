@@ -226,15 +226,7 @@ namespace MySoft.IoC
             e.Client.MessageError += Client_MessageError;
 
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
-
-            try
-            {
-                PushConnectInfo(endPoint, true, e.ConnectCount);
-            }
-            finally
-            {
-                endPoint = null;
-            }
+            PushConnectInfo(endPoint, true, e.ConnectCount);
         }
 
         void Client_MessageError(object sender, ErrorEventArgs e)
@@ -248,16 +240,7 @@ namespace MySoft.IoC
             e.Client.MessageError -= Client_MessageError;
 
             var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
-
-            try
-            {
-                PushConnectInfo(endPoint, false, e.ConnectCount);
-            }
-            finally
-            {
-                endPoint = null;
-                e.Client.UserToken = null;
-            }
+            PushConnectInfo(endPoint, false, e.ConnectCount);
         }
 
         void PushConnectInfo(ScsTcpEndPoint endPoint, bool connected, int count)
@@ -301,16 +284,7 @@ namespace MySoft.IoC
 
                     //响应客户端详细信息
                     var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
-
-                    try
-                    {
-                        PushAppClient(endPoint, appClient);
-                    }
-                    finally
-                    {
-                        endPoint = null;
-                        appClient = null;
-                    }
+                    PushAppClient(endPoint, appClient);
                 }
             }
             else if (e.Message is ScsResultMessage)

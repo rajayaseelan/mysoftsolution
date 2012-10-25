@@ -61,21 +61,15 @@ namespace MySoft.IoC
                 //响应定时信息
                 if (statuslist.Count > 0 && MessageCenter.Instance.Count > 0)
                 {
-                    ServerStatus status = null;
-
                     try
                     {
-                        status = GetServerStatus();
+                        var status = GetServerStatus();
                         MessageCenter.Instance.Notify(status);
                     }
                     catch (Exception ex)
                     {
                         //TODO
                         container.WriteError(ex);
-                    }
-                    finally
-                    {
-                        status = null;
                     }
 
                     //每秒推送一次
@@ -84,7 +78,7 @@ namespace MySoft.IoC
                 else
                 {
                     //每秒推送一次
-                    Thread.Sleep(10000);
+                    Thread.Sleep(5000);
                 }
             }
         }

@@ -183,12 +183,14 @@ namespace MySoft.IoC.Communication.Scs.Client
             try
             {
                 _communicationChannel.Disconnect();
+                _wireProtocol.Reset();
             }
             catch (Exception ex)
             {
             }
             finally
             {
+                _wireProtocol = null;
                 _pingTimer.Stop();
             }
         }
@@ -202,12 +204,11 @@ namespace MySoft.IoC.Communication.Scs.Client
 
             if (_communicationChannel != null)
             {
-                _pingTimer.Elapsed -= PingTimer_Elapsed;
-
                 _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
                 _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
                 _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
                 _communicationChannel.MessageError -= CommunicationChannel_MessageError;
+                _pingTimer.Elapsed -= PingTimer_Elapsed;
 
                 _communicationChannel = null;
             }

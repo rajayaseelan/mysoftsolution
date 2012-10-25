@@ -168,6 +168,7 @@ namespace MySoft.IoC.Communication.Scs.Server
                 _communicationChannel.MessageError -= CommunicationChannel_MessageError;
 
                 _communicationChannel = null;
+                UserToken = null;
             }
         }
 
