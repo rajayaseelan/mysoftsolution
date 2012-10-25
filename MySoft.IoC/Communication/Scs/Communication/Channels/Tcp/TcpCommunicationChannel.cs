@@ -106,18 +106,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            try
-            {
-                DisposeChannel();
-            }
-            catch (Exception ex)
-            {
-            }
+            DisposeChannel();
 
             CommunicationState = CommunicationStates.Disconnected;
             OnDisconnected();
         }
 
+        /// <summary>
+        /// Dispose channel
+        /// </summary>
         private void DisposeChannel()
         {
             try
@@ -138,19 +135,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                _clientSocket.Shutdown(SocketShutdown.Both);
-            }
-            catch (Exception ex)
-            {
-            }
-            finally
-            {
-                _clientSocket.Close();
-                _clientSocket = null;
-            }
-
-            try
-            {
                 //Dispose socket event args.
                 _sendEventArgs.Completed -= IOCompleted;
                 _sendEventArgs.UserToken = null;
@@ -159,17 +143,30 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 _receiveEventArgs.Completed -= IOCompleted;
                 _receiveEventArgs.UserToken = null;
                 _receiveEventArgs.SetBuffer(null, 0, 0);
+
+                _sendEventArgs.Dispose();
+                _receiveEventArgs.Dispose();
             }
             catch (Exception ex)
             {
             }
             finally
             {
-                _sendEventArgs.Dispose();
-                _receiveEventArgs.Dispose();
-
                 _sendEventArgs = null;
                 _receiveEventArgs = null;
+            }
+
+            try
+            {
+                _clientSocket.Shutdown(SocketShutdown.Both);
+                _clientSocket.Close();
+            }
+            catch (Exception ex)
+            {
+            }
+            finally
+            {
+                _clientSocket = null;
             }
         }
 
