@@ -111,19 +111,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 try
                 {
-                    _clientSocket.Shutdown(SocketShutdown.Both);
-                    _clientSocket.Close();
-                }
-                catch (Exception ex)
-                {
-                }
-                finally
-                {
-                    _clientSocket = null;
-                }
-
-                try
-                {
                     //Dispose socket event args.
                     _sendEventArgs.Completed -= IOCompleted;
                     _sendEventArgs.UserToken = null;
@@ -159,6 +146,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     _willRaiseEvent = null;
                     _remoteEndPoint = null;
                     WireProtocol = null;
+                }
+
+                try
+                {
+                    _clientSocket.Shutdown(SocketShutdown.Both);
+                    _clientSocket.Close();
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    _clientSocket = null;
                 }
             }
         }

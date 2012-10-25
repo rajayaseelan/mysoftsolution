@@ -25,7 +25,7 @@ namespace MySoft.PlatformService.UserService
 
         public User GetUser(int id)
         {
-            //Thread.Sleep(5000);
+            Thread.Sleep(5000);
             //throw new Exception("出错了。");
 
             //Thread.Sleep(2100);
@@ -50,7 +50,7 @@ namespace MySoft.PlatformService.UserService
                 return null;
             }
 
-            return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id.ToString() };
+            return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#') };
         }
 
         public User GetUserForName(string name)

@@ -106,8 +106,12 @@ namespace MySoft.IoC.Services
                 //等待超时
                 if (!waitResult.WaitOne(timeout))
                 {
-                    //结束线程
-                    CancelThread(callerItem as ThreadItem);
+                    //安全起见，客户端不结束线程
+                    if (fromServer)
+                    {
+                        //结束线程
+                        CancelThread(callerItem as ThreadItem);
+                    }
 
                     //获取超时响应
                     var resMsg = GetTimeoutResponse(reqMsg);
@@ -135,7 +139,7 @@ namespace MySoft.IoC.Services
             {
                 try
                 {
-                    callerItem.Thread.Abort();
+                    callerItem.Thread.Interrupt();
                 }
                 catch (Exception ex)
                 {
