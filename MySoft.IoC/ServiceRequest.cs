@@ -139,7 +139,7 @@ namespace MySoft.IoC
             this.reqMsg = reqMsg;
 
             //如果连接断开，直接抛出异常
-            if (client.CommunicationState == CommunicationStates.Disconnected)
+            if (client.CommunicationState != CommunicationStates.Connected)
             {
                 ConnectServer();
 

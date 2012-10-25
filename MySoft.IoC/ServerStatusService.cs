@@ -95,11 +95,9 @@ namespace MySoft.IoC
                     //处理客户端连接
                     var lastMinute = DateTime.Now.AddMinutes(-DefaultDisconnectionAttemptTimeout);
 
+                    //断开超时的连接
                     foreach (var client in server.Clients.GetAllItems())
                     {
-                        //不为null表示是组件传递的客户端，则不处理r
-                        if (client.UserToken != null) continue;
-
                         if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
                         {
                             try

@@ -101,73 +101,74 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public override void Disconnect()
         {
-            if (CommunicationState != CommunicationStates.Connected)
+            if (CommunicationState == CommunicationStates.Connected)
             {
-                return;
+                CommunicationState = CommunicationStates.Disconnected;
+                OnDisconnected();
             }
 
-            DisposeChannel();
+            if (_clientSocket != null)
+            {
+                try
+                {
+                    _clientSocket.Shutdown(SocketShutdown.Both);
+                    _clientSocket.Close();
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    _clientSocket = null;
+                }
 
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
+                try
+                {
+                    //Dispose socket event args.
+                    _sendEventArgs.Completed -= IOCompleted;
+                    _sendEventArgs.UserToken = null;
+                    _sendEventArgs.SetBuffer(null, 0, 0);
+
+                    _receiveEventArgs.Completed -= IOCompleted;
+                    _receiveEventArgs.UserToken = null;
+                    _receiveEventArgs.SetBuffer(null, 0, 0);
+
+                    _sendEventArgs.Dispose();
+                    _receiveEventArgs.Dispose();
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    _sendEventArgs = null;
+                    _receiveEventArgs = null;
+                }
+
+                try
+                {
+                    _willRaiseEvent.Close();
+                    WireProtocol.Reset();
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    _buffer = null;
+                    _willRaiseEvent = null;
+                    _remoteEndPoint = null;
+                    WireProtocol = null;
+                }
+            }
         }
 
         /// <summary>
         /// Dispose channel
         /// </summary>
-        private void DisposeChannel()
+        public override void Dispose()
         {
-            try
-            {
-                _willRaiseEvent.Close();
-                WireProtocol.Reset();
-            }
-            catch (Exception ex)
-            {
-            }
-            finally
-            {
-                _buffer = null;
-                _remoteEndPoint = null;
-                _willRaiseEvent = null;
-                WireProtocol = null;
-            }
-
-            try
-            {
-                //Dispose socket event args.
-                _sendEventArgs.Completed -= IOCompleted;
-                _sendEventArgs.UserToken = null;
-                _sendEventArgs.SetBuffer(null, 0, 0);
-
-                _receiveEventArgs.Completed -= IOCompleted;
-                _receiveEventArgs.UserToken = null;
-                _receiveEventArgs.SetBuffer(null, 0, 0);
-
-                _sendEventArgs.Dispose();
-                _receiveEventArgs.Dispose();
-            }
-            catch (Exception ex)
-            {
-            }
-            finally
-            {
-                _sendEventArgs = null;
-                _receiveEventArgs = null;
-            }
-
-            try
-            {
-                _clientSocket.Shutdown(SocketShutdown.Both);
-                _clientSocket.Close();
-            }
-            catch (Exception ex)
-            {
-            }
-            finally
-            {
-                _clientSocket = null;
-            }
+            Disconnect();
         }
 
         #endregion
@@ -339,10 +340,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     {
                     }
 
-                    //Read more bytes if still running
-                    if (!_clientSocket.ReceiveAsync(e))
+                    if (CommunicationState == CommunicationStates.Connected)
                     {
-                        OnReceiveCompleted(e);
+                        //Read more bytes if still running
+                        if (!_clientSocket.ReceiveAsync(e))
+                        {
+                            OnReceiveCompleted(e);
+                        }
                     }
                 }
                 else

@@ -221,5 +221,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels
         }
 
         #endregion
+
+        /// <summary>
+        /// Dispose resource.
+        /// </summary>
+        public abstract void Dispose();
     }
 }
