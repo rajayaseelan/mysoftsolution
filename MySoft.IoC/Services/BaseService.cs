@@ -73,5 +73,10 @@ namespace MySoft.IoC.Services
         }
 
         #endregion
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public abstract void Dispose();
     }
 }

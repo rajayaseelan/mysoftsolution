@@ -1,3 +1,4 @@
+using System;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
@@ -5,7 +6,7 @@ namespace MySoft.IoC
     /// <summary>
     /// interface of all services.
     /// </summary>
-    public interface IService
+    public interface IService : IDisposable
     {
         /// <summary>
         /// Gets the name of the service.

@@ -59,13 +59,13 @@ namespace MySoft.IoC.Callback
         /// <summary>
         /// 获取监控器
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="channel"></param>
         /// <returns></returns>
-        public MessageListener GetListener(IScsServerClient client)
+        public MessageListener GetListener(IScsServerClient channel)
         {
             if (_listeners.Count == 0) return null;
 
-            var listenerKey = client.RemoteEndPoint.ToString();
+            var listenerKey = channel.RemoteEndPoint.ToString();
             if (_listeners.ContainsKey(listenerKey))
             {
                 return _listeners[listenerKey] as MessageListener;
@@ -80,7 +80,7 @@ namespace MySoft.IoC.Callback
         /// <param name="listener"></param>
         public void AddListener(MessageListener listener)
         {
-            var listenerKey = listener.Client.RemoteEndPoint.ToString();
+            var listenerKey = listener.Channel.RemoteEndPoint.ToString();
 
             if (_listeners.ContainsKey(listenerKey))
             {
@@ -103,7 +103,7 @@ namespace MySoft.IoC.Callback
         /// <param name="listener"></param>
         public void RemoveListener(MessageListener listener)
         {
-            var listenerKey = listener.Client.RemoteEndPoint.ToString();
+            var listenerKey = listener.Channel.RemoteEndPoint.ToString();
             if (_listeners.ContainsKey(listenerKey))
             {
                 if (OnLog != null)

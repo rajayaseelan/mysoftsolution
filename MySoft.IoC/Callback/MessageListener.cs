@@ -19,13 +19,13 @@ namespace MySoft.IoC.Callback
             get { return _pushTime; }
         }
 
-        private IScsServerClient _client;
+        private IScsServerClient _channel;
         /// <summary>
         /// 远程客户端
         /// </summary>
-        public IScsServerClient Client
+        public IScsServerClient Channel
         {
-            get { return _client; }
+            get { return _channel; }
         }
 
         private SubscribeOptions _options;
@@ -60,31 +60,31 @@ namespace MySoft.IoC.Callback
         /// <summary>
         /// 初始化消息监听器
         /// </summary>
-        /// <param name="client"></param>
-        public MessageListener(IScsServerClient client, IStatusListener innerListener)
+        /// <param name="channel"></param>
+        public MessageListener(IScsServerClient channel, IStatusListener innerListener)
         {
-            _client = client;
-            _innerListener = innerListener;
-            _pushTime = DateTime.Now;
-            _appNames = new List<string>();
-            _appNames = new List<string>();
+            this._channel = channel;
+            this._innerListener = innerListener;
+            this._pushTime = DateTime.Now;
+            this._appNames = new List<string>();
+            this._appNames = new List<string>();
         }
 
         /// <summary>
         /// 初始化消息监听器
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="channel"></param>
         /// <param name="innerListener"></param>
         /// <param name="options"></param>
-        public MessageListener(IScsServerClient client, IStatusListener innerListener, SubscribeOptions options, string[] subscribeTypes)
-            : this(client, innerListener)
+        public MessageListener(IScsServerClient channel, IStatusListener innerListener, SubscribeOptions options, string[] subscribeTypes)
+            : this(channel, innerListener)
         {
-            _options = options;
+            this._options = options;
 
             if (subscribeTypes == null)
-                _subscribeTypes = new List<string>();
+                this._subscribeTypes = new List<string>();
             else
-                _subscribeTypes = new List<string>(subscribeTypes);
+                this._subscribeTypes = new List<string>(subscribeTypes);
         }
 
         /// <summary>
@@ -142,11 +142,6 @@ namespace MySoft.IoC.Callback
         public void Notify(CallTimeout callTimeout)
         {
             _innerListener.Push(callTimeout);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
         }
     }
 }

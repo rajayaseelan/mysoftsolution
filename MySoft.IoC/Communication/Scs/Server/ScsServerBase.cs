@@ -83,9 +83,9 @@ namespace MySoft.IoC.Communication.Scs.Server
                 _connectionListener.Stop();
             }
 
-            foreach (var client in Clients.GetAllItems())
+            foreach (var channel in Clients.GetAllItems())
             {
-                client.Dispose();
+                channel.Dispose();
             }
 
             Clients.ClearAll();
@@ -112,17 +112,17 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// <param name="e">Event arguments</param>
         private void ConnectionListener_CommunicationChannelConnected(object sender, CommunicationChannelEventArgs e)
         {
-            var client = new ScsServerClient(e.Channel)
+            var channel = new ScsServerClient(e.Channel)
             {
                 ClientId = ScsServerManager.GetClientId(),
                 WireProtocol = WireProtocolFactory.CreateWireProtocol()
             };
 
-            client.Disconnected += Client_Disconnected;
+            channel.Disconnected += Client_Disconnected;
 
-            Clients[client.ClientId] = client;
+            Clients[channel.ClientId] = channel;
 
-            OnClientConnected(client);
+            OnClientConnected(channel);
 
             e.Channel.Start();
         }
@@ -134,19 +134,19 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// <param name="e">Event arguments</param>
         private void Client_Disconnected(object sender, EventArgs e)
         {
-            var client = (IScsServerClient)sender;
+            var channel = (IScsServerClient)sender;
 
-            client.Disconnected -= Client_Disconnected;
+            channel.Disconnected -= Client_Disconnected;
 
-            Clients.Remove(client.ClientId);
+            Clients.Remove(channel.ClientId);
 
             try
             {
-                OnClientDisconnected(client);
+                OnClientDisconnected(channel);
             }
             finally
             {
-                client.Dispose();
+                channel.Dispose();
             }
         }
 
@@ -157,15 +157,15 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// <summary>
         /// Raises ClientConnected event.
         /// </summary>
-        /// <param name="client">Connected client</param>
-        protected virtual void OnClientConnected(IScsServerClient client)
+        /// <param name="channel">Connected client</param>
+        protected virtual void OnClientConnected(IScsServerClient channel)
         {
             var handler = ClientConnected;
             if (handler != null)
             {
                 try
                 {
-                    handler(this, new ServerClientEventArgs(client) { ConnectCount = Clients.Count });
+                    handler(this, new ServerClientEventArgs(channel) { ConnectCount = Clients.Count });
                 }
                 catch
                 {

@@ -7,7 +7,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 服务代理
     /// </summary>
-    public class RemoteProxy : IService, IServerConnect, IDisposable
+    public class RemoteProxy : IService, IServerConnect
     {
         #region IServerConnect 成员
 

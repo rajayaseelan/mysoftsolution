@@ -40,7 +40,7 @@ namespace MySoft.IoC
         /// 回调类型
         /// </summary>
         private Type callbackType;
-        private IScsServerClient client;
+        private IScsServerClient channel;
         private IContainer container;
         private AppCaller caller;
 
@@ -65,16 +65,16 @@ namespace MySoft.IoC
         /// <summary>
         /// 远程客户端
         /// </summary>
-        public IScsServerClient ServerClient
+        public IScsServerClient Channel
         {
-            get { return client; }
+            get { return channel; }
         }
 
         internal OperationContext() { }
 
-        internal OperationContext(IScsServerClient client, Type callbackType)
+        internal OperationContext(IScsServerClient channel, Type callbackType)
         {
-            this.client = client;
+            this.channel = channel;
             this.callbackType = callbackType;
         }
 
@@ -91,7 +91,7 @@ namespace MySoft.IoC
             }
             else
             {
-                var callback = new CallbackInvocationHandler(callbackType, client);
+                var callback = new CallbackInvocationHandler(callbackType, channel);
                 var instance = ProxyFactory.GetInstance().Create(callback, typeof(ICallbackService), true);
                 return (ICallbackService)instance;
             }

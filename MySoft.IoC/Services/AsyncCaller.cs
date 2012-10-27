@@ -23,8 +23,6 @@ namespace MySoft.IoC.Services
         private TimeSpan timeout;
         private bool enabledCache;
         private bool fromServer;
-        private ThreadManager manager;
-        private AsyncMethodCaller caller;
         private Random random;
 
         /// <summary>
@@ -40,7 +38,6 @@ namespace MySoft.IoC.Services
             this.enabledCache = false;
             this.fromServer = fromServer;
             this.random = new Random();
-            this.caller = new AsyncMethodCaller(GetInvokeResponse);
         }
 
         /// <summary>
@@ -55,7 +52,6 @@ namespace MySoft.IoC.Services
         {
             this.cache = cache;
             this.enabledCache = true;
-            this.manager = new ThreadManager(service, caller, cache);
         }
 
         /// <summary>
@@ -77,9 +73,6 @@ namespace MySoft.IoC.Services
                 //从缓存中获取数据
                 if (GetResponseFromCache(callKey, reqMsg, out resMsg))
                 {
-                    //刷新数据
-                    manager.RefreshWorker(callKey);
-
                     return resMsg;
                 }
             }
@@ -101,17 +94,13 @@ namespace MySoft.IoC.Services
             using (var waitResult = new WaitResult(reqMsg))
             {
                 //开始异步请求
-                var callerItem = GetAsyncCallerItem(callKey, context, reqMsg, waitResult);
+                var worker = GetWorkerItem(callKey, context, reqMsg, waitResult);
 
                 //等待超时
                 if (!waitResult.WaitOne(timeout))
                 {
-                    //安全起见，客户端不结束线程
-                    if (fromServer)
-                    {
-                        //结束线程
-                        CancelThread(callerItem as ThreadItem);
-                    }
+                    //结束线程
+                    CancelThread(worker);
 
                     //获取超时响应
                     var resMsg = GetTimeoutResponse(reqMsg);
@@ -121,7 +110,7 @@ namespace MySoft.IoC.Services
                 }
 
                 //设置响应信息
-                SetInvokeResponse(callKey, waitResult.Message);
+                SetWorkerResponse(callKey, waitResult.Message);
 
                 //返回响应结果
                 return waitResult.Message;
@@ -131,22 +120,22 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 结束线程
         /// </summary>
-        /// <param name="callerItem"></param>
-        private void CancelThread(ThreadItem callerItem)
+        /// <param name="worker"></param>
+        private void CancelThread(WorkerItem worker)
         {
             //结束线程
-            if (callerItem.Thread != null)
+            if (worker.Thread != null)
             {
                 try
                 {
-                    callerItem.Thread.Interrupt();
+                    worker.Thread.Interrupt();
                 }
                 catch (Exception ex)
                 {
                 }
                 finally
                 {
-                    callerItem.Thread = null;
+                    worker.Thread = null;
                 }
             }
         }
@@ -159,9 +148,9 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         /// <param name="waitResult"></param>
         /// <returns></returns>
-        private CallerItem GetAsyncCallerItem(string callKey, OperationContext context, RequestMessage reqMsg, WaitResult waitResult)
+        private WorkerItem GetWorkerItem(string callKey, OperationContext context, RequestMessage reqMsg, WaitResult waitResult)
         {
-            var callerItem = new ThreadItem
+            var worker = new WorkerItem(waitResult)
             {
                 CallKey = callKey,
                 Context = context,
@@ -176,7 +165,7 @@ namespace MySoft.IoC.Services
                     hashtable[callKey] = new Queue<WaitResult>();
 
                     //启动线程调用
-                    caller.BeginInvoke(callerItem, AsyncCallback, new ArrayList { waitResult, callerItem });
+                    ThreadPool.QueueUserWorkItem(WaitCallback, worker);
                 }
                 else
                 {
@@ -186,43 +175,36 @@ namespace MySoft.IoC.Services
                 }
             }
 
-            return callerItem;
+            return worker;
         }
 
         /// <summary>
         /// 运行请求
         /// </summary>
-        /// <param name="ar"></param>
-        private void AsyncCallback(IAsyncResult ar)
+        /// <param name="state"></param>
+        private void WaitCallback(object state)
         {
-            var arr = ar.AsyncState as ArrayList;
+            var worker = state as WorkerItem;
 
             try
             {
-                var waitResult = arr[0] as WaitResult;
-                var callerItem = arr[1] as CallerItem;
-
                 //获取响应信息
-                var resMsg = caller.EndInvoke(ar);
+                var resMsg = GetWorkerResponse(worker);
 
                 if (resMsg != null)
                 {
                     if (enabledCache)
                     {
                         //设置响应信息到缓存
-                        SetResponseToCache(callerItem, resMsg);
+                        SetResponseToCache(worker, resMsg);
                     }
 
                     //设置响应信息
-                    waitResult.SetResponse(resMsg);
+                    worker.Set(resMsg);
                 }
             }
             catch (Exception ex)
             {
-            }
-            finally
-            {
-                ar.AsyncWaitHandle.Close();
             }
         }
 
@@ -231,7 +213,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="callKey"></param>
         /// <param name="resMsg"></param>
-        private void SetInvokeResponse(string callKey, ResponseMessage resMsg)
+        private void SetWorkerResponse(string callKey, ResponseMessage resMsg)
         {
             lock (hashtable.SyncRoot)
             {
@@ -301,25 +283,22 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 调用方法
         /// </summary>
-        /// <param name="caller"></param>
+        /// <param name="worker"></param>
         /// <returns></returns>
-        private ResponseMessage GetInvokeResponse(CallerItem caller)
+        private ResponseMessage GetWorkerResponse(WorkerItem worker)
         {
             //定义响应的消息
             ResponseMessage resMsg = null;
 
-            if (caller is ThreadItem)
-            {
-                //设置线程
-                (caller as ThreadItem).Thread = Thread.CurrentThread;
-            }
+            //设置线程
+            worker.Thread = Thread.CurrentThread;
 
             try
             {
-                OperationContext.Current = caller.Context;
+                OperationContext.Current = worker.Context;
 
                 //响应结果，清理资源
-                resMsg = service.CallService(caller.Request);
+                resMsg = service.CallService(worker.Request);
             }
             catch (ThreadInterruptedException ex) { }
             catch (ThreadAbortException ex)
@@ -330,7 +309,7 @@ namespace MySoft.IoC.Services
             catch (Exception ex)
             {
                 //获取异常响应信息
-                resMsg = IoCHelper.GetResponse(caller.Request, ex);
+                resMsg = IoCHelper.GetResponse(worker.Request, ex);
             }
             finally
             {
@@ -343,13 +322,13 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 设置响应信息到缓存
         /// </summary>
-        /// <param name="callerItem"></param>
+        /// <param name="worker"></param>
         /// <param name="resMsg"></param>
-        private void SetResponseToCache(CallerItem callerItem, ResponseMessage resMsg)
+        private void SetResponseToCache(WorkerItem worker, ResponseMessage resMsg)
         {
-            var callKey = callerItem.CallKey;
-            var reqMsg = callerItem.Request;
-            var context = callerItem.Context;
+            var callKey = worker.CallKey;
+            var reqMsg = worker.Request;
+            var context = worker.Context;
 
             if (reqMsg.CacheTime <= 0) return;
 
@@ -359,20 +338,8 @@ namespace MySoft.IoC.Services
                 //克隆一个新的对象
                 var newMsg = NewResponseMessage(reqMsg, resMsg);
 
-                cache.InsertCache(callKey, newMsg, reqMsg.CacheTime * 10);
-
-                //Add worker item
-                var worker = new WorkerItem
-                {
-                    CallKey = callKey,
-                    Context = context,
-                    Request = reqMsg,
-                    SlidingTime = reqMsg.CacheTime,
-                    UpdateTime = DateTime.Now.AddSeconds(reqMsg.CacheTime),
-                    IsRunning = false
-                };
-
-                manager.AddWorker(callKey, worker);
+                //插入缓存
+                cache.InsertCache(callKey, newMsg, reqMsg.CacheTime);
             }
         }
 

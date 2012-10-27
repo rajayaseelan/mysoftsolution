@@ -80,11 +80,11 @@ namespace MySoft.IoC
         /// <summary>
         /// 调用方法
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="channel"></param>
         /// <param name="reqMsg"></param>
         /// <param name="messageId"></param>
         /// <returns></returns>
-        public void CallMethod(IScsServerClient client, RequestMessage reqMsg, string messageId)
+        public void CallMethod(IScsServerClient channel, RequestMessage reqMsg, string messageId)
         {
             //定义响应的消息
             ResponseMessage resMsg = null;
@@ -94,13 +94,13 @@ namespace MySoft.IoC
             try
             {
                 //创建Caller
-                caller = CreateCaller(client, reqMsg);
+                caller = CreateCaller(channel, reqMsg);
 
                 //解析服务
                 var asyncCaller = GetAsyncCaller(caller);
 
                 //获取上下文
-                context = GetOperationContext(client, caller);
+                context = GetOperationContext(channel, caller);
 
                 //异步调用服务
                 resMsg = asyncCaller.Run(context, reqMsg);
@@ -120,7 +120,7 @@ namespace MySoft.IoC
                     resMsg = HandleResponse(caller, reqMsg, resMsg);
 
                     //发送消息
-                    SendMessage(client, reqMsg, resMsg, messageId);
+                    SendMessage(channel, reqMsg, resMsg, messageId);
                 }
             }
             catch (Exception ex)
@@ -207,11 +207,11 @@ namespace MySoft.IoC
         /// <summary>
         /// 发送消息
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="channel"></param>
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <param name="messageId"></param>
-        private void SendMessage(IScsServerClient client, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
+        private void SendMessage(IScsServerClient channel, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
         {
             IScsMessage scsMessage = null;
 
@@ -220,7 +220,7 @@ namespace MySoft.IoC
                 scsMessage = new ScsResultMessage(resMsg, messageId);
 
                 //发送消息
-                client.SendMessage(scsMessage);
+                channel.SendMessage(scsMessage);
             }
             catch (Exception ex)
             {
@@ -231,7 +231,7 @@ namespace MySoft.IoC
                     scsMessage = new ScsResultMessage(resMsg, messageId);
 
                     //发送消息
-                    client.SendMessage(scsMessage);
+                    channel.SendMessage(scsMessage);
                 }
                 catch (Exception e)
                 {
@@ -243,13 +243,13 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取AppCaller
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="channel"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private AppCaller CreateCaller(IScsServerClient client, RequestMessage reqMsg)
+        private AppCaller CreateCaller(IScsServerClient channel, RequestMessage reqMsg)
         {
             //获取AppPath
-            var appPath = (client.UserToken == null) ? null : (client.UserToken as AppClient).AppPath;
+            var appPath = (channel.UserToken == null) ? null : (channel.UserToken as AppClient).AppPath;
 
             //服务参数信息
             var caller = new AppCaller
@@ -270,9 +270,9 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取上下文
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="channel"></param>
         /// <param name="caller"></param>
-        private OperationContext GetOperationContext(IScsServerClient client, AppCaller caller)
+        private OperationContext GetOperationContext(IScsServerClient channel, AppCaller caller)
         {
             //实例化当前上下文
             Type callbackType = null;
@@ -281,7 +281,7 @@ namespace MySoft.IoC
                 callbackType = callbackTypes[caller.ServiceName];
             }
 
-            return new OperationContext(client, callbackType)
+            return new OperationContext(channel, callbackType)
             {
                 Container = container,
                 Caller = caller

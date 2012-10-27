@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
 
@@ -79,12 +80,15 @@ namespace MySoft.IoC.Services
                 MethodName = reqMsg.MethodName
             };
 
-            //解析服务
-            var instance = container.Resolve(serviceType);
+            //返回拦截服务
+            object instance = null;
 
             try
             {
-                //返回拦截服务
+                //解析服务
+                instance = container.Resolve(serviceType);
+
+                //创建代理服务
                 var service = AspectFactory.CreateProxy(serviceType, instance);
 
                 //参数赋值
@@ -96,9 +100,15 @@ namespace MySoft.IoC.Services
                 //处理返回参数
                 IoCHelper.SetRefParameters(callMethod, parameters, resMsg.Parameters);
             }
+            catch (ThreadInterruptedException ex) { }
+            catch (ThreadAbortException ex) { }
+            catch (Exception ex)
+            {
+                //出现异常
+                resMsg.Error = ex;
+            }
             finally
             {
-                //释放资源
                 container.Release(instance);
             }
 
@@ -145,6 +155,15 @@ namespace MySoft.IoC.Services
                 //清除参数集合
                 resMsg.Parameters.Clear();
             }
+        }
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public override void Dispose()
+        {
+            this.methods.Clear();
+            this.methods = null;
         }
     }
 }

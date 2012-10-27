@@ -139,15 +139,14 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static ParameterCollection CreateParameters(System.Reflection.MethodInfo method, string jsonString)
         {
-            var collection = new ParameterCollection();
+            var pis = method.GetParameters();
+            object[] parameters = new object[pis.Length];
 
             if (!string.IsNullOrEmpty(jsonString))
             {
                 JObject obj = JObject.Parse(jsonString);
                 if (obj.Count > 0)
                 {
-                    var pis = method.GetParameters();
-                    object[] parameters = new object[pis.Length];
                     var index = 0;
                     foreach (var p in pis)
                     {
@@ -162,14 +161,11 @@ namespace MySoft.IoC
 
                         index++;
                     }
-
-                    //创建参数集合
-                    collection = CreateParameters(method, parameters);
                 }
             }
 
-            //如果json检测不通过，返回空的参数集合
-            return collection;
+            //创建参数集合
+            return CreateParameters(method, parameters);
         }
 
         /// <summary>

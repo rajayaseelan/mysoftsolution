@@ -5,9 +5,9 @@ using System.Threading;
 namespace MySoft.IoC.Services
 {
     /// <summary>
-    /// Caller item.
+    /// Worker item.
     /// </summary>
-    internal abstract class CallerItem
+    internal class WorkerItem
     {
         /// <summary>
         /// 调用的Key
@@ -23,40 +23,32 @@ namespace MySoft.IoC.Services
         /// Request
         /// </summary>
         public RequestMessage Request { get; set; }
-    }
 
-    /// <summary>
-    /// Thread item
-    /// </summary>
-    internal class ThreadItem : CallerItem
-    {
+        /// <summary>
+        /// Thread
+        /// </summary>
         public Thread Thread { get; set; }
-    }
 
-    /// <summary>
-    /// Worker item
-    /// </summary>
-    internal class WorkerItem : CallerItem
-    {
-        /// <summary>
-        /// 更新时间
-        /// </summary>
-        public DateTime UpdateTime { get; set; }
+        //响应对象
+        private WaitResult waitResult;
 
         /// <summary>
-        /// 间隔时间
+        /// 实例化WorkerItem
         /// </summary>
-        public int SlidingTime { get; set; }
-
-        /// <summary>
-        /// 是否正在运行
-        /// </summary>
-        public bool IsRunning { get; set; }
-
-        public WorkerItem()
+        /// <param name="waitResult"></param>
+        public WorkerItem(WaitResult waitResult)
         {
-            this.UpdateTime = DateTime.Now;
-            this.IsRunning = false;
+            this.waitResult = waitResult;
+        }
+
+        /// <summary>
+        /// 设置响应信息
+        /// </summary>
+        /// <param name="resMsg"></param>
+        /// <returns></returns>
+        public bool Set(ResponseMessage resMsg)
+        {
+            return waitResult.SetResponse(resMsg);
         }
     }
 }

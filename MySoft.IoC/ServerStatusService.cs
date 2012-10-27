@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using MySoft.IoC.Callback;
+using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
@@ -96,18 +97,26 @@ namespace MySoft.IoC
                     var lastMinute = DateTime.Now.AddMinutes(-DefaultDisconnectionAttemptTimeout);
 
                     //断开超时的连接
-                    foreach (var client in server.Clients.GetAllItems())
+                    foreach (var channel in server.Clients.GetAllItems())
                     {
-                        if (client.LastReceivedMessageTime < lastMinute && client.LastSentMessageTime < lastMinute)
+                        //判断状态
+                        if (channel.CommunicationState != CommunicationStates.Connected)
+                        {
+                            server.Clients.Remove(channel.ClientId);
+
+                            continue;
+                        }
+
+                        if (channel.LastReceivedMessageTime < lastMinute && channel.LastSentMessageTime < lastMinute)
                         {
                             try
                             {
                                 //如果超过5分钟没响应，则断开链接
-                                client.Dispose();
+                                channel.Dispose();
                             }
                             finally
                             {
-                                server.Clients.Remove(client.ClientId);
+                                server.Clients.Remove(channel.ClientId);
                             }
                         }
                     }
@@ -545,8 +554,8 @@ namespace MySoft.IoC
         public void Subscribe(SubscribeOptions options, params string[] subscribeTypes)
         {
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
-            var client = OperationContext.Current.ServerClient;
-            MessageCenter.Instance.AddListener(new MessageListener(client, callback, options, subscribeTypes));
+            var channel = OperationContext.Current.Channel;
+            MessageCenter.Instance.AddListener(new MessageListener(channel, callback, options, subscribeTypes));
         }
 
         /// <summary>
@@ -555,8 +564,8 @@ namespace MySoft.IoC
         public void Unsubscribe()
         {
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
-            var client = OperationContext.Current.ServerClient;
-            MessageCenter.Instance.RemoveListener(new MessageListener(client, callback));
+            var channel = OperationContext.Current.Channel;
+            MessageCenter.Instance.RemoveListener(new MessageListener(channel, callback));
         }
 
         /// <summary>
@@ -565,8 +574,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<string> GetSubscribeTypes()
         {
-            var client = OperationContext.Current.ServerClient;
-            var listener = MessageCenter.Instance.GetListener(client);
+            var channel = OperationContext.Current.Channel;
+            var listener = MessageCenter.Instance.GetListener(channel);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
@@ -579,8 +588,8 @@ namespace MySoft.IoC
         /// <param name="subscribeType"></param>
         public void SubscribeType(string subscribeType)
         {
-            var client = OperationContext.Current.ServerClient;
-            var listener = MessageCenter.Instance.GetListener(client);
+            var channel = OperationContext.Current.Channel;
+            var listener = MessageCenter.Instance.GetListener(channel);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
@@ -599,8 +608,8 @@ namespace MySoft.IoC
         /// <param name="subscribeType"></param>
         public void UnsubscribeType(string subscribeType)
         {
-            var client = OperationContext.Current.ServerClient;
-            var listener = MessageCenter.Instance.GetListener(client);
+            var channel = OperationContext.Current.Channel;
+            var listener = MessageCenter.Instance.GetListener(channel);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
@@ -619,8 +628,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IList<string> GetSubscribeApps()
         {
-            var client = OperationContext.Current.ServerClient;
-            var listener = MessageCenter.Instance.GetListener(client);
+            var channel = OperationContext.Current.Channel;
+            var listener = MessageCenter.Instance.GetListener(channel);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
@@ -633,8 +642,8 @@ namespace MySoft.IoC
         /// <param name="appName"></param>
         public void SubscribeApp(string appName)
         {
-            var client = OperationContext.Current.ServerClient;
-            var listener = MessageCenter.Instance.GetListener(client);
+            var channel = OperationContext.Current.Channel;
+            var listener = MessageCenter.Instance.GetListener(channel);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
@@ -653,8 +662,8 @@ namespace MySoft.IoC
         /// <param name="appName"></param>
         public void UnsubscribeApp(string appName)
         {
-            var client = OperationContext.Current.ServerClient;
-            var listener = MessageCenter.Instance.GetListener(client);
+            var channel = OperationContext.Current.Channel;
+            var listener = MessageCenter.Instance.GetListener(channel);
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 

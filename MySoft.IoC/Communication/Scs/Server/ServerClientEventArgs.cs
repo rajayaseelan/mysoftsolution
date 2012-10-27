@@ -10,7 +10,7 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// <summary>
         /// Client that is associated with this event.
         /// </summary>
-        public IScsServerClient Client { get; private set; }
+        public IScsServerClient Channel { get; private set; }
 
         /// <summary>
         /// Get or set server client count.
@@ -20,10 +20,10 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// <summary>
         /// Creates a new ServerClientEventArgs object.
         /// </summary>
-        /// <param name="client">Client that is associated with this event</param>
-        public ServerClientEventArgs(IScsServerClient client)
+        /// <param name="channel">Client that is associated with this event</param>
+        public ServerClientEventArgs(IScsServerClient channel)
         {
-            Client = client;
+            Channel = channel;
         }
     }
 }

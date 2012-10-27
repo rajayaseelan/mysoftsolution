@@ -222,10 +222,10 @@ namespace MySoft.IoC
 
         void server_ClientConnected(object sender, ServerClientEventArgs e)
         {
-            e.Client.MessageReceived += Client_MessageReceived;
-            e.Client.MessageError += Client_MessageError;
+            e.Channel.MessageReceived += Client_MessageReceived;
+            e.Channel.MessageError += Client_MessageError;
 
-            var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
+            var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
             PushConnectInfo(endPoint, true, e.ConnectCount);
         }
 
@@ -236,10 +236,10 @@ namespace MySoft.IoC
 
         void server_ClientDisconnected(object sender, ServerClientEventArgs e)
         {
-            e.Client.MessageReceived -= Client_MessageReceived;
-            e.Client.MessageError -= Client_MessageError;
+            e.Channel.MessageReceived -= Client_MessageReceived;
+            e.Channel.MessageError -= Client_MessageError;
 
-            var endPoint = (e.Client.RemoteEndPoint as ScsTcpEndPoint);
+            var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
             PushConnectInfo(endPoint, false, e.ConnectCount);
         }
 
@@ -278,9 +278,9 @@ namespace MySoft.IoC
                 var info = sender as IScsServerClient;
                 if (server.Clients.ContainsKey(info.ClientId))
                 {
-                    var client = server.Clients[info.ClientId];
+                    var channel = server.Clients[info.ClientId];
                     var appClient = (e.Message as ScsClientMessage).Client;
-                    client.UserToken = appClient;
+                    channel.UserToken = appClient;
 
                     //响应客户端详细信息
                     var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
@@ -290,14 +290,12 @@ namespace MySoft.IoC
             else if (e.Message is ScsResultMessage)
             {
                 //获取client发送端
-                var client = sender as IScsServerClient;
-
-                //解析消息
+                var channel = sender as IScsServerClient;
                 var message = e.Message as ScsResultMessage;
                 var reqMsg = message.MessageValue as RequestMessage;
 
                 //调用方法
-                caller.CallMethod(client, reqMsg, message.RepliedMessageId);
+                caller.CallMethod(channel, reqMsg, message.RepliedMessageId);
             }
         }
 

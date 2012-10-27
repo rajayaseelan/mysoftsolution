@@ -11,12 +11,12 @@ namespace MySoft.IoC.Callback
     internal class CallbackInvocationHandler : IProxyInvocationHandler
     {
         private Type callType;
-        private IScsServerClient client;
+        private IScsServerClient channel;
 
-        public CallbackInvocationHandler(Type callType, IScsServerClient client)
+        public CallbackInvocationHandler(Type callType, IScsServerClient channel)
         {
             this.callType = callType;
-            this.client = client;
+            this.channel = channel;
         }
 
         #region IProxyInvocationHandler 成员
@@ -42,7 +42,7 @@ namespace MySoft.IoC.Callback
             IScsMessage scsMessage = new ScsCallbackMessage(message);
 
             //发送回调数据
-            client.SendMessage(scsMessage);
+            channel.SendMessage(scsMessage);
 
             //返回null
             return null;
