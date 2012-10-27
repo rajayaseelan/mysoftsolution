@@ -1,7 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
 
@@ -14,6 +14,8 @@ namespace MySoft.IoC.Services
     {
         private IServiceContainer container;
         private Type serviceType;
+        private object service;
+        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         private IDictionary<string, System.Reflection.MethodInfo> methods;
 
         /// <summary>
@@ -25,6 +27,12 @@ namespace MySoft.IoC.Services
         {
             this.container = container;
             this.serviceType = serviceType;
+
+            //解析服务
+            var instance = container.Resolve(serviceType);
+
+            //创建代理服务
+            this.service = AspectFactory.CreateProxy(serviceType, instance);
 
             //Get method
             this.methods = CoreHelper.GetMethodsFromType(serviceType).ToDictionary(p => p.ToString());
@@ -80,37 +88,14 @@ namespace MySoft.IoC.Services
                 MethodName = reqMsg.MethodName
             };
 
-            //返回拦截服务
-            object instance = null;
+            //参数赋值
+            object[] parameters = IoCHelper.CreateParameters(callMethod, reqMsg.Parameters);
 
-            try
-            {
-                //解析服务
-                instance = container.Resolve(serviceType);
+            //调用对应的服务
+            resMsg.Value = callMethod.FastInvoke(service, parameters);
 
-                //创建代理服务
-                var service = AspectFactory.CreateProxy(serviceType, instance);
-
-                //参数赋值
-                object[] parameters = IoCHelper.CreateParameters(callMethod, reqMsg.Parameters);
-
-                //调用对应的服务
-                resMsg.Value = callMethod.FastInvoke(service, parameters);
-
-                //处理返回参数
-                IoCHelper.SetRefParameters(callMethod, parameters, resMsg.Parameters);
-            }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex) { }
-            catch (Exception ex)
-            {
-                //出现异常
-                resMsg.Error = ex;
-            }
-            finally
-            {
-                container.Release(instance);
-            }
+            //处理返回参数
+            IoCHelper.SetRefParameters(callMethod, parameters, resMsg.Parameters);
 
             return resMsg;
         }

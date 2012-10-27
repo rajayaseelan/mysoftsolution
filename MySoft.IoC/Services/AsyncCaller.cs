@@ -8,13 +8,6 @@ using MySoft.IoC.Messages;
 namespace MySoft.IoC.Services
 {
     /// <summary>
-    /// 异步响应方法
-    /// </summary>
-    /// <param name="caller"></param>
-    /// <returns></returns>
-    internal delegate ResponseMessage AsyncMethodCaller(WorkerItem worker);
-
-    /// <summary>
     /// 异步调用器
     /// </summary>
     internal class AsyncCaller
@@ -24,7 +17,6 @@ namespace MySoft.IoC.Services
         /// </summary>
         private Hashtable hashtable = new Hashtable();
 
-        private AsyncMethodCaller caller;
         private IService service;
         private ICacheStrategy cache;
         private TimeSpan timeout;
@@ -40,7 +32,6 @@ namespace MySoft.IoC.Services
         /// <param name="fromServer"></param>
         public AsyncCaller(IService service, TimeSpan timeout, bool fromServer)
         {
-            this.caller = new AsyncMethodCaller(GetWorkerResponse);
             this.service = service;
             this.timeout = timeout;
             this.enabledCache = false;
@@ -107,13 +98,20 @@ namespace MySoft.IoC.Services
                 //等待超时
                 if (!waitResult.WaitOne(timeout))
                 {
-                    //获取超时响应
-                    var resMsg = GetTimeoutResponse(reqMsg);
+                    try
+                    {
+                        //获取超时响应
+                        var resMsg = GetTimeoutResponse(reqMsg);
 
-                    worker.Set(resMsg);
+                        worker.Set(resMsg);
 
-                    //结束线程
-                    CancelThread(worker);
+                        //结束线程
+                        CancelThread(worker);
+                    }
+                    finally
+                    {
+                        RemoveKey(callKey);
+                    }
                 }
                 else
                 {
@@ -132,10 +130,10 @@ namespace MySoft.IoC.Services
         /// <param name="worker"></param>
         private void CancelThread(WorkerItem worker)
         {
-            try
+            //结束线程
+            if (worker.Thread != null)
             {
-                //结束线程
-                if (worker.Thread != null)
+                try
                 {
                     //获取线程状态
                     var ts = GetThreadState(worker.Thread);
@@ -149,17 +147,27 @@ namespace MySoft.IoC.Services
                         worker.Thread.Abort();
                     }
                 }
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                lock (hashtable.SyncRoot)
+                catch (Exception ex)
                 {
-                    if (hashtable.ContainsKey(worker.CallKey))
-                    {
-                        //移除队列
-                        hashtable.Remove(worker.CallKey);
-                    }
+                }
+                finally
+                {
+                    worker.Thread = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 移除缓存
+        /// </summary>
+        /// <param name="callKey"></param>
+        private void RemoveKey(string callKey)
+        {
+            lock (hashtable.SyncRoot)
+            {
+                if (hashtable.ContainsKey(callKey))
+                {
+                    hashtable.Remove(callKey);
                 }
             }
         }
@@ -200,8 +208,15 @@ namespace MySoft.IoC.Services
                     //将waitResult加入队列中
                     hashtable[callKey] = new Queue<WaitResult>();
 
+                    var thread = new Thread(AsyncCallback);
+                    thread.IsBackground = true;
+                    thread.Name = string.Format("{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
+                    thread.Priority = ThreadPriority.Highest;
+
+                    worker.Thread = thread;
+
                     //启动线程调用
-                    caller.BeginInvoke(worker, AsyncCallback, worker);
+                    thread.Start(worker);
                 }
                 else
                 {
@@ -217,15 +232,15 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 运行请求
         /// </summary>
-        /// <param name="ar"></param>
-        private void AsyncCallback(IAsyncResult ar)
+        /// <param name="state"></param>
+        private void AsyncCallback(object state)
         {
-            var worker = ar.AsyncState as WorkerItem;
+            var worker = state as WorkerItem;
 
             try
             {
                 //获取响应信息
-                var resMsg = caller.EndInvoke(ar);
+                var resMsg = GetWorkerResponse(worker);
 
                 if (!worker.IsCompleted && resMsg != null)
                 {
@@ -241,10 +256,6 @@ namespace MySoft.IoC.Services
             }
             catch (Exception ex)
             {
-            }
-            finally
-            {
-                ar.AsyncWaitHandle.Close();
             }
         }
 
@@ -329,9 +340,6 @@ namespace MySoft.IoC.Services
         {
             //定义响应的消息
             ResponseMessage resMsg = null;
-
-            //设置线程
-            worker.Thread = Thread.CurrentThread;
 
             try
             {

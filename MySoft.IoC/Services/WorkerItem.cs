@@ -25,6 +25,11 @@ namespace MySoft.IoC.Services
         public RequestMessage Request { get; set; }
 
         /// <summary>
+        /// 完成状态
+        /// </summary>
+        public bool IsCompleted { get; private set; }
+
+        /// <summary>
         /// Thread
         /// </summary>
         public Thread Thread { get; set; }
@@ -38,6 +43,7 @@ namespace MySoft.IoC.Services
         /// <param name="waitResult"></param>
         public WorkerItem(WaitResult waitResult)
         {
+            this.IsCompleted = false;
             this.waitResult = waitResult;
         }
 
@@ -48,6 +54,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Set(ResponseMessage resMsg)
         {
+            this.IsCompleted = true;
             return waitResult.SetResponse(resMsg);
         }
     }
