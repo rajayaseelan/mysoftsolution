@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
+    /// <summary>
+    /// 异步响应方法
+    /// </summary>
+    /// <param name="caller"></param>
+    /// <returns></returns>
+    internal delegate ResponseMessage AsyncMethodCaller(WorkerItem worker);
+
     /// <summary>
     /// 异步调用器
     /// </summary>
@@ -18,6 +24,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         private Hashtable hashtable = new Hashtable();
 
+        private AsyncMethodCaller caller;
         private IService service;
         private ICacheStrategy cache;
         private TimeSpan timeout;
@@ -33,6 +40,7 @@ namespace MySoft.IoC.Services
         /// <param name="fromServer"></param>
         public AsyncCaller(IService service, TimeSpan timeout, bool fromServer)
         {
+            this.caller = new AsyncMethodCaller(GetWorkerResponse);
             this.service = service;
             this.timeout = timeout;
             this.enabledCache = false;
@@ -99,18 +107,19 @@ namespace MySoft.IoC.Services
                 //等待超时
                 if (!waitResult.WaitOne(timeout))
                 {
-                    //结束线程
-                    CancelThread(worker);
-
                     //获取超时响应
                     var resMsg = GetTimeoutResponse(reqMsg);
 
-                    //设置响应信息
-                    waitResult.SetResponse(resMsg);
-                }
+                    worker.Set(resMsg);
 
-                //设置响应信息
-                SetWorkerResponse(callKey, waitResult.Message);
+                    //结束线程
+                    CancelThread(worker);
+                }
+                else
+                {
+                    //设置响应信息
+                    SetWorkerResponse(callKey, waitResult.Message);
+                }
 
                 //返回响应结果
                 return waitResult.Message;
@@ -123,21 +132,48 @@ namespace MySoft.IoC.Services
         /// <param name="worker"></param>
         private void CancelThread(WorkerItem worker)
         {
-            //结束线程
-            if (worker.Thread != null)
+            try
             {
-                try
+                //结束线程
+                if (worker.Thread != null)
                 {
-                    worker.Thread.Interrupt();
-                }
-                catch (Exception ex)
-                {
-                }
-                finally
-                {
-                    worker.Thread = null;
+                    //获取线程状态
+                    var ts = GetThreadState(worker.Thread);
+
+                    if (ts == ThreadState.WaitSleepJoin)
+                    {
+                        worker.Thread.Interrupt();
+                    }
+                    else if (ts == ThreadState.Running)
+                    {
+                        worker.Thread.Abort();
+                    }
                 }
             }
+            catch (Exception ex) { }
+            finally
+            {
+                lock (hashtable.SyncRoot)
+                {
+                    if (hashtable.ContainsKey(worker.CallKey))
+                    {
+                        //移除队列
+                        hashtable.Remove(worker.CallKey);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取线程状态
+        /// </summary>
+        /// <param name="ts"></param>
+        /// <returns></returns>
+        private ThreadState GetThreadState(Thread thread)
+        {
+            return thread.ThreadState & (ThreadState.Aborted | ThreadState.AbortRequested |
+                         ThreadState.Stopped | ThreadState.Unstarted |
+                         ThreadState.WaitSleepJoin);
         }
 
         /// <summary>
@@ -165,7 +201,7 @@ namespace MySoft.IoC.Services
                     hashtable[callKey] = new Queue<WaitResult>();
 
                     //启动线程调用
-                    ThreadPool.QueueUserWorkItem(WaitCallback, worker);
+                    caller.BeginInvoke(worker, AsyncCallback, worker);
                 }
                 else
                 {
@@ -181,17 +217,17 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 运行请求
         /// </summary>
-        /// <param name="state"></param>
-        private void WaitCallback(object state)
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
         {
-            var worker = state as WorkerItem;
+            var worker = ar.AsyncState as WorkerItem;
 
             try
             {
                 //获取响应信息
-                var resMsg = GetWorkerResponse(worker);
+                var resMsg = caller.EndInvoke(ar);
 
-                if (resMsg != null)
+                if (!worker.IsCompleted && resMsg != null)
                 {
                     if (enabledCache)
                     {
@@ -205,6 +241,10 @@ namespace MySoft.IoC.Services
             }
             catch (Exception ex)
             {
+            }
+            finally
+            {
+                ar.AsyncWaitHandle.Close();
             }
         }
 
@@ -301,16 +341,7 @@ namespace MySoft.IoC.Services
                 resMsg = service.CallService(worker.Request);
             }
             catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex)
-            {
-                //恢复线程
-                Thread.ResetAbort();
-            }
-            catch (Exception ex)
-            {
-                //获取异常响应信息
-                resMsg = IoCHelper.GetResponse(worker.Request, ex);
-            }
+            catch (ThreadAbortException ex) { }
             finally
             {
                 OperationContext.Current = null;
@@ -389,7 +420,7 @@ namespace MySoft.IoC.Services
             //如果是服务端，直接返回对象
             if (!fromServer && !reqMsg.InvokeMethod)
             {
-                var watch = Stopwatch.StartNew();
+                var watch = System.Diagnostics.Stopwatch.StartNew();
 
                 try
                 {
@@ -400,10 +431,7 @@ namespace MySoft.IoC.Services
                     //设置耗时时间
                     newMsg.ElapsedTime = watch.ElapsedMilliseconds;
                 }
-                catch (Exception ex)
-                {
-                    //TODO
-                }
+                catch (Exception ex) { }
                 finally
                 {
                     if (watch.IsRunning)
