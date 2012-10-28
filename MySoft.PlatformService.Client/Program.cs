@@ -475,7 +475,7 @@ namespace MySoft.PlatformService.Client
 
             //var service = new MySoft.PlatformService.UserService.UserService();
 
-            while (counter < 1000000)
+            while (true)
             {
                 try
                 {

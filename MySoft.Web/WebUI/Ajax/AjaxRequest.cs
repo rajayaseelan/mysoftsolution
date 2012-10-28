@@ -112,7 +112,10 @@ namespace MySoft.Web.UI
                     }
                 }
             }
-            catch (ThreadAbortException) { }
+            catch (ThreadAbortException)
+            {
+                Thread.ResetAbort();
+            }
             catch (AjaxException ex)
             {
                 WriteErrorMessage("AjaxError: " + ex.Message);

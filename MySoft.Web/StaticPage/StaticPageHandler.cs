@@ -141,7 +141,10 @@ namespace MySoft.Web
                 IHttpHandler handler = PageParser.GetCompiledPageInstance(sendToUrlLessQString, applicationPath, context);
                 handler.ProcessRequest(context);
             }
-            catch (ThreadAbortException) { }
+            catch (ThreadAbortException)
+            {
+                Thread.ResetAbort();
+            }
             catch (Exception)
             {
                 throw;

@@ -37,7 +37,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// AsyncThread
         /// </summary>
-        public Thread AsyncThread { get; set; }
+        public Thread AsyncThread { private get; set; }
 
         //响应对象
         private WaitResult waitResult;
@@ -90,18 +90,6 @@ namespace MySoft.IoC.Services
                 try
                 {
                     AsyncThread.Abort();
-
-                    ////获取线程状态
-                    //var ts = GetThreadState(AsyncThread);
-
-                    //if (ts == ThreadState.WaitSleepJoin)
-                    //{
-                    //    AsyncThread.Interrupt();
-                    //}
-                    //else if (ts == ThreadState.Running)
-                    //{
-                    //    AsyncThread.Abort();
-                    //}
                 }
                 catch (Exception ex)
                 {
@@ -111,18 +99,6 @@ namespace MySoft.IoC.Services
                     AsyncThread = null;
                 }
             }
-        }
-
-        /// <summary>
-        /// 获取线程状态
-        /// </summary>
-        /// <param name="ts"></param>
-        /// <returns></returns>
-        private ThreadState GetThreadState(Thread thread)
-        {
-            return thread.ThreadState & (ThreadState.Aborted | ThreadState.AbortRequested |
-                         ThreadState.Stopped | ThreadState.Unstarted |
-                         ThreadState.WaitSleepJoin);
         }
     }
 }

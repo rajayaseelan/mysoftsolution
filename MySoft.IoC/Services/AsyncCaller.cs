@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
+using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -93,25 +94,28 @@ namespace MySoft.IoC.Services
             using (var waitResult = new WaitResult(reqMsg))
             {
                 //开始异步请求
-                var worker = GetWorkerItem(callKey, context, reqMsg, waitResult);
+                var worker = new WorkerItem(waitResult)
+                {
+                    CallKey = callKey,
+                    Context = context,
+                    Request = reqMsg,
+                    IsAsyncRequest = false
+                };
+
+                //开始异步请求
+                BeginAsyncRequest(worker);
 
                 //等待超时
                 if (!waitResult.WaitOne(timeout))
                 {
-                    try
-                    {
-                        //获取超时响应
-                        var resMsg = GetTimeoutResponse(reqMsg);
-
-                        worker.Set(resMsg);
-
-                        //结束线程
-                        CancelThread(worker);
-                    }
-                    finally
+                    if (worker.IsAsyncRequest)
                     {
                         RemoveKey(callKey);
                     }
+
+                    //获取超时响应
+                    var resMsg = GetTimeoutResponse(reqMsg);
+                    worker.Cancel(resMsg);
                 }
                 else
                 {
@@ -121,39 +125,6 @@ namespace MySoft.IoC.Services
 
                 //返回响应结果
                 return waitResult.Message;
-            }
-        }
-
-        /// <summary>
-        /// 结束线程
-        /// </summary>
-        /// <param name="worker"></param>
-        private void CancelThread(WorkerItem worker)
-        {
-            //结束线程
-            if (worker.Thread != null)
-            {
-                try
-                {
-                    //获取线程状态
-                    var ts = GetThreadState(worker.Thread);
-
-                    if (ts == ThreadState.WaitSleepJoin)
-                    {
-                        worker.Thread.Interrupt();
-                    }
-                    else if (ts == ThreadState.Running)
-                    {
-                        worker.Thread.Abort();
-                    }
-                }
-                catch (Exception ex)
-                {
-                }
-                finally
-                {
-                    worker.Thread = null;
-                }
             }
         }
 
@@ -173,60 +144,30 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 获取线程状态
-        /// </summary>
-        /// <param name="ts"></param>
-        /// <returns></returns>
-        private ThreadState GetThreadState(Thread thread)
-        {
-            return thread.ThreadState & (ThreadState.Aborted | ThreadState.AbortRequested |
-                         ThreadState.Stopped | ThreadState.Unstarted |
-                         ThreadState.WaitSleepJoin);
-        }
-
-        /// <summary>
         /// 获取异常结果
         /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="waitResult"></param>
-        /// <returns></returns>
-        private WorkerItem GetWorkerItem(string callKey, OperationContext context, RequestMessage reqMsg, WaitResult waitResult)
+        /// <param name="worker"></param>
+        private void BeginAsyncRequest(WorkerItem worker)
         {
-            var worker = new WorkerItem(waitResult)
-            {
-                CallKey = callKey,
-                Context = context,
-                Request = reqMsg
-            };
-
             lock (hashtable.SyncRoot)
             {
-                if (!hashtable.ContainsKey(callKey))
+                if (!hashtable.ContainsKey(worker.CallKey))
                 {
+                    worker.IsAsyncRequest = true;
+
                     //将waitResult加入队列中
-                    hashtable[callKey] = new Queue<WaitResult>();
+                    hashtable[worker.CallKey] = new Queue<WorkerItem>();
 
-                    var thread = new Thread(AsyncCallback);
-                    thread.IsBackground = true;
-                    thread.Name = string.Format("{0}_{1}", reqMsg.ServiceName, reqMsg.MethodName);
-                    thread.Priority = ThreadPriority.Highest;
-
-                    worker.Thread = thread;
-
-                    //启动线程调用
-                    thread.Start(worker);
+                    //开始异步请求
+                    ManagedThreadPool.QueueUserWorkItem(AsyncCallback, worker);
                 }
                 else
                 {
                     //加入队列中
-                    var waitQueue = hashtable[callKey] as Queue<WaitResult>;
-                    waitQueue.Enqueue(waitResult);
+                    var workerQueue = hashtable[worker.CallKey] as Queue<WorkerItem>;
+                    workerQueue.Enqueue(worker);
                 }
             }
-
-            return worker;
         }
 
         /// <summary>
@@ -239,20 +180,32 @@ namespace MySoft.IoC.Services
 
             try
             {
+                //设置线程
+                worker.AsyncThread = Thread.CurrentThread;
+
+                var callKey = worker.CallKey;
+                var reqMsg = worker.Request;
+                var context = worker.Context;
+
                 //获取响应信息
-                var resMsg = GetWorkerResponse(worker);
+                var resMsg = GetWorkerResponse(context, reqMsg);
 
                 if (!worker.IsCompleted && resMsg != null)
                 {
                     if (enabledCache)
                     {
                         //设置响应信息到缓存
-                        SetResponseToCache(worker, resMsg);
+                        SetResponseToCache(callKey, context, reqMsg, resMsg);
                     }
 
                     //设置响应信息
                     worker.Set(resMsg);
                 }
+            }
+            catch (ThreadInterruptedException ex) { }
+            catch (ThreadAbortException ex)
+            {
+                Thread.ResetAbort();
             }
             catch (Exception ex)
             {
@@ -271,18 +224,17 @@ namespace MySoft.IoC.Services
                 if (hashtable.ContainsKey(callKey))
                 {
                     //获取队列
-                    var waitQueue = hashtable[callKey] as Queue<WaitResult>;
+                    var workerQueue = hashtable[callKey] as Queue<WorkerItem>;
 
                     try
                     {
-                        while (waitQueue.Count > 0)
+                        while (workerQueue.Count > 0)
                         {
                             try
                             {
                                 //响应队列中的请求
-                                var waitItem = waitQueue.Dequeue();
-
-                                waitItem.SetResponse(resMsg);
+                                var waitItem = workerQueue.Dequeue();
+                                waitItem.Set(resMsg);
                             }
                             catch (Exception ex)
                             {
@@ -334,41 +286,33 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 调用方法
         /// </summary>
-        /// <param name="worker"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetWorkerResponse(WorkerItem worker)
+        private ResponseMessage GetWorkerResponse(OperationContext context, RequestMessage reqMsg)
         {
-            //定义响应的消息
-            ResponseMessage resMsg = null;
-
             try
             {
-                OperationContext.Current = worker.Context;
+                OperationContext.Current = context;
 
                 //响应结果，清理资源
-                resMsg = service.CallService(worker.Request);
+                return service.CallService(reqMsg);
             }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex) { }
             finally
             {
                 OperationContext.Current = null;
             }
-
-            return resMsg;
         }
 
         /// <summary>
         /// 设置响应信息到缓存
         /// </summary>
-        /// <param name="worker"></param>
+        /// <param name="callKey"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
-        private void SetResponseToCache(WorkerItem worker, ResponseMessage resMsg)
+        private void SetResponseToCache(string callKey, OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
         {
-            var callKey = worker.CallKey;
-            var reqMsg = worker.Request;
-            var context = worker.Context;
-
             if (reqMsg.CacheTime <= 0) return;
 
             //如果符合条件，则自动缓存 【自动缓存功能】

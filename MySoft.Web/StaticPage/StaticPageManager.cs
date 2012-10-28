@@ -316,7 +316,7 @@ namespace MySoft.Web
                 }
                 catch (ThreadAbortException)
                 {
-                    //线程异常，则跳过
+                    Thread.ResetAbort();
                 }
             }
 
