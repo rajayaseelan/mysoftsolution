@@ -1,6 +1,6 @@
 ﻿using System;
-using MySoft.IoC.Messages;
 using System.Threading;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
@@ -30,9 +30,14 @@ namespace MySoft.IoC.Services
         public bool IsCompleted { get; private set; }
 
         /// <summary>
-        /// Thread
+        /// 是否异步请求
         /// </summary>
-        public Thread Thread { get; set; }
+        public bool IsAsyncRequest { get; set; }
+
+        /// <summary>
+        /// AsyncThread
+        /// </summary>
+        public Thread AsyncThread { get; set; }
 
         //响应对象
         private WaitResult waitResult;
@@ -56,6 +61,68 @@ namespace MySoft.IoC.Services
         {
             this.IsCompleted = true;
             return waitResult.SetResponse(resMsg);
+        }
+
+        /// <summary>
+        /// 结束响应
+        /// </summary>
+        /// <param name="resMsg"></param>
+        /// <returns></returns>
+        public bool Cancel(ResponseMessage resMsg)
+        {
+            //结束线程
+            if (IsAsyncRequest)
+            {
+                CancelThread();
+            }
+
+            return Set(resMsg);
+        }
+
+        /// <summary>
+        /// 结束线程
+        /// </summary>
+        private void CancelThread()
+        {
+            //结束线程
+            if (AsyncThread != null)
+            {
+                try
+                {
+                    AsyncThread.Abort();
+
+                    ////获取线程状态
+                    //var ts = GetThreadState(AsyncThread);
+
+                    //if (ts == ThreadState.WaitSleepJoin)
+                    //{
+                    //    AsyncThread.Interrupt();
+                    //}
+                    //else if (ts == ThreadState.Running)
+                    //{
+                    //    AsyncThread.Abort();
+                    //}
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    AsyncThread = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取线程状态
+        /// </summary>
+        /// <param name="ts"></param>
+        /// <returns></returns>
+        private ThreadState GetThreadState(Thread thread)
+        {
+            return thread.ThreadState & (ThreadState.Aborted | ThreadState.AbortRequested |
+                         ThreadState.Stopped | ThreadState.Unstarted |
+                         ThreadState.WaitSleepJoin);
         }
     }
 }
