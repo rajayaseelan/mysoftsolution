@@ -7,7 +7,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// Worker item.
     /// </summary>
-    internal class WorkerItem
+    internal class WorkerItem : IDisposable
     {
         /// <summary>
         /// 调用的Key
@@ -94,11 +94,22 @@ namespace MySoft.IoC.Services
                 catch (Exception ex)
                 {
                 }
-                finally
-                {
-                    AsyncThread = null;
-                }
             }
         }
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            this.CallKey = null;
+            this.Context = null;
+            this.Request = null;
+            this.AsyncThread = null;
+        }
+
+        #endregion
     }
 }

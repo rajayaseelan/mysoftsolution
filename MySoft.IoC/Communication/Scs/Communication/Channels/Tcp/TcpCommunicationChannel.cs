@@ -193,7 +193,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 Disconnect();
 
-                throw ex;
+                throw;
             }
         }
 
@@ -236,7 +236,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     Disconnect();
 
-                    throw ex;
+                    throw;
                 }
                 finally
                 {

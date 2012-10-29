@@ -168,7 +168,7 @@ namespace MySoft.IoC
             }
             catch (BusinessException ex)
             {
-                throw ex;
+                throw;
             }
             catch (Exception ex)
             {
@@ -178,7 +178,7 @@ namespace MySoft.IoC
                     if (errors.ContainsKey(reqMsg.MethodName))
                         throw new BusinessException(errors[reqMsg.MethodName]);
                     else
-                        throw ex;
+                        throw;
                 }
             }
 

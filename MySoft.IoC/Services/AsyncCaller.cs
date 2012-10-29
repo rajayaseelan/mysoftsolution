@@ -116,6 +116,7 @@ namespace MySoft.IoC.Services
                     //获取超时响应
                     var resMsg = GetTimeoutResponse(reqMsg);
                     worker.Cancel(resMsg);
+                    worker.Dispose();
                 }
                 else
                 {
@@ -200,6 +201,7 @@ namespace MySoft.IoC.Services
 
                     //设置响应信息
                     worker.Set(resMsg);
+                    worker.Dispose();
                 }
             }
             catch (ThreadInterruptedException ex) { }
@@ -233,8 +235,10 @@ namespace MySoft.IoC.Services
                             try
                             {
                                 //响应队列中的请求
-                                var waitItem = workerQueue.Dequeue();
-                                waitItem.Set(resMsg);
+                                var worker = workerQueue.Dequeue();
+
+                                worker.Set(resMsg);
+                                worker.Dispose();
                             }
                             catch (Exception ex)
                             {
@@ -297,6 +301,18 @@ namespace MySoft.IoC.Services
 
                 //响应结果，清理资源
                 return service.CallService(reqMsg);
+            }
+            catch (ThreadInterruptedException ex)
+            {
+                throw;
+            }
+            catch (ThreadAbortException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                return IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {
