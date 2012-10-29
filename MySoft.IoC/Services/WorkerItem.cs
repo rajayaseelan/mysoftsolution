@@ -66,9 +66,9 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 结束响应
         /// </summary>
-        /// <param name="resMsg"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        public bool Cancel(ResponseMessage resMsg)
+        public bool Cancel(TimeSpan timeout)
         {
             //结束线程
             if (IsAsyncRequest)
@@ -76,7 +76,29 @@ namespace MySoft.IoC.Services
                 CancelThread();
             }
 
+            var resMsg = GetTimeoutResponse(this.Request, timeout);
+
             return Set(resMsg);
+        }
+
+        /// <summary>
+        /// 获取超时响应信息
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, TimeSpan timeout)
+        {
+            //获取异常响应信息
+            var title = string.Format("Async call service ({0},{1}) timeout ({2}) ms.",
+                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
+
+            var resMsg = IoCHelper.GetResponse(reqMsg, new System.TimeoutException(title));
+
+            //设置耗时时间
+            resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;
+
+            return resMsg;
         }
 
         /// <summary>

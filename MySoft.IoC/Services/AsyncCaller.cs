@@ -113,9 +113,8 @@ namespace MySoft.IoC.Services
                         RemoveKey(callKey);
                     }
 
-                    //获取超时响应
-                    var resMsg = GetTimeoutResponse(reqMsg);
-                    worker.Cancel(resMsg);
+                    //结束请求
+                    worker.Cancel(timeout);
                     worker.Dispose();
                 }
                 else
@@ -266,25 +265,6 @@ namespace MySoft.IoC.Services
             return string.Format("{0}_Caller_{1}${2}${3}", (reqMsg.InvokeMethod ? "Invoke" : "Direct"),
                                 caller.ServiceName, caller.MethodName, caller.Parameters)
                     .Replace(" ", "").Replace("\r\n", "").Replace("\t", "").ToLower();
-        }
-
-        /// <summary>
-        /// 获取超时响应信息
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg)
-        {
-            //获取异常响应信息
-            var title = string.Format("Async call service ({0},{1}) timeout ({2}) ms.",
-                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
-
-            var resMsg = IoCHelper.GetResponse(reqMsg, new System.TimeoutException(title));
-
-            //设置耗时时间
-            resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;
-
-            return resMsg;
         }
 
         /// <summary>
