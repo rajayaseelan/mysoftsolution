@@ -42,7 +42,7 @@ namespace MySoft.Web
             string query = CoreHelper.Encrypt(url, ajaxKey);
             if (urlType != null)
             {
-                UI.AjaxNamespaceAttribute ajaxSpace = CoreHelper.GetTypeAttribute<UI.AjaxNamespaceAttribute>(urlType);
+                UI.AjaxNamespaceAttribute ajaxSpace = CoreHelper.GetMemberAttribute<UI.AjaxNamespaceAttribute>(urlType);
                 if (ajaxSpace != null) query += ";" + CoreHelper.Encrypt(ajaxSpace.Name ?? urlType.Name, ajaxKey);
             }
 

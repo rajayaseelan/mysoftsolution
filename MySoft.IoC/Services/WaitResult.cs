@@ -64,7 +64,6 @@ namespace MySoft.IoC.Services
                     this.resMsg = new ResponseMessage
                     {
                         TransactionId = reqMsg.TransactionId,
-                        ReturnType = resMsg.ReturnType,
                         ServiceName = resMsg.ServiceName,
                         MethodName = resMsg.MethodName,
                         Parameters = resMsg.Parameters,

@@ -483,38 +483,6 @@ namespace MySoft
             return default(T);
         }
 
-        /// <summary>
-        /// 获取自定义属性
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static T GetTypeAttribute<T>(Type type)
-        {
-            object[] attrs = type.GetCustomAttributes(typeof(T), false);
-            if (attrs != null && attrs.Length > 0)
-            {
-                return (T)attrs[0];
-            }
-            return default(T);
-        }
-
-        /// <summary>
-        /// 获取自定义属性
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static T[] GetTypeAttributes<T>(Type type)
-        {
-            object[] attrs = type.GetCustomAttributes(typeof(T), false);
-            if (attrs != null && attrs.Length > 0)
-            {
-                return new List<object>(attrs).ConvertAll<T>(p => (T)p).ToArray();
-            }
-            return null;
-        }
-
         #endregion
 
         #region 数据转换

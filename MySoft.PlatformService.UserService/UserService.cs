@@ -9,7 +9,7 @@ using System.Collections.Specialized;
 
 namespace MySoft.PlatformService.UserService
 {
-    [AspectProxy(typeof(AspectLog))]
+    //[AspectProxy(typeof(AspectLog))]
     public class UserService : IUserService, IInitializable, IStartable
     {
         //private DateTime startTime;
@@ -23,10 +23,11 @@ namespace MySoft.PlatformService.UserService
             return new User { Id = name.Length, Name = name };
         }
 
-        public User GetUser(int id)
+        //[AspectSwitcher(true, Description = "获取用户")]
+        public virtual User GetUser(int id)
         {
             //Thread.Sleep(5000);
-            throw new Exception("出错了。");
+            //throw new Exception("出错了。");
 
             //Thread.Sleep(2100);
 
@@ -45,10 +46,10 @@ namespace MySoft.PlatformService.UserService
             //Thread.Sleep(1000 * 10);
 
             //.PadRight(id, '*')
-            if (id % 100 == 0)
-            {
-                return null;
-            }
+            //if (id % 100 == 0)
+            //{
+            //    return null;
+            //}
 
             return new User { Id = id, Name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#') };
         }
@@ -227,6 +228,23 @@ namespace MySoft.PlatformService.UserService
         protected override void PreProceed(IInvocation invocation)
         {
             base.PreProceed(invocation);
+        }
+
+        protected override void PerformProceed(IInvocation invocation)
+        {
+            try
+            {
+                base.PerformProceed(invocation);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        protected override void PostProceed(IInvocation invocation)
+        {
+            base.PostProceed(invocation);
         }
     }
 }

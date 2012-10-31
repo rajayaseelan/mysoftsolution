@@ -111,7 +111,7 @@ namespace MySoft.RESTful.SDK
             else
             {
                 bool markedWithServiceContract = false;
-                var attr = CoreHelper.GetTypeAttribute<PublishKindAttribute>(typeof(IServiceInterfaceType));
+                var attr = CoreHelper.GetMemberAttribute<PublishKindAttribute>(typeof(IServiceInterfaceType));
                 if (attr != null)
                 {
                     markedWithServiceContract = true;

@@ -90,7 +90,6 @@ namespace MySoft.IoC
                 AppName = config.AppName,                       //应用名称
                 HostName = hostName,                            //客户端名称
                 IPAddress = ipAddress,                          //客户端IP地址
-                ReturnType = method.ReturnType,                 //返回类型
                 ServiceName = serviceType.FullName,             //服务名称
                 MethodName = method.ToString(),                 //方法名称
                 TransactionId = Guid.NewGuid(),                 //传输ID号

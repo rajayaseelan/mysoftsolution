@@ -37,7 +37,7 @@ namespace MySoft.RESTful.Business.Register
             nodes.Cast<ComponentModel>().ForEach(model =>
             {
                 bool markedWithServiceContract = false;
-                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Services.First());
+                var attr = CoreHelper.GetMemberAttribute<ContractType>(model.Services.First());
                 if (attr != null)
                 {
                     markedWithServiceContract = true;
@@ -71,7 +71,7 @@ namespace MySoft.RESTful.Business.Register
                 foreach (var type in GetInterfaceServices<PublishKindAttribute>(container))
                 {
                     //获取类特性
-                    var kind = CoreHelper.GetTypeAttribute<PublishKindAttribute>(type);
+                    var kind = CoreHelper.GetMemberAttribute<PublishKindAttribute>(type);
                     if (kind == null) continue;
 
                     kind.Name = kind.Name.ToLower();

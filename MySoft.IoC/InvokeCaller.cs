@@ -53,7 +53,6 @@ namespace MySoft.IoC
                 IPAddress = ipAddress,                                  //客户端IP地址
                 ServiceName = message.ServiceName,                      //服务名称
                 MethodName = message.MethodName,                        //方法名称
-                ReturnType = typeof(string),                            //返回类型
                 TransactionId = Guid.NewGuid(),
                 RespType = ResponseType.Json                        //数据类型
             };

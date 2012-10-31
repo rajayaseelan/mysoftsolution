@@ -116,11 +116,11 @@ namespace MySoft.IoC.Messages
                 if (_error != null)
                 {
                     var ex = ErrorHelper.GetInnerException(_error);
-                    return string.Format("(Type: {0}) Elapsed Time: {1} ms, Error: {2}", base.ReturnType, this.elapsedTime, ex.Message);
+                    return string.Format("Elapsed time: {0} ms, Error: {1}", this.elapsedTime, ex.Message);
                 }
                 else
                 {
-                    return string.Format("(Type: {0}) Elapsed Time: {1} ms, RowCount: {2} row(s)", base.ReturnType, this.elapsedTime, this.Count);
+                    return string.Format("Elapsed time: {0} ms, Count: {1} row(s)", this.elapsedTime, this.Count);
                 }
             }
         }

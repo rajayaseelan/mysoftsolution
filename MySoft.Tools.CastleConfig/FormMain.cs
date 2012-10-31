@@ -103,9 +103,9 @@ namespace MySoft.Tools.CastleConfig
                     if (typeInterfaces.Length == 0) continue;
 
                     var iface = typeInterfaces[0];
-                    var contract = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(iface);
+                    var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(iface);
                     if (contract == null) continue;
-                    var obsolete = CoreHelper.GetTypeAttribute<ObsoleteAttribute>(iface);
+                    var obsolete = CoreHelper.GetMemberAttribute<ObsoleteAttribute>(iface);
                     if (obsolete != null) continue;
 
                     var value = string.Format(template, iface.FullName, iface.FullName, iface.Assembly.FullName.Split(',')[0],
