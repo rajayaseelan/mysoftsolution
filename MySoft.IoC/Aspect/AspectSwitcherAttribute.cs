@@ -37,6 +37,11 @@ namespace MySoft.IoC.Aspect
             }
         }
 
+        /// <summary>
+        /// 响应的消息
+        /// </summary>
+        public string Description { get; set; }
+
         public AspectSwitcherAttribute(params Type[] interceptorTypes)
         {
             this.useAspect = true;

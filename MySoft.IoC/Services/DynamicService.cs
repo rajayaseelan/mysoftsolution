@@ -14,7 +14,6 @@ namespace MySoft.IoC.Services
     {
         private IServiceContainer container;
         private Type serviceType;
-        private object service;
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         private IDictionary<string, System.Reflection.MethodInfo> methods;
 
@@ -27,12 +26,6 @@ namespace MySoft.IoC.Services
         {
             this.container = container;
             this.serviceType = serviceType;
-
-            //解析服务
-            var instance = container.Resolve(serviceType);
-
-            //创建代理服务
-            this.service = AspectFactory.CreateProxy(serviceType, instance);
 
             //Get method
             this.methods = CoreHelper.GetMethodsFromType(serviceType).ToDictionary(p => p.ToString());
@@ -88,16 +81,30 @@ namespace MySoft.IoC.Services
                 MethodName = reqMsg.MethodName
             };
 
-            //参数赋值
-            object[] parameters = IoCHelper.CreateParameters(callMethod, reqMsg.Parameters);
+            //定义对象
+            object instance = null;
 
-            //调用对应的服务
-            resMsg.Value = callMethod.FastInvoke(service, parameters);
+            try
+            {
+                //解析服务
+                instance = container.Resolve(serviceType);
 
-            //处理返回参数
-            IoCHelper.SetRefParameters(callMethod, parameters, resMsg.Parameters);
+                //参数赋值
+                object[] parameters = IoCHelper.CreateParameters(callMethod, reqMsg.Parameters);
 
-            return resMsg;
+                //调用对应的服务
+                resMsg.Value = callMethod.FastInvoke(instance, parameters);
+
+                //处理返回参数
+                IoCHelper.SetRefParameters(callMethod, parameters, resMsg.Parameters);
+
+                return resMsg;
+            }
+            finally
+            {
+                //释放实例
+                container.Release(instance);
+            }
         }
 
         /// <summary>
@@ -140,15 +147,6 @@ namespace MySoft.IoC.Services
                 //清除参数集合
                 resMsg.Parameters.Clear();
             }
-        }
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        public override void Dispose()
-        {
-            this.methods.Clear();
-            this.methods = null;
         }
     }
 }

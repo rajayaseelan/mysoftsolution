@@ -74,12 +74,12 @@ namespace MySoft.IoC.Services
             reqService.OnConnected += (sender, args) =>
             {
                 if (OnConnected != null) OnConnected(sender, args);
-            }; ;
+            };
 
             reqService.OnDisconnected += (sender, args) =>
             {
                 if (OnDisconnected != null) OnDisconnected(sender, args);
-            }; ;
+            };
 
             return reqService;
         }
@@ -248,33 +248,8 @@ namespace MySoft.IoC.Services
         {
             get
             {
-                return string.Format("{0}_{1}", typeof(RemoteProxy).FullName, node.Key);
+                return string.Format("{0}${1}", typeof(RemoteProxy).FullName, node.Key);
             }
-        }
-
-        #endregion
-
-        #region IDisposable ≥…‘±
-
-        /// <summary>
-        /// Disposes this object and closes underlying connection.
-        /// </summary>
-        public void Dispose()
-        {
-            while (reqPool.Count > 0)
-            {
-                var req = reqPool.Pop();
-
-                try
-                {
-                    req.Dispose();
-                }
-                catch (Exception ex)
-                {
-                }
-            }
-
-            hashtable.Clear();
         }
 
         #endregion

@@ -13,7 +13,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务调用者
     /// </summary>
-    internal class ServiceCaller : IDisposable
+    internal class ServiceCaller
     {
         public event EventHandler<CallEventArgs> Handler;
 
@@ -88,19 +88,17 @@ namespace MySoft.IoC
         {
             //定义响应的消息
             ResponseMessage resMsg = null;
-            AppCaller caller = null;
-            OperationContext context = null;
+
+            //创建Caller
+            var caller = CreateCaller(channel, reqMsg);
 
             try
             {
-                //创建Caller
-                caller = CreateCaller(channel, reqMsg);
-
                 //解析服务
                 var asyncCaller = GetAsyncCaller(caller);
 
                 //获取上下文
-                context = GetOperationContext(channel, caller);
+                var context = GetOperationContext(channel, caller);
 
                 //异步调用服务
                 resMsg = asyncCaller.Run(context, reqMsg);
@@ -111,27 +109,14 @@ namespace MySoft.IoC
                 resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
 
-            try
+            //判断返回的消息
+            if (resMsg != null)
             {
-                //判断返回的消息
-                if (resMsg != null)
-                {
-                    //处理响应信息
-                    resMsg = HandleResponse(caller, reqMsg, resMsg);
+                //处理响应信息
+                resMsg = HandleResponse(caller, reqMsg, resMsg);
 
-                    //发送消息
-                    SendMessage(channel, reqMsg, resMsg, messageId);
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-            finally
-            {
-                reqMsg = null;
-                resMsg = null;
-                caller = null;
-                context = null;
+                //发送消息
+                SendMessage(channel, reqMsg, resMsg, messageId);
             }
         }
 
@@ -173,34 +158,23 @@ namespace MySoft.IoC
                 Value = resMsg.Value
             };
 
-            try
+            //调用计数服务
+            status.Counter(callArgs);
+
+            //响应消息
+            MessageCenter.Instance.Notify(callArgs);
+
+            //输出信息
+            if (Handler != null)
             {
-                //调用计数服务
-                status.Counter(callArgs);
-
-                //响应消息
-                MessageCenter.Instance.Notify(callArgs);
-
-                //输出信息
-                if (Handler != null)
+                try
                 {
-                    try
-                    {
-                        Handler(container, callArgs);
-                    }
-                    catch (Exception ex)
-                    {
-                        //TODO
-                    }
+                    Handler(container, callArgs);
                 }
-            }
-            catch (Exception ex)
-            {
-                //TODO
-            }
-            finally
-            {
-                callArgs = null;
+                catch (Exception ex)
+                {
+                    //TODO
+                }
             }
         }
 
@@ -306,22 +280,5 @@ namespace MySoft.IoC
 
             return asyncCallers[caller.ServiceName];
         }
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// Disposes this object and closes underlying connection.
-        /// </summary>
-        public void Dispose()
-        {
-            Handler = null;
-            callbackTypes.Clear();
-            asyncCallers.Clear();
-
-            callbackTypes = null;
-            asyncCallers = null;
-        }
-
-        #endregion
     }
 }

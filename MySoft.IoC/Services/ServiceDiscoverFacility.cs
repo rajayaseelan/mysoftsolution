@@ -19,7 +19,7 @@ namespace MySoft.IoC.Services
         private bool CheckIfComponentImplementsIService(ComponentModel model)
         {
             bool markedWithServiceContract = false;
-            var attr = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(model.Services.First());
+            var attr = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(model.Services.First());
             if (attr != null)
             {
                 markedWithServiceContract = true;

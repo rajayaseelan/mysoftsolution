@@ -6,7 +6,7 @@ namespace MySoft.IoC.Communication.Scs.Client
     /// <summary>
     /// Represents a client for SCS servers.
     /// </summary>
-    public interface IConnectableClient : IDisposable
+    public interface IConnectableClient
     {
         /// <summary>
         /// This event is raised when client connected to server.

@@ -6,7 +6,7 @@ namespace MySoft.IoC.Messages
     /// request base
     /// </summary>
     [Serializable]
-    public abstract class MessageBase : IDisposable
+    public abstract class MessageBase
     {
         private string serviceName;
         private string methodName;
@@ -98,14 +98,6 @@ namespace MySoft.IoC.Messages
         /// 响应的消息
         /// </summary>
         public abstract string Message { get; }
-
-        /// <summary>
-        /// Dispose this message.
-        /// </summary>
-        public virtual void Dispose()
-        {
-            this.parameters.Clear();
-        }
     }
 
     /// <summary>

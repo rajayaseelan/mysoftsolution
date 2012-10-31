@@ -117,11 +117,6 @@ namespace MySoft.IoC.Services
                     worker.Cancel(timeout);
                     worker.Dispose();
                 }
-                else
-                {
-                    //设置响应信息
-                    SetWorkerResponse(callKey, waitResult.Message);
-                }
 
                 //返回响应结果
                 return waitResult.Message;
@@ -199,6 +194,9 @@ namespace MySoft.IoC.Services
                     }
 
                     //设置响应信息
+                    SetWorkerResponse(callKey, resMsg);
+
+                    //设置响应信息
                     worker.Set(resMsg);
                     worker.Dispose();
                 }
@@ -244,6 +242,7 @@ namespace MySoft.IoC.Services
                             }
                         }
                     }
+                    catch (Exception ex) { }
                     finally
                     {
                         //移除队列

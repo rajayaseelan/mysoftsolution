@@ -480,7 +480,7 @@ namespace MySoft.IoC
             else
             {
                 bool markedWithServiceContract = false;
-                var attr = CoreHelper.GetTypeAttribute<ServiceContractAttribute>(serviceType);
+                var attr = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(serviceType);
                 if (attr != null)
                 {
                     markedWithServiceContract = true;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using IOC = MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Aspect
 {
@@ -9,9 +10,28 @@ namespace MySoft.IoC.Aspect
     internal class InnerInvocation : IInvocation
     {
         private Castle.DynamicProxy.IInvocation invocation;
+        private IOC.ParameterCollection parameters;
+        private string description;
+
         public InnerInvocation(Castle.DynamicProxy.IInvocation invocation)
         {
             this.invocation = invocation;
+
+            var description = string.Empty;
+            var attr = CoreHelper.GetMemberAttribute<AspectSwitcherAttribute>(invocation.MethodInvocationTarget);
+            if (attr != null) description = attr.Description;
+
+            this.description = description;
+            this.parameters = new IOC.ParameterCollection();
+
+            var pis = invocation.MethodInvocationTarget.GetParameters();
+            if (pis != null && pis.Length > 0)
+            {
+                for (var index = 0; index < pis.Length; index++)
+                {
+                    this.parameters[pis[index].Name] = invocation.GetArgumentValue(index);
+                }
+            }
         }
 
         #region IInvocation 成员
@@ -132,6 +152,32 @@ namespace MySoft.IoC.Aspect
         {
             get { return invocation.TargetType; }
         }
+
+        #region 内部接口
+
+        /// <summary>
+        /// 参数集合信息
+        /// </summary>
+        public IOC.ParameterCollection Parameters
+        {
+            get
+            {
+                return parameters;
+            }
+        }
+
+        /// <summary>
+        /// 响应的消息
+        /// </summary>
+        public string Description
+        {
+            get
+            {
+                return description;
+            }
+        }
+
+        #endregion
 
         #endregion
     }

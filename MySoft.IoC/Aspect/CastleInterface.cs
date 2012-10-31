@@ -1,4 +1,5 @@
-﻿
+﻿using MySoft.IoC.Messages;
+
 namespace MySoft.IoC
 {
     /// <summary>
@@ -25,6 +26,14 @@ namespace MySoft.IoC.Aspect
     /// </summary>
     public interface IInvocation : Castle.DynamicProxy.IInvocation
     {
-        //TO DO
+        /// <summary>
+        /// 参数集合信息
+        /// </summary>
+        ParameterCollection Parameters { get; }
+
+        /// <summary>
+        /// 操作描述信息
+        /// </summary>
+        string Description { get; }
     }
 }

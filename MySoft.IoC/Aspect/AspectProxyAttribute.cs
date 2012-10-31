@@ -20,22 +20,6 @@ namespace MySoft.IoC.Aspect
             }
         }
 
-        private object[] arguments;
-        /// <summary>
-        /// 拦截器参数
-        /// </summary>
-        public object[] Arguments
-        {
-            get
-            {
-                return arguments;
-            }
-            set
-            {
-                arguments = value;
-            }
-        }
-
         public AspectProxyAttribute(Type interceptorType)
         {
             this.interceptorType = interceptorType;

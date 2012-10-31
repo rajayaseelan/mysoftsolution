@@ -125,32 +125,6 @@ namespace MySoft.IoC.Messages
             }
         }
 
-        /// <summary>
-        /// Dispose this message.
-        /// </summary>
-        public override void Dispose()
-        {
-            base.Dispose();
-
-            if (_value != null)
-            {
-                try
-                {
-                    if (_value is IDisposable)
-                    {
-                        (_value as IDisposable).Dispose();
-                    }
-                }
-                catch (Exception ex)
-                {
-                }
-                finally
-                {
-                    _value = null;
-                }
-            }
-        }
-
         private int GetCount(object val)
         {
             if (val == null) return 0;

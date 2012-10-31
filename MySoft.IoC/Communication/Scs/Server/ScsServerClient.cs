@@ -152,26 +152,14 @@ namespace MySoft.IoC.Communication.Scs.Server
                     _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
                     _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
                     _communicationChannel.MessageError -= CommunicationChannel_MessageError;
-
-                    _communicationChannel.Dispose();
                 }
-                catch (Exception ex)
-                {
-                }
+                catch (Exception ex) { }
                 finally
                 {
                     _communicationChannel = null;
                     UserToken = null;
                 }
             }
-        }
-
-        /// <summary>
-        /// Disposes this object and closes underlying connection.
-        /// </summary>
-        public void Dispose()
-        {
-            Disconnect();
         }
 
         /// <summary>

@@ -85,7 +85,7 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             foreach (var channel in Clients.GetAllItems())
             {
-                channel.Dispose();
+                channel.Disconnect();
             }
 
             Clients.ClearAll();
@@ -120,11 +120,14 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             channel.Disconnected += Client_Disconnected;
 
-            Clients[channel.ClientId] = channel;
+            lock (Clients)
+            {
+                Clients[channel.ClientId] = channel;
 
-            OnClientConnected(channel);
+                OnClientConnected(channel);
 
-            e.Channel.Start();
+                e.Channel.Start();
+            }
         }
 
         /// <summary>
@@ -136,17 +139,13 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             var channel = (IScsServerClient)sender;
 
-            channel.Disconnected -= Client_Disconnected;
-
-            Clients.Remove(channel.ClientId);
-
-            try
+            lock (Clients)
             {
+                channel.Disconnected -= Client_Disconnected;
+
+                Clients.Remove(channel.ClientId);
+
                 OnClientDisconnected(channel);
-            }
-            finally
-            {
-                channel.Dispose();
             }
         }
 

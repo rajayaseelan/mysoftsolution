@@ -100,7 +100,7 @@ namespace MySoft.IoC.Services
         {
             get
             {
-                return string.Format("{0}_{1}", typeof(CallbackProxy).FullName, Guid.NewGuid());
+                return string.Format("{0}${1}", typeof(CallbackProxy).FullName, Guid.NewGuid());
             }
         }
     }

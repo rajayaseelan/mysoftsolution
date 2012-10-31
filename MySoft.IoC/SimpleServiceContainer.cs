@@ -5,11 +5,13 @@ using System.Linq;
 using Castle.Core;
 using Castle.Core.Internal;
 using Castle.Core.Resource;
+using Castle.DynamicProxy;
 using Castle.Facilities.Startable;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using Castle.Windsor.Configuration.Interpreters;
+using MySoft.IoC.Aspect;
 using MySoft.IoC.Services;
 using MySoft.Logger;
 
@@ -38,6 +40,7 @@ namespace MySoft.IoC
                 //如果不是远程模式，则加载配置节
                 var sectionKey = "mysoft.framework/castle";
                 var castle = ConfigurationManager.GetSection(sectionKey);
+
                 if (castle != null)
                 {
                     //只解析本地服务
@@ -50,33 +53,68 @@ namespace MySoft.IoC
             }
         }
 
+        /// <summary>
+        /// 处理服务
+        /// </summary>
+        /// <param name="sectionKey"></param>
         private void DiscoverServices(string sectionKey)
         {
             //加载服务
-            var windsorContainer = new WindsorContainer(new XmlInterpreter(new ConfigResource(sectionKey)));
-
-            //如果容易为空，则不加载
-            if (windsorContainer.Kernel.GraphNodes.Length > 0)
+            using (var windsorContainer = new WindsorContainer(new XmlInterpreter(new ConfigResource(sectionKey))))
             {
-                var models = GetComponentModels<ServiceContractAttribute>(windsorContainer);
-                var components = new List<IRegistration>();
-                foreach (var model in models)
+                //如果容易为空，则不加载
+                if (windsorContainer.Kernel.GraphNodes.Length > 0)
                 {
-                    //注册服务
-                    var component = Component.For(model.Services.First()).Named(model.Name).ImplementedBy(model.Implementation);
-                    if (model.LifestyleType == LifestyleType.Undefined)
-                        component = component.LifeStyle.Singleton;
-                    else
-                        component = component.LifeStyle.Is(model.LifestyleType);
+                    //获取组件
+                    var models = GetComponentModels<ServiceContractAttribute>(windsorContainer);
+                    var components = CreateComponents(models);
 
-                    components.Add(component);
+                    //注册组件
+                    container.Register(components.ToArray());
+                }
+            }
+        }
+
+        /// <summary>
+        /// 创建组件
+        /// </summary>
+        /// <param name="models"></param>
+        /// <returns></returns>
+        private IList<IRegistration> CreateComponents(ComponentModel[] models)
+        {
+            var components = new List<IRegistration>();
+
+            foreach (var model in models)
+            {
+                //注册服务
+                var component = Component.For(model.Services).Named(model.Name).ImplementedBy(model.Implementation);
+
+                if (model.LifestyleType == LifestyleType.Undefined)
+                    component = component.LifeStyle.Pooled.LifestylePooled(10, 100);
+                else
+                    component = component.LifeStyle.Is(model.LifestyleType);
+
+                #region 处理拦截器
+
+                var interceptors = AspectFactory.GetInterceptors(model.Implementation);
+                if (interceptors.Count > 0)
+                {
+                    //注册拦截器
+                    foreach (var type in interceptors)
+                    {
+                        components.Add(Component.For<IInterceptor>().ImplementedBy(type).LifeStyle.Singleton);
+                    }
+
+                    var references = interceptors.Select(type => InterceptorReference.ForType(type)).ToArray();
+                    component = component.Interceptors(references).SelectedWith(new InterceptorSelector()).Anywhere;
                 }
 
-                container.Register(components.ToArray());
+                #endregion
 
-                //销毁资源
-                windsorContainer.Dispose();
+                components.Add(component);
             }
+
+            return components;
         }
 
         /// <summary>
@@ -92,7 +130,7 @@ namespace MySoft.IoC
             nodes.Cast<ComponentModel>().ForEach(model =>
             {
                 bool markedWithServiceContract = false;
-                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Services.First());
+                var attr = CoreHelper.GetMemberAttribute<ContractType>(model.Services.First());
                 if (attr != null)
                 {
                     markedWithServiceContract = true;
@@ -283,7 +321,7 @@ namespace MySoft.IoC
             return nodes.Cast<ComponentModel>().Any(model =>
               {
                   bool markedWithServiceContract = false;
-                  var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Services.First());
+                  var attr = CoreHelper.GetMemberAttribute<ContractType>(model.Services.First());
                   if (attr != null)
                   {
                       markedWithServiceContract = true;
@@ -305,7 +343,7 @@ namespace MySoft.IoC
             nodes.Cast<ComponentModel>().ForEach(model =>
             {
                 bool markedWithServiceContract = false;
-                var attr = CoreHelper.GetTypeAttribute<ContractType>(model.Services.First());
+                var attr = CoreHelper.GetMemberAttribute<ContractType>(model.Services.First());
                 if (attr != null)
                 {
                     markedWithServiceContract = true;
@@ -387,7 +425,6 @@ namespace MySoft.IoC
         public void Dispose()
         {
             container.Dispose();
-            container = null;
         }
 
         #endregion

@@ -18,7 +18,7 @@ namespace MySoft.IoC
     /// <summary>
     /// Castle服务
     /// </summary>
-    public class CastleService : ILogable, IErrorLogable, IDisposable
+    public class CastleService : ILogable, IErrorLogable
     {
         private CastleServiceConfiguration config;
         private IServiceContainer container;
@@ -203,24 +203,8 @@ namespace MySoft.IoC
             }
 
             server.Stop();
-        }
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        public void Dispose()
-        {
-            Stop();
 
             container.Dispose();
-            caller.Dispose();
-
-            container = null;
-            httpServer = null;
-            server = null;
-            epServer = null;
-            caller = null;
-            config = null;
         }
 
         #endregion

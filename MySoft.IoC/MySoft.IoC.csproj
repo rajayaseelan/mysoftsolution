@@ -76,7 +76,6 @@
     <Compile Include="Aspect\CastleInterface.cs" />
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
-    <Compile Include="Aspect\ProxyGenerationHook.cs" />
     <Compile Include="HttpServer\TcpDocument.cs" />
     <Compile Include="Services\WorkerItem.cs" />
     <Compile Include="IServerConnect.cs" />

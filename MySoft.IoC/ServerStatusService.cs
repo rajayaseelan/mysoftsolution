@@ -99,6 +99,8 @@ namespace MySoft.IoC
                     //断开超时的连接
                     foreach (var channel in server.Clients.GetAllItems())
                     {
+                        if (channel == null) continue;
+
                         //判断状态
                         if (channel.CommunicationState != CommunicationStates.Connected)
                         {
@@ -112,7 +114,7 @@ namespace MySoft.IoC
                             try
                             {
                                 //如果超过5分钟没响应，则断开链接
-                                channel.Dispose();
+                                channel.Disconnect();
                             }
                             finally
                             {

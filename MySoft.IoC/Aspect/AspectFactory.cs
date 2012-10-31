@@ -12,33 +12,13 @@ namespace MySoft.IoC.Aspect
     public static class AspectFactory
     {
         /// <summary>
-        /// 创建一个实例方式的拦截器（支持Aspect方式）
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public static object CreateProxy(Type serviceType, object target)
-        {
-            //获取拦截器
-            var interceptors = GetInterceptorList(target);
-
-            //创建代理服务
-            return CreateProxy(serviceType, target, interceptors.ToArray());
-        }
-
-        /// <summary>
         /// 获取拦截器列表
         /// </summary>
-        /// <param name="target"></param>
-        private static IList<IInterceptor> GetInterceptorList(object target)
+        /// <param name="classType"></param>
+        internal static IList<Type> GetInterceptors(Type classType)
         {
-            var interceptors = new List<IInterceptor>();
-
-            //判断对象是否为null
-            if (target == null) return interceptors;
-
-            var classType = target.GetType();
-            var attributes = CoreHelper.GetTypeAttributes<AspectProxyAttribute>(classType);
+            var interceptors = new List<Type>();
+            var attributes = CoreHelper.GetMemberAttributes<AspectProxyAttribute>(classType);
 
             if (attributes != null && attributes.Length > 0)
             {
@@ -46,35 +26,7 @@ namespace MySoft.IoC.Aspect
                 {
                     if (typeof(IInterceptor).IsAssignableFrom(attribute.InterceptorType))
                     {
-                        object value = null;
-                        if (attribute.Arguments == null)
-                        {
-                            value = Activator.CreateInstance(attribute.InterceptorType);
-                        }
-                        else
-                        {
-                            var arguments = new List<object>();
-                            foreach (var argument in attribute.Arguments)
-                            {
-                                if (argument == null) continue;
-
-                                //如果类，则创建实例
-                                var type = argument.GetType();
-                                if (type.IsClass)
-                                {
-                                    var instance = Activator.CreateInstance(type);
-                                    arguments.Add(instance);
-                                }
-                                else
-                                {
-                                    arguments.Add(argument);
-                                }
-                            }
-
-                            value = Activator.CreateInstance(attribute.InterceptorType, arguments.ToArray());
-                        }
-
-                        interceptors.Add(value as IInterceptor);
+                        interceptors.Add(attribute.InterceptorType);
                     }
                 }
             }
@@ -91,19 +43,7 @@ namespace MySoft.IoC.Aspect
         /// <returns></returns>
         public static object CreateProxy(Type proxyType, object target, params IInterceptor[] interceptors)
         {
-            //如果拦截器为0
-            if (interceptors == null || interceptors.Length == 0)
-            {
-                return target;
-            }
-
-            ProxyGenerator proxy = new ProxyGenerator();
-            ProxyGenerationOptions options = new ProxyGenerationOptions(new ProxyGenerationHook())
-            {
-                Selector = new InterceptorSelector()
-            };
-
-            return proxy.CreateInterfaceProxyWithTarget(proxyType, target, options, interceptors);
+            return CreateProxy(proxyType, target, null, interceptors);
         }
 
         /// <summary>
@@ -114,7 +54,7 @@ namespace MySoft.IoC.Aspect
         /// <returns></returns>
         public static object CreateProxy(Type classType, params IInterceptor[] interceptors)
         {
-            return CreateProxy(classType, new object[0], interceptors);
+            return CreateProxy(classType, (ProxyGenerationOptions)null, interceptors);
         }
 
         /// <summary>
@@ -126,6 +66,57 @@ namespace MySoft.IoC.Aspect
         /// <returns></returns>
         public static object CreateProxy(Type classType, object[] arguments, params IInterceptor[] interceptors)
         {
+            return CreateProxy(classType, arguments, null, interceptors);
+        }
+
+        #region 带options参数
+
+        /// <summary>
+        /// 创建一个实例方式的拦截器
+        /// </summary>
+        /// <param name="proxyType"></param>
+        /// <param name="target"></param>
+        /// <param name="options"></param>
+        /// <param name="interceptors"></param>
+        /// <returns></returns>
+        public static object CreateProxy(Type proxyType, object target, ProxyGenerationOptions options, params IInterceptor[] interceptors)
+        {
+            //如果拦截器为0
+            if (interceptors == null || interceptors.Length == 0)
+            {
+                return target;
+            }
+
+            ProxyGenerator proxy = new ProxyGenerator();
+
+            if (options == null)
+                return proxy.CreateInterfaceProxyWithTarget(proxyType, target, interceptors);
+            else
+                return proxy.CreateInterfaceProxyWithTarget(proxyType, target, options, interceptors);
+        }
+
+        /// <summary>
+        /// 创建一个类型方式的拦截器
+        /// </summary>
+        /// <param name="classType"></param>
+        /// <param name="options"></param>
+        /// <param name="interceptors"></param>
+        /// <returns></returns>
+        public static object CreateProxy(Type classType, ProxyGenerationOptions options, params IInterceptor[] interceptors)
+        {
+            return CreateProxy(classType, new object[0], interceptors);
+        }
+
+        /// <summary>
+        /// 创建一个类型方式的拦截器（可传入参数）
+        /// </summary>
+        /// <param name="classType"></param>
+        /// <param name="arguments"></param>
+        /// <param name="options"></param>
+        /// <param name="interceptors"></param>
+        /// <returns></returns>
+        public static object CreateProxy(Type classType, object[] arguments, ProxyGenerationOptions options, params IInterceptor[] interceptors)
+        {
             //如果拦截器为0
             if (interceptors.Length == 0)
             {
@@ -133,15 +124,23 @@ namespace MySoft.IoC.Aspect
             }
 
             ProxyGenerator proxy = new ProxyGenerator();
-            ProxyGenerationOptions options = new ProxyGenerationOptions(new ProxyGenerationHook())
-            {
-                Selector = new InterceptorSelector()
-            };
 
-            if (arguments == null || arguments.Length == 0)
-                return proxy.CreateClassProxy(classType, options, interceptors);
+            if (options == null)
+            {
+                if (arguments == null || arguments.Length == 0)
+                    return proxy.CreateClassProxy(classType, interceptors);
+                else
+                    return proxy.CreateClassProxy(classType, arguments, interceptors);
+            }
             else
-                return proxy.CreateClassProxy(classType, options, arguments, interceptors);
+            {
+                if (arguments == null || arguments.Length == 0)
+                    return proxy.CreateClassProxy(classType, options, interceptors);
+                else
+                    return proxy.CreateClassProxy(classType, options, arguments, interceptors);
+            }
         }
+
+        #endregion
     }
 }
