@@ -39,7 +39,6 @@ namespace MySoft.IoC
 
         private RequestMessage reqMsg;
         private IScsClient client;
-        private IServiceContainer container;
         private ServerNode node;
         private bool subscribed;
 
@@ -47,10 +46,9 @@ namespace MySoft.IoC
         /// 实例化ServiceMessage
         /// </summary>
         /// <param name="node"></param>
-        /// <param name="container"></param>
-        public ServiceRequest(ServerNode node, IServiceContainer container, bool subscribed)
+        /// <param name="subscribed"></param>
+        public ServiceRequest(ServerNode node, bool subscribed)
         {
-            this.container = container;
             this.node = node;
             this.subscribed = subscribed;
 

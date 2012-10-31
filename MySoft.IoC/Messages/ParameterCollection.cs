@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
 namespace MySoft.IoC.Messages
@@ -38,7 +35,6 @@ namespace MySoft.IoC.Messages
             }
             set
             {
-                //if (value == null) return;
                 parmValues[paramName] = value;
             }
         }

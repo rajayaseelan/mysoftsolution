@@ -12,23 +12,6 @@ namespace MySoft.IoC.Messages
         private string methodName;
         private Guid transactionId;
         private ParameterCollection parameters = new ParameterCollection();
-        private Type returnType;
-
-        /// <summary>
-        /// Gets or sets the returnType.
-        /// </summary>
-        /// <value>The returnType.</value>
-        public Type ReturnType
-        {
-            get
-            {
-                return returnType;
-            }
-            set
-            {
-                returnType = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the transaction id.

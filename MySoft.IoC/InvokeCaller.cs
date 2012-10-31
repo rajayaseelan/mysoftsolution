@@ -13,7 +13,7 @@ namespace MySoft.IoC
         private IService service;
         private string hostName;
         private string ipAddress;
-        private IServiceContainer container;
+        private IContainer container;
         private AsyncCaller asyncCaller;
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace MySoft.IoC
         /// <param name="container"></param>
         /// <param name="service"></param>
         /// <param name="timeout"></param>
-        public InvokeCaller(string appName, IServiceContainer container, IService service, TimeSpan timeout)
+        public InvokeCaller(string appName, IContainer container, IService service, TimeSpan timeout)
         {
             this.appName = appName;
             this.service = service;
@@ -64,16 +64,17 @@ namespace MySoft.IoC
             reqMsg.Parameters["InvokeParameter"] = message.Parameters;
 
             //获取上下文
-            var context = GetOperationContext(reqMsg);
+            using (var context = GetOperationContext(reqMsg))
+            {
+                //异步调用服务
+                var resMsg = asyncCaller.Run(context, reqMsg);
 
-            //异步调用服务
-            var resMsg = asyncCaller.Run(context, reqMsg);
+                //如果有异常，向外抛出
+                if (resMsg.IsError) throw resMsg.Error;
 
-            //如果有异常，向外抛出
-            if (resMsg.IsError) throw resMsg.Error;
-
-            //返回数据
-            return resMsg.Value as InvokeData;
+                //返回数据
+                return resMsg.Value as InvokeData;
+            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.IoC.Services
 {
@@ -11,8 +12,8 @@ namespace MySoft.IoC.Services
     {
         private object callback;
 
-        public CallbackProxy(object callback, ServerNode node, IServiceContainer container)
-            : base(node, container)
+        public CallbackProxy(object callback, ServerNode node, ILog logger)
+            : base(node, logger)
         {
             this.callback = callback;
         }
@@ -26,7 +27,7 @@ namespace MySoft.IoC.Services
 
             lock (this.reqPool)
             {
-                var reqService = new ServiceRequest(node, container, true);
+                var reqService = new ServiceRequest(node, true);
                 reqService.OnCallback += reqService_OnCallback;
                 reqService.OnError += reqService_OnError;
 
@@ -88,7 +89,7 @@ namespace MySoft.IoC.Services
                             catch (Exception ex)
                             {
                                 //调用异常，写异常信息
-                                container.WriteError(ex);
+                                logger.WriteError(ex);
                             }
                         }
                     }

@@ -98,10 +98,11 @@ namespace MySoft.IoC
                 var asyncCaller = GetAsyncCaller(caller);
 
                 //获取上下文
-                var context = GetOperationContext(channel, caller);
-
-                //异步调用服务
-                resMsg = asyncCaller.Run(context, reqMsg);
+                using (var context = GetOperationContext(channel, caller))
+                {
+                    //异步调用服务
+                    resMsg = asyncCaller.Run(context, reqMsg);
+                }
             }
             catch (Exception ex)
             {

@@ -40,8 +40,6 @@ namespace MySoft.IoC.Services
         {
             try
             {
-                if (ev == null) return true;
-
                 return ev.WaitOne(timeout, false);
             }
             catch
@@ -76,8 +74,6 @@ namespace MySoft.IoC.Services
                     };
                 }
 
-                if (ev == null) return true;
-
                 return ev.Set();
             }
             catch
@@ -93,20 +89,10 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            try
-            {
-                this.ev.Close();
-            }
-            catch (Exception ex)
-            {
-                //TODO
-            }
-            finally
-            {
-                this.reqMsg = null;
-                this.resMsg = null;
-                this.ev = null;
-            }
+            this.ev.Close();
+
+            this.reqMsg = null;
+            this.resMsg = null;
         }
 
         #endregion

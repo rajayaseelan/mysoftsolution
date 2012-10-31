@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.IoC.Services
 {
@@ -27,7 +28,7 @@ namespace MySoft.IoC.Services
 
         protected ServiceRequestPool reqPool;
         private volatile int poolSize;
-        protected IServiceContainer container;
+        protected ILog logger;
         protected ServerNode node;
 
         /// <summary>
@@ -35,10 +36,10 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="node"></param>
         /// <param name="container"></param>
-        public RemoteProxy(ServerNode node, IServiceContainer container)
+        public RemoteProxy(ServerNode node, ILog logger)
         {
             this.node = node;
-            this.container = container;
+            this.logger = logger;
 
             InitServiceRequest();
         }
@@ -68,7 +69,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ServiceRequest CreateServiceRequest()
         {
-            var reqService = new ServiceRequest(node, container, false);
+            var reqService = new ServiceRequest(node, false);
             reqService.OnCallback += reqService_OnCallback;
             reqService.OnError += reqService_OnError;
             reqService.OnConnected += (sender, args) =>

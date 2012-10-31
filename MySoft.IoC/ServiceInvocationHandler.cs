@@ -17,7 +17,7 @@ namespace MySoft.IoC
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
         private IDictionary<string, string> errors;
-        private IServiceContainer container;
+        private IContainer container;
         private AsyncCaller asyncCaller;
         private IService service;
         private Type serviceType;
@@ -33,7 +33,7 @@ namespace MySoft.IoC
         /// <param name="service"></param>
         /// <param name="serviceType"></param>
         /// <param name="cache"></param>
-        public ServiceInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IService service, Type serviceType, ICacheStrategy cache, IServiceLog logger)
+        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, Type serviceType, ICacheStrategy cache, IServiceLog logger)
         {
             this.config = config;
             this.container = container;
@@ -139,16 +139,17 @@ namespace MySoft.IoC
                 //写日志开始
                 logger.BeginRequest(reqMsg);
 
-                //获取上下文
-                var context = GetOperationContext(reqMsg);
-
                 //开始计时
                 var watch = Stopwatch.StartNew();
 
                 try
                 {
-                    //异步调用服务
-                    resMsg = asyncCaller.Run(context, reqMsg);
+                    //获取上下文
+                    using (var context = GetOperationContext(reqMsg))
+                    {
+                        //异步调用服务
+                        resMsg = asyncCaller.Run(context, reqMsg);
+                    }
 
                     watch.Stop();
                 }

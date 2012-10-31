@@ -122,11 +122,11 @@ namespace MySoft.IoC.Services
         #region IDisposable 成员
 
         /// <summary>
-        /// 清理资源
+        /// Dispose operation context.
         /// </summary>
         public void Dispose()
         {
-            this.CallKey = null;
+            this.Context.Dispose();
             this.Context = null;
             this.Request = null;
             this.AsyncThread = null;

@@ -12,7 +12,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     public class DynamicService : BaseService
     {
-        private IServiceContainer container;
+        private IContainer container;
         private Type serviceType;
         private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         private IDictionary<string, System.Reflection.MethodInfo> methods;
@@ -21,7 +21,7 @@ namespace MySoft.IoC.Services
         /// Initializes a new instance of the <see cref="DynamicService"/> class.
         /// </summary>
         /// <param name="serviceType">Type of the service interface.</param>
-        public DynamicService(IServiceContainer container, Type serviceType)
+        public DynamicService(IContainer container, Type serviceType)
             : base(serviceType)
         {
             this.container = container;
