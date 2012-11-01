@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using MySoft.IoC.Callback;
+using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
@@ -93,15 +95,7 @@ namespace MySoft.IoC
             }
 
             //绑定事件
-            MessageCenter.Instance.OnError += error =>
-            {
-                container.WriteError(error);
-            };
-
-            MessageCenter.Instance.OnLog += (log, type) =>
-            {
-                container.WriteLog(log, type);
-            };
+            MessageCenter.Instance.OnLog += container.WriteLog;
 
             //发布日志
             PublishService(status.GetServiceList());
@@ -211,30 +205,164 @@ namespace MySoft.IoC
 
         #region 侦听事件
 
-        void server_ClientConnected(object sender, ServerClientEventArgs e)
+        /// <summary>
+        /// 开始链接
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void server_ClientConnected(object sender, ServerClientEventArgs e)
         {
-            e.Channel.MessageReceived += Client_MessageReceived;
-            e.Channel.MessageError += Client_MessageError;
+            try
+            {
+                e.Channel.MessageReceived += Client_MessageReceived;
+                e.Channel.MessageError += Client_MessageError;
 
-            var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
-            PushConnectInfo(endPoint, true, e.ConnectCount);
+                var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
+                PushConnectInfo(endPoint, true, e.ConnectCount);
+            }
+            catch (Exception ex)
+            {
+                //写异常日志
+                container.WriteError(ex);
+            }
         }
 
-        void Client_MessageError(object sender, ErrorEventArgs e)
+        /// <summary>
+        /// 断开链接
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void server_ClientDisconnected(object sender, ServerClientEventArgs e)
+        {
+            try
+            {
+                e.Channel.MessageReceived -= Client_MessageReceived;
+                e.Channel.MessageError -= Client_MessageError;
+
+                var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
+                PushConnectInfo(endPoint, false, e.ConnectCount);
+            }
+            catch (Exception ex)
+            {
+                //写异常日志
+                container.WriteError(ex);
+            }
+        }
+
+        /// <summary>
+        /// 接收数据
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Client_MessageReceived(object sender, MessageEventArgs e)
+        {
+            var channel = sender as IScsServerClient;
+
+            try
+            {
+                //只处理指定消息
+                if (e.Message is ScsClientMessage)
+                {
+                    ReceiveClientMessage(e, channel);
+                }
+                else if (e.Message is ScsResultMessage)
+                {
+                    //获取client发送端
+                    ReceiveRequestMessage(e, channel);
+                }
+            }
+            catch (Exception ex)
+            {
+                //写异常日志
+                container.WriteError(ex);
+            }
+        }
+
+        /// <summary>
+        /// 接收客户端
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="channel"></param>
+        private void ReceiveClientMessage(MessageEventArgs e, IScsServerClient channel)
+        {
+            var client = (e.Message as ScsClientMessage).Client;
+            channel.UserToken = client;
+
+            //响应客户端详细信息
+            var endPoint = (channel.RemoteEndPoint as ScsTcpEndPoint);
+            PushAppClient(endPoint, client);
+        }
+
+        /// <summary>
+        /// 接收请求消息
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="channel"></param>
+        private void ReceiveRequestMessage(MessageEventArgs e, IScsServerClient channel)
+        {
+            var message = e.Message as ScsResultMessage;
+            var reqMsg = message.MessageValue as RequestMessage;
+
+            //发送结果
+            var resMsg = caller.InvokeRequest(channel, reqMsg);
+            SendMessage(channel, reqMsg, resMsg, message.RepliedMessageId);
+        }
+
+        /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="resMsg"></param>
+        /// <param name="messageId"></param>
+        private void SendMessage(IScsServerClient channel, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
+        {
+            IScsMessage scsMessage = null;
+
+            try
+            {
+                scsMessage = new ScsResultMessage(resMsg, messageId);
+
+                //发送消息
+                channel.SendMessage(scsMessage);
+            }
+            catch (SocketException ex) { }
+            catch (CommunicationException ex) { }
+            catch (Exception ex)
+            {
+                try
+                {
+                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
+
+                    scsMessage = new ScsResultMessage(resMsg, messageId);
+
+                    //发送消息
+                    channel.SendMessage(scsMessage);
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+        }
+
+        /// <summary>
+        /// 异常处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Client_MessageError(object sender, ErrorEventArgs e)
         {
             container.WriteError(e.Error);
         }
 
-        void server_ClientDisconnected(object sender, ServerClientEventArgs e)
-        {
-            e.Channel.MessageReceived -= Client_MessageReceived;
-            e.Channel.MessageError -= Client_MessageError;
-
-            var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
-            PushConnectInfo(endPoint, false, e.ConnectCount);
-        }
-
-        void PushConnectInfo(ScsTcpEndPoint endPoint, bool connected, int count)
+        /// <summary>
+        /// 推送链接信息
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <param name="connected"></param>
+        /// <param name="count"></param>
+        private void PushConnectInfo(ScsTcpEndPoint endPoint, bool connected, int count)
         {
             if (connected)
             {
@@ -248,7 +376,7 @@ namespace MySoft.IoC
             }
 
             //推送连接信息
-            var connect = new ConnectInfo
+            var appConnect = new ConnectInfo
             {
                 ConnectTime = DateTime.Now,
                 IPAddress = endPoint.IpAddress,
@@ -258,39 +386,15 @@ namespace MySoft.IoC
                 Connected = connected
             };
 
-            MessageCenter.Instance.Notify(connect);
+            MessageCenter.Instance.Notify(appConnect);
         }
 
-        void Client_MessageReceived(object sender, MessageEventArgs e)
-        {
-            //不是指定消息不处理
-            if (e.Message is ScsClientMessage)
-            {
-                var info = sender as IScsServerClient;
-                if (server.Clients.ContainsKey(info.ClientId))
-                {
-                    var channel = server.Clients[info.ClientId];
-                    var appClient = (e.Message as ScsClientMessage).Client;
-                    channel.UserToken = appClient;
-
-                    //响应客户端详细信息
-                    var endPoint = (info.RemoteEndPoint as ScsTcpEndPoint);
-                    PushAppClient(endPoint, appClient);
-                }
-            }
-            else if (e.Message is ScsResultMessage)
-            {
-                //获取client发送端
-                var channel = sender as IScsServerClient;
-                var message = e.Message as ScsResultMessage;
-                var reqMsg = message.MessageValue as RequestMessage;
-
-                //调用方法
-                caller.CallMethod(channel, reqMsg, message.RepliedMessageId);
-            }
-        }
-
-        void PushAppClient(ScsTcpEndPoint endPoint, AppClient appClient)
+        /// <summary>
+        /// 推送客户端信息
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <param name="appClient"></param>
+        private void PushAppClient(ScsTcpEndPoint endPoint, AppClient appClient)
         {
             container.WriteLog(string.Format("Change app 【{4}】 client {0}:{1} to {2}[{3}].",
                     endPoint.IpAddress, endPoint.TcpPort, appClient.IPAddress, appClient.HostName, appClient.AppName), LogType.Information);

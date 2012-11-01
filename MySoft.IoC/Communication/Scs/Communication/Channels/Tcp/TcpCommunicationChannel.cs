@@ -36,10 +36,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private readonly Socket _clientSocket;
 
+        private readonly ManualResetEvent _willRaiseEvent;
+
         /// <summary>
         /// Socket object async args.
         /// </summary>
-        private readonly SocketAsyncEventArgs _sendEventArgs, _receiveEventArgs;
+        private readonly SocketAsyncEventArgs _sendEventArgs;
+        private readonly SocketAsyncEventArgs _receiveEventArgs;
 
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
@@ -50,8 +53,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// This buffer is used to receive bytes 
         /// </summary>
         private volatile byte[] _buffer;
-
-        private ManualResetEvent _willRaiseEvent;
 
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
@@ -117,6 +118,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 _sendEventArgs.Dispose();
                 _receiveEventArgs.Dispose();
+
+                _willRaiseEvent.Close();
             }
         }
 
@@ -266,6 +269,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     }
                     catch (Exception ex)
                     {
+                        OnMessageError(ex);
                     }
 
                     if (!_clientSocket.ReceiveAsync(_receiveEventArgs))

@@ -19,20 +19,16 @@ namespace MySoft.IoC
         {
             get
             {
-                string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
+                var name = typeof(OperationContext).FullName;
                 return CallContext.GetData(name) as OperationContext;
             }
             set
             {
-                string name = string.Format("OperationContext_{0}", Thread.CurrentThread.ManagedThreadId);
+                var name = typeof(OperationContext).FullName;
                 if (value == null)
-                {
                     CallContext.FreeNamedDataSlot(name);
-                }
                 else
-                {
                     CallContext.SetData(name, value);
-                }
             }
         }
 
@@ -87,7 +83,7 @@ namespace MySoft.IoC
         {
             if (callbackType == null || typeof(ICallbackService) != callbackType)
             {
-                throw new IoCException("Please set the current of callback interface type.");
+                throw new WarningException("Please set the current of callback interface type.");
             }
             else
             {

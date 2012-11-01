@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using MySoft.IoC.Callback;
-using MySoft.IoC.Communication.Scs.Communication;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
@@ -82,9 +80,8 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="reqMsg"></param>
-        /// <param name="messageId"></param>
         /// <returns></returns>
-        public void CallMethod(IScsServerClient channel, RequestMessage reqMsg, string messageId)
+        public ResponseMessage InvokeRequest(IScsServerClient channel, RequestMessage reqMsg)
         {
             //定义响应的消息
             ResponseMessage resMsg = null;
@@ -115,10 +112,9 @@ namespace MySoft.IoC
             {
                 //处理响应信息
                 resMsg = HandleResponse(caller, reqMsg, resMsg);
-
-                //发送消息
-                SendMessage(channel, reqMsg, resMsg, messageId);
             }
+
+            return resMsg;
         }
 
         /// <summary>
@@ -175,42 +171,6 @@ namespace MySoft.IoC
                 catch (Exception ex)
                 {
                     //TODO
-                }
-            }
-        }
-
-        /// <summary>
-        /// 发送消息
-        /// </summary>
-        /// <param name="channel"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        /// <param name="messageId"></param>
-        private void SendMessage(IScsServerClient channel, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
-        {
-            IScsMessage scsMessage = null;
-
-            try
-            {
-                scsMessage = new ScsResultMessage(resMsg, messageId);
-
-                //发送消息
-                channel.SendMessage(scsMessage);
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                    scsMessage = new ScsResultMessage(resMsg, messageId);
-
-                    //发送消息
-                    channel.SendMessage(scsMessage);
-                }
-                catch (Exception e)
-                {
-
                 }
             }
         }

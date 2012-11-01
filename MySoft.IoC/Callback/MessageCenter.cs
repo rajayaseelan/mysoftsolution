@@ -6,13 +6,14 @@ using System.Net.Sockets;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using MySoft.IoC.Communication.Scs.Communication;
 
 namespace MySoft.IoC.Callback
 {
     /// <summary>
     /// 消息中心；
     /// </summary>
-    internal class MessageCenter : IErrorLogable
+    internal class MessageCenter : ILogable
     {
         #region MessageCenter 的单例实现
 
@@ -88,11 +89,7 @@ namespace MySoft.IoC.Callback
             }
             else
             {
-                if (OnLog != null)
-                {
-                    OnLog(string.Format("Add listener ({0}).", listenerKey), LogType.Warning);
-                }
-
+                if (OnLog != null) OnLog(string.Format("Add listener ({0}).", listenerKey), LogType.Warning);
                 _listeners[listenerKey] = listener;
             }
         }
@@ -106,11 +103,7 @@ namespace MySoft.IoC.Callback
             var listenerKey = listener.Channel.RemoteEndPoint.ToString();
             if (_listeners.ContainsKey(listenerKey))
             {
-                if (OnLog != null)
-                {
-                    OnLog(string.Format("Remove listener ({0}).", listenerKey), LogType.Error);
-                }
-
+                if (OnLog != null) OnLog(string.Format("Remove listener ({0}).", listenerKey), LogType.Error);
                 _listeners.Remove(listenerKey);
             }
             else
@@ -144,13 +137,9 @@ namespace MySoft.IoC.Callback
                         lstn.Notify(status);
                     }
                 }
-                catch (SocketException ex)
-                {
-                    RemoveListener(lstn);
-                }
                 catch (Exception ex)
                 {
-                    if (OnError != null) OnError(ex);
+                    RemoveListener(lstn);
                 }
             }
         }
@@ -206,13 +195,9 @@ namespace MySoft.IoC.Callback
                         }
                     }
                 }
-                catch (SocketException ex)
-                {
-                    RemoveListener(lstn);
-                }
                 catch (Exception ex)
                 {
-                    if (OnError != null) OnError(ex);
+                    RemoveListener(lstn);
                 }
             }
         }
@@ -236,13 +221,9 @@ namespace MySoft.IoC.Callback
                         lstn.Notify(connectInfo);
                     }
                 }
-                catch (SocketException ex)
-                {
-                    RemoveListener(lstn);
-                }
                 catch (Exception ex)
                 {
-                    if (OnError != null) OnError(ex);
+                    RemoveListener(lstn);
                 }
             }
         }
@@ -268,13 +249,9 @@ namespace MySoft.IoC.Callback
                         lstn.Notify(ipAddress, port, appClient);
                     }
                 }
-                catch (SocketException ex)
-                {
-                    RemoveListener(lstn);
-                }
                 catch (Exception ex)
                 {
-                    if (OnError != null) OnError(ex);
+                    RemoveListener(lstn);
                 }
             }
         }
@@ -298,23 +275,14 @@ namespace MySoft.IoC.Callback
                         lstn.Notify(clientInfos);
                     }
                 }
-                catch (SocketException ex)
-                {
-                    RemoveListener(lstn);
-                }
                 catch (Exception ex)
                 {
-                    if (OnError != null) OnError(ex);
+                    RemoveListener(lstn);
                 }
             }
         }
 
-        #region IErrorLogable 成员
-
-        /// <summary>
-        /// 错误处理Handler
-        /// </summary>
-        public event ErrorLogEventHandler OnError;
+        #region ILogable 成员
 
         /// <summary>
         /// 日志处理

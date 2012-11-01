@@ -2,6 +2,7 @@
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Communication.Protocols;
+using System.Net.Sockets;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels
 {
@@ -113,6 +114,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels
             if (message == null)
             {
                 throw new ArgumentNullException("message");
+            }
+
+            //Socket connection is not connected.
+            if (CommunicationState != CommunicationStates.Connected)
+            {
+                throw new CommunicationException("Tcp socket is closed.");
             }
 
             try

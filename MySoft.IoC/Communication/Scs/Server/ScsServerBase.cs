@@ -120,14 +120,10 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             channel.Disconnected += Client_Disconnected;
 
-            lock (Clients)
-            {
-                Clients[channel.ClientId] = channel;
+            Clients[channel.ClientId] = channel;
+            OnClientConnected(channel);
 
-                OnClientConnected(channel);
-
-                e.Channel.Start();
-            }
+            e.Channel.Start();
         }
 
         /// <summary>
@@ -139,14 +135,10 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             var channel = (IScsServerClient)sender;
 
-            lock (Clients)
-            {
-                channel.Disconnected -= Client_Disconnected;
+            channel.Disconnected -= Client_Disconnected;
 
-                Clients.Remove(channel.ClientId);
-
-                OnClientDisconnected(channel);
-            }
+            Clients.Remove(channel.ClientId);
+            OnClientDisconnected(channel);
         }
 
         #endregion
