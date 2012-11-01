@@ -8,6 +8,7 @@ namespace MySoft.RESTful
     /// <summary>
     /// 认证User结果
     /// </summary>
+    [Serializable]
     public class AuthorizeUser
     {
         /// <summary>

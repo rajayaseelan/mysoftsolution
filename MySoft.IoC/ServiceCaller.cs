@@ -91,12 +91,12 @@ namespace MySoft.IoC
 
             try
             {
-                //解析服务
-                var asyncCaller = GetAsyncCaller(caller);
-
                 //获取上下文
                 using (var context = GetOperationContext(channel, caller))
                 {
+                    //解析服务
+                    var asyncCaller = GetAsyncCaller(caller);
+
                     //异步调用服务
                     resMsg = asyncCaller.Run(context, reqMsg);
                 }

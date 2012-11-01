@@ -95,7 +95,10 @@ namespace MySoft.IoC.Messages
             }
             else if (parmValues.ContainsKey("InvokeParameter"))
             {
-                return parmValues["InvokeParameter"].ToString();
+                var value = parmValues["InvokeParameter"];
+                if (value == null) return "{}";
+
+                return value.ToString();
             }
             else
             {

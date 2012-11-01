@@ -9,7 +9,7 @@ using System.Collections.Specialized;
 
 namespace MySoft.PlatformService.UserService
 {
-    //[AspectProxy(typeof(AspectLog))]
+    [AspectProxy(typeof(AspectLog))]
     public class UserService : IUserService, IInitializable, IStartable
     {
         //private DateTime startTime;
@@ -23,7 +23,7 @@ namespace MySoft.PlatformService.UserService
             return new User { Id = name.Length, Name = name };
         }
 
-        //[AspectSwitcher(true, Description = "获取用户")]
+        [AspectSwitcher(true, Description = "获取用户")]
         public virtual User GetUser(int id)
         {
             //Thread.Sleep(5000);

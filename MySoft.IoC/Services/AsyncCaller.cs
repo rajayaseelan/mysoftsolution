@@ -62,6 +62,12 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage Run(OperationContext context, RequestMessage reqMsg)
         {
+            //如果是Invoke方式调用，直接响应
+            if (reqMsg.InvokeMethod)
+            {
+                return GetWorkerResponse(context, reqMsg);
+            }
+
             //获取CallerKey
             var callKey = GetCallerKey(reqMsg, context.Caller);
 

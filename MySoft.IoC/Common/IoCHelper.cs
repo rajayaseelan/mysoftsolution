@@ -162,6 +162,14 @@ namespace MySoft.IoC
                         index++;
                     }
                 }
+                else if (pis.Length > 0)
+                {
+                    throw new ArgumentNullException("Parameter value can't be empty.");
+                }
+            }
+            else if (pis.Length > 0)
+            {
+                throw new ArgumentNullException("Parameter value can't be null.");
             }
 
             //创建参数集合

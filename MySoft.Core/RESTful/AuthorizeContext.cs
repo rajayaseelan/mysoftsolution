@@ -34,20 +34,16 @@ namespace MySoft.RESTful
         {
             get
             {
-                string name = string.Format("AuthorizeContext_{0}", Thread.CurrentThread.ManagedThreadId);
+                string name = typeof(AuthorizeContext).FullName;
                 return CallContext.GetData(name) as AuthorizeContext;
             }
             set
             {
-                string name = string.Format("AuthorizeContext_{0}", Thread.CurrentThread.ManagedThreadId);
+                string name = typeof(AuthorizeContext).FullName;
                 if (value == null)
-                {
                     CallContext.FreeNamedDataSlot(name);
-                }
                 else
-                {
                     CallContext.SetData(name, value);
-                }
             }
         }
     }
