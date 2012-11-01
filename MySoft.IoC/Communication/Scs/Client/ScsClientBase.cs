@@ -175,28 +175,18 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// </summary>
         public void Disconnect()
         {
-            if (_communicationChannel != null)
+            if (_communicationChannel.CommunicationState == CommunicationStates.Connected)
             {
-                try
-                {
-                    if (_communicationChannel.CommunicationState == CommunicationStates.Connected)
-                    {
-                        _communicationChannel.Disconnect();
-                    }
-
-                    _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
-                    _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
-                    _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
-                    _communicationChannel.MessageError -= CommunicationChannel_MessageError;
-                    _pingTimer.Elapsed -= PingTimer_Elapsed;
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    _communicationChannel = null;
-                    _pingTimer.Stop();
-                }
+                _communicationChannel.Disconnect();
             }
+
+            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
+            _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
+            _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
+            _communicationChannel.MessageError -= CommunicationChannel_MessageError;
+
+            _pingTimer.Elapsed -= PingTimer_Elapsed;
+            _pingTimer.Stop();
         }
 
         /// <summary>

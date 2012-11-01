@@ -120,8 +120,11 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             channel.Disconnected += Client_Disconnected;
 
-            Clients[channel.ClientId] = channel;
-            OnClientConnected(channel);
+            lock (Clients)
+            {
+                Clients[channel.ClientId] = channel;
+                OnClientConnected(channel);
+            }
 
             e.Channel.Start();
         }
@@ -137,8 +140,11 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             channel.Disconnected -= Client_Disconnected;
 
-            Clients.Remove(channel.ClientId);
-            OnClientDisconnected(channel);
+            lock (Clients)
+            {
+                Clients.Remove(channel.ClientId);
+                OnClientDisconnected(channel);
+            }
         }
 
         #endregion
