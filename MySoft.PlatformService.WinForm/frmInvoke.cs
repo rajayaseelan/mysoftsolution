@@ -239,7 +239,8 @@ namespace MySoft.PlatformService.WinForm
             {
                 ServiceName = serviceName,
                 MethodName = methodName,
-                Parameters = parameter
+                Parameters = parameter,
+                CacheTime = node.Timeout
             };
 
             //启用线程进行数据填充

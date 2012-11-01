@@ -372,7 +372,10 @@ namespace MySoft.IoC
             {
                 //获取本地服务
                 IService service = GetLocalService(message);
-                if (service != null) return GetInvokeData(message, service);
+                if (service != null)
+                {
+                    return GetInvokeResponse(message, service);
+                }
 
                 throw new WarningException(string.Format("Did not find the service {0}.", message.ServiceName));
             }
@@ -438,7 +441,7 @@ namespace MySoft.IoC
             }
 
             //获取服务内容
-            return GetInvokeData(message, service);
+            return GetInvokeResponse(message, service);
         }
 
         #endregion
@@ -451,11 +454,46 @@ namespace MySoft.IoC
         /// <param name="message"></param>
         /// <param name="service"></param>
         /// <returns></returns>
+        private InvokeData GetInvokeResponse(InvokeMessage message, IService service)
+        {
+            //定义响应数据体
+            InvokeData invokeData = null;
+
+            if (message.CacheTime > 0)
+            {
+                string thisKey = string.Format("{0}${1}${2}", message.ServiceName, message.MethodName, message.Parameters);
+                var cacheKey = string.Format("InvokeCaller_{0}", thisKey);
+
+                //获取超时
+                var timeout = TimeSpan.FromSeconds(message.CacheTime);
+                invokeData = CacheHelper<InvokeData>.Get(cacheKey, timeout, state =>
+                {
+                    var arr = state as ArrayList;
+
+                    //获取响应信息
+                    return GetInvokeData(arr[0] as InvokeMessage, arr[1] as IService);
+
+                }, new ArrayList { message, service });
+            }
+            else
+            {
+                //不缓存直接获取
+                invokeData = GetInvokeData(message, service);
+            }
+
+            return invokeData;
+        }
+
+        /// <summary>
+        /// 获取调用的数据
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="service"></param>
+        /// <returns></returns>
         private InvokeData GetInvokeData(InvokeMessage message, IService service)
         {
             //调用分布式服务
             var timeout = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT * 5);
-
             var caller = new InvokeCaller(config.AppName, container, service, timeout);
             return caller.CallMethod(message);
         }

@@ -49,5 +49,15 @@ namespace MySoft.IoC.Messages
         /// 参数值，必须为json格式
         /// </summary>
         public string Parameters { get; set; }
+
+        /// <summary>
+        /// 缓存时间（单位：秒）
+        /// </summary>
+        public int CacheTime { get; set; }
+
+        public InvokeMessage()
+        {
+            this.CacheTime = -1;
+        }
     }
 }

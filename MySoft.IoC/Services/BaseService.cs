@@ -58,7 +58,7 @@ namespace MySoft.IoC.Services
 
                 watch.Stop();
 
-                //计算超时
+                //计算耗时时间
                 resMsg.ElapsedTime = watch.ElapsedMilliseconds;
 
                 return resMsg;
@@ -69,6 +69,8 @@ namespace MySoft.IoC.Services
                 {
                     watch.Stop();
                 }
+
+                watch = null;
             }
         }
 

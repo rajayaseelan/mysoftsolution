@@ -358,32 +358,20 @@ namespace MySoft.IoC.Services
                 ServiceName = resMsg.ServiceName,
                 MethodName = resMsg.MethodName,
                 Parameters = resMsg.Parameters,
+                ElapsedTime = resMsg.ElapsedTime,
                 Error = resMsg.Error,
-                Value = resMsg.Value,
-                ElapsedTime = 0
+                Value = resMsg.Value
             };
 
             //如果是服务端，直接返回对象
             if (!fromServer && !reqMsg.InvokeMethod)
             {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
-
                 try
                 {
                     newMsg.Value = CoreHelper.CloneObject(newMsg.Value);
-
-                    watch.Stop();
-
-                    //设置耗时时间
-                    newMsg.ElapsedTime = watch.ElapsedMilliseconds;
                 }
-                catch (Exception ex) { }
-                finally
+                catch (Exception ex)
                 {
-                    if (watch.IsRunning)
-                    {
-                        watch.Stop();
-                    }
                 }
             }
 

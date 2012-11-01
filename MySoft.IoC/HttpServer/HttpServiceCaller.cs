@@ -165,34 +165,36 @@ namespace MySoft.IoC.HttpServer
         {
             if (callers.ContainsKey(name))
             {
+                //定义响应数据体
+                InvokeData invokeData = null;
+
                 var caller = callers[name];
                 var message = new InvokeMessage
                 {
                     ServiceName = caller.Service.FullName,
                     MethodName = caller.Method.ToString(),
-                    Parameters = parameters
+                    Parameters = parameters,
+                    CacheTime = caller.CacheTime
                 };
 
-                string thisKey = string.Format("{0}${1}${2}", message.ServiceName, message.MethodName, message.Parameters);
-                var cacheKey = string.Format("HttpServiceCaller_{0}", thisKey);
-
-                var invokeData = CacheHelper.Get<InvokeData>(cacheKey);
-                if (invokeData == null)
+                if (message.CacheTime > 0)
                 {
-                    //创建服务
-                    var service = ParseService(message.ServiceName);
+                    string thisKey = string.Format("{0}${1}${2}", message.ServiceName, message.MethodName, message.Parameters);
+                    var cacheKey = string.Format("HttpServiceCaller_{0}", thisKey);
 
-                    var timeout = TimeSpan.FromSeconds(config.Timeout);
-
-                    //使用Invoke方式调用
-                    var invoke = new InvokeCaller("HttpServer", container, service, timeout);
-                    invokeData = invoke.CallMethod(message);
-
-                    //插入缓存
-                    if (invokeData != null && caller.CacheTime > 0)
+                    //获取超时
+                    var timeout = TimeSpan.FromSeconds(message.CacheTime);
+                    invokeData = CacheHelper<InvokeData>.Get(cacheKey, timeout, state =>
                     {
-                        CacheHelper.Insert(cacheKey, invokeData, caller.CacheTime);
-                    }
+                        //获取响应信息
+                        return GetInvokeData(state as InvokeMessage);
+
+                    }, message);
+                }
+                else
+                {
+                    //不缓存直接获取
+                    invokeData = GetInvokeData(message);
                 }
 
                 //如果缓存不为null，则返回缓存数据
@@ -203,6 +205,22 @@ namespace MySoft.IoC.HttpServer
             }
 
             return "null";
+        }
+
+        /// <summary>
+        /// 返回响应数据
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        private InvokeData GetInvokeData(InvokeMessage message)
+        {
+            //创建服务
+            var service = ParseService(message.ServiceName);
+            var timeout = TimeSpan.FromSeconds(config.Timeout);
+
+            //使用Invoke方式调用
+            var invoke = new InvokeCaller("HttpServer", container, service, timeout);
+            return invoke.CallMethod(message);
         }
 
         /// <summary>
