@@ -234,7 +234,7 @@ namespace MySoft.PlatformService.WinForm
             }
 
             //提交的参数信息
-            string parameter = jValue.ToString(Newtonsoft.Json.Formatting.None);
+            string parameter = jValue.ToString(Newtonsoft.Json.Formatting.Indented);
             var message = new InvokeMessage
             {
                 ServiceName = serviceName,
