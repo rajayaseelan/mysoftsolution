@@ -143,11 +143,6 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 _communicationChannel.Disconnect();
             }
-
-            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
-            _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
-            _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
-            _communicationChannel.MessageError -= CommunicationChannel_MessageError;
         }
 
         /// <summary>
@@ -171,6 +166,13 @@ namespace MySoft.IoC.Communication.Scs.Server
         private void CommunicationChannel_Disconnected(object sender, EventArgs e)
         {
             OnDisconnected();
+
+            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
+            _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
+            _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
+            _communicationChannel.MessageError -= CommunicationChannel_MessageError;
+            _communicationChannel.WireProtocol.Reset();
+            _communicationChannel = null;
         }
 
         /// <summary>

@@ -90,7 +90,7 @@ namespace MySoft.IoC.Services
         private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, TimeSpan timeout)
         {
             //获取异常响应信息
-            var title = string.Format("Async call service ({0},{1}) timeout ({2}) ms.",
+            var title = string.Format("Async call service ({0}, {1}) timeout ({2}) ms.",
                         reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
 
             var resMsg = IoCHelper.GetResponse(reqMsg, new System.TimeoutException(title));

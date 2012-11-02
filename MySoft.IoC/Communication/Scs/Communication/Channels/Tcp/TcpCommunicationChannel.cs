@@ -102,25 +102,34 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
-
             try
             {
                 _sendEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
                 _receiveEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
 
-                _clientSocket.Shutdown(SocketShutdown.Both);
-                _clientSocket.Close();
+                _sendEventArgs.SetBuffer(null, 0, 0);
+                _receiveEventArgs.SetBuffer(null, 0, 0);
             }
             catch (Exception ex) { }
             finally
             {
                 _sendEventArgs.Dispose();
                 _receiveEventArgs.Dispose();
+            }
 
+            try
+            {
+                _clientSocket.Shutdown(SocketShutdown.Both);
+                _clientSocket.Close();
+            }
+            catch (Exception ex) { }
+            finally
+            {
                 _willRaiseEvent.Close();
             }
+
+            CommunicationState = CommunicationStates.Disconnected;
+            OnDisconnected();
         }
 
         #endregion

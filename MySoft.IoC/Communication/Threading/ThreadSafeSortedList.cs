@@ -20,27 +20,17 @@ namespace MySoft.IoC.Communication.Threading
         {
             get
             {
-                _lock.EnterReadLock();
-                try
+                lock (_items)
                 {
                     return _items.ContainsKey(key) ? _items[key] : default(TV);
-                }
-                finally
-                {
-                    _lock.ExitReadLock();
                 }
             }
 
             set
             {
-                _lock.EnterWriteLock();
-                try
+                lock (_items)
                 {
                     _items[key] = value;
-                }
-                finally
-                {
-                    _lock.ExitWriteLock();
                 }
             }
         }
@@ -52,14 +42,9 @@ namespace MySoft.IoC.Communication.Threading
         {
             get
             {
-                _lock.EnterReadLock();
-                try
+                lock (_items)
                 {
                     return _items.Count;
-                }
-                finally
-                {
-                    _lock.ExitReadLock();
                 }
             }
         }
@@ -67,12 +52,7 @@ namespace MySoft.IoC.Communication.Threading
         /// <summary>
         /// Internal collection to store items.
         /// </summary>
-        protected readonly SortedList<TK, TV> _items;
-
-        /// <summary>
-        /// Used to synchronize access to _items list.
-        /// </summary>
-        protected readonly ReaderWriterLockSlim _lock;
+        protected readonly IDictionary<TK, TV> _items;
 
         /// <summary>
         /// Creates a new ThreadSafeSortedList object.
@@ -80,7 +60,6 @@ namespace MySoft.IoC.Communication.Threading
         public ThreadSafeSortedList()
         {
             _items = new SortedList<TK, TV>();
-            _lock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         }
 
         /// <summary>
@@ -90,32 +69,9 @@ namespace MySoft.IoC.Communication.Threading
         /// <returns>True; if collection contains given key</returns>
         public bool ContainsKey(TK key)
         {
-            _lock.EnterReadLock();
-            try
+            lock (_items)
             {
                 return _items.ContainsKey(key);
-            }
-            finally
-            {
-                _lock.ExitReadLock();
-            }
-        }
-
-        /// <summary>
-        /// Checks if collection contains spesified item.
-        /// </summary>
-        /// <param name="item">Item to check</param>
-        /// <returns>True; if collection contains given item</returns>
-        public bool ContainsValue(TV item)
-        {
-            _lock.EnterReadLock();
-            try
-            {
-                return _items.ContainsValue(item);
-            }
-            finally
-            {
-                _lock.ExitReadLock();
             }
         }
 
@@ -125,8 +81,7 @@ namespace MySoft.IoC.Communication.Threading
         /// <param name="key">Key of item to remove</param>
         public bool Remove(TK key)
         {
-            _lock.EnterWriteLock();
-            try
+            lock (_items)
             {
                 if (!_items.ContainsKey(key))
                 {
@@ -136,10 +91,6 @@ namespace MySoft.IoC.Communication.Threading
                 _items.Remove(key);
                 return true;
             }
-            finally
-            {
-                _lock.ExitWriteLock();
-            }
         }
 
         /// <summary>
@@ -148,14 +99,9 @@ namespace MySoft.IoC.Communication.Threading
         /// <returns>Item list</returns>
         public List<TV> GetAllItems()
         {
-            _lock.EnterReadLock();
-            try
+            lock (_items)
             {
                 return new List<TV>(_items.Values);
-            }
-            finally
-            {
-                _lock.ExitReadLock();
             }
         }
 
@@ -164,14 +110,9 @@ namespace MySoft.IoC.Communication.Threading
         /// </summary>
         public void ClearAll()
         {
-            _lock.EnterWriteLock();
-            try
+            lock (_items)
             {
                 _items.Clear();
-            }
-            finally
-            {
-                _lock.ExitWriteLock();
             }
         }
 
@@ -181,16 +122,11 @@ namespace MySoft.IoC.Communication.Threading
         /// <returns>Item list</returns>
         public List<TV> GetAndClearAllItems()
         {
-            _lock.EnterWriteLock();
-            try
+            lock (_items)
             {
                 var list = new List<TV>(_items.Values);
                 _items.Clear();
                 return list;
-            }
-            finally
-            {
-                _lock.ExitWriteLock();
             }
         }
     }

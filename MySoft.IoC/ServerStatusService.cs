@@ -45,46 +45,37 @@ namespace MySoft.IoC
             this.statuslist = new TimeStatusCollection(config.RecordHours * 3600);
 
             //启动定义推送线程
-            var thread1 = new Thread(DoPushWork);
-            thread1.IsBackground = true;
-            thread1.Start();
+            ThreadPool.QueueUserWorkItem(DoPushWork);
 
             //启动自动检测线程
-            var thread2 = new Thread(DoCheckWork);
-            thread2.IsBackground = true;
-            thread2.Start();
+            ThreadPool.QueueUserWorkItem(DoCheckWork);
         }
 
-        void DoPushWork()
+        void DoPushWork(object state)
         {
             while (true)
             {
-                //响应定时信息
-                if (statuslist.Count > 0 && MessageCenter.Instance.Count > 0)
+                //每秒推送一次
+                Thread.Sleep(1000);
+
+                try
                 {
-                    try
+                    //响应定时信息
+                    if (statuslist.Count > 0 && MessageCenter.Instance.Count > 0)
                     {
                         var status = GetServerStatus();
                         MessageCenter.Instance.Notify(status);
                     }
-                    catch (Exception ex)
-                    {
-                        //TODO
-                        container.WriteError(ex);
-                    }
-
-                    //每秒推送一次
-                    Thread.Sleep(1000);
                 }
-                else
+                catch (Exception ex)
                 {
-                    //每秒推送一次
-                    Thread.Sleep(5000);
+                    //TODO
+                    container.WriteError(ex);
                 }
             }
         }
 
-        void DoCheckWork()
+        void DoCheckWork(object state)
         {
             while (true)
             {
@@ -93,33 +84,25 @@ namespace MySoft.IoC
 
                 try
                 {
-                    //处理客户端连接
+                    if (server.Clients.Count == 0) continue;
+
                     var lastMinute = DateTime.Now.AddMinutes(-DefaultDisconnectionAttemptTimeout);
 
                     //断开超时的连接
                     foreach (var channel in server.Clients.GetAllItems())
                     {
-                        if (channel == null) continue;
-
                         //判断状态
                         if (channel.CommunicationState != CommunicationStates.Connected)
                         {
                             server.Clients.Remove(channel.ClientId);
-
                             continue;
                         }
 
+                        //判断是否超时
                         if (channel.LastReceivedMessageTime < lastMinute && channel.LastSentMessageTime < lastMinute)
                         {
-                            try
-                            {
-                                //如果超过5分钟没响应，则断开链接
-                                channel.Disconnect();
-                            }
-                            finally
-                            {
-                                server.Clients.Remove(channel.ClientId);
-                            }
+                            //如果超过5分钟没响应，则断开链接
+                            channel.Disconnect();
                         }
                     }
                 }
