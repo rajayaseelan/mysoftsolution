@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
+using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -154,7 +155,7 @@ namespace MySoft.IoC.Services
                     hashtable[worker.CallKey] = new Queue<WorkerItem>();
 
                     //开始异步请求
-                    ThreadPool.QueueUserWorkItem(AsyncCallback, worker);
+                    ManagedThreadPool.QueueUserWorkItem(AsyncCallback, worker);
                 }
                 else
                 {
