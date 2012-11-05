@@ -36,7 +36,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private readonly Socket _clientSocket;
 
-        private readonly ManualResetEvent _willRaiseEvent;
+        private readonly AutoResetEvent _willRaiseEvent;
 
         /// <summary>
         /// Socket object async args.
@@ -86,7 +86,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _receiveEventArgs = new SocketAsyncEventArgs();
             _receiveEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
 
-            _willRaiseEvent = new ManualResetEvent(false);
+            _willRaiseEvent = new AutoResetEvent(false);
             _syncLock = new object();
         }
 
@@ -171,8 +171,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 //Create a byte array from message according to current protocol
                 var messageBytes = WireProtocol.GetBytes(message);
 
-                _willRaiseEvent.Reset();
-
                 try
                 {
                     _sendEventArgs.SetBuffer(messageBytes, 0, messageBytes.Length);
@@ -185,7 +183,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     }
 
                     //Wait
-                    _willRaiseEvent.WaitOne();
+                    try
+                    {
+                        _willRaiseEvent.WaitOne(-1, true);
+                    }
+                    catch
+                    {
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -243,10 +247,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
+                e.UserToken = null;
                 e.SetBuffer(null, 0, 0);
             }
 
-            _willRaiseEvent.Set();
+            try
+            {
+                _willRaiseEvent.Set();
+            }
+            catch
+            {
+            }
         }
 
         /// <summary>

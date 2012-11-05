@@ -104,7 +104,7 @@ namespace MySoft.IoC.Aspect
         /// <returns></returns>
         public static object CreateProxy(Type classType, ProxyGenerationOptions options, params IInterceptor[] interceptors)
         {
-            return CreateProxy(classType, new object[0], interceptors);
+            return CreateProxy(classType, new object[0], null, interceptors);
         }
 
         /// <summary>

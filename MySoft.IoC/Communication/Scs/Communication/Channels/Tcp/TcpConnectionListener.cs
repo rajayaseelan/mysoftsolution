@@ -63,6 +63,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public override void Start()
         {
             StartSocket();
+
+            //Start worker from thread.
+            ThreadPool.QueueUserWorkItem(DoListenAsThread);
+        }
+
+        /// <summary>
+        /// Entrance point of the thread.
+        /// This method is used by the thread to listen incoming requests.
+        /// </summary>
+        private void DoListenAsThread(object state)
+        {
             StartAcceptSocket();
         }
 

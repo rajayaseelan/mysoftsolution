@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
-using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -155,7 +154,7 @@ namespace MySoft.IoC.Services
                     hashtable[worker.CallKey] = new Queue<WorkerItem>();
 
                     //开始异步请求
-                    ManagedThreadPool.QueueUserWorkItem(AsyncCallback, worker);
+                    ThreadPool.QueueUserWorkItem(AsyncCallback, worker);
                 }
                 else
                 {
@@ -175,15 +174,17 @@ namespace MySoft.IoC.Services
         private void AsyncCallback(object state)
         {
             var worker = state as WorkerItem;
+            var callKey = worker.CallKey;
+            var reqMsg = worker.Request;
+            var context = worker.Context;
 
             try
             {
                 //设置线程
                 worker.Set(Thread.CurrentThread);
 
-                var callKey = worker.CallKey;
-                var reqMsg = worker.Request;
-                var context = worker.Context;
+                //添加结束
+                ThreadManager.Add(context.Channel, Thread.CurrentThread);
 
                 //获取响应信息
                 var resMsg = GetWorkerResponse(context, reqMsg);
@@ -206,8 +207,11 @@ namespace MySoft.IoC.Services
             {
                 Thread.ResetAbort();
             }
-            catch (Exception ex)
+            catch (Exception ex) { }
+            finally
             {
+                //移除结束
+                ThreadManager.Remove(context.Channel);
             }
         }
 
