@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
@@ -310,7 +311,11 @@ namespace MySoft.IoC
 
             //发送结果
             var resMsg = caller.InvokeRequest(channel, reqMsg);
-            SendMessage(channel, reqMsg, resMsg, message.RepliedMessageId);
+
+            if (resMsg != null)
+            {
+                SendMessage(channel, reqMsg, resMsg, message.RepliedMessageId);
+            }
         }
 
         /// <summary>
@@ -322,16 +327,16 @@ namespace MySoft.IoC
         /// <param name="messageId"></param>
         private void SendMessage(IScsServerClient channel, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
         {
-            IScsMessage scsMessage = null;
-
             try
             {
-                scsMessage = new ScsResultMessage(resMsg, messageId);
+                var message = new ScsResultMessage(resMsg, messageId);
 
                 //发送消息
-                channel.SendMessage(scsMessage);
+                channel.SendMessage(message);
             }
             catch (SocketException ex) { }
+            catch (ThreadInterruptedException ex) { }
+            catch (ThreadAbortException ex) { }
             catch (CommunicationException ex) { }
             catch (Exception ex)
             {
@@ -339,14 +344,13 @@ namespace MySoft.IoC
                 {
                     resMsg = IoCHelper.GetResponse(reqMsg, ex);
 
-                    scsMessage = new ScsResultMessage(resMsg, messageId);
+                    var message = new ScsResultMessage(resMsg, messageId);
 
                     //发送消息
-                    channel.SendMessage(scsMessage);
+                    channel.SendMessage(message);
                 }
                 catch (Exception e)
                 {
-
                 }
             }
         }

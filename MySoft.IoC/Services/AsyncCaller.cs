@@ -101,6 +101,9 @@ namespace MySoft.IoC.Services
             {
                 try
                 {
+                    //添加线程
+                    ThreadManager.Add(context.Channel, worker);
+
                     //开始异步请求
                     AsyncRequest(worker);
 
@@ -118,6 +121,11 @@ namespace MySoft.IoC.Services
                 {
                     //处理异常响应
                     return IoCHelper.GetResponse(reqMsg, ex);
+                }
+                finally
+                {
+                    //移除结束
+                    ThreadManager.Remove(context.Channel);
                 }
             }
         }
@@ -175,44 +183,33 @@ namespace MySoft.IoC.Services
         private void AsyncCallback(object state)
         {
             var worker = state as WorkerItem;
-            var callKey = worker.CallKey;
-            var reqMsg = worker.Request;
-            var context = worker.Context;
 
             try
             {
                 //设置线程
-                worker.Set(Thread.CurrentThread);
-
-                //添加结束
-                ThreadManager.Add(context.Channel, Thread.CurrentThread);
+                worker.SetThread(Thread.CurrentThread);
 
                 //获取响应信息
-                var resMsg = GetWorkerResponse(context, reqMsg);
+                var resMsg = GetWorkerResponse(worker.Context, worker.Request);
 
                 if (!worker.IsCompleted && resMsg != null)
                 {
                     if (enabledCache)
                     {
                         //设置响应信息到缓存
-                        SetResponseToCache(callKey, context, reqMsg, resMsg);
+                        SetResponseToCache(worker.CallKey, worker.Context, worker.Request, resMsg);
                     }
 
                     //设置响应信息
-                    SetWorkerResponse(callKey, resMsg);
+                    SetWorkerResponse(worker.CallKey, resMsg);
                     worker.Set(resMsg);
                 }
             }
             catch (ThreadInterruptedException ex) { }
             catch (ThreadAbortException ex)
             {
+                //取消请求
                 Thread.ResetAbort();
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                //移除结束
-                ThreadManager.Remove(context.Channel);
             }
         }
 

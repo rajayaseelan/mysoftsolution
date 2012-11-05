@@ -89,9 +89,23 @@ namespace MySoft.IoC.Services
         /// 设置线程
         /// </summary>
         /// <param name="thread"></param>
-        public void Set(Thread thread)
+        public void SetThread(Thread thread)
         {
             this.asyncThread = thread;
+        }
+
+        /// <summary>
+        /// 结束线程
+        /// </summary>
+        public bool Cancel()
+        {
+            //结束线程
+            if (IsAsyncRequest)
+            {
+                CancelThread();
+            }
+
+            return Set(null);
         }
 
         /// <summary>

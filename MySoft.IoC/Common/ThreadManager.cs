@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Threading;
 using MySoft.IoC.Communication.Scs.Server;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
@@ -17,8 +18,8 @@ namespace MySoft.IoC
         /// 添加线程
         /// </summary>
         /// <param name="channel"></param>
-        /// <param name="thread"></param>
-        public static void Add(IScsServerClient channel, Thread thread)
+        /// <param name="worker"></param>
+        public static void Add(IScsServerClient channel, WorkerItem worker)
         {
             if (channel == null) return;
             var key = channel.ClientId;
@@ -28,7 +29,7 @@ namespace MySoft.IoC
                 if (!hashtable.ContainsKey(key))
                 {
                     //将当前线程放入队列中
-                    hashtable[key] = thread;
+                    hashtable[key] = worker;
                 }
             }
         }
@@ -65,27 +66,9 @@ namespace MySoft.IoC
                 if (hashtable.ContainsKey(key))
                 {
                     var item = hashtable[key];
-                    CancelThread(item as Thread);
+                    (item as WorkerItem).Cancel();
 
                     hashtable.Remove(key);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 结束线程
-        /// </summary>
-        private static void CancelThread(Thread thread)
-        {
-            //结束线程
-            if (thread != null)
-            {
-                try
-                {
-                    thread.Abort();
-                }
-                catch (Exception ex)
-                {
                 }
             }
         }
