@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
+using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -91,48 +92,49 @@ namespace MySoft.IoC.Services
         {
             //异步响应
             using (var waitResult = new WaitResult(reqMsg))
+            using (var worker = new WorkerItem(waitResult)
+                                {
+                                    CallKey = callKey,
+                                    Context = context,
+                                    Request = reqMsg
+                                })
             {
-                //开始异步请求
-                var worker = new WorkerItem(waitResult)
+                try
                 {
-                    CallKey = callKey,
-                    Context = context,
-                    Request = reqMsg,
-                    IsAsyncRequest = false
-                };
+                    //开始异步请求
+                    AsyncRequest(worker);
 
-                //开始异步请求
-                BeginAsyncRequest(worker);
-
-                //等待超时
-                if (!waitResult.WaitOne(timeout))
-                {
-                    if (worker.IsAsyncRequest)
-                    {
-                        RemoveKey(callKey);
-                    }
-
-                    //结束请求
-                    worker.Cancel(timeout);
-                    worker.Dispose();
+                    //返回响应结果
+                    return worker.GetResult(timeout);
                 }
+                catch (System.TimeoutException ex)
+                {
+                    //处理超时响应
+                    RemoveCaller(worker);
 
-                //返回响应结果
-                return waitResult.Message;
+                    return GetTimeoutResponse(reqMsg);
+                }
+                catch (Exception ex)
+                {
+                    //处理异常响应
+                    return IoCHelper.GetResponse(reqMsg, ex);
+                }
             }
         }
 
         /// <summary>
         /// 移除缓存
         /// </summary>
-        /// <param name="callKey"></param>
-        private void RemoveKey(string callKey)
+        /// <param name="worker"></param>
+        private void RemoveCaller(WorkerItem worker)
         {
+            if (!worker.IsAsyncRequest) return;
+
             lock (hashtable.SyncRoot)
             {
-                if (hashtable.ContainsKey(callKey))
+                if (hashtable.ContainsKey(worker.CallKey))
                 {
-                    hashtable.Remove(callKey);
+                    hashtable.Remove(worker.CallKey);
                 }
             }
         }
@@ -141,7 +143,7 @@ namespace MySoft.IoC.Services
         /// 获取异常结果
         /// </summary>
         /// <param name="worker"></param>
-        private void BeginAsyncRequest(WorkerItem worker)
+        private void AsyncRequest(WorkerItem worker)
         {
             lock (hashtable.SyncRoot)
             {
@@ -153,10 +155,12 @@ namespace MySoft.IoC.Services
                     hashtable[worker.CallKey] = new Queue<WorkerItem>();
 
                     //开始异步请求
-                    ThreadPool.QueueUserWorkItem(AsyncCallback, worker);
+                    ManagedThreadPool.QueueUserWorkItem(AsyncCallback, worker);
                 }
                 else
                 {
+                    worker.IsAsyncRequest = false;
+
                     //加入队列中
                     var workerQueue = hashtable[worker.CallKey] as Queue<WorkerItem>;
                     workerQueue.Enqueue(worker);
@@ -175,7 +179,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //设置线程
-                worker.AsyncThread = Thread.CurrentThread;
+                worker.Set(Thread.CurrentThread);
 
                 var callKey = worker.CallKey;
                 var reqMsg = worker.Request;
@@ -194,10 +198,7 @@ namespace MySoft.IoC.Services
 
                     //设置响应信息
                     SetWorkerResponse(callKey, resMsg);
-
-                    //设置响应信息
                     worker.Set(resMsg);
-                    worker.Dispose();
                 }
             }
             catch (ThreadInterruptedException ex) { }
@@ -232,9 +233,7 @@ namespace MySoft.IoC.Services
                             {
                                 //响应队列中的请求
                                 var worker = workerQueue.Dequeue();
-
                                 worker.Set(resMsg);
-                                worker.Dispose();
                             }
                             catch (Exception ex)
                             {
@@ -263,6 +262,25 @@ namespace MySoft.IoC.Services
             return string.Format("{0}_Caller_{1}${2}${3}", (reqMsg.InvokeMethod ? "Invoke" : "Direct"),
                                 caller.ServiceName, caller.MethodName, caller.Parameters)
                     .Replace(" ", "").Replace("\r\n", "").Replace("\t", "").ToLower();
+        }
+
+        /// <summary>
+        /// 获取超时响应信息
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg)
+        {
+            //获取异常响应信息
+            var title = string.Format("Async call service ({0}, {1}) timeout ({2}) ms.",
+                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
+
+            var resMsg = IoCHelper.GetResponse(reqMsg, new System.TimeoutException(title));
+
+            //设置耗时时间
+            resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;
+
+            return resMsg;
         }
 
         /// <summary>

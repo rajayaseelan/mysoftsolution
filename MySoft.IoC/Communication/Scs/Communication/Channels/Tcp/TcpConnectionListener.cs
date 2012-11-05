@@ -12,7 +12,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// </summary>
     internal class TcpConnectionListener : ConnectionListenerBase
     {
-        private const int SOCKET_BACKLOG = 255;
+        private const int SOCKET_BACKLOG = 1024;
+
+        /// <summary>
+        /// Size of the buffer that is used to receive bytes from TCP socket.
+        /// </summary>
+        private const int BufferSize = 2 * 1024; //2KB
 
         /// <summary>
         /// The endpoint address of the server to listen incoming connections.
@@ -40,9 +45,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void IOCompleted(object sender, SocketAsyncEventArgs e)
         {
-            if (e.LastOperation == SocketAsyncOperation.Accept)
+            try
             {
-                OnAcceptCompleted(e);
+                if (e.LastOperation == SocketAsyncOperation.Accept)
+                {
+                    OnAcceptCompleted(e);
+                }
+            }
+            catch
+            {
             }
         }
 
@@ -52,8 +63,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public override void Start()
         {
             StartSocket();
-
-            ThreadPool.QueueUserWorkItem(DoListenAsThread);
+            StartAcceptSocket();
         }
 
         /// <summary>
@@ -70,16 +80,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private void StartSocket()
         {
             // Get endpoint for the listener.
-            IPEndPoint localEndPoint = null;
+            IPEndPoint endPoint = null;
 
             if (string.IsNullOrEmpty(_endPoint.IpAddress))
-                localEndPoint = new IPEndPoint(IPAddress.Any, _endPoint.TcpPort);
+                endPoint = new IPEndPoint(IPAddress.Any, _endPoint.TcpPort);
             else
-                localEndPoint = new IPEndPoint(IPAddress.Parse(_endPoint.IpAddress), _endPoint.TcpPort);
+                endPoint = new IPEndPoint(IPAddress.Parse(_endPoint.IpAddress), _endPoint.TcpPort);
 
             // Listener socket.
-            _listenerSocket = new Socket(localEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            _listenerSocket.Bind(localEndPoint);
+            _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
+            _listenerSocket.SendBufferSize = BufferSize;
+            _listenerSocket.ReceiveBufferSize = BufferSize;
+            _listenerSocket.Bind(endPoint);
             _listenerSocket.Listen(SOCKET_BACKLOG);
         }
 
@@ -98,15 +111,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 _listenerSocket = null;
             }
-        }
-
-        /// <summary>
-        /// Entrance point of the thread.
-        /// This method is used by the thread to listen incoming requests.
-        /// </summary>
-        private void DoListenAsThread(object state)
-        {
-            StartAcceptSocket();
         }
 
         /// <summary>

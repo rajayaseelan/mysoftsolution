@@ -236,7 +236,6 @@ namespace MySoft.IoC
         {
             try
             {
-                e.Channel.UserToken = null;
                 e.Channel.MessageReceived -= Client_MessageReceived;
                 e.Channel.MessageError -= Client_MessageError;
 

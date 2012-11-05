@@ -172,7 +172,8 @@ namespace MySoft.IoC.Communication.Scs.Server
             _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
             _communicationChannel.MessageError -= CommunicationChannel_MessageError;
             _communicationChannel.WireProtocol.Reset();
-            _communicationChannel = null;
+
+            UserToken = null;
         }
 
         /// <summary>
