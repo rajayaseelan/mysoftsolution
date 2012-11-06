@@ -26,7 +26,10 @@ namespace MySoft.PlatformService.UserService
         [AspectSwitcher(true, Description = "获取用户")]
         public virtual User GetUser(int id)
         {
+            //if (id % 10 == 0)
+            //{
             Thread.Sleep(5000);
+            //}
             //throw new Exception("出错了。");
 
             //Thread.Sleep(2100);

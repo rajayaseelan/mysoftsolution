@@ -30,11 +30,6 @@ namespace MySoft.IoC.Services
         public bool IsCompleted { get; private set; }
 
         /// <summary>
-        /// 是否异步请求
-        /// </summary>
-        public bool IsAsyncRequest { get; set; }
-
-        /// <summary>
         /// AsyncThread
         /// </summary>
         private Thread asyncThread;
@@ -49,7 +44,6 @@ namespace MySoft.IoC.Services
         public WorkerItem(WaitResult waitResult)
         {
             this.IsCompleted = false;
-            this.IsAsyncRequest = false;
             this.waitResult = waitResult;
         }
 
@@ -57,18 +51,19 @@ namespace MySoft.IoC.Services
         /// 获取结果并处理超时
         /// </summary>
         /// <param name="timeout"></param>
+        /// <param name="callback"></param>
         /// <returns></returns>
-        public ResponseMessage GetResult(TimeSpan timeout)
+        public ResponseMessage GetResult(TimeSpan timeout, Action<string, ResponseMessage> callback)
         {
             if (!waitResult.WaitOne(timeout))
             {
-                //结束线程
-                if (IsAsyncRequest)
-                {
-                    CancelThread();
-                }
-
                 throw new System.TimeoutException("Timeout occured.");
+            }
+
+            if (callback != null)
+            {
+                //处理回调
+                callback(this.CallKey, waitResult.Message);
             }
 
             return waitResult.Message;
@@ -79,7 +74,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        public bool Set(ResponseMessage resMsg)
+        public bool SetResult(ResponseMessage resMsg)
         {
             this.IsCompleted = true;
             return waitResult.SetResponse(resMsg);
@@ -100,18 +95,15 @@ namespace MySoft.IoC.Services
         public bool Cancel()
         {
             //结束线程
-            if (IsAsyncRequest)
-            {
-                CancelThread();
-            }
+            AbortThread();
 
-            return Set(null);
+            return SetResult(null);
         }
 
         /// <summary>
         /// 结束线程
         /// </summary>
-        private void CancelThread()
+        private void AbortThread()
         {
             //结束线程
             if (asyncThread != null)

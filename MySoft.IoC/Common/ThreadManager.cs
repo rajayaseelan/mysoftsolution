@@ -19,7 +19,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="worker"></param>
-        public static void Add(IScsServerClient channel, WorkerItem worker)
+        public static void Set(IScsServerClient channel, WorkerItem worker)
         {
             if (channel == null) return;
             var key = channel.ClientId;
@@ -38,24 +38,6 @@ namespace MySoft.IoC
         /// 结束线程
         /// </summary>
         /// <param name="channel"></param>
-        public static void Remove(IScsServerClient channel)
-        {
-            if (channel == null) return;
-            var key = channel.ClientId;
-
-            lock (hashtable.SyncRoot)
-            {
-                if (hashtable.ContainsKey(key))
-                {
-                    hashtable.Remove(key);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 结束线程
-        /// </summary>
-        /// <param name="channel"></param>
         public static void Cancel(IScsServerClient channel)
         {
             if (channel == null) return;
@@ -65,8 +47,13 @@ namespace MySoft.IoC
             {
                 if (hashtable.ContainsKey(key))
                 {
-                    var item = hashtable[key];
-                    (item as WorkerItem).Cancel();
+                    var worker = hashtable[key] as WorkerItem;
+
+                    //判断是否已经完成
+                    if (!worker.IsCompleted)
+                    {
+                        worker.Cancel();
+                    }
 
                     hashtable.Remove(key);
                 }

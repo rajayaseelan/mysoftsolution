@@ -15,11 +15,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private const int SOCKET_BACKLOG = 1024;
 
         /// <summary>
-        /// Size of the buffer that is used to receive bytes from TCP socket.
-        /// </summary>
-        private const int BufferSize = 2 * 1024; //2KB
-
-        /// <summary>
         /// The endpoint address of the server to listen incoming connections.
         /// </summary>
         private readonly ScsTcpEndPoint _endPoint;
@@ -64,16 +59,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             StartSocket();
 
-            //Start worker from thread.
-            ThreadPool.QueueUserWorkItem(DoListenAsThread);
-        }
-
-        /// <summary>
-        /// Entrance point of the thread.
-        /// This method is used by the thread to listen incoming requests.
-        /// </summary>
-        private void DoListenAsThread(object state)
-        {
+            //Start accept socket.
             StartAcceptSocket();
         }
 
@@ -101,8 +87,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             // Listener socket.
             _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
-            _listenerSocket.SendBufferSize = BufferSize;
-            _listenerSocket.ReceiveBufferSize = BufferSize;
             _listenerSocket.Bind(endPoint);
             _listenerSocket.Listen(SOCKET_BACKLOG);
         }
@@ -166,30 +150,38 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 if (e.SocketError == SocketError.Success)
                 {
-                    var clientSocket = e.AcceptSocket;
-                    if (clientSocket.Connected)
-                    {
-                        OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
-                    }
-
-                    e.AcceptSocket = null;
+                    ThreadPool.QueueUserWorkItem(AcceptCompleted, e);
                 }
             }
             catch (Exception ex) { }
             finally
             {
-                try
+                StartAcceptSocket();
+            }
+        }
+
+        /// <summary>
+        /// Communication channel connected.
+        /// </summary>
+        /// <param name="state"></param>
+        private void AcceptCompleted(object state)
+        {
+            var e = state as SocketAsyncEventArgs;
+
+            try
+            {
+                var clientSocket = e.AcceptSocket;
+                if (clientSocket.Connected)
                 {
-                    e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
-                    e.SetBuffer(null, 0, 0);
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    e.Dispose();
+                    OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
                 }
 
-                StartAcceptSocket();
+                e.AcceptSocket = null;
+            }
+            finally
+            {
+                e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                e.Dispose();
             }
         }
     }

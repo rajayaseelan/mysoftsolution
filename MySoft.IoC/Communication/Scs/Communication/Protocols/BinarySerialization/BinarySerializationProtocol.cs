@@ -28,7 +28,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// <summary>
         /// Maximum length of a message.
         /// </summary>
-        private const int MaxMessageLength = 1024 * 1024 * 64; //64 Mbytes.
+        private const int MaxMessageLength = 1024 * 1024 * 32; //32 Mbytes.
 
         /// <summary>
         /// This MemoryStream object is used to collect receiving bytes to build messages.
@@ -111,7 +111,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         {
             if (_receiveMemoryStream.Length > 0)
             {
-                _receiveMemoryStream.Dispose();
                 _receiveMemoryStream = new MemoryStream();
             }
         }

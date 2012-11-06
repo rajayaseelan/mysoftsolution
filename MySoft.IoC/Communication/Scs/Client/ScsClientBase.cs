@@ -253,7 +253,6 @@ namespace MySoft.IoC.Communication.Scs.Client
             _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
             _communicationChannel.MessageError -= CommunicationChannel_MessageError;
-            _communicationChannel.WireProtocol.Reset();
 
             _pingTimer.Elapsed -= PingTimer_Elapsed;
             _pingTimer.Stop();

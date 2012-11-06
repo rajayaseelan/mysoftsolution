@@ -47,7 +47,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        private const int BufferSize = 2 * 1024; //2KB
+        private const int BufferSize = 4 * 1024; //4KB
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -72,8 +72,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             _clientSocket = clientSocket;
             _clientSocket.NoDelay = true;
-            _clientSocket.SendBufferSize = BufferSize;
-            _clientSocket.ReceiveBufferSize = BufferSize;
 
             var ipEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
@@ -111,6 +109,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                 _sendEventArgs.SetBuffer(null, 0, 0);
                 _receiveEventArgs.SetBuffer(null, 0, 0);
+
+                _sendEventArgs.UserToken = null;
+                _receiveEventArgs.UserToken = null;
             }
             catch (Exception ex) { }
             finally
@@ -270,17 +271,18 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 //Get received bytes count
-                var bytesRead = e.BytesTransferred;
+                var bytesTransferred = e.BytesTransferred;
 
-                if (bytesRead > 0 && e.SocketError == SocketError.Success)
+                if (bytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
                     LastReceivedMessageTime = DateTime.Now;
 
                     try
                     {
                         //Copy received bytes to a new byte array
-                        var receivedBytes = new byte[bytesRead];
-                        Array.Copy(_buffer, 0, receivedBytes, 0, bytesRead);
+                        var receivedBytes = new byte[bytesTransferred];
+                        Array.Copy(e.Buffer, e.Offset, receivedBytes, 0, bytesTransferred);
+                        Array.Clear(e.Buffer, e.Offset, bytesTransferred);
 
                         //Read messages according to current wire protocol
                         var messages = WireProtocol.CreateMessages(receivedBytes);
@@ -297,14 +299,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     }
                     finally
                     {
-                        Array.Clear(_buffer, 0, _buffer.Length);
-                    }
+                        //设置缓存区
+                        e.SetBuffer(0, e.Count);
 
-                    if (CommunicationState == CommunicationStates.Connected)
-                    {
-                        if (!_clientSocket.ReceiveAsync(_receiveEventArgs))
+                        if (!_clientSocket.ReceiveAsync(e))
                         {
-                            OnReceiveCompleted(_receiveEventArgs);
+                            OnReceiveCompleted(e);
                         }
                     }
                 }
