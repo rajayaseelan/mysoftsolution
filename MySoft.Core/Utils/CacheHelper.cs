@@ -416,9 +416,6 @@ namespace MySoft
                             CacheHelper.Insert(spareKey, cacheObj, (int)timeout.TotalSeconds * CACHE_MULTIPLE);
                         }
                     }
-
-                    //休眠一段时间
-                    Thread.Sleep(timeout);
                 }
                 finally
                 {

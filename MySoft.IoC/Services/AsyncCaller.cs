@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
-using System.Diagnostics;
 
 namespace MySoft.IoC.Services
 {
@@ -210,6 +210,9 @@ namespace MySoft.IoC.Services
                 //取消请求
                 Thread.ResetAbort();
             }
+            catch (Exception ex)
+            {
+            }
         }
 
         /// <summary>
@@ -223,46 +226,29 @@ namespace MySoft.IoC.Services
             {
                 if (hashtable.ContainsKey(callKey))
                 {
-                    //获取队列
-                    var workerQueue = hashtable[callKey] as Queue<WorkerItem>;
-
                     try
                     {
-                        if (workerQueue.Count > 0)
+                        //获取队列
+                        var queue = hashtable[callKey] as Queue<WorkerItem>;
+
+                        while (queue.Count > 0)
                         {
-                            //设置队列消息
-                            var arr = new ArrayList { workerQueue, resMsg };
-                            ThreadPool.QueueUserWorkItem(SetQueueMessage, arr);
+                            try
+                            {
+                                //响应队列中的请求
+                                var worker = queue.Dequeue();
+                                worker.SetResult(resMsg);
+                            }
+                            catch (Exception ex)
+                            {
+                            }
                         }
                     }
+                    catch (Exception ex) { }
                     finally
                     {
                         hashtable.Remove(callKey);
                     }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 设置队列消息
-        /// </summary>
-        /// <param name="state"></param>
-        private static void SetQueueMessage(object state)
-        {
-            var arr = state as ArrayList;
-            var queue = arr[0] as Queue<WorkerItem>;
-            var resMsg = arr[1] as ResponseMessage;
-
-            while (queue.Count > 0)
-            {
-                try
-                {
-                    //响应队列中的请求
-                    var worker = queue.Dequeue();
-                    worker.SetResult(resMsg);
-                }
-                catch (Exception ex)
-                {
                 }
             }
         }
@@ -317,62 +303,62 @@ namespace MySoft.IoC.Services
         private bool GetResponseFromCache(string callKey, OperationContext context, RequestMessage reqMsg, ref ResponseMessage resMsg)
         {
             //从缓存中获取数据
-            if (reqMsg.CacheTime > 0)
+            if (reqMsg.CacheTime <= 0) return false;
+
+            if (cache == null)
             {
-                if (cache == null)
-                {
-                    //双缓存保护获取方式
-                    var array = new ArrayList { callKey, context, reqMsg };
+                //双缓存保护获取方式
+                var array = new ArrayList { callKey, context, reqMsg };
 
-                    resMsg = CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime),
-                            state =>
-                            {
-                                var arr = state as ArrayList;
-                                var _callKey = Convert.ToString(arr[0]);
-                                var _context = arr[1] as OperationContext;
-                                var _reqMsg = arr[2] as RequestMessage;
-
-                                //异步请求响应数据
-                                return AsyncRun(_callKey, _context, _reqMsg);
-                            }, array, CheckResponse);
-                }
-                else
-                {
-                    try
-                    {
-                        //从缓存获取
-                        resMsg = cache.GetObject<ResponseMessage>(callKey);
-                    }
-                    catch
-                    {
-                    }
-
-                    if (resMsg == null)
-                    {
-                        //异步请求响应数据
-                        resMsg = AsyncRun(callKey, context, reqMsg);
-
-                        if (CheckResponse(resMsg))
+                resMsg = CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime),
+                        state =>
                         {
-                            try
-                            {
-                                //插入缓存
-                                cache.AddObject(callKey, resMsg, TimeSpan.FromSeconds(reqMsg.CacheTime));
-                            }
-                            catch
-                            {
-                            }
+                            var arr = state as ArrayList;
+                            var _callKey = Convert.ToString(arr[0]);
+                            var _context = arr[1] as OperationContext;
+                            var _reqMsg = arr[2] as RequestMessage;
+
+                            //异步请求响应数据
+                            return AsyncRun(_callKey, _context, _reqMsg);
+
+                        }, array, CheckResponse);
+            }
+            else
+            {
+                try
+                {
+                    //从缓存获取
+                    resMsg = cache.GetObject<ResponseMessage>(callKey);
+                }
+                catch
+                {
+                }
+
+                if (resMsg == null)
+                {
+                    //异步请求响应数据
+                    resMsg = AsyncRun(callKey, context, reqMsg);
+
+                    if (CheckResponse(resMsg))
+                    {
+                        try
+                        {
+                            //插入缓存
+                            cache.AddObject(callKey, resMsg, TimeSpan.FromSeconds(reqMsg.CacheTime));
+                        }
+                        catch
+                        {
                         }
                     }
                 }
+            }
 
-                if (resMsg != null)
-                {
-                    //克隆一个新的对象
-                    resMsg = NewResponseMessage(reqMsg, resMsg);
+            if (resMsg != null)
+            {
+                //克隆一个新的对象
+                resMsg = NewResponseMessage(reqMsg, resMsg);
 
-                    return true;
-                }
+                return true;
             }
 
             return false;
