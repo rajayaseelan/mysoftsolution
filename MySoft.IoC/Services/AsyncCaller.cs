@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
-using MySoft.Threading;
+using System.Diagnostics;
 
 namespace MySoft.IoC.Services
 {
@@ -76,24 +76,37 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage Run(OperationContext context, RequestMessage reqMsg)
         {
+            //定义一个响应值
+            ResponseMessage resMsg = null;
+
             //获取CallerKey
             var callKey = GetCallerKey(reqMsg, context.Caller);
 
             if (enabledCache)
             {
-                //定义一个响应值
-                ResponseMessage resMsg = null;
-
                 //从缓存中获取数据
-                if (GetResponseFromCache(callKey, reqMsg, out resMsg))
+                if (GetResponseFromCache(callKey, context, reqMsg, ref resMsg))
                 {
                     return resMsg;
                 }
             }
 
             //异步调用
+            return AsyncRun(callKey, context, reqMsg);
+        }
+
+        /// <summary>
+        /// 异常调用
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage AsyncRun(string callKey, OperationContext context, RequestMessage reqMsg)
+        {
+            //异步调用
             using (var waitResult = new WaitResult(reqMsg))
-            using (var worker = new WorkerItem(waitResult) { CallKey = callKey, Context = context, Request = reqMsg })
+            using (var worker = new WorkerItem(waitResult) { Context = context, Request = reqMsg })
             {
                 try
                 {
@@ -101,10 +114,10 @@ namespace MySoft.IoC.Services
                     ThreadManager.Set(context.Channel, worker);
 
                     //开始异步请求
-                    QueueWorkerItem(worker);
+                    QueueWorkerItem(callKey, worker);
 
                     //运行任务
-                    return GetAsyncResponse(worker);
+                    return GetAsyncResponse(callKey, worker);
                 }
                 finally
                 {
@@ -117,16 +130,17 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 异步调用
         /// </summary>
+        /// <param name="callKey"></param>
         /// <param name="worker"></param>
         /// <returns></returns>
-        private ResponseMessage GetAsyncResponse(WorkerItem worker)
+        private ResponseMessage GetAsyncResponse(string callKey, WorkerItem worker)
         {
             ResponseMessage resMsg = null;
 
             try
             {
                 //返回响应结果
-                resMsg = worker.GetResult(timeout, SetWorkerResponse);
+                resMsg = worker.GetResult(callKey, timeout, SetWorkerResponse);
             }
             catch (System.TimeoutException ex)
             {
@@ -145,23 +159,24 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取异常结果
         /// </summary>
+        /// <param name="callKey"></param>
         /// <param name="worker"></param>
-        private void QueueWorkerItem(WorkerItem worker)
+        private void QueueWorkerItem(string callKey, WorkerItem worker)
         {
             lock (hashtable.SyncRoot)
             {
-                if (!hashtable.ContainsKey(worker.CallKey))
+                if (!hashtable.ContainsKey(callKey))
                 {
                     //将waitResult加入队列中
-                    hashtable[worker.CallKey] = new Queue<WorkerItem>();
+                    hashtable[callKey] = new Queue<WorkerItem>();
 
                     //开始异步请求
-                    ManagedThreadPool.QueueUserWorkItem(AsyncCallback, worker);
+                    ThreadPool.QueueUserWorkItem(AsyncCallback, worker);
                 }
                 else
                 {
                     //加入队列中
-                    var workerQueue = hashtable[worker.CallKey] as Queue<WorkerItem>;
+                    var workerQueue = hashtable[callKey] as Queue<WorkerItem>;
                     workerQueue.Enqueue(worker);
                 }
             }
@@ -174,9 +189,6 @@ namespace MySoft.IoC.Services
         private void AsyncCallback(object state)
         {
             var worker = state as WorkerItem;
-            var callKey = worker.CallKey;
-            var context = worker.Context;
-            var reqMsg = worker.Request;
 
             try
             {
@@ -186,13 +198,7 @@ namespace MySoft.IoC.Services
                 if (!worker.IsCompleted)
                 {
                     //获取响应信息
-                    var resMsg = GetWorkerResponse(context, reqMsg);
-
-                    if (enabledCache)
-                    {
-                        //设置响应信息到缓存
-                        SetResponseToCache(callKey, context, reqMsg, resMsg);
-                    }
+                    var resMsg = GetWorkerResponse(worker.Context, worker.Request);
 
                     //设置响应信息
                     worker.SetResult(resMsg);
@@ -302,45 +308,87 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 设置响应信息到缓存
-        /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        private void SetResponseToCache(string callKey, OperationContext context, RequestMessage reqMsg, ResponseMessage resMsg)
-        {
-            if (resMsg == null) return;
-            if (reqMsg.CacheTime <= 0) return;
-
-            //如果符合条件，则自动缓存 【自动缓存功能】
-            if (resMsg != null && resMsg.Value != null && !resMsg.IsError && resMsg.Count > 0)
-            {
-                //克隆一个新的对象
-                var newMsg = NewResponseMessage(reqMsg, resMsg);
-
-                //插入缓存
-                cache.InsertCache(callKey, newMsg, reqMsg.CacheTime);
-            }
-        }
-
-        /// <summary>
         /// 从缓存中获取数据
         /// </summary>
         /// <param name="callKey"></param>
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        private bool GetResponseFromCache(string callKey, RequestMessage reqMsg, out ResponseMessage resMsg)
+        private bool GetResponseFromCache(string callKey, OperationContext context, RequestMessage reqMsg, ref ResponseMessage resMsg)
         {
             //从缓存中获取数据
-            resMsg = cache.GetCache<ResponseMessage>(callKey);
-
-            if (resMsg != null)
+            if (reqMsg.CacheTime > 0)
             {
-                //克隆一个新的对象
-                resMsg = NewResponseMessage(reqMsg, resMsg);
+                if (cache == null)
+                {
+                    //双缓存保护获取方式
+                    var array = new ArrayList { callKey, context, reqMsg };
 
+                    resMsg = CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime),
+                            state =>
+                            {
+                                var arr = state as ArrayList;
+                                var _callKey = Convert.ToString(arr[0]);
+                                var _context = arr[1] as OperationContext;
+                                var _reqMsg = arr[2] as RequestMessage;
+
+                                //异步请求响应数据
+                                return AsyncRun(_callKey, _context, _reqMsg);
+                            }, array, CheckResponse);
+                }
+                else
+                {
+                    try
+                    {
+                        //从缓存获取
+                        resMsg = cache.GetObject<ResponseMessage>(callKey);
+                    }
+                    catch
+                    {
+                    }
+
+                    if (resMsg == null)
+                    {
+                        //异步请求响应数据
+                        resMsg = AsyncRun(callKey, context, reqMsg);
+
+                        if (CheckResponse(resMsg))
+                        {
+                            try
+                            {
+                                //插入缓存
+                                cache.AddObject(callKey, resMsg, TimeSpan.FromSeconds(reqMsg.CacheTime));
+                            }
+                            catch
+                            {
+                            }
+                        }
+                    }
+                }
+
+                if (resMsg != null)
+                {
+                    //克隆一个新的对象
+                    resMsg = NewResponseMessage(reqMsg, resMsg);
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 检测响应是否有效
+        /// </summary>
+        /// <param name="resMsg"></param>
+        private bool CheckResponse(ResponseMessage resMsg)
+        {
+            if (resMsg == null) return false;
+
+            //如果符合条件，则自动缓存 【自动缓存功能】
+            if (!resMsg.IsError && resMsg.Value != null && resMsg.Count > 0)
+            {
                 return true;
             }
 
@@ -369,12 +417,23 @@ namespace MySoft.IoC.Services
             //如果是服务端，直接返回对象
             if (!fromServer && !reqMsg.InvokeMethod)
             {
+                var watch = Stopwatch.StartNew();
+
                 try
                 {
                     newMsg.Value = CoreHelper.CloneObject(newMsg.Value);
+                    watch.Stop();
+
+                    //设置耗时
+                    newMsg.ElapsedTime = watch.ElapsedMilliseconds;
                 }
-                catch (Exception ex)
+                catch (Exception ex) { }
+                finally
                 {
+                    if (watch.IsRunning)
+                    {
+                        watch.Stop();
+                    }
                 }
             }
 

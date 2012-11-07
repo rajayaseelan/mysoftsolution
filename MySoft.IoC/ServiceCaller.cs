@@ -91,6 +91,9 @@ namespace MySoft.IoC
 
             try
             {
+                //设置上下文
+                channel.UserContext = caller;
+
                 //获取上下文
                 using (var context = GetOperationContext(channel, caller))
                 {

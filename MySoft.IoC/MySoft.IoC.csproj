@@ -76,6 +76,7 @@
     <Compile Include="Aspect\CastleInterface.cs" />
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
+    <Compile Include="Common\Extensions.cs" />
     <Compile Include="HttpServer\TcpDocument.cs" />
     <Compile Include="Common\ThreadManager.cs" />
     <Compile Include="Services\WorkerItem.cs" />
@@ -128,7 +129,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\AsyncCaller.cs" />
-    <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IoCHelper.cs" />
     <Compile Include="HttpServer\HttpApi\DefaultApiResolver.cs" />
     <Compile Include="HttpServer\HttpApi\Config\HttpApiItem.cs" />

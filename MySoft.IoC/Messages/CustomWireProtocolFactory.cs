@@ -9,6 +9,10 @@ namespace MySoft.IoC.Messages
     {
         private bool compress;
 
+        /// <summary>
+        /// 实例化CustomWireProtocolFactory
+        /// </summary>
+        /// <param name="compress"></param>
         public CustomWireProtocolFactory(bool compress)
         {
             this.compress = compress;

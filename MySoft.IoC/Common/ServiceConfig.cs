@@ -33,7 +33,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default pool number.
         /// </summary>
-        public const int DEFAULT_CLIENT_MAXPOOL = 500; //默认为500
+        public const int DEFAULT_CLIENT_MAXPOOL = 100; //默认为100
 
         #endregion
     }

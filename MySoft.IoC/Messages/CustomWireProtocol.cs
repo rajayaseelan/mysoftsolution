@@ -19,7 +19,7 @@ namespace MySoft.IoC.Messages
         private bool compress;
 
         /// <summary>
-        /// 实例化CustomBinarySerializationProtocol
+        /// 实例化CustomWireProtocol
         /// </summary>
         /// <param name="compress"></param>
         public CustomWireProtocol(bool compress)
@@ -30,14 +30,21 @@ namespace MySoft.IoC.Messages
         protected override byte[] SerializeMessage(IScsMessage message)
         {
             var bytes = base.SerializeMessage(message);
-            if (compress) bytes = DeflateCompress(bytes);
+            if (compress)
+            {
+                bytes = DeflateCompress(bytes);
+            }
 
             return bytes;
         }
 
         protected override IScsMessage DeserializeMessage(byte[] bytes)
         {
-            if (compress) bytes = DeflateDecompress(bytes);
+            if (compress)
+            {
+                bytes = DeflateDecompress(bytes);
+            }
+
             return base.DeserializeMessage(bytes);
         }
 
@@ -79,7 +86,7 @@ namespace MySoft.IoC.Messages
                     break;
                 }
                 byte[] buffers = new byte[bytesRead];
-                Array.Copy(data, buffers, bytesRead);
+                Buffer.BlockCopy(data, 0, buffers, 0, bytesRead);
                 lst.AddRange(buffers);
                 totalCount += bytesRead;
             }

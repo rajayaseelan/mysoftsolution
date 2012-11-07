@@ -10,11 +10,6 @@ namespace MySoft.IoC.Services
     internal class WorkerItem : IDisposable
     {
         /// <summary>
-        /// 调用的Key
-        /// </summary>
-        public string CallKey { get; set; }
-
-        /// <summary>
         /// Context
         /// </summary>
         public OperationContext Context { get; set; }
@@ -50,10 +45,11 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取结果并处理超时
         /// </summary>
+        /// <param name="callKey"></param>
         /// <param name="timeout"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public ResponseMessage GetResult(TimeSpan timeout, Action<string, ResponseMessage> callback)
+        public ResponseMessage GetResult(string callKey, TimeSpan timeout, Action<string, ResponseMessage> callback)
         {
             if (!waitResult.WaitOne(timeout))
             {
@@ -63,7 +59,7 @@ namespace MySoft.IoC.Services
             if (callback != null)
             {
                 //处理回调
-                callback(this.CallKey, waitResult.Message);
+                callback(callKey, waitResult.Message);
             }
 
             return waitResult.Message;

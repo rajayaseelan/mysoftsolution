@@ -31,9 +31,14 @@ namespace MySoft.IoC.Communication.Scs.Server
         CommunicationStates CommunicationState { get; }
 
         /// <summary>
-        /// Client state info.
+        /// User token info.
         /// </summary>
         object UserToken { get; set; }
+
+        /// <summary>
+        /// User context info.
+        /// </summary>
+        object UserContext { get; set; }
 
         /// <summary>
         /// Disconnects from server.

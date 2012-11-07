@@ -72,7 +72,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             //Create a byte array including the length of the message (4 bytes) and serialized message content
             var bytes = new byte[messageLength + 4];
             WriteInt32(bytes, 0, messageLength);
-            Array.Copy(serializedMessage, 0, bytes, 4, messageLength);
+            Buffer.BlockCopy(serializedMessage, 0, bytes, 4, messageLength);
 
             //Return serialized message by this protocol
             return bytes;

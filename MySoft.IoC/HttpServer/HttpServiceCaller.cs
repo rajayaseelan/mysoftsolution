@@ -165,9 +165,6 @@ namespace MySoft.IoC.HttpServer
         {
             if (callers.ContainsKey(name))
             {
-                //定义响应数据体
-                InvokeData invokeData = null;
-
                 var caller = callers[name];
                 var message = new InvokeMessage
                 {
@@ -177,25 +174,11 @@ namespace MySoft.IoC.HttpServer
                     CacheTime = caller.CacheTime
                 };
 
-                if (message.CacheTime > 0)
-                {
-                    string thisKey = string.Format("{0}${1}${2}", message.ServiceName, message.MethodName, message.Parameters);
-                    var cacheKey = string.Format("HttpServiceCaller_{0}", thisKey);
+                //创建服务
+                var service = ParseService(message.ServiceName);
 
-                    //获取超时
-                    var timeout = TimeSpan.FromSeconds(message.CacheTime);
-                    invokeData = CacheHelper<InvokeData>.Get(cacheKey, timeout, state =>
-                    {
-                        //获取响应信息
-                        return GetInvokeData(state as InvokeMessage);
-
-                    }, message);
-                }
-                else
-                {
-                    //不缓存直接获取
-                    invokeData = GetInvokeData(message);
-                }
+                //定义响应数据体
+                var invokeData = GetInvokeData(service, message);
 
                 //如果缓存不为null，则返回缓存数据
                 if (invokeData != null)
@@ -210,17 +193,18 @@ namespace MySoft.IoC.HttpServer
         /// <summary>
         /// 返回响应数据
         /// </summary>
+        /// <param name="service"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        private InvokeData GetInvokeData(InvokeMessage message)
+        private InvokeData GetInvokeData(IService service, InvokeMessage message)
         {
-            //创建服务
-            var service = ParseService(message.ServiceName);
             var timeout = TimeSpan.FromSeconds(config.Timeout);
 
             //使用Invoke方式调用
-            var invoke = new InvokeCaller("HttpServer", container, service, timeout);
-            return invoke.CallMethod(message);
+            using (var invoke = new InvokeCaller("HttpServer", container, service, timeout, null))
+            {
+                return invoke.CallMethod(message);
+            }
         }
 
         /// <summary>

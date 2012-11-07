@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Caching;
+using System.Threading;
 
 namespace MySoft
 {
@@ -268,7 +269,7 @@ namespace MySoft
     public static class CacheHelper<T>
     {
         //缓存倍数
-        private const int CACHE_MULTIPLE = 10;
+        private const int CACHE_MULTIPLE = 60;
         private static readonly HashSet<string> hashtable = new HashSet<string>();
 
         /// <summary>
@@ -281,7 +282,21 @@ namespace MySoft
         /// <returns></returns>
         public static T Get(string key, TimeSpan timeout, Func<T> func)
         {
-            return Get(key, timeout, state => func(), null);
+            return Get(key, timeout, func, null);
+        }
+
+        /// <summary>
+        /// （本方法仅适应于本地缓存）
+        /// 从缓存中获取数据，如获取失败，返回从指定的方法中获取
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <param name="func"></param>
+        /// <param name="pred"></param>
+        /// <returns></returns>
+        public static T Get(string key, TimeSpan timeout, Func<T> func, Predicate<T> pred)
+        {
+            return Get(key, timeout, state => func(), null, pred);
         }
 
         /// <summary>
@@ -294,6 +309,21 @@ namespace MySoft
         /// <param name="state"></param>
         /// <returns></returns>
         public static T Get(string key, TimeSpan timeout, Func<object, T> func, object state)
+        {
+            return Get(key, timeout, func, state, null);
+        }
+
+        /// <summary>
+        /// （本方法仅适应于本地缓存）
+        /// 从缓存中获取数据，如获取失败，返回从指定的方法中获取
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <param name="func"></param>
+        /// <param name="state"></param>
+        /// <param name="pred"></param>
+        /// <returns></returns>
+        public static T Get(string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
         {
             var cacheObj = CacheHelper.Get(key);
 
@@ -308,8 +338,23 @@ namespace MySoft
 
                     if (cacheObj != null)
                     {
-                        CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
-                        CacheHelper.Insert(spareKey, cacheObj, (int)timeout.TotalSeconds * CACHE_MULTIPLE);
+                        var success = true;
+                        if (pred != null)
+                        {
+                            try
+                            {
+                                success = pred((T)cacheObj);
+                            }
+                            catch
+                            {
+                            }
+                        }
+
+                        if (success)
+                        {
+                            CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
+                            CacheHelper.Insert(spareKey, cacheObj, (int)timeout.TotalSeconds * CACHE_MULTIPLE);
+                        }
                     }
                 }
                 else
@@ -319,7 +364,7 @@ namespace MySoft
                         if (!hashtable.Contains(key))
                         {
                             hashtable.Add(key);
-                            func.BeginInvoke(state, AsyncCallback, new ArrayList { key, timeout, func });
+                            func.BeginInvoke(state, AsyncCallback, new ArrayList { key, timeout, func, pred });
                         }
                     }
                 }
@@ -346,14 +391,34 @@ namespace MySoft
                 {
                     var timeout = (TimeSpan)arr[1];
                     var func = arr[2] as Func<object, T>;
+                    var pred = arr[3] as Predicate<T>;
+
                     var cacheObj = func.EndInvoke(ar);
 
                     if (cacheObj != null)
                     {
-                        var spareKey = string.Format("SpareCache_{0}", key);
-                        CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
-                        CacheHelper.Insert(spareKey, cacheObj, (int)timeout.TotalSeconds * CACHE_MULTIPLE);
+                        var success = true;
+                        if (pred != null)
+                        {
+                            try
+                            {
+                                success = pred((T)cacheObj);
+                            }
+                            catch
+                            {
+                            }
+                        }
+
+                        if (success)
+                        {
+                            var spareKey = string.Format("SpareCache_{0}", key);
+                            CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
+                            CacheHelper.Insert(spareKey, cacheObj, (int)timeout.TotalSeconds * CACHE_MULTIPLE);
+                        }
                     }
+
+                    //休眠一段时间
+                    Thread.Sleep(timeout);
                 }
                 finally
                 {

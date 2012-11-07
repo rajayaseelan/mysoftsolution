@@ -106,11 +106,11 @@ namespace MySoft.IoC
 
             #endregion
 
-            //调用方法
-            var resMsg = CallService(reqMsg);
-
             //定义返回值
             object returnValue = null;
+
+            //调用方法
+            var resMsg = CallService(reqMsg);
 
             if (resMsg != null)
             {

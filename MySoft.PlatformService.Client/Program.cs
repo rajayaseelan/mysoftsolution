@@ -478,8 +478,7 @@ namespace MySoft.PlatformService.Client
             //e.WaitOne();
 
             //var node = CastleFactory.Create().GetDefaultNode();
-            var node = ServerNode.Parse("127.0.0.1", 9982);
-            var service = CastleFactory.Create().GetChannel<IUserService>(node);
+            var service = CastleFactory.Create().GetChannel<IUserService>();
 
             //var service = new MySoft.PlatformService.UserService.UserService();
 

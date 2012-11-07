@@ -337,13 +337,18 @@ namespace MySoft.IoC
             catch (SocketException ex) { }
             catch (ThreadInterruptedException ex) { }
             catch (ThreadAbortException ex) { }
-            catch (CommunicationException ex) { }
             catch (Exception ex)
             {
                 try
                 {
-                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                    //获取异常响应
+                    var caller = channel.UserContext as AppCaller;
+                    var body = string.Format("Sending messages error: {0}, service: ({1}, {2})",
+                                            ErrorHelper.GetInnerException(ex).Message, caller.ServiceName, caller.MethodName);
 
+                    var error = IoCHelper.GetException(caller, body);
+
+                    resMsg = IoCHelper.GetResponse(reqMsg, error);
                     var message = new ScsResultMessage(resMsg, messageId);
 
                     //发送消息
@@ -351,7 +356,14 @@ namespace MySoft.IoC
                 }
                 catch (Exception e)
                 {
+                    //写异常信息
+                    container.WriteError(e);
                 }
+            }
+            finally
+            {
+                //上下文设置为null
+                channel.UserContext = null;
             }
         }
 

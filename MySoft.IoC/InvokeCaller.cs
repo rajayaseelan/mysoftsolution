@@ -1,4 +1,5 @@
 ﻿using System;
+using MySoft.Cache;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 
@@ -7,12 +8,12 @@ namespace MySoft.IoC
     /// <summary>
     /// 调用者
     /// </summary>
-    public class InvokeCaller
+    public class InvokeCaller : IDisposable
     {
         private string appName;
-        private IService service;
         private string hostName;
         private string ipAddress;
+        private IService service;
         private IContainer container;
         private AsyncCaller asyncCaller;
 
@@ -23,14 +24,15 @@ namespace MySoft.IoC
         /// <param name="container"></param>
         /// <param name="service"></param>
         /// <param name="timeout"></param>
-        public InvokeCaller(string appName, IContainer container, IService service, TimeSpan timeout)
+        /// <param name="cache"></param>
+        public InvokeCaller(string appName, IContainer container, IService service, TimeSpan timeout, ICacheStrategy cache)
         {
             this.appName = appName;
             this.service = service;
             this.container = container;
 
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(service, timeout, false);
+            this.asyncCaller = new AsyncCaller(service, timeout, cache, false);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -101,5 +103,19 @@ namespace MySoft.IoC
                 Caller = caller
             };
         }
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            this.service = null;
+            this.container = null;
+            this.asyncCaller = null;
+        }
+
+        #endregion
     }
 }
