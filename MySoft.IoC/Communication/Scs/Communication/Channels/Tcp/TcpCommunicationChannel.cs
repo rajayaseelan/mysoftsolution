@@ -230,6 +230,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         //Copy received bytes to a new byte array
                         var receivedBytes = new byte[bytesTransferred];
                         Buffer.BlockCopy(e.Buffer, e.Offset, receivedBytes, 0, bytesTransferred);
+                        Array.Clear(e.Buffer, e.Offset, bytesTransferred);
 
                         //Read messages according to current wire protocol
                         var messages = WireProtocol.CreateMessages(receivedBytes);
@@ -246,9 +247,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                         throw;
                     }
-
-                    //Set client socket count.
-                    e.SetBuffer(0, e.Count);
 
                     if (!_clientSocket.ReceiveAsync(e))
                     {
