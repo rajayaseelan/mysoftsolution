@@ -84,7 +84,7 @@ namespace MySoft.IoC.Services
             }
 
             //返回响应
-            return InvokeResponse(context, reqMsg, !fromServer);
+            return InvokeResponse(context, reqMsg);
         }
 
         /// <summary>
@@ -92,11 +92,10 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
-        /// <param name="isSync"></param>
         /// <returns></returns>
-        private ResponseMessage InvokeResponse(OperationContext context, RequestMessage reqMsg, bool isSync)
+        private ResponseMessage InvokeResponse(OperationContext context, RequestMessage reqMsg)
         {
-            if (isSync)
+            if (!fromServer)
             {
                 //同步调用
                 return GetSyncResponse(context, reqMsg);
@@ -116,17 +115,34 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage GetSyncResponse(OperationContext context, RequestMessage reqMsg)
         {
+            //定义一个响应值
+            ResponseMessage resMsg = null;
+
+            //设置上下文
             OperationContext.Current = context;
 
             try
             {
                 //响应结果，清理资源
-                return service.CallService(reqMsg);
+                resMsg = service.CallService(reqMsg);
+            }
+            catch (ThreadInterruptedException ex) { }
+            catch (ThreadAbortException ex)
+            {
+                //取消请求
+                Thread.ResetAbort();
+            }
+            catch (Exception ex)
+            {
+                //返回异常响应信息
+                resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {
                 OperationContext.Current = null;
             }
+
+            return resMsg;
         }
 
         /// <summary>
@@ -207,12 +223,6 @@ namespace MySoft.IoC.Services
                     worker.SetResult(resMsg);
                 }
             }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex)
-            {
-                //取消请求
-                Thread.ResetAbort();
-            }
             catch (Exception ex)
             {
             }
@@ -262,7 +272,7 @@ namespace MySoft.IoC.Services
                             var _reqMsg = arr[1] as RequestMessage;
 
                             //异步请求响应数据
-                            return InvokeResponse(_context, _reqMsg, !fromServer);
+                            return InvokeResponse(_context, _reqMsg);
 
                         }, array, CheckResponse);
             }
@@ -280,7 +290,7 @@ namespace MySoft.IoC.Services
                 if (resMsg == null)
                 {
                     //异步请求响应数据
-                    resMsg = InvokeResponse(context, reqMsg, !fromServer);
+                    resMsg = InvokeResponse(context, reqMsg);
 
                     if (CheckResponse(resMsg))
                     {

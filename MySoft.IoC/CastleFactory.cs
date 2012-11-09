@@ -236,7 +236,7 @@ namespace MySoft.IoC
 
             if (node == null)
             {
-                throw new WarningException(string.Format("Did not find the node {0}.", nodeKey));
+                throw new WarningException(string.Format("Did not find the server node {0}.", nodeKey));
             }
 
             return GetChannel<IServiceInterfaceType>(node);
@@ -354,7 +354,7 @@ namespace MySoft.IoC
 
             if (node == null)
             {
-                throw new WarningException(string.Format("Did not find the node {0}.", nodeKey));
+                throw new WarningException(string.Format("Did not find the server node {0}.", nodeKey));
             }
 
             return GetChannel<IPublishService>(node, callback);
@@ -432,7 +432,7 @@ namespace MySoft.IoC
 
             if (node == null)
             {
-                throw new WarningException(string.Format("Did not find the node {0}.", nodeKey));
+                throw new WarningException(string.Format("Did not find the server node {0}.", nodeKey));
             }
 
             return Invoke(node, message);
