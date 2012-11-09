@@ -3,12 +3,11 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Web;
 using System.Web.SessionState;
 using System.Web.UI;
 using MySoft.Web.Configuration;
-using System.Web.Compilation;
-using System.Threading;
 
 namespace MySoft.Web
 {

@@ -1,6 +1,5 @@
 using System;
 using System.Configuration;
-using System.Web;
 using System.Xml.Serialization;
 
 namespace MySoft.Web.Configuration

@@ -203,7 +203,7 @@ namespace MySoft.IoC.HttpServer
             //使用Invoke方式调用
             using (var invoke = new InvokeCaller("HttpServer", container, service, timeout, null))
             {
-                return invoke.CallMethod(message);
+                return invoke.InvokeResponse(message);
             }
         }
 

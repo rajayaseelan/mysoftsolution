@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Threading;
+﻿using System.Collections;
 using MySoft.IoC.Communication.Scs.Server;
-using MySoft.IoC.Services;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Services
 {
     /// <summary>
     /// 线程管理
@@ -52,7 +49,13 @@ namespace MySoft.IoC
                     //判断是否已经完成
                     if (!worker.IsCompleted)
                     {
-                        worker.Cancel();
+                        try
+                        {
+                            worker.Cancel();
+                        }
+                        catch
+                        {
+                        }
                     }
 
                     hashtable.Remove(key);

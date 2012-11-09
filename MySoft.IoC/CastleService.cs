@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using MySoft.IoC.Callback;
-using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Services;
 using MySoft.Logger;
 using MySoft.Net.Http;
 
@@ -29,6 +27,7 @@ namespace MySoft.IoC
         private IScsServer server;
         private ScsTcpEndPoint epServer;
         private ServiceCaller caller;
+        private ServerStatusService status;
 
         /// <summary>
         /// 实例化CastleService
@@ -63,12 +62,12 @@ namespace MySoft.IoC
             };
 
             //实例化调用者
-            var status = new ServerStatusService(server, config, container);
-            this.caller = new ServiceCaller(status, config, container);
-            this.caller.Handler += (sender, args) =>
-            {
-                if (OnCalling != null) OnCalling(sender, args);
-            };
+            this.status = new ServerStatusService(server, config, container);
+
+            //注册状态服务
+            container.Register(typeof(IStatusService), status);
+
+            this.caller = new ServiceCaller(config, container);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -269,101 +268,47 @@ namespace MySoft.IoC
                 //只处理指定消息
                 if (e.Message is ScsClientMessage)
                 {
-                    ReceiveClientMessage(e, channel);
+                    var client = (e.Message as ScsClientMessage).Client;
+                    channel.UserToken = client;
+
+                    //响应客户端详细信息
+                    var endPoint = (channel.RemoteEndPoint as ScsTcpEndPoint);
+                    PushAppClient(endPoint, client);
                 }
                 else if (e.Message is ScsResultMessage)
                 {
-                    //获取client发送端
-                    ReceiveRequestMessage(e, channel);
+                    var message = e.Message as ScsResultMessage;
+                    var reqMsg = message.MessageValue as RequestMessage;
+
+                    //实例化服务通道
+                    using (var client = new ServiceChannel(channel, caller, status))
+                    {
+                        try
+                        {
+                            //发送消息
+                            client.SendMessage(message.RepliedMessageId, reqMsg, args =>
+                            {
+                                //响应消息
+                                MessageCenter.Instance.Notify(args);
+
+                                if (OnCalling != null)
+                                {
+                                    OnCalling(container, args);
+                                }
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            //写异常日志
+                            container.WriteError(ex);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 //写异常日志
                 container.WriteError(ex);
-            }
-        }
-
-        /// <summary>
-        /// 接收客户端
-        /// </summary>
-        /// <param name="e"></param>
-        /// <param name="channel"></param>
-        private void ReceiveClientMessage(MessageEventArgs e, IScsServerClient channel)
-        {
-            var client = (e.Message as ScsClientMessage).Client;
-            channel.UserToken = client;
-
-            //响应客户端详细信息
-            var endPoint = (channel.RemoteEndPoint as ScsTcpEndPoint);
-            PushAppClient(endPoint, client);
-        }
-
-        /// <summary>
-        /// 接收请求消息
-        /// </summary>
-        /// <param name="e"></param>
-        /// <param name="channel"></param>
-        private void ReceiveRequestMessage(MessageEventArgs e, IScsServerClient channel)
-        {
-            var message = e.Message as ScsResultMessage;
-            var reqMsg = message.MessageValue as RequestMessage;
-
-            //发送结果
-            var resMsg = caller.InvokeRequest(channel, reqMsg);
-
-            if (resMsg != null)
-            {
-                SendMessage(channel, reqMsg, resMsg, message.RepliedMessageId);
-            }
-        }
-
-        /// <summary>
-        /// 发送消息
-        /// </summary>
-        /// <param name="channel"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        /// <param name="messageId"></param>
-        private void SendMessage(IScsServerClient channel, RequestMessage reqMsg, ResponseMessage resMsg, string messageId)
-        {
-            try
-            {
-                var message = new ScsResultMessage(resMsg, messageId);
-
-                //发送消息
-                channel.SendMessage(message);
-            }
-            catch (SocketException ex) { }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex) { }
-            catch (Exception ex)
-            {
-                try
-                {
-                    //获取异常响应
-                    var caller = channel.UserContext as AppCaller;
-                    var body = string.Format("Sending messages error: {0}, service: ({1}, {2})",
-                                            ErrorHelper.GetInnerException(ex).Message, caller.ServiceName, caller.MethodName);
-
-                    var error = IoCHelper.GetException(caller, body);
-
-                    resMsg = IoCHelper.GetResponse(reqMsg, error);
-                    var message = new ScsResultMessage(resMsg, messageId);
-
-                    //发送消息
-                    channel.SendMessage(message);
-                }
-                catch (Exception e)
-                {
-                    //写异常信息
-                    container.WriteError(e);
-                }
-            }
-            finally
-            {
-                //上下文设置为null
-                channel.UserContext = null;
             }
         }
 

@@ -76,9 +76,12 @@
     <Compile Include="Aspect\CastleInterface.cs" />
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
+    <Compile Include="CallerContext.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="HttpServer\TcpDocument.cs" />
-    <Compile Include="Common\ThreadManager.cs" />
+    <Compile Include="Services\DiscoverProxy.cs" />
+    <Compile Include="Services\ThreadManager.cs" />
+    <Compile Include="ServiceChannel.cs" />
     <Compile Include="Services\WorkerItem.cs" />
     <Compile Include="IServerConnect.cs" />
     <Compile Include="Communication\Scs\Client\ClientReConnecter.cs" />

@@ -30,6 +30,17 @@ namespace MySoft.IoC
         private IServiceLog logger;
 
         /// <summary>
+        /// Gets the proxies.
+        /// </summary>
+        internal IList<RemoteProxy> Proxies
+        {
+            get
+            {
+                return proxies.Values.Cast<RemoteProxy>().ToList();
+            }
+        }
+
+        /// <summary>
         /// Gets the service container.
         /// </summary>
         /// <value>The service container.</value>
@@ -122,7 +133,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ServerNode GetDefaultNode()
         {
-            return GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, config.Default, true) == 0);
+            return GetServerNode(config.Default);
         }
 
         /// <summary>
@@ -132,6 +143,11 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ServerNode GetServerNode(string nodeKey)
         {
+            if (singleton.proxies.Count == 0)
+            {
+                throw new WarningException("Not find any server node.");
+            }
+
             return GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
         }
 
@@ -174,6 +190,26 @@ namespace MySoft.IoC
         /// <summary>
         /// Create service channel.
         /// </summary>
+        /// <typeparam name="IServiceInterfaceType"></typeparam>
+        /// <returns></returns>
+        public IServiceInterfaceType GetProxyChannel<IServiceInterfaceType>()
+        {
+            if (proxies.Count == 0)
+            {
+                //获取本地服务
+                var service = GetLocalService<IServiceInterfaceType>();
+                if (service != null) return service;
+
+                throw new WarningException(string.Format("Did not find the service {0}.", typeof(IServiceInterfaceType).FullName));
+            }
+
+            IService s = new DiscoverProxy(this, container);
+            return GetProxyChannel<IServiceInterfaceType>(s, true);
+        }
+
+        /// <summary>
+        /// Create service channel.
+        /// </summary>
         /// <returns>The service implemetation instance.</returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
@@ -196,8 +232,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey)
         {
-            nodeKey = GetNodeKey(nodeKey);
-            var node = GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            var node = GetServerNode(nodeKey);
+
             if (node == null)
             {
                 throw new WarningException(string.Format("Did not find the node {0}.", nodeKey));
@@ -314,12 +350,13 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IPublishService GetChannel<IPublishService>(string nodeKey, object callback)
         {
-            nodeKey = GetNodeKey(nodeKey);
-            var node = GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            var node = GetServerNode(nodeKey);
+
             if (node == null)
             {
                 throw new WarningException(string.Format("Did not find the node {0}.", nodeKey));
             }
+
             return GetChannel<IPublishService>(node, callback);
         }
 
@@ -391,8 +428,8 @@ namespace MySoft.IoC
         /// <returns></returns>
         public InvokeData Invoke(string nodeKey, InvokeMessage message)
         {
-            nodeKey = GetNodeKey(nodeKey);
-            var node = GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
+            var node = GetServerNode(nodeKey);
+
             if (node == null)
             {
                 throw new WarningException(string.Format("Did not find the node {0}.", nodeKey));
@@ -460,7 +497,7 @@ namespace MySoft.IoC
             var timeout = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT * 5);
             using (var caller = new InvokeCaller(config.AppName, container, service, timeout, cache))
             {
-                return caller.CallMethod(message);
+                return caller.InvokeResponse(message);
             }
         }
 
@@ -540,27 +577,6 @@ namespace MySoft.IoC
             }
 
             return ls;
-        }
-
-        /// <summary>
-        /// 获取节点名称
-        /// </summary>
-        /// <param name="nodeKey"></param>
-        /// <returns></returns>
-        private string GetNodeKey(string nodeKey)
-        {
-            if (singleton.proxies.Count == 0)
-            {
-                throw new WarningException("Not find any service node.");
-            }
-
-            //如果不存在当前配置节，则使用默认配置节
-            if (string.IsNullOrEmpty(nodeKey) || !singleton.proxies.ContainsKey(nodeKey.ToLower()))
-            {
-                nodeKey = config.Default;
-            }
-
-            return nodeKey;
         }
 
         /// <summary>

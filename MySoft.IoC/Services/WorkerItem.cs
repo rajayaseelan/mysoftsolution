@@ -45,21 +45,17 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取结果并处理超时
         /// </summary>
-        /// <param name="callKey"></param>
         /// <param name="timeout"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public ResponseMessage GetResult(string callKey, TimeSpan timeout, Action<string, ResponseMessage> callback)
+        public ResponseMessage GetResult(TimeSpan timeout, WaitCallback callback)
         {
+            //开始异步请求
+            ThreadPool.QueueUserWorkItem(callback, this);
+
             if (!waitResult.WaitOne(timeout))
             {
                 throw new System.TimeoutException("Timeout occured.");
-            }
-
-            if (callback != null)
-            {
-                //处理回调
-                callback(callKey, waitResult.Message);
             }
 
             return waitResult.Message;

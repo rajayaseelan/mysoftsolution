@@ -106,6 +106,7 @@ namespace MySoft.Net.Http
             IPAddress bindAddress = IPAddress.Any;
 
             _socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _socket.Bind(new IPEndPoint(bindAddress, port));
             _socket.Listen(64);
         }

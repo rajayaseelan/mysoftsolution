@@ -61,11 +61,6 @@ namespace MySoft.IoC.Communication.Scs.Server
         public object UserToken { get; set; }
 
         /// <summary>
-        /// Get or set user context info.
-        /// </summary>
-        public object UserContext { get; set; }
-
-        /// <summary>
         /// Gets/sets wire protocol that is used while reading and writing messages.
         /// </summary>
         public IScsWireProtocol WireProtocol

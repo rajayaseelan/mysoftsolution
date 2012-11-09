@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using MySoft.Cache;
@@ -13,17 +12,11 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class AsyncCaller
     {
-        /// <summary>
-        /// 用于存储并发队列信息
-        /// </summary>
-        private Hashtable hashtable = new Hashtable();
-
         private IService service;
         private ICacheStrategy cache;
         private TimeSpan timeout;
         private bool enabledCache;
         private bool fromServer;
-        private Random random;
 
         /// <summary>
         /// 实例化AsyncCaller
@@ -37,7 +30,6 @@ namespace MySoft.IoC.Services
             this.timeout = timeout;
             this.enabledCache = false;
             this.fromServer = fromServer;
-            this.random = new Random();
         }
 
         /// <summary>
@@ -91,33 +83,71 @@ namespace MySoft.IoC.Services
                 }
             }
 
-            //异步调用
-            return AsyncRun(callKey, context, reqMsg);
+            //返回响应
+            return InvokeResponse(context, reqMsg, !fromServer);
+        }
+
+        /// <summary>
+        /// 同步或异步响应
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="isSync"></param>
+        /// <returns></returns>
+        private ResponseMessage InvokeResponse(OperationContext context, RequestMessage reqMsg, bool isSync)
+        {
+            if (isSync)
+            {
+                //同步调用
+                return GetSyncResponse(context, reqMsg);
+            }
+            else
+            {
+                //异步调用
+                return GetAsyncResponse(context, reqMsg);
+            }
+        }
+
+        /// <summary>
+        /// 调用方法
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetSyncResponse(OperationContext context, RequestMessage reqMsg)
+        {
+            OperationContext.Current = context;
+
+            try
+            {
+                //响应结果，清理资源
+                return service.CallService(reqMsg);
+            }
+            finally
+            {
+                OperationContext.Current = null;
+            }
         }
 
         /// <summary>
         /// 异常调用
         /// </summary>
-        /// <param name="callKey"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage AsyncRun(string callKey, OperationContext context, RequestMessage reqMsg)
+        private ResponseMessage GetAsyncResponse(OperationContext context, RequestMessage reqMsg)
         {
             //异步调用
             using (var waitResult = new WaitResult(reqMsg))
             using (var worker = new WorkerItem(waitResult) { Context = context, Request = reqMsg })
             {
+                //添加线程
+                ThreadManager.Set(context.Channel, worker);
+
                 try
                 {
-                    //添加线程
-                    ThreadManager.Set(context.Channel, worker);
-
-                    //开始异步请求
-                    QueueWorkerItem(callKey, worker);
-
                     //运行任务
-                    return GetAsyncResponse(callKey, worker);
+                    return AsyncRun(worker);
                 }
                 finally
                 {
@@ -130,17 +160,16 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 异步调用
         /// </summary>
-        /// <param name="callKey"></param>
         /// <param name="worker"></param>
         /// <returns></returns>
-        private ResponseMessage GetAsyncResponse(string callKey, WorkerItem worker)
+        private ResponseMessage AsyncRun(WorkerItem worker)
         {
             ResponseMessage resMsg = null;
 
             try
             {
                 //返回响应结果
-                resMsg = worker.GetResult(callKey, timeout, SetWorkerResponse);
+                resMsg = worker.GetResult(timeout, AsyncCallback);
             }
             catch (System.TimeoutException ex)
             {
@@ -154,32 +183,6 @@ namespace MySoft.IoC.Services
             }
 
             return resMsg;
-        }
-
-        /// <summary>
-        /// 获取异常结果
-        /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="worker"></param>
-        private void QueueWorkerItem(string callKey, WorkerItem worker)
-        {
-            lock (hashtable.SyncRoot)
-            {
-                if (!hashtable.ContainsKey(callKey))
-                {
-                    //将waitResult加入队列中
-                    hashtable[callKey] = new Queue<WorkerItem>();
-
-                    //开始异步请求
-                    ThreadPool.QueueUserWorkItem(AsyncCallback, worker);
-                }
-                else
-                {
-                    //加入队列中
-                    var workerQueue = hashtable[callKey] as Queue<WorkerItem>;
-                    workerQueue.Enqueue(worker);
-                }
-            }
         }
 
         /// <summary>
@@ -198,7 +201,7 @@ namespace MySoft.IoC.Services
                 if (!worker.IsCompleted)
                 {
                     //获取响应信息
-                    var resMsg = GetWorkerResponse(worker.Context, worker.Request);
+                    var resMsg = GetSyncResponse(worker.Context, worker.Request);
 
                     //设置响应信息
                     worker.SetResult(resMsg);
@@ -212,44 +215,6 @@ namespace MySoft.IoC.Services
             }
             catch (Exception ex)
             {
-            }
-        }
-
-        /// <summary>
-        /// 设置响应信息
-        /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="resMsg"></param>
-        private void SetWorkerResponse(string callKey, ResponseMessage resMsg)
-        {
-            lock (hashtable.SyncRoot)
-            {
-                if (hashtable.ContainsKey(callKey))
-                {
-                    try
-                    {
-                        //获取队列
-                        var queue = hashtable[callKey] as Queue<WorkerItem>;
-
-                        while (queue.Count > 0)
-                        {
-                            try
-                            {
-                                //响应队列中的请求
-                                var worker = queue.Dequeue();
-                                worker.SetResult(resMsg);
-                            }
-                            catch (Exception ex)
-                            {
-                            }
-                        }
-                    }
-                    catch (Exception ex) { }
-                    finally
-                    {
-                        hashtable.Remove(callKey);
-                    }
-                }
             }
         }
 
@@ -273,27 +238,6 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 调用方法
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetWorkerResponse(OperationContext context, RequestMessage reqMsg)
-        {
-            try
-            {
-                OperationContext.Current = context;
-
-                //响应结果，清理资源
-                return service.CallService(reqMsg);
-            }
-            finally
-            {
-                OperationContext.Current = null;
-            }
-        }
-
-        /// <summary>
         /// 从缓存中获取数据
         /// </summary>
         /// <param name="callKey"></param>
@@ -308,18 +252,17 @@ namespace MySoft.IoC.Services
             if (cache == null)
             {
                 //双缓存保护获取方式
-                var array = new ArrayList { callKey, context, reqMsg };
+                var array = new ArrayList { context, reqMsg };
 
                 resMsg = CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime),
                         state =>
                         {
                             var arr = state as ArrayList;
-                            var _callKey = Convert.ToString(arr[0]);
-                            var _context = arr[1] as OperationContext;
-                            var _reqMsg = arr[2] as RequestMessage;
+                            var _context = arr[0] as OperationContext;
+                            var _reqMsg = arr[1] as RequestMessage;
 
                             //异步请求响应数据
-                            return AsyncRun(_callKey, _context, _reqMsg);
+                            return InvokeResponse(_context, _reqMsg, !fromServer);
 
                         }, array, CheckResponse);
             }
@@ -337,7 +280,7 @@ namespace MySoft.IoC.Services
                 if (resMsg == null)
                 {
                     //异步请求响应数据
-                    resMsg = AsyncRun(callKey, context, reqMsg);
+                    resMsg = InvokeResponse(context, reqMsg, !fromServer);
 
                     if (CheckResponse(resMsg))
                     {

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -160,6 +159,67 @@ namespace MySoft.Web
         }
 
         #endregion
+
+        /// <summary>
+        /// 生成本地页面
+        /// </summary>
+        /// <param name="templatePath">来路径。如:/Default.aspx?code=123456</param>
+        /// <param name="savePath">保存到路径。全路径。</param>
+        /// <param name="validateString">验证字符串</param>
+        internal static bool CreateStaticPage(String templatePath, String savePath, String validateString)
+        {
+            try
+            {
+                var content = string.Empty;
+
+                //判断是否有http://
+                if (!templatePath.ToLower().StartsWith("http://"))
+                {
+                    var arr = templatePath.Split('?');
+                    var url = arr.Length > 0 ? arr[0] : string.Empty;
+                    var query = arr.Length > 1 ? arr[1] : string.Empty;
+
+                    content = StaticPageManager.GetLocalPageString(url, query, Encoding.UTF8, validateString);
+                }
+                else
+                {
+                    content = StaticPageManager.GetRemotePageString(templatePath, Encoding.UTF8, validateString);
+                }
+
+                var dynamicurl = templatePath;
+                var staticurl = savePath;
+
+                //加入静态页生成元素
+                content = string.Format("{3}\r\n\r\n<!-- 生成方式：Redirect方式生成 -->\r\n<!-- 更新时间：{0} -->\r\n<!-- 动态URL：{1} -->\r\n<!-- 静态URL：{2} -->",
+                                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), dynamicurl, RemoveRootPath(staticurl), content.Trim());
+
+
+                StaticPageManager.SaveFile(content, savePath, Encoding.UTF8);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                SaveError(new StaticPageException("执行页面" + templatePath + "生成出现异常！", ex));
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 去除根目录
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        private static string RemoveRootPath(string path)
+        {
+            try
+            {
+                return path.Replace(AppDomain.CurrentDomain.BaseDirectory, "/").Replace("\\", "/").Replace("//", "/");
+            }
+            catch
+            {
+                return path;
+            }
+        }
 
         #region 生成页面
 

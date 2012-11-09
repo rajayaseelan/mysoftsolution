@@ -11,6 +11,7 @@ namespace MySoft.IoC.Services
     public class DiscoverProxy : IService
     {
         private CastleFactory factory;
+        private Random random;
         private IDictionary<string, IList<IService>> services;
 
         /// <summary>
@@ -21,6 +22,7 @@ namespace MySoft.IoC.Services
         public DiscoverProxy(CastleFactory factory, ILog logger)
         {
             this.factory = factory;
+            this.random = new Random();
             this.services = new Dictionary<string, IList<IService>>();
         }
 
@@ -77,15 +79,17 @@ namespace MySoft.IoC.Services
                                 //自定义实现一个ServerNode
                                 var node = new ServerNode
                                 {
+                                    Key = Guid.NewGuid().ToString(),
                                     IP = proxy.Node.IP,
                                     Port = proxy.Node.Port,
+                                    MaxPool = proxy.Node.MaxPool,
+                                    MinPool = proxy.Node.MinPool,
+                                    RespType = ResponseType.Binary,
                                     Compress = proxy.Node.Compress,
-                                    Encrypt = proxy.Node.Encrypt,
-                                    Key = Guid.NewGuid().ToString(),
-                                    MaxPool = 1,
                                     Timeout = 30
                                 };
 
+                                //获取服务
                                 var service = factory.GetChannel<IStatusService>(node);
 
                                 //检测是否存在服务
@@ -110,8 +114,7 @@ namespace MySoft.IoC.Services
             }
 
             //随机获取一个代理，实现分布式处理
-            var rndIndex = new Random(Guid.NewGuid().GetHashCode()).Next(proxies.Count);
-            return proxies[rndIndex].CallService(reqMsg);
+            return proxies[random.Next(proxies.Count)].CallService(reqMsg);
         }
 
         #endregion
@@ -124,7 +127,6 @@ namespace MySoft.IoC.Services
         public void Dispose()
         {
             this.services.Clear();
-            this.services = null;
         }
 
         #endregion

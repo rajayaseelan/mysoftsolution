@@ -12,8 +12,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// </summary>
     internal class TcpConnectionListener : ConnectionListenerBase
     {
-        private const int SOCKET_BACKLOG = 1024;
-
         /// <summary>
         /// The endpoint address of the server to listen incoming connections.
         /// </summary>
@@ -77,18 +75,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private void StartSocket()
         {
             // Get endpoint for the listener.
-            IPEndPoint endPoint = null;
+            IPAddress bindAddress = IPAddress.Any;
+            AddressFamily addressFamily = AddressFamily.InterNetwork;
 
-            if (string.IsNullOrEmpty(_endPoint.IpAddress))
-                endPoint = new IPEndPoint(IPAddress.Any, _endPoint.TcpPort);
-            else
-                endPoint = new IPEndPoint(IPAddress.Parse(_endPoint.IpAddress), _endPoint.TcpPort);
+            if (!string.IsNullOrEmpty(_endPoint.IpAddress))
+                bindAddress = IPAddress.Parse(_endPoint.IpAddress);
 
             // Listener socket.
-            _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            _listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
-            _listenerSocket.Bind(endPoint);
-            _listenerSocket.Listen(SOCKET_BACKLOG);
+            _listenerSocket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            _listenerSocket.Bind(new IPEndPoint(bindAddress, _endPoint.TcpPort));
+            _listenerSocket.Listen(1024);
         }
 
         /// <summary>

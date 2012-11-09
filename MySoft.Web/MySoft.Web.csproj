@@ -92,6 +92,11 @@
     <Compile Include="StaticPage\AspNetFilter.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="StaticPage\Configuration\RedirectPageConfigSerializerSectionHandler.cs" />
+    <Compile Include="StaticPage\Configuration\RedirectPageConfiguration.cs" />
+    <Compile Include="StaticPage\Configuration\RedirectPageRule.cs" />
+    <Compile Include="StaticPage\Configuration\RedirectPageRuleCollection.cs" />
+    <Compile Include="StaticPage\RedirectPageHandler.cs" />
     <Compile Include="StaticPage\ResponseFilter.cs">
       <SubType>Code</SubType>
     </Compile>

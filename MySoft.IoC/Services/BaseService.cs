@@ -69,8 +69,6 @@ namespace MySoft.IoC.Services
                 {
                     watch.Stop();
                 }
-
-                watch = null;
             }
         }
 

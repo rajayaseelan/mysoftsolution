@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.IO;
-using MySoft.Web.Configuration;
 using System.Web;
-using System.Text.RegularExpressions;
 
 namespace MySoft.Web
 {

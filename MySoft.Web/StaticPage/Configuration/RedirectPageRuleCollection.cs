@@ -4,46 +4,46 @@ using System.Collections;
 namespace MySoft.Web.Configuration
 {
     /// <summary>
-    /// The StaticPageRuleCollection models a set of StaticPageRules in the Web.config file.
+    /// The RedirectPageRuleCollection models a set of RedirectPageRules in the Web.config file.
     /// </summary>
     /// <remarks>
-    /// The StaticPageRuleCollection is expressed in XML as:
+    /// The RedirectPageRuleCollection is expressed in XML as:
     /// <code>
-    /// &lt;StaticPageRule&gt;
+    /// &lt;RedirectPageRule&gt;
     ///   &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
     ///   &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
-    /// &lt;StaticPageRule&gt;
-    /// &lt;StaticPageRule&gt;
+    /// &lt;RedirectPageRule&gt;
+    /// &lt;RedirectPageRule&gt;
     ///   &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
     ///   &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
-    /// &lt;StaticPageRule&gt;
+    /// &lt;RedirectPageRule&gt;
     /// ...
-    /// &lt;StaticPageRule&gt;
+    /// &lt;RedirectPageRule&gt;
     ///   &lt;LookFor&gt;<i>pattern to search for</i>&lt;/LookFor&gt;
     ///   &lt;SendTo&gt;<i>string to redirect to</i>&lt;/LookFor&gt;
-    /// &lt;StaticPageRule&gt;
+    /// &lt;RedirectPageRule&gt;
     /// </code>
     /// </remarks>
     [Serializable]
-    public class StaticPageRuleCollection : CollectionBase
+    public class RedirectPageRuleCollection : CollectionBase
     {
         /// <summary>
-        /// Adds a new StaticPageRule to the collection.
+        /// Adds a new RedirectPageRule to the collection.
         /// </summary>
-        /// <param name="r">A StaticPageRule instance.</param>
-        public virtual void Add(StaticPageRule r)
+        /// <param name="r">A RedirectPageRule instance.</param>
+        public virtual void Add(RedirectPageRule r)
         {
             this.InnerList.Add(r);
         }
 
         /// <summary>
-        /// Gets or sets a StaticPageRule at a specified ordinal index.
+        /// Gets or sets a RedirectPageRule at a specified ordinal index.
         /// </summary>
-        public StaticPageRule this[int index]
+        public RedirectPageRule this[int index]
         {
             get
             {
-                return (StaticPageRule)this.InnerList[index];
+                return (RedirectPageRule)this.InnerList[index];
             }
             set
             {

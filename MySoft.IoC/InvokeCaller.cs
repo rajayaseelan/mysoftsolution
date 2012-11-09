@@ -43,7 +43,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public InvokeData CallMethod(InvokeMessage message)
+        public InvokeData InvokeResponse(InvokeMessage message)
         {
             #region 设置请求信息
 
@@ -55,8 +55,9 @@ namespace MySoft.IoC
                 IPAddress = ipAddress,                                  //客户端IP地址
                 ServiceName = message.ServiceName,                      //服务名称
                 MethodName = message.MethodName,                        //方法名称
-                TransactionId = Guid.NewGuid(),
-                RespType = ResponseType.Json                        //数据类型
+                CacheTime = message.CacheTime,                          //缓存时间
+                TransactionId = Guid.NewGuid(),                         //Json字符串
+                RespType = ResponseType.Json                            //数据类型
             };
 
             #endregion

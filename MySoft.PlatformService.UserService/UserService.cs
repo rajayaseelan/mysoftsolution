@@ -54,14 +54,14 @@ namespace MySoft.PlatformService.UserService
             //    return null;
             //}
 
-            //var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
-            //var sb = new StringBuilder(name);
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    sb.Append(name);
-            //}
+            var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
+            var sb = new StringBuilder(name);
+            for (int i = 0; i < 10; i++)
+            {
+                sb.Append(name);
+            }
 
-            return new User { Id = id, Name = DateTime.Now.ToString() };
+            return new User { Id = id, Name = sb.ToString() };
         }
 
         public User GetUserForName(string name)

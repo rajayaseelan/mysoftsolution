@@ -44,7 +44,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </summary>
         public BinarySerializationProtocol()
         {
-            _receiveMemoryStream = new MemoryStream();
+            _receiveMemoryStream = NewMemoryStream(_receiveMemoryStream);
         }
 
         #endregion
@@ -93,6 +93,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </returns>
         public IEnumerable<IScsMessage> CreateMessages(byte[] receivedBytes)
         {
+            if (_receiveMemoryStream == null) return new List<IScsMessage>();
+
             //Write all received bytes to the _receiveMemoryStream
             _receiveMemoryStream.Write(receivedBytes, 0, receivedBytes.Length);
             //Create a list to collect messages
@@ -109,9 +111,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </summary>
         public void Reset()
         {
+            if (_receiveMemoryStream == null) return;
+
             if (_receiveMemoryStream.Length > 0)
             {
-                _receiveMemoryStream = new MemoryStream();
+                _receiveMemoryStream = NewMemoryStream(_receiveMemoryStream);
             }
         }
 
@@ -205,14 +209,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
                 //if no more bytes, return immediately
                 if (_receiveMemoryStream.Length == 4)
                 {
-                    _receiveMemoryStream = new MemoryStream(); //Clear the stream
+                    _receiveMemoryStream = NewMemoryStream(_receiveMemoryStream); //Clear the stream
                     return false;
                 }
 
                 //Create a new memory stream from current except first 4-bytes.
                 var bytes = _receiveMemoryStream.ToArray();
 
-                _receiveMemoryStream = new MemoryStream();
+                _receiveMemoryStream = NewMemoryStream(_receiveMemoryStream);
                 _receiveMemoryStream.Write(bytes, 4, bytes.Length - 4);
                 return true;
             }
@@ -232,7 +236,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             var remainingBytes = ReadByteArray(_receiveMemoryStream, (int)(_receiveMemoryStream.Length - (4 + messageLength)));
 
             //Re-create the receive memory stream and write remaining bytes
-            _receiveMemoryStream = new MemoryStream();
+            _receiveMemoryStream = NewMemoryStream(_receiveMemoryStream);
             _receiveMemoryStream.Write(remainingBytes, 0, remainingBytes.Length);
 
             //Return true to re-call this method to try to read next message
@@ -290,6 +294,29 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             }
 
             return buffer;
+        }
+
+        /// <summary>
+        /// New memory stream.
+        /// </summary>
+        /// <param name="ms"></param>
+        /// <returns></returns>
+        private MemoryStream NewMemoryStream(MemoryStream ms)
+        {
+            if (ms != null)
+            {
+                try
+                {
+                    ms.Close();
+                }
+                catch
+                {
+                    ms.Dispose();
+                    ms = null;
+                }
+            }
+
+            return new MemoryStream();
         }
 
         #endregion
