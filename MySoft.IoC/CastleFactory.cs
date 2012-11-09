@@ -200,7 +200,7 @@ namespace MySoft.IoC
                 var service = GetLocalService<IServiceInterfaceType>();
                 if (service != null) return service;
 
-                throw new WarningException(string.Format("Did not find the service {0}.", typeof(IServiceInterfaceType).FullName));
+                throw new WarningException(string.Format("Did not find the service¡¾{0}¡¿.", typeof(IServiceInterfaceType).FullName));
             }
 
             IService s = new DiscoverProxy(this, container);
@@ -219,7 +219,7 @@ namespace MySoft.IoC
                 var service = GetLocalService<IServiceInterfaceType>();
                 if (service != null) return service;
 
-                throw new WarningException(string.Format("Did not find the service {0}.", typeof(IServiceInterfaceType).FullName));
+                throw new WarningException(string.Format("Did not find the service¡¾{0}¡¿.", typeof(IServiceInterfaceType).FullName));
             }
 
             return GetChannel<IServiceInterfaceType>(config.Default);
@@ -236,7 +236,7 @@ namespace MySoft.IoC
 
             if (node == null)
             {
-                throw new WarningException(string.Format("Did not find the server node {0}.", nodeKey));
+                throw new WarningException(string.Format("Did not find the server node¡¾{0}¡¿.", nodeKey));
             }
 
             return GetChannel<IServiceInterfaceType>(node);
@@ -354,7 +354,7 @@ namespace MySoft.IoC
 
             if (node == null)
             {
-                throw new WarningException(string.Format("Did not find the server node {0}.", nodeKey));
+                throw new WarningException(string.Format("Did not find the server node¡¾{0}¡¿.", nodeKey));
             }
 
             return GetChannel<IPublishService>(node, callback);
@@ -414,7 +414,7 @@ namespace MySoft.IoC
                     return GetInvokeData(service, message);
                 }
 
-                throw new WarningException(string.Format("Did not find the service {0}.", message.ServiceName));
+                throw new WarningException(string.Format("Did not find the service¡¾{0}¡¿.", message.ServiceName));
             }
 
             return Invoke(config.Default, message);
@@ -432,7 +432,7 @@ namespace MySoft.IoC
 
             if (node == null)
             {
-                throw new WarningException(string.Format("Did not find the server node {0}.", nodeKey));
+                throw new WarningException(string.Format("Did not find the server node¡¾{0}¡¿.", nodeKey));
             }
 
             return Invoke(node, message);

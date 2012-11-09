@@ -81,6 +81,26 @@ namespace MySoft.IoC.Messages
         public string MethodDescription { get; set; }
 
         /// <summary>
+        /// 参数类型
+        /// </summary>
+        public string ReturnTypeName { get; set; }
+
+        /// <summary>
+        /// 参数类型
+        /// </summary>
+        public string ReturnTypeFullName { get; set; }
+
+        /// <summary>
+        /// 是否简单类型
+        /// </summary>
+        public bool IsPrimitive { get; set; }
+
+        /// <summary>
+        /// 是否集合类型
+        /// </summary>
+        public bool IsCollection { get; set; }
+
+        /// <summary>
         /// 参数信息
         /// </summary>
         public IList<ParameterInfo> Parameters { get; set; }

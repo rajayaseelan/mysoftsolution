@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using MySoft.IoC.Callback;
@@ -288,7 +289,11 @@ namespace MySoft.IoC
                         var m = new MethodInfo
                         {
                             Name = method.Name,
-                            FullName = method.ToString()
+                            FullName = method.ToString(),
+                            ReturnTypeName = CoreHelper.GetTypeName(method.ReturnType),
+                            ReturnTypeFullName = method.ReturnType.FullName,
+                            IsPrimitive = CheckPrimitive(method.ReturnType),
+                            IsCollection = CheckCollection(method.ReturnType)
                         };
 
                         if (contract2 != null)
@@ -330,10 +335,31 @@ namespace MySoft.IoC
             return services;
         }
 
+        /// <summary>
+        /// 检测是否为简单类型
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         private bool CheckPrimitive(Type type)
         {
             if (type.IsByRef) type = type.GetElementType();
+
             return type.IsValueType || type == typeof(string);
+        }
+
+        /// <summary>
+        /// 检测是否是集合
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private bool CheckCollection(Type type)
+        {
+            if (type.IsByRef) type = type.GetElementType();
+
+            return typeof(ICollection).IsAssignableFrom(type) ||
+                    typeof(Array).IsAssignableFrom(type) ||
+                    typeof(DataTable).IsAssignableFrom(type) ||
+                    typeof(DataSet).IsAssignableFrom(type);
         }
 
         private IList<ParameterInfo> GetSubParameters(Type type)
