@@ -277,44 +277,52 @@ namespace MySoft.PlatformService.WinForm
 
         private void AsyncComplete(IAsyncResult ar)
         {
-            if (this.IsDisposed) return;
-
-            var caller = ar.AsyncState as AsyncMethodCaller;
-            var value = caller.EndInvoke(ar);
-            var data = value as InvokeResponse;
-
-            InvokeMethod(new Action(() =>
+            try
             {
-                if (data.IsError)
-                {
-                    richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
-                }
-                else
-                {
-                    richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
-                                        data.Count, data.Value, data.OutParameters);
-                    richTextBox1.Refresh();
-                }
+                if (this.IsDisposed) return;
 
-                label5.Text = string.Format("{0} ms. / {1} ms.", data.ElapsedMilliseconds, data.ElapsedTime);
-                label5.Refresh();
+                var caller = ar.AsyncState as AsyncMethodCaller;
+                var value = caller.EndInvoke(ar);
+                var data = value as InvokeResponse;
 
-                button1.Enabled = true;
-
-                if (txtParameters.Count > 0)
+                InvokeMethod(new Action(() =>
                 {
-                    var p = txtParameters.Values.FirstOrDefault();
-                    p.Focus();
-                }
-                else
-                {
-                    button1.Focus();
-                }
-            }));
+                    if (data.IsError)
+                    {
+                        richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
+                    }
+                    else
+                    {
+                        richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
+                                            data.Count, data.Value, data.OutParameters);
+                        richTextBox1.Refresh();
+                    }
 
-            if (!data.IsError)
+                    label5.Text = string.Format("{0} ms. / {1} ms.", data.ElapsedMilliseconds, data.ElapsedTime);
+                    label5.Refresh();
+
+                    button1.Enabled = true;
+
+                    if (txtParameters.Count > 0)
+                    {
+                        var p = txtParameters.Values.FirstOrDefault();
+                        p.Focus();
+                    }
+                    else
+                    {
+                        button1.Focus();
+                    }
+                }));
+
+                if (!data.IsError)
+                {
+                    ThreadPool.QueueUserWorkItem(InvokeTable, data);
+                }
+            }
+            catch (Exception ex) { }
+            finally
             {
-                ThreadPool.QueueUserWorkItem(InvokeTable, data);
+                ar.AsyncWaitHandle.Close();
             }
         }
 
@@ -331,25 +339,8 @@ namespace MySoft.PlatformService.WinForm
                 //写Document文档
                 InvokeMethod(new Action(() =>
                 {
-                    if (webBrowser1.IsBusy) return;
-
                     gridDataQuery.DataSource = null;
-
-                    var html = container.ToString();
-                    webBrowser1.Url = new Uri("about:blank");
-                    webBrowser1.DocumentCompleted += (sender, e) =>
-                    {
-                        if (this.IsDisposed) return;
-
-                        try
-                        {
-                            webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
-                            webBrowser1.Document.Write(html);
-                        }
-                        catch
-                        {
-                        }
-                    };
+                    SetWebBrowser(container);
                 }));
             }
             else
@@ -358,7 +349,41 @@ namespace MySoft.PlatformService.WinForm
                 {
                     gridDataQuery.DataSource = table;
                 }));
+
+                if (table.Rows.Count == 1 && table.Columns.Count == 1)
+                {
+                    //写Document文档
+                    InvokeMethod(new Action(() =>
+                    {
+                        SetWebBrowser(container);
+                    }));
+                }
             }
+        }
+
+        /// <summary>
+        /// 设置浏览器
+        /// </summary>
+        /// <param name="container"></param>
+        private void SetWebBrowser(JToken container)
+        {
+            if (webBrowser1.IsBusy) return;
+
+            var html = container.ToString();
+            webBrowser1.Url = new Uri("about:blank");
+            webBrowser1.DocumentCompleted += (sender, e) =>
+            {
+                if (this.IsDisposed) return;
+
+                try
+                {
+                    webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
+                    webBrowser1.Document.Write(html);
+                }
+                catch
+                {
+                }
+            };
         }
 
         private void InvokeMethod(Action action)
@@ -393,28 +418,12 @@ namespace MySoft.PlatformService.WinForm
 
             try
             {
-                table = new DataTable("TEMP_TABLE");
-                if (container is JArray)
+                var tokens = GetFromJToken(container);
+
+                if (tokens.Count > 0)
                 {
-                    var jarray = container as JArray;
-                    AddFromJArray(table, jarray);
-                }
-                else if (container is JObject)
-                {
-                    var value = container as JObject;
-                    if (value.First.First is JObject)
-                    {
-                        var jarray = new JArray(value.Values().ToArray());
-                        AddFromJArray(table, jarray);
-                    }
-                    else
-                    {
-                        AddFromJObject(table, value);
-                    }
-                }
-                else
-                {
-                    table = null;
+                    table = new DataTable("TEMP_TABLE");
+                    AddFromJToken(table, tokens.ToArray());
                 }
             }
             catch
@@ -427,40 +436,100 @@ namespace MySoft.PlatformService.WinForm
         }
 
         /// <summary>
-        /// 从对象添加
+        /// 添加到table
         /// </summary>
         /// <param name="table"></param>
-        /// <param name="value"></param>
-        private static void AddFromJObject(DataTable table, JObject value)
+        /// <param name="tokens"></param>
+        private void AddFromJToken(DataTable table, params JToken[] tokens)
         {
-            foreach (var kv in value)
+            for (int i = 0; i < tokens.Count(); i++)
             {
-                table.Columns.Add(kv.Key);
-            }
+                if (tokens[i] is JObject)
+                {
+                    var value = tokens[i] as JObject;
+                    if (i == 0)
+                    {
+                        foreach (var kv in value)
+                        {
+                            table.Columns.Add(kv.Key);
+                        }
+                    }
 
-            table.Rows.Add(value.Values().ToArray());
+                    table.Rows.Add(value.Values().ToArray());
+                }
+                else
+                {
+                    if (i == 0)
+                    {
+                        table.Columns.Add("Temp_Column");
+                    }
+
+                    table.Rows.Add(tokens[i]);
+                }
+            }
         }
 
         /// <summary>
-        /// 从数组添加
+        /// 从对象添加
         /// </summary>
-        /// <param name="table"></param>
-        /// <param name="jarray"></param>
-        private static void AddFromJArray(DataTable table, JArray jarray)
+        /// <param name="value"></param>
+        private IList<JToken> GetFromJToken(JToken value)
         {
-            for (int i = 0; i < jarray.Count; i++)
+            var list = new List<JToken>();
+
+            if (value is JArray)
             {
-                var value = jarray[i] as JObject;
-                if (i == 0)
+                foreach (var jtoken in value.ToArray())
                 {
-                    foreach (var kv in value)
+                    list.AddRange(GetFromJToken(jtoken));
+                }
+            }
+            else
+            {
+                var deepin = CheckJTokenDeep(value, -1);
+
+                if (deepin <= 0)
+                {
+                    list.Add(value);
+                }
+                else if (deepin == 1)
+                {
+                    list.AddRange(value.Values().ToArray());
+                }
+                else if (deepin == 2)
+                {
+                    foreach (var jtoken in value.Values())
                     {
-                        table.Columns.Add(kv.Key);
+                        list.AddRange(GetFromJToken(jtoken));
                     }
                 }
-
-                table.Rows.Add(value.Values().ToArray());
             }
+
+            return list;
+        }
+
+        /// <summary>
+        /// 检测深度
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        private int CheckJTokenDeep(JToken value, int index)
+        {
+            if (value is JObject)
+            {
+                return CheckJTokenDeep(value.Values().First(), index + 1);
+            }
+            else if (value is JArray)
+            {
+                return CheckJTokenDeep(value.First, index + 1);
+            }
+            else if (value is JValue)
+            {
+                return index;
+            }
+
+            return index;
         }
 
         private void button2_Click(object sender, EventArgs e)

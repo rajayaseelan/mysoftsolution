@@ -78,6 +78,7 @@
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="CallerContext.cs" />
     <Compile Include="Common\Extensions.cs" />
+    <Compile Include="Common\IServiceCall.cs" />
     <Compile Include="HttpServer\TcpDocument.cs" />
     <Compile Include="Services\DiscoverProxy.cs" />
     <Compile Include="Services\ThreadManager.cs" />

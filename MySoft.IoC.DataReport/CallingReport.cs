@@ -1,48 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
-using MySoft.IoC.Messages;
-using MySoft.IoC.Configuration;
 using System.Threading;
-using System.Linq;
+using MySoft.IoC.Configuration;
+using MySoft.IoC.Logger;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.DataReport
 {
     /// <summary>
     /// 调用报表
     /// </summary>
-    public class CallingReport
+    public class CallingReport : IServiceCall
     {
-        private static IDictionary<string, IList<CallEventArgs>> calls;
-        private static IList<CallEventArgs> errors;
-        private static CastleService server;
-        private static CastleServiceConfiguration config;
+        private IDictionary<string, IList<CallEventArgs>> calls;
+        private IList<CallEventArgs> errors;
+        private CastleService server;
+        private CastleServiceConfiguration config;
 
         /// <summary>
         /// 初始化调用报表统计
         /// </summary>
         /// <param name="_config"></param>
         /// <param name="_server"></param>
-        public static void Init(CastleServiceConfiguration _config, CastleService _server)
+        public CallingReport(CastleServiceConfiguration config)
         {
-            if (server == null)
-            {
-                config = _config;
-                server = _server;
-                calls = new Dictionary<string, IList<CallEventArgs>>();
-                errors = new List<CallEventArgs>();
-
-                server.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
-            }
+            this.config = config;
+            calls = new Dictionary<string, IList<CallEventArgs>>();
+            errors = new List<CallEventArgs>();
 
             ThreadPool.QueueUserWorkItem(TimerSaveCalling);
         }
 
-        static void TimerSaveCalling(object state)
+        void TimerSaveCalling(object state)
         {
 
         }
 
-        static void server_OnCalling(object sender, CallEventArgs e)
+        #region IServiceRecorder 成员
+
+        public void Recorder(object sender, CallEventArgs e)
         {
             e.Value = null;
 
@@ -62,5 +58,7 @@ namespace MySoft.IoC.DataReport
                 calls[key].Add(e);
             }
         }
+
+        #endregion
     }
 }

@@ -307,18 +307,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             if (e == null) return;
 
-            try
-            {
-                e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
-                e.UserToken = null;
-                e.SetBuffer(null, 0, 0);
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                e.Dispose();
-                e = null;
-            }
+            //e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+            e.SetBuffer(null, 0, 0);
+            e.AcceptSocket = null;
+            e.UserToken = null;
+            e.Dispose();
+            e = null;
         }
     }
 }

@@ -172,13 +172,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
                 }
-
-                e.AcceptSocket = null;
             }
+            catch (Exception ex) { }
             finally
             {
-                e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                //e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                e.AcceptSocket = null;
                 e.Dispose();
+                e = null;
             }
         }
     }

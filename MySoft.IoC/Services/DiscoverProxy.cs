@@ -76,21 +76,8 @@ namespace MySoft.IoC.Services
                         {
                             try
                             {
-                                //自定义实现一个ServerNode
-                                var node = new ServerNode
-                                {
-                                    Key = Guid.NewGuid().ToString(),
-                                    IP = proxy.Node.IP,
-                                    Port = proxy.Node.Port,
-                                    MaxPool = proxy.Node.MaxPool,
-                                    MinPool = proxy.Node.MinPool,
-                                    RespType = ResponseType.Binary,
-                                    Compress = proxy.Node.Compress,
-                                    Timeout = 30
-                                };
-
                                 //获取服务
-                                var service = factory.GetChannel<IStatusService>(node);
+                                var service = factory.GetChannel<IStatusService>(proxy.Node);
 
                                 //检测是否存在服务
                                 if (service.ContainsService(reqMsg.ServiceName))

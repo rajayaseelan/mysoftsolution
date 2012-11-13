@@ -154,8 +154,7 @@ namespace MySoft.IoC.Services
         private ResponseMessage GetAsyncResponse(OperationContext context, RequestMessage reqMsg)
         {
             //异步调用
-            using (var waitResult = new WaitResult(reqMsg))
-            using (var worker = new WorkerItem(waitResult) { Context = context, Request = reqMsg })
+            using (var worker = new WorkerItem(AsyncCallback, context, reqMsg))
             {
                 //添加线程
                 ThreadManager.Set(context.Channel, worker);
@@ -185,7 +184,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //返回响应结果
-                resMsg = worker.GetResult(timeout, AsyncCallback);
+                resMsg = worker.GetResult(timeout);
             }
             catch (System.TimeoutException ex)
             {

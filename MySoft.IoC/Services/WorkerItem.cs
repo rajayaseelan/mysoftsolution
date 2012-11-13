@@ -12,12 +12,12 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// Context
         /// </summary>
-        public OperationContext Context { get; set; }
+        public OperationContext Context { get; private set; }
 
         /// <summary>
         /// Request
         /// </summary>
-        public RequestMessage Request { get; set; }
+        public RequestMessage Request { get; private set; }
 
         /// <summary>
         /// 完成状态
@@ -30,25 +30,31 @@ namespace MySoft.IoC.Services
         private Thread asyncThread;
 
         //响应对象
+        private WaitCallback callback;
         private WaitResult waitResult;
 
         /// <summary>
         /// 实例化WorkerItem
         /// </summary>
-        /// <param name="waitResult"></param>
-        public WorkerItem(WaitResult waitResult)
+        /// <param name="callback"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        public WorkerItem(WaitCallback callback, OperationContext context, RequestMessage reqMsg)
         {
             this.IsCompleted = false;
-            this.waitResult = waitResult;
+
+            this.callback = callback;
+            this.Context = context;
+            this.Request = reqMsg;
+            this.waitResult = new WaitResult(reqMsg);
         }
 
         /// <summary>
         /// 获取结果并处理超时
         /// </summary>
         /// <param name="timeout"></param>
-        /// <param name="callback"></param>
         /// <returns></returns>
-        public ResponseMessage GetResult(TimeSpan timeout, WaitCallback callback)
+        public ResponseMessage GetResult(TimeSpan timeout)
         {
             //开始异步请求
             ThreadPool.QueueUserWorkItem(callback, this);
@@ -69,6 +75,10 @@ namespace MySoft.IoC.Services
         public bool SetResult(ResponseMessage resMsg)
         {
             this.IsCompleted = true;
+
+            if (waitResult == null)
+                return false;
+
             return waitResult.SetResponse(resMsg);
         }
 
@@ -118,8 +128,11 @@ namespace MySoft.IoC.Services
         public void Dispose()
         {
             this.Context.Dispose();
+            this.waitResult.Dispose();
+
             this.Context = null;
             this.Request = null;
+            this.callback = null;
             this.asyncThread = null;
             this.waitResult = null;
         }
