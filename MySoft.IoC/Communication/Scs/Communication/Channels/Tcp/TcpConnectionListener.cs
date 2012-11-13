@@ -38,15 +38,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void IOCompleted(object sender, SocketAsyncEventArgs e)
         {
-            try
+            switch (e.LastOperation)
             {
-                if (e.LastOperation == SocketAsyncOperation.Accept)
-                {
+                case SocketAsyncOperation.Accept:
                     OnAcceptCompleted(e);
-                }
-            }
-            catch
-            {
+                    break;
+                default:
+                    throw new ArgumentException("The last operation completed on the socket was not a receive or send");
             }
         }
 
@@ -147,7 +145,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 if (e.SocketError == SocketError.Success)
                 {
-                    ThreadPool.QueueUserWorkItem(AcceptCompleted, e);
+                    AcceptCompleted(e);
                 }
             }
             catch (Exception ex) { }
@@ -161,17 +159,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Communication channel connected.
         /// </summary>
         /// <param name="state"></param>
-        private void AcceptCompleted(object state)
+        private void AcceptCompleted(SocketAsyncEventArgs e)
         {
-            var e = state as SocketAsyncEventArgs;
-
             try
             {
-                var clientSocket = e.AcceptSocket;
-                if (clientSocket.Connected)
-                {
-                    OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
-                }
+                var channel = new TcpCommunicationChannel(e.AcceptSocket);
+                OnCommunicationChannelConnected(channel);
             }
             catch (Exception ex) { }
             finally

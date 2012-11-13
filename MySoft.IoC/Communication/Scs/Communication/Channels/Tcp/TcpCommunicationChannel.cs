@@ -120,7 +120,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     e.SetBuffer(_buffer, 0, _buffer.Length);
 
-                    if (!_clientSocket.ReceiveAsync(e))
+                    if (!e.AcceptSocket.ReceiveAsync(e))
                     {
                         OnReceiveCompleted(e);
                     }
@@ -156,7 +156,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     e.UserToken = message;
 
                     //Send all bytes to the remote application
-                    if (!_clientSocket.SendAsync(e))
+                    if (!e.AcceptSocket.SendAsync(e))
                     {
                         OnSendCompleted(e);
                     }
@@ -182,19 +182,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void IOCompleted(object sender, SocketAsyncEventArgs e)
         {
-            try
+            switch (e.LastOperation)
             {
-                if (e.LastOperation == SocketAsyncOperation.Send)
-                {
+                case SocketAsyncOperation.Send:
                     OnSendCompleted(e);
-                }
-                else if (e.LastOperation == SocketAsyncOperation.Receive)
-                {
+                    break;
+                case SocketAsyncOperation.Receive:
                     OnReceiveCompleted(e);
-                }
-            }
-            catch
-            {
+                    break;
+                default:
+                    throw new ArgumentException("The last operation completed on the socket was not a receive or send");
             }
         }
 
@@ -260,15 +257,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                         throw;
                     }
-                    finally
-                    {
-                        //Clear socket buffer.
-                        Array.Clear(e.Buffer, 0, e.Buffer.Length);
 
-                        if (!_clientSocket.ReceiveAsync(e))
-                        {
-                            OnReceiveCompleted(e);
-                        }
+                    if (!e.AcceptSocket.ReceiveAsync(e))
+                    {
+                        OnReceiveCompleted(e);
                     }
                 }
                 else
@@ -294,6 +286,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private SocketAsyncEventArgs NewSocketEventArgs()
         {
             var e = new SocketAsyncEventArgs();
+            e.AcceptSocket = _clientSocket;
             e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
 
             return e;
