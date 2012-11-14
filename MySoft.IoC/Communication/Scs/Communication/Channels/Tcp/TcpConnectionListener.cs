@@ -83,7 +83,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _listenerSocket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
             _listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _listenerSocket.Bind(new IPEndPoint(bindAddress, _endPoint.TcpPort));
-            _listenerSocket.Listen(1024);
+            _listenerSocket.Listen(64);
         }
 
         /// <summary>
@@ -108,18 +108,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private void StartAcceptSocket()
         {
+            var e = new SocketAsyncEventArgs();
+
             try
             {
-                var _acceptEventArgs = new SocketAsyncEventArgs();
-                _acceptEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
 
-                if (!_listenerSocket.AcceptAsync(_acceptEventArgs))
+                if (!_listenerSocket.AcceptAsync(e))
                 {
-                    OnAcceptCompleted(_acceptEventArgs);
+                    OnAcceptCompleted(e);
                 }
             }
             catch (Exception ex)
             {
+                DisposeEventArgs(e);
+
                 StopSocket();
 
                 //Thread 1000 ms.
@@ -145,7 +148,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 if (e.SocketError == SocketError.Success)
                 {
-                    AcceptCompleted(e);
+                    ThreadPool.QueueUserWorkItem(AcceptCompleted, e);
                 }
             }
             catch (Exception ex) { }
@@ -159,20 +162,44 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Communication channel connected.
         /// </summary>
         /// <param name="state"></param>
-        private void AcceptCompleted(SocketAsyncEventArgs e)
+        private void AcceptCompleted(object state)
         {
+            SocketAsyncEventArgs e = state as SocketAsyncEventArgs;
+
             try
             {
-                var channel = new TcpCommunicationChannel(e.AcceptSocket);
-                OnCommunicationChannelConnected(channel);
+                if (e.AcceptSocket.Connected)
+                {
+                    var channel = new TcpCommunicationChannel(e.AcceptSocket);
+                    OnCommunicationChannelConnected(channel);
+                }
             }
             catch (Exception ex) { }
             finally
             {
-                //e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                DisposeEventArgs(e);
+            }
+        }
+
+        /// <summary>
+        /// Dispose socket event args.
+        /// </summary>
+        /// <param name="e"></param>
+        private void DisposeEventArgs(SocketAsyncEventArgs e)
+        {
+            if (e == null) return;
+
+            try
+            {
+                e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
+                e.UserToken = null;
+
                 e.Dispose();
-                e = null;
+                e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+            }
+            catch
+            {
             }
         }
     }

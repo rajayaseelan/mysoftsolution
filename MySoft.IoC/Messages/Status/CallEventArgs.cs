@@ -11,7 +11,7 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// 调用参数信息
         /// </summary>
-        public AppCaller Caller { get; set; }
+        public AppCaller Caller { get; private set; }
 
         /// <summary>
         /// 耗时时间
@@ -55,9 +55,9 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// 实例化CallEventArgs
         /// </summary>
-        public CallEventArgs()
+        public CallEventArgs(AppCaller caller)
         {
-            this.Caller = new AppCaller();
+            this.Caller = caller;
         }
     }
 }

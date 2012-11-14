@@ -96,6 +96,7 @@ namespace MySoft.IoC
 
             //绑定事件
             MessageCenter.Instance.OnLog += container.WriteLog;
+            MessageCenter.Instance.OnError += container.WriteError;
 
             //发布日志
             PublishService(status.GetServiceList());

@@ -13,7 +13,7 @@ namespace MySoft.IoC.Callback
     /// <summary>
     /// 消息中心；
     /// </summary>
-    internal class MessageCenter : ILogable
+    internal class MessageCenter : ILogable, IErrorLogable
     {
         #region MessageCenter 的单例实现
 
@@ -139,7 +139,15 @@ namespace MySoft.IoC.Callback
                 }
                 catch (Exception ex)
                 {
-                    RemoveListener(lstn);
+                    try
+                    {
+                        WriteError(lstn, ex);
+
+                        RemoveListener(lstn);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
         }
@@ -197,7 +205,15 @@ namespace MySoft.IoC.Callback
                 }
                 catch (Exception ex)
                 {
-                    RemoveListener(lstn);
+                    try
+                    {
+                        WriteError(lstn, ex);
+
+                        RemoveListener(lstn);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
         }
@@ -223,7 +239,15 @@ namespace MySoft.IoC.Callback
                 }
                 catch (Exception ex)
                 {
-                    RemoveListener(lstn);
+                    try
+                    {
+                        WriteError(lstn, ex);
+
+                        RemoveListener(lstn);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
         }
@@ -251,34 +275,31 @@ namespace MySoft.IoC.Callback
                 }
                 catch (Exception ex)
                 {
-                    RemoveListener(lstn);
+                    try
+                    {
+                        WriteError(lstn, ex);
+
+                        RemoveListener(lstn);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// 推送客户端连接信息（只有第一次订阅的时候推送）
+        /// 输出异常
         /// </summary>
-        /// <param name="clientInfos"></param>
-        public void Notify(IList<ClientInfo> clientInfos)
+        /// <param name="lstn"></param>
+        /// <param name="ex"></param>
+        private void WriteError(MessageListener lstn, Exception ex)
         {
-            if (_listeners.Count == 0) return;
-
-            MessageListener[] listeners = _listeners.Values.Cast<MessageListener>().ToArray();
-            foreach (MessageListener lstn in listeners)
+            if (OnError != null)
             {
-                try
-                {
-                    var options = lstn.Options;
-                    if (options.PushClientConnect)
-                    {
-                        lstn.Notify(clientInfos);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    RemoveListener(lstn);
-                }
+                var listenerKey = lstn.Channel.RemoteEndPoint.ToString();
+                var error = new ApplicationException(string.Format("Notify listener ({0}) error.", listenerKey), ex);
+                OnError(error);
             }
         }
 
@@ -288,6 +309,12 @@ namespace MySoft.IoC.Callback
         /// 日志处理
         /// </summary>
         public event LogEventHandler OnLog;
+
+        #endregion
+
+        #region IErrorLogable 成员
+
+        public event ErrorLogEventHandler OnError;
 
         #endregion
     }

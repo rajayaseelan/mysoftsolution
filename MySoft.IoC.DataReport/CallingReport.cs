@@ -10,41 +10,52 @@ namespace MySoft.IoC.DataReport
     /// <summary>
     /// 调用报表
     /// </summary>
-    public class CallingReport : IServiceCall
+    public class CallingReport : IServiceRecorder
     {
         private IDictionary<string, IList<CallEventArgs>> calls;
-        private IList<CallEventArgs> errors;
-        private CastleService server;
         private CastleServiceConfiguration config;
 
         /// <summary>
         /// 初始化调用报表统计
         /// </summary>
         /// <param name="_config"></param>
-        /// <param name="_server"></param>
         public CallingReport(CastleServiceConfiguration config)
         {
             this.config = config;
-            calls = new Dictionary<string, IList<CallEventArgs>>();
-            errors = new List<CallEventArgs>();
+            this.calls = new Dictionary<string, IList<CallEventArgs>>();
 
             ThreadPool.QueueUserWorkItem(TimerSaveCalling);
         }
 
-        void TimerSaveCalling(object state)
+        /// <summary>
+        /// 定时记录
+        /// </summary>
+        /// <param name="state"></param>
+        private void TimerSaveCalling(object state)
         {
-
+            while (true)
+            {
+            }
         }
 
         #region IServiceRecorder 成员
 
-        public void Recorder(object sender, CallEventArgs e)
+        /// <summary>
+        /// 调用服务
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void Call(object sender, CallEventArgs e)
         {
             e.Value = null;
 
             if (e.IsError)
             {
-                errors.Add(e);
+                AddError(e);
+            }
+            else if (e.IsTimeout)
+            {
+                AddTimeout(e);
             }
 
             lock (calls)
@@ -60,5 +71,13 @@ namespace MySoft.IoC.DataReport
         }
 
         #endregion
+
+        private void AddError(CallEventArgs e)
+        {
+        }
+
+        public void AddTimeout(CallEventArgs e)
+        {
+        }
     }
 }

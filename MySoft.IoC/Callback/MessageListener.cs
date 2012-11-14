@@ -88,15 +88,6 @@ namespace MySoft.IoC.Callback
         }
 
         /// <summary>
-        /// 推送客户端连接信息（只有第一次订阅的时候推送）
-        /// </summary>
-        /// <param name="clientInfos"></param>
-        public void Notify(IList<ClientInfo> clientInfos)
-        {
-            _innerListener.Push(clientInfos);
-        }
-
-        /// <summary>
         /// 通知消息
         /// </summary>
         /// <param name="connectInfo"></param>

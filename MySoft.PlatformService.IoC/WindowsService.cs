@@ -4,6 +4,7 @@ using System.Threading;
 using MySoft.Installer;
 using MySoft.IoC;
 using MySoft.IoC.Configuration;
+using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 
@@ -17,6 +18,7 @@ namespace MySoft.PlatformService.IoC
         private int timeout = -1;
         private StartMode startMode = StartMode.Service;
         private CastleService server;
+        private IServiceRecorder recorder;
         private string[] mailTo;
 
         /// <summary>
@@ -52,6 +54,16 @@ namespace MySoft.PlatformService.IoC
             this.server.OnLog += new LogEventHandler(server_OnLog);
             this.server.OnError += new ErrorLogEventHandler(server_OnError);
             this.server.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
+
+            try
+            {
+                var typeName = ConfigurationManager.AppSettings["ServiceRecorderType"];
+                var type = Type.GetType(typeName);
+                this.recorder = Activator.CreateInstance(type, config) as IServiceRecorder;
+            }
+            catch
+            {
+            }
 
             //处理邮件地址
             string address = ConfigurationManager.AppSettings["SendMailAddress"];
@@ -120,6 +132,9 @@ namespace MySoft.PlatformService.IoC
         /// <param name="e"></param>
         void server_OnCalling(object sender, CallEventArgs e)
         {
+            //调用服务，记入数据库
+            if (recorder != null) recorder.Call(sender, e);
+
             if (e.IsTimeout)
             {
                 var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);

@@ -1322,16 +1322,8 @@ namespace MySoft.PlatformService.WinForm
 
         #region IStatusListener 成员
 
-        public void Push(IList<ClientInfo> clientInfos)
-        {
-            //客户端连接信息
-        }
-
-
-        public void Push(ServerStatus serverStatus)
-        {
-            //服务端定时状态信息
-        }
+        //服务端定时状态信息
+        public void Push(ServerStatus serverStatus) { }
 
         public void Push(ConnectInfo connectInfo)
         {
@@ -1372,7 +1364,15 @@ namespace MySoft.PlatformService.WinForm
                     }
                 }));
 
-                box1.EndInvoke(ar);
+                try
+                {
+                    box1.EndInvoke(ar);
+                }
+                catch (Exception ex) { }
+                finally
+                {
+                    ar.AsyncWaitHandle.Close();
+                }
             }
         }
 
@@ -1404,7 +1404,15 @@ namespace MySoft.PlatformService.WinForm
                     box1.Invalidate();
                 }));
 
-                box1.EndInvoke(ar);
+                try
+                {
+                    box1.EndInvoke(ar);
+                }
+                catch (Exception ex) { }
+                finally
+                {
+                    ar.AsyncWaitHandle.Close();
+                }
             }
         }
 
@@ -1456,7 +1464,15 @@ namespace MySoft.PlatformService.WinForm
                     }
                 }));
 
-                box2.EndInvoke(ar);
+                try
+                {
+                    box2.EndInvoke(ar);
+                }
+                catch (Exception ex) { }
+                finally
+                {
+                    ar.AsyncWaitHandle.Close();
+                }
             }
         }
 
@@ -1495,7 +1511,15 @@ namespace MySoft.PlatformService.WinForm
                     }
                 }));
 
-                box3.EndInvoke(ar);
+                try
+                {
+                    box3.EndInvoke(ar);
+                }
+                catch (Exception ex) { }
+                finally
+                {
+                    ar.AsyncWaitHandle.Close();
+                }
             }
         }
 

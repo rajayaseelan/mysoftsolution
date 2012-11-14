@@ -39,11 +39,5 @@ namespace MySoft.IoC
         /// </summary>
         /// <returns></returns>
         void Push(ServerStatus serverStatus);
-
-        /// <summary>
-        /// 推送客户端连接信息
-        /// </summary>
-        /// <param name="clientInfos"></param>
-        void Push(IList<ClientInfo> clientInfos);
     }
 }

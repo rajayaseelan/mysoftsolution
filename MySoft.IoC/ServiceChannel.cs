@@ -73,9 +73,8 @@ namespace MySoft.IoC
         private void HandleResponse(CallerContext e, Action<CallEventArgs> action)
         {
             //调用参数
-            var callArgs = new CallEventArgs
+            var callArgs = new CallEventArgs(e.Caller)
             {
-                Caller = e.Caller,
                 ElapsedTime = e.Message.ElapsedTime,
                 Count = e.Message.Count,
                 Error = e.Message.Error,
@@ -88,13 +87,19 @@ namespace MySoft.IoC
             //回调处理
             if (action != null)
             {
-                try
+                //开始异步调用
+                action.BeginInvoke(callArgs, ar =>
                 {
-                    action(callArgs);
-                }
-                catch (Exception ex)
-                {
-                }
+                    try
+                    {
+                        action.EndInvoke(ar);
+                    }
+                    catch (Exception ex) { }
+                    finally
+                    {
+                        ar.AsyncWaitHandle.Close();
+                    }
+                }, null);
             }
         }
 

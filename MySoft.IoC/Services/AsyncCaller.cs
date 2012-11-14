@@ -68,23 +68,31 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage Run(OperationContext context, RequestMessage reqMsg)
         {
-            //定义一个响应值
-            ResponseMessage resMsg = null;
-
-            //获取CallerKey
-            var callKey = GetCallerKey(reqMsg, context.Caller);
-
-            if (enabledCache)
+            //如果是状态服务，直接响应
+            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
             {
-                //从缓存中获取数据
-                if (GetResponseFromCache(callKey, context, reqMsg, ref resMsg))
-                {
-                    return resMsg;
-                }
+                return GetSyncResponse(context, reqMsg);
             }
+            else
+            {
+                //定义一个响应值
+                ResponseMessage resMsg = null;
 
-            //返回响应
-            return InvokeResponse(context, reqMsg);
+                //获取CallerKey
+                var callKey = GetCallerKey(reqMsg, context.Caller);
+
+                if (enabledCache)
+                {
+                    //从缓存中获取数据
+                    if (GetResponseFromCache(callKey, context, reqMsg, ref resMsg))
+                    {
+                        return resMsg;
+                    }
+                }
+
+                //返回响应
+                return InvokeResponse(context, reqMsg);
+            }
         }
 
         /// <summary>
