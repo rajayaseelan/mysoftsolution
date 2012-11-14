@@ -94,11 +94,18 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 _listenerSocket.Shutdown(SocketShutdown.Both);
-                _listenerSocket.Close();
             }
             catch (Exception ex) { }
             finally
             {
+                try
+                {
+                    _listenerSocket.Close();
+                }
+                catch
+                {
+                }
+
                 _listenerSocket = null;
             }
         }

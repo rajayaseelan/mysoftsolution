@@ -43,7 +43,7 @@ namespace MySoft.Remoting.Configuration
             {
                 var tmp = ConfigurationManager.GetSection(key);
                 obj = tmp as RemotingServerConfiguration;
-                CacheHelper.Permanent(key, obj);;
+                CacheHelper.Insert(key, obj, 60);
             }
 
             return obj;

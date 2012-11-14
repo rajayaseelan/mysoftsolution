@@ -67,7 +67,7 @@ namespace MySoft.Web.Configuration
             {
                 var tmp = ConfigurationManager.GetSection(key);
                 obj = tmp as RewriterConfiguration;
-                CacheHelper.Permanent(key, obj);
+                CacheHelper.Insert(key, obj, 60);
             }
 
             return obj;

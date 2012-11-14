@@ -37,7 +37,7 @@ namespace MySoft.IoC.Configuration
             {
                 var tmp = ConfigurationManager.GetSection(key);
                 obj = tmp as CastleFactoryConfiguration;
-                CacheHelper.Permanent(key, obj);
+                CacheHelper.Insert(key, obj, 60);
             }
 
             return obj;

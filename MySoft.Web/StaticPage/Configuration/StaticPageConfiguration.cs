@@ -31,7 +31,7 @@ namespace MySoft.Web.Configuration
             {
                 var tmp = ConfigurationManager.GetSection(key);
                 obj = tmp as StaticPageConfiguration;
-                CacheHelper.Permanent(key, obj);
+                CacheHelper.Insert(key, obj, 60);
             }
 
             return obj;

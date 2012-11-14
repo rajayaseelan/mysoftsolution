@@ -431,7 +431,7 @@ namespace SharpZip.Zip.Compression
 				state = BUSY_STATE | (state & (IS_FLUSHING | IS_FINISHING));
 			}
 			
-			for (;;) {
+			for (;) {
 				int count = pending.Flush(output, offset, length);
 				offset   += count;
 				totalOut += count;
