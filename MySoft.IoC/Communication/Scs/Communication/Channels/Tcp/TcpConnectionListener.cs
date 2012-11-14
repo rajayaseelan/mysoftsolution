@@ -108,12 +108,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private void StartAcceptSocket()
         {
-            var e = new SocketAsyncEventArgs();
+            var e = CreateEventArgs();
 
             try
             {
-                e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
-
                 if (!_listenerSocket.AcceptAsync(e))
                 {
                     OnAcceptCompleted(e);
@@ -150,6 +148,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     ThreadPool.QueueUserWorkItem(AcceptCompleted, e);
                 }
+                else
+                {
+                    DisposeEventArgs(e);
+                }
             }
             catch (Exception ex) { }
             finally
@@ -182,6 +184,18 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
+        /// Create socket event args.
+        /// </summary>
+        /// <returns></returns>
+        private SocketAsyncEventArgs CreateEventArgs()
+        {
+            var e = new SocketAsyncEventArgs();
+            e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+
+            return e;
+        }
+
+        /// <summary>
         /// Dispose socket event args.
         /// </summary>
         /// <param name="e"></param>
@@ -195,11 +209,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 e.AcceptSocket = null;
                 e.UserToken = null;
 
-                e.Dispose();
                 e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+                e.Dispose();
             }
-            catch
+            catch (Exception ex) { }
+            finally
             {
+                e = null;
             }
         }
     }

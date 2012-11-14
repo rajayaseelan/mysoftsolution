@@ -55,9 +55,9 @@ namespace MySoft.IoC.Services
         private string GetCallerKey(RequestMessage reqMsg, AppCaller caller)
         {
             //对Key进行组装
-            return string.Format("{0}_Caller_{1}${2}${3}", (reqMsg.InvokeMethod ? "Invoke" : "Direct"),
-                                caller.ServiceName, caller.MethodName, caller.Parameters)
-                    .Replace(" ", "").Replace("\r\n", "").Replace("\t", "").ToLower();
+            return string.Format("{0}_Caller_{1}_{2}${3}${4}", (reqMsg.InvokeMethod ? "Invoke" : "Direct")
+                                , service.ServiceName, caller.ServiceName, caller.MethodName, caller.Parameters)
+                                .Replace(" ", "").Replace("\r\n", "").Replace("\t", "").ToLower();
         }
 
         /// <summary>
@@ -68,31 +68,23 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage Run(OperationContext context, RequestMessage reqMsg)
         {
-            //如果是状态服务，直接响应
-            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
-            {
-                return GetSyncResponse(context, reqMsg);
-            }
-            else
-            {
-                //定义一个响应值
-                ResponseMessage resMsg = null;
+            //定义一个响应值
+            ResponseMessage resMsg = null;
 
-                //获取CallerKey
-                var callKey = GetCallerKey(reqMsg, context.Caller);
+            //获取CallerKey
+            var callKey = GetCallerKey(reqMsg, context.Caller);
 
-                if (enabledCache)
+            if (enabledCache)
+            {
+                //从缓存中获取数据
+                if (GetResponseFromCache(callKey, context, reqMsg, ref resMsg))
                 {
-                    //从缓存中获取数据
-                    if (GetResponseFromCache(callKey, context, reqMsg, ref resMsg))
-                    {
-                        return resMsg;
-                    }
+                    return resMsg;
                 }
-
-                //返回响应
-                return InvokeResponse(context, reqMsg);
             }
+
+            //返回响应
+            return InvokeResponse(context, reqMsg);
         }
 
         /// <summary>

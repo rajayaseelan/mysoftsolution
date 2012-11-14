@@ -249,7 +249,7 @@ namespace MySoft.IoC.Services
         {
             get
             {
-                return string.Format("{0}${1}", typeof(RemoteProxy).FullName, node.Key);
+                return string.Format("{0}${1}", typeof(RemoteProxy).FullName, node);
             }
         }
 
