@@ -678,7 +678,7 @@ namespace Newtonsoft.Json.Utilities.LinqBridge
     {
       using (var e = source.GetEnumerator())
       {
-        for (var i = 0;; i++)
+        for (var i = 0; i++)
         {
           if (!e.MoveNext())
             yield break;

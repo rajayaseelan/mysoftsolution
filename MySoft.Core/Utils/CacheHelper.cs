@@ -402,7 +402,7 @@ namespace MySoft
                         {
                             try
                             {
-                                success = pred((T)cacheObj);
+                                success = pred(cacheObj);
                             }
                             catch
                             {

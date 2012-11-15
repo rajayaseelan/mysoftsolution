@@ -287,16 +287,7 @@ namespace MySoft.IoC
                         try
                         {
                             //发送消息
-                            client.SendMessage(message.RepliedMessageId, reqMsg, args =>
-                            {
-                                //响应消息
-                                MessageCenter.Instance.Notify(args);
-
-                                if (OnCalling != null)
-                                {
-                                    OnCalling(container, args);
-                                }
-                            });
+                            client.SendMessage(message.RepliedMessageId, reqMsg, NotifyResult);
                         }
                         catch (Exception ex)
                         {
@@ -310,6 +301,27 @@ namespace MySoft.IoC
             {
                 //写异常日志
                 container.WriteError(ex);
+            }
+        }
+
+        /// <summary>
+        /// 响应结果
+        /// </summary>
+        /// <param name="callArgs"></param>
+        private void NotifyResult(CallEventArgs callArgs)
+        {
+            try
+            {
+                //响应消息
+                MessageCenter.Instance.Notify(callArgs);
+
+                if (OnCalling != null)
+                {
+                    OnCalling(container, callArgs);
+                }
+            }
+            catch
+            {
             }
         }
 
