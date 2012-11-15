@@ -332,44 +332,32 @@ namespace MySoft.PlatformService.WinForm
             var container = JContainer.Parse(invokeData.Value);
 
             //获取DataView数据
-            var table = GetDataTable(container);
-
-            if (table == null)
+            InvokeMethod(new Action(() =>
             {
-                //写Document文档
-                InvokeMethod(new Action(() =>
+                if (!container.HasValues)
                 {
                     gridDataQuery.DataSource = null;
-                    SetWebBrowser(container);
-                }));
-            }
-            else
-            {
-                InvokeMethod(new Action(() =>
-                {
-                    gridDataQuery.DataSource = table;
-                }));
-
-                if (table.Rows.Count == 1 && table.Columns.Count == 1)
-                {
-                    //写Document文档
-                    InvokeMethod(new Action(() =>
-                    {
-                        SetWebBrowser(container);
-                    }));
+                    var html = container.ToString();
+                    SetWebBrowser(html);
                 }
-            }
+                else
+                {
+                    //获取DataView数据
+                    var table = GetDataTable(container);
+                    gridDataQuery.DataSource = table;
+                    SetWebBrowser(string.Empty);
+                }
+            }));
         }
 
         /// <summary>
         /// 设置浏览器
         /// </summary>
-        /// <param name="container"></param>
-        private void SetWebBrowser(JToken container)
+        /// <param name="html"></param>
+        private void SetWebBrowser(string html)
         {
             if (webBrowser1.IsBusy) return;
 
-            var html = container.ToString();
             webBrowser1.Url = new Uri("about:blank");
             webBrowser1.DocumentCompleted += (sender, e) =>
             {
