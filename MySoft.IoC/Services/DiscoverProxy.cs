@@ -12,16 +12,21 @@ namespace MySoft.IoC.Services
     {
         private CastleFactory factory;
         private Random random;
+        private IList<ServerNode> nodes;
+        private ILog logger;
         private IDictionary<string, IList<IService>> services;
 
         /// <summary>
         /// 实例化DiscoverProxy
         /// </summary>
         /// <param name="factory"></param>
+        /// <param name="nodes"></param>
         /// <param name="logger"></param>
-        public DiscoverProxy(CastleFactory factory, ILog logger)
+        public DiscoverProxy(CastleFactory factory, IList<ServerNode> nodes, ILog logger)
         {
             this.factory = factory;
+            this.nodes = nodes;
+            this.logger = logger;
             this.random = new Random();
             this.services = new Dictionary<string, IList<IService>>();
         }
@@ -64,31 +69,22 @@ namespace MySoft.IoC.Services
                 //找到代理服务
                 lock (services)
                 {
-                    //代理数为1时，直接处理
-                    if (factory.Proxies.Count == 1)
+                    foreach (var node in nodes)
                     {
-                        proxies.Add(factory.Proxies[0]);
-                        services[reqMsg.ServiceName] = proxies;
-                    }
-                    else
-                    {
-                        foreach (var proxy in factory.Proxies)
-                        {
-                            try
-                            {
-                                //获取服务
-                                var service = factory.GetChannel<IStatusService>(proxy.Node);
+                        //获取服务
+                        var service = factory.GetChannel<IStatusService>(node);
 
-                                //检测是否存在服务
-                                if (service.ContainsService(reqMsg.ServiceName))
-                                {
-                                    proxies.Add(proxy);
-                                }
-                            }
-                            catch (WarningException ex)
-                            {
-                                throw ex;
-                            }
+                        //检测是否存在服务
+                        if (service.ContainsService(reqMsg.ServiceName))
+                        {
+                            IService proxy = null;
+
+                            if (node.RespType == ResponseType.Json)
+                                proxy = new InvokeProxy(node, logger);
+                            else
+                                proxy = new RemoteProxy(node, logger);
+
+                            proxies.Add(proxy);
                         }
                     }
 
