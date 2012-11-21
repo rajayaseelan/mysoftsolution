@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using MySoft.IoC.Messages;
+using MySoft.Logger;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -16,7 +17,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="node"></param>
         /// <param name="logger"></param>
-        public InvokeProxy(ServerNode node, IServiceContainer logger)
+        public InvokeProxy(ServerNode node, ILog logger)
             : base(node, logger) { }
 
         /// <summary>
@@ -94,9 +95,16 @@ namespace MySoft.IoC.Services
                         foreach (var p in pis)
                         {
                             var type = GetElementType(p.ParameterType);
-                            var jsonString = jobject[p.Name].ToString(Formatting.Indented);
-                            var obj = SerializationManager.DeserializeJson(type, jsonString);
-                            resMsg.Parameters[p.Name] = obj;
+                            if (type == typeof(void))
+                            {
+                                resMsg.Parameters[p.Name] = null;
+                            }
+                            else
+                            {
+                                var jsonString = jobject[p.Name].ToString(Formatting.Indented);
+                                var obj = SerializationManager.DeserializeJson(type, jsonString);
+                                resMsg.Parameters[p.Name] = obj;
+                            }
                         }
                     }
                 }
@@ -104,7 +112,11 @@ namespace MySoft.IoC.Services
 
             //处理返回值
             var returnType = GetElementType(method.ReturnType);
-            resMsg.Value = SerializationManager.DeserializeJson(returnType, invokeData.Value);
+
+            if (returnType == typeof(void))
+                resMsg.Value = null;
+            else
+                resMsg.Value = SerializationManager.DeserializeJson(returnType, invokeData.Value);
         }
 
         /// <summary>

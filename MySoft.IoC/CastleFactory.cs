@@ -25,20 +25,8 @@ namespace MySoft.IoC
         private CastleFactoryConfiguration config;
         private IServiceContainer container;
         private IDictionary<string, IService> proxies;
-        private IServiceResolver resolver;
         private ICacheStrategy cache;
         private IServiceLog logger;
-
-        /// <summary>
-        /// Gets the proxies.
-        /// </summary>
-        internal IList<RemoteProxy> Proxies
-        {
-            get
-            {
-                return proxies.Values.Cast<RemoteProxy>().ToList();
-            }
-        }
 
         /// <summary>
         /// Gets the service container.
@@ -102,6 +90,16 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static CastleFactory Create()
         {
+            return CreateInternal(true);
+        }
+
+        /// <summary>
+        /// 创建内部服务
+        /// </summary>
+        /// <param name="exists"></param>
+        /// <returns></returns>
+        internal static CastleFactory CreateInternal(bool exists)
+        {
             if (singleton == null)
             {
                 lock (hashtable.SyncRoot)
@@ -111,7 +109,17 @@ namespace MySoft.IoC
                         var config = CastleFactoryConfiguration.GetConfig();
 
                         if (config == null)
-                            throw new WarningException("Not find configuration section castleFactory.");
+                        {
+                            if (exists)
+                                throw new WarningException("Not find configuration section castleFactory.");
+                            else
+                                config = new CastleFactoryConfiguration
+                                {
+                                    AppName = "InternalServer",
+                                    Type = CastleFactoryType.Remote,
+                                    ThrowError = true
+                                };
+                        }
 
                         singleton = new CastleFactory(config);
                     }
@@ -133,7 +141,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ServerNode GetDefaultNode()
         {
-            return GetServerNode(config.Default);
+            return GetServerNode(config.DefaultKey);
         }
 
         /// <summary>
@@ -143,7 +151,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ServerNode GetServerNode(string nodeKey)
         {
-            if (singleton.proxies.Count == 0)
+            if (proxies.Count == 0)
             {
                 throw new WarningException("Not find any server node.");
             }
@@ -179,50 +187,12 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 注册服务解析器
-        /// </summary>
-        /// <param name="resolver"></param>
-        public void RegisterResolver(IServiceResolver resolver)
-        {
-            this.resolver = resolver;
-        }
-
-        /// <summary>
-        /// Create service channel.
-        /// </summary>
-        /// <typeparam name="IServiceInterfaceType"></typeparam>
-        /// <returns></returns>
-        public IServiceInterfaceType GetProxyChannel<IServiceInterfaceType>()
-        {
-            if (proxies.Count == 0)
-            {
-                //获取本地服务
-                var service = GetLocalService<IServiceInterfaceType>();
-                if (service != null) return service;
-
-                throw new WarningException(string.Format("Did not find the service【{0}】.", typeof(IServiceInterfaceType).FullName));
-            }
-
-            IService s = new DiscoverProxy(this, container);
-            return GetProxyChannel<IServiceInterfaceType>(s, true);
-        }
-
-        /// <summary>
         /// Create service channel.
         /// </summary>
         /// <returns>The service implemetation instance.</returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
-            if (proxies.Count == 0)
-            {
-                //获取本地服务
-                var service = GetLocalService<IServiceInterfaceType>();
-                if (service != null) return service;
-
-                throw new WarningException(string.Format("Did not find the service【{0}】.", typeof(IServiceInterfaceType).FullName));
-            }
-
-            return GetChannel<IServiceInterfaceType>(config.Default);
+            return GetChannel<IServiceInterfaceType>(config.DefaultKey);
         }
 
         /// <summary>
@@ -232,14 +202,25 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey)
         {
-            var node = GetServerNode(nodeKey);
+            //获取本地服务
+            IService service = GetLocalService<IServiceInterfaceType>();
 
-            if (node == null)
+            ServerNode node = null;
+
+            if (service == null)
             {
-                throw new WarningException(string.Format("Did not find the server node【{0}】.", nodeKey));
+                var nodes = GetCacheServerNodes(nodeKey, typeof(IServiceInterfaceType).FullName);
+
+                if (nodes.Count == 0)
+                {
+                    throw new WarningException(string.Format("Did not find the server node【{0}】.", nodeKey));
+                }
+
+                var index = new Random().Next(0, nodes.Count);
+                node = nodes[index];
             }
 
-            return GetChannel<IServiceInterfaceType>(node);
+            return GetChannel<IServiceInterfaceType>(service, node);
         }
 
         /// <summary>
@@ -249,25 +230,35 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(ServerNode node)
         {
-            if (node == null)
-                throw new WarningException("Server node can't for empty.");
-
-            //获取服务节点
-            if (resolver != null)
-            {
-                node = resolver.GetServerNode<IServiceInterfaceType>(node);
-            }
-
             //获取本地服务
-            var channel = GetLocalService<IServiceInterfaceType>();
+            IService service = GetLocalService<IServiceInterfaceType>();
 
-            if (channel == null)
+            return GetChannel<IServiceInterfaceType>(service, node);
+        }
+
+        /// <summary>
+        /// 获取通道服务
+        /// </summary>
+        /// <typeparam name="IServiceInterfaceType"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService service, ServerNode node)
+        {
+            //是否缓存服务
+            var isCacheService = true;
+
+            if (service == null)
             {
-                IService service = null;
+                if (node == null)
+                {
+                    throw new WarningException("Server node can't for empty.");
+                }
 
-                var isCacheService = true;
-                if (singleton.proxies.ContainsKey(node.Key.ToLower()))
-                    service = singleton.proxies[node.Key.ToLower()];
+                if (proxies.ContainsKey(node.Key.ToLower()))
+                {
+                    service = proxies[node.Key.ToLower()];
+                }
                 else
                 {
                     RemoteProxy proxy = null;
@@ -289,12 +280,10 @@ namespace MySoft.IoC
 
                     isCacheService = false;
                 }
-
-                channel = GetProxyChannel<IServiceInterfaceType>(service, isCacheService);
             }
 
             //返回通道服务
-            return channel;
+            return GetProxyChannel<IServiceInterfaceType>(service, isCacheService);
         }
 
         /// <summary>
@@ -338,7 +327,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IPublishService GetChannel<IPublishService>(object callback)
         {
-            return GetChannel<IPublishService>(config.Default, callback);
+            return GetChannel<IPublishService>(config.DefaultKey, callback);
         }
 
         /// <summary>
@@ -350,14 +339,15 @@ namespace MySoft.IoC
         /// <returns></returns>
         public IPublishService GetChannel<IPublishService>(string nodeKey, object callback)
         {
-            var node = GetServerNode(nodeKey);
+            var nodes = GetCacheServerNodes(nodeKey, typeof(IPublishService).FullName);
 
-            if (node == null)
+            if (nodes.Count == 0)
             {
                 throw new WarningException(string.Format("Did not find the server node【{0}】.", nodeKey));
             }
 
-            return GetChannel<IPublishService>(node, callback);
+            var index = new Random().Next(0, nodes.Count);
+            return GetChannel<IPublishService>(nodes[index], callback);
         }
 
         /// <summary>
@@ -370,12 +360,8 @@ namespace MySoft.IoC
         public IPublishService GetChannel<IPublishService>(ServerNode node, object callback)
         {
             if (node == null)
-                throw new WarningException("Server node can't for empty.");
-
-            //获取服务节点
-            if (resolver != null)
             {
-                node = resolver.GetServerNode<IPublishService>(node);
+                throw new WarningException("Server node can't for empty.");
             }
 
             if (callback == null) throw new IoCException("Callback cannot be the null.");
@@ -405,19 +391,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public InvokeData Invoke(InvokeMessage message)
         {
-            if (proxies.Count == 0)
-            {
-                //获取本地服务
-                IService service = GetLocalService(message);
-                if (service != null)
-                {
-                    return GetInvokeData(service, message);
-                }
-
-                throw new WarningException(string.Format("Did not find the service【{0}】.", message.ServiceName));
-            }
-
-            return Invoke(config.Default, message);
+            return Invoke(config.DefaultKey, message);
         }
 
         /// <summary>
@@ -428,14 +402,25 @@ namespace MySoft.IoC
         /// <returns></returns>
         public InvokeData Invoke(string nodeKey, InvokeMessage message)
         {
-            var node = GetServerNode(nodeKey);
+            //获取本地服务
+            IService service = GetLocalService(message.ServiceName);
 
-            if (node == null)
+            ServerNode node = null;
+
+            if (service == null)
             {
-                throw new WarningException(string.Format("Did not find the server node【{0}】.", nodeKey));
+                var nodes = GetCacheServerNodes(nodeKey, message.ServiceName);
+
+                if (nodes.Count == 0)
+                {
+                    throw new WarningException(string.Format("Did not find the server node【{0}】.", nodeKey));
+                }
+
+                var index = new Random().Next(0, nodes.Count);
+                node = nodes[index];
             }
 
-            return Invoke(node, message);
+            return Invoke(service, node, message);
         }
 
         /// <summary>
@@ -446,16 +431,33 @@ namespace MySoft.IoC
         /// <returns></returns>
         public InvokeData Invoke(ServerNode node, InvokeMessage message)
         {
-            if (node == null)
-                throw new WarningException("Server node can't for empty.");
-
             //获取本地服务
-            IService service = GetLocalService(message);
+            IService service = GetLocalService(message.ServiceName);
 
+            return Invoke(service, node, message);
+        }
+
+        /// <summary>
+        /// 响应服务
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="node"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        private InvokeData Invoke(IService service, ServerNode node, InvokeMessage message)
+        {
             if (service == null)
             {
-                if (singleton.proxies.ContainsKey(node.Key.ToLower()))
-                    service = singleton.proxies[node.Key.ToLower()];
+                if (node == null)
+                {
+                    throw new WarningException("Server node can't for empty.");
+                }
+
+                //获取服务节点
+                if (proxies.ContainsKey(node.Key.ToLower()))
+                {
+                    service = proxies[node.Key.ToLower()];
+                }
                 else
                 {
                     RemoteProxy proxy = null;
@@ -506,7 +508,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <typeparam name="IServiceInterfaceType"></typeparam>
         /// <returns></returns>
-        private IServiceInterfaceType GetLocalService<IServiceInterfaceType>()
+        private IService GetLocalService<IServiceInterfaceType>()
         {
             Type serviceType = typeof(IServiceInterfaceType);
 
@@ -533,74 +535,113 @@ namespace MySoft.IoC
                 }
             }
 
-            //定义本地服务
-            IServiceInterfaceType ls = default(IServiceInterfaceType);
-
-            //如果是本地配置，则抛出异常
-            if (config.Type != CastleFactoryType.Remote)
-            {
-                if (resolver != null)
-                {
-                    ls = resolver.ResolveService<IServiceInterfaceType>(container);
-                }
-
-                if (ls == null)
-                {
-                    var serviceKey = "Service_" + serviceType.FullName;
-
-                    //本地服务
-                    if (container.Kernel.HasComponent(serviceKey))
-                    {
-                        lock (hashtable.SyncRoot)
-                        {
-                            if (!hashtable.ContainsKey(serviceKey))
-                            {
-                                //返回本地服务
-                                var service = container.Resolve<IService>(serviceKey);
-                                var handler = new ServiceInvocationHandler(config, container, service, serviceType, cache, logger);
-                                var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
-
-                                hashtable[serviceKey] = dynamicProxy;
-                            }
-                        }
-
-                        ls = (IServiceInterfaceType)hashtable[serviceKey];
-                    }
-                }
-
-                if (ls == null)
-                {
-                    if (config.Type == CastleFactoryType.Local)
-                        throw new WarningException(string.Format("The local【{1}({2})】not find matching service ({0})."
-                            , serviceType.FullName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress()));
-                }
-            }
-
-            return ls;
+            //获取本地服务
+            return GetLocalService(serviceType.FullName);
         }
 
         /// <summary>
         /// 获取本地服务
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="serviceName"></param>
         /// <returns></returns>
-        private IService GetLocalService(InvokeMessage message)
+        private IService GetLocalService(string serviceName)
         {
-            IService service = null;
-            string serviceKey = "Service_" + message.ServiceName;
+            //定义本地服务
+            IService service = default(IService);
 
+            //如果是本地配置，则抛出异常
             if (config.Type != CastleFactoryType.Remote)
             {
+                var serviceKey = "Service_" + serviceName;
+
+                //本地服务
                 if (container.Kernel.HasComponent(serviceKey))
                 {
+                    //返回本地服务
                     service = container.Resolve<IService>(serviceKey);
                 }
 
-                if (service == null && config.Type == CastleFactoryType.Local)
-                    throw new WarningException(string.Format("Local not find service ({0}).", message.ServiceName));
+                if (service == null)
+                {
+                    if (config.Type == CastleFactoryType.Local)
+                    {
+                        throw new WarningException(string.Format("The local【{1}({2})】not find matching service ({0})."
+                            , serviceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress()));
+                    }
+                }
             }
 
             return service;
+        }
+
+        /// <summary>
+        /// 获取服务节点
+        /// </summary>
+        /// <param name="nodeKey"></param>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        private IList<ServerNode> GetCacheServerNodes(string nodeKey, string serviceName)
+        {
+            lock (hashtable.SyncRoot)
+            {
+                //获取服务节点
+                if (proxies.Count > 0)
+                {
+                    var node = GetServerNode(nodeKey);
+
+                    if (node != null)
+                    {
+                        return new ServerNode[] { node };
+                    }
+                };
+
+                if (!string.IsNullOrEmpty(config.ProxyServer))
+                {
+                    //从缓存中获取节点
+                    var serverKey = string.Format("{0}${1}", config.ProxyServer, nodeKey);
+
+                    return CacheHelper<IList<ServerNode>>.Get(serverKey, TimeSpan.FromMinutes(1), state =>
+                    {
+                        var arr = state as ArrayList;
+                        var key = Convert.ToString(arr[0]);
+                        var name = Convert.ToString(arr[1]);
+                        return GetServerNodesFromChannel(key, name);
+
+                    }, new ArrayList { nodeKey, serviceName });
+                }
+
+                //返回空列表
+                return new ServerNode[0];
+            }
+        }
+
+        /// <summary>
+        /// 获取服务节点列表
+        /// </summary>
+        /// <param name="nodeKey"></param>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        private IList<ServerNode> GetServerNodesFromChannel(string nodeKey, string serviceName)
+        {
+            var arr = config.ProxyServer.Split('|');
+
+            var server = ServerNode.Parse(arr[0]);
+            server.MinPool = 1;
+            server.MaxPool = 1;
+            server.Timeout = 30;
+
+            if (arr.Length > 1)
+            {
+                server.Compress = Convert.ToBoolean(arr[1]);
+            }
+
+            if (server != null)
+            {
+                return GetChannel<IStatusService>(server).GetServerNodes(nodeKey, serviceName);
+            }
+
+            //返回空列表
+            return new ServerNode[0];
         }
 
         #endregion

@@ -3,15 +3,15 @@
 namespace MySoft.IoC.Messages
 {
     /// <summary>
-    /// 调用事件参数
+    /// 基类
     /// </summary>
     [Serializable]
-    public class CallEventArgs : EventArgs
+    public abstract class BaseEventArgs : EventArgs
     {
         /// <summary>
         /// 调用参数信息
         /// </summary>
-        public AppCaller Caller { get; private set; }
+        public AppCaller Caller { get; internal set; }
 
         /// <summary>
         /// 耗时时间
@@ -27,11 +27,6 @@ namespace MySoft.IoC.Messages
         /// 数据数
         /// </summary>
         public int Count { get; set; }
-
-        /// <summary>
-        /// 返回值
-        /// </summary>
-        public object Value { get; set; }
 
         /// <summary>
         /// 是否错误
@@ -51,6 +46,18 @@ namespace MySoft.IoC.Messages
                 return IsError && (this.Error is TimeoutException);
             }
         }
+    }
+
+    /// <summary>
+    /// 调用事件参数
+    /// </summary>
+    [Serializable]
+    public class CallEventArgs : BaseEventArgs
+    {
+        /// <summary>
+        /// 返回值
+        /// </summary>
+        public object Value { get; set; }
 
         /// <summary>
         /// 实例化CallEventArgs

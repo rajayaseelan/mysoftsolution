@@ -95,16 +95,28 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage InvokeResponse(OperationContext context, RequestMessage reqMsg)
         {
-            if (!fromServer)
+            //定义一个响应值
+            ResponseMessage resMsg = null;
+
+            try
             {
-                //同步调用
-                return GetSyncResponse(context, reqMsg);
+                if (!fromServer)
+                    resMsg = GetSyncResponse(context, reqMsg); //同步调用
+                else
+                    resMsg = GetAsyncResponse(context, reqMsg); //异步调用
             }
-            else
+            catch (Exception ex)
             {
-                //异步调用
-                return GetAsyncResponse(context, reqMsg);
+                //线程异常，重置
+                if (ex is ThreadAbortException)
+                {
+                    Thread.ResetAbort();
+                }
+
+                resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
+
+            return resMsg;
         }
 
         /// <summary>
@@ -154,7 +166,7 @@ namespace MySoft.IoC.Services
         private ResponseMessage GetAsyncResponse(OperationContext context, RequestMessage reqMsg)
         {
             //异步调用
-            using (var worker = new WorkerItem(AsyncCallback, context, reqMsg))
+            using (var worker = new WorkerItem(AsyncCallback, context, reqMsg, fromServer))
             {
                 //添加线程
                 ThreadManager.Set(context.Channel, worker);

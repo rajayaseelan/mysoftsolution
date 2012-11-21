@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml.Serialization;
 
 namespace MySoft.IoC
 {
@@ -6,23 +7,23 @@ namespace MySoft.IoC
     /// 服务器节点
     /// </summary>
     [Serializable]
+    [XmlRoot("serverNode")]
     public class ServerNode
     {
-        private string ip;
-        private int port;
-        private string key;
+        private string ip = "127.0.0.1";
+        private int port = 8888;
+        private string key = "default";
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT;
         private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
         private int minpool = ServiceConfig.DEFAULT_CLIENT_MINPOOL;
         private ResponseType resptype = ResponseType.Binary;
 
-        internal ServerNode() { }
-
         /// <summary>
         /// Gets or sets the key.
         /// </summary>
         /// <value>The name.</value>
+        [XmlAttribute("key")]
         public string Key
         {
             get { return key; }
@@ -33,26 +34,29 @@ namespace MySoft.IoC
         /// Gets or sets the ip.
         /// </summary>
         /// <value>The server.</value>
+        [XmlAttribute("ip")]
         public string IP
         {
             get { return ip; }
-            internal set { ip = value; }
+            set { ip = value; }
         }
 
         /// <summary>
         /// Gets or sets the port.
         /// </summary>
         /// <value>The port.</value>
+        [XmlAttribute("port")]
         public int Port
         {
             get { return port; }
-            internal set { port = value; }
+            set { port = value; }
         }
 
         /// <summary>
         /// Gets or sets the compress.
         /// </summary>
         /// <value>The format.</value>
+        [XmlElement("compress")]
         public bool Compress
         {
             get { return compress; }
@@ -63,6 +67,7 @@ namespace MySoft.IoC
         /// Gets or sets the timeout.
         /// </summary>
         /// <value>The timeout ：单位（秒）.</value>
+        [XmlElement("timeout")]
         public int Timeout
         {
             get { return timeout; }
@@ -73,6 +78,7 @@ namespace MySoft.IoC
         /// Gets or sets the minpool.
         /// </summary>
         /// <value>The maxpool.</value>
+        [XmlElement("minpool")]
         public int MinPool
         {
             get { return minpool; }
@@ -83,6 +89,7 @@ namespace MySoft.IoC
         /// Gets or sets the maxpool.
         /// </summary>
         /// <value>The maxpool.</value>
+        [XmlElement("maxpool")]
         public int MaxPool
         {
             get { return maxpool; }
@@ -93,6 +100,7 @@ namespace MySoft.IoC
         /// Gets or sets the resptype
         /// </summary>
         /// <value>The resptype.</value>
+        [XmlElement("resptype")]
         public ResponseType RespType
         {
             get { return resptype; }

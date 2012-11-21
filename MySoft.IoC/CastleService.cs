@@ -4,12 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using MySoft.IoC.Callback;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Nodes;
 using MySoft.IoC.Services;
 using MySoft.Logger;
 using MySoft.Net.Http;
@@ -28,6 +30,11 @@ namespace MySoft.IoC
         private ScsTcpEndPoint epServer;
         private ServiceCaller caller;
         private ServerStatusService status;
+
+        /// <summary>
+        /// 处理服务
+        /// </summary>
+        public IScsServer Server { get { return server; } }
 
         /// <summary>
         /// 实例化CastleService
@@ -73,21 +80,25 @@ namespace MySoft.IoC
             if (config.HttpEnabled)
             {
                 //设置默认的解析器
-                IHttpApiResolver resolver = new DefaultApiResolver();
+                IHttpApiResolver apiResolver = null;
+                IServerNodeResolver nodeResolver = null;
 
-                //判断是否配置了HttpType
-                if (config.HttpType != null && typeof(IHttpApiResolver).IsAssignableFrom(config.HttpType))
-                {
-                    resolver = Activator.CreateInstance(config.HttpType) as IHttpApiResolver;
-                }
+                //判断是否配置了ApiResolverType
+                apiResolver = Create<IHttpApiResolver>(config.ApiResolverType) ?? new DefaultApiResolver();
+
+                //判断是否配置了NodeResolverType
+                nodeResolver = Create<IServerNodeResolver>(config.NodeResolverType) ?? new DefaultNodeResolver();
 
                 var httpCaller = new HttpServiceCaller(config, container);
 
                 //刷新服务委托
-                status.OnRefresh += () => httpCaller.InitCaller(resolver);
+                status.OnRefresh += (sender, args) => httpCaller.InitCaller(apiResolver);
+
+                //获取服务节点
+                status.OnServerNode += (sender, args) => nodeResolver.GetServerNodes(args.NodeKey, args.ServiceName);
 
                 //初始化调用器
-                httpCaller.InitCaller(resolver);
+                httpCaller.InitCaller(apiResolver);
 
                 var handler = new HttpServiceHandler(httpCaller);
                 var factory = new HttpRequestHandlerFactory(handler);
@@ -102,7 +113,7 @@ namespace MySoft.IoC
             PublishService(status.GetServiceList());
         }
 
-        void PublishService(IList<ServiceInfo> list)
+        private void PublishService(IList<ServiceInfo> list)
         {
             string log = string.Format("此次发布的服务有{0}个，共有{1}个方法，详细信息如下：\r\n\r\n", list.Count, list.Sum(p => p.Methods.Count()));
             var sb = new StringBuilder(log);
@@ -130,6 +141,29 @@ namespace MySoft.IoC
 
             //写日志
             SimpleLog.Instance.WriteLogForDir("ServiceRun", sb.ToString());
+        }
+
+        /// <summary>
+        /// 创建指定类型的实例
+        /// </summary>
+        /// <typeparam name="InterfaceType"></typeparam>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private InterfaceType Create<InterfaceType>(Type type)
+            where InterfaceType : class
+        {
+            try
+            {
+                if (type != null && typeof(InterfaceType).IsAssignableFrom(type))
+                {
+                    return Activator.CreateInstance(type) as InterfaceType;
+                }
+            }
+            catch
+            {
+            }
+
+            return default(InterfaceType);
         }
 
         #region 启动停止服务

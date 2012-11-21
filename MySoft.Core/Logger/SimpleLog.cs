@@ -375,7 +375,7 @@ namespace MySoft.Logger
         /// <param name="text"></param>
         public static void WriteFile(string filePath, string text)
         {
-            WriteFile(filePath, text, false);
+            WriteFile(filePath, text, true);
         }
 
         /// <summary>

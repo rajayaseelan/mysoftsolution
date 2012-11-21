@@ -977,7 +977,7 @@ namespace MySoft.PlatformService.WinForm
             InitService(defaultNode, true);
         }
 
-        private void 刷新API服务AToolStripMenuItem_Click(object sender, EventArgs e)
+        private void 刷新WebAPI服务AToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (defaultNode == null)
             {
@@ -985,13 +985,13 @@ namespace MySoft.PlatformService.WinForm
                 return;
             }
 
-            if (MessageBox.Show("确定刷新API服务吗？\r\n\r\n注意：刷新API服务会将所有API服务接口进行重置后再重新加载！可能会对某些应用产生影响。", "系统提示",
+            if (MessageBox.Show("确定刷新WebAPI服务吗？\r\n\r\n注意：刷新WebAPI服务会将所有API服务接口进行重置后再重新加载！可能会对某些应用产生影响。", "系统提示",
                 MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel) return;
 
             try
             {
-                CastleFactory.Create().GetChannel<IStatusService>(defaultNode).RefreshApi();
-                MessageBox.Show("刷新API服务成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                CastleFactory.Create().GetChannel<IStatusService>(defaultNode).RefreshWebAPI();
+                MessageBox.Show("刷新WebAPI服务成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {

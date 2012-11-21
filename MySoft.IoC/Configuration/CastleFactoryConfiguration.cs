@@ -12,10 +12,10 @@ namespace MySoft.IoC.Configuration
     {
         private IDictionary<string, ServerNode> nodes;
         private CastleFactoryType type = CastleFactoryType.Local;
-        private string defaultKey;                                  //默认服务
-        private string appname;                                     //host名称
-        private bool throwError = true;                             //抛出异常
-        private bool enableCache = true;                            //是否缓存
+        private string defaultKey, proxyServer;         //代理服务
+        private string appname;                         //host名称
+        private bool throwError = true;                 //抛出异常
+        private bool enableCache = true;                //是否缓存
 
         /// <summary>
         /// 实例化CastleFactoryConfiguration
@@ -64,6 +64,9 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["default"] != null && attribute["default"].Value.Trim() != string.Empty)
                 defaultKey = attribute["default"].Value;
+
+            if (attribute["proxy"] != null && attribute["proxy"].Value.Trim() != string.Empty)
+                proxyServer = attribute["proxy"].Value;
 
             if (attribute["appname"] != null && attribute["appname"].Value.Trim() != string.Empty)
                 appname = attribute["appname"].Value;
@@ -121,15 +124,16 @@ namespace MySoft.IoC.Configuration
                 }
 
                 //判断是否配置了服务信息
-                if (nodes.Count == 0)
+                if (string.IsNullOrEmpty(proxyServer))
                 {
-                    throw new WarningException("Not configure any service node.");
-                }
+                    if (nodes.Count == 0)
+                        throw new WarningException("Not configure any server node.");
 
-                //判断是否包含默认的服务
-                if (!nodes.ContainsKey(defaultKey))
-                {
-                    throw new WarningException("Not find the default service node 【" + defaultKey + "】.");
+                    //判断是否包含默认的服务
+                    if (!nodes.ContainsKey(defaultKey))
+                    {
+                        throw new WarningException("Not find the default service node 【" + defaultKey + "】.");
+                    }
                 }
             }
         }
@@ -158,10 +162,20 @@ namespace MySoft.IoC.Configuration
         /// Gets or sets the default
         /// </summary>
         /// <value>The default.</value>
-        public string Default
+        public string DefaultKey
         {
             get { return defaultKey; }
             set { defaultKey = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the proxy
+        /// </summary>
+        /// <value>The proxy.</value>
+        public string ProxyServer
+        {
+            get { return proxyServer; }
+            set { proxyServer = value; }
         }
 
         /// <summary>
@@ -191,7 +205,6 @@ namespace MySoft.IoC.Configuration
         public IDictionary<string, ServerNode> Nodes
         {
             get { return nodes; }
-            set { nodes = value; }
         }
     }
 }

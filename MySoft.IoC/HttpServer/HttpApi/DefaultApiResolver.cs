@@ -24,6 +24,7 @@ namespace MySoft.IoC.HttpServer
         {
             IList<HttpApiMethod> list = new List<HttpApiMethod>();
             var fileName = CoreHelper.GetFullPath("/config/httpapi.config");
+
             if (File.Exists(fileName))
             {
                 try

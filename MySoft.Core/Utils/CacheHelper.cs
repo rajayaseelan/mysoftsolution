@@ -352,8 +352,16 @@ namespace MySoft
 
                         if (success)
                         {
-                            CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
-                            CacheHelper.Insert(spareKey, cacheObj, (int)timeout.TotalSeconds * CACHE_MULTIPLE);
+                            try
+                            {
+                                CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
+                                CacheHelper.Insert(spareKey, cacheObj, (int)timeout.TotalSeconds * CACHE_MULTIPLE);
+                            }
+                            catch (ThreadInterruptedException ex) { }
+                            catch (ThreadAbortException ex)
+                            {
+                                Thread.ResetAbort();
+                            }
                         }
                     }
                 }
@@ -416,6 +424,11 @@ namespace MySoft
                             CacheHelper.Insert(spareKey, cacheObj, (int)timeout.TotalSeconds * CACHE_MULTIPLE);
                         }
                     }
+                }
+                catch (ThreadInterruptedException ex) { }
+                catch (ThreadAbortException ex)
+                {
+                    Thread.ResetAbort();
                 }
                 finally
                 {

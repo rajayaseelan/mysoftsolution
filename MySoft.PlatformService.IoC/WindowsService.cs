@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Threading;
 using MySoft.Installer;
 using MySoft.IoC;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
@@ -17,7 +18,7 @@ namespace MySoft.PlatformService.IoC
     {
         private int timeout = -1;
         private StartMode startMode = StartMode.Service;
-        private CastleService server;
+        private CastleService service;
         private IServiceRecorder recorder;
         private string[] mailTo;
 
@@ -49,17 +50,21 @@ namespace MySoft.PlatformService.IoC
         public void Init()
         {
             var config = CastleServiceConfiguration.GetConfig();
-            this.server = new CastleService(config);
+            this.service = new CastleService(config);
 
-            this.server.OnLog += new LogEventHandler(server_OnLog);
-            this.server.OnError += new ErrorLogEventHandler(server_OnError);
-            this.server.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
+            this.service.OnLog += new LogEventHandler(server_OnLog);
+            this.service.OnError += new ErrorLogEventHandler(server_OnError);
+            this.service.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
 
             try
             {
                 var typeName = ConfigurationManager.AppSettings["ServiceRecorderType"];
                 var type = Type.GetType(typeName);
-                this.recorder = Activator.CreateInstance(type, config) as IServiceRecorder;
+
+                if (type != null && typeof(IServiceRecorder).IsAssignableFrom(type))
+                {
+                    this.recorder = Activator.CreateInstance(type, config) as IServiceRecorder;
+                }
             }
             catch
             {
@@ -98,8 +103,8 @@ namespace MySoft.PlatformService.IoC
 
                 StartService();
 
-                server_OnLog(string.Format("Tcp server host -> {0}", server.ServerUrl), LogType.Normal);
-                server_OnLog(string.Format("Server publish ({0}) services.", server.ServiceCount), LogType.Normal);
+                server_OnLog(string.Format("Tcp server host -> {0}", service.ServerUrl), LogType.Normal);
+                server_OnLog(string.Format("Server publish ({0}) services.", service.ServiceCount), LogType.Normal);
                 server_OnLog("Press enter to exit and stop server...", LogType.Normal);
             }
             else
@@ -110,7 +115,7 @@ namespace MySoft.PlatformService.IoC
 
         private void StartService()
         {
-            server.Start();
+            service.Start();
         }
 
         public void Stop()
@@ -120,7 +125,7 @@ namespace MySoft.PlatformService.IoC
                 server_OnLog("Server ready stopped...", LogType.Normal);
             }
 
-            server.Stop();
+            service.Stop();
         }
 
         #endregion
@@ -133,7 +138,21 @@ namespace MySoft.PlatformService.IoC
         void server_OnCalling(object sender, CallEventArgs e)
         {
             //调用服务，记入数据库
-            if (recorder != null) recorder.Call(sender, e);
+            if (recorder != null)
+            {
+                var endPoint = service.Server.EndPoint as ScsTcpEndPoint;
+                var res = new RecordEventArgs(e.Caller)
+                {
+                    Error = e.Error,
+                    Count = e.Count,
+                    ElapsedTime = e.ElapsedTime,
+                    ServerHostName = DnsHelper.GetHostName(),
+                    ServerIPAddress = DnsHelper.GetIPAddress(),
+                    ServerPort = endPoint.TcpPort
+                };
+
+                recorder.Call(sender, res);
+            }
 
             if (e.IsTimeout)
             {

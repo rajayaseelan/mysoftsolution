@@ -79,8 +79,12 @@
     <Compile Include="CallerContext.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IServiceRecorder.cs" />
+    <Compile Include="Common\RecordEventArgs.cs" />
+    <Compile Include="Nodes\DefaultNodeResolver.cs" />
     <Compile Include="HttpServer\TcpDocument.cs" />
-    <Compile Include="Services\DiscoverProxy.cs" />
+    <Compile Include="Nodes\IServerNodeResolver.cs" />
+    <Compile Include="Nodes\NodeEventArgs.cs" />
+    <Compile Include="Nodes\ServerConfig.cs" />
     <Compile Include="Services\ThreadManager.cs" />
     <Compile Include="ServiceChannel.cs" />
     <Compile Include="Services\WorkerItem.cs" />
@@ -154,7 +158,6 @@
     <Compile Include="Messages\CallMessage.cs" />
     <Compile Include="Messages\InvokeMessage.cs" />
     <Compile Include="Messages\ReturnMessage.cs" />
-    <Compile Include="IServiceResolver.cs" />
     <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
     <Compile Include="Services\InvokeProxy.cs">

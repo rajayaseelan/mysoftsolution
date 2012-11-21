@@ -13,7 +13,8 @@ namespace MySoft.IoC.Configuration
         private int port = 8888;
         private int httpPort = 8080;
         private bool httpEnabled = false;
-        private Type httpType;
+        private Type apiResolverType;
+        private Type nodeResolverType;
         private bool compress = false;
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;            //默认记录1小时
         private int timeout = ServiceConfig.DEFAULT_SERVER_CALL_TIMEOUT;        //超时时间为30秒
@@ -74,11 +75,25 @@ namespace MySoft.IoC.Configuration
                 {
                     httpPort = Convert.ToInt32(childattribute["port"].Value);
                     httpEnabled = Convert.ToBoolean(childattribute["enabled"].Value);
-
+                }
+                else if (child.Name == "apiResolver") //加载api解析器
+                {
                     try
                     {
                         var typeName = childattribute["type"].Value;
-                        httpType = Type.GetType(typeName);
+                        apiResolverType = Type.GetType(typeName);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO
+                    }
+                }
+                else if (child.Name == "nodeResolver") //加载node解析器
+                {
+                    try
+                    {
+                        var typeName = childattribute["type"].Value;
+                        nodeResolverType = Type.GetType(typeName);
                     }
                     catch (Exception ex)
                     {
@@ -109,12 +124,21 @@ namespace MySoft.IoC.Configuration
         }
 
         /// <summary>
-        /// Gets or sets the httpType
+        /// Gets or sets the apiResolverType
         /// </summary>
-        public Type HttpType
+        public Type ApiResolverType
         {
-            get { return httpType; }
-            set { httpType = value; }
+            get { return apiResolverType; }
+            set { apiResolverType = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the nodeResolverType
+        /// </summary>
+        public Type NodeResolverType
+        {
+            get { return nodeResolverType; }
+            set { nodeResolverType = value; }
         }
 
         #endregion

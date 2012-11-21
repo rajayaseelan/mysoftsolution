@@ -203,6 +203,11 @@ namespace MySoft.PlatformService.UserService
             return null;
         }
 
+        public int[] GetUserIds()
+        {
+            return new int[] { 1, 2, 3, 4, 5, 6 };
+        }
+
         #region IInitializable 成员
 
         /// <summary>

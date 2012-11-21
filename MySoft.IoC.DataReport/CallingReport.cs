@@ -12,7 +12,7 @@ namespace MySoft.IoC.DataReport
     /// </summary>
     public class CallingReport : IServiceRecorder
     {
-        private IDictionary<string, IList<CallEventArgs>> calls;
+        private IDictionary<string, IList<RecordEventArgs>> calls;
         private CastleServiceConfiguration config;
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace MySoft.IoC.DataReport
         public CallingReport(CastleServiceConfiguration config)
         {
             this.config = config;
-            this.calls = new Dictionary<string, IList<CallEventArgs>>();
+            this.calls = new Dictionary<string, IList<RecordEventArgs>>();
 
             ThreadPool.QueueUserWorkItem(TimerSaveCalling);
         }
@@ -45,10 +45,8 @@ namespace MySoft.IoC.DataReport
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void Call(object sender, CallEventArgs e)
+        public void Call(object sender, RecordEventArgs e)
         {
-            e.Value = null;
-
             if (e.IsError)
             {
                 AddError(e);
@@ -63,7 +61,7 @@ namespace MySoft.IoC.DataReport
                 var key = DateTime.Now.ToString("yyyyMMddHHmm");
                 if (!calls.ContainsKey(key))
                 {
-                    calls[key] = new List<CallEventArgs>();
+                    calls[key] = new List<RecordEventArgs>();
                 }
 
                 calls[key].Add(e);
@@ -72,11 +70,11 @@ namespace MySoft.IoC.DataReport
 
         #endregion
 
-        private void AddError(CallEventArgs e)
+        private void AddError(RecordEventArgs e)
         {
         }
 
-        public void AddTimeout(CallEventArgs e)
+        public void AddTimeout(RecordEventArgs e)
         {
         }
     }

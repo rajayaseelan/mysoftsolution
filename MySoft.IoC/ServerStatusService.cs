@@ -10,6 +10,7 @@ using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Nodes;
 
 namespace MySoft.IoC
 {
@@ -21,7 +22,12 @@ namespace MySoft.IoC
         /// <summary>
         /// 刷新处理
         /// </summary>
-        public event RefreshEventHandler OnRefresh;
+        public event EventHandler OnRefresh;
+
+        /// <summary>
+        /// 服务节点
+        /// </summary>
+        public event ServerNodeEventHandler OnServerNode;
 
         private const int DefaultDisconnectionAttemptTimeout = 5; //5 minutes.
 
@@ -237,15 +243,6 @@ namespace MySoft.IoC
         public bool ContainsService(string serviceName)
         {
             return container.Contains<ServiceContractAttribute>(serviceName);
-        }
-
-        /// <summary>
-        /// 刷新API服务
-        /// </summary>
-        /// <returns></returns>
-        public void RefreshApi()
-        {
-            if (OnRefresh != null) OnRefresh();
         }
 
         #region GetServiceInfos
@@ -688,5 +685,36 @@ namespace MySoft.IoC
         }
 
         #endregion
+
+        /// <summary>
+        /// 刷新API服务
+        /// </summary>
+        /// <returns></returns>
+        public void RefreshWebAPI()
+        {
+            if (OnRefresh != null)
+            {
+                OnRefresh(container, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// 获取服务节点
+        /// </summary>
+        /// <param name="nodeKey"></param>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        public IList<ServerNode> GetServerNodes(string nodeKey, string serviceName)
+        {
+            if (OnServerNode != null)
+            {
+                return OnServerNode(container, new NodeEventArgs(nodeKey)
+                {
+                    ServiceName = serviceName
+                });
+            }
+
+            return null;
+        }
     }
 }

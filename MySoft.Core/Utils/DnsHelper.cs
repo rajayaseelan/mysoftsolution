@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using System.Collections.Generic;
+using System.Net.Sockets;
 
 namespace MySoft
 {
@@ -21,8 +23,14 @@ namespace MySoft
         /// <returns></returns>
         public static string GetIPAddress()
         {
-            IPAddress addr = new IPAddress(Dns.GetHostByName(Dns.GetHostName()).AddressList[0].Address);
-            return addr.ToString();
+            var list = GetAddressList();
+
+            if (list.Count > 0)
+            {
+                return list[0].ToString();
+            }
+
+            return IPAddress.Loopback.ToString();
         }
 
         /// <summary>
@@ -31,8 +39,35 @@ namespace MySoft
         /// <returns></returns>
         public static string GetDynamicIPAddress()
         {
-            IPAddress addr = new IPAddress(Dns.GetHostByName(Dns.GetHostName()).AddressList[1].Address);
-            return addr.ToString();
+            var list = GetAddressList();
+
+            if (list.Count > 1)
+            {
+                return list[1].ToString();
+            }
+
+            return IPAddress.Loopback.ToString();
+        }
+
+        /// <summary>
+        /// 获取地址列表
+        /// </summary>
+        /// <returns></returns>
+        private static IList<IPAddress> GetAddressList()
+        {
+            var entry = Dns.GetHostEntry(Dns.GetHostName());
+
+            var list = new List<IPAddress>();
+
+            foreach (var ipAddress in entry.AddressList)
+            {
+                if (ipAddress.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    list.Add(ipAddress);
+                }
+            }
+
+            return list;
         }
     }
 }

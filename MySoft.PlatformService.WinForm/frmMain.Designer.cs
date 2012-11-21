@@ -43,7 +43,7 @@
             this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.刷新服务RToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.刷新API服务AToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.刷新WebAPI服务AToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listService = new ListControls.MessageListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.订阅此服务SToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -316,7 +316,7 @@
             this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.刷新服务RToolStripMenuItem,
             this.toolStripSeparator1,
-            this.刷新API服务AToolStripMenuItem});
+            this.刷新WebAPI服务AToolStripMenuItem});
             this.contextMenuStrip2.Name = "contextMenuStrip2";
             this.contextMenuStrip2.Size = new System.Drawing.Size(177, 54);
             // 
@@ -332,12 +332,12 @@
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(173, 6);
             // 
-            // 刷新API服务AToolStripMenuItem
+            // 刷新WebAPI服务AToolStripMenuItem
             // 
-            this.刷新API服务AToolStripMenuItem.Name = "刷新API服务AToolStripMenuItem";
-            this.刷新API服务AToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
-            this.刷新API服务AToolStripMenuItem.Text = "刷新API服务(&A)";
-            this.刷新API服务AToolStripMenuItem.Click += new System.EventHandler(this.刷新API服务AToolStripMenuItem_Click);
+            this.刷新WebAPI服务AToolStripMenuItem.Name = "刷新WebAPI服务AToolStripMenuItem";
+            this.刷新WebAPI服务AToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.刷新WebAPI服务AToolStripMenuItem.Text = "刷新WebAPI服务(&A)";
+            this.刷新WebAPI服务AToolStripMenuItem.Click += new System.EventHandler(this.刷新WebAPI服务AToolStripMenuItem_Click);
             // 
             // listService
             // 
@@ -1402,7 +1402,7 @@
         private System.Windows.Forms.Label label14;
         private AutoCompleteTextbox autoCompleteTextbox1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripMenuItem 刷新API服务AToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 刷新WebAPI服务AToolStripMenuItem;
         private System.Windows.Forms.TabPage tabPage5;
         private System.Windows.Forms.TabPage tabPage6;
     }

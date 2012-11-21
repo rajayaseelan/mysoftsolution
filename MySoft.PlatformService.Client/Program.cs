@@ -13,26 +13,6 @@ using MySoft.PlatformService.UserService;
 
 namespace MySoft.PlatformService.Client
 {
-    public class ServiceResolver : IServiceResolver
-    {
-
-        #region IServiceResolver 成员
-
-        public ServerNode GetServerNode<T>(ServerNode currNode)
-        {
-            //throw new NotImplementedException();
-            return currNode;
-        }
-
-        public T ResolveService<T>(IContainer container)
-        {
-            //throw new NotImplementedException();
-            return default(T);
-        }
-
-        #endregion
-    }
-
     public class ServiceLog : IServiceLog
     {
         #region IServiceLog 成员
@@ -111,6 +91,16 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            //var list = new List<ServerNode>()
+            //{
+            //    new ServerNode()
+            //};
+
+            //var fileName = CoreHelper.GetFullPath("/config/serverNode.config");
+            //SimpleLog.WriteFile(fileName, SerializationManager.SerializeXml(list));
+
+            //Console.ReadLine();
+
             //var ps = new ParameterCollection();
             //ps["aaa"] = 1;
             //ps["bbb"] = "2222";
@@ -331,15 +321,13 @@ namespace MySoft.PlatformService.Client
             #endregion
 
             CastleFactory.Create().RegisterLogger(new ServiceLog());
-            CastleFactory.Create().RegisterResolver(new ServiceResolver());
-
-            CastleFactory.Create().OnDisconnected += new EventHandler<ConnectEventArgs>(Program_OnDisconnected);
+            CastleFactory.Create().OnDisconnected += Program_OnDisconnected;
 
             //var watch = Stopwatch.StartNew();
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -478,7 +466,7 @@ namespace MySoft.PlatformService.Client
             //e.WaitOne();
 
             //var node = CastleFactory.Create().GetDefaultNode();
-            var service = CastleFactory.Create().GetProxyChannel<IUserService>();
+            var service = CastleFactory.Create().GetChannel<IUserService>("dddd");
 
             //var service = new MySoft.PlatformService.UserService.UserService();
 

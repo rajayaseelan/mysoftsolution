@@ -58,7 +58,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="message"></param>
         public IoCException(string message)
-            : base(ExceptionType.IoCException, message) { }
+            : base(ExceptionType.IoCException, string.Format("[{0}] {1}", DnsHelper.GetIPAddress(), message)) { }
 
         /// <summary>
         /// 内嵌异常的构造方法
