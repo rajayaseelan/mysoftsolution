@@ -9,12 +9,10 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public class ScsCallbackMessage : ScsMessage
     {
-        public CallbackMessage MessageValue { get; set; }
-
-        public ScsCallbackMessage()
-        {
-            //TO DO
-        }
+        /// <summary>
+        /// 回调消息
+        /// </summary>
+        public CallbackMessage MessageValue { get; private set; }
 
         public ScsCallbackMessage(CallbackMessage value)
         {

@@ -12,15 +12,7 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// Message data that is being transmitted.
         /// </summary>
-        public MessageBase MessageValue { get; set; }
-
-        /// <summary>
-        /// Default empty constructor.
-        /// </summary>
-        public ScsResultMessage()
-        {
-
-        }
+        public MessageBase MessageValue { get; private set; }
 
         /// <summary>
         /// Creates a new ScsResultMessage object with Data property.
