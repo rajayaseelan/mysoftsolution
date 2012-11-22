@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Caching;
 using System.Threading;
+using MySoft.Logger;
 
 namespace MySoft
 {
@@ -269,7 +270,6 @@ namespace MySoft
     public static class CacheHelper<T>
     {
         //缓存倍数
-        private const int CACHE_MULTIPLE = 60;
         private static readonly HashSet<string> hashtable = new HashSet<string>();
 
         /// <summary>
@@ -334,7 +334,15 @@ namespace MySoft
 
                 if (cacheObj == null)
                 {
-                    cacheObj = func(state);
+                    try
+                    {
+                        cacheObj = func(state);
+                    }
+                    catch (ThreadInterruptedException ex) { }
+                    catch (ThreadAbortException ex)
+                    {
+                        Thread.ResetAbort();
+                    }
 
                     if (cacheObj != null)
                     {
@@ -352,16 +360,8 @@ namespace MySoft
 
                         if (success)
                         {
-                            try
-                            {
-                                CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
-                                CacheHelper.Insert(spareKey, cacheObj, (int)timeout.TotalSeconds * CACHE_MULTIPLE);
-                            }
-                            catch (ThreadInterruptedException ex) { }
-                            catch (ThreadAbortException ex)
-                            {
-                                Thread.ResetAbort();
-                            }
+                            CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
+                            CacheHelper.Insert(spareKey, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
                         }
                     }
                 }
@@ -414,6 +414,7 @@ namespace MySoft
                             }
                             catch
                             {
+                                success = false;
                             }
                         }
 
@@ -421,7 +422,7 @@ namespace MySoft
                         {
                             var spareKey = string.Format("SpareCache_{0}", key);
                             CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
-                            CacheHelper.Insert(spareKey, cacheObj, (int)timeout.TotalSeconds * CACHE_MULTIPLE);
+                            CacheHelper.Insert(spareKey, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
                         }
                     }
                 }
@@ -438,7 +439,10 @@ namespace MySoft
                     }
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            {
+                SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
+            }
             finally
             {
                 ar.AsyncWaitHandle.Close();
