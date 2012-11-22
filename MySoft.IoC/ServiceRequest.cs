@@ -11,7 +11,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务请求类
     /// </summary>
-    public class ServiceRequest : IServerConnect
+    public class ServiceRequest : IServerConnect, IDisposable
     {
         /// <summary>
         /// 数据回调
@@ -187,6 +187,18 @@ namespace MySoft.IoC
 
             //把数据发送到客户端
             if (OnCallback != null) OnCallback(this, message);
+        }
+
+        #endregion
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            this.reqMsg = null;
         }
 
         #endregion

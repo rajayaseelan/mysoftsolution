@@ -11,8 +11,43 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// <summary>
     /// This class is used to communicate with a remote application over TCP/IP protocol.
     /// </summary>
-    internal class TcpCommunicationChannel : CommunicationChannelBase
+    internal class TcpCommunicationChannel : CommunicationChannelBase, ITcpSocketChannel
     {
+        /// <summary>
+        /// Size of the buffer that is used to receive bytes from TCP socket.
+        /// </summary>
+        private const int BufferSize = 2 * 1024; //2KB
+
+        /// <summary>
+        /// Connection of the socket that is used to receive bytes from TCP socket.
+        /// </summary>
+        private const int MaxConnection = 1000; //Max connection
+
+        private static readonly TcpSocketAsyncEventArgsPool pool;
+
+        static TcpCommunicationChannel()
+        {
+            pool = InitSocketPool(MaxConnection);
+        }
+
+        /// <summary>
+        /// 初始化Socket池
+        /// </summary>
+        /// <param name="capacity"></param>
+        /// <returns></returns>
+        internal static TcpSocketAsyncEventArgsPool InitSocketPool(int capacity)
+        {
+            var pool = new TcpSocketAsyncEventArgsPool(capacity);
+
+            for (int i = 0; i < capacity; i++)
+            {
+                var e = new TcpSocketAsyncEventArgs();
+                pool.Push(e);
+            }
+
+            return pool;
+        }
+
         #region Public properties
 
         private volatile ScsTcpEndPoint _remoteEndPoint;
@@ -35,17 +70,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Socket object to send/reveice messages.
         /// </summary>
-        private readonly Socket _clientSocket;
-
-        /// <summary>
-        /// Size of the buffer that is used to receive bytes from TCP socket.
-        /// </summary>
-        private const int BufferSize = 1024; //1KB
+        private Socket _clientSocket;
 
         /// <summary>
         /// This buffer is used to receive bytes 
         /// </summary>
-        private readonly byte[] _buffer;
+        private byte[] _buffer;
 
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
@@ -88,6 +118,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
+            CommunicationState = CommunicationStates.Disconnected;
+            OnDisconnected();
+
             try
             {
                 _clientSocket.Shutdown(SocketShutdown.Both);
@@ -103,10 +136,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 catch
                 {
                 }
-            }
 
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
+                _clientSocket = null;
+                _buffer = null;
+            }
         }
 
         #endregion
@@ -120,7 +153,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             lock (_syncLock)
             {
-                var e = CreateEventArgs();
+                var e = PopSocketEventArgs();
 
                 try
                 {
@@ -128,12 +161,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                     if (!e.AcceptSocket.ReceiveAsync(e))
                     {
-                        OnReceiveCompleted(e);
+                        (this as ITcpSocketChannel).OnReceiveCompleted(e);
                     }
                 }
                 catch (Exception ex)
                 {
-                    DisposeEventArgs(e);
+                    PushSocketEventArgs(e);
 
                     Disconnect();
 
@@ -153,7 +186,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 //Create a byte array from message according to current protocol
                 var messageBytes = WireProtocol.GetBytes(message);
 
-                var e = CreateEventArgs();
+                var e = PopSocketEventArgs();
 
                 try
                 {
@@ -163,12 +196,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     //Send all bytes to the remote application
                     if (!e.AcceptSocket.SendAsync(e))
                     {
-                        OnSendCompleted(e);
+                        (this as ITcpSocketChannel).OnSendCompleted(e);
                     }
                 }
                 catch (Exception ex)
                 {
-                    DisposeEventArgs(e);
+                    PushSocketEventArgs(e);
 
                     Disconnect();
                 }
@@ -180,31 +213,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         #region Private methods
 
         /// <summary>
-        /// IO回调处理
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void IOCompleted(object sender, SocketAsyncEventArgs e)
-        {
-            switch (e.LastOperation)
-            {
-                case SocketAsyncOperation.Send:
-                    OnSendCompleted(e);
-                    break;
-                case SocketAsyncOperation.Receive:
-                    OnReceiveCompleted(e);
-                    break;
-                default:
-                    throw new ArgumentException("The last operation completed on the socket was not a receive or send");
-            }
-        }
-
-        /// <summary>
         /// This method is used as callback method in _clientSocket's BeginReceive method.
         /// It reveives bytes from socker.
         /// </summary>
         /// <param name="ar">Asyncronous call result</param>
-        private void OnSendCompleted(SocketAsyncEventArgs e)
+        void ITcpSocketChannel.OnSendCompleted(SocketAsyncEventArgs e)
         {
             //Sent success
             var message = e.UserToken as IScsMessage;
@@ -219,7 +232,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                DisposeEventArgs(e);
+                PushSocketEventArgs(e);
             }
         }
 
@@ -228,7 +241,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// It reveives bytes from socker.
         /// </summary>
         /// <param name="ar">Asyncronous call result</param>
-        private void OnReceiveCompleted(SocketAsyncEventArgs e)
+        void ITcpSocketChannel.OnReceiveCompleted(SocketAsyncEventArgs e)
         {
             try
             {
@@ -243,8 +256,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     {
                         //Copy received bytes to a new byte array
                         var receivedBytes = new byte[bytesTransferred];
-                        Buffer.BlockCopy(e.Buffer, e.Offset, receivedBytes, 0, bytesTransferred);
-                        Array.Clear(e.Buffer, 0, e.Buffer.Length);
+                        Buffer.BlockCopy(_buffer, 0, receivedBytes, 0, bytesTransferred);
+                        Array.Clear(_buffer, 0, BufferSize);
 
                         //Read messages according to current wire protocol
                         var messages = WireProtocol.CreateMessages(receivedBytes);
@@ -262,9 +275,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         throw;
                     }
 
+                    //重新开始接收数据
                     if (!e.AcceptSocket.ReceiveAsync(e))
                     {
-                        OnReceiveCompleted(e);
+                        (this as ITcpSocketChannel).OnReceiveCompleted(e);
                     }
                 }
                 else
@@ -274,7 +288,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                DisposeEventArgs(e);
+                PushSocketEventArgs(e);
 
                 Disconnect();
             }
@@ -286,11 +300,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Create socket event args.
         /// </summary>
         /// <returns></returns>
-        private SocketAsyncEventArgs CreateEventArgs()
+        private SocketAsyncEventArgs PopSocketEventArgs()
         {
-            var e = new SocketAsyncEventArgs();
+            var e = pool.Pop();
+            if (e == null)
+            {
+                e = new TcpSocketAsyncEventArgs();
+            }
+
             e.AcceptSocket = _clientSocket;
-            e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+            e.Channel = this;
 
             return e;
         }
@@ -299,23 +318,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Dispose socket event args.
         /// </summary>
         /// <param name="e"></param>
-        private void DisposeEventArgs(SocketAsyncEventArgs e)
+        private void PushSocketEventArgs(SocketAsyncEventArgs e)
         {
             if (e == null) return;
 
-            try
+            if (e is TcpSocketAsyncEventArgs)
             {
-                e.SetBuffer(null, 0, 0);
-                e.AcceptSocket = null;
-                e.UserToken = null;
+                var te = e as TcpSocketAsyncEventArgs;
+                te.SetBuffer(null, 0, 0);
+                te.AcceptSocket = null;
+                te.UserToken = null;
+                te.Channel = null;
 
-                e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
-                e.Dispose();
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                e = null;
+                pool.Push(te);
             }
         }
     }

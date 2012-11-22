@@ -9,7 +9,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal sealed class WaitResult : IDisposable
     {
-        private AutoResetEvent ev;
+        private ManualResetEvent ev;
         private RequestMessage reqMsg;
         private ResponseMessage resMsg;
 
@@ -27,7 +27,7 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         public WaitResult(RequestMessage reqMsg)
         {
-            this.ev = new AutoResetEvent(false);
+            this.ev = new ManualResetEvent(false);
             this.reqMsg = reqMsg;
         }
 
@@ -53,7 +53,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        public bool SetResponse(ResponseMessage resMsg)
+        public bool Set(ResponseMessage resMsg)
         {
             try
             {

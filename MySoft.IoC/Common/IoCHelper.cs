@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Sockets;
 using MySoft.IoC.Messages;
 using Newtonsoft.Json.Linq;
+using MySoft.IoC.Communication;
 
 namespace MySoft.IoC
 {

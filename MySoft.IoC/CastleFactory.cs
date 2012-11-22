@@ -376,7 +376,18 @@ namespace MySoft.IoC
             else
                 throw new IoCException("Callback type cannot be the null.");
 
+            //实例化代理回调
             CallbackProxy proxy = new CallbackProxy(callback, node, container);
+
+            proxy.OnConnected += (sender, args) =>
+            {
+                if (OnConnected != null) OnConnected(sender, args);
+            };
+            proxy.OnDisconnected += (sender, args) =>
+            {
+                if (OnDisconnected != null) OnDisconnected(sender, args);
+            };
+
             return GetProxyChannel<IPublishService>(proxy, false);
         }
 

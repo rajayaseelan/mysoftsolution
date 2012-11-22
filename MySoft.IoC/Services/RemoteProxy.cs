@@ -24,12 +24,15 @@ namespace MySoft.IoC.Services
 
         #endregion
 
+        /// <summary>
+        /// 结果队列
+        /// </summary>
         private IDictionary<Guid, WaitResult> hashtable = new Dictionary<Guid, WaitResult>();
 
         protected ServiceRequestPool reqPool;
         private volatile int poolSize;
-        protected ILog logger;
-        protected ServerNode node;
+        private ILog logger;
+        private ServerNode node;
 
         /// <summary>
         /// 实例化RemoteProxy
@@ -58,7 +61,7 @@ namespace MySoft.IoC.Services
                 //服务请求池化，使用最小的池初始化
                 for (int i = 0; i < node.MinPool; i++)
                 {
-                    this.reqPool.Push(CreateServiceRequest());
+                    this.reqPool.Push(CreateServiceRequest(false));
                 }
             }
         }
@@ -66,12 +69,13 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 创建一个服务请求项
         /// </summary>
+        /// <param name="subscribed"></param>
         /// <returns></returns>
-        private ServiceRequest CreateServiceRequest()
+        protected ServiceRequest CreateServiceRequest(bool subscribed)
         {
-            var reqService = new ServiceRequest(node, false);
-            reqService.OnCallback += reqService_OnCallback;
-            reqService.OnError += reqService_OnError;
+            var reqService = new ServiceRequest(node, subscribed);
+            reqService.OnCallback += OnMessageCallback;
+            reqService.OnError += OnMessageError;
             reqService.OnConnected += (sender, args) =>
             {
                 if (OnConnected != null) OnConnected(sender, args);
@@ -85,40 +89,12 @@ namespace MySoft.IoC.Services
             return reqService;
         }
 
-        void reqService_OnError(object sender, ErrorMessageEventArgs e)
-        {
-            QueueError(e.Request, e.Error);
-        }
-
-        protected void QueueError(RequestMessage reqMsg, Exception error)
-        {
-            if (reqMsg != null)
-            {
-                var resMsg = IoCHelper.GetResponse(reqMsg, error);
-
-                QueueMessage(resMsg);
-            }
-        }
-
         /// <summary>
-        /// 添加消息到队列
+        /// 消息回调
         /// </summary>
-        /// <param name="resMsg"></param>
-        protected void QueueMessage(ResponseMessage resMsg)
-        {
-            lock (hashtable)
-            {
-                if (hashtable.ContainsKey(resMsg.TransactionId))
-                {
-                    var waitResult = hashtable[resMsg.TransactionId];
-
-                    //数据响应
-                    waitResult.SetResponse(resMsg);
-                }
-            }
-        }
-
-        void reqService_OnCallback(object sender, ServiceMessageEventArgs args)
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void OnMessageCallback(object sender, ServiceMessageEventArgs args)
         {
             if (args.Result is ResponseMessage)
             {
@@ -129,28 +105,81 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// 异常处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected virtual void OnMessageError(object sender, ErrorMessageEventArgs e)
+        {
+            if (e.Request != null)
+            {
+                var resMsg = IoCHelper.GetResponse(e.Request, e.Error);
+
+                QueueMessage(resMsg);
+            }
+        }
+
+        /// <summary>
+        /// 添加消息到队列
+        /// </summary>
+        /// <param name="resMsg"></param>
+        private void QueueMessage(ResponseMessage resMsg)
+        {
+            lock (hashtable)
+            {
+                if (hashtable.ContainsKey(resMsg.TransactionId))
+                {
+                    var waitResult = hashtable[resMsg.TransactionId];
+
+                    //数据响应
+                    waitResult.Set(resMsg);
+                }
+            }
+        }
+
+        /// <summary>
         /// 调用方法
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
         public virtual ResponseMessage CallService(RequestMessage reqMsg)
         {
-            //获取一个请求
-            ServiceRequest reqProxy = null;
-
-            try
+            //处理数据
+            using (var waitResult = new WaitResult(reqMsg))
             {
-                //处理数据
-                using (var waitResult = new WaitResult(reqMsg))
+                lock (hashtable)
+                {
+                    hashtable[reqMsg.TransactionId] = waitResult;
+                }
+                try
+                {
+                    //获取响应消息
+                    return GetResponseMessage(waitResult, reqMsg);
+                }
+                finally
                 {
                     lock (hashtable)
                     {
-                        hashtable[reqMsg.TransactionId] = waitResult;
+                        //用完后移除
+                        hashtable.Remove(reqMsg.TransactionId);
                     }
+                }
+            }
+        }
 
-                    //获取一个请求
-                    reqProxy = GetServiceRequest();
-
+        /// <summary>
+        /// 获取响应消息
+        /// </summary>
+        /// <param name="waitResult"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponseMessage(WaitResult waitResult, RequestMessage reqMsg)
+        {
+            //获取一个请求
+            using (var reqProxy = GetServiceRequest())
+            {
+                try
+                {
                     //发送消息
                     reqProxy.SendMessage(reqMsg);
 
@@ -164,19 +193,10 @@ namespace MySoft.IoC.Services
 
                     return waitResult.Message;
                 }
-            }
-            finally
-            {
-                //加入队列
-                if (reqProxy != null)
+                finally
                 {
+                    //加入队列
                     reqPool.Push(reqProxy);
-                }
-
-                lock (hashtable)
-                {
-                    //用完后移除
-                    hashtable.Remove(reqMsg.TransactionId);
                 }
             }
         }
@@ -218,7 +238,7 @@ namespace MySoft.IoC.Services
                                 poolSize++;
 
                                 //创建一个新的请求
-                                reqPool.Push(CreateServiceRequest());
+                                reqPool.Push(CreateServiceRequest(false));
                             }
                         }
 

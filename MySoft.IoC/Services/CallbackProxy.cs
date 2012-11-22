@@ -27,11 +27,7 @@ namespace MySoft.IoC.Services
 
             lock (this.reqPool)
             {
-                var reqService = new ServiceRequest(node, true);
-                reqService.OnCallback += reqService_OnCallback;
-                reqService.OnError += reqService_OnError;
-
-                this.reqPool.Push(reqService);
+                this.reqPool.Push(CreateServiceRequest(true));
             }
         }
 
@@ -47,24 +43,14 @@ namespace MySoft.IoC.Services
                 throw new WarningException(string.Format("Service request pool beyond the {0} limit.", 1));
         }
 
-        void reqService_OnError(object sender, ErrorMessageEventArgs e)
-        {
-            base.QueueError(e.Request, e.Error);
-        }
-
         /// <summary>
         /// 消息回调
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        void reqService_OnCallback(object sender, ServiceMessageEventArgs args)
+        protected override void OnMessageCallback(object sender, ServiceMessageEventArgs args)
         {
-            if (args.Result is ResponseMessage)
-            {
-                var resMsg = args.Result as ResponseMessage;
-                base.QueueMessage(resMsg);
-            }
-            else if (args.Result is CallbackMessage)
+            if (args.Result is CallbackMessage)
             {
                 var callbackMsg = args.Result as CallbackMessage;
 
@@ -88,12 +74,15 @@ namespace MySoft.IoC.Services
                             }
                             catch (Exception ex)
                             {
-                                //调用异常，写异常信息
-                                logger.WriteError(ex);
                             }
                         }
                     }
                 }
+            }
+            else
+            {
+                //调用基类处理
+                base.OnMessageCallback(sender, args);
             }
         }
 

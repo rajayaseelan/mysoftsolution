@@ -86,7 +86,7 @@ namespace MySoft.IoC.Services
             if (waitResult == null)
                 return false;
 
-            return waitResult.SetResponse(resMsg);
+            return waitResult.Set(resMsg);
         }
 
         /// <summary>
