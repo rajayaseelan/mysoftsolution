@@ -2,7 +2,6 @@
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Communication.Protocols;
-using System.Net.Sockets;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels
 {

@@ -51,8 +51,12 @@ namespace MySoft.IoC
             //发送结果
             if (caller.InvokeResponse(e))
             {
-                //处理响应信息
-                HandleResponse(e, action);
+                //状态服务跳过
+                if (reqMsg.ServiceName != typeof(IStatusService).FullName)
+                {
+                    //处理响应信息
+                    HandleResponse(e, action);
+                }
 
                 //如果是Json方式调用，则需要处理异常
                 if (e.Request.InvokeMethod && e.Message.IsError)

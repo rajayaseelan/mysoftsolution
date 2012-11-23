@@ -213,7 +213,7 @@ namespace MySoft.IoC.Services
                , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, elapsedTime, reqMsg.Parameters.ToString());
 
             //ªÒ»°“Ï≥£
-            return IoCHelper.GetResponse(reqMsg, new System.TimeoutException(title));
+            return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
         }
 
         /// <summary>

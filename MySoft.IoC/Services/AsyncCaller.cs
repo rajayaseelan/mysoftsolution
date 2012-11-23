@@ -100,7 +100,7 @@ namespace MySoft.IoC.Services
 
             try
             {
-                if (!fromServer)
+                if (!fromServer || reqMsg.ServiceName == typeof(IStatusService).FullName)
                     resMsg = GetSyncResponse(context, reqMsg); //同步调用
                 else
                     resMsg = GetAsyncResponse(context, reqMsg); //异步调用
@@ -166,7 +166,7 @@ namespace MySoft.IoC.Services
         private ResponseMessage GetAsyncResponse(OperationContext context, RequestMessage reqMsg)
         {
             //异步调用
-            using (var worker = new WorkerItem(AsyncCallback, context, reqMsg, fromServer))
+            using (var worker = new WorkerItem(AsyncCallback, context, reqMsg))
             {
                 //添加线程
                 ThreadManager.Set(context.Channel, worker);
@@ -198,10 +198,10 @@ namespace MySoft.IoC.Services
                 //返回响应结果
                 resMsg = worker.GetResult(timeout);
             }
-            catch (System.TimeoutException ex)
+            catch (TimeoutException ex)
             {
                 //超时响应
-                resMsg = GetTimeoutResponse(worker.Request);
+                resMsg = GetTimeoutResponse(worker.Request, ex);
             }
             catch (Exception ex)
             {
@@ -243,14 +243,15 @@ namespace MySoft.IoC.Services
         /// 获取超时响应信息
         /// </summary>
         /// <param name="reqMsg"></param>
+        /// <param name="ex"></param>
         /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg)
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, TimeoutException ex)
         {
             //获取异常响应信息
-            var title = string.Format("Async call service ({0}, {1}) timeout ({2}) ms.",
-                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
+            var body = string.Format("Async call service ({0}, {1}) timeout ({2}) ms. {3}",
+                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds, ex.Message);
 
-            var resMsg = IoCHelper.GetResponse(reqMsg, new System.TimeoutException(title));
+            var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(body));
 
             //设置耗时时间
             resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;

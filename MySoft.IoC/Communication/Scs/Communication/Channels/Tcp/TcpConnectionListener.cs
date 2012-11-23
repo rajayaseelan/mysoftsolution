@@ -79,10 +79,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             if (!string.IsNullOrEmpty(_endPoint.IpAddress))
                 bindAddress = IPAddress.Parse(_endPoint.IpAddress);
 
+            var endPoint = new IPEndPoint(bindAddress, _endPoint.TcpPort);
+
             // Listener socket.
             _listenerSocket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
             _listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            _listenerSocket.Bind(new IPEndPoint(bindAddress, _endPoint.TcpPort));
+            _listenerSocket.Bind(endPoint);
             _listenerSocket.Listen(64);
         }
 
@@ -197,7 +199,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private SocketAsyncEventArgs CreateEventArgs()
         {
             var e = new SocketAsyncEventArgs();
-            e.Completed += new EventHandler<SocketAsyncEventArgs>(IOCompleted);
+            e.Completed += IOCompleted;
 
             return e;
         }
@@ -208,21 +210,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void DisposeEventArgs(SocketAsyncEventArgs e)
         {
-            if (e == null) return;
-
             try
             {
                 e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
                 e.UserToken = null;
-
-                e.Completed -= new EventHandler<SocketAsyncEventArgs>(IOCompleted);
-                e.Dispose();
             }
             catch (Exception ex) { }
             finally
             {
-                e = null;
+                e.Dispose();
             }
         }
     }

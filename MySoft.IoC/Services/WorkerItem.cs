@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using MySoft.IoC.Messages;
-using MySoft.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -33,7 +32,6 @@ namespace MySoft.IoC.Services
         //响应对象
         private WaitCallback callback;
         private WaitResult waitResult;
-        private bool fromServer;
 
         /// <summary>
         /// 实例化WorkerItem
@@ -41,15 +39,13 @@ namespace MySoft.IoC.Services
         /// <param name="callback"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
-        /// <param name="fromServer"></param>
-        public WorkerItem(WaitCallback callback, OperationContext context, RequestMessage reqMsg, bool fromServer)
+        public WorkerItem(WaitCallback callback, OperationContext context, RequestMessage reqMsg)
         {
             this.IsCompleted = false;
 
             this.callback = callback;
             this.Context = context;
             this.Request = reqMsg;
-            this.fromServer = fromServer;
             this.waitResult = new WaitResult(reqMsg);
         }
 
@@ -61,14 +57,11 @@ namespace MySoft.IoC.Services
         public ResponseMessage GetResult(TimeSpan timeout)
         {
             //开始异步请求
-            if (fromServer)
-                ThreadPool.QueueUserWorkItem(callback, this);
-            else
-                ManagedThreadPool.QueueUserWorkItem(callback, this);
+            ThreadPool.QueueUserWorkItem(callback, this);
 
             if (!waitResult.WaitOne(timeout))
             {
-                throw new System.TimeoutException("Timeout occured.");
+                throw new TimeoutException("Timeout occured.");
             }
 
             return waitResult.Message;

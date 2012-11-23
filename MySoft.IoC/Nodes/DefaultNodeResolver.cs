@@ -48,7 +48,7 @@ namespace MySoft.IoC.Nodes
                 return config.Nodes.Where(p => string.Compare(p.Key, nodeKey, true) == 0).ToList();
             }
 
-            return null;
+            return new List<ServerNode>();
         }
 
         /// <summary>

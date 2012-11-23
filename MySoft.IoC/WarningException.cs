@@ -24,27 +24,4 @@ namespace MySoft.IoC
             : base(info, context)
         { }
     }
-
-    /// <summary>
-    /// 超时异常
-    /// </summary>
-    [Serializable]
-    public class TimeoutException : IoCException
-    {
-        /// <summary>
-        /// 普通异常的构造方法
-        /// </summary>
-        /// <param name="message"></param>
-        public TimeoutException(string message)
-            : base(message) { }
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="info">存储对象序列化和反序列化所需的全部数据</param>
-        /// <param name="context">描述给定的序列化流的源和目标，并提供一个由调用方定义的附加上下文</param>
-        protected TimeoutException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
-            : base(info, context)
-        { }
-    }
 }

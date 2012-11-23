@@ -51,7 +51,7 @@ namespace MySoft.PlatformService.Console
                 var body = string.Format("Remote client°æ{0}°øcall service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
                             message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.ElapsedTime);
 
-                var error = IoCHelper.GetException(e.Caller, new System.TimeoutException(body));
+                var error = IoCHelper.GetException(e.Caller, body);
 
                 //–¥“Ï≥£»’÷æ
                 server_OnError(error);

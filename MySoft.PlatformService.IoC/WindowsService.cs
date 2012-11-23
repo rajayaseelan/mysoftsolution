@@ -140,18 +140,25 @@ namespace MySoft.PlatformService.IoC
             //调用服务，记入数据库
             if (recorder != null)
             {
-                var endPoint = service.Server.EndPoint as ScsTcpEndPoint;
-                var res = new RecordEventArgs(e.Caller)
+                try
                 {
-                    Error = e.Error,
-                    Count = e.Count,
-                    ElapsedTime = e.ElapsedTime,
-                    ServerHostName = DnsHelper.GetHostName(),
-                    ServerIPAddress = DnsHelper.GetIPAddress(),
-                    ServerPort = endPoint.TcpPort
-                };
+                    var endPoint = service.Server.EndPoint as ScsTcpEndPoint;
+                    var res = new RecordEventArgs(e.Caller)
+                    {
+                        Error = e.Error,
+                        Count = e.Count,
+                        ElapsedTime = e.ElapsedTime,
+                        ServerHostName = DnsHelper.GetHostName(),
+                        ServerIPAddress = DnsHelper.GetIPAddress(),
+                        ServerPort = endPoint.TcpPort
+                    };
 
-                recorder.Call(sender, res);
+                    recorder.Call(sender, res);
+                }
+                catch (Exception ex)
+                {
+                    server_OnError(ex);
+                }
             }
 
             if (e.IsTimeout)
@@ -160,7 +167,7 @@ namespace MySoft.PlatformService.IoC
                 var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
                             message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.ElapsedTime);
 
-                var error = IoCHelper.GetException(e.Caller, new System.TimeoutException(body));
+                var error = IoCHelper.GetException(e.Caller, body);
 
                 //写异常日志
                 server_OnError(error);
@@ -180,11 +187,15 @@ namespace MySoft.PlatformService.IoC
             {
                 if (startMode == StartMode.Debug)
                 {
-                    var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
-                    var body = string.Format("Remote client【{0}】call service ({1},{2}), result ({4}) rows, elapsed time ({5}) ms.\r\nParameters => {3}",
-                                message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.Count, e.ElapsedTime);
+                    //判断是否需要处理超时
+                    if (timeout < 0 || e.ElapsedTime > timeout)
+                    {
+                        var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
+                        var body = string.Format("Remote client【{0}】call service ({1},{2}), result ({4}) rows, elapsed time ({5}) ms.\r\nParameters => {3}",
+                                    message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.Count, e.ElapsedTime);
 
-                    server_OnLog(body, LogType.Information);
+                        server_OnLog(body, LogType.Information);
+                    }
                 }
             }
         }

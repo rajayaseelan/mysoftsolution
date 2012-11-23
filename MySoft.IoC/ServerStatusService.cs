@@ -29,7 +29,7 @@ namespace MySoft.IoC
         /// </summary>
         public event ServerNodeEventHandler OnServerNode;
 
-        private const int DefaultDisconnectionAttemptTimeout = 5; //5 minutes.
+        private const int DefaultDisconnectionAttemptTimeout = 60000; //1 minutes.
 
         private CastleServiceConfiguration config;
         private IScsServer server;
@@ -87,13 +87,13 @@ namespace MySoft.IoC
             while (true)
             {
                 //每1分钟检测一次
-                Thread.Sleep(TimeSpan.FromMinutes(1));
+                Thread.Sleep(5000);
 
                 try
                 {
                     if (server.Clients.Count == 0) continue;
 
-                    var lastMinute = DateTime.Now.AddMinutes(-DefaultDisconnectionAttemptTimeout);
+                    var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
 
                     //断开超时的连接
                     foreach (var channel in server.Clients.GetAllItems())
@@ -714,7 +714,7 @@ namespace MySoft.IoC
                 });
             }
 
-            return null;
+            return new List<ServerNode>();
         }
     }
 }

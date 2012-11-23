@@ -308,10 +308,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
                 try
                 {
                     ms.Close();
-                }
-                catch
-                {
                     ms.Dispose();
+                }
+                catch (Exception ex) { }
+                finally
+                {
                     ms = null;
                 }
             }

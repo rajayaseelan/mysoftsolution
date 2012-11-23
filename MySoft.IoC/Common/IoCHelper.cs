@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Sockets;
 using MySoft.IoC.Messages;
 using Newtonsoft.Json.Linq;
-using MySoft.IoC.Communication;
 
 namespace MySoft.IoC
 {
@@ -231,24 +229,7 @@ namespace MySoft.IoC
         public static IoCException GetException(AppCaller caller, string message)
         {
             //创建IoC异常
-            var exception = new MySoft.IoC.WarningException(message);
-
-            //设置调用信息
-            SetAppCaller(caller, exception);
-
-            return exception;
-        }
-
-        /// <summary>
-        /// 获取异常
-        /// </summary>
-        /// <param name="caller"></param>
-        /// <param name="error"></param>
-        /// <returns></returns>
-        public static IoCException GetException(AppCaller caller, System.TimeoutException error)
-        {
-            //创建IoC异常
-            var exception = new MySoft.IoC.TimeoutException(error.Message);
+            var exception = new WarningException(message);
 
             //设置调用信息
             SetAppCaller(caller, exception);
@@ -266,7 +247,7 @@ namespace MySoft.IoC
         public static IoCException GetException(AppCaller caller, string message, Exception inner)
         {
             //创建IoC异常
-            var exception = new MySoft.IoC.IoCException(message, inner);
+            var exception = new IoCException(message, inner);
 
             //设置调用信息
             SetAppCaller(caller, exception);
