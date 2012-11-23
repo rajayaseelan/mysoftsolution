@@ -44,7 +44,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </summary>
         public BinarySerializationProtocol()
         {
-            _receiveMemoryStream = NewMemoryStream(_receiveMemoryStream);
+            _receiveMemoryStream = new MemoryStream();
         }
 
         #endregion
@@ -95,14 +95,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         {
             if (_receiveMemoryStream == null) return new List<IScsMessage>();
 
-            //Write all received bytes to the _receiveMemoryStream
-            _receiveMemoryStream.Write(receivedBytes, 0, receivedBytes.Length);
-            //Create a list to collect messages
-            var messages = new List<IScsMessage>();
-            //Read all available messages and add to messages collection
-            while (ReadSingleMessage(messages)) { }
-            //Return message list
-            return messages;
+            lock (_receiveMemoryStream)
+            {
+                //Write all received bytes to the _receiveMemoryStream
+                _receiveMemoryStream.Write(receivedBytes, 0, receivedBytes.Length);
+                //Create a list to collect messages
+                var messages = new List<IScsMessage>();
+                //Read all available messages and add to messages collection
+                while (ReadSingleMessage(messages)) { }
+                //Return message list
+                return messages;
+            }
         }
 
         /// <summary>
@@ -111,11 +114,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </summary>
         public void Reset()
         {
-            if (_receiveMemoryStream == null) return;
-
             if (_receiveMemoryStream.Length > 0)
             {
-                _receiveMemoryStream = NewMemoryStream(_receiveMemoryStream);
+                _receiveMemoryStream = new MemoryStream();
             }
         }
 
@@ -209,14 +210,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
                 //if no more bytes, return immediately
                 if (_receiveMemoryStream.Length == 4)
                 {
-                    _receiveMemoryStream = NewMemoryStream(_receiveMemoryStream); //Clear the stream
+                    _receiveMemoryStream = new MemoryStream(); //Clear the stream
                     return false;
                 }
 
                 //Create a new memory stream from current except first 4-bytes.
                 var bytes = _receiveMemoryStream.ToArray();
 
-                _receiveMemoryStream = NewMemoryStream(_receiveMemoryStream);
+                _receiveMemoryStream = new MemoryStream();
                 _receiveMemoryStream.Write(bytes, 4, bytes.Length - 4);
                 return true;
             }
@@ -236,7 +237,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             var remainingBytes = ReadByteArray(_receiveMemoryStream, (int)(_receiveMemoryStream.Length - (4 + messageLength)));
 
             //Re-create the receive memory stream and write remaining bytes
-            _receiveMemoryStream = NewMemoryStream(_receiveMemoryStream);
+            _receiveMemoryStream = new MemoryStream();
             _receiveMemoryStream.Write(remainingBytes, 0, remainingBytes.Length);
 
             //Return true to re-call this method to try to read next message
@@ -280,44 +281,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// <exception cref="EndOfStreamException">Throws EndOfStreamException if can not read from stream.</exception>
         private static byte[] ReadByteArray(Stream stream, int length)
         {
-            var buffer = new byte[length];
-            var totalRead = 0;
-            while (totalRead < length)
-            {
-                var read = stream.Read(buffer, totalRead, length - totalRead);
-                if (read <= 0)
-                {
-                    throw new EndOfStreamException("Can not read from stream! Input stream is closed.");
-                }
+            if (length == 0) return new byte[0];
 
-                totalRead += read;
-            }
+            var buffer = new byte[length];
+            stream.Read(buffer, 0, length);
 
             return buffer;
-        }
-
-        /// <summary>
-        /// New memory stream.
-        /// </summary>
-        /// <param name="ms"></param>
-        /// <returns></returns>
-        private MemoryStream NewMemoryStream(MemoryStream ms)
-        {
-            if (ms != null)
-            {
-                try
-                {
-                    ms.Close();
-                    ms.Dispose();
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    ms = null;
-                }
-            }
-
-            return new MemoryStream();
         }
 
         #endregion

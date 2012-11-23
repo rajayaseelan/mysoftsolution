@@ -327,7 +327,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -466,7 +466,7 @@ namespace MySoft.PlatformService.Client
             //e.WaitOne();
 
             //var node = CastleFactory.Create().GetDefaultNode();
-            var service = CastleFactory.Create().GetChannel<IUserService>("dddd");
+            var service = CastleFactory.Create().GetChannel<IUserService>();
 
             //var service = new MySoft.PlatformService.UserService.UserService();
 

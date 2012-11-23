@@ -3,7 +3,6 @@ using MySoft.IoC.Communication.Scs.Communication.Channels;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.Protocols;
 using MySoft.IoC.Communication.Threading;
-using System.Threading;
 
 namespace MySoft.IoC.Communication.Scs.Server
 {
@@ -37,8 +36,6 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// A collection of clients that are connected to the server.
         /// </summary>
         public ThreadSafeSortedList<long, IScsServerClient> Clients { get; private set; }
-
-        private int ConnectionCount;
 
         #endregion
 
@@ -123,9 +120,11 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             channel.Disconnected += Client_Disconnected;
 
-            Interlocked.Increment(ref ConnectionCount);
-            Clients[channel.ClientId] = channel;
-            OnClientConnected(channel);
+            lock (Clients)
+            {
+                Clients[channel.ClientId] = channel;
+                OnClientConnected(channel);
+            }
 
             e.Channel.Start();
         }
@@ -141,9 +140,11 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             channel.Disconnected -= Client_Disconnected;
 
-            Interlocked.Decrement(ref ConnectionCount);
-            Clients.Remove(channel.ClientId);
-            OnClientDisconnected(channel);
+            lock (Clients)
+            {
+                Clients.Remove(channel.ClientId);
+                OnClientDisconnected(channel);
+            }
         }
 
         #endregion
@@ -180,7 +181,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 try
                 {
-                    handler(this, new ServerClientEventArgs(client) { ConnectCount = ConnectionCount });
+                    handler(this, new ServerClientEventArgs(client) { ConnectCount = Clients.Count });
                 }
                 catch
                 {

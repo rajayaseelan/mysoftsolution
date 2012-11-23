@@ -117,7 +117,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private void StartAcceptSocket()
         {
-            var e = CreateEventArgs();
+            var e = PopSocketEventArgs();
 
             try
             {
@@ -128,7 +128,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                DisposeEventArgs(e);
+                PushSocketEventArgs(e);
 
                 StopSocket();
 
@@ -153,32 +153,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                if (e.SocketError == SocketError.Success)
-                {
-                    ThreadPool.QueueUserWorkItem(AcceptCompleted, e);
-                }
-                else
-                {
-                    DisposeEventArgs(e);
-                }
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                StartAcceptSocket();
-            }
-        }
-
-        /// <summary>
-        /// Communication channel connected.
-        /// </summary>
-        /// <param name="state"></param>
-        private void AcceptCompleted(object state)
-        {
-            SocketAsyncEventArgs e = state as SocketAsyncEventArgs;
-
-            try
-            {
                 if (e.AcceptSocket.Connected)
                 {
                     var channel = new TcpCommunicationChannel(e.AcceptSocket);
@@ -188,17 +162,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                DisposeEventArgs(e);
+                PushSocketEventArgs(e);
             }
+
+            //重新开始接收
+            StartAcceptSocket();
         }
 
         /// <summary>
         /// Create socket event args.
         /// </summary>
         /// <returns></returns>
-        private SocketAsyncEventArgs CreateEventArgs()
+        private SocketAsyncEventArgs PopSocketEventArgs()
         {
-            var e = new SocketAsyncEventArgs();
+            var e = TcpCommunicationHelper.Pop();
             e.Completed += IOCompleted;
 
             return e;
@@ -208,10 +185,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Dispose socket event args.
         /// </summary>
         /// <param name="e"></param>
-        private void DisposeEventArgs(SocketAsyncEventArgs e)
+        private void PushSocketEventArgs(SocketAsyncEventArgs e)
         {
             try
             {
+                e.Completed -= IOCompleted;
                 e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
                 e.UserToken = null;
@@ -219,7 +197,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                e.Dispose();
+                TcpCommunicationHelper.Push(e);
             }
         }
     }

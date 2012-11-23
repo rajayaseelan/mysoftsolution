@@ -145,6 +145,8 @@ namespace MySoft.IoC
                 catch
                 {
                 }
+
+                throw;
             }
         }
 
