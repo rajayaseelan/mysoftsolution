@@ -128,7 +128,7 @@ namespace MySoft.Data
                 {
                     return this.Name;
                 }
-                return string.Format("{0} as __[{1}]__", this.Name, aliasName);
+                return string.Format("{0} AS __[{1}]__", this.Name, aliasName);
             }
         }
 
@@ -269,7 +269,7 @@ namespace MySoft.Data
         {
             get
             {
-                return new OrderByClip(this.Name + " asc ");
+                return new OrderByClip(this.Name + " ASC ");
             }
         }
 
@@ -277,7 +277,7 @@ namespace MySoft.Data
         {
             get
             {
-                return new OrderByClip(this.Name + " desc ");
+                return new OrderByClip(this.Name + " DESC ");
             }
         }
 
@@ -598,7 +598,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public Field Distinct()
         {
-            return new Field("distinct(" + this.Name + ")");
+            return new Field("DISTINCT(" + this.Name + ")");
         }
 
         /// <summary>
@@ -607,7 +607,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public Field Count()
         {
-            return new Field("count(" + this.Name + ")").As(this.OriginalName);
+            return new Field("COUNT(" + this.Name + ")").As(this.OriginalName);
         }
 
         /// <summary>
@@ -616,7 +616,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public Field Sum()
         {
-            return new Field("sum(" + this.Name + ")").As(this.OriginalName);
+            return new Field("SUM(" + this.Name + ")").As(this.OriginalName);
         }
 
         /// <summary>
@@ -625,7 +625,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public Field Avg()
         {
-            return new Field("avg(" + this.Name + ")").As(this.OriginalName);
+            return new Field("AVG(" + this.Name + ")").As(this.OriginalName);
         }
 
         /// <summary>
@@ -634,7 +634,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public Field Max()
         {
-            return new Field("max(" + this.Name + ")").As(this.OriginalName);
+            return new Field("MAX(" + this.Name + ")").As(this.OriginalName);
         }
 
         /// <summary>
@@ -643,7 +643,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public Field Min()
         {
-            return new Field("min(" + this.Name + ")").As(this.OriginalName);
+            return new Field("MIN(" + this.Name + ")").As(this.OriginalName);
         }
 
         /// <summary>
@@ -743,7 +743,7 @@ namespace MySoft.Data
         /// <returns></returns>
         public WhereClip Like(string value)
         {
-            return CreateWhereClip(this, "like", value);
+            return CreateWhereClip(this, "LIKE", value);
         }
 
         /// <summary>
@@ -784,7 +784,7 @@ namespace MySoft.Data
             SQLParameter p1 = new SQLParameter(p1Name);
             p1.Value = rightValue;
 
-            string where = string.Format("{0} between {1} and {2}", this.Name, p0Name, p1Name);
+            string where = string.Format("{0} BETWEEN {1} AND {2}", this.Name, p0Name, p1Name);
 
             return new WhereClip(where, p0, p1);
             //return this >= leftValue && this <= rightValue;
@@ -849,7 +849,7 @@ namespace MySoft.Data
         public WhereClip In<T>(QuerySection<T> query)
             where T : Entity
         {
-            return new WhereClip(this.Name + " in (" + query.QueryString + ") ", query.Parameters);
+            return new WhereClip(this.Name + " IN (" + query.QueryString + ") ", query.Parameters);
         }
 
         /// <summary>
@@ -862,7 +862,7 @@ namespace MySoft.Data
             where T : Entity
         {
             QuerySection<T> q = relation.GetFromSection().Query;
-            return new WhereClip(this.Name + " in (" + q.QueryString + ") ", q.Parameters);
+            return new WhereClip(this.Name + " IN (" + q.QueryString + ") ", q.Parameters);
         }
 
         /// <summary>
@@ -897,7 +897,7 @@ namespace MySoft.Data
 
                 string where = sb.Remove(sb.Length - 1, 1).ToString().Trim();
 
-                return new WhereClip(this.Name + " in (" + where + ") ", plist.ToArray());
+                return new WhereClip(this.Name + " IN (" + where + ") ", plist.ToArray());
             }
         }
 
@@ -955,9 +955,9 @@ namespace MySoft.Data
             if (value == null)
             {
                 if (join == "=")
-                    return new WhereClip(field.Name + " is null");
+                    return new WhereClip(field.Name + " IS NULL");
                 else if (join == "<>")
-                    return new WhereClip(field.Name + " is not null");
+                    return new WhereClip(field.Name + " IS NOT NULL");
                 else
                     throw new DataException("当值为null时只能应用于=与<>操作！");
             }
