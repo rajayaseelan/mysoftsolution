@@ -155,8 +155,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 if (e.AcceptSocket.Connected)
                 {
-                    var channel = new TcpCommunicationChannel(e.AcceptSocket);
-                    OnCommunicationChannelConnected(channel);
+                    ThreadPool.QueueUserWorkItem(OnTcpCommunicationChannel, e.AcceptSocket);
                 }
             }
             catch (Exception ex) { }
@@ -167,6 +166,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             //重新开始接收
             StartAcceptSocket();
+        }
+
+        /// <summary>
+        /// 创建TcpCommunicationChannel
+        /// </summary>
+        /// <param name="state"></param>
+        private void OnTcpCommunicationChannel(object state)
+        {
+            if (state == null) return;
+
+            var socket = state as Socket;
+            var channel = new TcpCommunicationChannel(socket);
+            OnCommunicationChannelConnected(channel);
         }
 
         /// <summary>

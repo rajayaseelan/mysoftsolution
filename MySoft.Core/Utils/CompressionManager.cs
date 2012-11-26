@@ -1,6 +1,6 @@
-using System;
 using System.IO;
 using System.IO.Compression;
+using SevenZip.Compression.LZMA;
 using SharpZip.Zip.Compression;
 using SharpZip.Zip.Compression.Streams;
 
@@ -25,19 +25,10 @@ namespace MySoft
                 return buffer;
             }
 
-            using (MemoryStream inStream = new MemoryStream(buffer))
+            using (MemoryStream outStream = new MemoryStream())
+            using (DeflaterOutputStream compressStream = new DeflaterOutputStream(outStream, new Deflater(Deflater.BEST_COMPRESSION)))
             {
-                MemoryStream outStream = new MemoryStream();
-                Deflater mDeflater = new Deflater(Deflater.BEST_COMPRESSION);
-                DeflaterOutputStream compressStream = new DeflaterOutputStream(outStream, mDeflater);
-                int mSize;
-                byte[] mWriteData = new Byte[4096];
-                while ((mSize = inStream.Read(mWriteData, 0, 4096)) > 0)
-                {
-                    compressStream.Write(mWriteData, 0, mSize);
-                }
-                compressStream.Finish();
-                inStream.Close();
+                CompressStream(new MemoryStream(buffer), compressStream);
                 return outStream.ToArray();
             }
         }
@@ -55,16 +46,10 @@ namespace MySoft
             }
 
             using (MemoryStream inStream = new MemoryStream(buffer))
+            using (InflaterInputStream unCompressStream = new InflaterInputStream(inStream))
+            using (MemoryStream outStream = new MemoryStream())
             {
-                InflaterInputStream unCompressStream = new InflaterInputStream(inStream);
-                MemoryStream outStream = new MemoryStream();
-                int mSize;
-                Byte[] mWriteData = new Byte[4096];
-                while ((mSize = unCompressStream.Read(mWriteData, 0, mWriteData.Length)) > 0)
-                {
-                    outStream.Write(mWriteData, 0, mSize);
-                }
-                unCompressStream.Close();
+                DecompressStream(unCompressStream, outStream);
                 return outStream.ToArray();
             }
         }
@@ -85,12 +70,12 @@ namespace MySoft
                 return buffer;
             }
 
-            MemoryStream ms = new MemoryStream();
-            using (GZipStream gzip = new GZipStream(ms, CompressionMode.Compress))
+            using (MemoryStream outStream = new MemoryStream())
+            using (GZipStream compressStream = new GZipStream(outStream, CompressionMode.Compress, true))
             {
-                gzip.Write(buffer, 0, buffer.Length);
+                CompressStream(new MemoryStream(buffer), compressStream);
+                return outStream.ToArray();
             }
-            return ms.ToArray();
         }
 
         /// <summary>
@@ -105,19 +90,12 @@ namespace MySoft
                 return buffer;
             }
 
-            using (MemoryStream ms = new MemoryStream(buffer, 0, buffer.Length))
+            using (MemoryStream inStream = new MemoryStream(buffer))
+            using (GZipStream unCompressStream = new GZipStream(inStream, CompressionMode.Decompress, true))
+            using (MemoryStream outStream = new MemoryStream())
             {
-                MemoryStream msOut = new MemoryStream();
-                byte[] writeData = new byte[4096];
-                using (GZipStream gzip = new GZipStream(ms, CompressionMode.Decompress))
-                {
-                    int n;
-                    while ((n = gzip.Read(writeData, 0, writeData.Length)) > 0)
-                    {
-                        msOut.Write(writeData, 0, n);
-                    }
-                }
-                return msOut.ToArray();
+                DecompressStream(unCompressStream, outStream);
+                return outStream.ToArray();
             }
         }
 
@@ -137,12 +115,12 @@ namespace MySoft
                 return buffer;
             }
 
-            MemoryStream ms = new MemoryStream();
-            using (DeflateStream gzip = new DeflateStream(ms, CompressionMode.Compress))
+            using (MemoryStream outStream = new MemoryStream())
+            using (DeflateStream compressStream = new DeflateStream(outStream, CompressionMode.Compress, true))
             {
-                gzip.Write(buffer, 0, buffer.Length);
+                CompressStream(new MemoryStream(buffer), compressStream);
+                return outStream.ToArray();
             }
-            return ms.ToArray();
         }
 
         /// <summary>
@@ -157,19 +135,12 @@ namespace MySoft
                 return buffer;
             }
 
-            using (MemoryStream ms = new MemoryStream(buffer, 0, buffer.Length))
+            using (MemoryStream inStream = new MemoryStream(buffer))
+            using (DeflateStream unCompressStream = new DeflateStream(inStream, CompressionMode.Decompress, true))
+            using (MemoryStream outStream = new MemoryStream())
             {
-                MemoryStream msOut = new MemoryStream();
-                byte[] writeData = new byte[4096];
-                using (DeflateStream gzip = new DeflateStream(ms, CompressionMode.Decompress))
-                {
-                    int n;
-                    while ((n = gzip.Read(writeData, 0, writeData.Length)) > 0)
-                    {
-                        msOut.Write(writeData, 0, n);
-                    }
-                }
-                return msOut.ToArray();
+                DecompressStream(unCompressStream, outStream);
+                return outStream.ToArray();
             }
         }
 
@@ -189,7 +160,7 @@ namespace MySoft
                 return buffer;
             }
 
-            return SevenZip.Compression.LZMA.SevenZipHelper.Compress(buffer);
+            return SevenZipHelper.Compress(buffer);
         }
 
         /// <summary>
@@ -204,9 +175,47 @@ namespace MySoft
                 return buffer;
             }
 
-            return SevenZip.Compression.LZMA.SevenZipHelper.Decompress(buffer);
+            return SevenZipHelper.Decompress(buffer);
         }
 
         #endregion
+
+        /// <summary>
+        /// Ñ¹ËõÁ÷
+        /// </summary>
+        /// <param name="originalStream"></param>
+        /// <param name="compressStream"></param>
+        private static void CompressStream(Stream originalStream, Stream compressStream)
+        {
+            BinaryWriter writer = new BinaryWriter(compressStream);
+            BinaryReader reader = new BinaryReader(originalStream);
+            while (true)
+            {
+                byte[] buffer = reader.ReadBytes(1024);
+                if (buffer == null || buffer.Length < 1)
+                    break;
+                writer.Write(buffer);
+            }
+            writer.Close();
+        }
+
+        /// <summary>
+        /// ½âÑ¹ËõÁ÷
+        /// </summary>
+        /// <param name="compressStream"></param>
+        /// <param name="originalStream"></param>
+        private static void DecompressStream(Stream compressStream, Stream originalStream)
+        {
+            BinaryReader reader = new BinaryReader(compressStream);
+            BinaryWriter writer = new BinaryWriter(originalStream);
+            while (true)
+            {
+                byte[] buffer = reader.ReadBytes(1024);
+                if (buffer == null || buffer.Length < 1)
+                    break;
+                writer.Write(buffer);
+            }
+            writer.Close();
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int BufferSize = 8 * 1024; //8KB
+        private const int BufferSize = 4 * 1024; //4KB
 
         #region Public properties
 
@@ -108,21 +108,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Create receive event args.
             var _receiveEventArgs = PopSocketEventArgs(_buffer, null);
 
-            try
-            {
-                if (!_receiveEventArgs.AcceptSocket.ReceiveAsync(_receiveEventArgs))
-                {
-                    OnReceiveCompleted(_receiveEventArgs);
-                }
-            }
-            catch (Exception ex)
-            {
-                PushSocketEventArgs(_receiveEventArgs);
-
-                Disconnect();
-
-                throw;
-            }
+            SendOrReceiveBufferData(_receiveEventArgs, true);
         }
 
         /// <summary>
@@ -137,34 +123,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             var userToken = new DataHoldingUserToken(message, messageBytes);
             var buffer = userToken.GetRemainingBuffer(BufferSize);
 
-            //发送缓冲区数据
-            SendBufferData(buffer, userToken);
-        }
-
-        /// <summary>
-        /// 发送缓冲区数据
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="userToken"></param>
-        private void SendBufferData(byte[] buffer, DataHoldingUserToken userToken)
-        {
             //设置缓冲区
             var _sendEventArgs = PopSocketEventArgs(buffer, userToken);
 
-            try
-            {
-                //Send all bytes to the remote application
-                if (!_sendEventArgs.AcceptSocket.SendAsync(_sendEventArgs))
-                {
-                    OnSendCompleted(_sendEventArgs);
-                }
-            }
-            catch (Exception ex)
-            {
-                PushSocketEventArgs(_sendEventArgs);
-
-                Disconnect();
-            }
+            //发送缓冲区数据
+            SendOrReceiveBufferData(_sendEventArgs, false);
         }
 
         #endregion
@@ -192,6 +155,42 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
+        /// 发送或接收缓冲区数据
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="received"></param>
+        private void SendOrReceiveBufferData(SocketAsyncEventArgs e, bool received)
+        {
+            try
+            {
+                if (received)
+                {
+                    //Receive all bytes to the remote application
+                    if (!e.AcceptSocket.ReceiveAsync(e))
+                    {
+                        OnReceiveCompleted(e);
+                    }
+                }
+                else
+                {
+                    //Send all bytes to the remote application
+                    if (!e.AcceptSocket.SendAsync(e))
+                    {
+                        OnSendCompleted(e);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                PushSocketEventArgs(e);
+
+                Disconnect();
+
+                throw;
+            }
+        }
+
+        /// <summary>
         /// This method is used as callback method in _clientSocket's BeginReceive method.
         /// It reveives bytes from socker.
         /// </summary>
@@ -199,10 +198,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private void OnSendCompleted(SocketAsyncEventArgs e)
         {
             var userToken = e.UserToken as DataHoldingUserToken;
-            var buffer = userToken.GetRemainingBuffer(BufferSize);
 
             try
             {
+                var buffer = userToken.GetRemainingBuffer(BufferSize);
+
                 if (buffer == null)
                 {
                     //Record last sent time
@@ -212,8 +212,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 }
                 else
                 {
+                    //设置缓冲区
+                    var _sendEventArgs = PopSocketEventArgs(buffer, userToken);
+
                     //发送缓冲区数据
-                    SendBufferData(buffer, userToken);
+                    SendOrReceiveBufferData(_sendEventArgs, false);
                 }
             }
             catch (Exception ex) { }
@@ -235,35 +238,29 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 //Get received bytes count
                 var bytesTransferred = e.BytesTransferred;
 
-                if (bytesTransferred > 0 && e.SocketError == SocketError.Success)
+                if (e.SocketError == SocketError.Success && bytesTransferred > 0)
                 {
                     LastReceivedMessageTime = DateTime.Now;
 
-                    try
+                    //Copy received bytes to a new byte array
+                    var receivedBytes = new byte[bytesTransferred];
+                    Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
+                    Array.Clear(e.Buffer, 0, bytesTransferred);
+
+                    //Read messages according to current wire protocol
+                    var messages = WireProtocol.CreateMessages(receivedBytes);
+
+                    //Raise MessageReceived event for all received messages
+                    foreach (var message in messages)
                     {
-                        //Copy received bytes to a new byte array
-                        var receivedBytes = new byte[bytesTransferred];
-                        Buffer.BlockCopy(e.Buffer, e.Offset, receivedBytes, 0, bytesTransferred);
-                        Array.Clear(e.Buffer, e.Offset, bytesTransferred);
-
-                        //Read messages according to current wire protocol
-                        var messages = WireProtocol.CreateMessages(receivedBytes);
-
-                        //Raise MessageReceived event for all received messages
-                        foreach (var message in messages)
-                        {
-                            OnMessageReceived(message);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        OnMessageError(ex);
-
-                        throw;
+                        OnMessageReceived(message);
                     }
 
-                    //重新开始接收数据
-                    StartInternal();
+                    //设置缓冲区
+                    var _receiveEventArgs = PopSocketEventArgs(_buffer, null);
+
+                    //重新发送缓存数据
+                    SendOrReceiveBufferData(_receiveEventArgs, true);
                 }
                 else
                 {

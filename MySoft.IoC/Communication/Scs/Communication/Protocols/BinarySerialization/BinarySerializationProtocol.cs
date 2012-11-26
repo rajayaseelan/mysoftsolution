@@ -231,7 +231,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
 
             //Read bytes of serialized message and deserialize it
             var serializedMessageBytes = ReadByteArray(_receiveMemoryStream, messageLength);
-            messages.Add(DeserializeMessage(serializedMessageBytes));
+
+            try
+            {
+                if (serializedMessageBytes.Length > 0)
+                {
+                    messages.Add(DeserializeMessage(serializedMessageBytes));
+                }
+            }
+            catch (Exception ex)
+            {
+            }
 
             //Read remaining bytes to an array
             var remainingBytes = ReadByteArray(_receiveMemoryStream, (int)(_receiveMemoryStream.Length - (4 + messageLength)));

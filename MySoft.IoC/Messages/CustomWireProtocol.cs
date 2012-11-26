@@ -25,73 +25,53 @@ namespace MySoft.IoC.Messages
         public CustomWireProtocol(bool compress)
         {
             this.compress = compress;
+
+            #region 压缩解压缩
+
+            //bytes = CompressionManager.CompressSharpZip(bytes);
+            //bytes = CompressionManager.DecompressSharpZip(bytes);
+
+            //bytes = CompressionManager.Compress7Zip(bytes);
+            //bytes = CompressionManager.Decompress7Zip(bytes);
+
+            //bytes = CompressionManager.CompressDeflate(bytes);
+            //bytes = CompressionManager.DecompressDeflate(bytes);
+
+            //bytes = CompressionManager.CompressGZip(bytes);
+            //bytes = CompressionManager.DecompressGZip(bytes);
+
+            #endregion
         }
 
+        /// <summary>
+        /// 序列化流
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         protected override byte[] SerializeMessage(IScsMessage message)
         {
             var bytes = base.SerializeMessage(message);
             if (compress)
             {
-                bytes = DeflateCompress(bytes);
+                bytes = CompressionManager.CompressGZip(bytes);
             }
 
             return bytes;
         }
 
+        /// <summary>
+        /// 反序列化流
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         protected override IScsMessage DeserializeMessage(byte[] bytes)
         {
             if (compress)
             {
-                bytes = DeflateDecompress(bytes);
+                bytes = CompressionManager.DecompressGZip(bytes);
             }
 
             return base.DeserializeMessage(bytes);
-        }
-
-        private byte[] DeflateCompress(byte[] bytes)
-        {
-            var ms = new MemoryStream();
-            using (var compressStream = new DeflateStream(ms, CompressionMode.Compress, true))
-            {
-                compressStream.Write(bytes, 0, bytes.Length);
-                compressStream.Close();
-            }
-
-            return ms.ToArray();
-        }
-
-        private byte[] DeflateDecompress(byte[] bytes)
-        {
-            var ms = new MemoryStream(bytes);
-            byte[] newByteArray = new byte[0];
-            using (var compressStream = new DeflateStream(ms, CompressionMode.Decompress, false))
-            {
-                newByteArray = RetrieveBytesFromStream(compressStream);
-                compressStream.Close();
-            }
-
-            return newByteArray;
-        }
-
-        private byte[] RetrieveBytesFromStream(Stream stream)
-        {
-            List<byte> lst = new List<byte>();
-            byte[] data = new byte[1024];
-            int totalCount = 0;
-            while (true)
-            {
-                int bytesRead = stream.Read(data, 0, data.Length);
-                if (bytesRead == 0)
-                {
-                    break;
-                }
-                byte[] buffers = new byte[bytesRead];
-                Buffer.BlockCopy(data, 0, buffers, 0, bytesRead);
-                lst.AddRange(buffers);
-                totalCount += bytesRead;
-            }
-
-            return lst.ToArray();
         }
     }
 }

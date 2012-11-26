@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
@@ -44,7 +42,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         public byte[] GetRemainingBuffer(int bufferSize)
         {
-            lock (this)
+            try
             {
                 //计算缓冲区大小
                 if (bufferLength - bufferIndex < bufferSize)
@@ -57,10 +55,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     var bytes = new byte[bufferSize];
                     Buffer.BlockCopy(buffer, bufferIndex, bytes, 0, bufferSize);
-                    bufferIndex += bufferSize;
+                    Interlocked.Add(ref bufferIndex, bufferSize);
 
                     return bytes;
                 }
+            }
+            catch (Exception ex)
+            {
             }
 
             return null;

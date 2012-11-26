@@ -95,28 +95,10 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage InvokeResponse(OperationContext context, RequestMessage reqMsg)
         {
-            //定义一个响应值
-            ResponseMessage resMsg = null;
-
-            try
-            {
-                if (!fromServer || reqMsg.ServiceName == typeof(IStatusService).FullName)
-                    resMsg = GetSyncResponse(context, reqMsg); //同步调用
-                else
-                    resMsg = GetAsyncResponse(context, reqMsg); //异步调用
-            }
-            catch (Exception ex)
-            {
-                //线程异常，重置
-                if (ex is ThreadAbortException)
-                {
-                    Thread.ResetAbort();
-                }
-
-                resMsg = IoCHelper.GetResponse(reqMsg, ex);
-            }
-
-            return resMsg;
+            if (!fromServer || reqMsg.ServiceName == typeof(IStatusService).FullName)
+                return GetSyncResponse(context, reqMsg); //同步调用
+            else
+                return GetAsyncResponse(context, reqMsg); //异步调用
         }
 
         /// <summary>
@@ -174,7 +156,7 @@ namespace MySoft.IoC.Services
                 try
                 {
                     //运行任务
-                    return AsyncRun(worker);
+                    return AsyncServiceRun(worker);
                 }
                 finally
                 {
@@ -189,7 +171,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="worker"></param>
         /// <returns></returns>
-        private ResponseMessage AsyncRun(WorkerItem worker)
+        private ResponseMessage AsyncServiceRun(WorkerItem worker)
         {
             ResponseMessage resMsg = null;
 
@@ -202,6 +184,12 @@ namespace MySoft.IoC.Services
             {
                 //超时响应
                 resMsg = GetTimeoutResponse(worker.Request, ex);
+            }
+            catch (ThreadInterruptedException ex) { }
+            catch (ThreadAbortException ex)
+            {
+                //取消请求
+                Thread.ResetAbort();
             }
             catch (Exception ex)
             {
@@ -225,6 +213,7 @@ namespace MySoft.IoC.Services
                 //设置线程
                 worker.SetThread(Thread.CurrentThread);
 
+                //判断是否完成
                 if (!worker.IsCompleted)
                 {
                     //获取响应信息
