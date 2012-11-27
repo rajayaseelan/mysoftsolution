@@ -83,6 +83,12 @@ namespace MySoft.IoC.Services
                 }
             }
 
+            //状态服务直接响应
+            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
+            {
+                return GetSyncResponse(context, reqMsg);
+            }
+
             //返回响应
             return InvokeResponse(context, reqMsg);
         }
@@ -95,7 +101,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage InvokeResponse(OperationContext context, RequestMessage reqMsg)
         {
-            if (!fromServer || reqMsg.ServiceName == typeof(IStatusService).FullName)
+            if (!fromServer)
                 return GetSyncResponse(context, reqMsg); //同步调用
             else
                 return GetAsyncResponse(context, reqMsg); //异步调用

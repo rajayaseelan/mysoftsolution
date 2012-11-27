@@ -10,7 +10,7 @@ namespace MySoft.IoC.Communication
         /// <summary>
         /// Max communication count.
         /// </summary>
-        private const int MaxCommunicationCount = 10000;
+        private const int MaxCommunicationCount = 1000;
 
         private static readonly SocketAsyncEventArgsPool pool;
 
@@ -20,6 +20,20 @@ namespace MySoft.IoC.Communication
         static TcpCommunicationHelper()
         {
             pool = new SocketAsyncEventArgsPool(MaxCommunicationCount);
+
+            for (int i = 0; i < MaxCommunicationCount; i++)
+            {
+                var e = new SocketAsyncEventArgs();
+                pool.Push(e);
+            }
+        }
+
+        /// <summary>
+        /// Pool count.
+        /// </summary>
+        internal static int Count
+        {
+            get { return pool.Count; }
         }
 
         /// <summary>

@@ -80,9 +80,6 @@
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IServiceRecorder.cs" />
     <Compile Include="Common\RecordEventArgs.cs" />
-    <Compile Include="Communication\Scs\Communication\Channels\Tcp\DataHoldingUserToken.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Communication\SocketAsyncEventArgsPool.cs" />
     <Compile Include="Communication\TcpCommunicationHelper.cs" />
     <Compile Include="Nodes\DefaultNodeResolver.cs" />

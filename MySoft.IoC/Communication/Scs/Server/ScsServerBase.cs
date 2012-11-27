@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.Channels;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.Protocols;
@@ -45,6 +46,8 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// This object is used to listen incoming connections.
         /// </summary>
         private IConnectionListener _connectionListener;
+
+        private int _connectionCount;
 
         #endregion
 
@@ -120,11 +123,10 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             channel.Disconnected += Client_Disconnected;
 
-            lock (Clients)
-            {
-                Clients[channel.ClientId] = channel;
-                OnClientConnected(channel);
-            }
+            Clients[channel.ClientId] = channel;
+
+            Interlocked.Increment(ref _connectionCount);
+            OnClientConnected(channel);
 
             e.Channel.Start();
         }
@@ -140,11 +142,10 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             channel.Disconnected -= Client_Disconnected;
 
-            lock (Clients)
-            {
-                Clients.Remove(channel.ClientId);
-                OnClientDisconnected(channel);
-            }
+            Clients.Remove(channel.ClientId);
+            Interlocked.Decrement(ref _connectionCount);
+
+            OnClientDisconnected(channel);
         }
 
         #endregion
@@ -162,7 +163,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 try
                 {
-                    handler(this, new ServerClientEventArgs(channel) { ConnectCount = Clients.Count });
+                    handler(this, new ServerClientEventArgs(channel) { ConnectCount = _connectionCount });
                 }
                 catch
                 {
@@ -181,7 +182,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 try
                 {
-                    handler(this, new ServerClientEventArgs(client) { ConnectCount = Clients.Count });
+                    handler(this, new ServerClientEventArgs(client) { ConnectCount = _connectionCount });
                 }
                 catch
                 {

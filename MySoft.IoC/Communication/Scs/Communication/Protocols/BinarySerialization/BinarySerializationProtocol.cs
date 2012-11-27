@@ -293,10 +293,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         {
             if (length == 0) return new byte[0];
 
-            var buffer = new byte[length];
-            stream.Read(buffer, 0, length);
-
-            return buffer;
+            return new BinaryReader(stream).ReadBytes(length);
         }
 
         #endregion

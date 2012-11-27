@@ -58,8 +58,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public TcpCommunicationChannel(Socket clientSocket)
         {
             _clientSocket = clientSocket;
-            _clientSocket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
-            _clientSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
+            _clientSocket.NoDelay = true;
+            _clientSocket.UseOnlyOverlappedIO = false;
 
             var endPoint = _clientSocket.RemoteEndPoint as IPEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
@@ -70,6 +70,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         #endregion
 
         #region Public methods
+
+        /// <summary>
+        /// Disconnects from remote application and closes channel.
+        /// </summary>
+        /// <param name="ex"></param>
+        private void Disconnect(Exception ex)
+        {
+            if (!(ex is CommunicationException || ex is SocketException))
+            {
+                OnMessageError(ex);
+            }
+
+            //Disconnect server.
+            Disconnect();
+        }
 
         /// <summary>
         /// Disconnects from remote application and closes channel.
@@ -120,11 +135,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Create a byte array from message according to current protocol
             var messageBytes = WireProtocol.GetBytes(message);
 
-            var userToken = new DataHoldingUserToken(message, messageBytes);
-            var buffer = userToken.GetRemainingBuffer(BufferSize);
-
             //设置缓冲区
-            var _sendEventArgs = PopSocketEventArgs(buffer, userToken);
+            var _sendEventArgs = PopSocketEventArgs(messageBytes, message);
 
             //发送缓冲区数据
             SendOrReceiveBufferData(_sendEventArgs, false);
@@ -184,9 +196,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 PushSocketEventArgs(e);
 
-                Disconnect();
-
-                throw;
+                Disconnect(ex);
             }
         }
 
@@ -197,27 +207,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="ar">Asyncronous call result</param>
         private void OnSendCompleted(SocketAsyncEventArgs e)
         {
-            var userToken = e.UserToken as DataHoldingUserToken;
-
             try
             {
-                var buffer = userToken.GetRemainingBuffer(BufferSize);
+                //Record last sent time
+                LastSentMessageTime = DateTime.Now;
 
-                if (buffer == null)
-                {
-                    //Record last sent time
-                    LastSentMessageTime = DateTime.Now;
-
-                    OnMessageSent(userToken.Message);
-                }
-                else
-                {
-                    //设置缓冲区
-                    var _sendEventArgs = PopSocketEventArgs(buffer, userToken);
-
-                    //发送缓冲区数据
-                    SendOrReceiveBufferData(_sendEventArgs, false);
-                }
+                OnMessageSent(e.UserToken as IScsMessage);
             }
             catch (Exception ex) { }
             finally
@@ -244,8 +239,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                     //Copy received bytes to a new byte array
                     var receivedBytes = new byte[bytesTransferred];
-                    Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
-                    Array.Clear(e.Buffer, 0, bytesTransferred);
+                    Buffer.BlockCopy(_buffer, 0, receivedBytes, 0, bytesTransferred);
+                    Array.Clear(_buffer, 0, _buffer.Length);
 
                     //Read messages according to current wire protocol
                     var messages = WireProtocol.CreateMessages(receivedBytes);
@@ -269,7 +264,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                Disconnect();
+                Disconnect(ex);
             }
             finally
             {
