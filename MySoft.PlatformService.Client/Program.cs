@@ -91,6 +91,11 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            //var service = CastleFactory.Create().GetChannel<IUserService>();
+
+            //var a = service.GetUser(new UserInfo());
+            //Console.ReadLine();
+
             //var list = new List<ServerNode>()
             //{
             //    new ServerNode()

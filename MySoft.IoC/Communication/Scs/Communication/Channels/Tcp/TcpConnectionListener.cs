@@ -10,7 +10,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// This class is used to listen and accept incoming TCP
     /// connection requests on a TCP port.
     /// </summary>
-    internal class TcpConnectionListener : ConnectionListenerBase
+    internal class TcpConnectionListener : ConnectionListenerBase, ICommunicationCompleted
     {
         /// <summary>
         /// The endpoint address of the server to listen incoming connections.
@@ -34,9 +34,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// IO回调处理
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void IOCompleted(object sender, SocketAsyncEventArgs e)
+        void ICommunicationCompleted.IOCompleted(SocketAsyncEventArgs e)
         {
             switch (e.LastOperation)
             {
@@ -155,7 +154,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 if (e.AcceptSocket.Connected)
                 {
-                    ThreadPool.QueueUserWorkItem(OnTcpCommunicationChannel, e.AcceptSocket);
+                    var channel = new TcpCommunicationChannel(e.AcceptSocket);
+                    OnCommunicationChannelConnected(channel);
                 }
             }
             catch (Exception ex) { }
@@ -169,28 +169,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// 创建TcpCommunicationChannel
-        /// </summary>
-        /// <param name="state"></param>
-        private void OnTcpCommunicationChannel(object state)
-        {
-            if (state == null) return;
-
-            var clientSocket = state as Socket;
-            var channel = new TcpCommunicationChannel(clientSocket);
-            OnCommunicationChannelConnected(channel);
-        }
-
-        /// <summary>
         /// Create socket event args.
         /// </summary>
         /// <returns></returns>
         private SocketAsyncEventArgs PopSocketEventArgs()
         {
-            var e = TcpCommunicationHelper.Pop();
-            e.Completed += IOCompleted;
-
-            return e;
+            return CommunicationHelper.Pop(this);
         }
 
         /// <summary>
@@ -201,13 +185,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                e.Completed -= IOCompleted;
+                e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
+                e.UserToken = null;
             }
             catch (Exception ex) { }
             finally
             {
-                TcpCommunicationHelper.Push(e);
+                var tcp = e as TcpSocketAsyncEventArgs;
+                CommunicationHelper.Push(tcp);
             }
         }
     }

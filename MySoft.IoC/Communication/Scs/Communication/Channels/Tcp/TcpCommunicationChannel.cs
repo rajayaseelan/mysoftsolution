@@ -10,7 +10,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// <summary>
     /// This class is used to communicate with a remote application over TCP/IP protocol.
     /// </summary>
-    internal class TcpCommunicationChannel : CommunicationChannelBase
+    internal class TcpCommunicationChannel : CommunicationChannelBase, ICommunicationCompleted
     {
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
@@ -149,9 +149,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// IO回调处理
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void IOCompleted(object sender, SocketAsyncEventArgs e)
+        void ICommunicationCompleted.IOCompleted(SocketAsyncEventArgs e)
         {
             switch (e.LastOperation)
             {
@@ -251,11 +250,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         OnMessageReceived(message);
                     }
 
-                    //设置缓冲区
-                    var _receiveEventArgs = PopSocketEventArgs(_buffer, null);
-
                     //重新发送缓存数据
-                    SendOrReceiveBufferData(_receiveEventArgs, true);
+                    SendOrReceiveBufferData(e, true);
                 }
                 else
                 {
@@ -264,11 +260,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                Disconnect(ex);
-            }
-            finally
-            {
                 PushSocketEventArgs(e);
+
+                Disconnect(ex);
             }
         }
 
@@ -282,8 +276,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         private SocketAsyncEventArgs PopSocketEventArgs(byte[] buffer, object token)
         {
-            var e = TcpCommunicationHelper.Pop();
-            e.Completed += IOCompleted;
+            var e = CommunicationHelper.Pop(this);
             e.SetBuffer(buffer, 0, buffer.Length);
             e.AcceptSocket = _clientSocket;
             e.UserToken = token;
@@ -299,7 +292,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                e.Completed -= IOCompleted;
                 e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
                 e.UserToken = null;
@@ -307,7 +299,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                TcpCommunicationHelper.Push(e);
+                var tcp = e as TcpSocketAsyncEventArgs;
+                CommunicationHelper.Push(tcp);
             }
         }
     }

@@ -69,9 +69,9 @@ namespace MySoft.PlatformService.UserService
             return new User { Id = name.Length, Name = name };
         }
 
-        public string GetUser(UserInfo user)
+        public string GetUser(object user)
         {
-            return user.Name;
+            return (user as UserInfo).Name;
         }
 
         public string GetUser(NameValueCollection nv)

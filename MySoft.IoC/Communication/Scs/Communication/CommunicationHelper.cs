@@ -1,29 +1,29 @@
 ﻿using System.Net.Sockets;
 
-namespace MySoft.IoC.Communication
+namespace MySoft.IoC.Communication.Scs.Communication
 {
     /// <summary>
-    /// TcpCommunicationHelper
+    /// CommunicationHelper
     /// </summary>
-    internal class TcpCommunicationHelper
+    internal class CommunicationHelper
     {
         /// <summary>
         /// Max communication count.
         /// </summary>
         private const int MaxCommunicationCount = 1000;
 
-        private static readonly SocketAsyncEventArgsPool pool;
+        private static readonly TcpSocketAsyncEventArgsPool pool;
 
         /// <summary>
-        /// 实例化TcpCommunicationHelper
+        /// 实例化CommunicationHelper
         /// </summary>
-        static TcpCommunicationHelper()
+        static CommunicationHelper()
         {
-            pool = new SocketAsyncEventArgsPool(MaxCommunicationCount);
+            pool = new TcpSocketAsyncEventArgsPool(MaxCommunicationCount);
 
             for (int i = 0; i < MaxCommunicationCount; i++)
             {
-                var e = new SocketAsyncEventArgs();
+                var e = new TcpSocketAsyncEventArgs();
                 pool.Push(e);
             }
         }
@@ -39,16 +39,18 @@ namespace MySoft.IoC.Communication
         /// <summary>
         /// Pop SocketAsyncEventArgs.
         /// </summary>
+        /// <param name="channel"></param>
         /// <returns></returns>
-        internal static SocketAsyncEventArgs Pop()
+        internal static TcpSocketAsyncEventArgs Pop(ICommunicationCompleted channel)
         {
             lock (pool)
             {
                 var item = pool.Pop();
                 if (item == null)
                 {
-                    item = new SocketAsyncEventArgs();
+                    item = new TcpSocketAsyncEventArgs();
                 }
+                item.Channel = channel;
 
                 return item;
             }
@@ -58,10 +60,14 @@ namespace MySoft.IoC.Communication
         /// Push SocketAsyncEventArgs.
         /// </summary>
         /// <returns></returns>
-        internal static void Push(SocketAsyncEventArgs item)
+        internal static void Push(TcpSocketAsyncEventArgs item)
         {
+            if (item == null) return;
+
             lock (pool)
             {
+                item.Channel = null;
+
                 pool.Push(item);
             }
         }

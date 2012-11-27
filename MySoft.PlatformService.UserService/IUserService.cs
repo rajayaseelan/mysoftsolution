@@ -48,7 +48,7 @@ namespace MySoft.PlatformService.UserService
 
         string GetUser(NameValueCollection nv);
 
-        string GetUser(UserInfo user);
+        string GetUser(object user);
 
         User GetUserFromName(string name);
 

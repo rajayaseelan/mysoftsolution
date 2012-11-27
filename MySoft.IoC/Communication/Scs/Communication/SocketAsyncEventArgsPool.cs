@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MySoft.IoC.Communication
+namespace MySoft.IoC.Communication.Scs.Communication
 {
     /// <summary>
     /// Tcp通讯异步套接字池
     /// </summary>
-    public class TcpSocketAsyncEventArgsPool
+    internal class TcpSocketAsyncEventArgsPool
     {
         /// <summary>
         /// TcpSocketAsyncEventArgs栈
