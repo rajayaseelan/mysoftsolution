@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
+    /// <summary>
+    /// 异步调用委托
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="reqMsg"></param>
+    /// <returns></returns>
+    internal delegate ResponseMessage AsyncWorker(OperationContext context, RequestMessage reqMsg);
+
     /// <summary>
     /// 异步调用器
     /// </summary>
@@ -83,12 +92,6 @@ namespace MySoft.IoC.Services
                 }
             }
 
-            //状态服务直接响应
-            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
-            {
-                return GetSyncResponse(context, reqMsg);
-            }
-
             //返回响应
             return InvokeResponse(context, reqMsg);
         }
@@ -101,7 +104,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage InvokeResponse(OperationContext context, RequestMessage reqMsg)
         {
-            if (!fromServer)
+            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
                 return GetSyncResponse(context, reqMsg); //同步调用
             else
                 return GetAsyncResponse(context, reqMsg); //异步调用
@@ -118,22 +121,22 @@ namespace MySoft.IoC.Services
             //定义一个响应值
             ResponseMessage resMsg = null;
 
-            //设置上下文
-            OperationContext.Current = context;
-
             try
             {
+                //设置上下文
+                OperationContext.Current = context;
+
                 //响应结果，清理资源
                 resMsg = service.CallService(reqMsg);
             }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex)
-            {
-                //取消请求
-                Thread.ResetAbort();
-            }
             catch (Exception ex)
             {
+                if (ex is ThreadAbortException)
+                {
+                    //取消请求
+                    Thread.ResetAbort();
+                }
+
                 //返回异常响应信息
                 resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
@@ -153,54 +156,29 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage GetAsyncResponse(OperationContext context, RequestMessage reqMsg)
         {
+            ResponseMessage resMsg = null;
+
             //异步调用
-            using (var worker = new WorkerItem(AsyncCallback, context, reqMsg))
+            using (var worker = new WorkerItem(GetSyncResponse, AsyncCallback, context, reqMsg))
             {
                 //添加线程
                 ThreadManager.Set(context.Channel, worker);
 
                 try
                 {
-                    //运行任务
-                    return AsyncServiceRun(worker);
+                    //返回响应结果
+                    resMsg = worker.GetResult(timeout);
+                }
+                catch (Exception ex)
+                {
+                    //处理异常响应
+                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
                 }
                 finally
                 {
                     //移除结束
                     ThreadManager.Cancel(context.Channel);
                 }
-            }
-        }
-
-        /// <summary>
-        /// 异步调用
-        /// </summary>
-        /// <param name="worker"></param>
-        /// <returns></returns>
-        private ResponseMessage AsyncServiceRun(WorkerItem worker)
-        {
-            ResponseMessage resMsg = null;
-
-            try
-            {
-                //返回响应结果
-                resMsg = worker.GetResult(timeout);
-            }
-            catch (TimeoutException ex)
-            {
-                //超时响应
-                resMsg = GetTimeoutResponse(worker.Request, ex);
-            }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex)
-            {
-                //取消请求
-                Thread.ResetAbort();
-            }
-            catch (Exception ex)
-            {
-                //处理异常响应
-                resMsg = IoCHelper.GetResponse(worker.Request, ex);
             }
 
             return resMsg;
@@ -209,28 +187,28 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 运行请求
         /// </summary>
-        /// <param name="state"></param>
-        private void AsyncCallback(object state)
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
         {
-            var worker = state as WorkerItem;
+            var worker = ar.AsyncState as WorkerItem;
 
             try
             {
-                //设置线程
-                worker.SetThread(Thread.CurrentThread);
-
                 //判断是否完成
                 if (!worker.IsCompleted)
                 {
                     //获取响应信息
-                    var resMsg = GetSyncResponse(worker.Context, worker.Request);
+                    var caller = ((AsyncResult)ar).AsyncDelegate as AsyncWorker;
+                    var resMsg = caller.EndInvoke(ar);
 
                     //设置响应信息
                     worker.SetResult(resMsg);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) { }
+            finally
             {
+                ar.AsyncWaitHandle.Close();
             }
         }
 
@@ -361,7 +339,7 @@ namespace MySoft.IoC.Services
             };
 
             //如果是服务端，直接返回对象
-            if (!fromServer && !reqMsg.InvokeMethod)
+            if (!(fromServer || reqMsg.InvokeMethod))
             {
                 var watch = Stopwatch.StartNew();
 

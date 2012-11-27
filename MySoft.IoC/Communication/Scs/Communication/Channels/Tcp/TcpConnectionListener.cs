@@ -116,18 +116,18 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private void StartAcceptSocket()
         {
-            var e = PopSocketEventArgs();
+            var _acceptEventArgs = PopSocketEventArgs();
 
             try
             {
-                if (!_listenerSocket.AcceptAsync(e))
+                if (!_listenerSocket.AcceptAsync(_acceptEventArgs))
                 {
-                    OnAcceptCompleted(e);
+                    OnAcceptCompleted(_acceptEventArgs);
                 }
             }
             catch (Exception ex)
             {
-                PushSocketEventArgs(e);
+                PushSocketEventArgs(_acceptEventArgs);
 
                 StopSocket();
 
@@ -152,11 +152,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                if (e.AcceptSocket.Connected)
-                {
-                    var channel = new TcpCommunicationChannel(e.AcceptSocket);
-                    OnCommunicationChannelConnected(channel);
-                }
+                ThreadPool.QueueUserWorkItem(AcceptCallback, e.AcceptSocket);
             }
             catch (Exception ex) { }
             finally
@@ -166,6 +162,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             //重新开始接收
             StartAcceptSocket();
+        }
+
+        /// <summary>
+        /// Accept callback.
+        /// </summary>
+        /// <param name="state"></param>
+        private void AcceptCallback(object state)
+        {
+            var clientSocket = state as Socket;
+
+            if (clientSocket.Connected)
+            {
+                var channel = new TcpCommunicationChannel(clientSocket);
+                OnCommunicationChannelConnected(channel);
+            }
         }
 
         /// <summary>

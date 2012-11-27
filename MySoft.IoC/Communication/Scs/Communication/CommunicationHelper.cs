@@ -46,12 +46,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
             lock (pool)
             {
                 var item = pool.Pop();
-                if (item == null)
-                {
-                    item = new TcpSocketAsyncEventArgs();
-                }
                 item.Channel = channel;
-
                 return item;
             }
         }
@@ -67,7 +62,6 @@ namespace MySoft.IoC.Communication.Scs.Communication
             lock (pool)
             {
                 item.Channel = null;
-
                 pool.Push(item);
             }
         }

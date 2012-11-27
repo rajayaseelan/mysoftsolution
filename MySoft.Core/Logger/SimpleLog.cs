@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using MySoft.Mail;
-using System.Configuration;
 
 namespace MySoft.Logger
 {
@@ -33,6 +32,7 @@ namespace MySoft.Logger
             {
             }
 
+            //单例
             Instance = new SimpleLog(dir);
             logqueue = new Queue<LogInfo>();
 
@@ -63,7 +63,11 @@ namespace MySoft.Logger
                             {
                                 string dirPath = Path.GetDirectoryName(item.FilePath);
                                 if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
-                                File.AppendAllText(item.FilePath, item.Log, Encoding.UTF8);
+
+                                if (item.IsAppend)
+                                    File.AppendAllText(item.FilePath, item.Log, Encoding.UTF8);
+                                else
+                                    File.WriteAllText(item.FilePath, item.Log, Encoding.UTF8);
                             }
                             catch (IOException)
                             {
@@ -133,7 +137,7 @@ namespace MySoft.Logger
 
             filePath = Path.Combine(filePath, string.Format("{0}.log", GetServiceFile(ex)));
 
-            WriteFileLog(filePath, ex, false);
+            WriteFileLog(filePath, ex, false, false);
         }
 
         /// <summary>
@@ -170,7 +174,7 @@ namespace MySoft.Logger
             string filePath = Path.Combine(Path.Combine(basedir, "Logs"), dir);
             filePath = Path.Combine(filePath, string.Format("{0}.log", DateTime.Now.ToString("yyyy-MM-dd")));
 
-            WriteFileLog(filePath, log, false);
+            WriteFileLog(filePath, log, false, false);
         }
 
         /// <summary>
@@ -238,7 +242,7 @@ namespace MySoft.Logger
         public void WriteLogForFile(string fileName, string log)
         {
             string filePath = Path.Combine(basedir, fileName);
-            WriteFileLog(filePath, log, false);
+            WriteFileLog(filePath, log, false, false);
         }
 
         /// <summary>
@@ -375,7 +379,7 @@ namespace MySoft.Logger
         /// <param name="text"></param>
         public static void WriteFile(string filePath, string text)
         {
-            WriteFile(filePath, text, true);
+            WriteFile(filePath, text, false);
         }
 
         /// <summary>
@@ -383,21 +387,10 @@ namespace MySoft.Logger
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="text"></param>
-        /// <param name="delFile"></param>
-        public static void WriteFile(string filePath, string text, bool delFile)
+        /// <param name="coverFile"></param>
+        public static void WriteFile(string filePath, string text, bool coverFile)
         {
-            if (delFile && File.Exists(filePath))
-            {
-                try
-                {
-                    File.Delete(filePath);
-                }
-                catch
-                {
-                }
-            }
-
-            WriteFileLog(filePath, text, true);
+            WriteFileLog(filePath, text, true, coverFile);
         }
 
         /// <summary>
@@ -405,10 +398,12 @@ namespace MySoft.Logger
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="ex"></param>
-        private static void WriteFileLog(string filePath, Exception ex, bool isOriginal)
+        /// <param name="isOriginal"></param>
+        /// <param name="coverFile"></param>
+        private static void WriteFileLog(string filePath, Exception ex, bool isOriginal, bool coverFile)
         {
             string log = ErrorHelper.GetErrorWithoutHtml(ex);
-            WriteFileLog(filePath, log, isOriginal);
+            WriteFileLog(filePath, log, isOriginal, coverFile);
         }
 
         /// <summary>
@@ -416,7 +411,9 @@ namespace MySoft.Logger
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="log"></param>
-        private static void WriteFileLog(string filePath, string log, bool isOriginal)
+        /// <param name="isOriginal"></param>
+        /// <param name="coverFile"></param>
+        private static void WriteFileLog(string filePath, string log, bool isOriginal, bool coverFile)
         {
             lock (logqueue)
             {
@@ -426,7 +423,7 @@ namespace MySoft.Logger
                                         Environment.NewLine, string.Empty.PadRight(180, '='));
                 }
 
-                var loginfo = new LogInfo { FilePath = filePath, Log = log };
+                var loginfo = new LogInfo { FilePath = filePath, Log = log, IsAppend = !coverFile };
 
                 //将信息入队列
                 logqueue.Enqueue(loginfo);
@@ -449,6 +446,11 @@ namespace MySoft.Logger
             /// 日志内容
             /// </summary>
             public string Log { get; set; }
+
+            /// <summary>
+            /// 是否追加
+            /// </summary>
+            public bool IsAppend { get; set; }
         }
     }
 }

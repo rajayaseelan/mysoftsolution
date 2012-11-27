@@ -201,6 +201,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             var messageLength = ReadInt32(_receiveMemoryStream);
             if (messageLength > MaxMessageLength)
             {
+                _receiveMemoryStream = new MemoryStream();
                 throw new CommunicationException("Message is too big (" + messageLength + " bytes). Max allowed length is " + MaxMessageLength + " bytes.");
             }
 
@@ -241,6 +242,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             }
             catch (Exception ex)
             {
+                _receiveMemoryStream = new MemoryStream();
+                throw;
             }
 
             //Read remaining bytes to an array
