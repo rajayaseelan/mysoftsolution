@@ -37,57 +37,64 @@ namespace MySoft.Logger
             logqueue = new Queue<LogInfo>();
 
             //启动生成文件线程
-            ThreadPool.QueueUserWorkItem(state =>
+            var thread = new Thread(WorkThreadStart);
+            thread.IsBackground = true;
+            thread.Start();
+        }
+
+        /// <summary>
+        /// 启动写日志线程
+        /// </summary>
+        private static void WorkThreadStart()
+        {
+            while (true)
             {
-                while (true)
+                //判断日志数
+                if (logqueue.Count == 0)
                 {
-                    //判断日志数
-                    if (logqueue.Count == 0)
-                    {
-                        Thread.Sleep(100);
+                    Thread.Sleep(100);
 
-                        continue;
-                    }
-                    else
-                    {
-                        LogInfo item = null;
-
-                        lock (logqueue)
-                        {
-                            item = logqueue.Dequeue();
-                        }
-
-                        if (item != null)
-                        {
-                            try
-                            {
-                                string dirPath = Path.GetDirectoryName(item.FilePath);
-                                if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
-
-                                if (item.IsAppend)
-                                    File.AppendAllText(item.FilePath, item.Log, Encoding.UTF8);
-                                else
-                                    File.WriteAllText(item.FilePath, item.Log, Encoding.UTF8);
-                            }
-                            catch (IOException)
-                            {
-                                //写日志出错重回队列
-                                lock (logqueue)
-                                {
-                                    logqueue.Enqueue(item);
-                                }
-                            }
-                            catch
-                            {
-                                //其它错误不做处理
-                            }
-                        }
-
-                        //等待10毫秒
-                        Thread.Sleep(10);
-                    }
+                    continue;
                 }
-            });
+                else
+                {
+                    LogInfo item = null;
+
+                    lock (logqueue)
+                    {
+                        item = logqueue.Dequeue();
+                    }
+
+                    if (item != null)
+                    {
+                        try
+                        {
+                            string dirPath = Path.GetDirectoryName(item.FilePath);
+                            if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+
+                            if (item.IsAppend)
+                                File.AppendAllText(item.FilePath, item.Log, Encoding.UTF8);
+                            else
+                                File.WriteAllText(item.FilePath, item.Log, Encoding.UTF8);
+                        }
+                        catch (IOException)
+                        {
+                            //写日志出错重回队列
+                            lock (logqueue)
+                            {
+                                logqueue.Enqueue(item);
+                            }
+                        }
+                        catch
+                        {
+                            //其它错误不做处理
+                        }
+                    }
+
+                    //等待10毫秒
+                    Thread.Sleep(10);
+                }
+            }
         }
 
         private string basedir;
