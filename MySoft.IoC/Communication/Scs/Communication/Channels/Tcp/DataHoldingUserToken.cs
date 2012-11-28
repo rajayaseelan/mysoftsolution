@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
@@ -55,7 +54,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     var bytes = new byte[bufferSize];
                     Buffer.BlockCopy(buffer, bufferIndex, bytes, 0, bufferSize);
-                    Interlocked.Add(ref bufferIndex, bufferSize);
+                    bufferIndex += bufferSize;
 
                     return bytes;
                 }
