@@ -10,6 +10,11 @@ namespace MySoft.IoC.Services
     internal class WorkerItem : IDisposable
     {
         /// <summary>
+        /// 完成状态
+        /// </summary>
+        public bool IsCompleted { get; private set; }
+
+        /// <summary>
         /// 上下文对象
         /// </summary>
         public OperationContext Context { get { return context; } }
@@ -33,6 +38,8 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         public WorkerItem(WaitCallback callback, OperationContext context, RequestMessage reqMsg)
         {
+            this.IsCompleted = false;
+
             this.callback = callback;
             this.context = context;
             this.reqMsg = reqMsg;
@@ -64,8 +71,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool SetResult(ResponseMessage resMsg)
         {
-            if (waitResult == null)
-                return false;
+            this.IsCompleted = true;
 
             return waitResult.Set(resMsg);
         }

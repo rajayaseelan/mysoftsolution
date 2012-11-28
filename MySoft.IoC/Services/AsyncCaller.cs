@@ -162,15 +162,21 @@ namespace MySoft.IoC.Services
                     //返回响应结果
                     resMsg = worker.GetResult(timeout);
                 }
-                catch (TimeoutException ex)
-                {
-                    //超时异常信息
-                    resMsg = GetTimeoutResponse(reqMsg, ex);
-                }
                 catch (Exception ex)
                 {
-                    //处理异常响应
-                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                    //结束请求
+                    worker.Cancel();
+
+                    if (ex is TimeoutException)
+                    {
+                        //超时异常信息
+                        resMsg = GetTimeoutResponse(reqMsg, ex);
+                    }
+                    else
+                    {
+                        //处理异常响应
+                        resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                    }
                 }
 
                 return resMsg;
@@ -187,6 +193,9 @@ namespace MySoft.IoC.Services
 
             try
             {
+                //如果已经完成，直接返回
+                if (worker.IsCompleted) return;
+
                 //获取响应信息
                 var resMsg = GetSyncResponse(worker.Context, worker.Request);
 
@@ -205,7 +214,7 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         /// <param name="ex"></param>
         /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, TimeoutException ex)
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, Exception ex)
         {
             //获取异常响应信息
             var body = string.Format("Async call service ({0}, {1}) timeout ({2}) ms. {3}",
@@ -326,7 +335,7 @@ namespace MySoft.IoC.Services
             };
 
             //如果是服务端，直接返回对象
-            if (!(fromServer || reqMsg.InvokeMethod))
+            if (!fromServer && !reqMsg.InvokeMethod)
             {
                 var watch = Stopwatch.StartNew();
 

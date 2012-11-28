@@ -116,7 +116,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private void StartAcceptSocket()
         {
-            var _acceptEventArgs = PopSocketEventArgs();
+            var _acceptEventArgs = CreateSocketEventArgs();
 
             try
             {
@@ -127,7 +127,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                PushSocketEventArgs(_acceptEventArgs);
+                DisposeSocketEventArgs(_acceptEventArgs);
 
                 StopSocket();
 
@@ -161,7 +161,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                PushSocketEventArgs(e);
+                DisposeSocketEventArgs(e);
             }
 
             //重新开始接收
@@ -172,30 +172,33 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Create socket event args.
         /// </summary>
         /// <returns></returns>
-        private SocketAsyncEventArgs PopSocketEventArgs()
+        private SocketAsyncEventArgs CreateSocketEventArgs()
         {
-            return CommunicationHelper.Pop(this);
+            var e = new TcpSocketAsyncEventArgs();
+            e.Channel = this;
+
+            return e;
         }
 
         /// <summary>
         /// Dispose socket event args.
         /// </summary>
         /// <param name="e"></param>
-        private void PushSocketEventArgs(SocketAsyncEventArgs e)
+        private void DisposeSocketEventArgs(SocketAsyncEventArgs e)
         {
             if (e == null) return;
 
             try
             {
-                e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
-                e.UserToken = null;
+
+                var tcp = e as TcpSocketAsyncEventArgs;
+                tcp.Channel = null;
             }
             catch (Exception ex) { }
             finally
             {
-                var tcp = e as TcpSocketAsyncEventArgs;
-                CommunicationHelper.Push(tcp);
+                e.Dispose();
             }
         }
     }

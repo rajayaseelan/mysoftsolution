@@ -155,7 +155,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                PushSocketEventArgs(_receiveEventArgs);
+                DisposeSocketEventArgs(_receiveEventArgs);
 
                 Disconnect(ex);
 
@@ -189,7 +189,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 }
                 catch (Exception ex)
                 {
-                    PushSocketEventArgs(_sendEventArgs);
+                    DisposeSocketEventArgs(_sendEventArgs);
 
                     Disconnect(ex);
 
@@ -253,7 +253,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex)
             {
                 //Dispose socket event args.
-                PushSocketEventArgs(e);
+                DisposeSocketEventArgs(e);
 
                 Disconnect(ex);
             }
@@ -307,7 +307,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex)
             {
                 //Dispose socket event args.
-                PushSocketEventArgs(e);
+                DisposeSocketEventArgs(e);
 
                 Disconnect(ex);
             }
@@ -322,7 +322,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         private SocketAsyncEventArgs PopSocketEventArgs(byte[] buffer)
         {
-            var e = CommunicationHelper.Pop(this);
+            var e = new TcpSocketAsyncEventArgs();
+            e.Channel = this;
 
             if (buffer != null)
             {
@@ -336,7 +337,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Dispose socket event args.
         /// </summary>
         /// <param name="e"></param>
-        private void PushSocketEventArgs(SocketAsyncEventArgs e)
+        private void DisposeSocketEventArgs(SocketAsyncEventArgs e)
         {
             if (e == null) return;
 
@@ -344,12 +345,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 e.SetBuffer(null, 0, 0);
                 e.UserToken = null;
+
+                var tcp = e as TcpSocketAsyncEventArgs;
+                tcp.Channel = null;
             }
             catch (Exception ex) { }
             finally
             {
-                var tcp = e as TcpSocketAsyncEventArgs;
-                CommunicationHelper.Push(tcp);
+                e.Dispose();
             }
         }
     }
