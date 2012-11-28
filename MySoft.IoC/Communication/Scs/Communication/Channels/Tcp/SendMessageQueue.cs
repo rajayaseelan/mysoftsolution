@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
@@ -6,7 +7,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// <summary>
     /// Send message queue.
     /// </summary>
-    internal class SendMessageQueue
+    internal class SendMessageQueue : IDisposable
     {
         private Socket _clientSocket;
         private Queue<MessageUserToken> _msgQueue;
@@ -16,23 +17,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// 实例化ScsMessageQueue
         /// </summary>
         /// <param name="clientSocket"></param>
-        /// <param name="capacity"></param>
-        public SendMessageQueue(Socket clientSocket, int capacity)
+        public SendMessageQueue(Socket clientSocket)
         {
             this._clientSocket = clientSocket;
-            this._msgQueue = new Queue<MessageUserToken>(capacity);
+            this._msgQueue = new Queue<MessageUserToken>();
             this._isCompleted = true;
-        }
-
-        /// <summary>
-        /// 清除队列
-        /// </summary>
-        public void Clear()
-        {
-            lock (_msgQueue)
-            {
-                _msgQueue.Clear();
-            }
         }
 
         /// <summary>
@@ -64,6 +53,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         public void SendMessage(SocketAsyncEventArgs e)
         {
+            if (!_isCompleted) return;
             if (_msgQueue.Count == 0) return;
 
             //定义消息
@@ -96,11 +86,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //开始异步发送
             if (!_clientSocket.SendAsync(e))
             {
-                var te = e as TcpSocketAsyncEventArgs;
-                if (te != null)
-                {
-                    te.Channel.IOCompleted(e);
-                }
+                var channel = (e as TcpSocketAsyncEventArgs).Channel;
+                channel.IOCompleted(e);
             }
         }
 
@@ -111,5 +98,22 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             _isCompleted = true;
         }
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// Dispose resource.
+        /// </summary>
+        public void Dispose()
+        {
+            lock (_msgQueue)
+            {
+                _msgQueue.Clear();
+            }
+
+            _clientSocket = null;
+        }
+
+        #endregion
     }
 }

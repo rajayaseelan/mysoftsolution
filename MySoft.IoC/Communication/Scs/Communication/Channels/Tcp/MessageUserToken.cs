@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
+﻿using MySoft.IoC.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 {
     /// <summary>
     /// Message usertoken
     /// </summary>
-    internal class MessageUserToken : IDisposable
+    internal class MessageUserToken
     {
         /// <summary>
         /// Send message value.
@@ -31,18 +27,5 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             this.Message = message;
             this.Buffer = messageBytes;
         }
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// Dispose resource.
-        /// </summary>
-        public void Dispose()
-        {
-            this.Message = null;
-            this.Buffer = null;
-        }
-
-        #endregion
     }
 }

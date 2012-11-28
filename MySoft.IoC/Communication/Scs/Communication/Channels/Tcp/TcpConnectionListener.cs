@@ -183,6 +183,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void PushSocketEventArgs(SocketAsyncEventArgs e)
         {
+            if (e == null) return;
+
             try
             {
                 e.SetBuffer(null, 0, 0);

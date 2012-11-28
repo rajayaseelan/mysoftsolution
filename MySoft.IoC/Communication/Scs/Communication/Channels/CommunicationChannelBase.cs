@@ -115,12 +115,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels
                 throw new ArgumentNullException("message");
             }
 
-            //Socket connection is not connected.
-            if (CommunicationState != CommunicationStates.Connected)
-            {
-                throw new CommunicationException("Tcp socket is closed.");
-            }
-
             try
             {
                 SendMessageInternal(message);
