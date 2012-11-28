@@ -152,7 +152,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                ThreadPool.QueueUserWorkItem(AcceptCallback, e.AcceptSocket);
+                if (e.AcceptSocket.Connected)
+                {
+                    var channel = new TcpCommunicationChannel(e.AcceptSocket);
+                    OnCommunicationChannelConnected(channel);
+                }
             }
             catch (Exception ex) { }
             finally
@@ -162,21 +166,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             //重新开始接收
             StartAcceptSocket();
-        }
-
-        /// <summary>
-        /// Accept callback.
-        /// </summary>
-        /// <param name="state"></param>
-        private void AcceptCallback(object state)
-        {
-            var clientSocket = state as Socket;
-
-            if (clientSocket.Connected)
-            {
-                var channel = new TcpCommunicationChannel(clientSocket);
-                OnCommunicationChannelConnected(channel);
-            }
         }
 
         /// <summary>

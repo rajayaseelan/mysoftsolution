@@ -1,26 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
-using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.IoC.Services
 {
-    /// <summary>
-    /// 异步调用委托
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="reqMsg"></param>
-    /// <returns></returns>
-    internal delegate ResponseMessage AsyncWorker(OperationContext context, RequestMessage reqMsg);
-
     /// <summary>
     /// 异步调用器
     /// </summary>
     internal class AsyncCaller
     {
+        private ILog logger;
         private IService service;
         private ICacheStrategy cache;
         private TimeSpan timeout;
@@ -30,11 +23,13 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
+        /// <param name="logger"></param>
         /// <param name="service"></param>
         /// <param name="timeout"></param>
         /// <param name="fromServer"></param>
-        public AsyncCaller(IService service, TimeSpan timeout, bool fromServer)
+        public AsyncCaller(ILog logger, IService service, TimeSpan timeout, bool fromServer)
         {
+            this.logger = logger;
             this.service = service;
             this.timeout = timeout;
             this.enabledCache = false;
@@ -44,12 +39,13 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
+        /// <param name="logger"></param>
         /// <param name="service"></param>
         /// <param name="timeout"></param>
         /// <param name="cache"></param>
         /// <param name="fromServer"></param>
-        public AsyncCaller(IService service, TimeSpan timeout, ICacheStrategy cache, bool fromServer)
-            : this(service, timeout, fromServer)
+        public AsyncCaller(ILog logger, IService service, TimeSpan timeout, ICacheStrategy cache, bool fromServer)
+            : this(logger, service, timeout, fromServer)
         {
             this.cache = cache;
             this.enabledCache = true;
@@ -156,59 +152,50 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage GetAsyncResponse(OperationContext context, RequestMessage reqMsg)
         {
-            ResponseMessage resMsg = null;
-
             //异步调用
-            using (var worker = new WorkerItem(GetSyncResponse, AsyncCallback, context, reqMsg))
+            using (var worker = new WorkerItem(WaitCallback, context, reqMsg))
             {
-                //添加线程
-                ThreadManager.Set(context.Channel, worker);
+                ResponseMessage resMsg = null;
 
                 try
                 {
                     //返回响应结果
                     resMsg = worker.GetResult(timeout);
                 }
+                catch (TimeoutException ex)
+                {
+                    //超时异常信息
+                    resMsg = GetTimeoutResponse(reqMsg, ex);
+                }
                 catch (Exception ex)
                 {
                     //处理异常响应
                     resMsg = IoCHelper.GetResponse(reqMsg, ex);
                 }
-                finally
-                {
-                    //移除结束
-                    ThreadManager.Cancel(context.Channel);
-                }
-            }
 
-            return resMsg;
+                return resMsg;
+            }
         }
 
         /// <summary>
         /// 运行请求
         /// </summary>
-        /// <param name="ar"></param>
-        private void AsyncCallback(IAsyncResult ar)
+        /// <param name="state"></param>
+        private void WaitCallback(object state)
         {
-            var worker = ar.AsyncState as WorkerItem;
+            var worker = state as WorkerItem;
 
             try
             {
-                //判断是否完成
-                if (!worker.IsCompleted)
-                {
-                    //获取响应信息
-                    var caller = ((AsyncResult)ar).AsyncDelegate as AsyncWorker;
-                    var resMsg = caller.EndInvoke(ar);
+                //获取响应信息
+                var resMsg = GetSyncResponse(worker.Context, worker.Request);
 
-                    //设置响应信息
-                    worker.SetResult(resMsg);
-                }
+                worker.SetResult(resMsg);
             }
-            catch (Exception ex) { }
-            finally
+            catch (Exception ex)
             {
-                ar.AsyncWaitHandle.Close();
+                //写异常日志
+                logger.WriteError(ex);
             }
         }
 

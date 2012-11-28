@@ -11,7 +11,6 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Nodes;
-using MySoft.IoC.Services;
 using MySoft.Logger;
 using MySoft.Net.Http;
 
@@ -280,11 +279,6 @@ namespace MySoft.IoC
             {
                 //写异常日志
                 container.WriteError(ex);
-            }
-            finally
-            {
-                //结束线程
-                ThreadManager.Cancel(e.Channel);
             }
         }
 

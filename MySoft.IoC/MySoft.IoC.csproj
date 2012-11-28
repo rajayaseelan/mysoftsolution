@@ -80,6 +80,8 @@
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IServiceRecorder.cs" />
     <Compile Include="Common\RecordEventArgs.cs" />
+    <Compile Include="Communication\Scs\Communication\Channels\Tcp\MessageUserToken.cs" />
+    <Compile Include="Communication\Scs\Communication\Channels\Tcp\SendMessageQueue.cs" />
     <Compile Include="Communication\Scs\Communication\CommunicationHelper.cs" />
     <Compile Include="Communication\Scs\Communication\SocketAsyncEventArgs.cs" />
     <Compile Include="Communication\Scs\Communication\SocketAsyncEventArgsPool.cs" />
@@ -92,7 +94,6 @@
     <Compile Include="Nodes\IServerNodeResolver.cs" />
     <Compile Include="Nodes\NodeEventArgs.cs" />
     <Compile Include="Nodes\ServerConfig.cs" />
-    <Compile Include="Services\ThreadManager.cs" />
     <Compile Include="ServiceChannel.cs" />
     <Compile Include="Services\WorkerItem.cs" />
     <Compile Include="IServerConnect.cs" />

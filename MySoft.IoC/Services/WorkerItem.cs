@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
@@ -9,29 +10,29 @@ namespace MySoft.IoC.Services
     internal class WorkerItem : IDisposable
     {
         /// <summary>
-        /// 完成状态
+        /// 上下文对象
         /// </summary>
-        public bool IsCompleted { get; private set; }
+        public OperationContext Context { get { return context; } }
+
+        /// <summary>
+        /// 请求对象
+        /// </summary>
+        public RequestMessage Request { get { return reqMsg; } }
 
         //响应对象
         private OperationContext context;
         private RequestMessage reqMsg;
-        private AsyncCallback callback;
+        private WaitCallback callback;
         private WaitResult waitResult;
-        private AsyncWorker caller;
 
         /// <summary>
         /// 实例化WorkerItem
         /// </summary>
-        /// <param name="caller"></param>
         /// <param name="callback"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
-        public WorkerItem(AsyncWorker caller, AsyncCallback callback, OperationContext context, RequestMessage reqMsg)
+        public WorkerItem(WaitCallback callback, OperationContext context, RequestMessage reqMsg)
         {
-            this.IsCompleted = false;
-
-            this.caller = caller;
             this.callback = callback;
             this.context = context;
             this.reqMsg = reqMsg;
@@ -46,7 +47,7 @@ namespace MySoft.IoC.Services
         public ResponseMessage GetResult(TimeSpan timeout)
         {
             //开始异步请求
-            caller.BeginInvoke(context, reqMsg, callback, this);
+            ThreadPool.QueueUserWorkItem(callback, this);
 
             if (!waitResult.WaitOne(timeout))
             {
@@ -63,8 +64,6 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool SetResult(ResponseMessage resMsg)
         {
-            this.IsCompleted = true;
-
             if (waitResult == null)
                 return false;
 

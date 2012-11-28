@@ -54,9 +54,9 @@ namespace MySoft.IoC
 
                     //实例化AsyncCaller
                     if (config.EnableCache)
-                        asyncCallers[type.FullName] = new AsyncCaller(service, timeout, null, true);
+                        asyncCallers[type.FullName] = new AsyncCaller(container, service, timeout, null, true);
                     else
-                        asyncCallers[type.FullName] = new AsyncCaller(service, timeout, true);
+                        asyncCallers[type.FullName] = new AsyncCaller(container, service, timeout, true);
                 }
             }
         }
@@ -89,8 +89,6 @@ namespace MySoft.IoC
             }
         }
 
-
-
         /// <summary>
         /// 获取上下文
         /// </summary>
@@ -100,9 +98,13 @@ namespace MySoft.IoC
         {
             //实例化当前上下文
             Type callbackType = null;
-            if (callbackTypes.ContainsKey(e.Caller.ServiceName))
+
+            lock (callbackTypes)
             {
-                callbackType = callbackTypes[e.Caller.ServiceName];
+                if (callbackTypes.ContainsKey(e.Caller.ServiceName))
+                {
+                    callbackType = callbackTypes[e.Caller.ServiceName];
+                }
             }
 
             return new OperationContext(e.Channel, callbackType)
@@ -119,16 +121,19 @@ namespace MySoft.IoC
         /// <returns></returns>
         private AsyncCaller GetAsyncCaller(AppCaller caller)
         {
-            if (!asyncCallers.ContainsKey(caller.ServiceName))
+            lock (asyncCallers)
             {
-                string body = string.Format("The server【{1}({2})】not find matching service ({0})."
-                    , caller.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
+                if (!asyncCallers.ContainsKey(caller.ServiceName))
+                {
+                    string body = string.Format("The server【{1}({2})】not find matching service ({0})."
+                        , caller.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
 
-                //获取异常
-                throw IoCHelper.GetException(caller, body);
+                    //获取异常
+                    throw IoCHelper.GetException(caller, body);
+                }
+
+                return asyncCallers[caller.ServiceName];
             }
-
-            return asyncCallers[caller.ServiceName];
         }
     }
 }
