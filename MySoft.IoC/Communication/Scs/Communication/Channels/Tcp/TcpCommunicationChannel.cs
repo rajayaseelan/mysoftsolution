@@ -10,12 +10,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// <summary>
     /// This class is used to communicate with a remote application over TCP/IP protocol.
     /// </summary>
-    internal class TcpCommunicationChannel : CommunicationChannelBase, ICommunicationCompleted
+    internal class TcpCommunicationChannel : CommunicationChannelBase
     {
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int BufferSize = 4 * 1024; //4KB
+        private const int ReceiveBufferSize = 4 * 1024; //4KB
 
         #region Public properties
 
@@ -44,7 +44,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// This buffer is used to receive bytes 
         /// </summary>
-        private readonly byte[] _buffer;
+        private readonly byte[] _receiveBuffer;
 
         /// <summary>
         /// Send or receive event args.
@@ -55,11 +55,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// A flag to control thread's running
         /// </summary>
         private volatile bool _running;
-
-        /// <summary>
-        /// This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private readonly object _syncLock;
 
         #endregion
 
@@ -74,15 +69,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             _clientSocket = clientSocket;
             _clientSocket.NoDelay = true;
-            _clientSocket.UseOnlyOverlappedIO = false;
 
             var endPoint = _clientSocket.RemoteEndPoint as IPEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
 
-            _sendQueue = new SendMessageQueue(_clientSocket);
+            _sendQueue = new SendMessageQueue(_clientSocket, IOCompleted);
 
-            _buffer = new byte[BufferSize];
-            _syncLock = new object();
+            _receiveBuffer = new byte[ReceiveBufferSize];
         }
 
         #endregion
@@ -143,7 +136,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             _running = true;
 
-            var _receiveEventArgs = PopSocketEventArgs(_buffer);
+            var _receiveEventArgs = CreateSocketEventArgs(_receiveBuffer);
 
             try
             {
@@ -174,27 +167,25 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            lock (_syncLock)
+            //Create a byte array from message according to current protocol
+            var messageBytes = WireProtocol.GetBytes(message);
+
+            var _sendEventArgs = CreateSocketEventArgs(null);
+
+            try
             {
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
+                //实例化MessageUserToken
+                var userToken = new MessageUserToken(message, messageBytes);
 
-                var userMessage = new MessageUserToken(message, messageBytes);
+                _sendQueue.SendMessage(_sendEventArgs, userToken);
+            }
+            catch (Exception ex)
+            {
+                DisposeSocketEventArgs(_sendEventArgs);
 
-                var _sendEventArgs = PopSocketEventArgs(null);
+                Disconnect(ex);
 
-                try
-                {
-                    _sendQueue.SendMessage(userMessage, _sendEventArgs);
-                }
-                catch (Exception ex)
-                {
-                    DisposeSocketEventArgs(_sendEventArgs);
-
-                    Disconnect(ex);
-
-                    throw;
-                }
+                throw;
             }
         }
 
@@ -205,8 +196,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// IO回调处理
         /// </summary>
+        /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ICommunicationCompleted.IOCompleted(SocketAsyncEventArgs e)
+        private void IOCompleted(object sender, SocketAsyncEventArgs e)
         {
             switch (e.LastOperation)
             {
@@ -230,24 +222,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                //Record last sent time
-                LastSentMessageTime = DateTime.Now;
+                var userToken = e.UserToken as MessageUserToken;
+                SendCompleted(userToken.Message);
 
-                var message = e.UserToken as MessageUserToken;
-                OnMessageSent(message.Message);
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                e.UserToken = null;
-                e.SetBuffer(null, 0, 0);
-
-                //重置状态
-                _sendQueue.Reset();
-            }
-
-            try
-            {
+                _sendQueue.ResetMessage(e);
                 _sendQueue.SendMessage(e);
             }
             catch (Exception ex)
@@ -256,6 +234,24 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 DisposeSocketEventArgs(e);
 
                 Disconnect(ex);
+            }
+        }
+
+        /// <summary>
+        /// Send data completed.
+        /// </summary>
+        /// <param name="message"></param>
+        private void SendCompleted(IScsMessage message)
+        {
+            try
+            {
+                //Record last sent time
+                LastSentMessageTime = DateTime.Now;
+
+                OnMessageSent(message);
+            }
+            catch (Exception ex)
+            {
             }
         }
 
@@ -273,30 +269,34 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                //Get received bytes count
-                var bytesTransferred = e.BytesTransferred;
-
-                if (e.SocketError == SocketError.Success && bytesTransferred > 0)
+                //Receive data success.
+                if (e.SocketError == SocketError.Success)
                 {
                     LastReceivedMessageTime = DateTime.Now;
 
-                    //Copy received bytes to a new byte array
-                    var receivedBytes = new byte[bytesTransferred];
-                    Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
+                    //Get received bytes count
+                    var bytesTransferred = e.BytesTransferred;
 
-                    //Read messages according to current wire protocol
-                    var messages = WireProtocol.CreateMessages(receivedBytes);
-
-                    //Raise MessageReceived event for all received messages
-                    foreach (var message in messages)
+                    if (bytesTransferred > 0)
                     {
-                        OnMessageReceived(message);
-                    }
+                        //Copy received bytes to a new byte array
+                        var receivedBytes = new byte[bytesTransferred];
+                        Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
 
-                    //Receive all bytes to the remote application
-                    if (!_clientSocket.ReceiveAsync(e))
-                    {
-                        OnReceiveCompleted(e);
+                        //Read messages according to current wire protocol
+                        var messages = WireProtocol.CreateMessages(receivedBytes);
+
+                        //Raise MessageReceived event for all received messages
+                        foreach (var message in messages)
+                        {
+                            OnMessageReceived(message);
+                        }
+
+                        //Receive all bytes to the remote application
+                        if (!_clientSocket.ReceiveAsync(e))
+                        {
+                            OnReceiveCompleted(e);
+                        }
                     }
                 }
                 else
@@ -320,10 +320,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        private SocketAsyncEventArgs PopSocketEventArgs(byte[] buffer)
+        private SocketAsyncEventArgs CreateSocketEventArgs(byte[] buffer)
         {
-            var e = new TcpSocketAsyncEventArgs();
-            e.Channel = this;
+            var e = new SocketAsyncEventArgs();
+            e.Completed += IOCompleted;
 
             if (buffer != null)
             {
@@ -343,11 +343,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
+                e.Completed -= IOCompleted;
                 e.SetBuffer(null, 0, 0);
                 e.UserToken = null;
-
-                var tcp = e as TcpSocketAsyncEventArgs;
-                tcp.Channel = null;
             }
             catch (Exception ex) { }
             finally

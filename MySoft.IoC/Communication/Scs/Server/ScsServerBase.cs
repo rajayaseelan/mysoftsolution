@@ -47,8 +47,6 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// </summary>
         private IConnectionListener _connectionListener;
 
-        private int _connectionCount;
-
         #endregion
 
         #region Constructor
@@ -123,10 +121,11 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             channel.Disconnected += Client_Disconnected;
 
-            Clients[channel.ClientId] = channel;
-
-            Interlocked.Increment(ref _connectionCount);
-            OnClientConnected(channel);
+            lock (Clients)
+            {
+                Clients[channel.ClientId] = channel;
+                OnClientConnected(channel);
+            }
 
             e.Channel.Start();
         }
@@ -142,10 +141,11 @@ namespace MySoft.IoC.Communication.Scs.Server
 
             channel.Disconnected -= Client_Disconnected;
 
-            Clients.Remove(channel.ClientId);
-            Interlocked.Decrement(ref _connectionCount);
-
-            OnClientDisconnected(channel);
+            lock (Clients)
+            {
+                Clients.Remove(channel.ClientId);
+                OnClientDisconnected(channel);
+            }
         }
 
         #endregion
@@ -163,7 +163,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 try
                 {
-                    handler(this, new ServerClientEventArgs(channel) { ConnectCount = _connectionCount });
+                    handler(this, new ServerClientEventArgs(channel) { ConnectCount = Clients.Count });
                 }
                 catch
                 {
@@ -182,7 +182,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 try
                 {
-                    handler(this, new ServerClientEventArgs(client) { ConnectCount = _connectionCount });
+                    handler(this, new ServerClientEventArgs(client) { ConnectCount = Clients.Count });
                 }
                 catch
                 {

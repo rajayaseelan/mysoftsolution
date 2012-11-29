@@ -56,8 +56,6 @@ namespace MySoft.IoC.Services
             {
                 var resMsg = Run(reqMsg);
 
-                watch.Stop();
-
                 //计算耗时时间
                 resMsg.ElapsedTime = watch.ElapsedMilliseconds;
 

@@ -11,7 +11,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务请求类
     /// </summary>
-    public class ServiceRequest : IServerConnect, IDisposable
+    public class ServiceRequest : IServerConnect
     {
         /// <summary>
         /// 数据回调
@@ -62,6 +62,40 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 发送数据包
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        public void SendRequest(RequestMessage reqMsg)
+        {
+            this.reqMsg = reqMsg;
+
+            //如果连接断开，直接抛出异常
+            if (client.CommunicationState != CommunicationStates.Connected)
+            {
+                ConnectServer();
+
+                //发送客户端信息到服务端
+                var clientInfo = new AppClient
+                {
+                    AppPath = AppDomain.CurrentDomain.BaseDirectory,
+                    AppName = reqMsg.AppName,
+                    IPAddress = reqMsg.IPAddress,
+                    HostName = reqMsg.HostName
+                };
+
+                //发送消息
+                client.SendMessage(new ScsClientMessage(clientInfo));
+            }
+
+            //设置压缩与加密
+            IScsMessage message = new ScsResultMessage(reqMsg, reqMsg.TransactionId.ToString());
+
+            //发送消息
+            client.SendMessage(message);
+        }
+
+        /// <summary>
         /// 连接成功
         /// </summary>
         /// <param name="sender"></param>
@@ -107,61 +141,13 @@ namespace MySoft.IoC
             //输出错误信息
             if (OnError != null)
             {
-                OnError(sender, new ErrorMessageEventArgs { Request = reqMsg, Error = e.Error });
-            }
-        }
-
-        /// <summary>
-        /// 连接服务器
-        /// </summary>
-        private void ConnectServer()
-        {
-            try
-            {
-                //连接到服务器
-                client.Connect();
-            }
-            catch (Exception e)
-            {
-                throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", node.IP, node.Port, node.Key, e.Message));
-            }
-        }
-
-        /// <summary>
-        /// 发送数据包
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        public void SendMessage(RequestMessage reqMsg)
-        {
-            this.reqMsg = reqMsg;
-
-            //如果连接断开，直接抛出异常
-            if (client.CommunicationState != CommunicationStates.Connected)
-            {
-                ConnectServer();
-
-                //发送客户端信息到服务端
-                var clientInfo = new AppClient
+                OnError(sender, new ErrorMessageEventArgs
                 {
-                    AppPath = AppDomain.CurrentDomain.BaseDirectory,
-                    AppName = reqMsg.AppName,
-                    IPAddress = reqMsg.IPAddress,
-                    HostName = reqMsg.HostName
-                };
-
-                //发送消息
-                client.SendMessage(new ScsClientMessage(clientInfo));
+                    Request = reqMsg,
+                    Error = e.Error
+                });
             }
-
-            //设置压缩与加密
-            IScsMessage message = new ScsResultMessage(reqMsg, reqMsg.TransactionId.ToString());
-
-            //发送消息
-            client.SendMessage(message);
         }
-
-        #region Socket消息委托
 
         void client_MessageReceived(object sender, MessageEventArgs e)
         {
@@ -189,18 +175,20 @@ namespace MySoft.IoC
             if (OnCallback != null) OnCallback(this, message);
         }
 
-        #endregion
-
-        #region IDisposable 成员
-
         /// <summary>
-        /// 清理资源
+        /// 连接服务器
         /// </summary>
-        public void Dispose()
+        private void ConnectServer()
         {
-            this.reqMsg = null;
+            try
+            {
+                //连接到服务器
+                client.Connect();
+            }
+            catch (Exception e)
+            {
+                throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", node.IP, node.Port, node.Key, e.Message));
+            }
         }
-
-        #endregion
     }
 }

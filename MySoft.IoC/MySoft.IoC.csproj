@@ -82,11 +82,9 @@
     <Compile Include="Common\RecordEventArgs.cs" />
     <Compile Include="Communication\Scs\Communication\Channels\Tcp\MessageUserToken.cs" />
     <Compile Include="Communication\Scs\Communication\Channels\Tcp\SendMessageQueue.cs" />
-    <Compile Include="Communication\Scs\Communication\SocketAsyncEventArgs.cs" />
     <Compile Include="Communication\Threading\Timer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Communication\Scs\Communication\ICommunicationCompleted.cs" />
     <Compile Include="Nodes\DefaultNodeResolver.cs" />
     <Compile Include="HttpServer\TcpDocument.cs" />
     <Compile Include="Nodes\IServerNodeResolver.cs" />

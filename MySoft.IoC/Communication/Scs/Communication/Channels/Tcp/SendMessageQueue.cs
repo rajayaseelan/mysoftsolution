@@ -10,39 +10,55 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     internal class SendMessageQueue : IDisposable
     {
         private Socket _clientSocket;
+        private Action<object, SocketAsyncEventArgs> _callback;
         private Queue<MessageUserToken> _msgQueue;
-        private bool _isCompleted = false;
+        private volatile bool _isCompleted = false;
 
         /// <summary>
         /// 实例化ScsMessageQueue
         /// </summary>
         /// <param name="clientSocket"></param>
-        public SendMessageQueue(Socket clientSocket)
+        /// <param name="callback"></param>
+        public SendMessageQueue(Socket clientSocket, Action<object, SocketAsyncEventArgs> callback)
         {
             this._clientSocket = clientSocket;
+            this._callback = callback;
             this._msgQueue = new Queue<MessageUserToken>();
             this._isCompleted = true;
         }
 
         /// <summary>
-        /// 添加消息到队列
+        /// 队列大小
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="e"></param>
-        public void SendMessage(MessageUserToken message, SocketAsyncEventArgs e)
+        public int Count
         {
-            if (_isCompleted)
-            {
-                _isCompleted = false;
-
-                //发送消息
-                SendAsync(e, message);
-            }
-            else
+            get
             {
                 lock (_msgQueue)
                 {
+                    return _msgQueue.Count;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 发送数据包
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="message"></param>
+        public void SendMessage(SocketAsyncEventArgs e, MessageUserToken message)
+        {
+            lock (_msgQueue)
+            {
+                if (!_isCompleted)
+                {
                     _msgQueue.Enqueue(message);
+                }
+                else
+                {
+                    _isCompleted = false;
+
+                    SendAsync(e, message);
                 }
             }
         }
@@ -53,20 +69,18 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         public void SendMessage(SocketAsyncEventArgs e)
         {
-            if (!_isCompleted) return;
-            if (_msgQueue.Count == 0) return;
-
-            //定义消息
-            MessageUserToken message = null;
-
             lock (_msgQueue)
             {
-                //从队列中取出一个消息进行发送
-                message = _msgQueue.Dequeue();
-            }
+                if (!_isCompleted) return;
 
-            //异步发送消息
-            SendAsync(e, message);
+                if (_msgQueue.Count == 0) return;
+
+                //从队列中取出一个消息进行发送
+                var message = _msgQueue.Dequeue();
+
+                //异步发送消息
+                SendAsync(e, message);
+            }
         }
 
         /// <summary>
@@ -86,16 +100,28 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //开始异步发送
             if (!_clientSocket.SendAsync(e))
             {
-                var channel = (e as TcpSocketAsyncEventArgs).Channel;
-                channel.IOCompleted(e);
+                if (_callback != null)
+                {
+                    _callback(_clientSocket, e);
+                }
             }
         }
 
         /// <summary>
         /// 重置状态
         /// </summary>
-        public void Reset()
+        /// <param name="e"></param>
+        public void ResetMessage(SocketAsyncEventArgs e)
         {
+            try
+            {
+                e.UserToken = null;
+                e.SetBuffer(null, 0, 0);
+            }
+            catch (Exception ex)
+            {
+            }
+
             _isCompleted = true;
         }
 
@@ -108,7 +134,18 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             lock (_msgQueue)
             {
-                _msgQueue.Clear();
+                try
+                {
+                    while (_msgQueue.Count > 0)
+                    {
+                        var message = _msgQueue.Dequeue();
+                        message.Dispose();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _msgQueue.Clear();
+                }
             }
 
             _clientSocket = null;

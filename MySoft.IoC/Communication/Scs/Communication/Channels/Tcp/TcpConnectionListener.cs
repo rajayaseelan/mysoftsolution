@@ -10,7 +10,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// This class is used to listen and accept incoming TCP
     /// connection requests on a TCP port.
     /// </summary>
-    internal class TcpConnectionListener : ConnectionListenerBase, ICommunicationCompleted
+    internal class TcpConnectionListener : ConnectionListenerBase
     {
         /// <summary>
         /// The endpoint address of the server to listen incoming connections.
@@ -34,8 +34,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// IO回调处理
         /// </summary>
+        /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ICommunicationCompleted.IOCompleted(SocketAsyncEventArgs e)
+        private void IOCompleted(object sender, SocketAsyncEventArgs e)
         {
             switch (e.LastOperation)
             {
@@ -174,8 +175,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         private SocketAsyncEventArgs CreateSocketEventArgs()
         {
-            var e = new TcpSocketAsyncEventArgs();
-            e.Channel = this;
+            var e = new SocketAsyncEventArgs();
+            e.Completed += IOCompleted;
 
             return e;
         }
@@ -190,10 +191,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
+                e.Completed -= IOCompleted;
                 e.AcceptSocket = null;
-
-                var tcp = e as TcpSocketAsyncEventArgs;
-                tcp.Channel = null;
             }
             catch (Exception ex) { }
             finally

@@ -17,7 +17,7 @@ namespace MySoft.IoC
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
         private IDictionary<string, string> errors;
-        private IServiceContainer container;
+        private IContainer container;
         private AsyncCaller asyncCaller;
         private IService service;
         private Type serviceType;
@@ -33,7 +33,7 @@ namespace MySoft.IoC
         /// <param name="service"></param>
         /// <param name="serviceType"></param>
         /// <param name="cache"></param>
-        public ServiceInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IService service, Type serviceType, ICacheStrategy cache, IServiceLog logger)
+        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, Type serviceType, ICacheStrategy cache, IServiceLog logger)
         {
             this.config = config;
             this.container = container;
@@ -51,9 +51,9 @@ namespace MySoft.IoC
 
             //实例化异步服务
             if (config.EnableCache)
-                this.asyncCaller = new AsyncCaller(container, service, timeout, cache, false);
+                this.asyncCaller = new AsyncCaller(service, timeout, cache, false);
             else
-                this.asyncCaller = new AsyncCaller(container, service, timeout, false);
+                this.asyncCaller = new AsyncCaller(service, timeout, false);
 
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)
@@ -150,7 +150,8 @@ namespace MySoft.IoC
                         resMsg = asyncCaller.Run(context, reqMsg);
                     }
 
-                    watch.Stop();
+                    //写日志结束
+                    logger.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
                 }
                 finally
                 {
@@ -159,9 +160,6 @@ namespace MySoft.IoC
                         watch.Stop();
                     }
                 }
-
-                //写日志结束
-                logger.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
 
                 //如果有异常，向外抛出
                 if (resMsg.IsError) throw resMsg.Error;

@@ -144,44 +144,40 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public virtual ResponseMessage CallService(RequestMessage reqMsg)
         {
-            //处理数据
-            using (var waitResult = new WaitResult(reqMsg))
+            //获取一个请求
+            var reqProxy = GetServiceRequest();
+
+            try
             {
-                lock (hashtable)
-                {
-                    hashtable[reqMsg.TransactionId] = waitResult;
-                }
-                try
-                {
-                    //获取响应消息
-                    return GetResponseMessage(waitResult, reqMsg);
-                }
-                finally
-                {
-                    lock (hashtable)
-                    {
-                        //用完后移除
-                        hashtable.Remove(reqMsg.TransactionId);
-                    }
-                }
+                return GetResponseMessage(reqProxy, reqMsg);
+            }
+            finally
+            {
+                //加入队列
+                reqPool.Push(reqProxy);
             }
         }
 
         /// <summary>
         /// 获取响应消息
         /// </summary>
-        /// <param name="waitResult"></param>
+        /// <param name="reqProxy"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponseMessage(WaitResult waitResult, RequestMessage reqMsg)
+        private ResponseMessage GetResponseMessage(ServiceRequest reqProxy, RequestMessage reqMsg)
         {
-            //获取一个请求
-            using (var reqProxy = GetServiceRequest())
+            //处理数据
+            using (var waitResult = new WaitResult(reqMsg))
             {
                 try
                 {
+                    lock (hashtable)
+                    {
+                        hashtable[reqMsg.TransactionId] = waitResult;
+                    }
+
                     //发送消息
-                    reqProxy.SendMessage(reqMsg);
+                    reqProxy.SendRequest(reqMsg);
 
                     var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
 
@@ -195,8 +191,11 @@ namespace MySoft.IoC.Services
                 }
                 finally
                 {
-                    //加入队列
-                    reqPool.Push(reqProxy);
+                    lock (hashtable)
+                    {
+                        //用完后移除
+                        hashtable.Remove(reqMsg.TransactionId);
+                    }
                 }
             }
         }

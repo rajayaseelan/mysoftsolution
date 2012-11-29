@@ -14,7 +14,7 @@ namespace MySoft.IoC
         private string hostName;
         private string ipAddress;
         private IService service;
-        private IServiceContainer container;
+        private IContainer container;
         private AsyncCaller asyncCaller;
 
         /// <summary>
@@ -25,14 +25,14 @@ namespace MySoft.IoC
         /// <param name="service"></param>
         /// <param name="timeout"></param>
         /// <param name="cache"></param>
-        public InvokeCaller(string appName, IServiceContainer container, IService service, TimeSpan timeout, ICacheStrategy cache)
+        public InvokeCaller(string appName, IContainer container, IService service, TimeSpan timeout, ICacheStrategy cache)
         {
             this.appName = appName;
             this.service = service;
             this.container = container;
 
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(container, service, timeout, cache, false);
+            this.asyncCaller = new AsyncCaller(service, timeout, cache, false);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();

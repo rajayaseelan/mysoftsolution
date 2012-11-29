@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
-using MySoft.Logger;
 
 namespace MySoft.IoC.Services
 {
@@ -13,7 +12,9 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class AsyncCaller
     {
-        private ILog logger;
+        //用于缓存数据
+        private Hashtable hashtable = new Hashtable();
+
         private IService service;
         private ICacheStrategy cache;
         private TimeSpan timeout;
@@ -23,13 +24,11 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
-        /// <param name="logger"></param>
         /// <param name="service"></param>
         /// <param name="timeout"></param>
         /// <param name="fromServer"></param>
-        public AsyncCaller(ILog logger, IService service, TimeSpan timeout, bool fromServer)
+        public AsyncCaller(IService service, TimeSpan timeout, bool fromServer)
         {
-            this.logger = logger;
             this.service = service;
             this.timeout = timeout;
             this.enabledCache = false;
@@ -39,13 +38,12 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
-        /// <param name="logger"></param>
         /// <param name="service"></param>
         /// <param name="timeout"></param>
         /// <param name="cache"></param>
         /// <param name="fromServer"></param>
-        public AsyncCaller(ILog logger, IService service, TimeSpan timeout, ICacheStrategy cache, bool fromServer)
-            : this(logger, service, timeout, fromServer)
+        public AsyncCaller(IService service, TimeSpan timeout, ICacheStrategy cache, bool fromServer)
+            : this(service, timeout, fromServer)
         {
             this.cache = cache;
             this.enabledCache = true;
@@ -125,14 +123,14 @@ namespace MySoft.IoC.Services
                 //响应结果，清理资源
                 resMsg = service.CallService(reqMsg);
             }
+            catch (ThreadInterruptedException ex) { }
+            catch (ThreadAbortException ex)
+            {
+                //取消请求
+                Thread.ResetAbort();
+            }
             catch (Exception ex)
             {
-                if (ex is ThreadAbortException)
-                {
-                    //取消请求
-                    Thread.ResetAbort();
-                }
-
                 //返回异常响应信息
                 resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
@@ -162,21 +160,20 @@ namespace MySoft.IoC.Services
                     //返回响应结果
                     resMsg = worker.GetResult(timeout);
                 }
+                catch (TimeoutException ex)
+                {
+                    worker.Cancel(true);
+
+                    //超时异常信息
+                    resMsg = GetTimeoutResponse(reqMsg, ex);
+                }
                 catch (Exception ex)
                 {
                     //结束请求
-                    worker.Cancel();
+                    worker.Cancel(false);
 
-                    if (ex is TimeoutException)
-                    {
-                        //超时异常信息
-                        resMsg = GetTimeoutResponse(reqMsg, ex);
-                    }
-                    else
-                    {
-                        //处理异常响应
-                        resMsg = IoCHelper.GetResponse(reqMsg, ex);
-                    }
+                    //处理异常响应
+                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
                 }
 
                 return resMsg;
@@ -193,18 +190,19 @@ namespace MySoft.IoC.Services
 
             try
             {
-                //如果已经完成，直接返回
-                if (worker.IsCompleted) return;
+                //设置当前线程
+                worker.CurrentThread = Thread.CurrentThread;
 
                 //获取响应信息
                 var resMsg = GetSyncResponse(worker.Context, worker.Request);
 
-                worker.SetResult(resMsg);
+                //如果已经完成，直接返回
+                if (worker.IsCompleted) return;
+
+                worker.Set(resMsg);
             }
-            catch (Exception ex)
+            catch
             {
-                //写异常日志
-                logger.WriteError(ex);
             }
         }
 
@@ -273,7 +271,7 @@ namespace MySoft.IoC.Services
                     //异步请求响应数据
                     resMsg = InvokeResponse(context, reqMsg);
 
-                    if (CheckResponse(resMsg))
+                    if (CheckResponse(callKey, resMsg))
                     {
                         try
                         {
@@ -290,7 +288,7 @@ namespace MySoft.IoC.Services
             if (resMsg != null)
             {
                 //克隆一个新的对象
-                resMsg = NewResponseMessage(reqMsg, resMsg);
+                resMsg = NewResponseMessage(callKey, reqMsg, resMsg);
 
                 return true;
             }
@@ -301,15 +299,30 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 检测响应是否有效
         /// </summary>
+        /// <param name="callKey"></param>
         /// <param name="resMsg"></param>
-        private bool CheckResponse(ResponseMessage resMsg)
+        /// <returns></returns>
+        private bool CheckResponse(string callKey, ResponseMessage resMsg)
         {
             if (resMsg == null) return false;
 
-            //如果符合条件，则自动缓存 【自动缓存功能】
-            if (!resMsg.IsError && resMsg.Value != null && resMsg.Count > 0)
+            //如果符合条件，则缓存 
+            if (!resMsg.IsError && resMsg.Count > 0)
             {
-                return true;
+                try
+                {
+                    lock (hashtable.SyncRoot)
+                    {
+                        //将序列化数据存储在队列中
+                        hashtable[callKey] = SerializationManager.SerializeBin(resMsg.Value);
+                    }
+
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
 
             return false;
@@ -318,10 +331,11 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 产生一个新的对象
         /// </summary>
+        /// <param name="callKey"></param>
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        private ResponseMessage NewResponseMessage(RequestMessage reqMsg, ResponseMessage resMsg)
+        private ResponseMessage NewResponseMessage(string callKey, RequestMessage reqMsg, ResponseMessage resMsg)
         {
             var newMsg = new ResponseMessage
             {
@@ -335,14 +349,14 @@ namespace MySoft.IoC.Services
             };
 
             //如果是服务端，直接返回对象
-            if (!fromServer && !reqMsg.InvokeMethod)
+            if (NeedCloneObject(reqMsg))
             {
                 var watch = Stopwatch.StartNew();
 
                 try
                 {
-                    newMsg.Value = CoreHelper.CloneObject(newMsg.Value);
-                    watch.Stop();
+                    //反序列化数据
+                    newMsg.Value = CloneResponseMessage(callKey, newMsg.Value);
 
                     //设置耗时
                     newMsg.ElapsedTime = watch.ElapsedMilliseconds;
@@ -358,6 +372,41 @@ namespace MySoft.IoC.Services
             }
 
             return newMsg;
+        }
+
+        /// <summary>
+        /// 克隆ResponseMessage
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private object CloneResponseMessage(string callKey, object value)
+        {
+            byte[] buffer = null;
+
+            lock (hashtable.SyncRoot)
+            {
+                if (!hashtable.ContainsKey(callKey))
+                {
+                    //将序列化数据存储在队列中
+                    hashtable[callKey] = SerializationManager.SerializeBin(value);
+                }
+
+                buffer = hashtable[callKey] as byte[];
+            }
+
+            //反序列化对象
+            return SerializationManager.DeserializeBin(buffer);
+        }
+
+        /// <summary>
+        /// 判断是否序列化
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private bool NeedCloneObject(RequestMessage reqMsg)
+        {
+            return !(fromServer || reqMsg.InvokeMethod);
         }
     }
 }

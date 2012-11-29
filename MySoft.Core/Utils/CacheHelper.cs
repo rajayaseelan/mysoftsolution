@@ -294,7 +294,7 @@ namespace MySoft
         /// <param name="func"></param>
         /// <param name="pred"></param>
         /// <returns></returns>
-        public static T Get(string key, TimeSpan timeout, Func<T> func, Predicate<T> pred)
+        public static T Get(string key, TimeSpan timeout, Func<T> func, Func<string, T, bool> pred)
         {
             return Get(key, timeout, state => func(), null, pred);
         }
@@ -323,7 +323,7 @@ namespace MySoft
         /// <param name="state"></param>
         /// <param name="pred"></param>
         /// <returns></returns>
-        public static T Get(string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
+        public static T Get(string key, TimeSpan timeout, Func<object, T> func, object state, Func<string, T, bool> pred)
         {
             var cacheObj = CacheHelper.Get(key);
 
@@ -351,7 +351,7 @@ namespace MySoft
                         {
                             try
                             {
-                                success = pred((T)cacheObj);
+                                success = pred(key, (T)cacheObj);
                             }
                             catch
                             {
@@ -399,7 +399,7 @@ namespace MySoft
                 {
                     var timeout = (TimeSpan)arr[1];
                     var func = arr[2] as Func<object, T>;
-                    var pred = arr[3] as Predicate<T>;
+                    var pred = arr[3] as Func<string, T, bool>;
 
                     var cacheObj = func.EndInvoke(ar);
 
@@ -410,7 +410,7 @@ namespace MySoft
                         {
                             try
                             {
-                                success = pred(cacheObj);
+                                success = pred(key, cacheObj);
                             }
                             catch
                             {

@@ -24,6 +24,11 @@ namespace MySoft.IoC.Services
         /// </summary>
         public RequestMessage Request { get { return reqMsg; } }
 
+        /// <summary>
+        /// 当前线程
+        /// </summary>
+        public Thread CurrentThread { get; set; }
+
         //响应对象
         private OperationContext context;
         private RequestMessage reqMsg;
@@ -69,7 +74,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        public bool SetResult(ResponseMessage resMsg)
+        public bool Set(ResponseMessage resMsg)
         {
             this.IsCompleted = true;
 
@@ -79,9 +84,32 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 结束线程
         /// </summary>
-        public bool Cancel()
+        /// <param name="abortThread"></param>
+        /// <returns></returns>
+        public bool Cancel(bool abortThread)
         {
-            return SetResult(null);
+            if (abortThread)
+            {
+                AbortThread();
+            }
+
+            return Set(null);
+        }
+
+        /// <summary>
+        /// 结束线程
+        /// </summary>
+        private void AbortThread()
+        {
+            if (CurrentThread == null) return;
+
+            try
+            {
+                CurrentThread.Abort();
+            }
+            catch
+            {
+            }
         }
 
         #region IDisposable 成员
@@ -98,6 +126,7 @@ namespace MySoft.IoC.Services
             this.reqMsg = null;
             this.callback = null;
             this.waitResult = null;
+            this.CurrentThread = null;
         }
 
         #endregion

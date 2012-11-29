@@ -54,9 +54,9 @@ namespace MySoft.IoC
 
                     //实例化AsyncCaller
                     if (config.EnableCache)
-                        asyncCallers[type.FullName] = new AsyncCaller(container, service, timeout, null, true);
+                        asyncCallers[type.FullName] = new AsyncCaller(service, timeout, null, true);
                     else
-                        asyncCallers[type.FullName] = new AsyncCaller(container, service, timeout, true);
+                        asyncCallers[type.FullName] = new AsyncCaller(service, timeout, true);
                 }
             }
         }
