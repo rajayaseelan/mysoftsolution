@@ -30,6 +30,12 @@ namespace MySoft.IoC
         private ServerStatusService status;
 
         /// <summary>
+        /// Gets the service container.
+        /// </summary>
+        /// <value>The service container.</value>
+        public IContainer Container { get { return container; } }
+
+        /// <summary>
         /// 处理服务
         /// </summary>
         public IScsServer Server { get { return server; } }

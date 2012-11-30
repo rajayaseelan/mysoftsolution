@@ -270,7 +270,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 //Receive data success.
-                if (e.SocketError == SocketError.Success)
+                if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
                 {
                     LastReceivedMessageTime = DateTime.Now;
 

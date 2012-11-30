@@ -160,18 +160,8 @@ namespace MySoft.IoC.Services
                     //返回响应结果
                     resMsg = worker.GetResult(timeout);
                 }
-                catch (TimeoutException ex)
-                {
-                    worker.Cancel(true);
-
-                    //超时异常信息
-                    resMsg = GetTimeoutResponse(reqMsg, ex);
-                }
                 catch (Exception ex)
                 {
-                    //结束请求
-                    worker.Cancel(false);
-
                     //处理异常响应
                     resMsg = IoCHelper.GetResponse(reqMsg, ex);
                 }
@@ -190,9 +180,6 @@ namespace MySoft.IoC.Services
 
             try
             {
-                //设置当前线程
-                worker.CurrentThread = Thread.CurrentThread;
-
                 //获取响应信息
                 var resMsg = GetSyncResponse(worker.Context, worker.Request);
 
@@ -204,26 +191,6 @@ namespace MySoft.IoC.Services
             catch
             {
             }
-        }
-
-        /// <summary>
-        /// 获取超时响应信息
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="ex"></param>
-        /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, Exception ex)
-        {
-            //获取异常响应信息
-            var body = string.Format("Async call service ({0}, {1}) timeout ({2}) ms. {3}",
-                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds, ex.Message);
-
-            var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(body));
-
-            //设置耗时时间
-            resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;
-
-            return resMsg;
         }
 
         /// <summary>

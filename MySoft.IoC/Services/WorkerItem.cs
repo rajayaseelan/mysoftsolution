@@ -24,11 +24,6 @@ namespace MySoft.IoC.Services
         /// </summary>
         public RequestMessage Request { get { return reqMsg; } }
 
-        /// <summary>
-        /// 当前线程
-        /// </summary>
-        public Thread CurrentThread { get; set; }
-
         //响应对象
         private OperationContext context;
         private RequestMessage reqMsg;
@@ -63,7 +58,10 @@ namespace MySoft.IoC.Services
 
             if (!waitResult.WaitOne(timeout))
             {
-                throw new TimeoutException("Timeout occured.");
+                this.IsCompleted = true;
+
+                //超时异常信息
+                return GetTimeoutResponse(reqMsg, timeout);
             }
 
             return waitResult.Message;
@@ -81,37 +79,6 @@ namespace MySoft.IoC.Services
             return waitResult.Set(resMsg);
         }
 
-        /// <summary>
-        /// 结束线程
-        /// </summary>
-        /// <param name="abortThread"></param>
-        /// <returns></returns>
-        public bool Cancel(bool abortThread)
-        {
-            if (abortThread)
-            {
-                AbortThread();
-            }
-
-            return Set(null);
-        }
-
-        /// <summary>
-        /// 结束线程
-        /// </summary>
-        private void AbortThread()
-        {
-            if (CurrentThread == null) return;
-
-            try
-            {
-                CurrentThread.Abort();
-            }
-            catch
-            {
-            }
-        }
-
         #region IDisposable 成员
 
         /// <summary>
@@ -126,9 +93,28 @@ namespace MySoft.IoC.Services
             this.reqMsg = null;
             this.callback = null;
             this.waitResult = null;
-            this.CurrentThread = null;
         }
 
         #endregion
+
+        /// <summary>
+        /// 获取超时响应信息
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, TimeSpan timeout)
+        {
+            //获取异常响应信息
+            var body = string.Format("Async call service ({0}, {1}) timeout ({2}) ms.",
+                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
+
+            var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(body));
+
+            //设置耗时时间
+            resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;
+
+            return resMsg;
+        }
     }
 }
