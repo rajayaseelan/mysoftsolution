@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Collections;
 
 namespace MySoft
 {
@@ -11,22 +12,24 @@ namespace MySoft
     /// <typeparam name="TValue"></typeparam>
     internal static class DynamicReflectionCache<TKey, TValue>
     {
-        private static IDictionary<TKey, TValue> m_cache = new Dictionary<TKey, TValue>();
+        private static Hashtable m_cache = Hashtable.Synchronized(new Hashtable());
 
         public static TValue Get(TKey key, Func<TKey, TValue> func)
         {
             TValue value = default(TValue);
 
-            lock (m_cache)
-            {
-                if (m_cache.TryGetValue(key, out value))
-                {
-                    return value;
-                }
+            if (key == null) return value;
 
-                if (!m_cache.TryGetValue(key, out value))
+            if (m_cache.ContainsKey(key))
+            {
+                value = (TValue)m_cache[key];
+            }
+            else
+            {
+                value = func(key);
+
+                if (value != null)
                 {
-                    value = func(key);
                     m_cache[key] = value;
                 }
             }
