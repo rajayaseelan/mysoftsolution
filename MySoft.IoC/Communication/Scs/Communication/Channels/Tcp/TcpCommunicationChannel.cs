@@ -19,7 +19,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
         #region Public properties
 
-        private ScsEndPoint _remoteEndPoint;
+        private readonly ScsEndPoint _remoteEndPoint;
 
         ///<summary>
         /// Gets the endpoint of remote application.
@@ -119,9 +119,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _running = false;
 
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
-
             try
             {
                 _clientSocket.Shutdown(SocketShutdown.Both);
@@ -132,6 +129,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 Dispose();
             }
+
+            CommunicationState = CommunicationStates.Disconnected;
+            OnDisconnected();
         }
 
         /// <summary>
@@ -163,7 +163,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                     _sendEventArgs = null;
                     _receiveEventArgs = null;
-                    _remoteEndPoint = null;
                 }
             }
         }

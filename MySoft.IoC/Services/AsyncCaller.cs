@@ -12,9 +12,6 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class AsyncCaller
     {
-        //用于缓存数据
-        private Hashtable hashtable = new Hashtable();
-
         private IService service;
         private ICacheStrategy cache;
         private TimeSpan timeout;
@@ -238,7 +235,7 @@ namespace MySoft.IoC.Services
                     //异步请求响应数据
                     resMsg = InvokeResponse(context, reqMsg);
 
-                    if (CheckResponse(callKey, resMsg))
+                    if (CheckResponse(resMsg))
                     {
                         try
                         {
@@ -266,30 +263,16 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 检测响应是否有效
         /// </summary>
-        /// <param name="callKey"></param>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        private bool CheckResponse(string callKey, ResponseMessage resMsg)
+        private bool CheckResponse(ResponseMessage resMsg)
         {
             if (resMsg == null) return false;
 
             //如果符合条件，则缓存 
             if (!resMsg.IsError && resMsg.Count > 0)
             {
-                try
-                {
-                    lock (hashtable.SyncRoot)
-                    {
-                        //将序列化数据存储在队列中
-                        hashtable[callKey] = SerializationManager.SerializeBin(resMsg.Value);
-                    }
-
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
+                return true;
             }
 
             return false;
@@ -315,65 +298,10 @@ namespace MySoft.IoC.Services
                 Value = resMsg.Value
             };
 
-            //如果是服务端，直接返回对象
-            if (NeedCloneObject(reqMsg))
-            {
-                var watch = Stopwatch.StartNew();
-
-                try
-                {
-                    //反序列化数据
-                    newMsg.Value = CloneResponseMessage(callKey, newMsg.Value);
-
-                    //设置耗时
-                    newMsg.ElapsedTime = watch.ElapsedMilliseconds;
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    if (watch.IsRunning)
-                    {
-                        watch.Stop();
-                    }
-                }
-            }
+            //设置耗时时间
+            newMsg.ElapsedTime = 0;
 
             return newMsg;
-        }
-
-        /// <summary>
-        /// 克隆ResponseMessage
-        /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        private object CloneResponseMessage(string callKey, object value)
-        {
-            byte[] buffer = null;
-
-            lock (hashtable.SyncRoot)
-            {
-                if (!hashtable.ContainsKey(callKey))
-                {
-                    //将序列化数据存储在队列中
-                    hashtable[callKey] = SerializationManager.SerializeBin(value);
-                }
-
-                buffer = hashtable[callKey] as byte[];
-            }
-
-            //反序列化对象
-            return SerializationManager.DeserializeBin(buffer);
-        }
-
-        /// <summary>
-        /// 判断是否序列化
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private bool NeedCloneObject(RequestMessage reqMsg)
-        {
-            return !(fromServer || reqMsg.InvokeMethod);
         }
     }
 }

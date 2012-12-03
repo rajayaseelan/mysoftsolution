@@ -28,7 +28,7 @@ namespace MySoft.PlatformService.UserService
         {
             //if (id % 10 == 0)
             //{
-            //Thread.Sleep(5000);
+            Thread.Sleep(5000);
             //}
             //throw new Exception("出错了。");
 

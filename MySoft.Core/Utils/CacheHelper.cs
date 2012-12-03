@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Web;
 using System.Web.Caching;
-using System.Threading;
 using MySoft.Logger;
 
 namespace MySoft
@@ -268,9 +267,9 @@ namespace MySoft
     /// 缓存扩展类
     /// </summary>
     public static class CacheHelper<T>
+        where T : class
     {
-        //缓存倍数
-        private static readonly HashSet<string> hashtable = new HashSet<string>();
+        private static readonly object _syncRoot = new object();
 
         /// <summary>
         /// （本方法仅适应于本地缓存）
@@ -294,7 +293,7 @@ namespace MySoft
         /// <param name="func"></param>
         /// <param name="pred"></param>
         /// <returns></returns>
-        public static T Get(string key, TimeSpan timeout, Func<T> func, Func<string, T, bool> pred)
+        public static T Get(string key, TimeSpan timeout, Func<T> func, Predicate<T> pred)
         {
             return Get(key, timeout, state => func(), null, pred);
         }
@@ -323,55 +322,55 @@ namespace MySoft
         /// <param name="state"></param>
         /// <param name="pred"></param>
         /// <returns></returns>
-        public static T Get(string key, TimeSpan timeout, Func<object, T> func, object state, Func<string, T, bool> pred)
+        public static T Get(string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
         {
-            var cacheObj = CacheHelper.Get(key);
+            var cacheObj = CacheHelper.Get<CacheObject<T>>(key);
 
             if (cacheObj == null)
             {
-                var spareKey = string.Format("SpareCache_{0}", key);
-                cacheObj = CacheHelper.Get(spareKey);
+                T internalObject = default(T);
 
-                if (cacheObj == null)
+                try
                 {
-                    try
+                    internalObject = func(state);
+                }
+                catch (ThreadInterruptedException ex) { }
+                catch (ThreadAbortException ex)
+                {
+                    Thread.ResetAbort();
+                }
+
+                if (internalObject != null)
+                {
+                    var success = true;
+                    if (pred != null)
                     {
-                        cacheObj = func(state);
-                    }
-                    catch (ThreadInterruptedException ex) { }
-                    catch (ThreadAbortException ex)
-                    {
-                        Thread.ResetAbort();
+                        try
+                        {
+                            success = pred(internalObject);
+                        }
+                        catch
+                        {
+                        }
                     }
 
-                    if (cacheObj != null)
+                    if (success)
                     {
-                        var success = true;
-                        if (pred != null)
-                        {
-                            try
-                            {
-                                success = pred(key, (T)cacheObj);
-                            }
-                            catch
-                            {
-                            }
-                        }
-
-                        if (success)
-                        {
-                            CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
-                            CacheHelper.Insert(spareKey, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
-                        }
+                        cacheObj = InsertCache(key, internalObject, timeout);
                     }
                 }
-                else
+            }
+            else
+            {
+                //如果数据过期，则更新之
+                if (cacheObj.Expired > DateTime.Now)
                 {
-                    lock (hashtable)
+                    lock (_syncRoot)
                     {
-                        if (!hashtable.Contains(key))
+                        if (cacheObj.Expired > DateTime.Now)
                         {
-                            hashtable.Add(key);
+                            cacheObj.Expired = DateTime.Now.Add(timeout);
+
                             func.BeginInvoke(state, AsyncCallback, new ArrayList { key, timeout, func, pred });
                         }
                     }
@@ -380,7 +379,7 @@ namespace MySoft
 
             if (cacheObj == null) return default(T);
 
-            return (T)cacheObj;
+            return cacheObj.Value;
         }
 
         /// <summary>
@@ -399,18 +398,18 @@ namespace MySoft
                 {
                     var timeout = (TimeSpan)arr[1];
                     var func = arr[2] as Func<object, T>;
-                    var pred = arr[3] as Func<string, T, bool>;
+                    var pred = arr[3] as Predicate<T>;
 
-                    var cacheObj = func.EndInvoke(ar);
+                    var internalObject = func.EndInvoke(ar);
 
-                    if (cacheObj != null)
+                    if (internalObject != null)
                     {
                         var success = true;
                         if (pred != null)
                         {
                             try
                             {
-                                success = pred(key, cacheObj);
+                                success = pred(internalObject);
                             }
                             catch
                             {
@@ -420,9 +419,7 @@ namespace MySoft
 
                         if (success)
                         {
-                            var spareKey = string.Format("SpareCache_{0}", key);
-                            CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
-                            CacheHelper.Insert(spareKey, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
+                            InsertCache(key, internalObject, timeout);
                         }
                     }
                 }
@@ -430,13 +427,6 @@ namespace MySoft
                 catch (ThreadAbortException ex)
                 {
                     Thread.ResetAbort();
-                }
-                finally
-                {
-                    lock (hashtable)
-                    {
-                        hashtable.Remove(key);
-                    }
                 }
             }
             catch (Exception ex)
@@ -447,6 +437,31 @@ namespace MySoft
             {
                 ar.AsyncWaitHandle.Close();
             }
+        }
+
+        /// <summary>
+        /// 插入缓存
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="internalObject"></param>
+        /// <param name="timeout"></param>
+        private static CacheObject<T> InsertCache(string key, T internalObject, TimeSpan timeout)
+        {
+            var cacheObj = new CacheObject<T>
+            {
+                Value = internalObject,
+                Expired = DateTime.Now.Add(timeout)
+            };
+
+            try
+            {
+                CacheHelper.Insert(key, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
+            }
+            catch
+            {
+            }
+
+            return cacheObj;
         }
     }
 }
