@@ -254,6 +254,8 @@ namespace MySoft.IoC.Communication.Scs.Client
             _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
             _communicationChannel.MessageError -= CommunicationChannel_MessageError;
 
+            _communicationChannel = null;
+
             _pingTimer.Elapsed -= PingTimer_Elapsed;
             _pingTimer.Stop();
         }

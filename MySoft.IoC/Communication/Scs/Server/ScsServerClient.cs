@@ -172,6 +172,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
             _communicationChannel.MessageError -= CommunicationChannel_MessageError;
 
+            _communicationChannel = null;
             UserToken = null;
         }
 
@@ -183,6 +184,7 @@ namespace MySoft.IoC.Communication.Scs.Server
         private void CommunicationChannel_MessageReceived(object sender, MessageEventArgs e)
         {
             var message = e.Message;
+
             if (message is ScsPingMessage)
             {
                 _communicationChannel.SendMessage(new ScsPingMessage { RepliedMessageId = message.MessageId });

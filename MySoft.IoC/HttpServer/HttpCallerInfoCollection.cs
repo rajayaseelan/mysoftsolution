@@ -11,7 +11,7 @@ namespace MySoft.IoC.HttpServer
     /// </summary>
     public sealed class HttpCallerInfoCollection
     {
-        private Hashtable callers = Hashtable.Synchronized(new Hashtable());
+        private Hashtable hashtable = new Hashtable();
 
         /// <summary>
         /// 判断是否存在
@@ -20,8 +20,11 @@ namespace MySoft.IoC.HttpServer
         /// <returns></returns>
         public bool ContainsKey(string key)
         {
-            key = key.ToLower();
-            return callers.ContainsKey(key);
+            lock (hashtable.SyncRoot)
+            {
+                key = key.ToLower();
+                return hashtable.ContainsKey(key);
+            }
         }
 
         /// <summary>
@@ -29,7 +32,13 @@ namespace MySoft.IoC.HttpServer
         /// </summary>
         public int Count
         {
-            get { return callers.Count; }
+            get
+            {
+                lock (hashtable.SyncRoot)
+                {
+                    return hashtable.Count;
+                }
+            }
         }
 
         /// <summary>
@@ -37,7 +46,10 @@ namespace MySoft.IoC.HttpServer
         /// </summary>
         public void Clear()
         {
-            callers.Clear();
+            lock (hashtable.SyncRoot)
+            {
+                hashtable.Clear();
+            }
         }
 
         /// <summary>
@@ -46,7 +58,10 @@ namespace MySoft.IoC.HttpServer
         /// <returns></returns>
         public IList<HttpCallerInfo> ToValueList()
         {
-            return callers.Values.Cast<HttpCallerInfo>().ToList();
+            lock (hashtable.SyncRoot)
+            {
+                return hashtable.Values.Cast<HttpCallerInfo>().ToList();
+            }
         }
 
         /// <summary>
@@ -58,13 +73,19 @@ namespace MySoft.IoC.HttpServer
         {
             get
             {
-                key = key.ToLower();
-                return callers[key] as HttpCallerInfo;
+                lock (hashtable.SyncRoot)
+                {
+                    key = key.ToLower();
+                    return hashtable[key] as HttpCallerInfo;
+                }
             }
             set
             {
-                key = key.ToLower();
-                callers[key] = value;
+                lock (hashtable.SyncRoot)
+                {
+                    key = key.ToLower();
+                    hashtable[key] = value;
+                }
             }
         }
     }

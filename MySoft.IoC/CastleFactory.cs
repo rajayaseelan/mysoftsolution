@@ -17,7 +17,7 @@ namespace MySoft.IoC
     public class CastleFactory : IServerConnect, ILogable, IErrorLogable
     {
         //线程同步锁；
-        private static Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
+        private static Hashtable hashtable = new Hashtable();
         private static CastleFactory singleton = null;
 
         #region Create Service Factory

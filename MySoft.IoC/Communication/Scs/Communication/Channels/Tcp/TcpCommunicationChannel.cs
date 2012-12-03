@@ -42,14 +42,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private readonly Socket _clientSocket;
 
         /// <summary>
+        /// Socket send messages event args.
+        /// </summary>
+        private SocketAsyncEventArgs _sendEventArgs;
+        private SocketAsyncEventArgs _receiveEventArgs;
+
+        /// <summary>
         /// This buffer is used to receive bytes 
         /// </summary>
-        private readonly byte[] _receiveBuffer;
+        private byte[] _receiveBuffer;
 
         /// <summary>
         /// Send or receive event args.
         /// </summary>
-        private readonly SendMessageQueue _sendQueue;
+        private SendMessageQueue _sendQueue;
 
         /// <summary>
         /// A flag to control thread's running
@@ -73,9 +79,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             var endPoint = _clientSocket.RemoteEndPoint as IPEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
 
-            _sendQueue = new SendMessageQueue(_clientSocket, IOCompleted);
-
             _receiveBuffer = new byte[ReceiveBufferSize];
+
+            _sendEventArgs = CreateSocketEventArgs(null);
+            _receiveEventArgs = CreateSocketEventArgs(_receiveBuffer);
+
+            _sendQueue = new SendMessageQueue(_clientSocket, _sendEventArgs);
+            _sendQueue.Completed += IOCompleted;
         }
 
         #endregion
@@ -109,9 +119,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _running = false;
 
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
-
             try
             {
                 _clientSocket.Shutdown(SocketShutdown.Both);
@@ -120,8 +127,36 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
+                Dispose();
+            }
+
+            CommunicationState = CommunicationStates.Disconnected;
+            OnDisconnected();
+        }
+
+        /// <summary>
+        /// Dispose resource.
+        /// </summary>
+        private void Dispose()
+        {
+            try
+            {
+                DisposeSocketEventArgs(_sendEventArgs);
+                DisposeSocketEventArgs(_receiveEventArgs);
+            }
+            catch (Exception ex) { }
+            finally
+            {
                 WireProtocol.Reset();
+
+                _sendQueue.Completed -= IOCompleted;
                 _sendQueue.Dispose();
+
+                _sendEventArgs = null;
+                _receiveEventArgs = null;
+                _sendQueue = null;
+                _receiveBuffer = null;
+                WireProtocol = null;
             }
         }
 
@@ -136,8 +171,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             _running = true;
 
-            var _receiveEventArgs = CreateSocketEventArgs(_receiveBuffer);
-
             try
             {
                 //Receive all bytes to the remote application
@@ -148,8 +181,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                DisposeSocketEventArgs(_receiveEventArgs);
-
                 Disconnect(ex);
 
                 throw;
@@ -170,19 +201,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Create a byte array from message according to current protocol
             var messageBytes = WireProtocol.GetBytes(message);
 
-            var _sendEventArgs = CreateSocketEventArgs(null);
-
             try
             {
-                //实例化MessageUserToken
-                var userToken = new MessageUserToken(message, messageBytes);
-
-                _sendQueue.SendMessage(_sendEventArgs, userToken);
+                _sendQueue.Send(message, messageBytes);
             }
             catch (Exception ex)
             {
-                DisposeSocketEventArgs(_sendEventArgs);
-
                 Disconnect(ex);
 
                 throw;
@@ -222,36 +246,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                var userToken = e.UserToken as MessageUserToken;
-                SendCompleted(userToken.Message);
-
-                _sendQueue.ResetMessage(e);
-                _sendQueue.SendMessage(e);
-            }
-            catch (Exception ex)
-            {
-                //Dispose socket event args.
-                DisposeSocketEventArgs(e);
-
-                Disconnect(ex);
-            }
-        }
-
-        /// <summary>
-        /// Send data completed.
-        /// </summary>
-        /// <param name="message"></param>
-        private void SendCompleted(IScsMessage message)
-        {
-            try
-            {
                 //Record last sent time
                 LastSentMessageTime = DateTime.Now;
 
-                OnMessageSent(message);
+                OnMessageSent(e.UserToken as IScsMessage);
             }
-            catch (Exception ex)
+            catch (Exception ex) { }
+            finally
             {
+                _sendQueue.Reset(e);
             }
         }
 
@@ -282,6 +285,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         //Copy received bytes to a new byte array
                         var receivedBytes = new byte[bytesTransferred];
                         Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
+                        //Array.Clear(e.Buffer, 0, bytesTransferred);
 
                         //Read messages according to current wire protocol
                         var messages = WireProtocol.CreateMessages(receivedBytes);
@@ -306,9 +310,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                //Dispose socket event args.
-                DisposeSocketEventArgs(e);
-
                 Disconnect(ex);
             }
         }
@@ -345,6 +346,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 e.Completed -= IOCompleted;
                 e.SetBuffer(null, 0, 0);
+                e.AcceptSocket = null;
                 e.UserToken = null;
             }
             catch (Exception ex) { }

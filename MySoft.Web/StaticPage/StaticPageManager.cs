@@ -82,6 +82,10 @@ namespace MySoft.Web
                     {
                         RunUpdate(DateTime.Now);
                     }
+                    catch (ThreadAbortException ex)
+                    {
+                        Thread.ResetAbort();
+                    }
                     catch (Exception ex)
                     {
                     }

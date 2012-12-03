@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using MySoft.IoC.Aspect;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
@@ -14,7 +12,6 @@ namespace MySoft.IoC.Services
     {
         private IContainer container;
         private Type serviceType;
-        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         private IDictionary<string, System.Reflection.MethodInfo> methods;
 
         /// <summary>

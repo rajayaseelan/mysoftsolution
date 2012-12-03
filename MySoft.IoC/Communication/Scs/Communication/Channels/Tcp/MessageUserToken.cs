@@ -19,7 +19,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public byte[] Buffer { get; private set; }
 
         /// <summary>
-        /// 
+        /// 实例化MessageUserToken
         /// </summary>
         /// <param name="message"></param>
         /// <param name="messageBytes"></param>

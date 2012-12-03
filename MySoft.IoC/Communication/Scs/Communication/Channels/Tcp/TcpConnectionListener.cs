@@ -74,7 +74,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             // Get endpoint for the listener.
             IPAddress bindAddress = IPAddress.Any;
-            AddressFamily addressFamily = AddressFamily.InterNetwork;
 
             if (!string.IsNullOrEmpty(_endPoint.IpAddress))
                 bindAddress = IPAddress.Parse(_endPoint.IpAddress);
@@ -82,7 +81,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             var endPoint = new IPEndPoint(bindAddress, _endPoint.TcpPort);
 
             // Listener socket.
-            _listenerSocket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _listenerSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _listenerSocket.Bind(endPoint);
             _listenerSocket.Listen(64);
@@ -96,18 +95,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 _listenerSocket.Shutdown(SocketShutdown.Both);
+                _listenerSocket.Close();
             }
             catch (Exception ex) { }
             finally
             {
-                try
-                {
-                    _listenerSocket.Close();
-                }
-                catch
-                {
-                }
-
                 _listenerSocket = null;
             }
         }
@@ -192,7 +184,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 e.Completed -= IOCompleted;
+                e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
+                e.UserToken = null;
             }
             catch (Exception ex) { }
             finally
