@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 4 * 1024; //4KB
+        private const int ReceiveBufferSize = 2 * 1024; //2KB
 
         #region Public properties
 
@@ -73,10 +73,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             var endPoint = _clientSocket.RemoteEndPoint as IPEndPoint;
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
 
-            _receiveBuffer = new byte[ReceiveBufferSize];
-
             _sendQueue = new SendMessageQueue(_clientSocket);
             _sendQueue.Completed += IOCompleted;
+
+            _receiveBuffer = new byte[ReceiveBufferSize];
         }
 
         #endregion
@@ -110,9 +110,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _running = false;
 
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
-
             try
             {
                 _clientSocket.Shutdown(SocketShutdown.Both);
@@ -123,6 +120,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 Dispose();
             }
+
+            CommunicationState = CommunicationStates.Disconnected;
+            OnDisconnected();
         }
 
         /// <summary>
@@ -142,7 +142,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 _sendQueue = null;
                 _receiveBuffer = null;
-                WireProtocol = null;
             }
         }
 
@@ -362,7 +361,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                e.Completed -= IOCompleted;
+                //e.Completed -= IOCompleted;
                 e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
                 e.UserToken = null;
@@ -371,7 +370,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 e.Dispose();
-                e = null;
             }
         }
     }

@@ -16,13 +16,14 @@ namespace MySoft
         public static TValue Get(TKey key, Func<TKey, TValue> func)
         {
             TValue value = default(TValue);
-            if (m_cache.TryGetValue(key, out value))
-            {
-                return value;
-            }
 
-            lock (key)
+            lock (m_cache)
             {
+                if (m_cache.TryGetValue(key, out value))
+                {
+                    return value;
+                }
+
                 if (!m_cache.TryGetValue(key, out value))
                 {
                     value = func(key);
