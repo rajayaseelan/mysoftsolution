@@ -42,12 +42,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private readonly Socket _clientSocket;
 
         /// <summary>
-        /// Socket send messages event args.
-        /// </summary>
-        private SocketAsyncEventArgs _sendEventArgs;
-        private SocketAsyncEventArgs _receiveEventArgs;
-
-        /// <summary>
         /// This buffer is used to receive bytes 
         /// </summary>
         private byte[] _receiveBuffer;
@@ -81,10 +75,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _receiveBuffer = new byte[ReceiveBufferSize];
 
-            _sendEventArgs = CreateSocketEventArgs(null);
-            _receiveEventArgs = CreateSocketEventArgs(_receiveBuffer);
-
-            _sendQueue = new SendMessageQueue(_clientSocket, _sendEventArgs);
+            _sendQueue = new SendMessageQueue(_clientSocket);
             _sendQueue.Completed += IOCompleted;
         }
 
@@ -119,6 +110,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _running = false;
 
+            CommunicationState = CommunicationStates.Disconnected;
+            OnDisconnected();
+
             try
             {
                 _clientSocket.Shutdown(SocketShutdown.Both);
@@ -129,9 +123,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 Dispose();
             }
-
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
         }
 
         /// <summary>
@@ -141,29 +132,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                DisposeSocketEventArgs(_sendEventArgs);
-                DisposeSocketEventArgs(_receiveEventArgs);
+                WireProtocol.Reset();
+
+                _sendQueue.Completed -= IOCompleted;
+                _sendQueue.Dispose();
             }
             catch (Exception ex) { }
             finally
             {
-                try
-                {
-                    WireProtocol.Reset();
-
-                    _sendQueue.Completed -= IOCompleted;
-                    _sendQueue.Dispose();
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    _sendQueue = null;
-                    _receiveBuffer = null;
-                    WireProtocol = null;
-
-                    _sendEventArgs = null;
-                    _receiveEventArgs = null;
-                }
+                _sendQueue = null;
+                _receiveBuffer = null;
+                WireProtocol = null;
             }
         }
 
@@ -178,6 +157,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             _running = true;
 
+            /// <summary>
+            /// Socket receive messages event args.
+            /// </summary>
+            var _receiveEventArgs = CreateSocketEventArgs(_receiveBuffer);
+
             try
             {
                 //Receive all bytes to the remote application
@@ -188,6 +172,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
+                DisposeSocketEventArgs(_receiveEventArgs);
+
                 Disconnect(ex);
 
                 throw;
@@ -208,12 +194,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Create a byte array from message according to current protocol
             var messageBytes = WireProtocol.GetBytes(message);
 
+            /// <summary>
+            /// Socket send messages event args.
+            /// </summary>
+            var _sendEventArgs = CreateSocketEventArgs(null);
+
             try
             {
-                _sendQueue.Send(message, messageBytes);
+                _sendQueue.Send(_sendEventArgs, message, messageBytes);
             }
             catch (Exception ex)
             {
+                DisposeSocketEventArgs(_sendEventArgs);
+
                 Disconnect(ex);
 
                 throw;
@@ -261,7 +254,23 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                _sendQueue.Reset(e);
+                DisposeSocketEventArgs(e);
+            }
+
+            /// <summary>
+            /// Socket send messages event args.
+            /// </summary>
+            var _sendEventArgs = CreateSocketEventArgs(null);
+
+            try
+            {
+                _sendQueue.Resend(_sendEventArgs);
+            }
+            catch (Exception ex)
+            {
+                DisposeSocketEventArgs(_sendEventArgs);
+
+                Disconnect(ex);
             }
         }
 
@@ -317,6 +326,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
+                DisposeSocketEventArgs(e);
+
                 Disconnect(ex);
             }
         }

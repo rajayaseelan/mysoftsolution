@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
@@ -16,8 +16,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public event EventHandler<SocketAsyncEventArgs> Completed;
 
         private readonly Socket _clientSocket;
-        private readonly SocketAsyncEventArgs _sendEventArgs;
-        private ManualResetEvent _manualResetEvent;
+
+        private bool _isCompleted;
+        private Queue<MessageUserToken> _msgQueue = new Queue<MessageUserToken>();
 
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
@@ -28,57 +29,55 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// 实例化ScsMessageQueue
         /// </summary>
         /// <param name="clientSocket"></param>
-        /// <param name="sendEventArgs"></param>
-        public SendMessageQueue(Socket clientSocket, SocketAsyncEventArgs sendEventArgs)
+        public SendMessageQueue(Socket clientSocket)
         {
             this._clientSocket = clientSocket;
-            this._sendEventArgs = sendEventArgs;
             this._syncLock = new object();
-            this._manualResetEvent = new ManualResetEvent(false);
+            this._isCompleted = true;
         }
 
         /// <summary>
         /// 发送数据包
         /// </summary>
+        /// <param name="e"></param>
         /// <param name="message"></param>
         /// <param name="messageBytes"></param>
-        public void Send(IScsMessage message, byte[] messageBytes)
+        public void Send(SocketAsyncEventArgs e, IScsMessage message, byte[] messageBytes)
         {
             //实例化MessageUserToken
             var msg = new MessageUserToken(message, messageBytes);
 
             lock (_syncLock)
             {
-                SendAsync(_sendEventArgs, msg);
-
-                try
+                if (_isCompleted)
                 {
-                    if (_manualResetEvent.WaitOne())
-                    {
-                        _manualResetEvent.Reset();
-                    }
+                    _isCompleted = false;
+                    SendAsync(e, msg);
                 }
-                catch
+                else
                 {
+                    _msgQueue.Enqueue(msg);
                 }
             }
         }
 
         /// <summary>
-        /// 重置消息
+        /// 重发消息
         /// </summary>
         /// <param name="e"></param>
-        public void Reset(SocketAsyncEventArgs e)
+        public void Resend(SocketAsyncEventArgs e)
         {
-            try
+            lock (_syncLock)
             {
-                e.SetBuffer(null, 0, 0);
-                e.UserToken = null;
-
-                _manualResetEvent.Set();
-            }
-            catch
-            {
+                if (_msgQueue.Count == 0)
+                {
+                    _isCompleted = true;
+                }
+                else
+                {
+                    var message = _msgQueue.Dequeue();
+                    SendAsync(e, message);
+                }
             }
         }
 
@@ -92,6 +91,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 if (e == null) return;
+                if (message == null) return;
 
                 e.UserToken = message.Message;
 
@@ -110,7 +110,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 message.Dispose();
-                message = null;
             }
         }
 
@@ -123,12 +122,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                _manualResetEvent.Close();
+                lock (_syncLock)
+                {
+                    while (_msgQueue.Count > 0)
+                    {
+                        var message = _msgQueue.Dequeue();
+                        message.Dispose();
+                    }
+                }
             }
-            catch (Exception ex) { }
-            finally
+            catch (Exception ex)
             {
-                _manualResetEvent = null;
+                lock (_syncLock)
+                {
+                    _msgQueue.Clear();
+                }
             }
         }
 
