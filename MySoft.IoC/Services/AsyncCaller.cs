@@ -299,9 +299,39 @@ namespace MySoft.IoC.Services
             };
 
             //设置耗时时间
-            newMsg.ElapsedTime = 0;
+            if (NeedCloneObject(reqMsg))
+            {
+                var watch = Stopwatch.StartNew();
+
+                try
+                {
+                    //反序列化数据
+                    newMsg.Value = CoreHelper.CloneObject(newMsg.Value);
+
+                    //设置耗时
+                    newMsg.ElapsedTime = watch.ElapsedMilliseconds;
+                }
+                catch (Exception ex) { }
+                finally
+                {
+                    if (watch.IsRunning)
+                    {
+                        watch.Stop();
+                    }
+                }
+            }
 
             return newMsg;
+        }
+
+        /// <summary>
+        /// 判断是否序列化
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private bool NeedCloneObject(RequestMessage reqMsg)
+        {
+            return !(fromServer || reqMsg.InvokeMethod);
         }
     }
 }

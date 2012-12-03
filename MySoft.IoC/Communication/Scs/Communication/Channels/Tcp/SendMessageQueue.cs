@@ -138,6 +138,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     _msgQueue.Clear();
                 }
             }
+            finally
+            {
+                _msgQueue = null;
+            }
         }
 
         #endregion
