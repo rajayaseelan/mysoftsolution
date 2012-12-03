@@ -29,7 +29,7 @@ namespace MySoft.IoC
         /// </summary>
         public event ServerNodeEventHandler OnServerNode;
 
-        private const int DefaultDisconnectionAttemptTimeout = 5 * 60000; //5 minutes.
+        private const int DefaultDisconnectionAttemptTimeout = 2 * 60000; //2 minutes.
 
         private CastleServiceConfiguration config;
         private IScsServer server;

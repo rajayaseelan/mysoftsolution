@@ -119,6 +119,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _running = false;
 
+            CommunicationState = CommunicationStates.Disconnected;
+            OnDisconnected();
+
             try
             {
                 _clientSocket.Shutdown(SocketShutdown.Both);
@@ -129,9 +132,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 Dispose();
             }
-
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
         }
 
         /// <summary>
@@ -147,16 +147,24 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                WireProtocol.Reset();
+                try
+                {
+                    WireProtocol.Reset();
 
-                _sendQueue.Completed -= IOCompleted;
-                _sendQueue.Dispose();
+                    _sendQueue.Completed -= IOCompleted;
+                    _sendQueue.Dispose();
+                }
+                catch (Exception ex) { }
+                finally
+                {
+                    _sendQueue = null;
+                    _receiveBuffer = null;
+                    WireProtocol = null;
 
-                _sendEventArgs = null;
-                _receiveEventArgs = null;
-                _sendQueue = null;
-                _receiveBuffer = null;
-                WireProtocol = null;
+                    _sendEventArgs = null;
+                    _receiveEventArgs = null;
+                    _remoteEndPoint = null;
+                }
             }
         }
 
