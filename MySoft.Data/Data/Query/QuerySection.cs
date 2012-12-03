@@ -880,37 +880,40 @@ namespace MySoft.Data
                     return (SourceList<TResult>)obj;
                 }
 
-                using (SourceReader reader = ExecuteDataReader(queryString, query.Parameters))
+                lock (query)
                 {
-                    ArrayList<TResult> list = new ArrayList<TResult>();
-
-                    if (typeof(TResult) == typeof(object[]))
+                    using (SourceReader reader = ExecuteDataReader(queryString, query.Parameters))
                     {
-                        while (reader.Read())
+                        ArrayList<TResult> list = new ArrayList<TResult>();
+
+                        if (typeof(TResult) == typeof(object[]))
                         {
-                            List<object> objs = new List<object>();
-                            for (int row = 0; row < reader.FieldCount; row++)
+                            while (reader.Read())
                             {
-                                objs.Add(reader.GetValue(row));
+                                List<object> objs = new List<object>();
+                                for (int row = 0; row < reader.FieldCount; row++)
+                                {
+                                    objs.Add(reader.GetValue(row));
+                                }
+
+                                TResult result = (TResult)(objs.ToArray() as object);
+                                list.Add(result);
                             }
-
-                            TResult result = (TResult)(objs.ToArray() as object);
-                            list.Add(result);
                         }
-                    }
-                    else
-                    {
-                        while (reader.Read())
+                        else
                         {
-                            list.Add(reader.GetValue<TResult>(0));
+                            while (reader.Read())
+                            {
+                                list.Add(reader.GetValue<TResult>(0));
+                            }
                         }
+
+                        SetCache<T>("ListObject", cacheKey, list);
+
+                        reader.Close();
+
+                        return list;
                     }
-
-                    SetCache<T>("ListObject", cacheKey, list);
-
-                    reader.Close();
-
-                    return list;
                 }
             }
             catch
@@ -932,23 +935,26 @@ namespace MySoft.Data
                     return (SourceList<TResult>)obj;
                 }
 
-                using (SourceReader reader = ExecuteDataReader(queryString, query.Parameters))
+                lock (query)
                 {
-                    SourceList<TResult> list = new SourceList<TResult>();
-
-                    while (reader.Read())
+                    using (SourceReader reader = ExecuteDataReader(queryString, query.Parameters))
                     {
-                        TResult entity = CoreHelper.CreateInstance<TResult>();
-                        entity.SetDbValues(reader);
-                        entity.Attach();
-                        list.Add(entity);
+                        SourceList<TResult> list = new SourceList<TResult>();
+
+                        while (reader.Read())
+                        {
+                            TResult entity = CoreHelper.CreateInstance<TResult>();
+                            entity.SetDbValues(reader);
+                            entity.Attach();
+                            list.Add(entity);
+                        }
+
+                        SetCache<TResult>("ListEntity", cacheKey, list);
+
+                        reader.Close();
+
+                        return list;
                     }
-
-                    SetCache<TResult>("ListEntity", cacheKey, list);
-
-                    reader.Close();
-
-                    return list;
                 }
             }
             catch

@@ -10,7 +10,6 @@ namespace MySoft
     /// </summary>
     [Serializable]
     internal class CacheObject<T>
-        where T : class
     {
         /// <summary>
         /// 缓存对象

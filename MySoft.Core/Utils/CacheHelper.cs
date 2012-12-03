@@ -267,8 +267,10 @@ namespace MySoft
     /// 缓存扩展类
     /// </summary>
     public static class CacheHelper<T>
-        where T : class
     {
+        /// <summary>
+        /// Lock object.
+        /// </summary>
         private static readonly object _syncRoot = new object();
 
         /// <summary>
