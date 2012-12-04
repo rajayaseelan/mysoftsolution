@@ -8,10 +8,19 @@ using MySoft.IoC.Messages;
 namespace MySoft.IoC.Services
 {
     /// <summary>
+    /// 异步调用委托
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="reqMsg"></param>
+    /// <returns></returns>
+    internal delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
+
+    /// <summary>
     /// 异步调用器
     /// </summary>
     internal class AsyncCaller
     {
+        private AsyncMethodCaller caller;
         private IService service;
         private ICacheStrategy cache;
         private TimeSpan timeout;
@@ -30,6 +39,7 @@ namespace MySoft.IoC.Services
             this.timeout = timeout;
             this.enabledCache = false;
             this.fromServer = fromServer;
+            this.caller = new AsyncMethodCaller(GetSyncResponse);
         }
 
         /// <summary>
@@ -148,14 +158,14 @@ namespace MySoft.IoC.Services
         private ResponseMessage GetAsyncResponse(OperationContext context, RequestMessage reqMsg)
         {
             //异步调用
-            using (var worker = new WorkerItem(WaitCallback, context, reqMsg))
+            using (var worker = new WorkerItem(caller, context, reqMsg))
             {
                 ResponseMessage resMsg = null;
 
                 try
                 {
                     //返回响应结果
-                    resMsg = worker.GetResult(timeout);
+                    resMsg = worker.GetResult(AsyncCallback, timeout);
                 }
                 catch (Exception ex)
                 {
@@ -171,22 +181,24 @@ namespace MySoft.IoC.Services
         /// 运行请求
         /// </summary>
         /// <param name="state"></param>
-        private void WaitCallback(object state)
+        private void AsyncCallback(IAsyncResult ar)
         {
-            var worker = state as WorkerItem;
+            var worker = ar.AsyncState as WorkerItem;
 
             try
             {
-                //获取响应信息
-                var resMsg = GetSyncResponse(worker.Context, worker.Request);
-
                 //如果已经完成，直接返回
                 if (worker.IsCompleted) return;
 
+                //获取响应信息
+                var resMsg = caller.EndInvoke(ar);
+
                 worker.Set(resMsg);
             }
-            catch
+            catch (Exception ex) { }
+            finally
             {
+                ar.AsyncWaitHandle.Close();
             }
         }
 

@@ -120,6 +120,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public void Dispose()
         {
+            if (_msgQueue == null) return;
+
             try
             {
                 lock (_syncLock)

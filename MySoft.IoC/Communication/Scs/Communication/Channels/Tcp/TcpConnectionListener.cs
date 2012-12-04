@@ -183,7 +183,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                //e.Completed -= IOCompleted;
+                e.Completed -= IOCompleted;
                 e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
                 e.UserToken = null;
@@ -192,6 +192,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 e.Dispose();
+                e = null;
             }
         }
     }
