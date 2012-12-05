@@ -164,8 +164,8 @@ var Ajax = new function () {
     this.cache = {};
     this.getRequestURL = function (url) {
         if (url) return url;
-        if (typeof (ajaxRequestInfo) != "undefined") {
-            return ajaxRequestInfo.url;
+        if (typeof (ajaxPage) != "undefined") {
+            return ajaxPage.url;
         }
         url = location.href;
         if (url.indexOf("#") > 0) {
@@ -413,14 +413,14 @@ var AjaxClass = function (url) {
 
 Object.extend(AjaxClass.prototype, {
     invoke: function (method, args, type, async, callback) {
-        if (typeof (ajaxRequestInfo) == "undefined") return;
+        if (typeof (ajaxPage) == "undefined") return;
 
         //set request header
         var header = [];
         header.add(['X-Ajax-Process', 'true']);
         header.add(['X-Ajax-Request', 'true']);
         header.add(['X-Ajax-Method', method]);
-        header.add(['X-Ajax-Key', ajaxRequestInfo.key]);
+        header.add(['X-Ajax-Key', ajaxPage.key]);
 
         Ajax.send(this.url, args, type, async, header, function (xmlHttp) {
             json = Ajax.getRequestData(xmlHttp, 'json');
@@ -450,7 +450,7 @@ Object.extend(AjaxClass.prototype, {
 
 Object.extend(Ajax, {
     registerPage: function (url) {
-        if (typeof (ajaxRequestInfo) == "undefined") return null;
+        if (typeof (ajaxPage) == "undefined") return null;
         if (url == window) url = this.getRequestURL();
         var header = [['X-Ajax-Register', 'true']];
         var methods = Ajax.getData(url, 'json', header);
@@ -531,7 +531,7 @@ Object.extend(Ajax, {
     * option is callback,template,interval and cache
     */
     updatePanel: function (obj, path, args, option) {
-        if (typeof (ajaxRequestInfo) == "undefined") return;
+        if (typeof (ajaxPage) == "undefined") return;
         var url = this.getRequestURL();
         var op = {
             callback: null,
@@ -546,7 +546,7 @@ Object.extend(Ajax, {
         header.add(['X-Ajax-Process', 'true']);
         header.add(['X-Ajax-Load', 'true']);
         header.add(['X-Ajax-Path', path]);
-        header.add(['X-Ajax-Key', ajaxRequestInfo.key]);
+        header.add(['X-Ajax-Key', ajaxPage.key]);
         if (op.template) {
             header.add(['X-Ajax-Template', op.template]);
         }

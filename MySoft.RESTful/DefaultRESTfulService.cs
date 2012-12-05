@@ -125,7 +125,7 @@ namespace MySoft.RESTful
             else
             {
                 result = GetResponseString(ParameterFormat.Jsonp, kind, method, null, null);
-                response.ContentType = "application/javascript;charset=utf-8";
+                response.ContentType = "text/javascript;charset=utf-8";
                 result = string.Format("{0}({1});", callback, result ?? "{}");
             }
 

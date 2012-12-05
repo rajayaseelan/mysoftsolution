@@ -32,7 +32,7 @@ namespace MySoft.Web
         public void ProcessRequest(HttpContext context)
         {
             string ajaxKey = "AjaxProcess", url = string.Empty, space = string.Empty;
-            string[] split = context.Request.Url.Query.Remove(0, 1).Split(';');
+            string[] split = HttpUtility.UrlDecode(context.Request.Url.Query.Remove(0, 1)).Split(';');
 
             url = CoreHelper.Decrypt(split[0], ajaxKey);
             url = (url.IndexOf('/') >= 0 ? url : "/" + url);
@@ -40,14 +40,14 @@ namespace MySoft.Web
             if (string.IsNullOrEmpty(space)) space = "AjaxMethods";
 
             StringBuilder sb = new StringBuilder();
-            sb.Append("var ajaxRequestInfo = { \r\n");
-            sb.Append("\t\turl : '" + url + "',\r\n");
-            sb.Append("\t\tkey : '" + WebHelper.MD5Encrypt(ajaxKey) + "'\r\n");
+            sb.Append("var ajaxPage = { \r\n");
+            sb.Append("\t\t\"url\" : \"" + url + "\",\r\n");
+            sb.Append("\t\t\"key\" : \"" + WebHelper.MD5Encrypt(ajaxKey) + "\"\r\n");
             sb.Append("\t};\r\n\r\n");
             sb.Append(string.Format("var {0} = Ajax.registerPage(this);", space));
 
             //写入javascript代码
-            context.Response.ContentType = "application/x-javascript";
+            context.Response.ContentType = "text/javascript;charset=utf-8";
 
             //将javascript代码输出到文件
             context.Response.Clear();
@@ -55,8 +55,9 @@ namespace MySoft.Web
             context.Response.Flush();
 
             //结束请求
-            context.Response.Close();
-            context.ApplicationInstance.CompleteRequest();
+            //context.Response.Close();
+            //context.ApplicationInstance.CompleteRequest();
+            context.Response.End();
         }
     }
 }

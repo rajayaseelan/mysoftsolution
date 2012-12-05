@@ -46,7 +46,7 @@ namespace MySoft.Web
                 if (ajaxSpace != null) query += ";" + CoreHelper.Encrypt(ajaxSpace.Name ?? urlType.Name, ajaxKey);
             }
 
-            string urlResource = page.Request.ApplicationPath + (page.Request.ApplicationPath.EndsWith("/") ? "" : "/") + "Ajax/" + type.FullName + ".ashx?" + query;
+            string urlResource = page.Request.ApplicationPath + (page.Request.ApplicationPath.EndsWith("/") ? "" : "/") + "Ajax/" + type.FullName + ".ashx?" + HttpUtility.UrlEncode(query);
 
             #endregion
 

@@ -40,7 +40,7 @@ namespace MySoft.IoC.Services
         {
             try
             {
-                return ev.WaitOne(timeout, true);
+                return ev.WaitOne(timeout, false);
             }
             catch
             {
@@ -90,6 +90,7 @@ namespace MySoft.IoC.Services
         {
             this.ev.Close();
 
+            this.ev = null;
             this.reqMsg = null;
             this.resMsg = null;
         }

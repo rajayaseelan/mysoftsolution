@@ -64,5 +64,12 @@ namespace MySoft.Data
         /// <param name="errors">输出的错误</param>
         /// <returns></returns>
         int Execute(out IList<Exception> errors);
+
+        /// <summary>
+        /// 执行批处理操作
+        /// </summary>
+        /// <param name="errors">输出的错误</param>
+        /// <returns></returns>
+        int Execute(out IList<DataException> errors);
     }
 }

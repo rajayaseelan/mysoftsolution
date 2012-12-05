@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
@@ -8,16 +9,13 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class WorkerItem : IDisposable
     {
-        /// <summary>
-        /// 完成状态
-        /// </summary>
-        public bool IsCompleted { get; private set; }
-
         //响应对象
-        private readonly AsyncMethodCaller caller;
         private readonly OperationContext context;
         private readonly RequestMessage reqMsg;
+        private AsyncMethodCaller caller;
+        private Thread currentThread;
         private WaitResult waitResult;
+        private bool isCompleted;
 
         /// <summary>
         /// 实例化WorkerItem
@@ -27,28 +25,30 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         public WorkerItem(AsyncMethodCaller caller, OperationContext context, RequestMessage reqMsg)
         {
-            this.IsCompleted = false;
-
             this.caller = caller;
             this.context = context;
             this.reqMsg = reqMsg;
             this.waitResult = new WaitResult(reqMsg);
+            this.isCompleted = false;
         }
 
         /// <summary>
         /// 获取结果并处理超时
         /// </summary>
-        /// <param name="callback"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        public ResponseMessage GetResult(AsyncCallback callback, TimeSpan timeout)
+        public ResponseMessage GetResult(TimeSpan timeout)
         {
             //开始异步请求
-            caller.BeginInvoke(context, reqMsg, callback, this);
+            ThreadPool.QueueUserWorkItem(WaitCallback);
 
+            //等待响应
             if (!waitResult.WaitOne(timeout))
             {
-                this.IsCompleted = true;
+                isCompleted = true;
+
+                //结束线程
+                AbortThread();
 
                 //超时异常信息
                 return GetTimeoutResponse(reqMsg, timeout);
@@ -57,16 +57,66 @@ namespace MySoft.IoC.Services
             return waitResult.Message;
         }
 
-        /// <summary>
-        /// 设置响应信息
-        /// </summary>
-        /// <param name="resMsg"></param>
-        /// <returns></returns>
-        public bool Set(ResponseMessage resMsg)
+        private void AbortThread()
         {
-            this.IsCompleted = true;
+            try
+            {
+                if (currentThread != null)
+                {
+                    //结束线程
+                    var state = GetThreadState(currentThread.ThreadState);
 
-            return waitResult.Set(resMsg);
+                    switch (state)
+                    {
+                        case ThreadState.WaitSleepJoin:
+                            currentThread.Interrupt();
+                            break;
+                        case ThreadState.Running:
+                            currentThread.Abort();
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        /// <summary>
+        /// 线程状态
+        /// </summary>
+        /// <param name="ts"></param>
+        /// <returns></returns>
+        private ThreadState GetThreadState(ThreadState ts)
+        {
+            return ts & (ThreadState.Aborted | ThreadState.AbortRequested |
+                         ThreadState.Stopped | ThreadState.Unstarted |
+                         ThreadState.WaitSleepJoin);
+        }
+
+        /// <summary>
+        /// 运行请求
+        /// </summary>
+        /// <param name="state"></param>
+        private void WaitCallback(object state)
+        {
+            currentThread = Thread.CurrentThread;
+
+            try
+            {
+                //获取响应信息
+                var resMsg = caller.Invoke(context, reqMsg);
+
+                //完成直接退出
+                if (isCompleted) return;
+
+                isCompleted = true;
+
+                waitResult.Set(resMsg);
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
         #region IDisposable 成员
@@ -76,10 +126,12 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            this.context.Dispose();
+            context.Dispose();
+            waitResult.Dispose();
 
-            this.waitResult.Dispose();
-            this.waitResult = null;
+            waitResult = null;
+            caller = null;
+            currentThread = null;
         }
 
         #endregion

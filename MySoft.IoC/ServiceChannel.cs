@@ -122,11 +122,6 @@ namespace MySoft.IoC
                 e.Channel.SendMessage(message);
             }
             catch (SocketException ex) { }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex)
-            {
-                Thread.ResetAbort();
-            }
             catch (Exception ex)
             {
                 try

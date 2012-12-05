@@ -210,7 +210,7 @@ namespace MySoft.IoC.HttpProxy
                         if (string.IsNullOrEmpty(jsoncallback))
                         {
                             //输出为javascript格式数据
-                            response.ContentType = "application/javascript;charset=utf-8";
+                            response.ContentType = "text/javascript;charset=utf-8";
                             jsonString = string.Format("{0}({1});", callback, jsonString ?? "{}");
                         }
                         else

@@ -159,9 +159,9 @@ namespace MySoft.Web
         {
             //判断是否为xml格式
             if (fileExtension.ToLower() == ".xml")
-                context.Response.ContentType = "text/xml";
+                context.Response.ContentType = "text/xml;charset=utf-8";
             else if (fileExtension.ToLower() == ".js")
-                context.Response.ContentType = "application/javascript";
+                context.Response.ContentType = "text/javascript;charset=utf-8";
         }
 
         /// <summary>

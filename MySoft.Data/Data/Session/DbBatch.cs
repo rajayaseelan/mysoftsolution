@@ -46,6 +46,23 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="errors">输出的错误</param>
         /// <returns></returns>
+        public int Execute(out IList<DataException> errors)
+        {
+            IList<Exception> errs;
+            var ret = Execute(out errs);
+
+            errors = errs.Where(p => p is DataException)
+                        .Select(p => p as DataException)
+                        .ToList();
+
+            return ret;
+        }
+
+        /// <summary>
+        /// 执行批处理操作
+        /// </summary>
+        /// <param name="errors">输出的错误</param>
+        /// <returns></returns>
         public int Execute(out IList<Exception> errors)
         {
             //实例化errors

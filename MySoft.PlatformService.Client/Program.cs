@@ -492,7 +492,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 5);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
                     //var value = service.GetUsersString(count, out length);
 
                     //var value = service.GetUser(new Random().Next(1, 10000));
