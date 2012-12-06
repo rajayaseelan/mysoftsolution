@@ -15,16 +15,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public event EventHandler<SocketAsyncEventArgs> Completed;
 
-        private readonly SocketAsyncEventArgs _sendEventArgs;
         private readonly Socket _clientSocket;
-
-        private bool _isCompleted;
+        private readonly SocketAsyncEventArgs _sendEventArgs;
         private Queue<BufferMessage> _msgQueue = new Queue<BufferMessage>();
 
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
         /// </summary>
         private readonly object _syncLock;
+        private bool _isCompleted;
 
         /// <summary>
         /// 实例化ScsMessageQueue
@@ -40,7 +39,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// 发送数据包
+        /// 发送数据服务
         /// </summary>
         /// <param name="message"></param>
         /// <param name="messageBytes"></param>
@@ -64,16 +63,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// 重置消息
+        /// 发送数据服务
         /// </summary>
         /// <param name="e"></param>
-        public void Reset(SocketAsyncEventArgs e)
+        public void Send(SocketAsyncEventArgs e)
         {
-            e.SetBuffer(null, 0, 0);
-            e.UserToken = null;
-
             lock (_syncLock)
             {
+                e.SetBuffer(null, 0, 0);
+                e.UserToken = _clientSocket;
+
                 if (_msgQueue.Count == 0)
                 {
                     _isCompleted = true;

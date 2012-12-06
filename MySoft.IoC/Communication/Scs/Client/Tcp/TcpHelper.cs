@@ -25,6 +25,8 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
                 socket.Blocking = false;
                 socket.Connect(endPoint);
                 socket.Blocking = true;
+                socket.NoDelay = true;
+
                 return socket;
             }
             catch (SocketException socketException)

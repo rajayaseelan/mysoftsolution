@@ -36,7 +36,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void IOCompleted(object sender, SocketAsyncEventArgs e)
+        private void IO_Completed(object sender, SocketAsyncEventArgs e)
         {
             switch (e.LastOperation)
             {
@@ -109,7 +109,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private void StartAcceptSocket()
         {
-            var _acceptEventArgs = CreateSocketEventArgs();
+            var _acceptEventArgs = CreateAsyncSEA();
 
             try
             {
@@ -120,7 +120,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                DisposeSocketEventArgs(_acceptEventArgs);
+                DisposeAsyncSEA(_acceptEventArgs);
 
                 StopSocket();
 
@@ -154,7 +154,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                DisposeSocketEventArgs(e);
+                DisposeAsyncSEA(e);
             }
 
             //重新开始接收
@@ -165,10 +165,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Create socket event args.
         /// </summary>
         /// <returns></returns>
-        private SocketAsyncEventArgs CreateSocketEventArgs()
+        private SocketAsyncEventArgs CreateAsyncSEA()
         {
             var e = new SocketAsyncEventArgs();
-            e.Completed += IOCompleted;
+            e.Completed += IO_Completed;
 
             return e;
         }
@@ -177,16 +177,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Dispose socket event args.
         /// </summary>
         /// <param name="e"></param>
-        private void DisposeSocketEventArgs(SocketAsyncEventArgs e)
+        private void DisposeAsyncSEA(SocketAsyncEventArgs e)
         {
             if (e == null) return;
 
             try
             {
-                e.Completed -= IOCompleted;
-                e.SetBuffer(null, 0, 0);
+                e.Completed -= IO_Completed;
                 e.AcceptSocket = null;
-                e.UserToken = null;
             }
             catch (Exception ex) { }
             finally
