@@ -20,11 +20,6 @@ namespace MySoft.IoC
         public AppCaller Caller { get; set; }
 
         /// <summary>
-        /// 通道信息
-        /// </summary>
-        public IScsServerClient Channel { get; set; }
-
-        /// <summary>
         /// 请求信息
         /// </summary>
         public RequestMessage Request { get; set; }
@@ -39,7 +34,6 @@ namespace MySoft.IoC
         public void Dispose()
         {
             this.Caller = null;
-            this.Channel = null;
             this.Request = null;
             this.Message = null;
         }

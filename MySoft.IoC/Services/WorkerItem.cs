@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Remoting.Messaging;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
@@ -9,8 +10,8 @@ namespace MySoft.IoC.Services
     internal class WorkerItem : IDisposable
     {
         //响应对象
-        private readonly OperationContext context;
-        private readonly RequestMessage reqMsg;
+        private OperationContext context;
+        private RequestMessage reqMsg;
         private AsyncMethodCaller workCaller;
         private WaitResult waitResult;
         private bool isCompleted;
@@ -64,23 +65,14 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 设置响应信息
         /// </summary>
-        /// <param name="ar"></param>
+        /// <param name="resMsg"></param>
         /// <returns></returns>
-        public bool Set(IAsyncResult ar)
+        public bool Set(ResponseMessage resMsg)
         {
-            try
-            {
-                var resMsg = workCaller.EndInvoke(ar);
-
-                if (isCompleted || resMsg == null)
-                    return false;
-                else
-                    return waitResult.Set(resMsg);
-            }
-            finally
-            {
-                workCaller = null;
-            }
+            if (isCompleted || resMsg == null)
+                return false;
+            else
+                return waitResult.Set(resMsg);
         }
 
         /// <summary>
@@ -89,12 +81,15 @@ namespace MySoft.IoC.Services
         /// <param name="ar"></param>
         private void AsyncCallback(IAsyncResult ar)
         {
-            var item = ar.AsyncState as WorkerItem;
+            var worker = ar.AsyncState as WorkerItem;
 
             try
             {
+                var caller = (ar as AsyncResult).AsyncDelegate as AsyncMethodCaller;
+                var resMsg = workCaller.EndInvoke(ar);
+
                 //设置响应信息
-                item.Set(ar);
+                worker.Set(resMsg);
             }
             catch (Exception ex) { }
             finally
@@ -133,6 +128,8 @@ namespace MySoft.IoC.Services
             context.Dispose();
             waitResult.Dispose();
 
+            context = null;
+            reqMsg = null;
             waitResult = null;
         }
 

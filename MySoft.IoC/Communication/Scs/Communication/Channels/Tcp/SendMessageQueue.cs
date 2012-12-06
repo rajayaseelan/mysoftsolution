@@ -15,10 +15,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public event EventHandler<SocketAsyncEventArgs> Completed;
 
+        private readonly SocketAsyncEventArgs _sendEventArgs;
         private readonly Socket _clientSocket;
 
         private bool _isCompleted;
-        private Queue<MessageUserToken> _msgQueue = new Queue<MessageUserToken>();
+        private Queue<BufferMessage> _msgQueue = new Queue<BufferMessage>();
 
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
@@ -29,9 +30,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// 实例化ScsMessageQueue
         /// </summary>
         /// <param name="clientSocket"></param>
-        public SendMessageQueue(Socket clientSocket)
+        /// <param name="sendEventArgs"></param>
+        public SendMessageQueue(Socket clientSocket, SocketAsyncEventArgs sendEventArgs)
         {
             this._clientSocket = clientSocket;
+            this._sendEventArgs = sendEventArgs;
             this._syncLock = new object();
             this._isCompleted = true;
         }
@@ -39,20 +42,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// 发送数据包
         /// </summary>
-        /// <param name="e"></param>
         /// <param name="message"></param>
         /// <param name="messageBytes"></param>
-        public void Send(SocketAsyncEventArgs e, IScsMessage message, byte[] messageBytes)
+        public void Send(IScsMessage message, byte[] messageBytes)
         {
-            //实例化MessageUserToken
-            var msg = new MessageUserToken(message, messageBytes);
+            //实例化BufferMessage
+            var msg = new BufferMessage(message, messageBytes);
 
             lock (_syncLock)
             {
                 if (_isCompleted)
                 {
                     _isCompleted = false;
-                    SendAsync(e, msg);
+                    SendAsync(_sendEventArgs, msg);
                 }
                 else
                 {
@@ -62,11 +64,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// 重发消息
+        /// 重置消息
         /// </summary>
         /// <param name="e"></param>
-        public void Resend(SocketAsyncEventArgs e)
+        public void Reset(SocketAsyncEventArgs e)
         {
+            e.SetBuffer(null, 0, 0);
+            e.UserToken = null;
+
             lock (_syncLock)
             {
                 if (_msgQueue.Count == 0)
@@ -86,17 +91,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         /// <param name="e"></param>
         /// <param name="message"></param>
-        private void SendAsync(SocketAsyncEventArgs e, MessageUserToken message)
+        private void SendAsync(SocketAsyncEventArgs e, BufferMessage message)
         {
             try
             {
                 if (e == null) return;
                 if (message == null) return;
 
-                e.UserToken = message.Message;
-
                 //设置缓冲区
                 e.SetBuffer(message.Buffer, 0, message.Buffer.Length);
+
+                e.UserToken = message.Message;
 
                 //开始异步发送
                 if (!_clientSocket.SendAsync(e))
@@ -120,29 +125,18 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public void Dispose()
         {
-            if (_msgQueue == null) return;
-
             try
             {
-                lock (_syncLock)
+                while (_msgQueue.Count > 0)
                 {
-                    while (_msgQueue.Count > 0)
-                    {
-                        var message = _msgQueue.Dequeue();
-                        message.Dispose();
-                    }
+                    var message = _msgQueue.Dequeue();
+                    message.Dispose();
                 }
             }
-            catch (Exception ex)
-            {
-                lock (_syncLock)
-                {
-                    _msgQueue.Clear();
-                }
-            }
+            catch (Exception ex) { }
             finally
             {
-                _msgQueue = null;
+                _msgQueue.Clear();
             }
         }
 

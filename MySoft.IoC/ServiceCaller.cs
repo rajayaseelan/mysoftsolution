@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
@@ -64,12 +65,13 @@ namespace MySoft.IoC
         /// <summary>
         /// 调用方法
         /// </summary>
+        /// <param name="channel"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public bool InvokeResponse(CallerContext e)
+        public bool InvokeResponse(IScsServerClient channel, CallerContext e)
         {
             //获取上下文
-            using (var context = GetOperationContext(e))
+            using (var context = GetOperationContext(channel, e.Caller))
             {
                 try
                 {
@@ -92,25 +94,26 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取上下文
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="channel"></param>
+        /// <param name="caller"></param>
         /// <returns></returns>
-        private OperationContext GetOperationContext(CallerContext e)
+        private OperationContext GetOperationContext(IScsServerClient channel, AppCaller caller)
         {
             //实例化当前上下文
             Type callbackType = null;
 
             lock (callbackTypes)
             {
-                if (callbackTypes.ContainsKey(e.Caller.ServiceName))
+                if (callbackTypes.ContainsKey(caller.ServiceName))
                 {
-                    callbackType = callbackTypes[e.Caller.ServiceName];
+                    callbackType = callbackTypes[caller.ServiceName];
                 }
             }
 
-            return new OperationContext(e.Channel, callbackType)
+            return new OperationContext(channel, callbackType)
             {
                 Container = container,
-                Caller = e.Caller
+                Caller = caller
             };
         }
 

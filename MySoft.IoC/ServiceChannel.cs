@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using MySoft.IoC.Communication.Scs.Communication;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
@@ -10,16 +11,19 @@ namespace MySoft.IoC
     /// </summary>
     internal class ServiceChannel : IDisposable
     {
+        private IScsServerClient channel;
         private ServiceCaller caller;
         private ServerStatusService status;
 
         /// <summary>
         /// 实例化ServiceChannel
         /// </summary>
+        /// <param name="channel"></param>
         /// <param name="caller"></param>
         /// <param name="status"></param>
-        public ServiceChannel(ServiceCaller caller, ServerStatusService status)
+        public ServiceChannel(IScsServerClient channel, ServiceCaller caller, ServerStatusService status)
         {
+            this.channel = channel;
             this.caller = caller;
             this.status = status;
         }
@@ -29,10 +33,10 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="e"></param>
         /// <param name="action"></param>
-        public void SendMessage(CallerContext e, Action<CallEventArgs> action)
+        public void Send(CallerContext e, Action<CallEventArgs> action)
         {
             //发送结果
-            if (caller.InvokeResponse(e))
+            if (caller.InvokeResponse(channel, e))
             {
                 //状态服务跳过
                 if (e.Request.ServiceName != typeof(IStatusService).FullName)
@@ -48,7 +52,7 @@ namespace MySoft.IoC
                 }
 
                 //发送消息
-                SendMessageToChannel(e);
+                SendMessage(e);
             }
         }
 
@@ -89,16 +93,16 @@ namespace MySoft.IoC
         /// 发送消息
         /// </summary>
         /// <param name="e"></param>
-        private void SendMessageToChannel(CallerContext e)
+        private void SendMessage(CallerContext e)
         {
-            if (e.Channel.CommunicationState != CommunicationStates.Connected) return;
+            if (channel.CommunicationState != CommunicationStates.Connected) return;
 
             try
             {
                 var message = new ScsResultMessage(e.Message, e.MessageId);
 
                 //发送消息
-                e.Channel.SendMessage(message);
+                channel.SendMessage(message);
             }
             catch (SocketException ex) { }
             catch (Exception ex)
@@ -115,7 +119,7 @@ namespace MySoft.IoC
                     var message = new ScsResultMessage(resMsg, e.MessageId);
 
                     //发送消息
-                    e.Channel.SendMessage(message);
+                    channel.SendMessage(message);
                 }
                 catch
                 {
@@ -132,6 +136,7 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
+            this.channel = null;
             this.caller = null;
             this.status = null;
         }

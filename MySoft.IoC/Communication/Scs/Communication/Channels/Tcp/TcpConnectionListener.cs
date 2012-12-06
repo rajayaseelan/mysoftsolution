@@ -192,7 +192,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 e.Dispose();
-                e = null;
             }
         }
     }

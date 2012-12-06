@@ -64,7 +64,7 @@
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IServiceRecorder.cs" />
     <Compile Include="Common\RecordEventArgs.cs" />
-    <Compile Include="Communication\Scs\Communication\Channels\Tcp\MessageUserToken.cs" />
+    <Compile Include="Communication\Scs\Communication\Channels\Tcp\BufferMessage.cs" />
     <Compile Include="Communication\Scs\Communication\Channels\Tcp\SendMessageQueue.cs" />
     <Compile Include="Communication\Threading\Timer.cs">
       <SubType>Code</SubType>
