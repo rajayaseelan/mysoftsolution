@@ -20,6 +20,11 @@ namespace MySoft.IoC.Communication.Scs.Communication
         static CommunicationHelper()
         {
             pool = new SocketAsyncEventArgsPool(MaxCommunicationCount);
+
+            for (int i = 0; i < MaxCommunicationCount / 10; i++)
+            {
+                pool.Push(new SocketAsyncEventArgs());
+            }
         }
 
         /// <summary>

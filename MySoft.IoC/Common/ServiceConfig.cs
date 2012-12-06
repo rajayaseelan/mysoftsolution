@@ -35,6 +35,11 @@ namespace MySoft.IoC
         /// </summary>
         public const int DEFAULT_CLIENT_MAXPOOL = 100; //默认为100
 
+        /// <summary>
+        /// The default max caller.
+        /// </summary>
+        public const int DEFAULT_SERVER_MAX_CALLER = 30; //默认并发30
+
         #endregion
     }
 }

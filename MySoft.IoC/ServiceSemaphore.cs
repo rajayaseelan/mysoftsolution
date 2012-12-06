@@ -3,6 +3,7 @@ using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -11,24 +12,28 @@ namespace MySoft.IoC
     /// </summary>
     internal class ServiceSemaphore
     {
-        private ILog logger;
-        private ServiceCaller caller;
-        private ServerStatusService status;
-        private Action<CallEventArgs> action;
+        private readonly ILog logger;
+        private readonly ServiceCaller caller;
+        private readonly ServerStatusService status;
+        private readonly Semaphore semaphore;
+        private readonly Action<CallEventArgs> callback;
 
         /// <summary>
         /// 实例化ServiceSemaphore
         /// </summary>
+        /// <param name="maxCaller"></param>
         /// <param name="caller"></param>
         /// <param name="status"></param>
         /// <param name="logger"></param>
         /// <param name="action"></param>
-        public ServiceSemaphore(ServiceCaller caller, ServerStatusService status, ILog logger, Action<CallEventArgs> action)
+        public ServiceSemaphore(int maxCaller, ServiceCaller caller, ServerStatusService status, ILog logger, Action<CallEventArgs> action)
         {
             this.caller = caller;
             this.status = status;
             this.logger = logger;
-            this.action = action;
+            this.callback = action;
+
+            this.semaphore = new Semaphore(maxCaller, maxCaller);
         }
 
         /// <summary>
@@ -50,21 +55,30 @@ namespace MySoft.IoC
                                         Caller = CreateCaller(appPath, reqMsg)
                                     })
             {
-                if (channel.CommunicationState != CommunicationStates.Connected) return;
+                //等待资源
+                semaphore.WaitOne();
 
-                //实例化服务通道
-                using (var client = new ServiceChannel(channel, caller, status))
+                try
                 {
-                    try
+                    //连接状态
+                    if (channel.CommunicationState == CommunicationStates.Connected)
                     {
+                        //实例化服务通道
+                        var client = new ServiceChannel(channel, caller, status);
+
                         //发送消息
-                        client.Send(e, action);
+                        client.Send(e, callback);
                     }
-                    catch (Exception ex)
-                    {
-                        //写异常日志
-                        logger.WriteError(ex);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    //写异常日志
+                    logger.WriteError(ex);
+                }
+                finally
+                {
+                    //释放资源
+                    semaphore.Release();
                 }
             }
         }

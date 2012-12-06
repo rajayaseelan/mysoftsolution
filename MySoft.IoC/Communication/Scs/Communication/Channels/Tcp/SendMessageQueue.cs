@@ -14,6 +14,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// 用于完成异步操作的事件
         /// </summary>
         public event EventHandler<SocketAsyncEventArgs> Completed;
+        public event EventHandler<SocketAsyncEventArgs> Disposed;
 
         private readonly Socket _clientSocket;
         private readonly SocketAsyncEventArgs _sendEventArgs;
@@ -111,6 +112,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                if (Disposed != null)
+                {
+                    Disposed(_clientSocket, e);
+                }
+
+                throw ex;
+            }
             finally
             {
                 message.Dispose();
@@ -136,6 +146,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 _msgQueue.Clear();
+
+                if (Disposed != null)
+                {
+                    Disposed(_clientSocket, _sendEventArgs);
+                }
             }
         }
 

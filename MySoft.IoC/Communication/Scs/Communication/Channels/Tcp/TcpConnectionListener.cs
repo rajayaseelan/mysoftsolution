@@ -167,8 +167,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         private SocketAsyncEventArgs CreateAsyncSEA()
         {
-            var e = new SocketAsyncEventArgs();
+            var e = CommunicationHelper.Pop();
+
+            if (e == null)
+            {
+                e = new SocketAsyncEventArgs();
+            }
+
             e.Completed += IO_Completed;
+            e.UserToken = _listenerSocket;
 
             return e;
         }
@@ -184,12 +191,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 e.Completed -= IO_Completed;
+                e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
+                e.UserToken = null;
             }
             catch (Exception ex) { }
             finally
             {
-                e.Dispose();
+                CommunicationHelper.Push(e);
             }
         }
     }

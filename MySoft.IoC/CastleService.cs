@@ -82,7 +82,7 @@ namespace MySoft.IoC
             this.caller = new ServiceCaller(config, container);
 
             //实例化队列服务
-            this.semaphore = new ServiceSemaphore(caller, status, container, NotifyResult);
+            this.semaphore = new ServiceSemaphore(config.MaxCaller, caller, status, container, NotifyResult);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -319,10 +319,7 @@ namespace MySoft.IoC
                     var reqMsg = message.MessageValue as RequestMessage;
 
                     //调用服务
-                    lock (channel)
-                    {
-                        semaphore.Send(channel, message.MessageId, reqMsg);
-                    }
+                    semaphore.Send(channel, message.MessageId, reqMsg);
                 }
             }
             catch (Exception ex)

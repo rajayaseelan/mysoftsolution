@@ -9,11 +9,11 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务通道
     /// </summary>
-    internal class ServiceChannel : IDisposable
+    internal class ServiceChannel
     {
-        private IScsServerClient channel;
-        private ServiceCaller caller;
-        private ServerStatusService status;
+        private readonly IScsServerClient channel;
+        private readonly ServiceCaller caller;
+        private readonly ServerStatusService status;
 
         /// <summary>
         /// 实例化ServiceChannel
@@ -72,9 +72,6 @@ namespace MySoft.IoC
                 Value = e.Message.Value
             };
 
-            //调用计数服务
-            status.Counter(callArgs);
-
             //回调处理
             if (action != null)
             {
@@ -87,6 +84,9 @@ namespace MySoft.IoC
                 {
                 }
             }
+
+            //调用计数服务
+            status.Counter(callArgs);
         }
 
         /// <summary>
@@ -95,8 +95,6 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         private void SendMessage(CallerContext e)
         {
-            if (channel.CommunicationState != CommunicationStates.Connected) return;
-
             try
             {
                 var message = new ScsResultMessage(e.Message, e.MessageId);
@@ -104,6 +102,8 @@ namespace MySoft.IoC
                 //发送消息
                 channel.SendMessage(message);
             }
+            catch (CommunicationException ex) { }
+            catch (ObjectDisposedException ex) { }
             catch (SocketException ex) { }
             catch (Exception ex)
             {
@@ -128,19 +128,5 @@ namespace MySoft.IoC
                 throw;
             }
         }
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        public void Dispose()
-        {
-            this.channel = null;
-            this.caller = null;
-            this.status = null;
-        }
-
-        #endregion
     }
 }
