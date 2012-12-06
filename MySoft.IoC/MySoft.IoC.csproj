@@ -75,6 +75,7 @@
     <Compile Include="Nodes\NodeEventArgs.cs" />
     <Compile Include="Nodes\ServerConfig.cs" />
     <Compile Include="ServiceChannel.cs" />
+    <Compile Include="ServiceSemaphore.cs" />
     <Compile Include="Services\WorkerItem.cs" />
     <Compile Include="IServerConnect.cs" />
     <Compile Include="Communication\Scs\Client\ClientReConnecter.cs" />

@@ -51,7 +51,9 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             get
             {
-                return _communicationChannel.CommunicationState;
+                return _communicationChannel != null
+                           ? _communicationChannel.CommunicationState
+                           : CommunicationStates.Disconnected;
             }
         }
 
@@ -84,7 +86,9 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             get
             {
-                return _communicationChannel.LastReceivedMessageTime;
+                return _communicationChannel != null
+                           ? _communicationChannel.LastReceivedMessageTime
+                           : DateTime.MinValue;
             }
         }
 
@@ -95,7 +99,9 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             get
             {
-                return _communicationChannel.LastSentMessageTime;
+                return _communicationChannel != null
+                           ? _communicationChannel.LastSentMessageTime
+                           : DateTime.MinValue;
             }
         }
 

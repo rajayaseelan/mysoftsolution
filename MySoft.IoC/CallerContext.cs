@@ -1,4 +1,5 @@
-﻿using MySoft.IoC.Communication.Scs.Server;
+﻿using System;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
@@ -6,7 +7,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 调用上下文
     /// </summary>
-    internal class CallerContext
+    internal class CallerContext : IDisposable
     {
         /// <summary>
         /// 消息Id
@@ -32,5 +33,17 @@ namespace MySoft.IoC
         /// 响应信息
         /// </summary>
         public ResponseMessage Message { get; set; }
+
+        #region IDisposable 成员
+
+        public void Dispose()
+        {
+            this.Caller = null;
+            this.Channel = null;
+            this.Request = null;
+            this.Message = null;
+        }
+
+        #endregion
     }
 }

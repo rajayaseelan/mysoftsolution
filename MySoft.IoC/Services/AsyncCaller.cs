@@ -92,21 +92,35 @@ namespace MySoft.IoC.Services
             }
 
             //返回响应
-            return InvokeResponse(context, reqMsg);
+            return GetAsyncResponse(context, reqMsg);
         }
 
         /// <summary>
-        /// 同步或异步响应
+        /// 异常调用
         /// </summary>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage InvokeResponse(OperationContext context, RequestMessage reqMsg)
+        private ResponseMessage GetAsyncResponse(OperationContext context, RequestMessage reqMsg)
         {
-            if (reqMsg.ServiceName == typeof(IStatusService).FullName)
-                return GetSyncResponse(context, reqMsg); //同步调用
-            else
-                return GetAsyncResponse(context, reqMsg); //异步调用
+            //异步调用
+            using (var worker = new WorkerItem(GetSyncResponse, context, reqMsg))
+            {
+                ResponseMessage resMsg = null;
+
+                try
+                {
+                    //返回响应结果
+                    resMsg = worker.GetResult(timeout);
+                }
+                catch (Exception ex)
+                {
+                    //处理异常响应
+                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                }
+
+                return resMsg;
+            }
         }
 
         /// <summary>
@@ -148,34 +162,6 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 异常调用
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetAsyncResponse(OperationContext context, RequestMessage reqMsg)
-        {
-            //异步调用
-            using (var worker = new WorkerItem(GetSyncResponse, context, reqMsg))
-            {
-                ResponseMessage resMsg = null;
-
-                try
-                {
-                    //返回响应结果
-                    resMsg = worker.GetResult(timeout);
-                }
-                catch (Exception ex)
-                {
-                    //处理异常响应
-                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
-                }
-
-                return resMsg;
-            }
-        }
-
-        /// <summary>
         /// 从缓存中获取数据
         /// </summary>
         /// <param name="callKey"></param>
@@ -200,7 +186,7 @@ namespace MySoft.IoC.Services
                             var _reqMsg = arr[1] as RequestMessage;
 
                             //异步请求响应数据
-                            return InvokeResponse(_context, _reqMsg);
+                            return GetAsyncResponse(_context, _reqMsg);
 
                         }, array, CheckResponse);
             }
@@ -218,7 +204,7 @@ namespace MySoft.IoC.Services
                 if (resMsg == null)
                 {
                     //异步请求响应数据
-                    resMsg = InvokeResponse(context, reqMsg);
+                    resMsg = GetAsyncResponse(context, reqMsg);
 
                     if (CheckResponse(resMsg))
                     {

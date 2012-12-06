@@ -28,6 +28,7 @@ namespace MySoft.IoC
         private ScsTcpEndPoint epServer;
         private ServiceCaller caller;
         private ServerStatusService status;
+        private ServiceSemaphore queue;
 
         /// <summary>
         /// Gets the service container.
@@ -79,6 +80,9 @@ namespace MySoft.IoC
             container.Register(typeof(IStatusService), status);
 
             this.caller = new ServiceCaller(config, container);
+
+            //实例化队列服务
+            this.queue = new ServiceSemaphore(caller, status, container, NotifyResult);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -314,20 +318,8 @@ namespace MySoft.IoC
                     var message = e.Message as ScsResultMessage;
                     var reqMsg = message.MessageValue as RequestMessage;
 
-                    //实例化服务通道
-                    using (var client = new ServiceChannel(channel, caller, status))
-                    {
-                        try
-                        {
-                            //发送消息
-                            client.SendMessage(message.RepliedMessageId, reqMsg, NotifyResult);
-                        }
-                        catch (Exception ex)
-                        {
-                            //写异常日志
-                            container.WriteError(ex);
-                        }
-                    }
+                    //调用服务
+                    queue.Send(channel, message.MessageId, reqMsg);
                 }
             }
             catch (Exception ex)
