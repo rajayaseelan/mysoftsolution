@@ -17,7 +17,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public event EventHandler<SocketAsyncEventArgs> Disposed;
 
         private readonly Socket _clientSocket;
-        private readonly SocketAsyncEventArgs _sendEventArgs;
         private Queue<BufferMessage> _msgQueue = new Queue<BufferMessage>();
 
         /// <summary>
@@ -30,11 +29,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// 实例化ScsMessageQueue
         /// </summary>
         /// <param name="clientSocket"></param>
-        /// <param name="sendEventArgs"></param>
-        public SendMessageQueue(Socket clientSocket, SocketAsyncEventArgs sendEventArgs)
+        public SendMessageQueue(Socket clientSocket)
         {
             this._clientSocket = clientSocket;
-            this._sendEventArgs = sendEventArgs;
             this._syncLock = new object();
             this._isCompleted = true;
         }
@@ -42,9 +39,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// 发送数据服务
         /// </summary>
+        /// <param name="sendEventArgs"></param>
         /// <param name="message"></param>
         /// <param name="messageBytes"></param>
-        public void Send(IScsMessage message, byte[] messageBytes)
+        public void Send(SocketAsyncEventArgs sendEventArgs, IScsMessage message, byte[] messageBytes)
         {
             //实例化BufferMessage
             var msg = new BufferMessage(message, messageBytes);
@@ -54,11 +52,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 if (_isCompleted)
                 {
                     _isCompleted = false;
-                    SendAsync(_sendEventArgs, msg);
+                    SendAsync(sendEventArgs, msg);
                 }
                 else
                 {
                     _msgQueue.Enqueue(msg);
+                    if (Disposed != null)
+                    {
+                        Disposed(_clientSocket, sendEventArgs);
+                    }
                 }
             }
         }
@@ -66,22 +68,23 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// 发送数据服务
         /// </summary>
-        /// <param name="e"></param>
-        public void Send(SocketAsyncEventArgs e)
+        /// <param name="sendEventArgs"></param>
+        public void Send(SocketAsyncEventArgs sendEventArgs)
         {
             lock (_syncLock)
             {
-                e.SetBuffer(null, 0, 0);
-                e.UserToken = _clientSocket;
-
                 if (_msgQueue.Count == 0)
                 {
                     _isCompleted = true;
+                    if (Disposed != null)
+                    {
+                        Disposed(_clientSocket, sendEventArgs);
+                    }
                 }
                 else
                 {
                     var message = _msgQueue.Dequeue();
-                    SendAsync(e, message);
+                    SendAsync(sendEventArgs, message);
                 }
             }
         }
@@ -112,15 +115,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                if (Disposed != null)
-                {
-                    Disposed(_clientSocket, e);
-                }
-
-                throw ex;
-            }
             finally
             {
                 message.Dispose();
@@ -146,11 +140,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 _msgQueue.Clear();
-
-                if (Disposed != null)
-                {
-                    Disposed(_clientSocket, _sendEventArgs);
-                }
             }
         }
 

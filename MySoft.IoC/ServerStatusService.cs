@@ -89,6 +89,10 @@ namespace MySoft.IoC
                 //每1分钟检测一次
                 Thread.Sleep(5000);
 
+#if DEBUG
+                Console.WriteLine("{0} => Socket async event args : {1}", DateTime.Now, CommunicationHelper.Count);
+#endif
+
                 try
                 {
                     if (server.Clients.Count == 0) continue;
@@ -110,6 +114,10 @@ namespace MySoft.IoC
                         {
                             //如果超过5分钟没响应，则断开链接
                             channel.Disconnect();
+
+#if DEBUG
+                            Console.WriteLine("{0} => Auto disconnect! client id : {1}", DateTime.Now, channel.ClientId);
+#endif
                         }
                     }
                 }

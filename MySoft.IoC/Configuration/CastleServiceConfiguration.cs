@@ -18,7 +18,7 @@ namespace MySoft.IoC.Configuration
         private bool compress = false;
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;            //默认记录1小时
         private int timeout = ServiceConfig.DEFAULT_SERVER_CALL_TIMEOUT;        //超时时间为30秒
-        private int maxCaller = ServiceConfig.DEFAULT_SERVER_MAX_CALLER;        //默认并发数为30
+        private int maxCaller = ServiceConfig.DEFAULT_SERVER_MAX_CALLER;        //默认并发数为10
         private bool enableCache = false;                                       //是否缓存
 
         /// <summary>

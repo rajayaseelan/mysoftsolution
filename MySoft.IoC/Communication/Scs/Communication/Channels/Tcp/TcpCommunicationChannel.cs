@@ -75,9 +75,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _receiveBuffer = new byte[ReceiveBufferSize];
 
-            //Socket send messages event args.
-            var _sendEventArgs = CreateAsyncSEA(null);
-            _sendQueue = new SendMessageQueue(_clientSocket, _sendEventArgs);
+            _sendQueue = new SendMessageQueue(_clientSocket);
             _sendQueue.Completed += IO_Completed;
             _sendQueue.Disposed += IO_Disposed;
         }
@@ -193,12 +191,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Create a byte array from message according to current protocol
             var messageBytes = WireProtocol.GetBytes(message);
 
+            //Socket send messages event args.
+            var _sendEventArgs = CreateAsyncSEA(null);
+
             try
             {
-                _sendQueue.Send(message, messageBytes);
+                _sendQueue.Send(_sendEventArgs, message, messageBytes);
             }
             catch (Exception ex)
             {
+                DisposeAsyncSEA(_sendEventArgs);
+
                 Disconnect(ex);
 
                 throw;
@@ -216,16 +219,22 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void IO_Completed(object sender, SocketAsyncEventArgs e)
         {
-            switch (e.LastOperation)
+            try
             {
-                case SocketAsyncOperation.Send:
-                    OnSendCompleted(e);
-                    break;
-                case SocketAsyncOperation.Receive:
-                    OnReceiveCompleted(e);
-                    break;
-                default:
-                    throw new ArgumentException("The last operation completed on the socket was not a receive or send");
+                switch (e.LastOperation)
+                {
+                    case SocketAsyncOperation.Send:
+                        OnSendCompleted(e);
+                        break;
+                    case SocketAsyncOperation.Receive:
+                        OnReceiveCompleted(e);
+                        break;
+                    default:
+                        throw new ArgumentException("The last operation completed on the socket was not a receive or send");
+                }
+            }
+            catch (Exception ex)
+            {
             }
         }
 
@@ -236,7 +245,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void IO_Disposed(object sender, SocketAsyncEventArgs e)
         {
-            DisposeAsyncSEA(e);
+            try
+            {
+                DisposeAsyncSEA(e);
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
         /// <summary>
@@ -269,6 +284,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 }
                 catch (Exception ex)
                 {
+                    DisposeAsyncSEA(e);
+
                     Disconnect(ex);
                 }
             }
