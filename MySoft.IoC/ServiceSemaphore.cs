@@ -25,13 +25,13 @@ namespace MySoft.IoC
         /// <param name="caller"></param>
         /// <param name="status"></param>
         /// <param name="logger"></param>
-        /// <param name="action"></param>
-        public ServiceSemaphore(int maxCaller, ServiceCaller caller, ServerStatusService status, ILog logger, Action<CallEventArgs> action)
+        /// <param name="callback"></param>
+        public ServiceSemaphore(int maxCaller, ServiceCaller caller, ServerStatusService status, ILog logger, Action<CallEventArgs> callback)
         {
             this.caller = caller;
             this.status = status;
             this.logger = logger;
-            this.callback = action;
+            this.callback = callback;
 
             this.semaphore = new Semaphore(maxCaller, maxCaller);
         }

@@ -78,8 +78,11 @@ namespace MySoft.IoC
                     //解析服务
                     var asyncCaller = GetAsyncCaller(e.Caller);
 
-                    //异步调用服务
-                    e.Message = asyncCaller.Run(context, e.Request);
+                    lock (asyncCaller)
+                    {
+                        //异步调用服务
+                        e.Message = asyncCaller.Run(context, e.Request);
+                    }
                 }
                 catch (Exception ex)
                 {

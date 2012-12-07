@@ -60,33 +60,45 @@ namespace MySoft.IoC
         /// 处理消息
         /// </summary>
         /// <param name="e"></param>
-        /// <param name="action"></param>
-        private void HandleResponse(CallerContext e, Action<CallEventArgs> action)
+        /// <param name="callback"></param>
+        private void HandleResponse(CallerContext e, Action<CallEventArgs> callback)
         {
-            //调用参数
-            var callArgs = new CallEventArgs(e.Caller)
+            try
             {
-                ElapsedTime = e.Message.ElapsedTime,
-                Count = e.Message.Count,
-                Error = e.Message.Error,
-                Value = e.Message.Value
-            };
+                //调用参数
+                var callArgs = new CallEventArgs(e.Caller)
+                {
+                    ElapsedTime = e.Message.ElapsedTime,
+                    Count = e.Message.Count,
+                    Error = e.Message.Error,
+                    Value = e.Message.Value
+                };
 
-            //回调处理
-            if (action != null)
-            {
-                //开始调用
-                try
+                //回调处理
+                if (callback != null)
                 {
-                    action(callArgs);
+                    //开始异步调用
+                    callback.BeginInvoke(callArgs, ar =>
+                    {
+                        try
+                        {
+                            var action = ar.AsyncState as Action<CallEventArgs>;
+                            action.EndInvoke(ar);
+                        }
+                        catch (Exception ex) { }
+                        finally
+                        {
+                            ar.AsyncWaitHandle.Close();
+                        }
+                    }, callback);
                 }
-                catch
-                {
-                }
+
+                //调用计数服务
+                status.Counter(callArgs);
             }
-
-            //调用计数服务
-            status.Counter(callArgs);
+            catch (Exception ex)
+            {
+            }
         }
 
         /// <summary>

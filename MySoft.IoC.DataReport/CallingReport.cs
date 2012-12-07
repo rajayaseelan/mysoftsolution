@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
-using MySoft.IoC.Messages;
+using MySoft.Logger;
 
 namespace MySoft.IoC.DataReport
 {
@@ -35,6 +35,16 @@ namespace MySoft.IoC.DataReport
         {
             while (true)
             {
+                try
+                {
+                }
+                catch (Exception ex)
+                {
+                    SimpleLog.Instance.WriteLog(ex);
+                }
+
+                //30秒存一次
+                Thread.Sleep(TimeSpan.FromSeconds(30));
             }
         }
 

@@ -140,6 +140,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 WireProtocol.Reset();
+
+                _sendQueue.Completed -= IO_Completed;
+                _sendQueue.Disposed -= IO_Disposed;
                 _sendQueue.Dispose();
             }
             catch (Exception ex) { }
