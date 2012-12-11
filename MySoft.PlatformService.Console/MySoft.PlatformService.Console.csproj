@@ -106,7 +106,7 @@
       <Project>{7B603EE2-B9F0-445E-817F-F058F43E5F48}</Project>
       <Name>MySoft.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MySoft.IoC.DataReport\MySoft.IoC.note.csproj">
+    <ProjectReference Include="..\MySoft.IoC.DataReport\MySoft.IoC.DataReport.csproj">
       <Project>{CE90D9E4-560C-4B8D-B344-9E225FAC8D65}</Project>
       <Name>MySoft.IoC.note</Name>
     </ProjectReference>

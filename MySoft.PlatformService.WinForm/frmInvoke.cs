@@ -298,7 +298,9 @@ namespace MySoft.PlatformService.WinForm
                         richTextBox1.Refresh();
                     }
 
-                    label5.Text = string.Format("{0} ms. / {1} ms.", data.ElapsedMilliseconds, data.ElapsedTime);
+                    label5.Text = string.Format("{0} / {1} ms.  Row(s): {2}.  Size: {3}.", data.ElapsedMilliseconds,
+                                data.ElapsedTime, data.Count, GetDataSize(data.Value));
+
                     label5.Refresh();
 
                     button1.Enabled = true;
@@ -323,6 +325,29 @@ namespace MySoft.PlatformService.WinForm
             finally
             {
                 ar.AsyncWaitHandle.Close();
+            }
+        }
+
+        /// <summary>
+        /// 获取数据大小
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private string GetDataSize(string value)
+        {
+            var count = Encoding.UTF8.GetByteCount(value);
+
+            if (count * 1.0 / (1024 * 1024) > 1)
+            {
+                return string.Format("{0} MB", Math.Round(count * 1.0 / (1024 * 1024), 2));
+            }
+            else if (count * 1.0 / 1024 > 1)
+            {
+                return string.Format("{0} KB", Math.Round(count * 1.0 / 1024, 2));
+            }
+            else
+            {
+                return string.Format("{0} Byte(s)", count);
             }
         }
 
