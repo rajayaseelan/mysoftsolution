@@ -44,7 +44,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Send or receive event args.
         /// </summary>
-        private SendMessageQueue _sendQueue;
+        private readonly SendMessageQueue _sendQueue;
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -143,12 +143,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                 _sendQueue.Completed -= IO_Completed;
                 _sendQueue.Disposed -= IO_Disposed;
-                _sendQueue.Dispose();
             }
             catch (Exception ex) { }
             finally
             {
-                _sendQueue = null;
+                _sendQueue.Dispose();
                 _receiveBuffer = null;
             }
         }
@@ -191,6 +190,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="message">Message to be sent</param>
         protected override void SendMessageInternal(IScsMessage message)
         {
+            if (!_running)
+            {
+                return;
+            }
+
             //Create a byte array from message according to current protocol
             var messageBytes = WireProtocol.GetBytes(message);
 

@@ -66,10 +66,14 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取结果并处理超时
         /// </summary>
+        /// <param name="callback"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        public ResponseMessage GetResult(TimeSpan timeout)
+        public ResponseMessage GetResult(WaitCallback callback, TimeSpan timeout)
         {
+            //开始异步请求
+            ThreadPool.QueueUserWorkItem(callback, this);
+
             //等待响应
             if (!waitResult.WaitOne(timeout))
             {

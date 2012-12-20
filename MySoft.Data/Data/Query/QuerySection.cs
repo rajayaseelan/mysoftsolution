@@ -455,6 +455,48 @@ namespace MySoft.Data
             return this;
         }
 
+        #region 通过Field产生对象
+
+        /// <summary>
+        /// 进行GroupBy操作
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        public QuerySection<T> GroupBy(Field[] fields)
+        {
+            var groupBy = GroupByClip.None;
+            foreach (var field in fields)
+            {
+                groupBy &= field.Group;
+            }
+
+            this.groupBy = groupBy;
+            return this;
+        }
+
+        /// <summary>
+        /// 进行OrderBy操作
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <param name="desc"></param>
+        /// <returns></returns>
+        public QuerySection<T> OrderBy(Field[] fields, bool desc)
+        {
+            var orderBy = OrderByClip.None;
+            foreach (var field in fields)
+            {
+                if (desc)
+                    orderBy &= field.Desc;
+                else
+                    orderBy &= field.Asc;
+            }
+
+            this.orderBy = orderBy;
+            return this;
+        }
+
+        #endregion
+
         /// <summary>
         /// 选取前N条数据
         /// </summary>

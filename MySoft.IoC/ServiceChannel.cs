@@ -32,8 +32,8 @@ namespace MySoft.IoC
         /// 响应消息
         /// </summary>
         /// <param name="e"></param>
-        /// <param name="action"></param>
-        public void Send(CallerContext e, Action<CallEventArgs> action)
+        /// <param name="callback"></param>
+        public void Send(CallerContext e, Action<CallEventArgs> callback)
         {
             //发送结果
             if (caller.InvokeResponse(channel, e))
@@ -42,7 +42,7 @@ namespace MySoft.IoC
                 if (e.Request.ServiceName != typeof(IStatusService).FullName)
                 {
                     //处理响应信息
-                    HandleResponse(e, action);
+                    HandleResponse(e, callback);
                 }
 
                 //如果是Json方式调用，则需要处理异常

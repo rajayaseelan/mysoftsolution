@@ -102,11 +102,8 @@ namespace MySoft.IoC.Services
 
                 try
                 {
-                    //开始异步请求
-                    ThreadPool.QueueUserWorkItem(WaitCallback, worker);
-
                     //返回响应结果
-                    resMsg = worker.GetResult(timeout);
+                    resMsg = worker.GetResult(WaitCallback, timeout);
                 }
                 catch (Exception ex)
                 {
@@ -132,6 +129,8 @@ namespace MySoft.IoC.Services
 
                 //开始同步调用
                 var resMsg = GetSyncResponse(worker.Context, worker.Request);
+
+                if (worker.IsCompleted) return;
 
                 //设置响应信息
                 worker.Set(resMsg);

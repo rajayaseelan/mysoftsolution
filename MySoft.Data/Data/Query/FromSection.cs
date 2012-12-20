@@ -150,6 +150,31 @@ namespace MySoft.Data
             return query.OrderBy(orderBy);
         }
 
+        #region 通过Field产生对象
+
+        /// <summary>
+        /// 进行GroupBy操作
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        public QuerySection<T> GroupBy(Field[] fields)
+        {
+            return query.GroupBy(fields);
+        }
+
+        /// <summary>
+        /// 进行OrderBy操作
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <param name="desc"></param>
+        /// <returns></returns>
+        public QuerySection<T> OrderBy(Field[] fields, bool desc)
+        {
+            return query.OrderBy(fields, desc);
+        }
+
+        #endregion
+
         /// <summary>
         /// 选择输出的列
         /// </summary>

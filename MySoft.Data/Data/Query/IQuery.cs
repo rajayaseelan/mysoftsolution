@@ -48,6 +48,7 @@ namespace MySoft.Data
         #region ·Ö×éÅÅÐò
 
         QuerySection<T> GroupBy(GroupByClip groupBy);
+        QuerySection<T> GroupBy(Field[] fields);
         QuerySection<T> Having(WhereClip where);
         QuerySection<T> Select(params Field[] fields);
         QuerySection<T> Select(IFieldFilter filter);
@@ -106,6 +107,7 @@ namespace MySoft.Data
         QuerySection<T> SetPagingField(Field pagingField);
         QuerySection<T> Distinct();
         QuerySection<T> OrderBy(OrderByClip orderBy);
+        QuerySection<T> OrderBy(Field[] fields, bool desc);
         QuerySection<T> GetTop(int topSize);
         PageSection<T> GetPage(int pageSize);
 

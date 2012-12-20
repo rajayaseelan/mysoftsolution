@@ -56,7 +56,7 @@ namespace MySoft.IoC
                                     })
             {
                 //等待资源
-                semaphore.WaitOne();
+                semaphore.WaitOne(-1, false);
 
                 try
                 {

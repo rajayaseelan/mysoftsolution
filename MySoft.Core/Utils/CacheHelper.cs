@@ -395,41 +395,37 @@ namespace MySoft
             try
             {
                 var key = Convert.ToString(arr[0]);
+                var timeout = (TimeSpan)arr[1];
+                var func = arr[2] as Func<object, T>;
+                var pred = arr[3] as Predicate<T>;
 
-                try
+                var internalObject = func.EndInvoke(ar);
+
+                if (internalObject != null)
                 {
-                    var timeout = (TimeSpan)arr[1];
-                    var func = arr[2] as Func<object, T>;
-                    var pred = arr[3] as Predicate<T>;
-
-                    var internalObject = func.EndInvoke(ar);
-
-                    if (internalObject != null)
+                    var success = true;
+                    if (pred != null)
                     {
-                        var success = true;
-                        if (pred != null)
+                        try
                         {
-                            try
-                            {
-                                success = pred(internalObject);
-                            }
-                            catch
-                            {
-                                success = false;
-                            }
+                            success = pred(internalObject);
                         }
-
-                        if (success)
+                        catch
                         {
-                            InsertCache(key, internalObject, timeout);
+                            success = false;
                         }
                     }
+
+                    if (success)
+                    {
+                        InsertCache(key, internalObject, timeout);
+                    }
                 }
-                catch (ThreadInterruptedException ex) { }
-                catch (ThreadAbortException ex)
-                {
-                    Thread.ResetAbort();
-                }
+            }
+            catch (ThreadInterruptedException ex) { }
+            catch (ThreadAbortException ex)
+            {
+                Thread.ResetAbort();
             }
             catch (Exception ex)
             {
