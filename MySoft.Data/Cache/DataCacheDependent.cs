@@ -10,7 +10,7 @@ namespace MySoft.Data.Cache
     /// </summary>
     internal class DataCacheDependent : ICacheDependent
     {
-        private ICacheStrategy strategy;
+        private IDataCache strategy;
         private string connectName;
 
         /// <summary>
@@ -18,7 +18,7 @@ namespace MySoft.Data.Cache
         /// </summary>
         /// <param name="strategy"></param>
         /// <param name="connectName"></param>
-        public DataCacheDependent(ICacheStrategy strategy, string connectName)
+        public DataCacheDependent(IDataCache strategy, string connectName)
         {
             this.strategy = strategy;
             this.connectName = connectName;
@@ -39,7 +39,7 @@ namespace MySoft.Data.Cache
             {
                 //组合CacheKey
                 cacheKey = string.Format("{0}_{1}_{2}", connectName, typeof(T).FullName, cacheKey);
-                strategy.AddObject(cacheKey, cacheValue, TimeSpan.FromSeconds(cacheTime));
+                strategy.Insert(cacheKey, cacheValue, TimeSpan.FromSeconds(cacheTime));
             }
         }
 
@@ -52,7 +52,7 @@ namespace MySoft.Data.Cache
         {
             //组合CacheKey
             cacheKey = string.Format("{0}_{1}_{2}", connectName, typeof(T).FullName, cacheKey);
-            strategy.RemoveObject(cacheKey);
+            strategy.Remove(cacheKey);
         }
         /// <summary>
         /// 获取缓存
@@ -65,7 +65,7 @@ namespace MySoft.Data.Cache
         {
             //组合CacheKey
             cacheKey = string.Format("{0}_{1}_{2}", connectName, typeof(T).FullName, cacheKey);
-            return strategy.GetObject<T>(cacheKey);
+            return strategy.Get<T>(cacheKey);
         }
 
         #endregion

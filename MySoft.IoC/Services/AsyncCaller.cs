@@ -13,7 +13,7 @@ namespace MySoft.IoC.Services
     internal class AsyncCaller
     {
         private IService service;
-        private ICacheStrategy cache;
+        private IDataCache cache;
         private TimeSpan timeout;
         private bool enabledCache;
         private bool fromServer;
@@ -39,7 +39,7 @@ namespace MySoft.IoC.Services
         /// <param name="timeout"></param>
         /// <param name="cache"></param>
         /// <param name="fromServer"></param>
-        public AsyncCaller(IService service, TimeSpan timeout, ICacheStrategy cache, bool fromServer)
+        public AsyncCaller(IService service, TimeSpan timeout, IDataCache cache, bool fromServer)
             : this(service, timeout, fromServer)
         {
             this.cache = cache;
@@ -305,7 +305,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //从缓存获取
-                resMsg = cache.GetObject<ResponseMessage>(callKey);
+                resMsg = cache.Get<ResponseMessage>(callKey);
             }
             catch
             {
@@ -321,7 +321,7 @@ namespace MySoft.IoC.Services
                     try
                     {
                         //插入缓存
-                        cache.AddObject(callKey, resMsg, TimeSpan.FromSeconds(reqMsg.CacheTime));
+                        cache.Insert(callKey, resMsg, TimeSpan.FromSeconds(reqMsg.CacheTime));
                     }
                     catch
                     {

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Logger;
-using MySoft.Cache;
 
 namespace MySoft.IoC
 {

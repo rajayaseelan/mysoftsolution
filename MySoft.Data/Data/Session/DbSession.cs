@@ -1045,7 +1045,7 @@ namespace MySoft.Data
         /// ◊¢≤·ª∫¥Ê“¿¿µ
         /// </summary>
         /// <param name="cache"></param>
-        public void RegisterCache(ICacheStrategy cache)
+        public void RegisterCache(IDataCache cache)
         {
             this.dbProvider.Cache = new DataCacheDependent(cache, connectName);
         }

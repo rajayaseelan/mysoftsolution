@@ -25,7 +25,7 @@ namespace MySoft.IoC
         /// <param name="service"></param>
         /// <param name="timeout"></param>
         /// <param name="cache"></param>
-        public InvokeCaller(string appName, IContainer container, IService service, TimeSpan timeout, ICacheStrategy cache)
+        public InvokeCaller(string appName, IContainer container, IService service, TimeSpan timeout, IDataCache cache)
         {
             this.appName = appName;
             this.service = service;

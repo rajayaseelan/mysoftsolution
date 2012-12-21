@@ -33,7 +33,7 @@ namespace MySoft.IoC
         /// <param name="service"></param>
         /// <param name="serviceType"></param>
         /// <param name="cache"></param>
-        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, Type serviceType, ICacheStrategy cache, IServiceLog logger)
+        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, Type serviceType, IDataCache cache, IServiceLog logger)
         {
             this.config = config;
             this.container = container;

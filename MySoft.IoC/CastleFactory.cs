@@ -25,7 +25,7 @@ namespace MySoft.IoC
         private CastleFactoryConfiguration config;
         private IServiceContainer container;
         private IDictionary<string, IService> proxies;
-        private ICacheStrategy cache;
+        private IDataCache cache;
         private IServiceLog logger;
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace MySoft.IoC
         /// ×¢²á»º´æ
         /// </summary>
         /// <param name="cache"></param>
-        public void RegisterCache(ICacheStrategy cache)
+        public void RegisterCache(IDataCache cache)
         {
             this.cache = cache;
         }

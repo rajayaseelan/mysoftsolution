@@ -41,7 +41,7 @@ namespace MySoft.Data
         /// ◊¢≤·ª∫¥Ê“¿¿µ
         /// </summary>
         /// <param name="cache"></param>
-        void RegisterCache(ICacheStrategy cache);
+        void RegisterCache(IDataCache cache);
 
         /// <summary>
         /// …Ë÷√√¸¡Ó≥¨ ± ±º‰
