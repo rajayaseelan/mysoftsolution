@@ -192,60 +192,154 @@ namespace MySoft.IoC.Services
 
             if (cache == null)
             {
-                //双缓存保护获取方式
-                var array = new ArrayList { context, reqMsg };
-
-                resMsg = CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime),
-                        state =>
-                        {
-                            var arr = state as ArrayList;
-                            var _context = arr[0] as OperationContext;
-                            var _reqMsg = arr[1] as RequestMessage;
-
-                            //异步请求响应数据
-                            return GetAsyncResponse(_context, _reqMsg);
-
-                        }, array, CheckResponse);
+                //获取响应从本地缓存
+                resMsg = GetResponseMessage(GetResponseFromLocalCache, callKey, context, reqMsg);
             }
             else
             {
-                try
-                {
-                    //从缓存获取
-                    resMsg = cache.GetObject<ResponseMessage>(callKey);
-                }
-                catch
-                {
-                }
+                //获取响应从远程缓存
+                resMsg = GetResponseMessage(GetResponseFromRemoteCache, callKey, context, reqMsg);
+            }
 
-                if (resMsg == null)
-                {
-                    //异步请求响应数据
-                    resMsg = GetAsyncResponse(context, reqMsg);
+            return resMsg != null;
+        }
 
-                    if (CheckResponse(resMsg))
-                    {
-                        try
-                        {
-                            //插入缓存
-                            cache.AddObject(callKey, resMsg, TimeSpan.FromSeconds(reqMsg.CacheTime));
-                        }
-                        catch
-                        {
-                        }
-                    }
+        /// <summary>
+        /// 获取缓存
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponseMessage(Func<string, OperationContext, RequestMessage, ResponseMessage> func,
+                                                    string callKey, OperationContext context, RequestMessage reqMsg)
+        {
+            //定义一个响应值
+            ResponseMessage resMsg = null;
+
+            var watch = Stopwatch.StartNew();
+
+            try
+            {
+                resMsg = func(callKey, context, reqMsg);
+
+                //返回新对象
+                resMsg = new ResponseMessage
+                {
+                    TransactionId = reqMsg.TransactionId,
+                    ServiceName = resMsg.ServiceName,
+                    MethodName = resMsg.MethodName,
+                    Parameters = resMsg.Parameters,
+                    ElapsedTime = resMsg.ElapsedTime,
+                    Error = resMsg.Error,
+                    Value = resMsg.Value
+                };
+
+                //设置耗时时间
+                if (NeedCloneObject(reqMsg))
+                {
+                    //反序列化数据
+                    resMsg.Value = CoreHelper.CloneObject(resMsg.Value);
+                }
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                if (watch.IsRunning)
+                {
+                    watch.Stop();
                 }
             }
 
             if (resMsg != null)
             {
-                //克隆一个新的对象
-                resMsg = NewResponseMessage(callKey, reqMsg, resMsg);
-
-                return true;
+                //设置耗时
+                resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
             }
 
-            return false;
+            return resMsg;
+        }
+
+        /// <summary>
+        /// 获取响应从本地缓存
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponseFromLocalCache(string callKey, OperationContext context, RequestMessage reqMsg)
+        {
+            //定义一个响应值
+            ResponseMessage resMsg = null;
+
+            //双缓存保护获取方式
+            var array = new ArrayList { context, reqMsg };
+
+            resMsg = CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime),
+                    state =>
+                    {
+                        var arr = state as ArrayList;
+                        var _context = arr[0] as OperationContext;
+                        var _reqMsg = arr[1] as RequestMessage;
+
+                        //异步请求响应数据
+                        return GetAsyncResponse(_context, _reqMsg);
+
+                    }, array, CheckResponse);
+
+            return resMsg;
+        }
+
+        /// <summary>
+        /// 获取响应从远程缓存
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponseFromRemoteCache(string callKey, OperationContext context, RequestMessage reqMsg)
+        {
+            //定义一个响应值
+            ResponseMessage resMsg = null;
+
+            try
+            {
+                //从缓存获取
+                resMsg = cache.GetObject<ResponseMessage>(callKey);
+            }
+            catch
+            {
+            }
+
+            if (resMsg == null)
+            {
+                //异步请求响应数据
+                resMsg = GetAsyncResponse(context, reqMsg);
+
+                if (CheckResponse(resMsg))
+                {
+                    try
+                    {
+                        //插入缓存
+                        cache.AddObject(callKey, resMsg, TimeSpan.FromSeconds(reqMsg.CacheTime));
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            return resMsg;
+        }
+
+        /// <summary>
+        /// 判断是否序列化
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private bool NeedCloneObject(RequestMessage reqMsg)
+        {
+            return !(fromServer || reqMsg.InvokeMethod);
         }
 
         /// <summary>
@@ -264,62 +358,6 @@ namespace MySoft.IoC.Services
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// 产生一个新的对象
-        /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage NewResponseMessage(string callKey, RequestMessage reqMsg, ResponseMessage resMsg)
-        {
-            var newMsg = new ResponseMessage
-            {
-                TransactionId = reqMsg.TransactionId,
-                ServiceName = resMsg.ServiceName,
-                MethodName = resMsg.MethodName,
-                Parameters = resMsg.Parameters,
-                ElapsedTime = resMsg.ElapsedTime,
-                Error = resMsg.Error,
-                Value = resMsg.Value
-            };
-
-            //设置耗时时间
-            if (NeedCloneObject(reqMsg))
-            {
-                var watch = Stopwatch.StartNew();
-
-                try
-                {
-                    //反序列化数据
-                    newMsg.Value = CoreHelper.CloneObject(newMsg.Value);
-
-                    //设置耗时
-                    newMsg.ElapsedTime = watch.ElapsedMilliseconds;
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    if (watch.IsRunning)
-                    {
-                        watch.Stop();
-                    }
-                }
-            }
-
-            return newMsg;
-        }
-
-        /// <summary>
-        /// 判断是否序列化
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private bool NeedCloneObject(RequestMessage reqMsg)
-        {
-            return !(fromServer || reqMsg.InvokeMethod);
         }
     }
 }

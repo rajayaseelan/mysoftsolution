@@ -145,7 +145,7 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// </summary>
         public void Disconnect()
         {
-            if (_communicationChannel.CommunicationState == CommunicationStates.Connected)
+            if (CommunicationState == CommunicationStates.Connected)
             {
                 _communicationChannel.Disconnect();
             }
@@ -173,10 +173,10 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             OnDisconnected();
 
-            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
             _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
             _communicationChannel.MessageError -= CommunicationChannel_MessageError;
+            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
 
             _communicationChannel = null;
             UserToken = null;

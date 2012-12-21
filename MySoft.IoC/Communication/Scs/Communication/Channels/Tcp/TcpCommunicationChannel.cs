@@ -213,6 +213,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                 throw;
             }
+            finally
+            {
+                messageBytes = null;
+            }
         }
 
         #endregion
@@ -326,22 +330,30 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     {
                         //Copy received bytes to a new byte array
                         var receivedBytes = new byte[bytesTransferred];
-                        Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
-                        //Array.Clear(e.Buffer, 0, bytesTransferred);
 
-                        //Read messages according to current wire protocol
-                        var messages = WireProtocol.CreateMessages(receivedBytes);
-
-                        //Raise MessageReceived event for all received messages
-                        foreach (var message in messages)
+                        try
                         {
-                            OnMessageReceived(message);
+                            Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
+                            //Array.Clear(e.Buffer, 0, bytesTransferred);
+
+                            //Read messages according to current wire protocol
+                            var messages = WireProtocol.CreateMessages(receivedBytes);
+
+                            //Raise MessageReceived event for all received messages
+                            foreach (var message in messages)
+                            {
+                                OnMessageReceived(message);
+                            }
+
+                            //Receive all bytes to the remote application
+                            if (!_clientSocket.ReceiveAsync(e))
+                            {
+                                OnReceiveCompleted(e);
+                            }
                         }
-
-                        //Receive all bytes to the remote application
-                        if (!_clientSocket.ReceiveAsync(e))
+                        finally
                         {
-                            OnReceiveCompleted(e);
+                            receivedBytes = null;
                         }
                     }
                 }

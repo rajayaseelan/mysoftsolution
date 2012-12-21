@@ -160,11 +160,13 @@ namespace MySoft.IoC.Communication.Scs.Client
             WireProtocol.Reset();
             _communicationChannel = CreateCommunicationChannel();
             _communicationChannel.WireProtocol = WireProtocol;
+
             _communicationChannel.Disconnected += CommunicationChannel_Disconnected;
             _communicationChannel.MessageReceived += CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent += CommunicationChannel_MessageSent;
             _communicationChannel.MessageError += CommunicationChannel_MessageError;
             _communicationChannel.Start();
+
             _pingTimer.Start();
             OnConnected();
         }
@@ -175,7 +177,7 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// </summary>
         public void Disconnect()
         {
-            if (_communicationChannel.CommunicationState == CommunicationStates.Connected)
+            if (CommunicationState == CommunicationStates.Connected)
             {
                 _communicationChannel.Disconnect();
             }
@@ -249,10 +251,10 @@ namespace MySoft.IoC.Communication.Scs.Client
         {
             OnDisconnected();
 
-            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
             _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
             _communicationChannel.MessageError -= CommunicationChannel_MessageError;
+            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
 
             _communicationChannel = null;
 
