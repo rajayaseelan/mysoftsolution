@@ -275,6 +275,7 @@ namespace MySoft.IoC.HttpServer
             if (string.IsNullOrEmpty(value))
                 return value;
 
+            value = value.Replace("+", "%2b");
             return HttpUtility.UrlDecode(value, Encoding.UTF8);
         }
 
