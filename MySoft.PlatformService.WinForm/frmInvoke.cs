@@ -335,6 +335,11 @@ namespace MySoft.PlatformService.WinForm
         /// <returns></returns>
         private string GetDataSize(string value)
         {
+            if (string.IsNullOrEmpty(value))
+            {
+                return "0 Byte";
+            }
+
             var count = Encoding.UTF8.GetByteCount(value);
 
             if (count * 1.0 / (1024 * 1024) > 1)
