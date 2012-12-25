@@ -15,7 +15,7 @@ namespace MySoft.Data.Logger
         /// </summary>
         /// <param name="command"></param>
         /// <returns></returns>
-        void Begin(IDbCommand command);
+        void Begin(DbCommand command);
 
         /// <summary>
         /// Ω· ¯÷¥––√¸¡Ó
@@ -23,6 +23,6 @@ namespace MySoft.Data.Logger
         /// <param name="command"></param>
         /// <param name="retValue"></param>
         /// <param name="elapsedTime"></param>
-        void End(IDbCommand command, ReturnValue retValue, long elapsedTime);
+        void End(DbCommand command, ReturnValue retValue, long elapsedTime);
     }
 }

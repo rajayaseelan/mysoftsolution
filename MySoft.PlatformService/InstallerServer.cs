@@ -35,14 +35,7 @@ namespace MySoft.PlatformService
                     }
                     catch (Exception ex)
                     {
-                        if (ex.InnerException != null)
-                        {
-                            Console.WriteLine(ex.InnerException.Message);
-                        }
-                        else
-                        {
-                            Console.WriteLine(ex.Message);
-                        }
+                        Console.WriteLine(ErrorHelper.GetErrorWithoutHtml(ex));
 
                         //写错误日志
                         SimpleLog.Instance.WriteLogForDir("ServiceRun", ex);
@@ -74,14 +67,7 @@ namespace MySoft.PlatformService
                     }
                     catch (Exception ex)
                     {
-                        if (ex.InnerException != null)
-                        {
-                            Console.WriteLine(ex.InnerException.Message);
-                        }
-                        else
-                        {
-                            Console.WriteLine(ex.Message);
-                        }
+                        Console.WriteLine(ErrorHelper.GetErrorWithoutHtml(ex));
 
                         //写错误日志
                         SimpleLog.Instance.WriteLogForDir("ServiceRun", ex);

@@ -375,7 +375,7 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="command"></param>
         /// <returns></returns>
-        public static string GetCommandLog(IDbCommand command)
+        public static string GetCommandLog(DbCommand command)
         {
             StringBuilder sb = new StringBuilder();
 
