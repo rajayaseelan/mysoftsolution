@@ -66,8 +66,6 @@
     <Compile Include="Common\RecordEventArgs.cs" />
     <Compile Include="Communication\Scs\Communication\Channels\Tcp\BufferMessage.cs" />
     <Compile Include="Communication\Scs\Communication\Channels\Tcp\SendMessageQueue.cs" />
-    <Compile Include="Communication\Scs\Communication\CommunicationHelper.cs" />
-    <Compile Include="Communication\Scs\Communication\SocketAsyncEventArgsPool.cs" />
     <Compile Include="Communication\Threading\Timer.cs">
       <SubType>Code</SubType>
     </Compile>

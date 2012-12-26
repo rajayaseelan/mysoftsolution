@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 2 * 1024; //2KB
+        private const int ReceiveBufferSize = 4 * 1024; //4KB
 
         #region Public properties
 
@@ -44,7 +44,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Send or receive event args.
         /// </summary>
-        private readonly SendMessageQueue _sendQueue;
+        private SendMessageQueue _sendQueue;
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -75,7 +75,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _receiveBuffer = new byte[ReceiveBufferSize];
 
-            _sendQueue = new SendMessageQueue(_clientSocket);
+            //Socket send messages event args.
+            var _sendEventArgs = CreateAsyncSEA(null);
+            _sendQueue = new SendMessageQueue(_clientSocket, _sendEventArgs);
+
             _sendQueue.Completed += IO_Completed;
             _sendQueue.Disposed += IO_Disposed;
         }
@@ -140,14 +143,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 WireProtocol.Reset();
-
-                _sendQueue.Completed -= IO_Completed;
-                _sendQueue.Disposed -= IO_Disposed;
+                _sendQueue.Dispose();
             }
             catch (Exception ex) { }
             finally
             {
-                _sendQueue.Dispose();
+                _sendQueue = null;
                 _receiveBuffer = null;
             }
         }
@@ -198,17 +199,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Create a byte array from message according to current protocol
             var messageBytes = WireProtocol.GetBytes(message);
 
-            //Socket send messages event args.
-            var _sendEventArgs = CreateAsyncSEA(null);
-
             try
             {
-                _sendQueue.Send(_sendEventArgs, message, messageBytes);
+                _sendQueue.Send(message, messageBytes);
             }
             catch (Exception ex)
             {
-                DisposeAsyncSEA(_sendEventArgs);
-
                 Disconnect(ex);
 
                 throw;
@@ -295,8 +291,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 }
                 catch (Exception ex)
                 {
-                    DisposeAsyncSEA(e);
-
                     Disconnect(ex);
                 }
             }
@@ -379,12 +373,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         private SocketAsyncEventArgs CreateAsyncSEA(byte[] buffer)
         {
-            var e = CommunicationHelper.Pop();
-
-            if (e == null)
-            {
-                e = new SocketAsyncEventArgs();
-            }
+            var e = new SocketAsyncEventArgs();
 
             e.Completed += IO_Completed;
             e.UserToken = _clientSocket;
@@ -415,7 +404,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                CommunicationHelper.Push(e);
+                e = null;
             }
         }
     }

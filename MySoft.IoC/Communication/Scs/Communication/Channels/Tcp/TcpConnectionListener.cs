@@ -84,7 +84,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _listenerSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _listenerSocket.Bind(endPoint);
-            _listenerSocket.Listen(64);
+            _listenerSocket.Listen(256);
         }
 
         /// <summary>
@@ -167,12 +167,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         private SocketAsyncEventArgs CreateAsyncSEA()
         {
-            var e = CommunicationHelper.Pop();
-
-            if (e == null)
-            {
-                e = new SocketAsyncEventArgs();
-            }
+            var e = new SocketAsyncEventArgs();
 
             e.Completed += IO_Completed;
             e.UserToken = _listenerSocket;
@@ -198,7 +193,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                CommunicationHelper.Push(e);
+                e = null;
             }
         }
     }
