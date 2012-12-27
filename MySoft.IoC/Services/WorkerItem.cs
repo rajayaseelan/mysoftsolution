@@ -13,8 +13,6 @@ namespace MySoft.IoC.Services
         private OperationContext context;
         private RequestMessage reqMsg;
         private WaitResult waitResult;
-        private Thread currentThread;
-        private bool isCompleted;
 
         /// <summary>
         /// 上下文信息
@@ -33,23 +31,6 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 当前线程
-        /// </summary>
-        public Thread CurrentThread
-        {
-            get { return currentThread; }
-            set { currentThread = value; }
-        }
-
-        /// <summary>
-        /// 是否结束
-        /// </summary>
-        public bool IsCompleted
-        {
-            get { return isCompleted; }
-        }
-
-        /// <summary>
         /// 实例化WorkerItem
         /// </summary>
         /// <param name="context"></param>
@@ -59,51 +40,27 @@ namespace MySoft.IoC.Services
             this.context = context;
             this.reqMsg = reqMsg;
             this.waitResult = new WaitResult(reqMsg);
-
-            this.isCompleted = false;
         }
 
         /// <summary>
         /// 获取结果并处理超时
         /// </summary>
         /// <param name="callback"></param>
-        /// <param name="timeout"></param>
         /// <returns></returns>
-        public ResponseMessage GetResult(WaitCallback callback, TimeSpan timeout)
+        public ResponseMessage GetResult(WaitCallback callback)
         {
-            //开始异步请求
-            ThreadPool.QueueUserWorkItem(callback, this);
-
-            //等待响应
-            if (!waitResult.WaitOne(timeout))
+            //阻止上下文传递
+            using (var flowControl = ExecutionContext.SuppressFlow())
             {
-                isCompleted = true;
+                //开始异步请求
+                ThreadPool.QueueUserWorkItem(callback, this);
 
-                //结束线程
-                AbortThread(currentThread);
+                //等待响应
+                var resMsg = waitResult.GetResult();
 
-                //超时异常信息
-                return GetTimeoutResponse(reqMsg, timeout);
-            }
+                flowControl.Undo();
 
-            return waitResult.Message;
-        }
-
-        /// <summary>
-        /// 结束线程
-        /// </summary>
-        /// <param name="thread"></param>
-        private void AbortThread(Thread thread)
-        {
-            if (thread != null)
-            {
-                try
-                {
-                    thread.Abort();
-                }
-                catch (Exception ex)
-                {
-                }
+                return resMsg;
             }
         }
 
@@ -114,30 +71,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Set(ResponseMessage resMsg)
         {
-            if (isCompleted || resMsg == null)
-                return false;
-            else
-                return waitResult.Set(resMsg);
-        }
-
-        /// <summary>
-        /// 获取超时响应信息
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="timeout"></param>
-        /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, TimeSpan timeout)
-        {
-            //获取异常响应信息
-            var body = string.Format("Async call service ({0}, {1}) timeout ({2}) ms.",
-                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
-
-            var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(body));
-
-            //设置耗时时间
-            resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;
-
-            return resMsg;
+            return waitResult.Set(resMsg);
         }
 
         #region IDisposable 成员
@@ -147,12 +81,18 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            context.Dispose();
-            waitResult.Dispose();
-
-            context = null;
-            reqMsg = null;
-            waitResult = null;
+            try
+            {
+                context.Dispose();
+                waitResult.Dispose();
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                context = null;
+                reqMsg = null;
+                waitResult = null;
+            }
         }
 
         #endregion

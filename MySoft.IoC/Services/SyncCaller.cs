@@ -89,7 +89,7 @@ namespace MySoft.IoC.Services
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
+        protected virtual ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
         {
             //定义一个响应值
             ResponseMessage resMsg = null;

@@ -133,7 +133,6 @@ namespace MySoft.IoC.Services
 
                     //数据响应
                     waitResult.Set(resMsg);
-                    waitResult.Dispose();
                 }
             }
         }
@@ -197,6 +196,8 @@ namespace MySoft.IoC.Services
                         //用完后移除
                         hashtable.Remove(reqMsg.TransactionId);
                     }
+
+                    waitResult.Dispose();
                 }
             }
         }
