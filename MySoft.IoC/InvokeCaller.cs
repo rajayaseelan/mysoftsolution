@@ -15,7 +15,7 @@ namespace MySoft.IoC
         private string ipAddress;
         private IService service;
         private IContainer container;
-        private AsyncCaller asyncCaller;
+        private SyncCaller syncCaller;
 
         /// <summary>
         /// 实例化InvokeCaller
@@ -23,16 +23,15 @@ namespace MySoft.IoC
         /// <param name="appName"></param>
         /// <param name="container"></param>
         /// <param name="service"></param>
-        /// <param name="timeout"></param>
         /// <param name="cache"></param>
-        public InvokeCaller(string appName, IContainer container, IService service, TimeSpan timeout, IDataCache cache)
+        public InvokeCaller(string appName, IContainer container, IService service, IDataCache cache)
         {
             this.appName = appName;
             this.service = service;
             this.container = container;
 
             //实例化异步服务
-            this.asyncCaller = new AsyncCaller(service, timeout, cache, false);
+            this.syncCaller = new SyncCaller(service, cache, false);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -69,7 +68,7 @@ namespace MySoft.IoC
             using (var context = GetOperationContext(reqMsg))
             {
                 //异步调用服务
-                var resMsg = asyncCaller.Run(context, reqMsg);
+                var resMsg = syncCaller.Run(context, reqMsg);
 
                 //如果有异常，向外抛出
                 if (resMsg.IsError) throw resMsg.Error;
@@ -114,7 +113,7 @@ namespace MySoft.IoC
         {
             this.service = null;
             this.container = null;
-            this.asyncCaller = null;
+            this.syncCaller = null;
         }
 
         #endregion

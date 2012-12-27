@@ -35,17 +35,6 @@ namespace MySoft.IoC.Messages
         {
             get { return this.Error != null; }
         }
-
-        /// <summary>
-        /// 是否超时
-        /// </summary>
-        public bool IsTimeout
-        {
-            get
-            {
-                return IsError && (this.Error is TimeoutException);
-            }
-        }
     }
 
     /// <summary>

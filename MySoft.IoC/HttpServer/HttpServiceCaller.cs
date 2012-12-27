@@ -198,10 +198,8 @@ namespace MySoft.IoC.HttpServer
         /// <returns></returns>
         private InvokeData GetInvokeData(IService service, InvokeMessage message)
         {
-            var timeout = TimeSpan.FromSeconds(config.Timeout);
-
             //使用Invoke方式调用
-            using (var invoke = new InvokeCaller("HttpServer", container, service, timeout, null))
+            using (var invoke = new InvokeCaller("HttpServer", container, service, null))
             {
                 return invoke.InvokeResponse(message);
             }

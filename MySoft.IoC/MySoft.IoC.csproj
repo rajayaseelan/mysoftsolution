@@ -76,7 +76,6 @@
     <Compile Include="Nodes\ServerConfig.cs" />
     <Compile Include="ServiceChannel.cs" />
     <Compile Include="ServiceSemaphore.cs" />
-    <Compile Include="Services\WorkerItem.cs" />
     <Compile Include="IServerConnect.cs" />
     <Compile Include="Communication\Scs\Client\ClientReConnecter.cs" />
     <Compile Include="Communication\Scs\Client\IConnectableClient.cs" />
@@ -124,7 +123,6 @@
     <Compile Include="Messages\CustomWireProtocolFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Services\AsyncCaller.cs" />
     <Compile Include="Common\IoCHelper.cs" />
     <Compile Include="HttpServer\HttpApi\DefaultApiResolver.cs" />
     <Compile Include="HttpServer\HttpApi\Config\HttpApiItem.cs" />
@@ -189,6 +187,7 @@
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
     <Compile Include="Services\WaitResult.cs" />
+    <Compile Include="Services\SyncCaller.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
     <Compile Include="Messages\Status\CallInfo.cs" />
     <Compile Include="IStatusListener.cs" />

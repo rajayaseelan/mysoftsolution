@@ -14,7 +14,7 @@ namespace MySoft.IoC
         private int port = 8888;
         private string key = "default";
         private bool compress = false;
-        private int timeout = ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT;
+        private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
         private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
         private int minpool = ServiceConfig.DEFAULT_CLIENT_MINPOOL;
         private ResponseType resptype = ResponseType.Binary;

@@ -161,18 +161,7 @@ namespace MySoft.PlatformService.IoC
                 }
             }
 
-            if (e.IsTimeout)
-            {
-                var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
-                var body = string.Format("Remote client【{0}】call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
-                            message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.ElapsedTime);
-
-                var error = IoCHelper.GetException(e.Caller, body);
-
-                //写异常日志
-                server_OnError(error);
-            }
-            else if (e.IsError)
+            if (e.IsError)
             {
                 var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
                 var body = string.Format("Remote client【{0}】call service ({1},{2}) error.\r\nParameters => {3}",

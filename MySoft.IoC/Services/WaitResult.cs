@@ -58,21 +58,6 @@ namespace MySoft.IoC.Services
             try
             {
                 this.resMsg = resMsg;
-
-                if (resMsg != null && resMsg.TransactionId != reqMsg.TransactionId)
-                {
-                    this.resMsg = new ResponseMessage
-                    {
-                        TransactionId = reqMsg.TransactionId,
-                        ServiceName = resMsg.ServiceName,
-                        MethodName = resMsg.MethodName,
-                        Parameters = resMsg.Parameters,
-                        ElapsedTime = resMsg.ElapsedTime,
-                        Error = resMsg.Error,
-                        Value = resMsg.Value
-                    };
-                }
-
                 return ev.Set();
             }
             catch
@@ -88,11 +73,17 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            this.ev.Close();
-
-            this.ev = null;
-            this.reqMsg = null;
-            this.resMsg = null;
+            try
+            {
+                this.ev.Close();
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                this.ev = null;
+                this.reqMsg = null;
+                this.resMsg = null;
+            }
         }
 
         #endregion

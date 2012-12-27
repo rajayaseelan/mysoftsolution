@@ -18,7 +18,7 @@ namespace MySoft.IoC
         private IDictionary<string, int> cacheTimes;
         private IDictionary<string, string> errors;
         private IContainer container;
-        private AsyncCaller asyncCaller;
+        private SyncCaller syncCaller;
         private IService service;
         private Type serviceType;
         private IServiceLog logger;
@@ -47,13 +47,11 @@ namespace MySoft.IoC
             this.cacheTimes = new Dictionary<string, int>();
             this.errors = new Dictionary<string, string>();
 
-            var timeout = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT * 5);
-
             //实例化异步服务
             if (config.EnableCache)
-                this.asyncCaller = new AsyncCaller(service, timeout, cache, false);
+                this.syncCaller = new SyncCaller(service, cache, false);
             else
-                this.asyncCaller = new AsyncCaller(service, timeout, false);
+                this.syncCaller = new SyncCaller(service, false);
 
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)
@@ -147,7 +145,7 @@ namespace MySoft.IoC
                     using (var context = GetOperationContext(reqMsg))
                     {
                         //异步调用服务
-                        resMsg = asyncCaller.Run(context, reqMsg);
+                        resMsg = syncCaller.Run(context, reqMsg);
                     }
 
                     //写日志结束

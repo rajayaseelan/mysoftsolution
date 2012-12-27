@@ -13,7 +13,7 @@ namespace MySoft.IoC
     internal class ServiceCaller
     {
         private IDictionary<string, Type> callbackTypes;
-        private IDictionary<string, AsyncCaller> asyncCallers;
+        private IDictionary<string, SyncCaller> syncCallers;
         private IServiceContainer container;
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace MySoft.IoC
         {
             this.container = container;
             this.callbackTypes = new Dictionary<string, Type>();
-            this.asyncCallers = new Dictionary<string, AsyncCaller>();
+            this.syncCallers = new Dictionary<string, SyncCaller>();
 
             //初始化服务
             Init(container, config);
@@ -34,9 +34,7 @@ namespace MySoft.IoC
         private void Init(IServiceContainer container, CastleServiceConfiguration config)
         {
             callbackTypes[typeof(IStatusService).FullName] = typeof(IStatusListener);
-
             var types = container.GetServiceTypes<ServiceContractAttribute>();
-            var timeout = TimeSpan.FromSeconds(config.Timeout);
 
             foreach (var type in types)
             {
@@ -53,11 +51,11 @@ namespace MySoft.IoC
                 {
                     service = container.Resolve<IService>(serviceKey);
 
-                    //实例化AsyncCaller
+                    //实例化SyncCaller
                     if (config.EnableCache)
-                        asyncCallers[type.FullName] = new AsyncCaller(service, timeout, null, true);
+                        syncCallers[type.FullName] = new SyncCaller(service, null, true);
                     else
-                        asyncCallers[type.FullName] = new AsyncCaller(service, timeout, true);
+                        syncCallers[type.FullName] = new SyncCaller(service, true);
                 }
             }
         }
@@ -76,10 +74,10 @@ namespace MySoft.IoC
                 try
                 {
                     //解析服务
-                    var asyncCaller = GetAsyncCaller(e.Caller);
+                    var syncCaller = GetAsyncCaller(e.Caller);
 
                     //异步调用服务
-                    e.Message = asyncCaller.Run(context, e.Request);
+                    e.Message = syncCaller.Run(context, e.Request);
                 }
                 catch (Exception ex)
                 {
@@ -118,15 +116,15 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Gets the asyncCaller.
+        /// Gets the syncCaller.
         /// </summary>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private AsyncCaller GetAsyncCaller(AppCaller caller)
+        private SyncCaller GetAsyncCaller(AppCaller caller)
         {
-            lock (asyncCallers)
+            lock (syncCallers)
             {
-                if (!asyncCallers.ContainsKey(caller.ServiceName))
+                if (!syncCallers.ContainsKey(caller.ServiceName))
                 {
                     string body = string.Format("The server【{1}({2})】not find matching service ({0})."
                         , caller.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
@@ -135,7 +133,7 @@ namespace MySoft.IoC
                     throw IoCHelper.GetException(caller, body);
                 }
 
-                return asyncCallers[caller.ServiceName];
+                return syncCallers[caller.ServiceName];
             }
         }
     }

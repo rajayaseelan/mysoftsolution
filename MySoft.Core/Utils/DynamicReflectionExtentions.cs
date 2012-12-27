@@ -12,23 +12,28 @@ namespace MySoft
     /// <typeparam name="TValue"></typeparam>
     internal static class DynamicReflectionCache<TKey, TValue>
     {
-        private static Hashtable m_cache = Hashtable.Synchronized(new Hashtable());
+        private static IDictionary<TKey, TValue> m_cache = new Dictionary<TKey, TValue>();
 
         public static TValue Get(TKey key, Func<TKey, TValue> func)
         {
-            TValue value = default(TValue);
-
-            if (key == null) return value;
-
-            if (m_cache.ContainsKey(key))
+            if (key == null)
             {
-                value = (TValue)m_cache[key];
+                return default(TValue);
             }
-            else
-            {
-                value = func(key);
 
-                if (value != null)
+            lock (m_cache)
+            {
+                if (m_cache.ContainsKey(key))
+                {
+                    return (TValue)m_cache[key];
+                }
+            }
+
+            TValue value = func(key);
+
+            if (value != null)
+            {
+                lock (m_cache)
                 {
                     m_cache[key] = value;
                 }

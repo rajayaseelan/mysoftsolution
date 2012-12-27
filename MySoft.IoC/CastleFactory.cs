@@ -507,8 +507,7 @@ namespace MySoft.IoC
         private InvokeData GetInvokeData(IService service, InvokeMessage message)
         {
             //调用分布式服务
-            var timeout = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_CALL_TIMEOUT * 5);
-            using (var caller = new InvokeCaller(config.AppName, container, service, timeout, cache))
+            using (var caller = new InvokeCaller(config.AppName, container, service, cache))
             {
                 return caller.InvokeResponse(message);
             }
