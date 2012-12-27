@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using MySoft.IoC.Callback;
+using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
@@ -28,7 +29,6 @@ namespace MySoft.IoC
         private ScsTcpEndPoint epServer;
         private ServiceCaller caller;
         private ServerStatusService status;
-        private ServiceSemaphore semaphore;
 
         /// <summary>
         /// Gets the service container.
@@ -80,9 +80,6 @@ namespace MySoft.IoC
             container.Register(typeof(IStatusService), status);
 
             this.caller = new ServiceCaller(config, container);
-
-            //实例化队列服务
-            this.semaphore = new ServiceSemaphore(config.MaxCaller, caller, status, container, NotifyResult);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -319,13 +316,76 @@ namespace MySoft.IoC
                     var reqMsg = message.MessageValue as RequestMessage;
 
                     //调用服务
-                    semaphore.Send(channel, message.MessageId, reqMsg);
+                    Send(channel, message.MessageId, reqMsg);
                 }
             }
             catch (Exception ex)
             {
                 //写异常日志
                 container.WriteError(ex);
+            }
+        }
+
+        /// <summary>
+        /// 获取AppCaller
+        /// </summary>
+        /// <param name="appPath"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private AppCaller CreateCaller(string appPath, RequestMessage reqMsg)
+        {
+            //服务参数信息
+            var caller = new AppCaller
+            {
+                AppPath = appPath,
+                AppName = reqMsg.AppName,
+                IPAddress = reqMsg.IPAddress,
+                HostName = reqMsg.HostName,
+                ServiceName = reqMsg.ServiceName,
+                MethodName = reqMsg.MethodName,
+                Parameters = reqMsg.Parameters.ToString(),
+                CallTime = DateTime.Now
+            };
+
+            return caller;
+        }
+
+        /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="messageId"></param>
+        /// <param name="reqMsg"></param>
+        private void Send(IScsServerClient channel, string messageId, RequestMessage reqMsg)
+        {
+            //获取AppPath
+            var appPath = (channel.UserToken == null) ? null : (channel.UserToken as AppClient).AppPath;
+
+            //实例化上下文
+            using (var e = new CallerContext
+            {
+                MessageId = messageId,
+                Request = reqMsg,
+                Caller = CreateCaller(appPath, reqMsg)
+            })
+            {
+                try
+                {
+                    //连接状态
+                    if (channel.CommunicationState == CommunicationStates.Connected)
+                    {
+                        //实例化服务通道
+                        var client = new ServiceChannel(channel, caller, status);
+
+                        //发送消息
+                        client.Send(e, NotifyResult);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //写异常日志
+                    container.WriteError(ex);
+                }
             }
         }
 

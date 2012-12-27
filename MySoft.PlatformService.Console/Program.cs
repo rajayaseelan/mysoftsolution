@@ -45,18 +45,7 @@ namespace MySoft.PlatformService.Console
         /// <param name="e"></param>
         static void server_OnCalling(object sender, CallEventArgs e)
         {
-            if (e.IsTimeout)
-            {
-                var message = string.Format("{0}£º{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
-                var body = string.Format("Remote client¡¾{0}¡¿call service ({1},{2}) timeout ({4}) ms.\r\nParameters => {3}",
-                            message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters, e.ElapsedTime);
-
-                var error = IoCHelper.GetException(e.Caller, body);
-
-                //Ð´Òì³£ÈÕÖ¾
-                server_OnError(error);
-            }
-            else if (e.IsError)
+            if (e.IsError)
             {
                 var message = string.Format("{0}£º{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
                 var body = string.Format("Remote client¡¾{0}¡¿call service ({1},{2}) error.\r\nParameters => {3}",

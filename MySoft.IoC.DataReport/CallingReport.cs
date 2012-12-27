@@ -110,7 +110,7 @@ namespace MySoft.IoC.DataReport
         /// <param name="e"></param>
         private void AddError(RecordEventArgs e)
         {
-            var error = new DbServiceError
+            var error = new ServiceError
             {
                 AppName = e.Caller.AppName,
                 IPAddress = e.Caller.IPAddress,
@@ -137,7 +137,7 @@ namespace MySoft.IoC.DataReport
         /// <param name="e"></param>
         private void AddTimeout(RecordEventArgs e)
         {
-            var timeout = new DbServiceTimeout
+            var timeout = new ServiceTimeout
             {
                 AppName = e.Caller.AppName,
                 IPAddress = e.Caller.IPAddress,
@@ -170,7 +170,7 @@ namespace MySoft.IoC.DataReport
                 ServerHostName = p.ServerHostName,
                 ServerIPAddress = p.ServerIPAddress,
                 ServerPort = p.ServerPort
-            }).Select(p => new DbServiceCaller
+            }).Select(p => new ServiceCaller
             {
                 AppName = p.Key.AppName,
                 IPAddress = p.Key.IPAddress,
@@ -185,7 +185,7 @@ namespace MySoft.IoC.DataReport
                 ServerPort = p.Key.ServerPort,
                 AddTime = DateTime.Now
             })
-            .ToList();
+            .ToArray();
 
             return SaveData(dblist);
         }
@@ -196,11 +196,11 @@ namespace MySoft.IoC.DataReport
         /// <typeparam name="T"></typeparam>
         /// <param name="item"></param>
         private int SaveData<T>(T item)
-            where T : class
+            where T : Entity
         {
             try
             {
-                return InsertOperate<T>.Create("sdp").Execute(item);
+                return DbSession.Default.Insert(item);
             }
             catch (Exception ex)
             {
@@ -216,28 +216,25 @@ namespace MySoft.IoC.DataReport
         /// <typeparam name="T"></typeparam>
         /// <param name="items"></param>
         private int SaveData<T>(T[] items)
-            where T : class
+            where T : Entity
         {
             try
             {
                 int count = 0;
-                using (IDataSession session = new DataSession("sdp"))
+                using (DbTrans trans = DbSession.Default.BeginTrans())
                 {
-                    session.Open();
-                    session.BeginTran();
-
                     try
                     {
                         foreach (var item in items)
                         {
-                            count += InsertOperate<T>.Create().Execute(item, session);
+                            count += trans.Insert(item);
                         }
 
-                        session.Commit();
+                        trans.Commit();
                     }
                     catch
                     {
-                        session.RollBack();
+                        trans.Rollback();
                     }
                 }
 
