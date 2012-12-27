@@ -49,18 +49,17 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage GetResult(WaitCallback callback)
         {
-            //阻止上下文传递
-            using (var flowControl = ExecutionContext.SuppressFlow())
+            //开始异步请求
+            ThreadPool.UnsafeQueueUserWorkItem(callback, this);
+
+            //等待响应
+            if (waitResult.WaitOne())
             {
-                //开始异步请求
-                ThreadPool.QueueUserWorkItem(callback, this);
-
-                //等待响应
-                var resMsg = waitResult.GetResult();
-
-                flowControl.Undo();
-
-                return resMsg;
+                return waitResult.Message;
+            }
+            else
+            {
+                return default(ResponseMessage);
             }
         }
 

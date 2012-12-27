@@ -53,9 +53,9 @@ namespace MySoft.IoC
 
                     //实例化SyncCaller
                     if (config.EnableCache)
-                        syncCallers[type.FullName] = new AsyncCaller(service, null, true);
+                        syncCallers[type.FullName] = new SyncCaller(service, null, true);
                     else
-                        syncCallers[type.FullName] = new AsyncCaller(service, true);
+                        syncCallers[type.FullName] = new SyncCaller(service, true);
                 }
             }
         }

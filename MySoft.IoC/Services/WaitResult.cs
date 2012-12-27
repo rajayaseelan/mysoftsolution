@@ -35,17 +35,16 @@ namespace MySoft.IoC.Services
         /// 等待信号
         /// </summary>
         /// <returns></returns>
-        public ResponseMessage GetResult()
+        public bool WaitOne()
         {
             try
             {
-                ev.WaitOne(-1, false);
+                return ev.WaitOne(-1, false);
             }
             catch
             {
+                return false;
             }
-
-            return resMsg;
         }
 
         /// <summary>
