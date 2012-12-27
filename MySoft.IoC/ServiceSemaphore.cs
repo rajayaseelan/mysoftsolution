@@ -55,11 +55,11 @@ namespace MySoft.IoC
                                         Caller = CreateCaller(appPath, reqMsg)
                                     })
             {
-                //等待资源
-                semaphore.WaitOne(-1, false);
-
                 try
                 {
+                    //等待资源
+                    semaphore.WaitOne();
+
                     //连接状态
                     if (channel.CommunicationState == CommunicationStates.Connected)
                     {

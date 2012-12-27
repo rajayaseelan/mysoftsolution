@@ -366,6 +366,9 @@ namespace MySoft.IoC.HttpProxy
 
             //获取代理服务地址
             var sb = new StringBuilder();
+            var content = string.Empty;
+            var contentRegex = new Regex(@"<div id=""content"">([\s\S]+?)</div>");
+            var index = 0;
 
             foreach (var proxyServer in proxyServers)
             {
@@ -380,18 +383,51 @@ namespace MySoft.IoC.HttpProxy
 
                 //转换成utf8返回
                 response.ContentType = "text/html;charset=utf-8";
-                var regex = new Regex(@"<title>([\s\S]+) 处的操作</title>", RegexOptions.IgnoreCase);
+                var regex = new Regex(@"<title>([\s\S]+?) 处的操作</title>", RegexOptions.IgnoreCase);
                 if (regex.IsMatch(html))
                 {
                     url = GetRequestUri().GetLeftPart(UriPartial.Authority);
                     html = html.Replace(regex.Match(html).Result("$1"), url);
                 }
 
-                sb.Append(html);
+                if (string.IsNullOrEmpty(content)) content = html;
+
+                regex = new Regex(@"<p>([\s\S]+?)</p>");
+                if (regex.IsMatch(html))
+                {
+                    html = html.Replace(regex.Match(html).Result("$1"),
+                        string.Format("{0}，{1}", proxyServer, regex.Match(html).Result("$1")));
+                }
+
+                regex = new Regex(@"<p title([\s\S]+?)</p>");
+                if (method == "tcp" || regex.IsMatch(html))
+                {
+                    if (index > 0)
+                    {
+                        regex = new Regex(@"<p class=""heading1"">([\s\S]+?)</p>", RegexOptions.IgnoreCase);
+                        if (regex.IsMatch(html))
+                        {
+                            html = regex.Replace(html, string.Empty);
+                        }
+                    }
+
+                    index++;
+
+                    if (contentRegex.IsMatch(html))
+                    {
+                        html = contentRegex.Match(html).Result("$1");
+                    }
+
+                    sb.Append(html);
+                }
             }
 
+            //替换成统一的内容
+            content = contentRegex.Replace(content,
+                    string.Concat(@"<div id=""content"">", sb.ToString(), "</div>"));
+
             response.ContentType = "text/html;charset=utf-8";
-            return new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString()));
+            return new MemoryStream(Encoding.UTF8.GetBytes(content));
         }
 
         private string AuthorizeMethod(string name, WebHeaderCollection header, out ServiceItem service)
