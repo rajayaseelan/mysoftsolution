@@ -133,6 +133,7 @@ namespace MySoft.IoC.Services
 
                     //Êý¾ÝÏìÓ¦
                     waitResult.Set(resMsg);
+                    waitResult.Dispose();
                 }
             }
         }
