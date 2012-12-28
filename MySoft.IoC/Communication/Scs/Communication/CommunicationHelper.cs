@@ -10,7 +10,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// <summary>
         /// Max communication count.
         /// </summary>
-        private const int MaxCommunicationCount = 10000;
+        private const int MaxCommunicationCount = 1000;
 
         private static readonly SocketAsyncEventArgsPool pool;
 
@@ -21,7 +21,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         {
             pool = new SocketAsyncEventArgsPool(MaxCommunicationCount);
 
-            for (int i = 0; i < MaxCommunicationCount / 10; i++)
+            for (int i = 0; i < MaxCommunicationCount; i++)
             {
                 pool.Push(new SocketAsyncEventArgs());
             }
@@ -58,6 +58,10 @@ namespace MySoft.IoC.Communication.Scs.Communication
 
             lock (pool)
             {
+                item.SetBuffer(null, 0, 0);
+                item.AcceptSocket = null;
+                item.UserToken = null;
+
                 pool.Push(item);
             }
         }

@@ -34,22 +34,6 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 等待信号
         /// </summary>
-        /// <returns></returns>
-        public bool WaitOne()
-        {
-            try
-            {
-                return ev.WaitOne(-1, false);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 等待信号
-        /// </summary>
         /// <param name="timeout"></param>
         /// <returns></returns>
         public bool WaitOne(TimeSpan timeout)

@@ -89,6 +89,10 @@ namespace MySoft.IoC
                 //每1分钟检测一次
                 Thread.Sleep(5000);
 
+#if DEBUG
+                Console.WriteLine("{0} => Socket async event args : {1}", DateTime.Now, CommunicationHelper.Count);
+#endif
+
                 try
                 {
                     if (server.Clients.Count == 0) continue;

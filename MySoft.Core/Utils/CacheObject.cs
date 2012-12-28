@@ -19,6 +19,6 @@ namespace MySoft
         /// <summary>
         /// 过期时间
         /// </summary>
-        public DateTime Expired { get; set; }
+        public DateTime ExpiredTime { get; set; }
     }
 }

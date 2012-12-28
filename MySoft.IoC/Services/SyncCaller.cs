@@ -212,13 +212,10 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage GetResponseFromLocalCache(string callKey, OperationContext context, RequestMessage reqMsg)
         {
-            //定义一个响应值
-            ResponseMessage resMsg = null;
-
             //双缓存保护获取方式
             var array = new ArrayList { context, reqMsg };
 
-            resMsg = CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime),
+            return CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime),
                     state =>
                     {
                         var arr = state as ArrayList;
@@ -226,11 +223,9 @@ namespace MySoft.IoC.Services
                         var _reqMsg = arr[1] as RequestMessage;
 
                         //异步请求响应数据
-                        return GetResponse(_context, _reqMsg);
+                        return this.GetResponse(_context, _reqMsg);
 
                     }, array, CheckResponse);
-
-            return resMsg;
         }
 
         /// <summary>
@@ -257,7 +252,7 @@ namespace MySoft.IoC.Services
             if (resMsg == null)
             {
                 //异步请求响应数据
-                resMsg = GetResponse(context, reqMsg);
+                resMsg = this.GetResponse(context, reqMsg);
 
                 if (CheckResponse(resMsg))
                 {

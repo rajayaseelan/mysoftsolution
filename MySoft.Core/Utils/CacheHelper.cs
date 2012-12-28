@@ -353,6 +353,7 @@ namespace MySoft
                         }
                         catch
                         {
+                            success = false;
                         }
                     }
 
@@ -365,13 +366,13 @@ namespace MySoft
             else
             {
                 //如果数据过期，则更新之
-                if (cacheObj.Expired > DateTime.Now)
+                if (cacheObj.ExpiredTime < DateTime.Now)
                 {
                     lock (_syncRoot)
                     {
-                        if (cacheObj.Expired > DateTime.Now)
+                        if (cacheObj.ExpiredTime < DateTime.Now)
                         {
-                            cacheObj.Expired = DateTime.Now.Add(timeout);
+                            cacheObj.ExpiredTime = DateTime.Now.Add(timeout);
 
                             func.BeginInvoke(state, AsyncCallback, new ArrayList { key, timeout, func, pred });
                         }
@@ -448,7 +449,7 @@ namespace MySoft
             var cacheObj = new CacheObject<T>
             {
                 Value = internalObject,
-                Expired = DateTime.Now.Add(timeout)
+                ExpiredTime = DateTime.Now.Add(timeout)
             };
 
             try

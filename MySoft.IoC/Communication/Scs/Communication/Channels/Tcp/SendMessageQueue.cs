@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
@@ -71,6 +72,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             lock (_syncLock)
             {
+                e.SetBuffer(null, 0, 0);
+                e.UserToken = null;
+
                 if (_msgQueue.Count == 0)
                 {
                     _isCompleted = true;

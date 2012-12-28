@@ -46,21 +46,43 @@ namespace MySoft.IoC.Services
         /// 获取结果并处理超时
         /// </summary>
         /// <param name="callback"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        public ResponseMessage GetResult(WaitCallback callback)
+        public ResponseMessage GetResult(WaitCallback callback, TimeSpan timeout)
         {
-            //开始异步请求
-            ThreadPool.UnsafeQueueUserWorkItem(callback, this);
+            using (var flowControl = ExecutionContext.SuppressFlow())
+            {
+                //开始异步请求
+                ThreadPool.QueueUserWorkItem(callback, this);
+            }
 
             //等待响应
-            if (waitResult.WaitOne())
+            if (!waitResult.WaitOne(timeout))
             {
-                return waitResult.Message;
+                return GetTimeoutResponse(reqMsg, timeout);
             }
-            else
-            {
-                return default(ResponseMessage);
-            }
+
+            return waitResult.Message;
+        }
+
+        /// <summary>
+        /// 获取超时响应信息
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, TimeSpan timeout)
+        {
+            //获取异常响应信息
+            var body = string.Format("Async call service ({0}, {1}) timeout ({2}) ms.",
+                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
+
+            var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(body));
+
+            //设置耗时时间
+            resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;
+
+            return resMsg;
         }
 
         /// <summary>

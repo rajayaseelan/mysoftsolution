@@ -9,13 +9,19 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class AsyncCaller : SyncCaller
     {
+        private TimeSpan timeout;
+        private const int TIMEOUT = 60; //超时时间为60秒
+
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
         /// <param name="service"></param>
         /// <param name="fromServer"></param>
         public AsyncCaller(IService service, bool fromServer)
-            : base(service, fromServer) { }
+            : base(service, fromServer)
+        {
+            this.timeout = TimeSpan.FromSeconds(TIMEOUT);
+        }
 
         /// <summary>
         /// 实例化AsyncCaller
@@ -24,7 +30,10 @@ namespace MySoft.IoC.Services
         /// <param name="cache"></param>
         /// <param name="fromServer"></param>
         public AsyncCaller(IService service, IDataCache cache, bool fromServer)
-            : base(service, cache, fromServer) { }
+            : base(service, cache, fromServer)
+        {
+            this.timeout = TimeSpan.FromSeconds(TIMEOUT);
+        }
 
         /// <summary>
         /// 异常调用
@@ -42,7 +51,7 @@ namespace MySoft.IoC.Services
                 try
                 {
                     //返回响应结果
-                    resMsg = worker.GetResult(WaitCallback);
+                    resMsg = worker.GetResult(WaitCallback, timeout);
                 }
                 catch (Exception ex)
                 {
