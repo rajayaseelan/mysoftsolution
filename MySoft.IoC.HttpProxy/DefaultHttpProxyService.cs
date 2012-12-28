@@ -155,7 +155,7 @@ namespace MySoft.IoC.HttpProxy
                         url = string.Format(HTTP_PROXY_API, service.ProxyServer, name);
                     }
 
-                    jsonString = helper.Reader(url, 5, header);
+                    jsonString = helper.Reader(url, header);
 
                     if (service.TypeString)
                     {

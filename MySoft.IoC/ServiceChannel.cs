@@ -63,42 +63,30 @@ namespace MySoft.IoC
         /// <param name="callback"></param>
         private void HandleResponse(CallerContext e, Action<CallEventArgs> callback)
         {
-            try
+            //调用参数
+            var callArgs = new CallEventArgs(e.Caller)
             {
-                //调用参数
-                var callArgs = new CallEventArgs(e.Caller)
-                {
-                    ElapsedTime = e.Message.ElapsedTime,
-                    Count = e.Message.Count,
-                    Error = e.Message.Error,
-                    Value = e.Message.Value
-                };
+                ElapsedTime = e.Message.ElapsedTime,
+                Count = e.Message.Count,
+                Error = e.Message.Error,
+                Value = e.Message.Value
+            };
 
-                //回调处理
-                if (callback != null)
+            //回调处理
+            if (callback != null)
+            {
+                try
                 {
-                    //开始异步调用
-                    callback.BeginInvoke(callArgs, ar =>
-                    {
-                        try
-                        {
-                            var action = ar.AsyncState as Action<CallEventArgs>;
-                            action.EndInvoke(ar);
-                        }
-                        catch (Exception ex) { }
-                        finally
-                        {
-                            ar.AsyncWaitHandle.Close();
-                        }
-                    }, callback);
+                    //开始调用
+                    callback(callArgs);
                 }
+                catch (Exception ex)
+                {
+                }
+            }
 
-                //调用计数服务
-                status.Counter(callArgs);
-            }
-            catch (Exception ex)
-            {
-            }
+            //调用计数服务
+            status.Counter(callArgs);
         }
 
         /// <summary>

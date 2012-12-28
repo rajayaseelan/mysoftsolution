@@ -27,6 +27,7 @@ namespace MySoft.PlatformService.WinForm
 
             CastleFactory.Create().OnError += new ErrorLogEventHandler(frmMain_OnError);
             CastleFactory.Create().OnDisconnected += new EventHandler<ConnectEventArgs>(frmMain_OnDisconnected);
+            CastleFactory.Create().RegisterCache(new MonitorCache());
         }
 
         void frmMain_OnDisconnected(object sender, ConnectEventArgs e)
