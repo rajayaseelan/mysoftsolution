@@ -4,10 +4,15 @@ using System.Linq;
 using System.Text;
 using MySoft.Cache;
 
-namespace MySoft.PlatformService.WinForm
+namespace MySoft.IoC.Services
 {
-    internal class MonitorCache : IDataCache
+    internal class InternalCache : IDataCache
     {
+        /// <summary>
+        /// 缓存单例
+        /// </summary>
+        public static readonly InternalCache Instance = new InternalCache();
+
         #region IDataCache 成员
 
         /// <summary>

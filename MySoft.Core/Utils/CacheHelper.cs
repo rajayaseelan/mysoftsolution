@@ -361,6 +361,10 @@ namespace MySoft
                     {
                         cacheObj = InsertCache(key, internalObject, timeout);
                     }
+                    else
+                    {
+                        return internalObject;
+                    }
                 }
             }
             else
@@ -452,13 +456,7 @@ namespace MySoft
                 ExpiredTime = DateTime.Now.Add(timeout)
             };
 
-            try
-            {
-                CacheHelper.Insert(key, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
-            }
-            catch
-            {
-            }
+            CacheHelper.Insert(key, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
 
             return cacheObj;
         }

@@ -102,7 +102,6 @@
     <Compile Include="ListBox\ResizableListBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="MonitorCache.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Singleton.cs" />

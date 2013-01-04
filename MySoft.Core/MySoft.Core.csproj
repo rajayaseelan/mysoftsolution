@@ -77,6 +77,7 @@
     <Compile Include="Aop\IAopOperator.cs" />
     <Compile Include="Aop\IAopProxyFactory.cs" />
     <Compile Include="Cache\IDataCache.cs" />
+    <Compile Include="Common\BaseObject.cs" />
     <Compile Include="RESTful\AuthorizeToken.cs" />
     <Compile Include="RESTful\AuthorizeUser.cs" />
     <Compile Include="Common\HttpMethod.cs" />

@@ -24,7 +24,7 @@ namespace MySoft.PlatformService.UserService
         }
 
         [AspectSwitcher(true, Description = "获取用户")]
-        public virtual User GetUser(int id)
+        public virtual User GetUser(int id, int id1)
         {
             //if (id % 10 == 0)
             //{

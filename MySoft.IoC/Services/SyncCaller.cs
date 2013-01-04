@@ -64,19 +64,16 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage Run(OperationContext context, RequestMessage reqMsg)
         {
-            //定义一个响应值
-            ResponseMessage resMsg = null;
-
             //获取CallerKey
             var callKey = GetCallerKey(reqMsg, context.Caller);
 
             if (enabledCache)
             {
+                //从缓存获取数据
+                var resMsg = GetResponseFromCache(callKey, context, reqMsg);
+
                 //从缓存中获取数据
-                if (GetResponseFromCache(callKey, context, reqMsg, ref resMsg))
-                {
-                    return resMsg;
-                }
+                if (resMsg != null) return resMsg;
             }
 
             //返回响应
@@ -128,23 +125,37 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        private bool GetResponseFromCache(string callKey, OperationContext context, RequestMessage reqMsg, ref ResponseMessage resMsg)
+        private ResponseMessage GetResponseFromCache(string callKey, OperationContext context, RequestMessage reqMsg)
         {
             //从缓存中获取数据
-            if (reqMsg.CacheTime <= 0) return false;
+            if (reqMsg.CacheTime <= 0) return null;
+
+            //定义回调函数
+            Func<string, OperationContext, RequestMessage, ResponseMessage> func = null;
 
             if (cache == null)
             {
-                //获取响应从本地缓存
-                resMsg = GetResponseMessage(GetResponseFromLocalCache, callKey, context, reqMsg);
+                //如果是状态服务，则使用内部缓存
+                if (reqMsg.InvokeMethod || reqMsg.ServiceName == typeof(IStatusService).FullName)
+                {
+                    cache = InternalCache.Instance;
+
+                    //获取响应从远程缓存
+                    func = GetResponseFromRemoteCache;
+                }
+                else
+                {
+                    //获取响应从本地缓存
+                    func = GetResponseFromLocalCache;
+                }
             }
             else
             {
                 //获取响应从远程缓存
-                resMsg = GetResponseMessage(GetResponseFromRemoteCache, callKey, context, reqMsg);
+                func = GetResponseFromRemoteCache;
             }
 
-            return resMsg != null;
+            return GetResponseMessage(func, callKey, context, reqMsg);
         }
 
         /// <summary>
@@ -168,7 +179,7 @@ namespace MySoft.IoC.Services
                 resMsg = func(callKey, context, reqMsg);
 
                 //返回新对象
-                return new ResponseMessage
+                resMsg = new ResponseMessage
                 {
                     TransactionId = reqMsg.TransactionId,
                     ServiceName = resMsg.ServiceName,
@@ -176,12 +187,12 @@ namespace MySoft.IoC.Services
                     Parameters = resMsg.Parameters,
                     ElapsedTime = resMsg.ElapsedTime,
                     Error = resMsg.Error,
-                    Value = NeedCloneObject(reqMsg, resMsg) ? CoreHelper.CloneObject(resMsg.Value) : resMsg.Value
+                    Value = resMsg.Value
                 };
             }
             catch (Exception ex)
             {
-                return IoCHelper.GetResponse(reqMsg, ex);
+                resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {
@@ -212,8 +223,8 @@ namespace MySoft.IoC.Services
             //双缓存保护获取方式
             var array = new ArrayList { context, reqMsg };
 
-            return CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime),
-                    state =>
+            return ServiceCacheHelper<ResponseMessage>.Get(reqMsg.ServiceName, reqMsg.MethodName.Substring(reqMsg.MethodName.IndexOf(' ') + 1),
+                                                            callKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
                     {
                         var arr = state as ArrayList;
                         var _context = arr[0] as OperationContext;
@@ -265,20 +276,6 @@ namespace MySoft.IoC.Services
             }
 
             return resMsg;
-        }
-
-        /// <summary>
-        /// 判断是否序列化
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        /// <returns></returns>
-        private bool NeedCloneObject(RequestMessage reqMsg, ResponseMessage resMsg)
-        {
-            if (resMsg != null && !resMsg.IsError)
-                return !(fromServer || reqMsg.InvokeMethod);
-            else
-                return false;
         }
 
         /// <summary>

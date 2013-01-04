@@ -54,7 +54,7 @@ namespace MySoft.PlatformService.UserService
 
         //, ErrorMessage = "获取用户信息失败"
         [OperationContract(CacheTime = 10, Description = "获取用户")]
-        User GetUser(int id);
+        User GetUser(int id, int id1);
 
         User GetUserForName(string name);
 
@@ -65,7 +65,7 @@ namespace MySoft.PlatformService.UserService
         string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
 
         //[HttpInvoke(Name = "user.getuser", Description = "获取用户")]
-        //[OperationContract(CacheTime = 1)]
+        [OperationContract(CacheTime = 60)]
         IList<UserInfo> GetUsers();
 
         //[HttpInvoke(Name = "user.getuser", Description = "获取用户", Authorized = true, AuthParameter = "name")]

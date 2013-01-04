@@ -61,6 +61,8 @@
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="CallerContext.cs" />
+    <Compile Include="Common\CacheHelper.cs" />
+    <Compile Include="Common\CacheObject.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IServiceRecorder.cs" />
     <Compile Include="Common\RecordEventArgs.cs" />
@@ -149,6 +151,7 @@
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Services\InternalCache.cs" />
     <Compile Include="Services\ServiceDiscoverFacility.cs" />
     <Compile Include="Messages\Status\AppCaller.cs" />
     <Compile Include="Messages\Status\AppClient.cs" />

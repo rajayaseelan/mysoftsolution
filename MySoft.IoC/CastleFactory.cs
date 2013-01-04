@@ -610,7 +610,7 @@ namespace MySoft.IoC
                     //从缓存中获取节点
                     var serverKey = string.Format("{0}${1}", config.ProxyServer, nodeKey);
 
-                    return CacheHelper<IList<ServerNode>>.Get(serverKey, TimeSpan.FromMinutes(1), state =>
+                    return ServiceCacheHelper<IList<ServerNode>>.Get(serviceName, "GetServerNodes", serverKey, TimeSpan.FromMinutes(5), state =>
                     {
                         var arr = state as ArrayList;
                         var key = Convert.ToString(arr[0]);
