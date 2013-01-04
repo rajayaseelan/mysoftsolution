@@ -28,7 +28,7 @@ namespace MySoft.IoC.HttpProxy
         const string HTTP_PROXY_URL = "{0}/{1}?{2}";
         private HttpHelper helper;
         private IList<string> proxyServers;
-        private IList<ServiceItem> services;
+        private IDictionary<string, IList<ServiceItem>> services;
 
         /// <summary>
         /// TODO: Implement the collection resource that will contain the SampleItem instances
@@ -50,7 +50,7 @@ namespace MySoft.IoC.HttpProxy
             }
 
             this.helper = new HttpHelper(Encoding.UTF8, 30);
-            this.services = new List<ServiceItem>();
+            this.services = new Dictionary<string, IList<ServiceItem>>();
 
             //更新服务
             var thread = new Thread(UpdateService);
@@ -64,24 +64,34 @@ namespace MySoft.IoC.HttpProxy
         {
             while (true)
             {
-                var proxyServices = new List<ServiceItem>();
-
                 foreach (var proxyServer in proxyServers)
                 {
                     bool isError = false;
                     var items = ReaderService(proxyServer, out isError);
 
                     //判断是否有更新
-                    if (!isError && items.Count != services.Count)
+                    if (!isError)
                     {
                         items.ForEach(p => p.ProxyServer = proxyServer);
-                        proxyServices.AddRange(items);
-                    }
-                }
 
-                if (proxyServices.Count > 0)
-                {
-                    this.services = proxyServices;
+                        lock (services)
+                        {
+                            //如果存在，则判断是否一致
+                            if (services.ContainsKey(proxyServer))
+                            {
+                                //判断数量是否一致
+                                if (services[proxyServer].Count != items.Count)
+                                {
+                                    services[proxyServer] = items;
+                                }
+                            }
+                            else
+                            {
+                                //不存在，则替换掉
+                                services[proxyServer] = items;
+                            }
+                        }
+                    }
                 }
 
                 //一分钟检测一次
@@ -372,9 +382,9 @@ namespace MySoft.IoC.HttpProxy
 
             foreach (var proxyServer in proxyServers)
             {
-                if (services.Count(p => p.ProxyServer == proxyServer) == 0)
+                lock (services)
                 {
-                    continue;
+                    if (!services.ContainsKey(proxyServer)) continue;
                 }
 
                 //文档缓存1分钟
@@ -442,7 +452,7 @@ namespace MySoft.IoC.HttpProxy
                 var item = new HttpProxyResult { Code = (int)response.StatusCode, Message = "Service 【" + name + "】 not found." };
                 return SerializeJson(item);
             }
-            else if (!services.Any(p => string.Compare(p.Name, name, true) == 0))
+            else if (!GetServiceItems().Any(p => string.Compare(p.Name, name, true) == 0))
             {
                 response.StatusCode = HttpStatusCode.NotFound;
                 var item = new HttpProxyResult { Code = (int)response.StatusCode, Message = "Method 【" + name + "】 not found." };
@@ -452,7 +462,7 @@ namespace MySoft.IoC.HttpProxy
             {
                 #region 进行认证处理
 
-                service = services.Single(p => string.Compare(p.Name, name, true) == 0);
+                service = GetServiceItems().Single(p => string.Compare(p.Name, name, true) == 0);
 
                 //认证处理
                 if (service.Authorized)
@@ -508,6 +518,24 @@ namespace MySoft.IoC.HttpProxy
             {
                 SimpleLog.Instance.WriteLogForDir("Authorize", ex);
                 return new HttpProxyResult { Code = (int)response.StatusCode, Message = "Unauthorized - " + ex.Message };
+            }
+        }
+
+        /// <summary>
+        /// 获取获取列表
+        /// </summary>
+        /// <returns></returns>
+        private IList<ServiceItem> GetServiceItems()
+        {
+            lock (services)
+            {
+                var list = new List<ServiceItem>();
+                foreach (var items in services.Values)
+                {
+                    list.AddRange(items);
+                }
+
+                return list;
             }
         }
 
