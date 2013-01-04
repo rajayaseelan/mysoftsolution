@@ -164,10 +164,11 @@ namespace MySoft.IoC.Services
 
             try
             {
+                //调用服务
                 resMsg = func(callKey, context, reqMsg);
 
                 //返回新对象
-                resMsg = new ResponseMessage
+                return new ResponseMessage
                 {
                     TransactionId = reqMsg.TransactionId,
                     ServiceName = resMsg.ServiceName,
@@ -175,17 +176,13 @@ namespace MySoft.IoC.Services
                     Parameters = resMsg.Parameters,
                     ElapsedTime = resMsg.ElapsedTime,
                     Error = resMsg.Error,
-                    Value = resMsg.Value
+                    Value = NeedCloneObject(reqMsg, resMsg) ? CoreHelper.CloneObject(resMsg.Value) : resMsg.Value
                 };
-
-                //设置耗时时间
-                if (NeedCloneObject(reqMsg))
-                {
-                    //反序列化数据
-                    resMsg.Value = CoreHelper.CloneObject(resMsg.Value);
-                }
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            {
+                return IoCHelper.GetResponse(reqMsg, ex);
+            }
             finally
             {
                 if (watch.IsRunning)
@@ -274,10 +271,14 @@ namespace MySoft.IoC.Services
         /// 判断是否序列化
         /// </summary>
         /// <param name="reqMsg"></param>
+        /// <param name="resMsg"></param>
         /// <returns></returns>
-        private bool NeedCloneObject(RequestMessage reqMsg)
+        private bool NeedCloneObject(RequestMessage reqMsg, ResponseMessage resMsg)
         {
-            return !(fromServer || reqMsg.InvokeMethod);
+            if (resMsg != null && !resMsg.IsError)
+                return !(fromServer || reqMsg.InvokeMethod);
+            else
+                return false;
         }
 
         /// <summary>
