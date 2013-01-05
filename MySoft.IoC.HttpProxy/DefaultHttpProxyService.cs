@@ -385,6 +385,7 @@ namespace MySoft.IoC.HttpProxy
                 lock (services)
                 {
                     if (!services.ContainsKey(proxyServer)) continue;
+                    if (services[proxyServer].Count == 0) continue;
                 }
 
                 //文档缓存1分钟

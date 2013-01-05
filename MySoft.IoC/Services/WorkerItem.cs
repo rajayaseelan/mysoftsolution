@@ -54,15 +54,15 @@ namespace MySoft.IoC.Services
             {
                 //开始异步请求
                 ThreadPool.QueueUserWorkItem(callback, this);
-            }
 
-            //等待响应
-            if (!waitResult.WaitOne(timeout))
-            {
-                return GetTimeoutResponse(reqMsg, timeout);
-            }
+                //等待响应
+                if (!waitResult.WaitOne(timeout))
+                {
+                    return GetTimeoutResponse(reqMsg, timeout);
+                }
 
-            return waitResult.Message;
+                return waitResult.Message;
+            }
         }
 
         /// <summary>

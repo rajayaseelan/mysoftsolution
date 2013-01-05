@@ -10,7 +10,7 @@ namespace MySoft.IoC.Services
     internal class AsyncCaller : SyncCaller
     {
         private TimeSpan timeout;
-        private const int TIMEOUT = 60; //超时时间为60秒
+        private const int TIMEOUT = 5 * 60; //超时时间为300秒
 
         /// <summary>
         /// 实例化AsyncCaller

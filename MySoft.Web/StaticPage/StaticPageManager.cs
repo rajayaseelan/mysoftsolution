@@ -440,40 +440,28 @@ namespace MySoft.Web
         /// <param name="outEncoding">文件保存页面编码</param>
         internal static void SaveFile(string content, string savePath, Encoding outEncoding)
         {
-            //将内容写入文件
-            string dir = Path.GetDirectoryName(savePath);
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
-            //将内容写入文件中
-            var newSavePath = string.Format("{0}.tmp", savePath);
-            File.WriteAllText(newSavePath, content, outEncoding);
-
-            while (true)
+            int count = 0;
+            while (count < 5)
             {
-                if (File.Exists(newSavePath))
+                try
                 {
-                    try
-                    {
-                        using (var sr = new StreamReader(newSavePath, outEncoding))
-                        using (var sw = new StreamWriter(savePath, false, outEncoding))
-                        {
-                            sw.Write(sr.ReadToEnd());
-                            sw.Flush();
-                        }
+                    //将内容写入文件
+                    string dir = Path.GetDirectoryName(savePath);
+                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-                        File.Delete(newSavePath);
-
-                        break;
-                    }
-                    catch
-                    {
-                        Thread.Sleep(TimeSpan.FromSeconds(1));
-                    }
-                }
-                else
-                {
+                    File.WriteAllText(savePath, content, outEncoding);
                     break;
                 }
+                catch (IOException)
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                }
+                catch (Exception ex)
+                {
+                    SimpleLog.Instance.WriteLogForDir("StaticPageManager", ex);
+                }
+
+                count++;
             }
 
             //生成文件成功写日志

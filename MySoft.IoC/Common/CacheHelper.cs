@@ -14,9 +14,9 @@ namespace MySoft.IoC
     public static class ServiceCacheHelper<T>
     {
         /// <summary>
-        /// Lock object.
+        /// Hashtable.
         /// </summary>
-        private static readonly object _syncRoot = new object();
+        private static readonly Hashtable hashtable = new Hashtable();
 
         /// <summary>
         /// （本方法仅适应于本地缓存）
@@ -124,13 +124,14 @@ namespace MySoft.IoC
                 //如果数据过期，则更新之
                 if (cacheObj.ExpiredTime < DateTime.Now)
                 {
-                    lock (_syncRoot)
+                    lock (hashtable.SyncRoot)
                     {
-                        if (cacheObj.ExpiredTime < DateTime.Now)
+                        if (!hashtable.ContainsKey(key))
                         {
-                            cacheObj.ExpiredTime = DateTime.Now.Add(timeout);
+                            hashtable[key] = new ArrayList { serviceName, methodName, timeout, func, pred };
 
-                            func.BeginInvoke(state, AsyncCallback, new ArrayList { serviceName, methodName, key, timeout, func, pred });
+                            //异步更新
+                            func.BeginInvoke(state, AsyncCallback, key);
                         }
                     }
                 }
@@ -147,16 +148,16 @@ namespace MySoft.IoC
         /// <param name="ar"></param>
         private static void AsyncCallback(IAsyncResult ar)
         {
-            var arr = ar.AsyncState as ArrayList;
+            var key = Convert.ToString(ar.AsyncState);
 
             try
             {
+                var arr = hashtable[key] as ArrayList;
                 var serviceName = Convert.ToString(arr[0]);
                 var methodName = Convert.ToString(arr[1]);
-                var key = Convert.ToString(arr[2]);
-                var timeout = (TimeSpan)arr[3];
-                var func = arr[4] as Func<object, T>;
-                var pred = arr[5] as Predicate<T>;
+                var timeout = (TimeSpan)arr[2];
+                var func = arr[3] as Func<object, T>;
+                var pred = arr[4] as Predicate<T>;
 
                 var internalObject = func.EndInvoke(ar);
 
@@ -192,6 +193,11 @@ namespace MySoft.IoC
             }
             finally
             {
+                lock (hashtable)
+                {
+                    hashtable.Remove(key);
+                }
+
                 ar.AsyncWaitHandle.Close();
             }
         }
@@ -212,11 +218,12 @@ namespace MySoft.IoC
                 try
                 {
                     var cacheKey = MD5.HexHash(Encoding.Default.GetBytes(key));
-                    var path = CoreHelper.GetFullPath(string.Format("ServiceCache\\{0}\\{1}\\{2}.bin", serviceName, methodName, cacheKey));
+                    var path = CoreHelper.GetFullPath(string.Format("ServiceCache\\{0}\\{1}\\{2}.dat", serviceName, methodName, cacheKey));
 
                     if (File.Exists(path))
                     {
                         var buffer = File.ReadAllBytes(path);
+                        buffer = CompressionManager.DecompressGZip(buffer);
                         cacheObj = SerializationManager.DeserializeBin(buffer);
 
                         //默认缓存5秒
@@ -253,11 +260,14 @@ namespace MySoft.IoC
             try
             {
                 var cacheKey = MD5.HexHash(Encoding.Default.GetBytes(key));
-                var path = CoreHelper.GetFullPath(string.Format("ServiceCache\\{0}\\{1}\\{2}.bin", serviceName, methodName, cacheKey));
+                var path = CoreHelper.GetFullPath(string.Format("ServiceCache\\{0}\\{1}\\{2}.dat", serviceName, methodName, cacheKey));
 
                 var dir = Path.GetDirectoryName(path);
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                File.WriteAllBytes(path, SerializationManager.SerializeBin(cacheObj));
+
+                var buffer = SerializationManager.SerializeBin(cacheObj);
+                buffer = CompressionManager.CompressGZip(buffer);
+                File.WriteAllBytes(path, buffer);
             }
             catch (IOException ex) { }
             catch (Exception ex)
