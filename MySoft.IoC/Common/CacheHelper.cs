@@ -217,8 +217,7 @@ namespace MySoft.IoC
             {
                 try
                 {
-                    var cacheKey = MD5.HexHash(Encoding.Default.GetBytes(key));
-                    var path = CoreHelper.GetFullPath(string.Format("ServiceCache\\{0}\\{1}\\{2}.dat", serviceName, methodName, cacheKey));
+                    var path = GetFilePath(serviceName, methodName, key);
 
                     if (File.Exists(path))
                     {
@@ -259,10 +258,9 @@ namespace MySoft.IoC
 
             try
             {
-                var cacheKey = MD5.HexHash(Encoding.Default.GetBytes(key));
-                var path = CoreHelper.GetFullPath(string.Format("ServiceCache\\{0}\\{1}\\{2}.dat", serviceName, methodName, cacheKey));
-
+                var path = GetFilePath(serviceName, methodName, key);
                 var dir = Path.GetDirectoryName(path);
+
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
                 var buffer = SerializationManager.SerializeBin(cacheObj);
@@ -276,6 +274,19 @@ namespace MySoft.IoC
             }
 
             return cacheObj;
+        }
+
+        /// <summary>
+        /// 获取文件路径
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <param name="methodName"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static string GetFilePath(string serviceName, string methodName, string key)
+        {
+            var cacheKey = MD5.HexHash(Encoding.Default.GetBytes(key));
+            return CoreHelper.GetFullPath(string.Format("ServiceCache\\{0}\\{1}\\{2}.dat", serviceName, methodName, cacheKey));
         }
     }
 }
