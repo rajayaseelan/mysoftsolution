@@ -607,7 +607,8 @@ namespace MySoft
         /// <returns></returns>
         private static string GetFilePath(string key)
         {
-            return CoreHelper.GetFullPath(string.Format("LocalCache\\{0}.dat", key));
+            var cacheKey = MD5.HexHash(Encoding.Default.GetBytes(key));
+            return CoreHelper.GetFullPath(string.Format("LocalCache\\{0}.dat", cacheKey));
         }
     }
 
