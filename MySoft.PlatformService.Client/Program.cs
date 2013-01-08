@@ -91,6 +91,13 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            while (true)
+            {
+                CacheHelper<IList<User>>.Get(LocalCacheType.File, "aaa", TimeSpan.FromSeconds(5), () => new List<User> { new User() });
+
+                Thread.Sleep(1000);
+            }
+
             //var service = CastleFactory.Create().GetChannel<IUserService>();
 
             //var a = service.GetUser(new UserInfo());

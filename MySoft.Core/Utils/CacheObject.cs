@@ -9,7 +9,7 @@ namespace MySoft
     /// 缓存对象
     /// </summary>
     [Serializable]
-    internal class CacheObject<T>
+    public class CacheObject<T>
     {
         /// <summary>
         /// 缓存对象

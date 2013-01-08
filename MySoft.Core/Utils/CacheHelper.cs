@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
 using System.Web.Caching;
 using MySoft.Logger;
+using MySoft.Security;
 
 namespace MySoft
 {
     /// <summary>
     /// 缓存管理类
     /// </summary>
-    public class CacheHelper
+    public static class CacheHelper
     {
         /// <summary>
         /// DayFactor
@@ -268,10 +271,12 @@ namespace MySoft
     /// </summary>
     public static class CacheHelper<T>
     {
+        #region 数据缓存
+
         /// <summary>
-        /// Lock object.
+        /// Hashtable.
         /// </summary>
-        private static readonly object _syncRoot = new object();
+        private static readonly Hashtable hashtable = new Hashtable();
 
         /// <summary>
         /// （本方法仅适应于本地缓存）
@@ -283,7 +288,7 @@ namespace MySoft
         /// <returns></returns>
         public static T Get(string key, TimeSpan timeout, Func<T> func)
         {
-            return Get(key, timeout, func, null);
+            return Get(LocalCacheType.Memory, key, timeout, func);
         }
 
         /// <summary>
@@ -297,7 +302,7 @@ namespace MySoft
         /// <returns></returns>
         public static T Get(string key, TimeSpan timeout, Func<T> func, Predicate<T> pred)
         {
-            return Get(key, timeout, state => func(), null, pred);
+            return Get(LocalCacheType.Memory, key, timeout, func, pred);
         }
 
         /// <summary>
@@ -311,7 +316,7 @@ namespace MySoft
         /// <returns></returns>
         public static T Get(string key, TimeSpan timeout, Func<object, T> func, object state)
         {
-            return Get(key, timeout, func, state, null);
+            return Get(LocalCacheType.Memory, key, timeout, func, state);
         }
 
         /// <summary>
@@ -326,7 +331,71 @@ namespace MySoft
         /// <returns></returns>
         public static T Get(string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
         {
-            var cacheObj = CacheHelper.Get<CacheObject<T>>(key);
+            return Get(LocalCacheType.Memory, key, timeout, func, state, pred);
+        }
+
+        #endregion
+
+        #region 设置缓存方式
+
+        /// <summary>
+        /// （本方法仅适应于本地缓存）
+        /// 从缓存中获取数据，如获取失败，返回从指定的方法中获取
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        public static T Get(LocalCacheType type, string key, TimeSpan timeout, Func<T> func)
+        {
+            return Get(type, key, timeout, func, null);
+        }
+
+        /// <summary>
+        /// （本方法仅适应于本地缓存）
+        /// 从缓存中获取数据，如获取失败，返回从指定的方法中获取
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <param name="func"></param>
+        /// <param name="pred"></param>
+        /// <returns></returns>
+        public static T Get(LocalCacheType type, string key, TimeSpan timeout, Func<T> func, Predicate<T> pred)
+        {
+            return Get(type, key, timeout, state => func(), null, pred);
+        }
+
+        /// <summary>
+        /// （本方法仅适应于本地缓存）
+        /// 从缓存中获取数据，如获取失败，返回从指定的方法中获取
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <param name="func"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static T Get(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state)
+        {
+            return Get(type, key, timeout, func, state, null);
+        }
+
+        /// <summary>
+        /// （本方法仅适应于本地缓存）
+        /// 从缓存中获取数据，如获取失败，返回从指定的方法中获取
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <param name="func"></param>
+        /// <param name="state"></param>
+        /// <param name="pred"></param>
+        /// <returns></returns>
+        public static T Get(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
+        {
+            var cacheObj = GetCache(type, key, timeout);
 
             if (cacheObj == null)
             {
@@ -359,7 +428,7 @@ namespace MySoft
 
                     if (success)
                     {
-                        cacheObj = InsertCache(key, internalObject, timeout);
+                        cacheObj = InsertCache(type, key, internalObject, timeout);
                     }
                     else
                     {
@@ -372,13 +441,14 @@ namespace MySoft
                 //如果数据过期，则更新之
                 if (cacheObj.ExpiredTime < DateTime.Now)
                 {
-                    lock (_syncRoot)
+                    lock (hashtable.SyncRoot)
                     {
-                        if (cacheObj.ExpiredTime < DateTime.Now)
+                        if (!hashtable.ContainsKey(key))
                         {
-                            cacheObj.ExpiredTime = DateTime.Now.Add(timeout);
+                            hashtable[key] = new ArrayList { type, timeout, func, pred };
 
-                            func.BeginInvoke(state, AsyncCallback, new ArrayList { key, timeout, func, pred });
+                            //异步更新
+                            func.BeginInvoke(state, AsyncCallback, key);
                         }
                     }
                 }
@@ -389,17 +459,20 @@ namespace MySoft
             return cacheObj.Value;
         }
 
+        #endregion
+
         /// <summary>
         /// 缓存回调
         /// </summary>
         /// <param name="ar"></param>
         private static void AsyncCallback(IAsyncResult ar)
         {
-            var arr = ar.AsyncState as ArrayList;
+            var key = Convert.ToString(ar.AsyncState);
 
             try
             {
-                var key = Convert.ToString(arr[0]);
+                var arr = hashtable[key] as ArrayList;
+                var type = (LocalCacheType)arr[0];
                 var timeout = (TimeSpan)arr[1];
                 var func = arr[2] as Func<object, T>;
                 var pred = arr[3] as Predicate<T>;
@@ -423,7 +496,7 @@ namespace MySoft
 
                     if (success)
                     {
-                        InsertCache(key, internalObject, timeout);
+                        InsertCache(type, key, internalObject, timeout);
                     }
                 }
             }
@@ -438,17 +511,60 @@ namespace MySoft
             }
             finally
             {
+                lock (hashtable)
+                {
+                    hashtable.Remove(key);
+                }
+
                 ar.AsyncWaitHandle.Close();
             }
         }
 
         /// <summary>
+        /// 获取缓存
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        private static CacheObject<T> GetCache(LocalCacheType type, string key, TimeSpan timeout)
+        {
+            var cacheObj = CacheHelper.Get(key);
+            if (type == LocalCacheType.File && cacheObj == null)
+            {
+                try
+                {
+                    var path = GetFilePath(key);
+
+                    if (File.Exists(path))
+                    {
+                        var buffer = File.ReadAllBytes(path);
+                        buffer = CompressionManager.DecompressGZip(buffer);
+                        cacheObj = SerializationManager.DeserializeBin(buffer);
+
+                        //默认缓存5秒
+                        CacheHelper.Insert(key, cacheObj, (int)Math.Min(5, timeout.TotalSeconds));
+                    }
+                }
+                catch (IOException ex) { }
+                catch (Exception ex)
+                {
+                    SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
+                }
+            }
+
+            return cacheObj as CacheObject<T>;
+        }
+
+        /// <summary>
         /// 插入缓存
         /// </summary>
+        /// <param name="type"></param>
         /// <param name="key"></param>
         /// <param name="internalObject"></param>
         /// <param name="timeout"></param>
-        private static CacheObject<T> InsertCache(string key, T internalObject, TimeSpan timeout)
+        /// <returns></returns>
+        private static CacheObject<T> InsertCache(LocalCacheType type, string key, T internalObject, TimeSpan timeout)
         {
             var cacheObj = new CacheObject<T>
             {
@@ -456,9 +572,57 @@ namespace MySoft
                 ExpiredTime = DateTime.Now.Add(timeout)
             };
 
-            CacheHelper.Insert(key, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
+            if (type == LocalCacheType.File)
+            {
+                try
+                {
+                    var path = GetFilePath(key);
+                    var dir = Path.GetDirectoryName(path);
+
+                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+                    var buffer = SerializationManager.SerializeBin(cacheObj);
+                    buffer = CompressionManager.CompressGZip(buffer);
+                    File.WriteAllBytes(path, buffer);
+                }
+                catch (IOException ex) { }
+                catch (Exception ex)
+                {
+                    SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
+                }
+            }
+            else
+            {
+                //默认缓存5秒
+                CacheHelper.Insert(key, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
+            }
 
             return cacheObj;
         }
+
+        /// <summary>
+        /// 获取文件路径
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static string GetFilePath(string key)
+        {
+            return CoreHelper.GetFullPath(string.Format("LocalCache\\{0}.dat", key));
+        }
+    }
+
+    /// <summary>
+    /// 缓存类型
+    /// </summary>
+    public enum LocalCacheType
+    {
+        /// <summary>
+        /// 内存方式
+        /// </summary>
+        Memory,
+        /// <summary>
+        /// 文件方式
+        /// </summary>
+        File
     }
 }
