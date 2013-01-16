@@ -1,4 +1,5 @@
 ﻿using System;
+using Castle.DynamicProxy;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
@@ -8,7 +9,7 @@ namespace MySoft.IoC.Callback
     /// <summary>
     /// 回调代理
     /// </summary>
-    internal class CallbackInvocationHandler : IProxyInvocationHandler
+    internal class CallbackInvocationHandler : IProxyInvocationHandler, IInterceptor
     {
         private Type callType;
         private IScsServerClient channel;
@@ -46,6 +47,20 @@ namespace MySoft.IoC.Callback
 
             //返回null
             return null;
+        }
+
+        #endregion
+
+        #region IInterceptor 成员
+
+        /// <summary>
+        /// Impl Intercept method.
+        /// </summary>
+        /// <param name="invocation"></param>
+        public void Intercept(IInvocation invocation)
+        {
+            //Call proxy method.
+            invocation.ReturnValue = Invoke(invocation.Proxy, invocation.Method, invocation.Arguments);
         }
 
         #endregion

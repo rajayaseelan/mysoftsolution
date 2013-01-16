@@ -16,6 +16,7 @@ namespace MySoft.IoC.Configuration
         private Type apiResolverType;
         private Type nodeResolverType;
         private bool compress = false;
+        private int maxCaller = ServiceConfig.DEFAULT_SERVER_MAXCALLER;         //默认并发数为10
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;            //默认记录6小时
         private bool enableCache = false;                                       //是否缓存
 
@@ -61,6 +62,9 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["enableCache"] != null && attribute["enableCache"].Value.Trim() != string.Empty)
                 enableCache = Convert.ToBoolean(attribute["enableCache"].Value);
+
+            if (attribute["maxCaller"] != null && attribute["maxCaller"].Value.Trim() != string.Empty)
+                maxCaller = Convert.ToInt32(attribute["maxCaller"].Value);
 
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
@@ -187,6 +191,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return enableCache; }
             set { enableCache = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the maxCaller
+        /// </summary>
+        public int MaxCaller
+        {
+            get { return maxCaller; }
+            set { maxCaller = value; }
         }
     }
 }

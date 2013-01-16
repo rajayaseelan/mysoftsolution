@@ -111,8 +111,8 @@ namespace MySoft.IoC
             }
 
             //绑定事件
-            MessageCenter.Instance.OnLog += container.WriteLog;
-            MessageCenter.Instance.OnError += container.WriteError;
+            MessageCenter.Instance.OnLog += (log, type) => container.WriteLog(log, type);
+            MessageCenter.Instance.OnError += error => container.WriteError(error);
 
             //发布日志
             PublishService(status.GetServiceList());
@@ -375,10 +375,11 @@ namespace MySoft.IoC
                     if (channel.CommunicationState == CommunicationStates.Connected)
                     {
                         //实例化服务通道
-                        var client = new ServiceChannel(channel, caller, status);
-
-                        //发送消息
-                        client.Send(e, NotifyResult);
+                        using (var client = new ServiceChannel(channel, caller, status))
+                        {
+                            //发送消息
+                            client.Send(e, NotifyResult);
+                        }
                     }
                 }
                 catch (Exception ex)

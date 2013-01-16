@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Castle.DynamicProxy;
 using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
@@ -12,7 +13,7 @@ namespace MySoft.IoC
     /// <summary>
     /// The base impl class of the service interface, this class is used by service factory to emit service interface impl automatically at runtime.
     /// </summary>
-    public class ServiceInvocationHandler : IProxyInvocationHandler
+    public class ServiceInvocationHandler : IProxyInvocationHandler, IInterceptor
     {
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
@@ -205,6 +206,20 @@ namespace MySoft.IoC
                 Container = container,
                 Caller = caller
             };
+        }
+
+        #endregion
+
+        #region IInterceptor ≥…‘±
+
+        /// <summary>
+        /// Impl Intercept method.
+        /// </summary>
+        /// <param name="invocation"></param>
+        public void Intercept(IInvocation invocation)
+        {
+            //Call proxy method.
+            invocation.ReturnValue = Invoke(invocation.Proxy, invocation.Method, invocation.Arguments);
         }
 
         #endregion

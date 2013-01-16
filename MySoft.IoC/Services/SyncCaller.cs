@@ -91,6 +91,9 @@ namespace MySoft.IoC.Services
             //定义一个响应值
             ResponseMessage resMsg = null;
 
+            //如果上下文已经不存在，则直接返回
+            if (context.Disposed) return resMsg;
+
             try
             {
                 //设置上下文

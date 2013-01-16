@@ -16,20 +16,24 @@ namespace MySoft.IoC.Aspect
         public InnerInvocation(Castle.DynamicProxy.IInvocation invocation)
         {
             this.invocation = invocation;
-
-            var description = string.Empty;
-            var attr = CoreHelper.GetMemberAttribute<AspectSwitcherAttribute>(invocation.MethodInvocationTarget);
-            if (attr != null) description = attr.Description;
-
-            this.description = description;
+            this.description = string.Empty;
             this.parameters = new IOC.ParameterCollection();
 
-            var pis = invocation.MethodInvocationTarget.GetParameters();
-            if (pis != null && pis.Length > 0)
+            if (invocation.InvocationTarget != null)
             {
-                for (var index = 0; index < pis.Length; index++)
+                var description = string.Empty;
+                var attr = CoreHelper.GetMemberAttribute<AspectSwitcherAttribute>(invocation.MethodInvocationTarget);
+                if (attr != null) description = attr.Description;
+
+                this.description = description;
+
+                var pis = invocation.MethodInvocationTarget.GetParameters();
+                if (pis != null && pis.Length > 0)
                 {
-                    this.parameters[pis[index].Name] = invocation.GetArgumentValue(index);
+                    for (var index = 0; index < pis.Length; index++)
+                    {
+                        this.parameters[pis[index].Name] = invocation.GetArgumentValue(index);
+                    }
                 }
             }
         }

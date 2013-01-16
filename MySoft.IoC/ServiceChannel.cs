@@ -9,11 +9,11 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务通道
     /// </summary>
-    internal class ServiceChannel
+    internal class ServiceChannel : IDisposable
     {
-        private readonly IScsServerClient channel;
-        private readonly ServiceCaller caller;
-        private readonly ServerStatusService status;
+        private IScsServerClient channel;
+        private ServiceCaller caller;
+        private ServerStatusService status;
 
         /// <summary>
         /// 实例化ServiceChannel
@@ -128,5 +128,19 @@ namespace MySoft.IoC
                 throw;
             }
         }
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            this.channel = null;
+            this.caller = null;
+            this.status = null;
+        }
+
+        #endregion
     }
 }

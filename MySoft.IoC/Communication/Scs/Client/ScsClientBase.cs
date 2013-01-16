@@ -130,7 +130,7 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// <summary>
         /// This timer is used to send PingMessage messages to server periodically.
         /// </summary>
-        private readonly Timer _pingTimer;
+        private Timer _pingTimer;
 
         #endregion
 
@@ -256,10 +256,12 @@ namespace MySoft.IoC.Communication.Scs.Client
             _communicationChannel.MessageError -= CommunicationChannel_MessageError;
             _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
 
-            _communicationChannel = null;
-
             _pingTimer.Elapsed -= PingTimer_Elapsed;
             _pingTimer.Stop();
+            _pingTimer.Dispose();
+
+            _communicationChannel = null;
+            _pingTimer = null;
         }
 
         /// <summary>

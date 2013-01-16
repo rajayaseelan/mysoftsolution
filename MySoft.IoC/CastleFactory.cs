@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.DynamicProxy;
 using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
@@ -191,6 +192,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <returns>The service implemetation instance.</returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
+            where IServiceInterfaceType : class
         {
             return GetChannel<IServiceInterfaceType>(config.DefaultKey);
         }
@@ -201,6 +203,7 @@ namespace MySoft.IoC
         /// <param name="nodeKey">The node key.</param>
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(string nodeKey)
+            where IServiceInterfaceType : class
         {
             //获取本地服务
             IService service = GetLocalService<IServiceInterfaceType>();
@@ -229,6 +232,7 @@ namespace MySoft.IoC
         /// <param name="node">The node name.</param>
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>(ServerNode node)
+            where IServiceInterfaceType : class
         {
             //获取本地服务
             IService service = GetLocalService<IServiceInterfaceType>();
@@ -244,6 +248,7 @@ namespace MySoft.IoC
         /// <param name="node"></param>
         /// <returns></returns>
         private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService service, ServerNode node)
+            where IServiceInterfaceType : class
         {
             //是否缓存服务
             var isCacheService = true;
@@ -294,6 +299,7 @@ namespace MySoft.IoC
         /// <param name="isCacheService"></param>
         /// <returns></returns>
         private IServiceInterfaceType GetProxyChannel<IServiceInterfaceType>(IService proxy, bool isCacheService)
+            where IServiceInterfaceType : class
         {
             Type serviceType = typeof(IServiceInterfaceType);
             string serviceKey = string.Format("{0}${1}", serviceType.FullName, proxy.ServiceName);
@@ -301,10 +307,13 @@ namespace MySoft.IoC
             lock (hashtable.SyncRoot)
             {
                 var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, cache, logger);
-                var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
+                //var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
-                if (!isCacheService) //不缓存，直接返回服务
-                    return (IServiceInterfaceType)dynamicProxy;
+                var proxyGenerator = new ProxyGenerator();
+                var dynamicProxy = proxyGenerator.CreateInterfaceProxyWithoutTarget<IServiceInterfaceType>(handler);
+
+                //不缓存，直接返回服务
+                if (!isCacheService) return dynamicProxy;
 
                 if (!hashtable.ContainsKey(serviceKey))
                 {
@@ -326,6 +335,7 @@ namespace MySoft.IoC
         /// <param name="callback"></param>
         /// <returns></returns>
         public IPublishService GetChannel<IPublishService>(object callback)
+            where IPublishService : class
         {
             return GetChannel<IPublishService>(config.DefaultKey, callback);
         }
@@ -338,6 +348,7 @@ namespace MySoft.IoC
         /// <param name="callback"></param>
         /// <returns></returns>
         public IPublishService GetChannel<IPublishService>(string nodeKey, object callback)
+            where IPublishService : class
         {
             var nodes = GetCacheServerNodes(nodeKey, typeof(IPublishService).FullName);
 
@@ -358,6 +369,7 @@ namespace MySoft.IoC
         /// <param name="callback"></param>
         /// <returns></returns>
         public IPublishService GetChannel<IPublishService>(ServerNode node, object callback)
+            where IPublishService : class
         {
             if (node == null)
             {
@@ -519,6 +531,7 @@ namespace MySoft.IoC
         /// <typeparam name="IServiceInterfaceType"></typeparam>
         /// <returns></returns>
         private IService GetLocalService<IServiceInterfaceType>()
+            where IServiceInterfaceType : class
         {
             Type serviceType = typeof(IServiceInterfaceType);
 

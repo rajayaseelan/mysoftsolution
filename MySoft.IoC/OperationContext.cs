@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Runtime.Remoting.Messaging;
-using System.Threading;
+using Castle.DynamicProxy;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
@@ -32,6 +33,8 @@ namespace MySoft.IoC
             }
         }
 
+        private static readonly Hashtable hashtable = new Hashtable();
+
         /// <summary>
         /// 回调类型
         /// </summary>
@@ -39,6 +42,12 @@ namespace MySoft.IoC
         private IScsServerClient channel;
         private IContainer container;
         private AppCaller caller;
+        private bool disposed = false;
+
+        /// <summary>
+        /// 是否已经销毁对象
+        /// </summary>
+        public bool Disposed { get { return disposed; } }
 
         /// <summary>
         /// 容器对象
@@ -80,16 +89,29 @@ namespace MySoft.IoC
         /// <typeparam name="ICallbackService"></typeparam>
         /// <returns></returns>
         public ICallbackService GetCallbackChannel<ICallbackService>()
+            where ICallbackService : class
         {
-            if (callbackType == null || typeof(ICallbackService) != callbackType)
+            if (callbackType == null || typeof(ICallbackService) != callbackType || !typeof(ICallbackService).IsInterface)
             {
                 throw new WarningException("Please set the current of callback interface type.");
             }
             else
             {
-                var callback = new CallbackInvocationHandler(callbackType, channel);
-                var instance = ProxyFactory.GetInstance().Create(callback, typeof(ICallbackService), true);
-                return (ICallbackService)instance;
+                lock (hashtable.SyncRoot)
+                {
+                    if (!hashtable.ContainsKey(channel.ClientId))
+                    {
+                        var handler = new CallbackInvocationHandler(callbackType, channel);
+                        //var instance = ProxyFactory.GetInstance().Create(handler, typeof(ICallbackService), true);
+
+                        var proxyGenerator = new ProxyGenerator();
+                        var dynamicProxy = proxyGenerator.CreateInterfaceProxyWithoutTarget<ICallbackService>(handler);
+
+                        hashtable[channel.ClientId] = dynamicProxy;
+                    }
+                }
+
+                return (ICallbackService)hashtable[channel.ClientId];
             }
         }
 
@@ -100,9 +122,15 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
+            lock (hashtable.SyncRoot)
+            {
+                hashtable.Remove(channel.ClientId);
+            }
+
             this.channel = null;
             this.container = null;
             this.caller = null;
+            this.disposed = true;
         }
 
         #endregion

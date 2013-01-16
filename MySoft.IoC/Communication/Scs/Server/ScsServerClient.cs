@@ -57,10 +57,15 @@ namespace MySoft.IoC.Communication.Scs.Server
             }
         }
 
+        private object _userToken;
         /// <summary>
         /// Get or set user token info.
         /// </summary>
-        public object UserToken { get; set; }
+        public object UserToken
+        {
+            get { return _userToken; }
+            set { _userToken = value; }
+        }
 
         /// <summary>
         /// Gets/sets wire protocol that is used while reading and writing messages.
@@ -179,7 +184,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
 
             _communicationChannel = null;
-            UserToken = null;
+            _userToken = null;
         }
 
         /// <summary>

@@ -142,5 +142,33 @@ namespace MySoft.IoC.Aspect
         }
 
         #endregion
+
+        /// <summary>
+        /// 创建服务代理
+        /// </summary>
+        /// <typeparam name="IServiceInterfaceType"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="interceptors"></param>
+        /// <returns></returns>
+        public static IServiceInterfaceType CreateProxy<IServiceInterfaceType>(IServiceInterfaceType service, params IInterceptor[] interceptors)
+            where IServiceInterfaceType : class
+        {
+            return CreateProxy<IServiceInterfaceType>(service, ProxyGenerationOptions.Default, interceptors);
+        }
+
+        /// <summary>
+        /// 创建服务代理
+        /// </summary>
+        /// <typeparam name="IServiceInterfaceType"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="options"></param>
+        /// <param name="interceptors"></param>
+        /// <returns></returns>
+        public static IServiceInterfaceType CreateProxy<IServiceInterfaceType>(IServiceInterfaceType service, ProxyGenerationOptions options, params IInterceptor[] interceptors)
+            where IServiceInterfaceType : class
+        {
+            ProxyGenerator proxy = new ProxyGenerator();
+            return proxy.CreateInterfaceProxyWithTarget<IServiceInterfaceType>(service, options, interceptors);
+        }
     }
 }
