@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
@@ -45,24 +44,17 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取结果并处理超时
         /// </summary>
-        /// <param name="callback"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        public ResponseMessage GetResult(WaitCallback callback, TimeSpan timeout)
+        public ResponseMessage GetResult(TimeSpan timeout)
         {
-            using (var flowControl = ExecutionContext.SuppressFlow())
+            //等待响应
+            if (!waitResult.WaitOne(timeout))
             {
-                //开始异步请求
-                ThreadPool.QueueUserWorkItem(callback, this);
-
-                //等待响应
-                if (!waitResult.WaitOne(timeout))
-                {
-                    return GetTimeoutResponse(reqMsg, timeout);
-                }
-
-                return waitResult.Message;
+                return GetTimeoutResponse(reqMsg, timeout);
             }
+
+            return waitResult.Message;
         }
 
         /// <summary>
