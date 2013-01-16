@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 4 * 1024; //4KB
+        private const int ReceiveBufferSize = 1024; //1KB
 
         #region Public properties
 
@@ -75,10 +75,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _receiveBuffer = new byte[ReceiveBufferSize];
 
-            //Socket send messages event args.
-            var _sendEventArgs = CreateAsyncSEA(null);
-            _sendQueue = new SendMessageQueue(_clientSocket, _sendEventArgs);
-
+            _sendQueue = new SendMessageQueue(_clientSocket);
             _sendQueue.Completed += IO_Completed;
             _sendQueue.Disposed += IO_Disposed;
         }
@@ -143,7 +140,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             try
             {
                 WireProtocol.Reset();
+
+                _sendQueue.Completed -= IO_Completed;
                 _sendQueue.Dispose();
+
+                //collect resource.
+                GC.Collect();
             }
             catch (Exception ex) { }
             finally
@@ -196,22 +198,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            //Create a byte array from message according to current protocol
-            var messageBytes = WireProtocol.GetBytes(message);
+            //Socket send messages event args.
+            Func<SocketAsyncEventArgs> func = () => CreateAsyncSEA(null);
 
             try
             {
-                _sendQueue.Send(message, messageBytes);
+                //Create a byte array from message according to current protocol
+                var messageBytes = WireProtocol.GetBytes(message);
+
+                _sendQueue.Send(func, message, messageBytes);
             }
             catch (Exception ex)
             {
                 Disconnect(ex);
 
                 throw;
-            }
-            finally
-            {
-                messageBytes = null;
             }
         }
 
@@ -282,17 +283,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                 OnMessageSent(e.UserToken as IScsMessage);
             }
-            catch (Exception ex) { }
-            finally
+            catch (Exception ex)
             {
-                try
-                {
-                    _sendQueue.Send(e);
-                }
-                catch (Exception ex)
-                {
-                    Disconnect(ex);
-                }
+            }
+
+            try
+            {
+                _sendQueue.Resend(e);
+            }
+            catch (Exception ex)
+            {
+                Disconnect(ex);
             }
         }
 
@@ -325,29 +326,22 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         //Copy received bytes to a new byte array
                         var receivedBytes = new byte[bytesTransferred];
 
-                        try
+                        Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
+                        Array.Clear(e.Buffer, 0, bytesTransferred);
+
+                        //Read messages according to current wire protocol
+                        var messages = WireProtocol.CreateMessages(receivedBytes);
+
+                        //Raise MessageReceived event for all received messages
+                        foreach (var message in messages)
                         {
-                            Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
-                            //Array.Clear(e.Buffer, 0, bytesTransferred);
-
-                            //Read messages according to current wire protocol
-                            var messages = WireProtocol.CreateMessages(receivedBytes);
-
-                            //Raise MessageReceived event for all received messages
-                            foreach (var message in messages)
-                            {
-                                OnMessageReceived(message);
-                            }
-
-                            //Receive all bytes to the remote application
-                            if (!_clientSocket.ReceiveAsync(e))
-                            {
-                                OnReceiveCompleted(e);
-                            }
+                            OnMessageReceived(message);
                         }
-                        finally
+
+                        //Receive all bytes to the remote application
+                        if (!_clientSocket.ReceiveAsync(e))
                         {
-                            receivedBytes = null;
+                            OnReceiveCompleted(e);
                         }
                     }
                 }
