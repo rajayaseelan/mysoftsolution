@@ -31,6 +31,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using Newtonsoft.Json.Serialization;
 
 namespace Newtonsoft.Json.Utilities.LinqBridge
@@ -678,7 +679,7 @@ namespace Newtonsoft.Json.Utilities.LinqBridge
     {
       using (var e = source.GetEnumerator())
       {
-        for (var i = 0; i++)
+        for (var i = 0;; i++)
         {
           if (!e.MoveNext())
             yield break;
@@ -2966,7 +2967,7 @@ namespace Newtonsoft.Json.Utilities.LinqBridge
 
     public override string ToString()
     {
-      return string.Format(@"{{ First = {0}, Second = {1} }}", First, Second);
+      return string.Format(CultureInfo.InvariantCulture, @"{{ First = {0}, Second = {1} }}", First, Second);
     }
   }
 }

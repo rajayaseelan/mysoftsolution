@@ -107,12 +107,12 @@ namespace MySoft.IoC
             catch (SocketException ex) { }
             catch (Exception ex)
             {
+                //获取异常响应
+                var body = string.Format("Sending messages error: {0}, service: ({1}, {2})",
+                                        ErrorHelper.GetInnerException(ex).Message, e.Caller.ServiceName, e.Caller.MethodName);
+
                 try
                 {
-                    //获取异常响应
-                    var body = string.Format("Sending messages error: {0}, service: ({1}, {2})",
-                                            ErrorHelper.GetInnerException(ex).Message, e.Caller.ServiceName, e.Caller.MethodName);
-
                     var error = IoCHelper.GetException(e.Caller, body);
 
                     var resMsg = IoCHelper.GetResponse(e.Request, error);
@@ -121,11 +121,11 @@ namespace MySoft.IoC
                     //发送消息
                     channel.SendMessage(message);
                 }
-                catch
+                catch (Exception inner) { }
+                finally
                 {
+                    throw IoCHelper.GetException(e.Caller, body, ex);
                 }
-
-                throw;
             }
         }
 

@@ -91,12 +91,12 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
-            while (true)
-            {
-                CacheHelper<IList<User>>.Get(LocalCacheType.File, "aaa", TimeSpan.FromSeconds(5), () => new List<User> { new User() });
+            //while (true)
+            //{
+            //    CacheHelper<IList<User>>.Get(LocalCacheType.File, "aaa", TimeSpan.FromSeconds(5), () => new List<User> { new User() });
 
-                Thread.Sleep(1000);
-            }
+            //    Thread.Sleep(1000);
+            //}
 
             //var service = CastleFactory.Create().GetChannel<IUserService>();
 
@@ -339,7 +339,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);

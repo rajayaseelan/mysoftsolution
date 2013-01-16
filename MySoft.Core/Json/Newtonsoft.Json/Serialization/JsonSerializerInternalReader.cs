@@ -31,6 +31,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Dynamic;
 #endif
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -46,6 +47,13 @@ namespace Newtonsoft.Json.Serialization
 {
   internal class JsonSerializerInternalReader : JsonSerializerInternalBase
   {
+    internal enum PropertyPresence
+    {
+      None,
+      Null,
+      Value
+    }
+
     private JsonSerializerProxy _internalSerializer;
 #if !(SILVERLIGHT || NETFX_CORE || PORTABLE)
     private JsonFormatterConverter _formatterConverter;
@@ -129,7 +137,7 @@ namespace Newtonsoft.Json.Serialization
         object deserializedValue;
 
         if (converter != null && converter.CanRead)
-          deserializedValue = converter.ReadJson(reader, objectType, null, GetInternalSerializer());
+          deserializedValue = DeserializeConvertable(converter, reader, objectType, null);
         else
           deserializedValue = CreateValueInternal(reader, objectType, contract, null, null, null, null);
 
@@ -143,7 +151,7 @@ namespace Newtonsoft.Json.Serialization
       }
       catch (Exception ex)
       {
-        if (IsErrorHandled(null, contract, null, reader.Path, ex))
+        if (IsErrorHandled(null, contract, null, reader as IJsonLineInfo, reader.Path, ex))
         {
           HandleError(reader, false, 0);
           return null;
@@ -430,10 +438,12 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
                 if (reader.TokenType == JsonToken.PropertyName)
                   throw JsonSerializationException.Create(reader, "Additional content found in JSON reference object. A JSON reference object should only have a {0} property.".FormatWith(CultureInfo.InvariantCulture, JsonTypeReflector.RefPropertyName));
 
-                {
-                  newValue = Serializer.ReferenceResolver.ResolveReference(this, reference);
-                  return true;
-                }
+                newValue = Serializer.ReferenceResolver.ResolveReference(this, reference);
+
+                if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+                  TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Resolved object reference '{0}' to {1}.".FormatWith(CultureInfo.InvariantCulture, reference, newValue.GetType())), null);
+
+                return true;
               }
               else
               {
@@ -469,6 +479,9 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
 
                 if (specifiedType == null)
                   throw JsonSerializationException.Create(reader, "Type specified in JSON '{0}' was not resolved.".FormatWith(CultureInfo.InvariantCulture, qualifiedTypeName));
+
+                if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+                  TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Resolved type '{0}' to {1}.".FormatWith(CultureInfo.InvariantCulture, qualifiedTypeName, specifiedType)), null);
 
                 if (objectType != null
 #if !(NET35 || NET20 || WINDOWS_PHONE || PORTABLE)
@@ -672,7 +685,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
         if (!gottenCurrentValue && target != null && property.Readable)
           currentValue = property.ValueProvider.GetValue(target);
 
-        value = propertyConverter.ReadJson(reader, property.PropertyType, currentValue, GetInternalSerializer());
+        value = DeserializeConvertable(propertyConverter, reader, property.PropertyType, currentValue);
       }
       else
       {
@@ -688,7 +701,12 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
         property.ValueProvider.SetValue(target, value);
 
         if (property.SetIsSpecified != null)
+        {
+          if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+            TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "IsSpecified for property '{0}' on {1} set to true.".FormatWith(CultureInfo.InvariantCulture, property.PropertyName, property.DeclaringType)), null);
+
           property.SetIsSpecified(target, true);
+        }
       }
     }
 
@@ -737,7 +755,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
       // test tokentype here because default value might not be convertable to actual type, e.g. default of "" for DateTime
       if (HasFlag(property.DefaultValueHandling.GetValueOrDefault(Serializer.DefaultValueHandling), DefaultValueHandling.Ignore)
           && JsonReader.IsPrimitiveToken(reader.TokenType)
-          && MiscellaneousUtils.ValueEquals(reader.Value, property.DefaultValue))
+          && MiscellaneousUtils.ValueEquals(reader.Value, property.GetResolvedDefaultValue()))
       {
         reader.Skip();
         return true;
@@ -761,6 +779,21 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
       return false;
     }
 
+    private void AddReference(JsonReader reader, string id, object value)
+    {
+      try
+      {
+        if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+          TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Read object reference Id '{0}' for {1}.".FormatWith(CultureInfo.InvariantCulture, id, value.GetType())), null);
+
+        Serializer.ReferenceResolver.AddReference(this, id, value);
+      }
+      catch (Exception ex)
+      {
+        throw JsonSerializationException.Create(reader, "Error reading object reference '{0}'.".FormatWith(CultureInfo.InvariantCulture, id), ex);
+      }
+    }
+
     private bool HasFlag(DefaultValueHandling value, DefaultValueHandling flag)
     {
       return ((value & flag) == flag);
@@ -772,7 +805,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
         return false;
 
       if (HasFlag(property.DefaultValueHandling.GetValueOrDefault(Serializer.DefaultValueHandling), DefaultValueHandling.Ignore)
-        && MiscellaneousUtils.ValueEquals(value, property.DefaultValue))
+        && MiscellaneousUtils.ValueEquals(value, property.GetResolvedDefaultValue()))
         return false;
 
       if (!property.Writable)
@@ -794,14 +827,30 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
       return dictionary;
     }
 
+    private void OnDeserializing(JsonReader reader, JsonContract contract, object value)
+    {
+      if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+        TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Started deserializing {0}".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
+
+      contract.InvokeOnDeserializing(value, Serializer.Context);
+    }
+
+    private void OnDeserialized(JsonReader reader, JsonContract contract, object value)
+    {
+      if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+        TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Finished deserializing {0}".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
+
+      contract.InvokeOnDeserialized(value, Serializer.Context);
+    }
+
     private object PopulateDictionary(IWrappedDictionary wrappedDictionary, JsonReader reader, JsonDictionaryContract contract, JsonProperty containerProperty, string id)
     {
       object dictionary = wrappedDictionary.UnderlyingDictionary;
 
       if (id != null)
-        Serializer.ReferenceResolver.AddReference(this, id, dictionary);
+        AddReference(reader, id, dictionary);
 
-      contract.InvokeOnDeserializing(dictionary, Serializer.Context);
+      OnDeserializing(reader, contract, dictionary);
 
       int initialDepth = reader.Depth;
 
@@ -836,7 +885,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
 
               object itemValue;
               if (dictionaryValueConverter != null && dictionaryValueConverter.CanRead)
-                itemValue = dictionaryValueConverter.ReadJson(reader, contract.DictionaryValueType, null, GetInternalSerializer());
+                itemValue = DeserializeConvertable(dictionaryValueConverter, reader, contract.DictionaryValueType, null);
               else
                 itemValue = CreateValueInternal(reader, contract.DictionaryValueType, contract.ItemContract, null, contract, containerProperty, null);
 
@@ -844,7 +893,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
             }
             catch (Exception ex)
             {
-              if (IsErrorHandled(dictionary, contract, keyValue, reader.Path, ex))
+              if (IsErrorHandled(dictionary, contract, keyValue, reader as IJsonLineInfo, reader.Path, ex))
                 HandleError(reader, true, initialDepth);
               else
                 throw;
@@ -863,7 +912,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
       if (!finished)
         ThrowUnexpectedEndException(reader, contract, dictionary, "Unexpected end when deserializing object.");
 
-      contract.InvokeOnDeserialized(dictionary, Serializer.Context);
+      OnDeserialized(reader, contract, dictionary);
       return dictionary;
     }
 
@@ -872,9 +921,9 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
       int rank = contract.UnderlyingType.GetArrayRank();
 
       if (id != null)
-        Serializer.ReferenceResolver.AddReference(this, id, list);
+        AddReference(reader, id, list);
 
-      contract.InvokeOnDeserializing(list, Serializer.Context);
+      OnDeserializing(reader, contract, list);
 
       JsonContract collectionItemContract = GetContractSafe(contract.CollectionItemType);
       JsonConverter collectionItemConverter = GetConverter(collectionItemContract, null, contract, containerProperty);
@@ -908,7 +957,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
                   object value;
 
                   if (collectionItemConverter != null && collectionItemConverter.CanRead)
-                    value = collectionItemConverter.ReadJson(reader, contract.CollectionItemType, null, GetInternalSerializer());
+                    value = DeserializeConvertable(collectionItemConverter, reader, contract.CollectionItemType, null);
                   else
                     value = CreateValueInternal(reader, contract.CollectionItemType, collectionItemContract, null, contract, containerProperty, null);
 
@@ -925,7 +974,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
           {
             JsonPosition errorPosition = reader.GetPosition(initialDepth);
 
-            if (IsErrorHandled(list, contract, errorPosition.Position, reader.Path, ex))
+            if (IsErrorHandled(list, contract, errorPosition.Position, reader as IJsonLineInfo, reader.Path, ex))
             {
               HandleError(reader, true, initialDepth);
 
@@ -986,7 +1035,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
       if (!finished)
         ThrowUnexpectedEndException(reader, contract, list, "Unexpected end when deserializing array.");
 
-      contract.InvokeOnDeserialized(list, Serializer.Context);
+      OnDeserialized(reader, contract, list);
       return list;
     }
 
@@ -998,7 +1047,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
       }
       catch (Exception ex)
       {
-        if (IsErrorHandled(currentObject, contract, null, reader.Path, ex))
+        if (IsErrorHandled(currentObject, contract, null, reader as IJsonLineInfo, reader.Path, ex))
           HandleError(reader, false, 0);
         else
           throw;
@@ -1010,7 +1059,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
       object list = wrappedList.UnderlyingCollection;
 
       if (id != null)
-        Serializer.ReferenceResolver.AddReference(this, id, list);
+        AddReference(reader, id, list);
 
       // can't populate an existing array
       if (wrappedList.IsFixedSize)
@@ -1019,7 +1068,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
         return list;
       }
 
-      contract.InvokeOnDeserializing(list, Serializer.Context);
+      OnDeserializing(reader, contract, list);
 
       int initialDepth = reader.Depth;
 
@@ -1046,7 +1095,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
                 object value;
 
                 if (collectionItemConverter != null && collectionItemConverter.CanRead)
-                  value = collectionItemConverter.ReadJson(reader, contract.CollectionItemType, null, GetInternalSerializer());
+                  value = DeserializeConvertable(collectionItemConverter, reader, contract.CollectionItemType, null);
                 else
                   value = CreateValueInternal(reader, contract.CollectionItemType, collectionItemContract, null, contract, containerProperty, null);
 
@@ -1063,7 +1112,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
         {
           JsonPosition errorPosition = reader.GetPosition(initialDepth);
 
-          if (IsErrorHandled(list, contract, errorPosition.Position, reader.Path, ex))
+          if (IsErrorHandled(list, contract, errorPosition.Position, reader as IJsonLineInfo, reader.Path, ex))
           {
             HandleError(reader, true, initialDepth);
 
@@ -1088,7 +1137,7 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
       if (!finished)
         ThrowUnexpectedEndException(reader, contract, list, "Unexpected end when deserializing array.");
 
-      contract.InvokeOnDeserialized(list, Serializer.Context);
+      OnDeserialized(reader, contract, list);
       return list;
     }
 
@@ -1103,6 +1152,9 @@ To fix this error either change the JSON to a {1} or change the deserialized typ
 To fix this error either change the environment to be fully trusted, change the application to not deserialize the type, add JsonObjectAttribute to the type or change the JsonSerializer setting ContractResolver to use a new DefaultContractResolver with IgnoreSerializableInterface set to true.
 ".FormatWith(CultureInfo.InvariantCulture, objectType));
       }
+
+      if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+        TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Deserializing {0} using ISerializable constructor.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
 
       SerializationInfo serializationInfo = new SerializationInfo(contract.UnderlyingType, GetFormatterConverter());
 
@@ -1137,11 +1189,11 @@ To fix this error either change the environment to be fully trusted, change the 
       object createdObject = contract.ISerializableCreator(serializationInfo, Serializer.Context);
 
       if (id != null)
-        Serializer.ReferenceResolver.AddReference(this, id, createdObject);
+        AddReference(reader, id, createdObject);
 
       // these are together because OnDeserializing takes an object but for an ISerializable the object is fully created in the constructor
-      contract.InvokeOnDeserializing(createdObject, Serializer.Context);
-      contract.InvokeOnDeserialized(createdObject, Serializer.Context);
+      OnDeserializing(reader, contract, createdObject);
+      OnDeserialized(reader, contract, createdObject);
 
       return createdObject;
     }
@@ -1153,7 +1205,7 @@ To fix this error either change the environment to be fully trusted, change the 
       IDynamicMetaObjectProvider newObject;
 
       if (contract.UnderlyingType.IsInterface() || contract.UnderlyingType.IsAbstract())
-        throw JsonSerializationException.Create(reader, "Could not create an instance of type {0}. Type is an interface or abstract class and cannot be instantated.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
+        throw JsonSerializationException.Create(reader, "Could not create an instance of type {0}. Type is an interface or abstract class and cannot be instantiated.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
 
       if (contract.DefaultCreator != null &&
         (!contract.DefaultCreatorNonPublic || Serializer.ConstructorHandling == ConstructorHandling.AllowNonPublicDefaultConstructor))
@@ -1162,9 +1214,9 @@ To fix this error either change the environment to be fully trusted, change the 
         throw JsonSerializationException.Create(reader, "Unable to find a default constructor to use for type {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
 
       if (id != null)
-        Serializer.ReferenceResolver.AddReference(this, id, newObject);
+        AddReference(reader, id, newObject);
 
-      contract.InvokeOnDeserializing(newObject, Serializer.Context);
+      OnDeserializing(reader, contract, newObject);
 
       int initialDepth = reader.Depth;
 
@@ -1202,7 +1254,7 @@ To fix this error either change the environment to be fully trusted, change the 
 
                 object value;
                 if (dynamicMemberConverter != null && dynamicMemberConverter.CanRead)
-                  value = dynamicMemberConverter.ReadJson(reader, t, null, GetInternalSerializer());
+                  value = DeserializeConvertable(dynamicMemberConverter, reader, t, null);
                 else
                   value = CreateValueInternal(reader, t, dynamicMemberContract, null, null, member, null);
 
@@ -1211,7 +1263,7 @@ To fix this error either change the environment to be fully trusted, change the 
             }
             catch (Exception ex)
             {
-              if (IsErrorHandled(newObject, contract, memberName, reader.Path, ex))
+              if (IsErrorHandled(newObject, contract, memberName, reader as IJsonLineInfo, reader.Path, ex))
                 HandleError(reader, true, initialDepth);
               else
                 throw;
@@ -1228,7 +1280,7 @@ To fix this error either change the environment to be fully trusted, change the 
       if (!finished)
         ThrowUnexpectedEndException(reader, contract, newObject, "Unexpected end when deserializing object.");
 
-      contract.InvokeOnDeserialized(newObject, Serializer.Context);
+      OnDeserialized(reader, contract, newObject);
 
       return newObject;
     }
@@ -1239,6 +1291,9 @@ To fix this error either change the environment to be fully trusted, change the 
       ValidationUtils.ArgumentNotNull(constructorInfo, "constructorInfo");
 
       Type objectType = contract.UnderlyingType;
+
+      if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+        TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Deserializing {0} using a non-default constructor '{1}'.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType, constructorInfo)), null);
 
       IDictionary<JsonProperty, object> propertyValues = ResolvePropertyAndConstructorValues(contract, containerProperty, reader, objectType);
 
@@ -1257,9 +1312,9 @@ To fix this error either change the environment to be fully trusted, change the 
       object createdObject = constructorInfo.Invoke(constructorParameters.Values.ToArray());
 
       if (id != null)
-        Serializer.ReferenceResolver.AddReference(this, id, createdObject);
+        AddReference(reader, id, createdObject);
 
-      contract.InvokeOnDeserializing(createdObject, Serializer.Context);
+      OnDeserializing(reader, contract, createdObject);
 
       // go through unused values and set the newly created object's properties
       foreach (KeyValuePair<JsonProperty, object> remainingPropertyValue in remainingPropertyValues)
@@ -1311,8 +1366,21 @@ To fix this error either change the environment to be fully trusted, change the 
         }
       }
 
-      contract.InvokeOnDeserialized(createdObject, Serializer.Context);
+      OnDeserialized(reader, contract, createdObject);
       return createdObject;
+    }
+
+    private object DeserializeConvertable(JsonConverter converter, JsonReader reader, Type objectType, object existingValue)
+    {
+      if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+        TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Started deserializing {0} with converter {1}.".FormatWith(CultureInfo.InvariantCulture, objectType, converter.GetType())), null);
+
+      object value = converter.ReadJson(reader, objectType, existingValue, GetInternalSerializer());
+
+      if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+        TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Finished deserializing {0} with converter {1}.".FormatWith(CultureInfo.InvariantCulture, objectType, converter.GetType())), null);
+
+      return value;
     }
 
     private IDictionary<JsonProperty, object> ResolvePropertyAndConstructorValues(JsonObjectContract contract, JsonProperty containerProperty, JsonReader reader, Type objectType)
@@ -1348,7 +1416,7 @@ To fix this error either change the environment to be fully trusted, change the 
 
                 object propertyValue;
                 if (propertyConverter != null && propertyConverter.CanRead)
-                  propertyValue = propertyConverter.ReadJson(reader, property.PropertyType, null, GetInternalSerializer());
+                  propertyValue = DeserializeConvertable(propertyConverter, reader, property.PropertyType, null);
                 else
                   propertyValue = CreateValueInternal(reader, property.PropertyType, property.PropertyContract, property, contract, containerProperty, null);
 
@@ -1363,6 +1431,9 @@ To fix this error either change the environment to be fully trusted, change the 
             {
               if (!reader.Read())
                 throw JsonSerializationException.Create(reader, "Unexpected end when setting {0}'s value.".FormatWith(CultureInfo.InvariantCulture, memberName));
+
+              if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+                TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Could not find member '{0}' on {1}.".FormatWith(CultureInfo.InvariantCulture, memberName, contract.UnderlyingType)), null);
 
               if (Serializer.MissingMemberHandling == MissingMemberHandling.Error)
                 throw JsonSerializationException.Create(reader, "Could not find member '{0}' on object of type '{1}'".FormatWith(CultureInfo.InvariantCulture, memberName, objectType.Name));
@@ -1434,7 +1505,7 @@ To fix this error either change the environment to be fully trusted, change the 
       object newObject = null;
 
       if (objectContract.UnderlyingType.IsInterface() || objectContract.UnderlyingType.IsAbstract())
-        throw JsonSerializationException.Create(reader, "Could not create an instance of type {0}. Type is an interface or abstract class and cannot be instantated.".FormatWith(CultureInfo.InvariantCulture, objectContract.UnderlyingType));
+        throw JsonSerializationException.Create(reader, "Could not create an instance of type {0}. Type is an interface or abstract class and cannot be instantiated.".FormatWith(CultureInfo.InvariantCulture, objectContract.UnderlyingType));
 
       if (objectContract.OverrideConstructor != null)
       {
@@ -1470,7 +1541,7 @@ To fix this error either change the environment to be fully trusted, change the 
 
     private object PopulateObject(object newObject, JsonReader reader, JsonObjectContract contract, JsonProperty member, string id)
     {
-      contract.InvokeOnDeserializing(newObject, Serializer.Context);
+      OnDeserializing(reader, contract, newObject);
 
       // only need to keep a track of properies presence if they are required or a value should be defaulted if missing
       Dictionary<JsonProperty, PropertyPresence> propertiesPresence = (contract.HasRequiredOrDefaultValueProperties || HasFlag(Serializer.DefaultValueHandling, DefaultValueHandling.Populate))
@@ -1478,7 +1549,7 @@ To fix this error either change the environment to be fully trusted, change the 
         : null;
 
       if (id != null)
-        Serializer.ReferenceResolver.AddReference(this, id, newObject);
+        AddReference(reader, id, newObject);
 
       int initialDepth = reader.Depth;
 
@@ -1499,6 +1570,9 @@ To fix this error either change the environment to be fully trusted, change the 
 
                 if (property == null)
                 {
+                  if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+                    TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Could not find member '{0}' on {1}".FormatWith(CultureInfo.InvariantCulture, memberName, contract.UnderlyingType)), null);
+
                   if (Serializer.MissingMemberHandling == MissingMemberHandling.Error)
                     throw JsonSerializationException.Create(reader, "Could not find member '{0}' on object of type '{1}'".FormatWith(CultureInfo.InvariantCulture, memberName, contract.UnderlyingType.Name));
 
@@ -1520,7 +1594,7 @@ To fix this error either change the environment to be fully trusted, change the 
               }
               catch (Exception ex)
               {
-                if (IsErrorHandled(newObject, contract, memberName, reader.Path, ex))
+                if (IsErrorHandled(newObject, contract, memberName, reader as IJsonLineInfo, reader.Path, ex))
                   HandleError(reader, true, initialDepth);
                 else
                   throw;
@@ -1543,7 +1617,7 @@ To fix this error either change the environment to be fully trusted, change the 
 
       EndObject(newObject, reader, contract, initialDepth, propertiesPresence);
 
-      contract.InvokeOnDeserialized(newObject, Serializer.Context);
+      OnDeserialized(reader, contract, newObject);
       return newObject;
     }
 
@@ -1572,7 +1646,7 @@ To fix this error either change the environment to be fully trusted, change the 
                     property.PropertyContract = GetContractSafe(property.PropertyType);
 
                   if (HasFlag(property.DefaultValueHandling.GetValueOrDefault(Serializer.DefaultValueHandling), DefaultValueHandling.Populate) && property.Writable)
-                    property.ValueProvider.SetValue(newObject, EnsureType(reader, property.DefaultValue, CultureInfo.InvariantCulture, property.PropertyContract, property.PropertyType));
+                    property.ValueProvider.SetValue(newObject, EnsureType(reader, property.GetResolvedDefaultValue(), CultureInfo.InvariantCulture, property.PropertyContract, property.PropertyType));
                   break;
                 case PropertyPresence.Null:
                   if (resolvedRequired == Required.Always)
@@ -1582,7 +1656,7 @@ To fix this error either change the environment to be fully trusted, change the 
             }
             catch (Exception ex)
             {
-              if (IsErrorHandled(newObject, contract, property.PropertyName, reader.Path, ex))
+              if (IsErrorHandled(newObject, contract, property.PropertyName, reader as IJsonLineInfo, reader.Path, ex))
                 HandleError(reader, true, initialDepth);
               else
                 throw;
@@ -1616,13 +1690,6 @@ To fix this error either change the environment to be fully trusted, change the 
             break;
         }
       }
-    }
-
-    internal enum PropertyPresence
-    {
-      None,
-      Null,
-      Value
     }
   }
 }

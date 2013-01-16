@@ -25,6 +25,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Messages
         public string RepliedMessageId { get; set; }
 
         /// <summary>
+        /// Total data size.
+        /// </summary>
+        public int DataLength { get; set; }
+
+        /// <summary>
         /// Creates a new ScsMessage.
         /// </summary>
         public ScsMessage()

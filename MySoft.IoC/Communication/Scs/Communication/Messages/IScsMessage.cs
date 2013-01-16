@@ -15,5 +15,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Messages
         /// Unique identified for this message. 
         /// </summary>
         string RepliedMessageId { get; set; }
+
+        /// <summary>
+        /// Total data size.
+        /// </summary>
+        int DataLength { get; set; }
     }
 }

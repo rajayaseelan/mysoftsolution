@@ -59,9 +59,9 @@ namespace MySoft.IoC
 
                     //实例化SyncCaller
                     if (config.EnableCache)
-                        syncCallers[type.FullName] = new SyncCaller(service, null, true);
+                        syncCallers[type.FullName] = new AsyncCaller(service, null, true);
                     else
-                        syncCallers[type.FullName] = new SyncCaller(service, true);
+                        syncCallers[type.FullName] = new AsyncCaller(service, true);
                 }
             }
         }
@@ -74,11 +74,18 @@ namespace MySoft.IoC
         /// <returns></returns>
         public bool InvokeResponse(IScsServerClient channel, CallerContext e)
         {
-            if (!_semaphore.WaitOne(_timeout, false)) return false;
+            if (!_semaphore.WaitOne(_timeout, false))
+            {
+                //获取异常响应
+                e.Message = IoCHelper.GetResponse(e.Request, new WarningException("The server response overtime."));
+
+                return true;
+            }
 
             //不是连接状态，直接返回
             if (channel.CommunicationState != CommunicationStates.Connected)
             {
+                _semaphore.Release();
                 return false;
             }
 

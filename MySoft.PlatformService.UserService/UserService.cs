@@ -54,7 +54,9 @@ namespace MySoft.PlatformService.UserService
             //    return null;
             //}
 
-            var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
+            Thread.Sleep(100);
+
+            var name = DateTime.Now.ToString(); // +"__" + id.ToString().PadRight(100000, '#');
             var sb = new StringBuilder(name);
             for (int i = 0; i < 10; i++)
             {

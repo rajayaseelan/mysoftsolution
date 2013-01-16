@@ -91,6 +91,11 @@ namespace MySoft.IoC
         public ICallbackService GetCallbackChannel<ICallbackService>()
             where ICallbackService : class
         {
+            if (channel == null)
+            {
+                return default(ICallbackService);
+            }
+
             if (callbackType == null || typeof(ICallbackService) != callbackType || !typeof(ICallbackService).IsInterface)
             {
                 throw new WarningException("Please set the current of callback interface type.");
@@ -102,7 +107,7 @@ namespace MySoft.IoC
                     if (!hashtable.ContainsKey(channel.ClientId))
                     {
                         var handler = new CallbackInvocationHandler(callbackType, channel);
-                        //var instance = ProxyFactory.GetInstance().Create(handler, typeof(ICallbackService), true);
+                        //var dynamicProxy = ProxyFactory.GetInstance().Create(handler, typeof(ICallbackService), true);
 
                         var proxyGenerator = new ProxyGenerator();
                         var dynamicProxy = proxyGenerator.CreateInterfaceProxyWithoutTarget<ICallbackService>(handler);
@@ -122,9 +127,15 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            lock (hashtable.SyncRoot)
+            if (channel != null)
             {
-                hashtable.Remove(channel.ClientId);
+                lock (hashtable.SyncRoot)
+                {
+                    if (hashtable.ContainsKey(channel.ClientId))
+                    {
+                        hashtable.Remove(channel.ClientId);
+                    }
+                }
             }
 
             this.channel = null;

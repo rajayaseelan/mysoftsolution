@@ -175,6 +175,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
+                //Data packet size.
+                message.DataLength = messageBytes.Length;
+
+                _sendEventArgs.UserToken = message;
+
                 //Receive all bytes to the remote application
                 if (!_clientSocket.SendAsync(_sendEventArgs))
                 {

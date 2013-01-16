@@ -111,6 +111,9 @@ namespace Newtonsoft.Json.Serialization
         new DataSetConverter(),
         new DataTableConverter(),
 #endif
+#if NETFX_CORE
+        new JsonValueConverter(),
+#endif
         new KeyValuePairConverter(),
         new BsonObjectIdConverter()
       };
@@ -362,15 +365,13 @@ namespace Newtonsoft.Json.Serialization
       if (attribute != null)
         contract.ItemRequired = attribute._itemRequired;
 
+      ConstructorInfo overrideConstructor = GetAttributeConstructor(contract.NonNullableUnderlyingType);
+        
       // check if a JsonConstructorAttribute has been defined and use that
-      if (contract.NonNullableUnderlyingType.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(c => c.IsDefined(typeof(JsonConstructorAttribute), true)))
+      if (overrideConstructor != null)
       {
-        ConstructorInfo constructor = GetAttributeConstructor(contract.NonNullableUnderlyingType);
-        if (constructor != null)
-        {
-          contract.OverrideConstructor = constructor;
-          contract.ConstructorParameters.AddRange(CreateConstructorParameters(constructor, contract.Properties));
-        }
+        contract.OverrideConstructor = overrideConstructor;
+        contract.ConstructorParameters.AddRange(CreateConstructorParameters(overrideConstructor, contract.Properties));
       }
       else if (contract.MemberSerialization == MemberSerialization.Fields)
       {
@@ -402,6 +403,10 @@ namespace Newtonsoft.Json.Serialization
       else if (markedConstructors.Count == 1)
         return markedConstructors[0];
 
+      // little hack to get Version objects to deserialize correctly
+      if (objectType == typeof(Version))
+        return objectType.GetConstructor(new [] { typeof(int), typeof(int), typeof(int), typeof(int) });
+
       return null;
     }
 
@@ -429,7 +434,10 @@ namespace Newtonsoft.Json.Serialization
 
       foreach (ParameterInfo parameterInfo in constructorParameters)
       {
-        JsonProperty matchingMemberProperty = memberProperties.GetClosestMatchProperty(parameterInfo.Name);
+        // it is possible to generate a ParameterInfo with a null name using Reflection.Emit
+        // protect against an ArgumentNullException from GetClosestMatchProperty by testing for null here
+        JsonProperty matchingMemberProperty = (parameterInfo.Name != null) ? memberProperties.GetClosestMatchProperty(parameterInfo.Name) : null;
+
         // type must match as well as name
         if (matchingMemberProperty != null && matchingMemberProperty.PropertyType != parameterInfo.ParameterType)
           matchingMemberProperty = null;
@@ -468,7 +476,10 @@ namespace Newtonsoft.Json.Serialization
         property.PropertyName = (property.PropertyName != parameterInfo.Name) ? property.PropertyName : matchingMemberProperty.PropertyName;
         property.Converter = property.Converter ?? matchingMemberProperty.Converter;
         property.MemberConverter = property.MemberConverter ?? matchingMemberProperty.MemberConverter;
-        property.DefaultValue = property.DefaultValue ?? matchingMemberProperty.DefaultValue;
+
+        if (!property._hasExplicitDefaultValue && matchingMemberProperty._hasExplicitDefaultValue)
+          property.DefaultValue = matchingMemberProperty.DefaultValue;
+
         property._required = property._required ?? matchingMemberProperty._required;
         property.IsReference = property.IsReference ?? matchingMemberProperty.IsReference;
         property.NullValueHandling = property.NullValueHandling ?? matchingMemberProperty.NullValueHandling;
@@ -965,6 +976,7 @@ namespace Newtonsoft.Json.Serialization
       {
         property._required = propertyAttribute._required;
         property.Order = propertyAttribute._order;
+        property.DefaultValueHandling = propertyAttribute._defaultValueHandling;
         hasMemberAttribute = true;
       }
 #if !PocketPC && !NET20
@@ -972,6 +984,7 @@ namespace Newtonsoft.Json.Serialization
       {
         property._required = (dataMemberAttribute.IsRequired) ? Required.AllowNull : Required.Default;
         property.Order = (dataMemberAttribute.Order != -1) ? (int?) dataMemberAttribute.Order : null;
+        property.DefaultValueHandling = (!dataMemberAttribute.EmitDefaultValue) ? (DefaultValueHandling?) DefaultValueHandling.Ignore : null;
         hasMemberAttribute = true;
       }
 #endif
@@ -1006,10 +1019,10 @@ namespace Newtonsoft.Json.Serialization
       property.MemberConverter = JsonTypeReflector.GetJsonConverter(attributeProvider, property.PropertyType);
 
       DefaultValueAttribute defaultValueAttribute = JsonTypeReflector.GetAttribute<DefaultValueAttribute>(attributeProvider);
-      property.DefaultValue = (defaultValueAttribute != null) ? defaultValueAttribute.Value : null;
+      if (defaultValueAttribute != null)
+        property.DefaultValue = defaultValueAttribute.Value;
 
       property.NullValueHandling = (propertyAttribute != null) ? propertyAttribute._nullValueHandling : null;
-      property.DefaultValueHandling = (propertyAttribute != null) ? propertyAttribute._defaultValueHandling : null;
       property.ReferenceLoopHandling = (propertyAttribute != null) ? propertyAttribute._referenceLoopHandling : null;
       property.ObjectCreationHandling = (propertyAttribute != null) ? propertyAttribute._objectCreationHandling : null;
       property.TypeNameHandling = (propertyAttribute != null) ? propertyAttribute._typeNameHandling : null;

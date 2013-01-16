@@ -6,20 +6,11 @@ using MySoft.IoC.Messages;
 namespace MySoft.IoC.Services
 {
     /// <summary>
-    /// 异步方法调用
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="reqMsg"></param>
-    /// <returns></returns>
-    internal delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
-
-    /// <summary>
     /// 异步调用器
     /// </summary>
     internal class AsyncCaller : SyncCaller
     {
         private TimeSpan timeout;
-        private AsyncMethodCaller caller;
         private const int TIMEOUT = 5 * 60; //超时时间为300秒
 
         /// <summary>
@@ -31,7 +22,6 @@ namespace MySoft.IoC.Services
             : base(service, fromServer)
         {
             this.timeout = TimeSpan.FromSeconds(TIMEOUT);
-            this.caller = new AsyncMethodCaller(base.GetResponse);
         }
 
         /// <summary>
@@ -44,7 +34,6 @@ namespace MySoft.IoC.Services
             : base(service, cache, fromServer)
         {
             this.timeout = TimeSpan.FromSeconds(TIMEOUT);
-            this.caller = new AsyncMethodCaller(base.GetResponse);
         }
 
         /// <summary>
@@ -56,20 +45,25 @@ namespace MySoft.IoC.Services
         protected override ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
         {
             //异步调用
-            using (var worker = new WorkerItem(context, reqMsg))
+            using (var waitResult = new WaitResult(reqMsg))
+            using (var worker = new WorkerItem(waitResult, context, reqMsg))
             {
                 ResponseMessage resMsg = null;
 
                 try
                 {
-                    using (var flowControl = ExecutionContext.SuppressFlow())
-                    {
-                        //开始异步请求
-                        caller.BeginInvoke(context, reqMsg, AsyncCallback, worker);
-                    }
+                    //开始异步请求
+                    ThreadPool.UnsafeQueueUserWorkItem(AsyncCallback, worker);
 
-                    //返回响应结果
-                    resMsg = worker.GetResult(timeout);
+                    //等待响应
+                    if (!waitResult.WaitOne(timeout))
+                    {
+                        resMsg = GetTimeoutResponse(reqMsg, timeout);
+                    }
+                    else
+                    {
+                        resMsg = waitResult.Message;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -82,17 +76,37 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// 获取超时响应信息
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, TimeSpan timeout)
+        {
+            //获取异常响应信息
+            var body = string.Format("Async call service ({0}, {1}) timeout ({2}) ms.",
+                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
+
+            var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(body));
+
+            //设置耗时时间
+            resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;
+
+            return resMsg;
+        }
+
+        /// <summary>
         /// 运行请求
         /// </summary>
-        /// <param name="ar"></param>
-        private void AsyncCallback(IAsyncResult ar)
+        /// <param name="state"></param>
+        private void AsyncCallback(object state)
         {
-            var worker = ar.AsyncState as WorkerItem;
+            var worker = state as WorkerItem;
 
             try
             {
                 //开始同步调用
-                var resMsg = caller.EndInvoke(ar);
+                var resMsg = base.GetResponse(worker.Context, worker.Request);
 
                 //设置响应信息
                 worker.Set(resMsg);
@@ -100,7 +114,7 @@ namespace MySoft.IoC.Services
             catch (Exception ex) { }
             finally
             {
-                ar.AsyncWaitHandle.Close();
+                worker.Dispose();
             }
         }
     }

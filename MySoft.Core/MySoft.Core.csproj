@@ -78,6 +78,11 @@
     <Compile Include="Aop\IAopProxyFactory.cs" />
     <Compile Include="Cache\IDataCache.cs" />
     <Compile Include="Common\BaseObject.cs" />
+    <Compile Include="Json\Newtonsoft.Json\Serialization\DiagnosticsTraceWriter.cs" />
+    <Compile Include="Json\Newtonsoft.Json\Serialization\ITraceWriter.cs" />
+    <Compile Include="Json\Newtonsoft.Json\Serialization\MemoryTraceWriter.cs" />
+    <Compile Include="Json\Newtonsoft.Json\StringEscapeHandling.cs" />
+    <Compile Include="Json\Newtonsoft.Json\TraceLevel.cs" />
     <Compile Include="RESTful\AuthorizeToken.cs" />
     <Compile Include="RESTful\AuthorizeUser.cs" />
     <Compile Include="Common\HttpMethod.cs" />
@@ -493,6 +498,7 @@
     <Compile Include="Common\IDataPage.cs" />
     <Compile Include="Logger\IErrorLogable.cs" />
     <Compile Include="Logger\ILogable.cs" />
+    <Compile Include="Utils\ObjectConverter.cs" />
     <Compile Include="Utils\Parallel.cs" />
     <Compile Include="Utils\SerializationManager.cs" />
     <Compile Include="Logger\SimpleLog.cs" />

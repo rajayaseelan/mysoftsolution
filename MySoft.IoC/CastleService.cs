@@ -254,8 +254,9 @@ namespace MySoft.IoC
         {
             try
             {
-                e.Channel.MessageReceived += Client_MessageReceived;
-                e.Channel.MessageError += Client_MessageError;
+                e.Channel.MessageSent += Channel_MessageSent;
+                e.Channel.MessageReceived += Channel_MessageReceived;
+                e.Channel.MessageError += Channel_MessageError;
 
                 var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
                 PushConnectInfo(endPoint, true, e.ConnectCount);
@@ -276,8 +277,9 @@ namespace MySoft.IoC
         {
             try
             {
-                e.Channel.MessageReceived -= Client_MessageReceived;
-                e.Channel.MessageError -= Client_MessageError;
+                e.Channel.MessageSent -= Channel_MessageSent;
+                e.Channel.MessageReceived -= Channel_MessageReceived;
+                e.Channel.MessageError -= Channel_MessageError;
 
                 var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
                 PushConnectInfo(endPoint, false, e.ConnectCount);
@@ -290,11 +292,21 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 数据发送
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Channel_MessageSent(object sender, MessageEventArgs e)
+        {
+
+        }
+
+        /// <summary>
         /// 接收数据
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Client_MessageReceived(object sender, MessageEventArgs e)
+        private void Channel_MessageReceived(object sender, MessageEventArgs e)
         {
             var channel = sender as IScsServerClient;
 
@@ -416,7 +428,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Client_MessageError(object sender, ErrorEventArgs e)
+        private void Channel_MessageError(object sender, ErrorEventArgs e)
         {
             container.WriteError(e.Error);
         }
