@@ -1,15 +1,25 @@
 ﻿using System;
+using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
     /// <summary>
+    /// 异步方法调用
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="reqMsg"></param>
+    /// <returns></returns>
+    internal delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
+
+    /// <summary>
     /// 异步调用器
     /// </summary>
     internal class AsyncCaller : SyncCaller
     {
         private TimeSpan timeout;
+        private AsyncMethodCaller caller;
         private const int TIMEOUT = 5 * 60; //超时时间为300秒
 
         /// <summary>
@@ -21,6 +31,7 @@ namespace MySoft.IoC.Services
             : base(service, fromServer)
         {
             this.timeout = TimeSpan.FromSeconds(TIMEOUT);
+            this.caller = new AsyncMethodCaller(base.GetResponse);
         }
 
         /// <summary>
@@ -33,6 +44,7 @@ namespace MySoft.IoC.Services
             : base(service, cache, fromServer)
         {
             this.timeout = TimeSpan.FromSeconds(TIMEOUT);
+            this.caller = new AsyncMethodCaller(base.GetResponse);
         }
 
         /// <summary>
@@ -50,8 +62,14 @@ namespace MySoft.IoC.Services
 
                 try
                 {
+                    using (var flowControl = ExecutionContext.SuppressFlow())
+                    {
+                        //开始异步请求
+                        caller.BeginInvoke(context, reqMsg, AsyncCallback, worker);
+                    }
+
                     //返回响应结果
-                    resMsg = worker.GetResult(WaitCallback, timeout);
+                    resMsg = worker.GetResult(timeout);
                 }
                 catch (Exception ex)
                 {
@@ -66,21 +84,23 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 运行请求
         /// </summary>
-        /// <param name="state"></param>
-        private void WaitCallback(object state)
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
         {
-            var worker = state as WorkerItem;
+            var worker = ar.AsyncState as WorkerItem;
 
             try
             {
                 //开始同步调用
-                var resMsg = base.GetResponse(worker.Context, worker.Request);
+                var resMsg = caller.EndInvoke(ar);
 
                 //设置响应信息
                 worker.Set(resMsg);
             }
-            catch (Exception ex)
+            catch (Exception ex) { }
+            finally
             {
+                ar.AsyncWaitHandle.Close();
             }
         }
     }
