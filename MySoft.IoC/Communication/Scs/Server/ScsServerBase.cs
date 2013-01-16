@@ -14,6 +14,8 @@ namespace MySoft.IoC.Communication.Scs.Server
     {
         #region Public events
 
+        private int ConnectCount = 0;
+
         /// <summary>
         /// This event is raised when a new client is connected.
         /// </summary>
@@ -124,6 +126,8 @@ namespace MySoft.IoC.Communication.Scs.Server
             lock (Clients)
             {
                 Clients[channel.ClientId] = channel;
+
+                Interlocked.Increment(ref ConnectCount);
                 OnClientConnected(channel);
             }
 
@@ -144,6 +148,8 @@ namespace MySoft.IoC.Communication.Scs.Server
             lock (Clients)
             {
                 Clients.Remove(channel.ClientId);
+
+                Interlocked.Decrement(ref ConnectCount);
                 OnClientDisconnected(channel);
             }
         }
@@ -163,7 +169,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 try
                 {
-                    handler(this, new ServerClientEventArgs(channel) { ConnectCount = Clients.Count });
+                    handler(this, new ServerClientEventArgs(channel) { ConnectCount = ConnectCount });
                 }
                 catch
                 {
@@ -182,7 +188,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 try
                 {
-                    handler(this, new ServerClientEventArgs(client) { ConnectCount = Clients.Count });
+                    handler(this, new ServerClientEventArgs(client) { ConnectCount = ConnectCount });
                 }
                 catch
                 {

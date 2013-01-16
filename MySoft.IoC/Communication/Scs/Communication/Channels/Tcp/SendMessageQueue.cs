@@ -15,7 +15,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// 用于完成异步操作的事件
         /// </summary>
         public event EventHandler<SocketAsyncEventArgs> Completed;
-        public event EventHandler<SocketAsyncEventArgs> Disposed;
 
         private Socket _clientSocket;
         private Queue<BufferMessage> _msgQueue = new Queue<BufferMessage>();
@@ -40,10 +39,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// 发送数据服务
         /// </summary>
-        /// <param name="func"></param>
+        /// <param name="_sendEventArgs"></param>
         /// <param name="message"></param>
         /// <param name="messageBytes"></param>
-        public void Send(Func<SocketAsyncEventArgs> func, IScsMessage message, byte[] messageBytes)
+        public void Send(SocketAsyncEventArgs _sendEventArgs, IScsMessage message, byte[] messageBytes)
         {
             //实例化BufferMessage
             var msg = new BufferMessage(message, messageBytes);
@@ -54,21 +53,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     _isCompleted = false;
 
-                    var _sendEventArgs = func();
-
-                    try
-                    {
-                        SendAsync(_sendEventArgs, msg);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (Disposed != null)
-                        {
-                            Disposed(_clientSocket, _sendEventArgs);
-                        }
-
-                        throw;
-                    }
+                    SendAsync(_sendEventArgs, msg);
                 }
                 else
                 {
@@ -88,32 +73,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 if (_msgQueue.Count == 0)
                 {
                     _isCompleted = true;
-
-                    if (Disposed != null)
-                    {
-                        Disposed(_clientSocket, e);
-                    }
                 }
                 else
                 {
                     var message = _msgQueue.Dequeue();
 
-                    try
-                    {
-                        e.SetBuffer(null, 0, 0);
-                        e.UserToken = null;
+                    e.SetBuffer(null, 0, 0);
+                    e.UserToken = null;
 
-                        SendAsync(e, message);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (Disposed != null)
-                        {
-                            Disposed(_clientSocket, e);
-                        }
-
-                        throw;
-                    }
+                    SendAsync(e, message);
                 }
             }
         }

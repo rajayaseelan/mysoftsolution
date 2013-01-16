@@ -20,7 +20,7 @@ namespace MySoft.IoC
     /// <summary>
     /// Castle服务
     /// </summary>
-    public class CastleService : ILogable, IErrorLogable
+    public class CastleService : ILogable, IErrorLogable, IDisposable
     {
         private CastleServiceConfiguration config;
         private IServiceContainer container;
@@ -29,6 +29,7 @@ namespace MySoft.IoC
         private ScsTcpEndPoint epServer;
         private ServiceCaller caller;
         private ServerStatusService status;
+        private ServiceChannel client;
 
         /// <summary>
         /// Gets the service container.
@@ -73,13 +74,13 @@ namespace MySoft.IoC
                 if (OnLog != null) OnLog(log, type);
             };
 
-            //实例化调用者
-            this.status = new ServerStatusService(server, config, container);
-
             //注册状态服务
+            this.status = new ServerStatusService(server, config, container);
             container.Register(typeof(IStatusService), status);
 
+            //实例化调用者
             this.caller = new ServiceCaller(config, container);
+            this.client = new ServiceChannel(NotifyResult, caller, status, config.MaxCaller);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -231,15 +232,32 @@ namespace MySoft.IoC
         /// </summary>
         public void Stop()
         {
-            if (config.HttpEnabled)
+            if (server == null) return;
+
+            try
             {
-                httpServer.Stop();
+                if (config.HttpEnabled)
+                {
+                    httpServer.Stop();
+                }
+
+                server.Stop();
+                container.Dispose();
+                client.Dispose();
+                caller.Dispose();
             }
-
-            server.Stop();
-
-            container.Dispose();
+            catch (Exception ex) { }
+            finally
+            {
+                httpServer = null;
+                server = null;
+                container = null;
+                caller = null;
+                status = null;
+                client = null;
+            }
         }
+
 
         #endregion
 
@@ -370,35 +388,26 @@ namespace MySoft.IoC
         /// <param name="reqMsg"></param>
         private void Send(IScsServerClient channel, string messageId, RequestMessage reqMsg)
         {
-            //获取AppPath
-            var appPath = (channel.UserToken == null) ? null : (channel.UserToken as AppClient).AppPath;
-
-            //实例化上下文
-            using (var e = new CallerContext
+            try
             {
-                MessageId = messageId,
-                Request = reqMsg,
-                Caller = CreateCaller(appPath, reqMsg)
-            })
-            {
-                try
+                //连接状态
+                if (channel.CommunicationState == CommunicationStates.Connected)
                 {
-                    //连接状态
-                    if (channel.CommunicationState == CommunicationStates.Connected)
+                    //获取AppPath
+                    var appPath = (channel.UserToken == null) ? null : (channel.UserToken as AppClient).AppPath;
+
+                    //实例化上下文
+                    using (var e = new CallerContext { MessageId = messageId, Request = reqMsg, Caller = CreateCaller(appPath, reqMsg) })
                     {
-                        //实例化服务通道
-                        using (var client = new ServiceChannel(channel, caller, status))
-                        {
-                            //发送消息
-                            client.Send(e, NotifyResult);
-                        }
+                        //发送消息
+                        client.Send(channel, e);
                     }
                 }
-                catch (Exception ex)
-                {
-                    //写异常日志
-                    container.WriteError(ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                //写异常日志
+                container.WriteError(ex);
             }
         }
 
@@ -497,6 +506,15 @@ namespace MySoft.IoC
         /// OnCalling event.
         /// </summary>
         public event EventHandler<CallEventArgs> OnCalling;
+
+        #endregion
+
+        #region IDisposable 成员
+
+        public void Dispose()
+        {
+            this.Stop();
+        }
 
         #endregion
     }

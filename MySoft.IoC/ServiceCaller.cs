@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
-using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
@@ -12,13 +10,11 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务调用者
     /// </summary>
-    internal class ServiceCaller
+    internal class ServiceCaller : IDisposable
     {
         private IDictionary<string, Type> callbackTypes;
         private IDictionary<string, SyncCaller> syncCallers;
         private IServiceContainer container;
-        private Semaphore _semaphore;
-        private TimeSpan _timeout;
 
         /// <summary>
         /// 初始化ServiceCaller
@@ -30,8 +26,6 @@ namespace MySoft.IoC
             this.container = container;
             this.callbackTypes = new Dictionary<string, Type>();
             this.syncCallers = new Dictionary<string, SyncCaller>();
-            this._semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
-            this._timeout = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_CLIENT_TIMEOUT);
 
             //初始化服务
             Init(container, config);
@@ -40,7 +34,9 @@ namespace MySoft.IoC
         private void Init(IServiceContainer container, CastleServiceConfiguration config)
         {
             callbackTypes[typeof(IStatusService).FullName] = typeof(IStatusListener);
+
             var types = container.GetServiceTypes<ServiceContractAttribute>();
+            var timeout = TimeSpan.FromSeconds(config.Timeout);
 
             foreach (var type in types)
             {
@@ -59,9 +55,9 @@ namespace MySoft.IoC
 
                     //实例化SyncCaller
                     if (config.EnableCache)
-                        syncCallers[type.FullName] = new AsyncCaller(service, null, true);
+                        syncCallers[type.FullName] = new AsyncCaller(service, timeout, null, true);
                     else
-                        syncCallers[type.FullName] = new AsyncCaller(service, true);
+                        syncCallers[type.FullName] = new AsyncCaller(service, timeout, true);
                 }
             }
         }
@@ -74,21 +70,6 @@ namespace MySoft.IoC
         /// <returns></returns>
         public bool InvokeResponse(IScsServerClient channel, CallerContext e)
         {
-            if (!_semaphore.WaitOne(_timeout, false))
-            {
-                //获取异常响应
-                e.Message = IoCHelper.GetResponse(e.Request, new WarningException("The server response overtime."));
-
-                return true;
-            }
-
-            //不是连接状态，直接返回
-            if (channel.CommunicationState != CommunicationStates.Connected)
-            {
-                _semaphore.Release();
-                return false;
-            }
-
             //获取上下文
             using (var context = GetOperationContext(channel, e.Caller))
             {
@@ -104,10 +85,6 @@ namespace MySoft.IoC
                 {
                     //获取异常响应
                     e.Message = IoCHelper.GetResponse(e.Request, ex);
-                }
-                finally
-                {
-                    _semaphore.Release();
                 }
 
                 return e.Message != null;
@@ -161,5 +138,18 @@ namespace MySoft.IoC
                 return syncCallers[caller.ServiceName];
             }
         }
+
+        #region IDisposable 成员
+
+        public void Dispose()
+        {
+            callbackTypes.Clear();
+            syncCallers.Clear();
+
+            callbackTypes = null;
+            syncCallers = null;
+        }
+
+        #endregion
     }
 }

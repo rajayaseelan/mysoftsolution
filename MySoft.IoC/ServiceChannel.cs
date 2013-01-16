@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
@@ -11,48 +12,61 @@ namespace MySoft.IoC
     /// </summary>
     internal class ServiceChannel : IDisposable
     {
-        private IScsServerClient channel;
+        private Action<CallEventArgs> callback;
         private ServiceCaller caller;
         private ServerStatusService status;
+        private Semaphore _semaphore;
+        private int maxCaller;
 
         /// <summary>
         /// 实例化ServiceChannel
         /// </summary>
-        /// <param name="channel"></param>
+        /// <param name="callback"></param>
         /// <param name="caller"></param>
         /// <param name="status"></param>
-        public ServiceChannel(IScsServerClient channel, ServiceCaller caller, ServerStatusService status)
+        /// <param name="maxCaller"></param>
+        public ServiceChannel(Action<CallEventArgs> callback, ServiceCaller caller, ServerStatusService status, int maxCaller)
         {
-            this.channel = channel;
+            this.callback = callback;
             this.caller = caller;
             this.status = status;
+            this.maxCaller = maxCaller;
+            this._semaphore = new Semaphore(maxCaller, maxCaller);
         }
 
         /// <summary>
-        /// 响应消息
+        /// 发送响应消息
         /// </summary>
+        /// <param name="channel"></param>
         /// <param name="e"></param>
-        /// <param name="callback"></param>
-        public void Send(CallerContext e, Action<CallEventArgs> callback)
+        public void Send(IScsServerClient channel, CallerContext e)
         {
-            //发送结果
-            if (caller.InvokeResponse(channel, e))
+            try
             {
-                //状态服务跳过
-                if (e.Request.ServiceName != typeof(IStatusService).FullName)
-                {
-                    //处理响应信息
-                    HandleResponse(e, callback);
-                }
+                _semaphore.WaitOne();
 
-                //如果是Json方式调用，则需要处理异常
-                if (e.Request.InvokeMethod && e.Message.IsError)
+                if (caller.InvokeResponse(channel, e))
                 {
-                    e.Message.Error = new ApplicationException(e.Message.Error.Message);
-                }
+                    //状态服务跳过
+                    if (e.Request.ServiceName != typeof(IStatusService).FullName)
+                    {
+                        //处理响应信息
+                        HandleResponse(e);
+                    }
 
-                //发送消息
-                SendMessage(e);
+                    //如果是Json方式调用，则需要处理异常
+                    if (e.Request.InvokeMethod && e.Message.IsError)
+                    {
+                        e.Message.Error = new ApplicationException(e.Message.Error.Message);
+                    }
+
+                    //发送消息
+                    SendMessage(channel, e);
+                }
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -60,8 +74,7 @@ namespace MySoft.IoC
         /// 处理消息
         /// </summary>
         /// <param name="e"></param>
-        /// <param name="callback"></param>
-        private void HandleResponse(CallerContext e, Action<CallEventArgs> callback)
+        private void HandleResponse(CallerContext e)
         {
             //调用参数
             var callArgs = new CallEventArgs(e.Caller)
@@ -92,9 +105,15 @@ namespace MySoft.IoC
         /// <summary>
         /// 发送消息
         /// </summary>
+        /// <param name="channel"></param>
         /// <param name="e"></param>
-        private void SendMessage(CallerContext e)
+        private void SendMessage(IScsServerClient channel, CallerContext e)
         {
+            if (channel.CommunicationState != CommunicationStates.Connected)
+            {
+                return;
+            }
+
             try
             {
                 var message = new ScsResultMessage(e.Message, e.MessageId);
@@ -136,9 +155,18 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            this.channel = null;
-            this.caller = null;
-            this.status = null;
+            try
+            {
+                this._semaphore.Close();
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                this.callback = null;
+                this.caller = null;
+                this.status = null;
+                this._semaphore = null;
+            }
         }
 
         #endregion

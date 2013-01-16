@@ -11,29 +11,30 @@ namespace MySoft.IoC.Services
     internal class AsyncCaller : SyncCaller
     {
         private TimeSpan timeout;
-        private const int TIMEOUT = 5 * 60; //超时时间为300秒
 
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
         /// <param name="service"></param>
+        /// <param name="timeout"></param>
         /// <param name="fromServer"></param>
-        public AsyncCaller(IService service, bool fromServer)
+        public AsyncCaller(IService service, TimeSpan timeout, bool fromServer)
             : base(service, fromServer)
         {
-            this.timeout = TimeSpan.FromSeconds(TIMEOUT);
+            this.timeout = timeout;
         }
 
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
         /// <param name="service"></param>
+        /// <param name="timeout"></param>
         /// <param name="cache"></param>
         /// <param name="fromServer"></param>
-        public AsyncCaller(IService service, IDataCache cache, bool fromServer)
+        public AsyncCaller(IService service, TimeSpan timeout, IDataCache cache, bool fromServer)
             : base(service, cache, fromServer)
         {
-            this.timeout = TimeSpan.FromSeconds(TIMEOUT);
+            this.timeout = timeout;
         }
 
         /// <summary>
@@ -48,30 +49,27 @@ namespace MySoft.IoC.Services
             using (var waitResult = new WaitResult(reqMsg))
             using (var worker = new WorkerItem(waitResult, context, reqMsg))
             {
-                ResponseMessage resMsg = null;
-
                 try
                 {
-                    //开始异步请求
-                    ThreadPool.UnsafeQueueUserWorkItem(AsyncCallback, worker);
+                    using (var afc = ExecutionContext.SuppressFlow())
+                    {
+                        //开始异步请求
+                        ThreadPool.QueueUserWorkItem(AsyncCallback, worker);
+                    }
 
                     //等待响应
                     if (!waitResult.WaitOne(timeout))
                     {
-                        resMsg = GetTimeoutResponse(reqMsg, timeout);
-                    }
-                    else
-                    {
-                        resMsg = waitResult.Message;
+                        return GetTimeoutResponse(reqMsg, timeout);
                     }
                 }
                 catch (Exception ex)
                 {
                     //处理异常响应
-                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                    return IoCHelper.GetResponse(reqMsg, ex);
                 }
 
-                return resMsg;
+                return waitResult.Message;
             }
         }
 

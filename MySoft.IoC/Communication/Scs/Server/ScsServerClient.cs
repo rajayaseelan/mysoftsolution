@@ -183,6 +183,8 @@ namespace MySoft.IoC.Communication.Scs.Server
             _communicationChannel.MessageError -= CommunicationChannel_MessageError;
             _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
 
+            _communicationChannel.WireProtocol.Reset();
+            _communicationChannel.WireProtocol = null;
             _communicationChannel = null;
             _userToken = null;
         }

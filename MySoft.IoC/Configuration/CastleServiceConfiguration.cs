@@ -17,6 +17,7 @@ namespace MySoft.IoC.Configuration
         private Type nodeResolverType;
         private bool compress = false;
         private int maxCaller = ServiceConfig.DEFAULT_SERVER_MAXCALLER;         //默认并发数为10
+        private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;             //默认超时为30秒
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;            //默认记录6小时
         private bool enableCache = false;                                       //是否缓存
 
@@ -62,6 +63,9 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["enableCache"] != null && attribute["enableCache"].Value.Trim() != string.Empty)
                 enableCache = Convert.ToBoolean(attribute["enableCache"].Value);
+
+            if (attribute["timeout"] != null && attribute["timeout"].Value.Trim() != string.Empty)
+                timeout = Convert.ToInt32(attribute["timeout"].Value);
 
             if (attribute["maxCaller"] != null && attribute["maxCaller"].Value.Trim() != string.Empty)
                 maxCaller = Convert.ToInt32(attribute["maxCaller"].Value);
@@ -200,6 +204,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return maxCaller; }
             set { maxCaller = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the timeout
+        /// </summary>
+        public int Timeout
+        {
+            get { return timeout; }
+            set { timeout = value; }
         }
     }
 }

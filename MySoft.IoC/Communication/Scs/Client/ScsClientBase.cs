@@ -260,6 +260,8 @@ namespace MySoft.IoC.Communication.Scs.Client
             _pingTimer.Stop();
             _pingTimer.Dispose();
 
+            _communicationChannel.WireProtocol.Reset();
+            _communicationChannel.WireProtocol = null;
             _communicationChannel = null;
             _pingTimer = null;
         }

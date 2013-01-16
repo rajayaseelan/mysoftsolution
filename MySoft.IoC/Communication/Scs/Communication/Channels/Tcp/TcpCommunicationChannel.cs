@@ -40,6 +40,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Socket object to send/reveice messages.
         /// </summary>
         private readonly Socket _clientSocket;
+        private SocketAsyncEventArgs _sendEventArgs, _receiveEventArgs;
+        private SendMessageQueue _sendQueue;
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -69,6 +71,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
 
             _receiveBuffer = new byte[ReceiveBufferSize];
+
+            _sendQueue = new SendMessageQueue(_clientSocket);
+            _sendQueue.Completed += IO_Completed;
+
+            //Socket send messages event args.
+            _sendEventArgs = CreateAsyncSEA(null);
+
+            //Socket receive messages event args.
+            _receiveEventArgs = CreateAsyncSEA(_receiveBuffer);
         }
 
         #endregion
@@ -113,6 +124,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
+                DisposeAsyncSEA(_sendEventArgs);
+                DisposeAsyncSEA(_receiveEventArgs);
+
                 _clientSocket.Shutdown(SocketShutdown.Both);
                 _clientSocket.Close();
             }
@@ -120,7 +134,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 WireProtocol.Reset();
+
+                _sendQueue.Completed -= IO_Completed;
+                _sendQueue.Dispose();
+
                 _receiveBuffer = null;
+                _sendQueue = null;
             }
         }
 
@@ -134,9 +153,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         protected override void StartInternal()
         {
             _running = true;
-
-            //Socket receive messages event args.
-            var _receiveEventArgs = CreateAsyncSEA(_receiveBuffer);
 
             try
             {
@@ -170,21 +186,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Create a byte array from message according to current protocol
             var messageBytes = WireProtocol.GetBytes(message);
 
-            //Socket send messages event args.
-            var _sendEventArgs = CreateAsyncSEA(messageBytes);
-
             try
             {
                 //Data packet size.
                 message.DataLength = messageBytes.Length;
 
-                _sendEventArgs.UserToken = message;
-
                 //Receive all bytes to the remote application
-                if (!_clientSocket.SendAsync(_sendEventArgs))
-                {
-                    OnSendCompleted(_sendEventArgs);
-                }
+                _sendQueue.Send(_sendEventArgs, message, messageBytes);
             }
             catch (Exception ex)
             {
@@ -240,10 +248,19 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                 OnMessageSent(e.UserToken as IScsMessage);
             }
-            catch (Exception ex) { }
-            finally
+            catch (Exception ex)
+            {
+            }
+
+            try
+            {
+                _sendQueue.Resend(e);
+            }
+            catch (Exception ex)
             {
                 DisposeAsyncSEA(e);
+
+                Disconnect(ex);
             }
         }
 
@@ -312,8 +329,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             var e = CommunicationHelper.Pop();
 
-            e.Completed += IO_Completed;
+            e.AcceptSocket = _clientSocket;
             e.UserToken = _clientSocket;
+            e.Completed += IO_Completed;
 
             if (buffer != null)
             {
@@ -341,7 +359,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                CommunicationHelper.Push(e);
+                e.Dispose();
+                e = null;
             }
         }
     }

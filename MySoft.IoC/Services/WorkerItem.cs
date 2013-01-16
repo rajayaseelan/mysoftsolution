@@ -9,7 +9,7 @@ namespace MySoft.IoC.Services
     internal class WorkerItem : IDisposable
     {
         //响应对象
-        private readonly WaitResult waitResult;
+        private WaitResult waitResult;
         private OperationContext context;
         private RequestMessage reqMsg;
 
@@ -49,6 +49,11 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Set(ResponseMessage resMsg)
         {
+            if (waitResult == null)
+            {
+                return false;
+            }
+
             return waitResult.Set(resMsg);
         }
 
@@ -66,6 +71,7 @@ namespace MySoft.IoC.Services
             catch (Exception ex) { }
             finally
             {
+                waitResult = null;
                 context = null;
                 reqMsg = null;
             }
