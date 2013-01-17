@@ -34,7 +34,7 @@ namespace MySoft.IoC
             this.caller = caller;
             this.status = status;
             this.maxCaller = maxCaller;
-            this._semaphore = new Semaphore(maxCaller / 2, maxCaller);
+            this._semaphore = new Semaphore(maxCaller, maxCaller);
         }
 
         /// <summary>

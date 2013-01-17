@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 1024; //1KB
+        private const int ReceiveBufferSize = 2 * 1024; //2KB
 
         #region Public properties
 
@@ -40,10 +40,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Socket object to send/reveice messages.
         /// </summary>
         private readonly Socket _clientSocket;
-
-        private SocketAsyncEventArgs _sendEventArgs, _receiveEventArgs;
-
-        private SendMessageQueue _sendQueue;
 
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
@@ -79,15 +75,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _receiveBuffer = new byte[ReceiveBufferSize];
             _syncLock = new object();
-
-            _sendQueue = new SendMessageQueue(_clientSocket);
-            _sendQueue.SendCompleted += (sender, e) => OnSendCompleted(e);
-
-            //Socket send messages event args.
-            _sendEventArgs = CreateAsyncSEA(null);
-
-            //Socket receive messages event args.
-            _receiveEventArgs = CreateAsyncSEA(_receiveBuffer);
         }
 
         #endregion
@@ -114,32 +101,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                Dispose();
+                WireProtocol.Reset();
+                _receiveBuffer = null;
             }
 
             CommunicationState = CommunicationStates.Disconnected;
             OnDisconnected();
-        }
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        private void Dispose()
-        {
-            try
-            {
-                DisposeAsyncSEA(_sendEventArgs);
-                DisposeAsyncSEA(_receiveEventArgs);
-
-                WireProtocol.Reset();
-                _sendQueue.Dispose();
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                _receiveBuffer = null;
-                _sendQueue = null;
-            }
         }
 
         #endregion
@@ -152,6 +119,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         protected override void StartInternal()
         {
             _running = true;
+
+            //Socket receive messages event args.
+            var _receiveEventArgs = CreateAsyncSEA(_receiveBuffer);
 
             try
             {
@@ -187,13 +157,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 //Create a byte array from message according to current protocol
                 var messageBytes = WireProtocol.GetBytes(message);
 
+                //Data packet size.
+                message.DataLength = messageBytes.Length;
+
+                //Socket send messages event args.
+                var _sendEventArgs = CreateAsyncSEA(messageBytes);
+                _sendEventArgs.UserToken = message;
+
                 try
                 {
-                    //Data packet size.
-                    message.DataLength = messageBytes.Length;
-
-                    //Receive all bytes to the remote application
-                    _sendQueue.Send(_sendEventArgs, message, messageBytes);
+                    //Send all bytes to the remote application
+                    if (!_clientSocket.SendAsync(_sendEventArgs))
+                    {
+                        OnSendCompleted(_sendEventArgs);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -243,13 +220,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="ar">Asyncronous call result</param>
         private void OnSendCompleted(SocketAsyncEventArgs e)
         {
-            if (!_running)
-            {
-                DisposeAsyncSEA(e);
-
-                return;
-            }
-
             try
             {
                 //Record last sent time
@@ -257,19 +227,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                 OnMessageSent(e.UserToken as IScsMessage);
             }
-            catch (Exception ex)
-            {
-            }
-
-            try
-            {
-                _sendQueue.Resend(e);
-            }
-            catch (Exception ex)
+            catch (Exception ex) { }
+            finally
             {
                 DisposeAsyncSEA(e);
-
-                Disconnect();
             }
         }
 
