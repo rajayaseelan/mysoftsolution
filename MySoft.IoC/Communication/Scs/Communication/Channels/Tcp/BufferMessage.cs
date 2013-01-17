@@ -18,6 +18,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public byte[] Buffer { get; private set; }
 
+        public int MessageSize
+        {
+            get
+            {
+                if (Buffer == null) return 0;
+                return Buffer.Length;
+            }
+        }
+
         /// <summary>
         /// 实例化BufferMessage
         /// </summary>

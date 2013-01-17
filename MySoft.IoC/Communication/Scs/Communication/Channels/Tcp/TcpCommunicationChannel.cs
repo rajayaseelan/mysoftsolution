@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 1024; //1KB
+        private const int ReceiveBufferSize = 4 * 1024; //4KB
 
         #region Public properties
 
@@ -40,8 +40,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Socket object to send/reveice messages.
         /// </summary>
         private readonly Socket _clientSocket;
+
         private SocketAsyncEventArgs _sendEventArgs, _receiveEventArgs;
+
         private SendMessageQueue _sendQueue;
+
+        /// <summary>
+        /// This object is just used for thread synchronizing (locking).
+        /// </summary>
+        private readonly object _syncLock;
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -71,6 +78,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
 
             _receiveBuffer = new byte[ReceiveBufferSize];
+            _syncLock = new object();
 
             _sendQueue = new SendMessageQueue(_clientSocket);
             _sendQueue.Completed += IO_Completed;
@@ -183,24 +191,27 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            //Create a byte array from message according to current protocol
-            var messageBytes = WireProtocol.GetBytes(message);
-
-            try
+            lock (_syncLock)
             {
-                //Data packet size.
-                message.DataLength = messageBytes.Length;
+                //Create a byte array from message according to current protocol
+                var messageBytes = WireProtocol.GetBytes(message);
 
-                //Receive all bytes to the remote application
-                _sendQueue.Send(_sendEventArgs, message, messageBytes);
-            }
-            catch (Exception ex)
-            {
-                DisposeAsyncSEA(_sendEventArgs);
+                try
+                {
+                    //Data packet size.
+                    message.DataLength = messageBytes.Length;
 
-                Disconnect(ex);
+                    //Receive all bytes to the remote application
+                    _sendQueue.Send(_sendEventArgs, message, messageBytes);
+                }
+                catch (Exception ex)
+                {
+                    DisposeAsyncSEA(_sendEventArgs);
 
-                throw;
+                    Disconnect(ex);
+
+                    throw;
+                }
             }
         }
 
@@ -327,11 +338,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         private SocketAsyncEventArgs CreateAsyncSEA(byte[] buffer)
         {
-            var e = CommunicationHelper.Pop();
+            var e = new SocketAsyncEventArgs();
 
+            e.Completed += IO_Completed;
             e.AcceptSocket = _clientSocket;
             e.UserToken = _clientSocket;
-            e.Completed += IO_Completed;
 
             if (buffer != null)
             {

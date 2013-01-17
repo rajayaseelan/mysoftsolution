@@ -16,13 +16,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public event EventHandler<SocketAsyncEventArgs> Completed;
 
-        private Socket _clientSocket;
+        private readonly Socket _clientSocket;
         private Queue<BufferMessage> _msgQueue = new Queue<BufferMessage>();
 
-        /// <summary>
-        /// This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private readonly object _syncLock;
         private bool _isCompleted;
 
         /// <summary>
@@ -32,28 +28,27 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         public SendMessageQueue(Socket clientSocket)
         {
             this._clientSocket = clientSocket;
-            this._syncLock = new object();
             this._isCompleted = true;
         }
 
         /// <summary>
         /// 发送数据服务
         /// </summary>
-        /// <param name="_sendEventArgs"></param>
+        /// <param name="e"></param>
         /// <param name="message"></param>
         /// <param name="messageBytes"></param>
-        public void Send(SocketAsyncEventArgs _sendEventArgs, IScsMessage message, byte[] messageBytes)
+        public void Send(SocketAsyncEventArgs e, IScsMessage message, byte[] messageBytes)
         {
             //实例化BufferMessage
             var msg = new BufferMessage(message, messageBytes);
 
-            lock (_syncLock)
+            lock (_msgQueue)
             {
                 if (_isCompleted)
                 {
                     _isCompleted = false;
 
-                    SendAsync(_sendEventArgs, msg);
+                    SendAsync(e, msg);
                 }
                 else
                 {
@@ -68,8 +63,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         public void Resend(SocketAsyncEventArgs e)
         {
-            lock (_syncLock)
+            lock (_msgQueue)
             {
+                e.SetBuffer(null, 0, 0);
+                e.UserToken = null;
+
                 if (_msgQueue.Count == 0)
                 {
                     _isCompleted = true;
@@ -77,9 +75,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 else
                 {
                     var message = _msgQueue.Dequeue();
-
-                    e.SetBuffer(null, 0, 0);
-                    e.UserToken = null;
 
                     SendAsync(e, message);
                 }
@@ -99,7 +94,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 if (message == null) return;
 
                 //设置缓冲区
-                e.SetBuffer(message.Buffer, 0, message.Buffer.Length);
+                e.SetBuffer(message.Buffer, 0, message.MessageSize);
 
                 e.UserToken = message.Message;
 
@@ -127,10 +122,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                while (_msgQueue.Count > 0)
+                lock (_msgQueue)
                 {
-                    var message = _msgQueue.Dequeue();
-                    message.Dispose();
+                    while (_msgQueue.Count > 0)
+                    {
+                        var message = _msgQueue.Dequeue();
+                        message.Dispose();
+                    }
                 }
             }
             catch (Exception ex) { }
@@ -138,8 +136,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 _msgQueue.Clear();
             }
-
-            this._clientSocket = null;
         }
 
         #endregion
