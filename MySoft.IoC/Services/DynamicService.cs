@@ -17,6 +17,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicService"/> class.
         /// </summary>
+        /// <param name="container"></param>
         /// <param name="serviceType">Type of the service interface.</param>
         public DynamicService(IContainer container, Type serviceType)
             : base(serviceType)
@@ -77,14 +78,11 @@ namespace MySoft.IoC.Services
                 MethodName = reqMsg.MethodName
             };
 
-            //定义对象
-            object instance = null;
+            //解析服务
+            var instance = container.Resolve(serviceType);
 
             try
             {
-                //解析服务
-                instance = container.Resolve(serviceType);
-
                 //参数赋值
                 object[] parameters = IoCHelper.CreateParameters(callMethod, reqMsg.Parameters);
 
@@ -98,7 +96,7 @@ namespace MySoft.IoC.Services
             }
             finally
             {
-                //释放实例
+                //释放对象
                 container.Release(instance);
             }
         }

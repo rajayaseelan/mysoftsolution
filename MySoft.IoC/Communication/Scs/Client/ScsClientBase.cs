@@ -249,21 +249,15 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// <param name="e">Event arguments</param>
         private void CommunicationChannel_Disconnected(object sender, EventArgs e)
         {
+            _pingTimer.Stop();
+
             OnDisconnected();
 
             _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
             _communicationChannel.MessageError -= CommunicationChannel_MessageError;
             _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
-
-            _pingTimer.Elapsed -= PingTimer_Elapsed;
-            _pingTimer.Stop();
-            _pingTimer.Dispose();
-
-            _communicationChannel.WireProtocol.Reset();
-            _communicationChannel.WireProtocol = null;
             _communicationChannel = null;
-            _pingTimer = null;
         }
 
         /// <summary>
