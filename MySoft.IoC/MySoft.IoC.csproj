@@ -71,6 +71,8 @@
     <Compile Include="Communication\Scs\Communication\CommunicationHelper.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Communication\Scs\Communication\ICommunicationProtocol.cs" />
+    <Compile Include="Communication\Scs\Communication\SocketAsyncEventArgs.cs" />
     <Compile Include="Communication\Scs\Communication\SocketAsyncEventArgsPool.cs">
       <SubType>Code</SubType>
     </Compile>

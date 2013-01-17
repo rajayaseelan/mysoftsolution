@@ -23,7 +23,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
 
             for (int i = 0; i < MaxCommunicationCount; i++)
             {
-                pool.Push(new SocketAsyncEventArgs());
+                pool.Push(new TcpSocketAsyncEventArgs());
             }
         }
 
@@ -40,11 +40,19 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// </summary>
         /// <param name="channel"></param>
         /// <returns></returns>
-        internal static SocketAsyncEventArgs Pop()
+        internal static SocketAsyncEventArgs Pop(ICommunicationProtocol channel)
         {
             lock (pool)
             {
-                return pool.Pop();
+                var item = pool.Pop();
+
+                var tcpitem = item as TcpSocketAsyncEventArgs;
+                if (tcpitem == null) return null;
+
+                tcpitem.IsPushed = false;
+                tcpitem.Channel = channel;
+
+                return item;
             }
         }
 
@@ -58,6 +66,14 @@ namespace MySoft.IoC.Communication.Scs.Communication
 
             lock (pool)
             {
+                var tcpitem = item as TcpSocketAsyncEventArgs;
+                if (tcpitem == null) return;
+
+                if (tcpitem.IsPushed) return;
+
+                tcpitem.IsPushed = true;
+                tcpitem.Channel = null;
+
                 pool.Push(item);
             }
         }

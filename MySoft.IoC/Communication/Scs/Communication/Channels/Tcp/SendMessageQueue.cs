@@ -14,7 +14,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// 用于完成异步操作的事件
         /// </summary>
-        public event EventHandler<SocketAsyncEventArgs> Completed;
+        public event EventHandler<SocketAsyncEventArgs> SendCompleted;
 
         private readonly Socket _clientSocket;
         private Queue<BufferMessage> _msgQueue = new Queue<BufferMessage>();
@@ -101,9 +101,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 //开始异步发送
                 if (!_clientSocket.SendAsync(e))
                 {
-                    if (Completed != null)
+                    if (SendCompleted != null)
                     {
-                        Completed(_clientSocket, e);
+                        SendCompleted(_clientSocket, e);
                     }
                 }
             }

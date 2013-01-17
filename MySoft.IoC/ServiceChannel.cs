@@ -34,7 +34,7 @@ namespace MySoft.IoC
             this.caller = caller;
             this.status = status;
             this.maxCaller = maxCaller;
-            this._semaphore = new Semaphore(maxCaller, maxCaller);
+            this._semaphore = new Semaphore(maxCaller / 2, maxCaller);
         }
 
         /// <summary>
@@ -47,7 +47,9 @@ namespace MySoft.IoC
             if (!_semaphore.WaitOne(TimeSpan.FromSeconds(WAIT_TIMEOUT), false))
             {
                 //获取异常响应
-                e.Message = IoCHelper.GetResponse(e.Request, new WarningException("The server than the largest concurrent [" + maxCaller + "]."));
+                var errMessage = string.Format("The server than the largest concurrent [{0}].", maxCaller);
+
+                e.Message = IoCHelper.GetResponse(e.Request, new WarningException(errMessage));
 
                 //发送消息
                 SendMessage(channel, e);
@@ -69,7 +71,10 @@ namespace MySoft.IoC
                     //如果是Json方式调用，则需要处理异常
                     if (e.Request.InvokeMethod && e.Message.IsError)
                     {
-                        e.Message.Error = new ApplicationException(e.Message.Error.Message);
+                        //获取最底层异常信息
+                        var error = ErrorHelper.GetInnerException(e.Message.Error);
+
+                        e.Message.Error = new ApplicationException(error.Message);
                     }
 
                     //发送消息

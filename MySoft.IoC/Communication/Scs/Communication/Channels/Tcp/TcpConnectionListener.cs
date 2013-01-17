@@ -10,7 +10,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// This class is used to listen and accept incoming TCP
     /// connection requests on a TCP port.
     /// </summary>
-    internal class TcpConnectionListener : ConnectionListenerBase
+    internal class TcpConnectionListener : ConnectionListenerBase, ICommunicationProtocol
     {
         /// <summary>
         /// The endpoint address of the server to listen incoming connections.
@@ -34,9 +34,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// IO回调处理
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void IO_Completed(object sender, SocketAsyncEventArgs e)
+        void ICommunicationProtocol.IOCompleted(SocketAsyncEventArgs e)
         {
             switch (e.LastOperation)
             {
@@ -167,9 +166,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         private SocketAsyncEventArgs CreateAsyncSEA()
         {
-            var e = new SocketAsyncEventArgs();
+            var e = CommunicationHelper.Pop(this);
 
-            e.Completed += IO_Completed;
             e.UserToken = _listenerSocket;
 
             return e;
@@ -181,20 +179,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void DisposeAsyncSEA(SocketAsyncEventArgs e)
         {
-            if (e == null) return;
-
             try
             {
-                e.Completed -= IO_Completed;
-                e.SetBuffer(null, 0, 0);
                 e.AcceptSocket = null;
                 e.UserToken = null;
+                e.SetBuffer(null, 0, 0);
             }
             catch (Exception ex) { }
             finally
             {
-                e.Dispose();
-                e = null;
+                CommunicationHelper.Push(e);
             }
         }
     }
