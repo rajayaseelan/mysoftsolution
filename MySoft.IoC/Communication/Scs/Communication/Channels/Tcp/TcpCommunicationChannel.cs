@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 4 * 1024; //4KB
+        private const int ReceiveBufferSize = 1024; //1KB
 
         #region Public properties
 
@@ -97,27 +97,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Disconnects from remote application and closes channel.
         /// </summary>
-        /// <param name="ex"></param>
-        private void Disconnect(Exception ex)
-        {
-            try
-            {
-                if (!(ex is CommunicationException || ex is ObjectDisposedException || ex is SocketException))
-                {
-                    OnMessageError(ex);
-                }
-            }
-            catch (Exception e) { }
-            finally
-            {
-                //Disconnect server.
-                Disconnect();
-            }
-        }
-
-        /// <summary>
-        /// Disconnects from remote application and closes channel.
-        /// </summary>
         public override void Disconnect()
         {
             if (!_running)
@@ -127,25 +106,39 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _running = false;
 
-            CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
-
             try
             {
-                DisposeAsyncSEA(_sendEventArgs);
-                DisposeAsyncSEA(_receiveEventArgs);
-
                 _clientSocket.Shutdown(SocketShutdown.Both);
                 _clientSocket.Close();
             }
             catch (Exception ex) { }
             finally
             {
+                Dispose();
+            }
+
+            CommunicationState = CommunicationStates.Disconnected;
+            OnDisconnected();
+        }
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        private void Dispose()
+        {
+            try
+            {
+                DisposeAsyncSEA(_sendEventArgs);
+                DisposeAsyncSEA(_receiveEventArgs);
+
                 WireProtocol.Reset();
 
                 _sendQueue.Completed -= IO_Completed;
                 _sendQueue.Dispose();
-
+            }
+            catch (Exception ex) { }
+            finally
+            {
                 _receiveBuffer = null;
                 _sendQueue = null;
             }
@@ -174,7 +167,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 DisposeAsyncSEA(_receiveEventArgs);
 
-                Disconnect(ex);
+                Disconnect();
 
                 throw;
             }
@@ -208,7 +201,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     DisposeAsyncSEA(_sendEventArgs);
 
-                    Disconnect(ex);
+                    Disconnect();
 
                     throw;
                 }
@@ -252,6 +245,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="ar">Asyncronous call result</param>
         private void OnSendCompleted(SocketAsyncEventArgs e)
         {
+            if (!_running)
+            {
+                DisposeAsyncSEA(e);
+
+                return;
+            }
+
             try
             {
                 //Record last sent time
@@ -271,7 +271,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 DisposeAsyncSEA(e);
 
-                Disconnect(ex);
+                Disconnect();
             }
         }
 
@@ -282,6 +282,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="ar">Asyncronous call result</param>
         private void OnReceiveCompleted(SocketAsyncEventArgs e)
         {
+            if (!_running)
+            {
+                DisposeAsyncSEA(e);
+
+                return;
+            }
+
             try
             {
                 //Receive data success.
@@ -325,7 +332,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 DisposeAsyncSEA(e);
 
-                Disconnect(ex);
+                Disconnect();
             }
         }
 
@@ -338,7 +345,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         private SocketAsyncEventArgs CreateAsyncSEA(byte[] buffer)
         {
-            var e = new SocketAsyncEventArgs();
+            var e = CommunicationHelper.Pop();
 
             e.Completed += IO_Completed;
             e.AcceptSocket = _clientSocket;
@@ -358,7 +365,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void DisposeAsyncSEA(SocketAsyncEventArgs e)
         {
-            if (e == null) return;
+            if (e.AcceptSocket == null) return;
 
             try
             {
@@ -370,8 +377,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                e.Dispose();
-                e = null;
+                CommunicationHelper.Push(e);
             }
         }
     }

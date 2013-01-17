@@ -12,6 +12,9 @@ namespace MySoft.IoC
     /// </summary>
     internal class ServiceChannel : IDisposable
     {
+        //等待超时时间
+        private const int WAIT_TIMEOUT = 10;
+
         private Action<CallEventArgs> callback;
         private ServiceCaller caller;
         private ServerStatusService status;
@@ -41,10 +44,19 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         public void Send(IScsServerClient channel, CallerContext e)
         {
+            if (!_semaphore.WaitOne(TimeSpan.FromSeconds(WAIT_TIMEOUT), false))
+            {
+                //获取异常响应
+                e.Message = IoCHelper.GetResponse(e.Request, new WarningException("The server than the largest concurrent [" + maxCaller + "]."));
+
+                //发送消息
+                SendMessage(channel, e);
+
+                return;
+            }
+
             try
             {
-                _semaphore.WaitOne();
-
                 if (caller.InvokeResponse(channel, e))
                 {
                     //状态服务跳过
