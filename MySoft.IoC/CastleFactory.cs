@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Castle.DynamicProxy;
 using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
@@ -307,13 +306,10 @@ namespace MySoft.IoC
             lock (hashtable.SyncRoot)
             {
                 var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, cache, logger);
-                //var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
-
-                var proxyGenerator = new ProxyGenerator();
-                var dynamicProxy = proxyGenerator.CreateInterfaceProxyWithoutTarget<IServiceInterfaceType>(handler);
+                var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                 //不缓存，直接返回服务
-                if (!isCacheService) return dynamicProxy;
+                if (!isCacheService) return (IServiceInterfaceType)dynamicProxy;
 
                 if (!hashtable.ContainsKey(serviceKey))
                 {

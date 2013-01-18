@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
@@ -44,7 +45,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// This object is just used for thread synchronizing (locking).
         /// </summary>
-        private readonly object _syncLock;
+        //private readonly object _syncLock;
 
         /// <summary>
         /// This buffer is used to receive bytes 
@@ -74,7 +75,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
 
             _receiveBuffer = new byte[ReceiveBufferSize];
-            _syncLock = new object();
         }
 
         #endregion
@@ -152,34 +152,32 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            lock (_syncLock)
+            //Create a byte array from message according to current protocol
+            var messageBytes = WireProtocol.GetBytes(message);
+
+            //Data packet size.
+            message.DataLength = messageBytes.Length;
+
+            //Socket send messages event args.
+            var _sendEventArgs = CreateAsyncSEA(messageBytes);
+
+            try
             {
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
-
-                //Data packet size.
-                message.DataLength = messageBytes.Length;
-
-                //Socket send messages event args.
-                var _sendEventArgs = CreateAsyncSEA(messageBytes);
                 _sendEventArgs.UserToken = message;
 
-                try
+                //Send all bytes to the remote application
+                if (!_clientSocket.SendAsync(_sendEventArgs))
                 {
-                    //Send all bytes to the remote application
-                    if (!_clientSocket.SendAsync(_sendEventArgs))
-                    {
-                        OnSendCompleted(_sendEventArgs);
-                    }
+                    OnSendCompleted(_sendEventArgs);
                 }
-                catch (Exception ex)
-                {
-                    DisposeAsyncSEA(_sendEventArgs);
+            }
+            catch (Exception ex)
+            {
+                DisposeAsyncSEA(_sendEventArgs);
 
-                    Disconnect();
+                Disconnect();
 
-                    throw;
-                }
+                throw;
             }
         }
 
@@ -262,17 +260,26 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     {
                         //Copy received bytes to a new byte array
                         var receivedBytes = new byte[bytesTransferred];
+                        IEnumerable<IScsMessage> messages = null;
 
-                        Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
-                        Array.Clear(e.Buffer, 0, bytesTransferred);
-
-                        //Read messages according to current wire protocol
-                        var messages = WireProtocol.CreateMessages(receivedBytes);
-
-                        //Raise MessageReceived event for all received messages
-                        foreach (var message in messages)
+                        try
                         {
-                            OnMessageReceived(message);
+                            Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
+                            Array.Clear(e.Buffer, 0, bytesTransferred);
+
+                            //Read messages according to current wire protocol
+                            messages = WireProtocol.CreateMessages(receivedBytes);
+
+                            //Raise MessageReceived event for all received messages
+                            foreach (var message in messages)
+                            {
+                                OnMessageReceived(message);
+                            }
+                        }
+                        finally
+                        {
+                            receivedBytes = null;
+                            messages = null;
                         }
 
                         //Receive all bytes to the remote application

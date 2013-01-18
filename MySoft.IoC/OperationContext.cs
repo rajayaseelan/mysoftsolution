@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Runtime.Remoting.Messaging;
-using Castle.DynamicProxy;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
@@ -107,10 +106,7 @@ namespace MySoft.IoC
                     if (!hashtable.ContainsKey(channel.ClientId))
                     {
                         var handler = new CallbackInvocationHandler(callbackType, channel);
-                        //var dynamicProxy = ProxyFactory.GetInstance().Create(handler, typeof(ICallbackService), true);
-
-                        var proxyGenerator = new ProxyGenerator();
-                        var dynamicProxy = proxyGenerator.CreateInterfaceProxyWithoutTarget<ICallbackService>(handler);
+                        var dynamicProxy = ProxyFactory.GetInstance().Create(handler, typeof(ICallbackService), true);
 
                         hashtable[channel.ClientId] = dynamicProxy;
                     }

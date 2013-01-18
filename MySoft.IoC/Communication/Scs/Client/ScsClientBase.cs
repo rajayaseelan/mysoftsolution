@@ -157,6 +157,8 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// </summary>
         public void Connect()
         {
+            if (CommunicationState == CommunicationStates.Connected) return;
+
             WireProtocol.Reset();
             _communicationChannel = CreateCommunicationChannel();
             _communicationChannel.WireProtocol = WireProtocol;
