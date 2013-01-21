@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
     /// <summary>
     /// Stopwatch class
