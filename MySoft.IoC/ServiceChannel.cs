@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
+using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -12,9 +12,6 @@ namespace MySoft.IoC
     /// </summary>
     internal class ServiceChannel : IDisposable
     {
-        //等待超时时间
-        private const int WAIT_TIMEOUT = 10;
-
         private Action<CallEventArgs> callback;
         private ServiceCaller caller;
         private ServerStatusService status;
@@ -34,7 +31,7 @@ namespace MySoft.IoC
             this.caller = caller;
             this.status = status;
             this.maxCaller = maxCaller;
-            this._semaphore = new Semaphore(maxCaller, maxCaller);
+            this._semaphore = new Semaphore(maxCaller);
         }
 
         /// <summary>
@@ -44,18 +41,8 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         public void Send(IScsServerClient channel, CallerContext e)
         {
-            if (!_semaphore.WaitOne(TimeSpan.FromSeconds(WAIT_TIMEOUT), false))
-            {
-                //获取异常响应
-                var errMessage = string.Format("The server than the largest concurrent [{0}].", maxCaller);
-
-                e.Message = IoCHelper.GetResponse(e.Request, new WarningException(errMessage));
-
-                //发送消息
-                SendMessage(channel, e);
-
-                return;
-            }
+            //等待并发响应
+            _semaphore.WaitOne();
 
             try
             {
@@ -83,7 +70,8 @@ namespace MySoft.IoC
             }
             finally
             {
-                _semaphore.Release();
+                //释放并发连接
+                _semaphore.AddOne();
             }
         }
 
@@ -172,18 +160,12 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            try
-            {
-                this._semaphore.Close();
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                this.callback = null;
-                this.caller = null;
-                this.status = null;
-                this._semaphore = null;
-            }
+            this._semaphore.Reset(maxCaller);
+
+            this._semaphore = null;
+            this.callback = null;
+            this.caller = null;
+            this.status = null;
         }
 
         #endregion

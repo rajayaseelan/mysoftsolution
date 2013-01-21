@@ -16,7 +16,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 2 * 1024; //2KB
+        private const int ReceiveBufferSize = 1024; //1KB
 
         #region Public properties
 
@@ -133,6 +133,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
+                OnMessageError(ex);
+
                 DisposeAsyncSEA(_receiveEventArgs);
 
                 Disconnect();
@@ -173,6 +175,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
+                OnMessageError(ex);
+
                 DisposeAsyncSEA(_sendEventArgs);
 
                 Disconnect();
@@ -248,27 +252,23 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                //Receive data success.
-                if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
+                if (e.SocketError == SocketError.Success)
                 {
-                    LastReceivedMessageTime = DateTime.Now;
-
-                    //Get received bytes count
-                    var bytesTransferred = e.BytesTransferred;
-
-                    if (bytesTransferred > 0)
+                    //Receive data success.
+                    if (e.BytesTransferred > 0)
                     {
-                        //Copy received bytes to a new byte array
-                        var receivedBytes = new byte[bytesTransferred];
-                        IEnumerable<IScsMessage> messages = null;
+                        LastReceivedMessageTime = DateTime.Now;
 
                         try
                         {
-                            Buffer.BlockCopy(e.Buffer, 0, receivedBytes, 0, bytesTransferred);
-                            Array.Clear(e.Buffer, 0, bytesTransferred);
+                            //Copy received bytes to a new byte array
+                            var receivedBytes = new byte[e.BytesTransferred];
+
+                            //Copy buffer.
+                            Buffer.BlockCopy(e.Buffer, e.Offset, receivedBytes, 0, e.BytesTransferred);
 
                             //Read messages according to current wire protocol
-                            messages = WireProtocol.CreateMessages(receivedBytes);
+                            var messages = WireProtocol.CreateMessages(receivedBytes);
 
                             //Raise MessageReceived event for all received messages
                             foreach (var message in messages)
@@ -278,14 +278,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         }
                         finally
                         {
-                            receivedBytes = null;
-                            messages = null;
-                        }
+                            //Clear buffer.
+                            Array.Clear(_receiveBuffer, 0, _receiveBuffer.Length);
 
-                        //Receive all bytes to the remote application
-                        if (!_clientSocket.ReceiveAsync(e))
-                        {
-                            OnReceiveCompleted(e);
+                            //设置偏移量
+                            e.SetBuffer(0, _receiveBuffer.Length);
+
+                            //Receive all bytes to the remote application
+                            if (!_clientSocket.ReceiveAsync(e))
+                            {
+                                OnReceiveCompleted(e);
+                            }
                         }
                     }
                 }
@@ -296,6 +299,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
+                OnMessageError(ex);
+
                 DisposeAsyncSEA(e);
 
                 Disconnect();
