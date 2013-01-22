@@ -54,7 +54,7 @@ namespace MySoft.PlatformService.UserService
             //    return null;
             //}
 
-            //Thread.Sleep(3000);
+            //Thread.Sleep(30000);
 
             var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
             var sb = new StringBuilder(name);

@@ -41,8 +41,8 @@ namespace MySoft.IoC.Services
             //判断方法是否存在
             if (!methods.ContainsKey(reqMsg.MethodName))
             {
-                string message = string.Format("The server【{2}({3})】not find matching method ({0}, {1})."
-                    , reqMsg.ServiceName, reqMsg.MethodName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
+                string message = string.Format("The server not find matching method ({0}, {1})."
+                                                , reqMsg.ServiceName, reqMsg.MethodName);
 
                 throw new WarningException(message);
             }

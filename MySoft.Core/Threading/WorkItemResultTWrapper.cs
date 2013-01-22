@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
     #region WorkItemResultTWrapper class
 

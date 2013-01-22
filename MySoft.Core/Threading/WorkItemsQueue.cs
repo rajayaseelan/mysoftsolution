@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
 	#region WorkItemsQueue class
 
@@ -33,7 +34,9 @@ namespace MySoft.Threading.Internal
         private bool _isWorkItemsQueueActive = true;
 
 
-#if (_WINDOWS_CE)
+#if (WINDOWS_PHONE) 
+        private static readonly Dictionary<int, WaiterEntry> _waiterEntries = new Dictionary<int, WaiterEntry>();
+#elif (_WINDOWS_CE)
         private static LocalDataStoreSlot _waiterEntrySlot = Thread.AllocateDataSlot();
 #else
 
@@ -47,7 +50,27 @@ namespace MySoft.Threading.Internal
         /// </summary>
         private static WaiterEntry CurrentWaiterEntry
         {
-#if (_WINDOWS_CE)
+#if (WINDOWS_PHONE) 
+            get
+            {
+                lock (_waiterEntries)
+                {
+                    WaiterEntry waiterEntry;
+                    if (_waiterEntries.TryGetValue(Thread.CurrentThread.ManagedThreadId, out waiterEntry))
+                    {
+                        return waiterEntry;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                lock (_waiterEntries)
+                {
+                    _waiterEntries[Thread.CurrentThread.ManagedThreadId] = value;
+                }
+            }
+#elif (_WINDOWS_CE)
             get
             {
                 return Thread.GetData(_waiterEntrySlot) as WaiterEntry;
@@ -177,14 +200,8 @@ namespace MySoft.Threading.Internal
 
 			WaiterEntry waiterEntry;
 			WorkItem workItem = null;
-
-            try
-            {
-                while (!Monitor.TryEnter(this)) { }
-                //Stopwatch stopwatch = Stopwatch.StartNew();
-                //Monitor.Enter(this);
-                //stopwatch.Stop();
-
+		    lock (this)
+		    {
                 ValidateNotDisposed();
 
                 // If there are waiting work items then take one and return.
@@ -201,11 +218,7 @@ namespace MySoft.Threading.Internal
 
                 // Put the waiter with the other waiters
                 PushWaiter(waiterEntry);
-            }
-            finally
-            {
-                Monitor.Exit(this);
-            }
+		    }
 
 		    // Prepare array of wait handle for the WaitHandle.WaitAny()
             WaitHandle [] waitHandles = new WaitHandle[] { 

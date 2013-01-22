@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
     public partial class WorkItem
     {

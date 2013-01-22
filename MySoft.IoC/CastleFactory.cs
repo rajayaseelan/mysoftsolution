@@ -584,8 +584,7 @@ namespace MySoft.IoC
                 {
                     if (config.Type == CastleFactoryType.Local)
                     {
-                        throw new WarningException(string.Format("The local¡¾{1}({2})¡¿not find matching service ({0})."
-                            , serviceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress()));
+                        throw new WarningException(string.Format("The local not find matching service ({0}).", serviceName));
                     }
                 }
             }

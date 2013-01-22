@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace MySoft.Threading
+namespace Amib.Threading
 {
 	#region Delegates
 
@@ -271,7 +271,19 @@ namespace MySoft.Threading
         /// Queue a work item.
         /// </summary>
         /// <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
-        IWorkItemResult QueueWorkItem<T>(Action<T> action, T arg);
+        IWorkItemResult QueueWorkItem (Action action, WorkItemPriority priority);
+
+        /// <summary>
+        /// Queue a work item.
+        /// </summary>
+        /// <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
+        IWorkItemResult QueueWorkItem<T> (Action<T> action, T arg, WorkItemPriority priority);
+
+        /// <summary>
+        /// Queue a work item.
+        /// </summary>
+        /// <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
+        IWorkItemResult QueueWorkItem<T> (Action<T> action, T arg);
 
         /// <summary>
         /// Queue a work item.
@@ -283,13 +295,31 @@ namespace MySoft.Threading
         /// Queue a work item.
         /// </summary>
         /// <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
+        IWorkItemResult QueueWorkItem<T1, T2> (Action<T1, T2> action, T1 arg1, T2 arg2, WorkItemPriority priority);
+
+        /// <summary>
+        /// Queue a work item.
+        /// </summary>
+        /// <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
         IWorkItemResult QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 arg1, T2 arg2, T3 arg3);
 
         /// <summary>
         /// Queue a work item.
         /// </summary>
         /// <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
+        IWorkItemResult QueueWorkItem<T1, T2, T3> (Action<T1, T2, T3> action, T1 arg1, T2 arg2, T3 arg3, WorkItemPriority priority);
+
+        /// <summary>
+        /// Queue a work item.
+        /// </summary>
+        /// <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
         IWorkItemResult QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 arg1, T2 arg2, T3 arg3, T4 arg4);
+
+        /// <summary>
+        /// Queue a work item.
+        /// </summary>
+        /// <returns>Returns a IWorkItemResult object, but its GetResult() will always return null</returns>
+        IWorkItemResult QueueWorkItem<T1, T2, T3, T4> (Action<T1, T2, T3, T4> action, T1 arg1, T2 arg2, T3 arg3, T4 arg4, WorkItemPriority priority);
 
         #endregion
 
@@ -298,35 +328,35 @@ namespace MySoft.Threading
         /// <summary>
         /// Queue a work item.
         /// </summary>
-        /// <returns>Returns a IWorkItemResult<TResult> object. 
+        /// <returns>Returns a IWorkItemResult&lt;TResult&gt; object. 
         /// its GetResult() returns a TResult object</returns>
         IWorkItemResult<TResult> QueueWorkItem<TResult>(Func<TResult> func);
 
         /// <summary>
         /// Queue a work item.
         /// </summary>
-        /// <returns>Returns a IWorkItemResult<TResult> object. 
+        /// <returns>Returns a IWorkItemResult&lt;TResult&gt; object. 
         /// its GetResult() returns a TResult object</returns>
         IWorkItemResult<TResult> QueueWorkItem<T, TResult>(Func<T, TResult> func, T arg);
 
         /// <summary>
         /// Queue a work item.
         /// </summary>
-        /// <returns>Returns a IWorkItemResult<TResult> object. 
+        /// <returns>Returns a IWorkItemResult&lt;TResult&gt; object. 
         /// its GetResult() returns a TResult object</returns>
         IWorkItemResult<TResult> QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> func, T1 arg1, T2 arg2);
 
         /// <summary>
         /// Queue a work item.
         /// </summary>
-        /// <returns>Returns a IWorkItemResult<TResult> object. 
+        /// <returns>Returns a IWorkItemResult&lt;TResult&gt; object. 
         /// its GetResult() returns a TResult object</returns>
         IWorkItemResult<TResult> QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> func, T1 arg1, T2 arg2, T3 arg3);
 
         /// <summary>
         /// Queue a work item.
         /// </summary>
-        /// <returns>Returns a IWorkItemResult<TResult> object. 
+        /// <returns>Returns a IWorkItemResult&lt;TResult&gt; object. 
         /// its GetResult() returns a TResult object</returns>
         IWorkItemResult<TResult> QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> func, T1 arg1, T2 arg2, T3 arg3, T4 arg4);
 
@@ -366,7 +396,7 @@ namespace MySoft.Threading
 	#region IWorkItemResult interface
 
     /// <summary>
-    /// The common interface of IWorkItemResult and IWorkItemResult<T>
+    /// The common interface of IWorkItemResult and IWorkItemResult&lt;T&gt;
     /// </summary>
     public interface IWaitableResult
     {
@@ -392,8 +422,8 @@ namespace MySoft.Threading
     }
 
 	/// <summary>
-	/// IWorkItemResult<TResult> interface.
-    /// Created when a Func<T> work item is queued.
+    /// IWorkItemResult&lt;TResult&gt; interface.
+    /// Created when a Func&lt;TResult&gt; work item is queued.
 	/// </summary>
     public interface IWorkItemResult<TResult> : IWaitableResult
 	{

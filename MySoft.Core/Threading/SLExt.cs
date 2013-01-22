@@ -2,7 +2,7 @@
 
 using System.Threading;
 
-namespace MySoft.Threading
+namespace Amib.Threading
 {
     public enum ThreadPriority
     {

@@ -3,7 +3,7 @@ using System.Threading;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
 
 	#region WorkItemsGroup class 
@@ -87,11 +87,11 @@ namespace MySoft.Threading.Internal
 			if (concurrency <= 0)
 			{
 				throw new ArgumentOutOfRangeException(
-                    "concurrency", 
-#if !(_WINDOWS_CE) && !(_SILVERLIGHT)
+                    "concurrency",
+#if !(_WINDOWS_CE) && !(_SILVERLIGHT) && !(WINDOWS_PHONE)
                     concurrency,
 #endif
-                    "concurrency must be greater than zero");
+ "concurrency must be greater than zero");
 			}
 			_stp = stp;
 			_concurrency = concurrency;
@@ -115,7 +115,7 @@ namespace MySoft.Threading.Internal
             get { return _concurrency; }
             set
             {
-                //Debug.Assert(value > 0);
+                Debug.Assert(value > 0);
 
                 int diff = value - _concurrency;
                 _concurrency = value;

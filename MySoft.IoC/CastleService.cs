@@ -80,7 +80,7 @@ namespace MySoft.IoC
 
             //实例化调用者
             this.caller = new ServiceCaller(config, container);
-            this.client = new ServiceChannel(NotifyResult, caller, status, config.MaxCaller);
+            this.client = new ServiceChannel(NotifyResult, caller, status, config.MaxCaller, config.Timeout);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -316,7 +316,13 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         private void Channel_MessageSent(object sender, MessageEventArgs e)
         {
+            var channel = sender as IScsServerClient;
 
+            //如果是结果消息
+            if (e.Message is ScsResultMessage)
+            {
+                //统计处理
+            }
         }
 
         /// <summary>
@@ -397,10 +403,15 @@ namespace MySoft.IoC
                     var appPath = (channel.UserToken == null) ? null : (channel.UserToken as AppClient).AppPath;
 
                     //实例化上下文
-                    using (var e = new CallerContext { MessageId = messageId, Request = reqMsg, Caller = CreateCaller(appPath, reqMsg) })
+                    using (var context = new CallerContext
+                     {
+                         MessageId = messageId,
+                         Request = reqMsg,
+                         Caller = CreateCaller(appPath, reqMsg)
+                     })
                     {
                         //发送消息
-                        client.Send(channel, e);
+                        client.SendResponse(channel, context);
                     }
                 }
             }

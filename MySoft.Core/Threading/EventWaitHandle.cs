@@ -4,7 +4,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
     /// <summary>
     /// EventWaitHandle class

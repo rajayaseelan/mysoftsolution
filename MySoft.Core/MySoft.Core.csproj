@@ -269,7 +269,6 @@
     <Compile Include="Net\Http\IHTTPRequestHandlerFactory.cs" />
     <Compile Include="RESTful\IAuthentication.cs" />
     <Compile Include="Threading\ManagedThreadPool.cs" />
-    <Compile Include="Threading\Stopwatch.cs" />
     <Compile Include="Utils\Base64UrlHelper.cs" />
     <Compile Include="Utils\CacheObject.cs" />
     <Compile Include="Utils\CancellableTask.cs" />

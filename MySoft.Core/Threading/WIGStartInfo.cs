@@ -1,6 +1,6 @@
 using System;
 
-namespace MySoft.Threading
+namespace Amib.Threading
 {
 	/// <summary>
 	/// Summary description for WIGStartInfo.
@@ -145,7 +145,7 @@ namespace MySoft.Threading
 	    }
 
 	    /// <summary>
-	    /// Get/Set the if QueueWorkItem of Action<...>/Func<...> fill the
+        /// Get/Set the if QueueWorkItem of Action&lt;...&gt;/Func&lt;...&gt; fill the
 	    /// arguments as an object array into the state of the work item.
 	    /// The arguments can be access later by IWorkItemResult.State.
 	    /// </summary>

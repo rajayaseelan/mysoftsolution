@@ -32,8 +32,6 @@ namespace MySoft.IoC
             }
         }
 
-        private static readonly Hashtable hashtable = new Hashtable();
-
         /// <summary>
         /// 回调类型
         /// </summary>
@@ -41,12 +39,7 @@ namespace MySoft.IoC
         private IScsServerClient channel;
         private IContainer container;
         private AppCaller caller;
-        private bool disposed = false;
-
-        /// <summary>
-        /// 是否已经销毁对象
-        /// </summary>
-        public bool Disposed { get { return disposed; } }
+        private static object syncRoot = new object();
 
         /// <summary>
         /// 容器对象
@@ -101,18 +94,13 @@ namespace MySoft.IoC
             }
             else
             {
-                lock (hashtable.SyncRoot)
+                lock (syncRoot)
                 {
-                    if (!hashtable.ContainsKey(channel.ClientId))
-                    {
-                        var handler = new CallbackInvocationHandler(callbackType, channel);
-                        var dynamicProxy = ProxyFactory.GetInstance().Create(handler, typeof(ICallbackService), true);
+                    var handler = new CallbackInvocationHandler(callbackType, channel);
+                    var dynamicProxy = ProxyFactory.GetInstance().Create(handler, typeof(ICallbackService), true);
 
-                        hashtable[channel.ClientId] = dynamicProxy;
-                    }
+                    return (ICallbackService)dynamicProxy;
                 }
-
-                return (ICallbackService)hashtable[channel.ClientId];
             }
         }
 
@@ -123,21 +111,9 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            if (channel != null)
-            {
-                lock (hashtable.SyncRoot)
-                {
-                    if (hashtable.ContainsKey(channel.ClientId))
-                    {
-                        hashtable.Remove(channel.ClientId);
-                    }
-                }
-            }
-
             this.channel = null;
             this.container = null;
             this.caller = null;
-            this.disposed = true;
         }
 
         #endregion

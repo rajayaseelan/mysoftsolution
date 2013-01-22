@@ -1,4 +1,4 @@
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
     internal class CanceledWorkItemsGroup
     {

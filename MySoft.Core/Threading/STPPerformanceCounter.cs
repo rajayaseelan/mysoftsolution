@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace MySoft.Threading
+namespace Amib.Threading
 {
     public interface ISTPPerformanceCountersReader
     {
@@ -13,7 +13,7 @@ namespace MySoft.Threading
     }
 }
 
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
     internal interface ISTPInstancePerformanceCounters : IDisposable
     {
@@ -23,7 +23,7 @@ namespace MySoft.Threading.Internal
         void SampleWorkItemsWaitTime(TimeSpan workItemWaitTime);
         void SampleWorkItemsProcessTime(TimeSpan workItemProcessTime);
     }
-#if !(_WINDOWS_CE) && !(_SILVERLIGHT)
+#if !(_WINDOWS_CE) && !(_SILVERLIGHT) && !(WINDOWS_PHONE)
 
     internal enum STPPerformanceCounterType
 	{
@@ -354,7 +354,7 @@ namespace MySoft.Threading.Internal
 			GetCounter(STPPerformanceCounterType.AvgWorkItemProcessTimeBase).Increment();
 		}
     }
-    #endif
+#endif
 
     internal class NullSTPInstancePerformanceCounters : ISTPInstancePerformanceCounters, ISTPPerformanceCountersReader
 	{

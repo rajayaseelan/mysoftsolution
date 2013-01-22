@@ -1,8 +1,8 @@
 ﻿
 using System;
-using MySoft.Threading.Internal;
+using Amib.Threading.Internal;
 
-namespace MySoft.Threading
+namespace Amib.Threading
 {
     public partial class SmartThreadPool
     {

@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 #endif
 
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
     /// <summary>
     /// EventWaitHandleFactory class.

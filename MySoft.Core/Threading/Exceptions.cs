@@ -3,7 +3,7 @@ using System;
 using System.Runtime.Serialization;
 #endif
 
-namespace MySoft.Threading
+namespace Amib.Threading
 {
     #region Exceptions
 
@@ -68,7 +68,7 @@ namespace MySoft.Threading
     }
 
 
-#if !(_WINDOWS_CE) && !(_SILVERLIGHT)
+#if !(_WINDOWS_CE) && !(_SILVERLIGHT) && !(WINDOWS_PHONE)
     /// <summary>
     /// Represents an exception in case IWorkItemResult.GetResult has been canceled
     /// </summary>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
@@ -14,9 +13,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// 用于完成异步操作的事件
         /// </summary>
-        public event EventHandler<SocketAsyncEventArgs> SendCompleted;
+        public event EventHandler<SocketAsyncEventArgs> Completed;
+
+        /// <summary>
+        /// 销毁对象
+        /// </summary>
+        public event EventHandler<SocketAsyncEventArgs> Disposed;
 
         private readonly Socket _clientSocket;
+        private readonly SocketAsyncEventArgs _sendEventArgs;
         private Queue<BufferMessage> _msgQueue = new Queue<BufferMessage>();
 
         private bool _isCompleted;
@@ -25,19 +30,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// 实例化ScsMessageQueue
         /// </summary>
         /// <param name="clientSocket"></param>
-        public SendMessageQueue(Socket clientSocket)
+        /// <param name="sendEventArgs"></param>
+        public SendMessageQueue(Socket clientSocket, SocketAsyncEventArgs sendEventArgs)
         {
             this._clientSocket = clientSocket;
+            this._sendEventArgs = sendEventArgs;
             this._isCompleted = true;
         }
 
         /// <summary>
         /// 发送数据服务
         /// </summary>
-        /// <param name="e"></param>
         /// <param name="message"></param>
         /// <param name="messageBytes"></param>
-        public void Send(SocketAsyncEventArgs e, IScsMessage message, byte[] messageBytes)
+        public void Send(IScsMessage message, byte[] messageBytes)
         {
             //实例化BufferMessage
             var msg = new BufferMessage(message, messageBytes);
@@ -48,7 +54,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     _isCompleted = false;
 
-                    SendAsync(e, msg);
+                    SendAsync(_sendEventArgs, msg);
                 }
                 else
                 {
@@ -61,12 +67,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// 发送数据服务
         /// </summary>
         /// <param name="e"></param>
-        public void Resend(SocketAsyncEventArgs e)
+        public void ContinueSend(SocketAsyncEventArgs e)
         {
             lock (_msgQueue)
             {
-                e.SetBuffer(null, 0, 0);
                 e.UserToken = null;
+                e.SetBuffer(null, 0, 0);
 
                 if (_msgQueue.Count == 0)
                 {
@@ -76,7 +82,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     var message = _msgQueue.Dequeue();
 
-                    SendAsync(e, message);
+                    SendAsync(_sendEventArgs, message);
                 }
             }
         }
@@ -101,11 +107,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 //开始异步发送
                 if (!_clientSocket.SendAsync(e))
                 {
-                    if (SendCompleted != null)
+                    if (Completed != null)
                     {
-                        SendCompleted(_clientSocket, e);
+                        Completed(_clientSocket, e);
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                if (Disposed != null)
+                {
+                    Disposed(_clientSocket, e);
+                }
+
+                throw;
             }
             finally
             {
@@ -122,6 +137,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
+                if (Disposed != null)
+                {
+                    Disposed(_clientSocket, _sendEventArgs);
+                }
+
                 lock (_msgQueue)
                 {
                     while (_msgQueue.Count > 0)

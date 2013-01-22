@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
-using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
 
@@ -86,39 +85,20 @@ namespace MySoft.IoC.Services
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        protected virtual ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
+        private ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
         {
-            //定义一个响应值
-            ResponseMessage resMsg = null;
-
-            //如果上下文已经不存在，则直接返回
-            if (context.Disposed) return resMsg;
+            //设置上下文
+            OperationContext.Current = context;
 
             try
             {
-                //设置上下文
-                OperationContext.Current = context;
-
                 //响应结果，清理资源
-                resMsg = service.CallService(reqMsg);
-            }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex)
-            {
-                //取消请求
-                Thread.ResetAbort();
-            }
-            catch (Exception ex)
-            {
-                //返回异常响应信息
-                resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                return service.CallService(reqMsg);
             }
             finally
             {
                 OperationContext.Current = null;
             }
-
-            return resMsg;
         }
 
         /// <summary>

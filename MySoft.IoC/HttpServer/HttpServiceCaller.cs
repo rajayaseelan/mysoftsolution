@@ -223,8 +223,7 @@ namespace MySoft.IoC.HttpServer
 
             if (service == null)
             {
-                string body = string.Format("The server【{1}({2})】not find matching service ({0})."
-                    , serviceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
+                string body = string.Format("The server not find matching service ({0}).", serviceName);
 
                 //返回异常信息
                 throw new WarningException(body);

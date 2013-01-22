@@ -34,9 +34,7 @@ namespace MySoft.IoC
         private void Init(IServiceContainer container, CastleServiceConfiguration config)
         {
             callbackTypes[typeof(IStatusService).FullName] = typeof(IStatusListener);
-
             var types = container.GetServiceTypes<ServiceContractAttribute>();
-            var timeout = TimeSpan.FromSeconds(config.Timeout);
 
             foreach (var type in types)
             {
@@ -55,9 +53,9 @@ namespace MySoft.IoC
 
                     //实例化SyncCaller
                     if (config.EnableCache)
-                        syncCallers[type.FullName] = new AsyncCaller(service, timeout, null, true);
+                        syncCallers[type.FullName] = new SyncCaller(service, null, true);
                     else
-                        syncCallers[type.FullName] = new AsyncCaller(service, timeout, true);
+                        syncCallers[type.FullName] = new SyncCaller(service, true);
                 }
             }
         }
@@ -66,28 +64,19 @@ namespace MySoft.IoC
         /// 调用方法
         /// </summary>
         /// <param name="channel"></param>
-        /// <param name="e"></param>
+        /// <param name="caller"></param>
+        /// <param name="reqMsg"></param>
         /// <returns></returns>
-        public bool InvokeResponse(IScsServerClient channel, CallerContext e)
+        public ResponseMessage InvokeResponse(IScsServerClient channel, AppCaller caller, RequestMessage reqMsg)
         {
             //获取上下文
-            using (var context = GetOperationContext(channel, e.Caller))
+            using (var context = GetOperationContext(channel, caller))
             {
-                try
-                {
-                    //解析服务
-                    var syncCaller = GetAsyncCaller(e.Caller);
+                //解析服务
+                var syncCaller = GetAsyncCaller(caller);
 
-                    //异步调用服务
-                    e.Message = syncCaller.Run(context, e.Request);
-                }
-                catch (Exception ex)
-                {
-                    //获取异常响应
-                    e.Message = IoCHelper.GetResponse(e.Request, ex);
-                }
-
-                return e.Message != null;
+                //异步调用服务
+                return syncCaller.Run(context, reqMsg);
             }
         }
 
@@ -128,8 +117,7 @@ namespace MySoft.IoC
             {
                 if (!syncCallers.ContainsKey(caller.ServiceName))
                 {
-                    string body = string.Format("The server【{1}({2})】not find matching service ({0})."
-                        , caller.ServiceName, DnsHelper.GetHostName(), DnsHelper.GetIPAddress());
+                    string body = string.Format("The server not find matching service ({0}).", caller.ServiceName);
 
                     //获取异常
                     throw IoCHelper.GetException(caller, body);

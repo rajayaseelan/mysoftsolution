@@ -3,9 +3,9 @@
 using System;
 using System.Threading;
 
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
-#if _WINDOWS
+#if _WINDOWS ||  WINDOWS_PHONE
     internal static class STPEventWaitHandle
     {
         public const int WaitTimeout = Timeout.Infinite;

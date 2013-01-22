@@ -1,4 +1,4 @@
-namespace MySoft.Threading
+namespace Amib.Threading
 {
 	#region WorkItemInfo class
 

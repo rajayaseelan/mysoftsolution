@@ -90,7 +90,7 @@ namespace MySoft.IoC
                 Thread.Sleep(5000);
 
 #if DEBUG
-                Console.WriteLine("{0} => Socket async event args : {1}", DateTime.Now, CommunicationHelper.Count);
+                IoCHelper.WriteLine(ConsoleColor.DarkGreen, "{0} => Socket async event args : {1}", DateTime.Now, CommunicationHelper.Count);
 #endif
 
                 try
@@ -116,7 +116,7 @@ namespace MySoft.IoC
                             channel.Disconnect();
 
 #if DEBUG
-                            Console.WriteLine("{0} => Auto disconnect! client id : {1}", DateTime.Now, channel.ClientId);
+                            IoCHelper.WriteLine(ConsoleColor.DarkBlue, "{0} => Server auto disconnect, client id : {1}", DateTime.Now, channel.ClientId);
 #endif
                         }
                     }

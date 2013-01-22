@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MySoft.Threading.Internal
+namespace Amib.Threading.Internal
 {
     internal class SynchronizedDictionary<TKey, TValue>
     {

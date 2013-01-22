@@ -66,6 +66,8 @@
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IServiceRecorder.cs" />
     <Compile Include="Common\RecordEventArgs.cs" />
+    <Compile Include="Communication\Scs\Communication\Channels\Tcp\BufferMessage.cs" />
+    <Compile Include="Communication\Scs\Communication\Channels\Tcp\SendMessageQueue.cs" />
     <Compile Include="Communication\Scs\Communication\CommunicationHelper.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -153,9 +155,6 @@
     <Compile Include="Messages\ReturnMessage.cs" />
     <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
-    <Compile Include="Services\AsyncCaller.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -199,9 +198,6 @@
     <Compile Include="Services\DynamicService.cs" />
     <Compile Include="Services\WaitResult.cs" />
     <Compile Include="Services\SyncCaller.cs" />
-    <Compile Include="Services\WorkerItem.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="SimpleServiceContainer.cs" />
     <Compile Include="Messages\Status\CallInfo.cs" />
     <Compile Include="IStatusListener.cs" />
