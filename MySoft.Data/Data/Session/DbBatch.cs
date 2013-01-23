@@ -116,8 +116,7 @@ namespace MySoft.Data
                         string cmdText = cmd.CommandText;
                         foreach (DbParameter p in cmd.Parameters)
                         {
-                            DbParameter newp = (DbParameter)((ICloneable)p).Clone();
-                            mergeCommand.Parameters.Add(newp);
+                            mergeCommand.Parameters.Add((p as ICloneable).Clone());
                         }
                         sb.Append(cmdText);
                         sb.Append(";\r\n");
