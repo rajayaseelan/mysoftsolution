@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
 using MySoft.Security;
-using System.Diagnostics;
 
 namespace MySoft.IoC.Services
 {
@@ -41,21 +41,6 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 获取CallerKey
-        /// </summary>
-        /// <param name="caller"></param>
-        /// <returns></returns>
-        private string GetCallerKey(AppCaller caller)
-        {
-            //对Key进行组装
-            var callKey = string.Format("{0}${1}${2}${3}", service.ServiceName
-                            , caller.ServiceName, caller.MethodName, caller.Parameters);
-
-            //返回加密Key
-            return MD5.HexHash(Encoding.Default.GetBytes(callKey));
-        }
-
-        /// <summary>
         /// 同步调用服务
         /// </summary>
         /// <param name="context"></param>
@@ -77,6 +62,7 @@ namespace MySoft.IoC.Services
                 if (resMsg == null && buffer != null)
                 {
                     buffer = CompressionManager.DecompressGZip(buffer);
+
                     resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
 
                     //设置同步返回传输Id
@@ -111,16 +97,10 @@ namespace MySoft.IoC.Services
         {
             buffer = null;
 
-            //获取CallerKey
-            var callKey = GetCallerKey(context.Caller);
-
-            //如果是Invoke方式调用
-            if (reqMsg.InvokeMethod) callKey = string.Format("INVOKE_{0}", callKey);
-
             if (enabledCache)
             {
                 //从缓存获取数据
-                buffer = GetResponseFromCache(callKey.ToLower(), context, reqMsg);
+                buffer = GetResponseFromCache(context, reqMsg);
 
                 //从缓存中获取数据
                 if (buffer != null) return null;
@@ -170,14 +150,16 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 从缓存中获取数据
         /// </summary>
-        /// <param name="callKey"></param>
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        private byte[] GetResponseFromCache(string callKey, OperationContext context, RequestMessage reqMsg)
+        private byte[] GetResponseFromCache(OperationContext context, RequestMessage reqMsg)
         {
             //从缓存中获取数据
             if (reqMsg.CacheTime <= 0) return null;
+
+            //获取CallerKey
+            var callKey = GetCallerKey(context.Caller);
 
             //定义回调函数
             Func<string, OperationContext, RequestMessage, byte[]> func = null;
@@ -185,8 +167,10 @@ namespace MySoft.IoC.Services
             if (cache == null)
             {
                 //如果是状态服务，则使用内部缓存
-                if (reqMsg.ServiceName == typeof(IStatusService).FullName)
+                if (reqMsg.InvokeMethod)
                 {
+                    callKey = string.Format("invoke_{0}", callKey);
+
                     cache = InternalCache.Instance;
 
                     //获取响应从远程缓存
@@ -237,7 +221,9 @@ namespace MySoft.IoC.Services
 
                         if (CheckResponse(resMsg))
                         {
-                            return SerializationManager.SerializeBin(resMsg);
+                            var buffer = SerializationManager.SerializeBin(resMsg);
+
+                            return CompressionManager.CompressGZip(buffer);
                         }
 
                         return null;
@@ -276,6 +262,7 @@ namespace MySoft.IoC.Services
                     try
                     {
                         buffer = SerializationManager.SerializeBin(resMsg);
+
                         buffer = CompressionManager.CompressGZip(buffer);
 
                         //插入缓存
@@ -289,6 +276,22 @@ namespace MySoft.IoC.Services
 
             return buffer;
         }
+
+        /// <summary>
+        /// 获取CallerKey
+        /// </summary>
+        /// <param name="caller"></param>
+        /// <returns></returns>
+        private string GetCallerKey(AppCaller caller)
+        {
+            //对Key进行组装
+            var callKey = string.Format("{0}${1}${2}${3}", service.ServiceName, caller.ServiceName, caller.MethodName
+                                        , caller.Parameters).Replace(" ", "").Replace("\r\n", "").Replace("\t", "");
+
+            //返回加密Key
+            return MD5.HexHash(Encoding.Default.GetBytes(callKey));
+        }
+
 
         /// <summary>
         /// 检测响应是否有效

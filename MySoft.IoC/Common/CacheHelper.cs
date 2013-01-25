@@ -72,8 +72,6 @@ namespace MySoft.IoC
 
                 if (buffer != null)
                 {
-                    buffer = CompressionManager.CompressGZip(buffer);
-
                     //插入缓存
                     InsertCache(GetFilePath(key), key.UniqueId, buffer, timeout);
                 }
@@ -120,8 +118,6 @@ namespace MySoft.IoC
 
                 if (buffer != null)
                 {
-                    buffer = CompressionManager.CompressGZip(buffer);
-
                     //插入缓存
                     InsertCache(GetFilePath(key), key.UniqueId, buffer, timeout);
                 }
@@ -171,7 +167,7 @@ namespace MySoft.IoC
                             if (timeout != TimeSpan.MaxValue)
                             {
                                 //默认缓存5秒
-                                CacheHelper.Insert(key, cacheObj, (int)Math.Min(5, timeout.TotalSeconds));
+                                CacheHelper.Insert(key, cacheObj, (int)Math.Min(30, timeout.TotalSeconds));
                             }
                         }
                     }
