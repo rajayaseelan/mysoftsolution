@@ -80,7 +80,7 @@ namespace MySoft.IoC
 
             //实例化调用者
             this.caller = new ServiceCaller(config, container);
-            this.client = new ServiceChannel(NotifyResult, caller, status, config.MaxCaller, config.Timeout);
+            this.client = new ServiceChannel(NotifyResult, container, caller, status, config.MaxCaller, config.Timeout);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -352,7 +352,7 @@ namespace MySoft.IoC
                     var reqMsg = message.MessageValue as RequestMessage;
 
                     //调用服务
-                    Send(channel, message.MessageId, reqMsg);
+                    Send(channel, message.RepliedMessageId, reqMsg);
                 }
             }
             catch (Exception ex)

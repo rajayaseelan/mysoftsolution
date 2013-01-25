@@ -268,8 +268,14 @@ namespace MySoft.PlatformService.WinForm
             {
                 data = new InvokeResponse { Exception = ex };
             }
+            finally
+            {
+                if (watch.IsRunning)
+                {
+                    watch.Stop();
+                }
+            }
 
-            watch.Stop();
             data.ElapsedMilliseconds = watch.ElapsedMilliseconds;
 
             return data;
@@ -285,46 +291,56 @@ namespace MySoft.PlatformService.WinForm
                 var value = caller.EndInvoke(ar);
                 var data = value as InvokeResponse;
 
-                InvokeMethod(new Action(() =>
-                {
-                    if (data.IsError)
-                    {
-                        richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
-                    }
-                    else
-                    {
-                        richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
-                                            data.Count, data.Value, data.OutParameters);
-                        richTextBox1.Refresh();
-                    }
-
-                    label5.Text = string.Format("{0} / {1} ms.  Row(s): {2}.  Size: {3}.", data.ElapsedMilliseconds,
-                                data.ElapsedTime, data.Count, GetDataSize(data.Value));
-
-                    label5.Refresh();
-
-                    button1.Enabled = true;
-
-                    if (txtParameters.Count > 0)
-                    {
-                        var p = txtParameters.Values.FirstOrDefault();
-                        p.Focus();
-                    }
-                    else
-                    {
-                        button1.Focus();
-                    }
-                }));
-
-                if (!data.IsError)
-                {
-                    ThreadPool.QueueUserWorkItem(InvokeTable, data);
-                }
+                //设置响应信息
+                SetInvokeResponse(data);
             }
             catch (Exception ex) { }
             finally
             {
                 ar.AsyncWaitHandle.Close();
+            }
+        }
+
+        /// <summary>
+        /// 设置响应信息
+        /// </summary>
+        /// <param name="data"></param>
+        private void SetInvokeResponse(InvokeResponse data)
+        {
+            InvokeMethod(new Action(() =>
+            {
+                if (data.IsError)
+                {
+                    richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
+                }
+                else
+                {
+                    richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
+                                        data.Count, data.Value, data.OutParameters);
+                    richTextBox1.Refresh();
+                }
+
+                label5.Text = string.Format("{0} / {1} ms.  Row(s): {2}.  Size: {3}.", data.ElapsedMilliseconds,
+                            data.ElapsedTime, data.Count, GetDataSize(data.Value));
+
+                label5.Refresh();
+
+                button1.Enabled = true;
+
+                if (txtParameters.Count > 0)
+                {
+                    var p = txtParameters.Values.FirstOrDefault();
+                    p.Focus();
+                }
+                else
+                {
+                    button1.Focus();
+                }
+            }));
+
+            if (!data.IsError)
+            {
+                ThreadPool.QueueUserWorkItem(InvokeTable, data);
             }
         }
 
@@ -358,7 +374,7 @@ namespace MySoft.PlatformService.WinForm
 
         private void InvokeTable(object state)
         {
-            var invokeData = state as InvokeResponse;
+            var invokeData = state as InvokeData;
             var container = JContainer.Parse(invokeData.Value);
 
             //获取DataView数据
@@ -624,6 +640,33 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
+            }
+        }
+
+        private void 查看缓存文件内容VToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                openFileDialog1.FileName = string.Empty;
+                openFileDialog1.Multiselect = false;
+                openFileDialog1.Filter = "缓存文件(*.dat)|*.dat";
+                var result = openFileDialog1.ShowDialog();
+
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    var filePath = openFileDialog1.FileName;
+                    var data = IoCHelper.GetCache(filePath);
+
+                    //设置响应信息
+                    SetInvokeResponse(new InvokeResponse(data.Value));
+
+                    MessageBox.Show(string.Format("缓存过期时间：{0}，记录数：{1}", data.ExpiredTime, data.Value.Count)
+                                        , "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

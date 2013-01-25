@@ -34,6 +34,8 @@ namespace MySoft.PlatformService.WinForm
             base.Value = data.Value;
             base.ElapsedTime = data.ElapsedTime;
             base.OutParameters = data.OutParameters;
+
+            this.ElapsedMilliseconds = data.ElapsedTime;
         }
 
         /// <summary>

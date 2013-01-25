@@ -19,7 +19,7 @@ namespace MySoft.IoC.Configuration
         private int maxCaller = ServiceConfig.DEFAULT_SERVER_MAXCALLER;         //默认并发数为10
         private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;             //默认超时为30秒
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;            //默认记录6小时
-        private bool enableCache = false;                                       //是否缓存
+        private bool enableCache = true;                                        //是否缓存
 
         /// <summary>
         /// 获取远程对象配置

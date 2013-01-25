@@ -198,8 +198,14 @@ namespace MySoft.IoC.HttpServer
         /// <returns></returns>
         private InvokeData GetInvokeData(IService service, InvokeMessage message)
         {
+            var conf = new CastleFactoryConfiguration
+            {
+                AppName = "HttpServer",
+                EnableCache = config.EnableCache
+            };
+
             //使用Invoke方式调用
-            using (var invoke = new InvokeCaller("HttpServer", container, service, null))
+            using (var invoke = new InvokeCaller(conf, container, service, null))
             {
                 return invoke.InvokeResponse(message);
             }

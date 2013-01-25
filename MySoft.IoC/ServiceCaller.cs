@@ -53,9 +53,9 @@ namespace MySoft.IoC
 
                     //实例化SyncCaller
                     if (config.EnableCache)
-                        syncCallers[type.FullName] = new SyncCaller(service, null, true);
+                        syncCallers[type.FullName] = new SyncCaller(service, null);
                     else
-                        syncCallers[type.FullName] = new SyncCaller(service, true);
+                        syncCallers[type.FullName] = new SyncCaller(service);
                 }
             }
         }
@@ -64,19 +64,25 @@ namespace MySoft.IoC
         /// 调用方法
         /// </summary>
         /// <param name="channel"></param>
-        /// <param name="caller"></param>
-        /// <param name="reqMsg"></param>
+        /// <param name="e"></param>
         /// <returns></returns>
-        public ResponseMessage InvokeResponse(IScsServerClient channel, AppCaller caller, RequestMessage reqMsg)
+        public ResponseMessage InvokeResponse(IScsServerClient channel, ICaller e)
         {
             //获取上下文
-            using (var context = GetOperationContext(channel, caller))
+            using (var context = GetOperationContext(channel, e.Caller))
             {
                 //解析服务
-                var syncCaller = GetAsyncCaller(caller);
+                var syncCaller = GetAsyncCaller(e.Caller);
+
+                byte[] buffer = null;
 
                 //异步调用服务
-                return syncCaller.Run(context, reqMsg);
+                var resMsg = syncCaller.Run(context, e.Request, out buffer);
+
+                //如果消息为null
+                if (resMsg == null) e.Buffer = buffer;
+
+                return resMsg;
             }
         }
 

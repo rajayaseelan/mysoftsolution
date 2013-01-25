@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Net.Sockets;
-using System.Threading;
 using Amib.Threading;
 using MySoft.IoC.Communication.Scs.Communication;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
@@ -14,9 +13,10 @@ namespace MySoft.IoC
     internal class ServiceChannel : IDisposable
     {
         private Action<CallEventArgs> callback;
+        private IServiceContainer container;
         private ServiceCaller caller;
         private ServerStatusService status;
-        private SmartThreadPool stp;
+        private SmartThreadPool smart;
         private IWorkItemsGroup group;
         private int timeout;
 
@@ -24,31 +24,22 @@ namespace MySoft.IoC
         /// 实例化ServiceChannel
         /// </summary>
         /// <param name="callback"></param>
+        /// <param name="container"></param>
         /// <param name="caller"></param>
         /// <param name="status"></param>
         /// <param name="maxCaller"></param>
         /// <param name="timeout"></param>
-        public ServiceChannel(Action<CallEventArgs> callback, ServiceCaller caller, ServerStatusService status, int maxCaller, int timeout)
+        public ServiceChannel(Action<CallEventArgs> callback, IServiceContainer container, ServiceCaller caller
+                                , ServerStatusService status, int maxCaller, int timeout)
         {
             this.callback = callback;
+            this.container = container;
             this.caller = caller;
             this.status = status;
-            this.stp = new SmartThreadPool(new STPStartInfo
-            {
-                IdleTimeout = timeout * 1000,
-                DisposeOfStateObjects = true,
-                CallToPostExecute = CallToPostExecute.Always,
-                ThreadPriority = ThreadPriority.Highest,
-                UseCallerCallContext = false,
-                UseCallerHttpContext = false,
-                MaxWorkerThreads = maxCaller
-            });
-
-            //创建一个工作组
-            this.group = stp.CreateWorkItemsGroup(3);
-            this.group.Start();
-
             this.timeout = timeout;
+            this.smart = new SmartThreadPool(timeout * 1000, maxCaller);
+            this.group = smart.CreateWorkItemsGroup(Environment.ProcessorCount);
+            this.group.Start();
         }
 
         /// <summary>
@@ -59,35 +50,26 @@ namespace MySoft.IoC
         public void SendResponse(IScsServerClient channel, CallerContext e)
         {
             //创建一个工作项
-            var item = group.QueueWorkItem((_channel, _context) =>
+            var worker = group.QueueWorkItem((_channel, _context) =>
             {
                 //调用响应信息
-                return caller.InvokeResponse(_channel, _context.Caller, _context.Request);
+                return caller.InvokeResponse(_channel, _context);
 
             }, channel, e);
 
-            try
-            {
-                //获取响应结果
-                e.Message = item.GetResult(TimeSpan.FromSeconds(timeout), true);
-            }
-            catch (WorkItemTimeoutException ex) //超时异常
+            //等待超时响应
+            if (!group.WaitForIdle(TimeSpan.FromSeconds(timeout)))
             {
                 //结束进程
-                item.Cancel(true);
+                worker.Cancel(true);
 
                 //获取异常响应
-                e.Message = GetTimeoutResponse(e.Request, TimeSpan.FromSeconds(timeout), ex.Message);
+                e.Message = GetTimeoutResponse(e.Request);
             }
-            catch (WorkItemResultException ex) //获取结果异常
+            else
             {
-                //获取异常响应
-                e.Message = IoCHelper.GetResponse(e.Request, ex.InnerException);
-            }
-            catch (Exception ex) //其它异常
-            {
-                //获取异常响应
-                e.Message = IoCHelper.GetResponse(e.Request, ex);
+                //获取结果
+                e.Message = worker.GetResult();
             }
 
             //处理上下文
@@ -98,19 +80,17 @@ namespace MySoft.IoC
         /// 获取超时响应信息
         /// </summary>
         /// <param name="reqMsg"></param>
-        /// <param name="timeout"></param>
-        /// <param name="message"></param>
         /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, TimeSpan timeout, string message)
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg)
         {
             //获取异常响应信息
-            var body = string.Format("Async call service ({0}, {1})  timeout ({2}) ms. {3}",
-                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds, message);
+            var body = string.Format("Async call service ({0}, {1})  timeout ({2}) ms.",
+                        reqMsg.ServiceName, reqMsg.MethodName, timeout * 1000);
 
             var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(body));
 
             //设置耗时时间
-            resMsg.ElapsedTime = (long)timeout.TotalMilliseconds;
+            resMsg.ElapsedTime = timeout * 1000;
 
             return resMsg;
         }
@@ -122,22 +102,23 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         private void HandleCallerContext(IScsServerClient channel, CallerContext e)
         {
-            if (e.Message == null) return;
-
-            //状态服务跳过
-            if (e.Request.ServiceName != typeof(IStatusService).FullName)
+            if (e.Message != null)
             {
-                //处理响应信息
-                HandleResponse(e.Caller, e.Message);
-            }
+                //不是从缓存读取，则响应与状态服务跳过
+                if (e.Request.ServiceName != typeof(IStatusService).FullName)
+                {
+                    //处理响应信息
+                    HandleResponse(e.Caller, e.Message);
+                }
 
-            //如果是Json方式调用，则需要处理异常
-            if (e.Request.InvokeMethod && e.Message.IsError)
-            {
-                //获取最底层异常信息
-                var error = ErrorHelper.GetInnerException(e.Message.Error);
+                //如果是Json方式调用，则需要处理异常
+                if (e.Request.InvokeMethod && e.Message.IsError)
+                {
+                    //获取最底层异常信息
+                    var error = ErrorHelper.GetInnerException(e.Message.Error);
 
-                e.Message.Error = new ApplicationException(error.Message);
+                    e.Message.Error = new ApplicationException(error.Message);
+                }
             }
 
             //发送消息
@@ -190,37 +171,27 @@ namespace MySoft.IoC
 
             try
             {
-                var message = new ScsResultMessage(e.Message, e.MessageId);
+                //如果没有返回消息，则退出
+                if (e.Buffer == null && e.Message == null) return;
+
+                IScsMessage message = null;
+
+                if (e.Buffer != null)
+                    message = new ScsRawDataMessage(e.Buffer, e.MessageId);
+                else
+                    message = new ScsResultMessage(e.Message, e.MessageId);
 
                 //发送消息
                 channel.SendMessage(message);
             }
-            catch (CommunicationException ex) { }
-            catch (ObjectDisposedException ex) { }
-            catch (InvalidOperationException ex) { }
-            catch (SocketException ex) { }
             catch (Exception ex)
             {
                 //获取异常响应
-                var body = string.Format("Sending messages error: {0}, service: ({1}, {2})"
-                                        , ex.ToString() //ErrorHelper.GetInnerException(ex).Message
-                                        , e.Caller.ServiceName, e.Caller.MethodName);
+                var title = string.Format("Sending message ({0}, {1}) error.", e.Caller.ServiceName, e.Caller.MethodName);
 
-                try
-                {
-                    var error = IoCHelper.GetException(e.Caller, body);
+                var error = IoCHelper.GetException(e.Caller, title, ex);
 
-                    var resMsg = IoCHelper.GetResponse(e.Request, error);
-                    var message = new ScsResultMessage(resMsg, e.MessageId);
-
-                    //发送消息
-                    channel.SendMessage(message);
-                }
-                catch (Exception inner) { }
-                finally
-                {
-                    throw IoCHelper.GetException(e.Caller, body, ex);
-                }
+                container.WriteError(error);
             }
         }
 
@@ -233,14 +204,15 @@ namespace MySoft.IoC
         {
             try
             {
-                this.group.WaitForIdle();
-                this.stp.Shutdown();
-                this.stp.Dispose();
+                this.group.WaitForIdle(TimeSpan.FromSeconds(timeout));
+                this.smart.Shutdown();
+                this.smart.Dispose();
             }
             catch (Exception ex) { }
             finally
             {
-                this.stp = null;
+                this.group = null;
+                this.smart = null;
                 this.callback = null;
                 this.caller = null;
                 this.status = null;

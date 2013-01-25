@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections;
-using System.Diagnostics;
+using System.Text;
+using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
+using MySoft.Security;
+using System.Diagnostics;
 
 namespace MySoft.IoC.Services
 {
@@ -14,18 +17,15 @@ namespace MySoft.IoC.Services
         private IService service;
         private IDataCache cache;
         private bool enabledCache;
-        private bool fromServer;
 
         /// <summary>
         /// 实例化SyncCaller
         /// </summary>
         /// <param name="service"></param>
-        /// <param name="fromServer"></param>
-        public SyncCaller(IService service, bool fromServer)
+        public SyncCaller(IService service)
         {
             this.service = service;
             this.enabledCache = false;
-            this.fromServer = fromServer;
         }
 
         /// <summary>
@@ -33,9 +33,8 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="service"></param>
         /// <param name="cache"></param>
-        /// <param name="fromServer"></param>
-        public SyncCaller(IService service, IDataCache cache, bool fromServer)
-            : this(service, fromServer)
+        public SyncCaller(IService service, IDataCache cache)
+            : this(service)
         {
             this.cache = cache;
             this.enabledCache = true;
@@ -44,35 +43,87 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取CallerKey
         /// </summary>
-        /// <param name="reqMsg"></param>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private string GetCallerKey(RequestMessage reqMsg, AppCaller caller)
+        private string GetCallerKey(AppCaller caller)
         {
             //对Key进行组装
-            return string.Format("{0}_Caller_{1}_{2}${3}${4}", (reqMsg.InvokeMethod ? "Invoke" : "Direct")
-                                , service.ServiceName, caller.ServiceName, caller.MethodName, caller.Parameters)
-                                .Replace(" ", "").Replace("\r\n", "").Replace("\t", "").ToLower();
+            var callKey = string.Format("{0}${1}${2}${3}", service.ServiceName
+                            , caller.ServiceName, caller.MethodName, caller.Parameters);
+
+            //返回加密Key
+            return MD5.HexHash(Encoding.Default.GetBytes(callKey));
         }
 
         /// <summary>
-        /// 异步调用服务
+        /// 同步调用服务
         /// </summary>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
         public ResponseMessage Run(OperationContext context, RequestMessage reqMsg)
         {
+            //开始一个记时器
+            var watch = Stopwatch.StartNew();
+
+            try
+            {
+                byte[] buffer = null;
+
+                //响应数据
+                var resMsg = Run(context, reqMsg, out buffer);
+
+                //反序列化成对象
+                if (resMsg == null && buffer != null)
+                {
+                    buffer = CompressionManager.DecompressGZip(buffer);
+                    resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
+
+                    //设置同步返回传输Id
+                    resMsg.TransactionId = reqMsg.TransactionId;
+                    resMsg.ElapsedTime = watch.ElapsedMilliseconds;
+                }
+
+                return resMsg;
+            }
+            catch (Exception ex)
+            {
+                //返回异常响应
+                return IoCHelper.GetResponse(reqMsg, ex);
+            }
+            finally
+            {
+                if (watch.IsRunning)
+                {
+                    watch.Stop();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 同步调用服务
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
+        public ResponseMessage Run(OperationContext context, RequestMessage reqMsg, out byte[] buffer)
+        {
+            buffer = null;
+
             //获取CallerKey
-            var callKey = GetCallerKey(reqMsg, context.Caller);
+            var callKey = GetCallerKey(context.Caller);
+
+            //如果是Invoke方式调用
+            if (reqMsg.InvokeMethod) callKey = string.Format("INVOKE_{0}", callKey);
 
             if (enabledCache)
             {
                 //从缓存获取数据
-                var resMsg = GetResponseFromCache(callKey, context, reqMsg);
+                buffer = GetResponseFromCache(callKey.ToLower(), context, reqMsg);
 
                 //从缓存中获取数据
-                if (resMsg != null) return resMsg;
+                if (buffer != null) return null;
             }
 
             //返回响应
@@ -87,18 +138,33 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
         {
+            //定义一个响应值
+            ResponseMessage resMsg = null;
+
             //设置上下文
             OperationContext.Current = context;
 
             try
             {
                 //响应结果，清理资源
-                return service.CallService(reqMsg);
+                resMsg = service.CallService(reqMsg);
+            }
+            catch (ThreadInterruptedException ex) { }
+            catch (ThreadAbortException ex)
+            {
+                Thread.ResetAbort();
+            }
+            catch (Exception ex)
+            {
+                //获取异常响应
+                resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {
                 OperationContext.Current = null;
             }
+
+            return resMsg;
         }
 
         /// <summary>
@@ -108,18 +174,18 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponseFromCache(string callKey, OperationContext context, RequestMessage reqMsg)
+        private byte[] GetResponseFromCache(string callKey, OperationContext context, RequestMessage reqMsg)
         {
             //从缓存中获取数据
             if (reqMsg.CacheTime <= 0) return null;
 
             //定义回调函数
-            Func<string, OperationContext, RequestMessage, ResponseMessage> func = null;
+            Func<string, OperationContext, RequestMessage, byte[]> func = null;
 
             if (cache == null)
             {
                 //如果是状态服务，则使用内部缓存
-                if (reqMsg.InvokeMethod || reqMsg.ServiceName == typeof(IStatusService).FullName)
+                if (reqMsg.ServiceName == typeof(IStatusService).FullName)
                 {
                     cache = InternalCache.Instance;
 
@@ -138,60 +204,7 @@ namespace MySoft.IoC.Services
                 func = GetResponseFromRemoteCache;
             }
 
-            return GetResponseMessage(func, callKey, context, reqMsg);
-        }
-
-        /// <summary>
-        /// 获取缓存
-        /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponseMessage(Func<string, OperationContext, RequestMessage, ResponseMessage> func,
-                                                    string callKey, OperationContext context, RequestMessage reqMsg)
-        {
-            //定义一个响应值
-            ResponseMessage resMsg = null;
-
-            var watch = Stopwatch.StartNew();
-
-            try
-            {
-                //调用服务
-                resMsg = func(callKey, context, reqMsg);
-
-                //返回新对象
-                resMsg = new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Error = resMsg.Error,
-                    Value = resMsg.Value
-                };
-            }
-            catch (Exception ex)
-            {
-                resMsg = IoCHelper.GetResponse(reqMsg, ex);
-            }
-            finally
-            {
-                if (watch.IsRunning)
-                {
-                    watch.Stop();
-                }
-            }
-
-            if (resMsg != null)
-            {
-                //设置耗时
-                resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
-            }
-
-            return resMsg;
+            return func(callKey, context, reqMsg);
         }
 
         /// <summary>
@@ -201,22 +214,35 @@ namespace MySoft.IoC.Services
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponseFromLocalCache(string callKey, OperationContext context, RequestMessage reqMsg)
+        private byte[] GetResponseFromLocalCache(string callKey, OperationContext context, RequestMessage reqMsg)
         {
             //双缓存保护获取方式
             var array = new ArrayList { context, reqMsg };
 
-            return ServiceCacheHelper<ResponseMessage>.Get(reqMsg.ServiceName, reqMsg.MethodName.Substring(reqMsg.MethodName.IndexOf(' ') + 1),
-                                                            callKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
+            var key = new CacheKey
+            {
+                UniqueId = callKey,
+                ServiceName = reqMsg.ServiceName,
+                MethodName = reqMsg.MethodName.Substring(reqMsg.MethodName.IndexOf(' ') + 1)
+            };
+
+            return ServiceCacheHelper.Get(key, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
                     {
                         var arr = state as ArrayList;
                         var _context = arr[0] as OperationContext;
                         var _reqMsg = arr[1] as RequestMessage;
 
-                        //异步请求响应数据
-                        return this.GetResponse(_context, _reqMsg);
+                        //同步请求响应数据
+                        var resMsg = GetResponse(_context, _reqMsg);
 
-                    }, array, CheckResponse);
+                        if (CheckResponse(resMsg))
+                        {
+                            return SerializationManager.SerializeBin(resMsg);
+                        }
+
+                        return null;
+
+                    }, array);
         }
 
         /// <summary>
@@ -226,31 +252,34 @@ namespace MySoft.IoC.Services
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponseFromRemoteCache(string callKey, OperationContext context, RequestMessage reqMsg)
+        private byte[] GetResponseFromRemoteCache(string callKey, OperationContext context, RequestMessage reqMsg)
         {
             //定义一个响应值
-            ResponseMessage resMsg = null;
+            byte[] buffer = null;
 
             try
             {
                 //从缓存获取
-                resMsg = cache.Get<ResponseMessage>(callKey);
+                buffer = cache.Get<byte[]>(callKey);
             }
             catch
             {
             }
 
-            if (resMsg == null)
+            if (buffer == null)
             {
-                //异步请求响应数据
-                resMsg = this.GetResponse(context, reqMsg);
+                //同步请求响应数据
+                var resMsg = GetResponse(context, reqMsg);
 
                 if (CheckResponse(resMsg))
                 {
                     try
                     {
+                        buffer = SerializationManager.SerializeBin(resMsg);
+                        buffer = CompressionManager.CompressGZip(buffer);
+
                         //插入缓存
-                        cache.Insert(callKey, resMsg, TimeSpan.FromSeconds(reqMsg.CacheTime));
+                        cache.Insert(callKey, buffer, TimeSpan.FromSeconds(reqMsg.CacheTime));
                     }
                     catch
                     {
@@ -258,7 +287,7 @@ namespace MySoft.IoC.Services
                 }
             }
 
-            return resMsg;
+            return buffer;
         }
 
         /// <summary>

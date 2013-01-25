@@ -1,13 +1,30 @@
 ﻿using System;
-using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {
+    internal interface ICaller
+    {
+        /// <summary>
+        /// Caller信息
+        /// </summary>
+        AppCaller Caller { get; set; }
+
+        /// <summary>
+        /// 请求信息
+        /// </summary>
+        RequestMessage Request { get; set; }
+
+        /// <summary>
+        /// 缓冲数据
+        /// </summary>
+        byte[] Buffer { get; set; }
+    }
+
     /// <summary>
     /// 调用上下文
     /// </summary>
-    internal class CallerContext : IDisposable
+    internal class CallerContext : ICaller, IDisposable
     {
         /// <summary>
         /// 消息Id
@@ -29,6 +46,11 @@ namespace MySoft.IoC
         /// </summary>
         public ResponseMessage Message { get; set; }
 
+        /// <summary>
+        /// 缓冲数据
+        /// </summary>
+        public byte[] Buffer { get; set; }
+
         #region IDisposable 成员
 
         public void Dispose()
@@ -36,6 +58,7 @@ namespace MySoft.IoC
             this.Caller = null;
             this.Request = null;
             this.Message = null;
+            this.Buffer = null;
         }
 
         #endregion

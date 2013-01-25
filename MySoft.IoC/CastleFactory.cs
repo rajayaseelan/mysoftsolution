@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using MySoft.Security;
 
 namespace MySoft.IoC
 {
@@ -515,7 +517,7 @@ namespace MySoft.IoC
         private InvokeData GetInvokeData(IService service, InvokeMessage message)
         {
             //调用分布式服务
-            using (var caller = new InvokeCaller(config.AppName, container, service, cache))
+            using (var caller = new InvokeCaller(config, container, service, cache))
             {
                 return caller.InvokeResponse(message);
             }
@@ -615,17 +617,20 @@ namespace MySoft.IoC
 
                 if (!string.IsNullOrEmpty(config.ProxyServer))
                 {
+                    var cacheKey = string.Format("{0}${1}", config.ProxyServer, nodeKey);
+
                     //从缓存中获取节点
-                    var serverKey = string.Format("{0}${1}", config.ProxyServer, nodeKey);
+                    return CacheHelper<IList<ServerNode>>.Get(LocalCacheType.File, cacheKey, TimeSpan.FromMinutes(5)
+                                                        , state =>
+                                                        {
+                                                            var arr = state as ArrayList;
+                                                            var key = Convert.ToString(arr[0]);
+                                                            var name = Convert.ToString(arr[1]);
 
-                    return ServiceCacheHelper<IList<ServerNode>>.Get(serviceName, "GetServerNodes", serverKey, TimeSpan.FromMinutes(5), state =>
-                    {
-                        var arr = state as ArrayList;
-                        var key = Convert.ToString(arr[0]);
-                        var name = Convert.ToString(arr[1]);
-                        return GetServerNodesFromChannel(key, name);
+                                                            //获取节点
+                                                            return GetServerNodesFromChannel(key, name);
 
-                    }, new ArrayList { nodeKey, serviceName });
+                                                        }, new ArrayList { nodeKey, serviceName });
                 }
 
                 //返回空列表

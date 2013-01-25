@@ -1,5 +1,6 @@
 ﻿using System;
 using MySoft.Cache;
+using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 
@@ -10,7 +11,7 @@ namespace MySoft.IoC
     /// </summary>
     public class InvokeCaller : IDisposable
     {
-        private string appName;
+        private CastleFactoryConfiguration config;
         private string hostName;
         private string ipAddress;
         private IService service;
@@ -20,18 +21,21 @@ namespace MySoft.IoC
         /// <summary>
         /// 实例化InvokeCaller
         /// </summary>
-        /// <param name="appName"></param>
+        /// <param name="config"></param>
         /// <param name="container"></param>
         /// <param name="service"></param>
         /// <param name="cache"></param>
-        public InvokeCaller(string appName, IContainer container, IService service, IDataCache cache)
+        public InvokeCaller(CastleFactoryConfiguration config, IContainer container, IService service, IDataCache cache)
         {
-            this.appName = appName;
+            this.config = config;
             this.service = service;
             this.container = container;
 
             //实例化异步服务
-            this.syncCaller = new SyncCaller(service, cache, false);
+            if (config.EnableCache)
+                this.syncCaller = new SyncCaller(service, cache);
+            else
+                this.syncCaller = new SyncCaller(service);
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -49,7 +53,7 @@ namespace MySoft.IoC
             var reqMsg = new RequestMessage
             {
                 InvokeMethod = true,
-                AppName = appName,                                      //应用名称
+                AppName = config.AppName,                               //应用名称
                 HostName = hostName,                                    //客户端名称
                 IPAddress = ipAddress,                                  //客户端IP地址
                 ServiceName = message.ServiceName,                      //服务名称

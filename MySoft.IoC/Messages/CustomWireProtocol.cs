@@ -25,22 +25,6 @@ namespace MySoft.IoC.Messages
         public CustomWireProtocol(bool compress)
         {
             this.compress = compress;
-
-            #region 压缩解压缩
-
-            //bytes = CompressionManager.CompressSharpZip(bytes);
-            //bytes = CompressionManager.DecompressSharpZip(bytes);
-
-            //bytes = CompressionManager.Compress7Zip(bytes);
-            //bytes = CompressionManager.Decompress7Zip(bytes);
-
-            //bytes = CompressionManager.CompressDeflate(bytes);
-            //bytes = CompressionManager.DecompressDeflate(bytes);
-
-            //bytes = CompressionManager.CompressGZip(bytes);
-            //bytes = CompressionManager.DecompressGZip(bytes);
-
-            #endregion
         }
 
         /// <summary>
@@ -50,28 +34,28 @@ namespace MySoft.IoC.Messages
         /// <returns></returns>
         protected override byte[] SerializeMessage(IScsMessage message)
         {
-            var bytes = base.SerializeMessage(message);
+            var buffer = base.SerializeMessage(message);
             if (compress)
             {
-                bytes = CompressionManager.CompressGZip(bytes);
+                buffer = CompressionManager.CompressSharpZip(buffer);
             }
 
-            return bytes;
+            return buffer;
         }
 
         /// <summary>
         /// 反序列化流
         /// </summary>
-        /// <param name="bytes"></param>
+        /// <param name="buffer"></param>
         /// <returns></returns>
-        protected override IScsMessage DeserializeMessage(byte[] bytes)
+        protected override IScsMessage DeserializeMessage(byte[] buffer)
         {
             if (compress)
             {
-                bytes = CompressionManager.DecompressGZip(bytes);
+                buffer = CompressionManager.DecompressSharpZip(buffer);
             }
 
-            return base.DeserializeMessage(bytes);
+            return base.DeserializeMessage(buffer);
         }
     }
 }

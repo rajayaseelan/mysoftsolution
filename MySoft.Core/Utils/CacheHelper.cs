@@ -279,6 +279,19 @@ namespace MySoft
         private static readonly Hashtable hashtable = new Hashtable();
 
         /// <summary>
+        /// 从文件读取对象
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static CacheObject<T> GetCache(string filePath)
+        {
+            var key = Path.GetFileNameWithoutExtension(filePath);
+
+            //从文件读取对象
+            return GetCache(LocalCacheType.File, filePath, key, TimeSpan.MaxValue);
+        }
+
+        /// <summary>
         /// （本方法仅适应于本地缓存）
         /// 从缓存中获取数据，如获取失败，返回从指定的方法中获取
         /// </summary>
@@ -395,7 +408,7 @@ namespace MySoft
         /// <returns></returns>
         public static T Get(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
         {
-            var cacheObj = GetCache(type, key, timeout);
+            var cacheObj = GetCache(type, GetFilePath(key), key, timeout);
 
             if (cacheObj == null)
             {
@@ -428,12 +441,10 @@ namespace MySoft
 
                     if (success)
                     {
-                        cacheObj = InsertCache(type, key, internalObject, timeout);
+                        InsertCache(type, GetFilePath(key), key, internalObject, timeout);
                     }
-                    else
-                    {
-                        return internalObject;
-                    }
+
+                    return internalObject;
                 }
             }
             else
@@ -496,7 +507,7 @@ namespace MySoft
 
                     if (success)
                     {
-                        InsertCache(type, key, internalObject, timeout);
+                        InsertCache(type, GetFilePath(key), key, internalObject, timeout);
                     }
                 }
             }
@@ -511,7 +522,7 @@ namespace MySoft
             }
             finally
             {
-                lock (hashtable)
+                lock (hashtable.SyncRoot)
                 {
                     hashtable.Remove(key);
                 }
@@ -524,27 +535,38 @@ namespace MySoft
         /// 获取缓存
         /// </summary>
         /// <param name="type"></param>
+        /// <param name="path"></param>
         /// <param name="key"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        private static CacheObject<T> GetCache(LocalCacheType type, string key, TimeSpan timeout)
+        private static CacheObject<T> GetCache(LocalCacheType type, string path, string key, TimeSpan timeout)
         {
-            var cacheObj = CacheHelper.Get(key);
+            var cacheObj = CacheHelper.Get<CacheObject<T>>(key);
+
             if (type == LocalCacheType.File && cacheObj == null)
             {
                 try
                 {
-                    var path = GetFilePath(key);
-
-                    if (File.Exists(path))
+                    lock (hashtable.SyncRoot)
                     {
-                        var buffer = File.ReadAllBytes(path);
-                        buffer = CompressionManager.DecompressGZip(buffer);
-                        cacheObj = SerializationManager.DeserializeBin(buffer);
+                        if (File.Exists(path))
+                        {
+                            var buffer = File.ReadAllBytes(path);
+                            buffer = CompressionManager.DecompressGZip(buffer);
+                            cacheObj = SerializationManager.DeserializeBin<CacheObject<T>>(buffer);
 
-                        //默认缓存5秒
-                        CacheHelper.Insert(key, cacheObj, (int)Math.Min(5, timeout.TotalSeconds));
+                            if (timeout != TimeSpan.MaxValue)
+                            {
+                                //默认缓存5秒
+                                CacheHelper.Insert(key, cacheObj, (int)Math.Min(5, timeout.TotalSeconds));
+                            }
+                        }
                     }
+                }
+                catch (ThreadInterruptedException ex) { }
+                catch (ThreadAbortException ex)
+                {
+                    Thread.ResetAbort();
                 }
                 catch (IOException ex) { }
                 catch (Exception ex)
@@ -553,18 +575,18 @@ namespace MySoft
                 }
             }
 
-            return cacheObj as CacheObject<T>;
+            return cacheObj;
         }
 
         /// <summary>
         /// 插入缓存
         /// </summary>
         /// <param name="type"></param>
+        /// <param name="path"></param>
         /// <param name="key"></param>
         /// <param name="internalObject"></param>
         /// <param name="timeout"></param>
-        /// <returns></returns>
-        private static CacheObject<T> InsertCache(LocalCacheType type, string key, T internalObject, TimeSpan timeout)
+        private static void InsertCache(LocalCacheType type, string path, string key, T internalObject, TimeSpan timeout)
         {
             var cacheObj = new CacheObject<T>
             {
@@ -576,14 +598,21 @@ namespace MySoft
             {
                 try
                 {
-                    var path = GetFilePath(key);
-                    var dir = Path.GetDirectoryName(path);
+                    lock (hashtable.SyncRoot)
+                    {
+                        var dir = Path.GetDirectoryName(path);
 
-                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-                    var buffer = SerializationManager.SerializeBin(cacheObj);
-                    buffer = CompressionManager.CompressGZip(buffer);
-                    File.WriteAllBytes(path, buffer);
+                        var buffer = SerializationManager.SerializeBin(cacheObj);
+                        buffer = CompressionManager.CompressGZip(buffer);
+                        File.WriteAllBytes(path, buffer);
+                    }
+                }
+                catch (ThreadInterruptedException ex) { }
+                catch (ThreadAbortException ex)
+                {
+                    Thread.ResetAbort();
                 }
                 catch (IOException ex) { }
                 catch (Exception ex)
@@ -593,11 +622,9 @@ namespace MySoft
             }
             else
             {
-                //默认缓存5秒
+                //默认缓存1天
                 CacheHelper.Insert(key, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
             }
-
-            return cacheObj;
         }
 
         /// <summary>

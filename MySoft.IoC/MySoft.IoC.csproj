@@ -62,7 +62,7 @@
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="CallerContext.cs" />
     <Compile Include="Common\CacheHelper.cs" />
-    <Compile Include="Common\CacheObject.cs" />
+    <Compile Include="Common\CacheKey.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IServiceRecorder.cs" />
     <Compile Include="Common\RecordEventArgs.cs" />

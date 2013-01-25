@@ -49,7 +49,7 @@ namespace MySoft.IoC.Services
         /// <returns>The msg.</returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            //开始计时
+            //开始一个记时器
             var watch = Stopwatch.StartNew();
 
             try

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Sockets;
 using MySoft.IoC.Communication.Scs.Client;
 using MySoft.IoC.Communication.Scs.Communication;
@@ -169,6 +170,40 @@ namespace MySoft.IoC
                 //消息类型转换
                 var data = e.Message as ScsResultMessage;
                 message.Result = data.MessageValue;
+            }
+            else if (e.Message is ScsRawDataMessage)
+            {
+                //开始一个记时器
+                var watch = Stopwatch.StartNew();
+
+                try
+                {
+                    //获取响应信息
+                    var data = e.Message as ScsRawDataMessage;
+                    var transactionId = new Guid(e.Message.RepliedMessageId);
+                    var buffer = CompressionManager.DecompressGZip(data.MessageData);
+                    var resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
+
+                    //设置同步返回传输Id
+                    resMsg.TransactionId = transactionId;
+                    resMsg.ElapsedTime = watch.ElapsedMilliseconds;
+
+                    message.Result = resMsg;
+                }
+                catch (Exception ex)
+                {
+                    //出错时响应错误
+                    client_MessageError(sender, new ErrorEventArgs(ex));
+
+                    return;
+                }
+                finally
+                {
+                    if (watch.IsRunning)
+                    {
+                        watch.Stop();
+                    }
+                }
             }
 
             //把数据发送到客户端

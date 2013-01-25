@@ -49,9 +49,9 @@ namespace MySoft.IoC
 
             //实例化异步服务
             if (config.EnableCache)
-                this.syncCaller = new SyncCaller(service, cache, false);
+                this.syncCaller = new SyncCaller(service, cache);
             else
-                this.syncCaller = new SyncCaller(service, false);
+                this.syncCaller = new SyncCaller(service);
 
             var methods = CoreHelper.GetMethodsFromType(serviceType);
             foreach (var method in methods)
@@ -93,7 +93,7 @@ namespace MySoft.IoC
                 TransactionId = Guid.NewGuid(),                 //传输ID号
                 MethodInfo = method,                            //设置调用方法
                 Parameters = collection,                        //设置参数
-                RespType = ResponseType.Binary              //数据类型
+                RespType = ResponseType.Binary                  //数据类型
             };
 
             //设置缓存时间
@@ -136,7 +136,7 @@ namespace MySoft.IoC
                 //写日志开始
                 logger.BeginRequest(reqMsg);
 
-                //开始计时
+                //开始一个记时器
                 var watch = Stopwatch.StartNew();
 
                 try
