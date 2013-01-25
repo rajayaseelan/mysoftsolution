@@ -10,6 +10,8 @@ namespace MySoft.IoC
     /// </summary>
     internal static class ServiceCacheHelper
     {
+        private const int UPDATE_TIMEOUT = 30;
+
         /// <summary>
         /// 从文件读取对象
         /// </summary>
@@ -20,7 +22,7 @@ namespace MySoft.IoC
             var key = Path.GetFileNameWithoutExtension(filePath);
 
             //从文件读取对象
-            return GetCache(filePath, key, TimeSpan.MaxValue);
+            return GetCache(filePath, key);
         }
 
         /// <summary>
@@ -48,17 +50,17 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static byte[] Get(CacheKey key, TimeSpan timeout, Func<object, byte[]> func, object state)
         {
-            var cacheObj = GetCache(GetFilePath(key), key.UniqueId, timeout);
+            var cacheObj = GetCache(GetFilePath(key), key.UniqueId);
 
             if (cacheObj == null)
             {
                 //获取数据缓存
-                return GetUpdateBuffer(key, timeout, func, state);
+                return GetUpdateBuffer(key, timeout, func, state, false);
             }
             else if (cacheObj.ExpiredTime < DateTime.Now)
             {
                 //如果数据过期，则更新之
-                var buffer = GetUpdateBuffer(key, timeout, func, state);
+                var buffer = GetUpdateBuffer(key, timeout, func, state, true);
 
                 if (buffer != null) return buffer;
             }
@@ -73,25 +75,47 @@ namespace MySoft.IoC
         /// <param name="timeout"></param>
         /// <param name="func"></param>
         /// <param name="state"></param>
+        /// <param name="async"></param>
         /// <returns></returns>
-        private static byte[] GetUpdateBuffer(CacheKey key, TimeSpan timeout, Func<object, byte[]> func, object state)
+        private static byte[] GetUpdateBuffer(CacheKey key, TimeSpan timeout, Func<object, byte[]> func, object state, bool async)
         {
             byte[] buffer = null;
 
             try
             {
-                buffer = func(state);
+                if (async)
+                {
+                    var ar = func.BeginInvoke(state, null, null);
+
+                    //等待30秒超时
+                    if (ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(UPDATE_TIMEOUT)))
+                    {
+                        buffer = func.EndInvoke(ar);
+
+                        ar.AsyncWaitHandle.Close();
+                    }
+                }
+                else
+                {
+                    buffer = func(state);
+                }
             }
             catch (ThreadInterruptedException ex) { }
             catch (ThreadAbortException ex)
             {
                 Thread.ResetAbort();
             }
-
-            if (buffer != null)
+            catch (Exception ex)
             {
-                //插入缓存
-                InsertCache(GetFilePath(key), key.UniqueId, buffer, timeout);
+                SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
+            }
+            finally
+            {
+                if (buffer != null)
+                {
+                    //插入缓存
+                    InsertCache(GetFilePath(key), key.UniqueId, buffer, timeout);
+                }
             }
 
             return buffer;
@@ -102,9 +126,8 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="path"></param>
         /// <param name="key"></param>
-        /// <param name="timeout"></param>
         /// <returns></returns>
-        private static CacheObject<byte[]> GetCache(string path, string key, TimeSpan timeout)
+        private static CacheObject<byte[]> GetCache(string path, string key)
         {
             var cacheObj = CacheHelper.Get<CacheObject<byte[]>>(key);
 
@@ -157,7 +180,7 @@ namespace MySoft.IoC
 
                 File.WriteAllBytes(path, SerializationManager.SerializeBin(cacheObj));
 
-                //默认缓存5秒
+                //默认缓存30秒
                 CacheHelper.Insert(key, cacheObj, (int)Math.Min(30, timeout.TotalSeconds));
             }
             catch (ThreadInterruptedException ex) { }

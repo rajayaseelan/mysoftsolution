@@ -8,7 +8,6 @@ using System.Web;
 using System.Web.Caching;
 using MySoft.Logger;
 using MySoft.Security;
-using MySoft.Threading;
 
 namespace MySoft
 {
@@ -272,12 +271,9 @@ namespace MySoft
     /// </summary>
     public static class CacheHelper<T>
     {
-        #region 数据缓存
+        private const int UPDATE_TIMEOUT = 30;
 
-        /// <summary>
-        /// Hashtable.
-        /// </summary>
-        private static readonly Hashtable hashtable = new Hashtable();
+        #region 数据缓存
 
         /// <summary>
         /// 从文件读取对象
@@ -289,7 +285,7 @@ namespace MySoft
             var key = Path.GetFileNameWithoutExtension(filePath);
 
             //从文件读取对象
-            return GetCache(LocalCacheType.File, filePath, key, TimeSpan.MaxValue);
+            return GetCache(LocalCacheType.File, filePath, key);
         }
 
         /// <summary>
@@ -409,109 +405,56 @@ namespace MySoft
         /// <returns></returns>
         public static T Get(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
         {
-            var cacheObj = GetCache(type, GetFilePath(key), key, timeout);
+            var cacheObj = GetCache(type, GetFilePath(key), key);
 
             if (cacheObj == null)
             {
-                T internalObject = default(T);
-
-                try
-                {
-                    internalObject = func(state);
-                }
-                catch (ThreadInterruptedException ex) { }
-                catch (ThreadAbortException ex)
-                {
-                    Thread.ResetAbort();
-                }
-
-                if (internalObject != null)
-                {
-                    var success = true;
-                    if (pred != null)
-                    {
-                        try
-                        {
-                            success = pred(internalObject);
-                        }
-                        catch
-                        {
-                            success = false;
-                        }
-                    }
-
-                    if (success)
-                    {
-                        InsertCache(type, GetFilePath(key), key, internalObject, timeout);
-                    }
-
-                    return internalObject;
-                }
+                //获取更新对象
+                return GetUpdateObject(type, key, timeout, func, state, pred, false);
             }
-            else
+            else if (cacheObj.ExpiredTime < DateTime.Now) //如果数据过期，则更新之
             {
                 //如果数据过期，则更新之
-                if (cacheObj.ExpiredTime < DateTime.Now)
-                {
-                    lock (hashtable.SyncRoot)
-                    {
-                        if (!hashtable.ContainsKey(key))
-                        {
-                            hashtable[key] = new ArrayList { type, timeout, func, state, pred };
+                var internalObject = GetUpdateObject(type, key, timeout, func, state, pred, true);
 
-                            //异步更新
-                            ManagedThreadPool.QueueUserWorkItem(WaitCallback, key);
-                        }
-                    }
-                }
+                if (internalObject != null) return internalObject;
             }
-
-            if (cacheObj == null) return default(T);
 
             return cacheObj.Value;
         }
 
-        #endregion
-
         /// <summary>
-        /// 缓存回调
+        /// 获取更新对象
         /// </summary>
+        /// <param name="type"></param>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <param name="func"></param>
         /// <param name="state"></param>
-        private static void WaitCallback(object state)
+        /// <param name="pred"></param>
+        /// <param name="async"></param>
+        /// <returns></returns>
+        private static T GetUpdateObject(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred, bool async)
         {
-            var key = Convert.ToString(state);
-            if (string.IsNullOrEmpty(key)) return;
+            T internalObject = default(T);
 
             try
             {
-                var arr = hashtable[key] as ArrayList;
-                var _type = (LocalCacheType)arr[0];
-                var _timeout = (TimeSpan)arr[1];
-                var _func = arr[2] as Func<object, T>;
-                var _state = arr[3];
-                var _pred = arr[4] as Predicate<T>;
-
-                var internalObject = _func(_state);
-
-                if (internalObject != null)
+                if (async)
                 {
-                    var success = true;
-                    if (_pred != null)
-                    {
-                        try
-                        {
-                            success = _pred(internalObject);
-                        }
-                        catch
-                        {
-                            success = false;
-                        }
-                    }
+                    var ar = func.BeginInvoke(state, null, null);
 
-                    if (success)
+                    //等待30秒超时
+                    if (ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(UPDATE_TIMEOUT)))
                     {
-                        InsertCache(_type, GetFilePath(key), key, internalObject, _timeout);
+                        internalObject = func.EndInvoke(ar);
+
+                        ar.AsyncWaitHandle.Close();
                     }
+                }
+                else
+                {
+                    internalObject = func(state);
                 }
             }
             catch (ThreadInterruptedException ex) { }
@@ -523,14 +466,32 @@ namespace MySoft
             {
                 SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
             }
-            finally
+
+            if (internalObject != null)
             {
-                lock (hashtable.SyncRoot)
+                var success = true;
+                if (pred != null)
                 {
-                    hashtable.Remove(key);
+                    try
+                    {
+                        success = pred(internalObject);
+                    }
+                    catch
+                    {
+                        success = false;
+                    }
+                }
+
+                if (success)
+                {
+                    InsertCache(type, GetFilePath(key), key, internalObject, timeout);
                 }
             }
+
+            return internalObject;
         }
+
+        #endregion
 
         /// <summary>
         /// 获取缓存
@@ -538,9 +499,8 @@ namespace MySoft
         /// <param name="type"></param>
         /// <param name="path"></param>
         /// <param name="key"></param>
-        /// <param name="timeout"></param>
         /// <returns></returns>
-        private static CacheObject<T> GetCache(LocalCacheType type, string path, string key, TimeSpan timeout)
+        private static CacheObject<T> GetCache(LocalCacheType type, string path, string key)
         {
             var cacheObj = CacheHelper.Get<CacheObject<T>>(key);
 
@@ -548,14 +508,11 @@ namespace MySoft
             {
                 try
                 {
-                    lock (hashtable.SyncRoot)
+                    if (File.Exists(path))
                     {
-                        if (File.Exists(path))
-                        {
-                            var buffer = File.ReadAllBytes(path);
-                            buffer = CompressionManager.DecompressGZip(buffer);
-                            cacheObj = SerializationManager.DeserializeBin<CacheObject<T>>(buffer);
-                        }
+                        var buffer = File.ReadAllBytes(path);
+                        buffer = CompressionManager.DecompressGZip(buffer);
+                        cacheObj = SerializationManager.DeserializeBin<CacheObject<T>>(buffer);
                     }
                 }
                 catch (ThreadInterruptedException ex) { }
@@ -593,19 +550,16 @@ namespace MySoft
             {
                 try
                 {
-                    lock (hashtable.SyncRoot)
-                    {
-                        var dir = Path.GetDirectoryName(path);
+                    var dir = Path.GetDirectoryName(path);
 
-                        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-                        var buffer = SerializationManager.SerializeBin(cacheObj);
-                        buffer = CompressionManager.CompressGZip(buffer);
-                        File.WriteAllBytes(path, buffer);
+                    var buffer = SerializationManager.SerializeBin(cacheObj);
+                    buffer = CompressionManager.CompressGZip(buffer);
+                    File.WriteAllBytes(path, buffer);
 
-                        //默认缓存30秒
-                        CacheHelper.Insert(key, cacheObj, (int)Math.Min(30, timeout.TotalSeconds));
-                    }
+                    //默认缓存30秒
+                    CacheHelper.Insert(key, cacheObj, (int)Math.Min(30, timeout.TotalSeconds));
                 }
                 catch (ThreadInterruptedException ex) { }
                 catch (ThreadAbortException ex)
