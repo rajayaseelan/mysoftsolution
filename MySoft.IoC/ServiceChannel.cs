@@ -1,9 +1,11 @@
 ﻿using System;
-using Amib.Threading;
+using System.Collections;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Services;
+using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -16,8 +18,7 @@ namespace MySoft.IoC
         private IServiceContainer container;
         private ServiceCaller caller;
         private ServerStatusService status;
-        private SmartThreadPool smart;
-        private IWorkItemsGroup group;
+        private Semaphore semaphore;
         private int timeout;
 
         /// <summary>
@@ -37,9 +38,7 @@ namespace MySoft.IoC
             this.caller = caller;
             this.status = status;
             this.timeout = timeout;
-            this.smart = new SmartThreadPool(timeout * 1000, maxCaller);
-            this.group = smart.CreateWorkItemsGroup(Environment.ProcessorCount);
-            this.group.Start();
+            this.semaphore = new Semaphore(maxCaller);
         }
 
         /// <summary>
@@ -49,31 +48,70 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         public void SendResponse(IScsServerClient channel, CallerContext e)
         {
-            //创建一个工作项
-            var worker = group.QueueWorkItem((_channel, _context) =>
+            //请求一个控制器
+            semaphore.WaitOne();
+
+            try
             {
-                //调用响应信息
-                return caller.InvokeResponse(_channel, _context);
+                using (var waitResult = new WaitResult(e.Request))
+                {
+                    using (var afc = System.Threading.ExecutionContext.SuppressFlow())
+                    {
+                        //创建一个工作项
+                        ManagedThreadPool.QueueUserWorkItem(WaitCallback, new ArrayList { channel, e, waitResult });
+                    }
 
-            }, channel, e);
+                    //等待超时响应
+                    if (!waitResult.WaitOne(TimeSpan.FromSeconds(timeout)))
+                    {
+                        //获取异常响应
+                        e.Message = GetTimeoutResponse(e.Request);
+                    }
+                    else
+                    {
+                        //正常响应信息
+                        e.Message = waitResult.Message;
+                    }
+                }
 
-            //等待超时响应
-            if (!group.WaitForIdle(TimeSpan.FromSeconds(timeout)))
-            {
-                //结束进程
-                worker.Cancel(true);
-
-                //获取异常响应
-                e.Message = GetTimeoutResponse(e.Request);
+                //处理上下文
+                HandleCallerContext(channel, e);
             }
-            else
+            finally
             {
-                //获取结果
-                e.Message = worker.GetResult();
+                //释放一个控制器
+                semaphore.AddOne();
             }
+        }
 
-            //处理上下文
-            HandleCallerContext(channel, e);
+        /// <summary>
+        /// 等待回调
+        /// </summary>
+        /// <param name="state"></param>
+        private void WaitCallback(object state)
+        {
+            try
+            {
+                var arr = state as ArrayList;
+                var _channel = arr[0] as IScsServerClient;
+                var _context = arr[1] as CallerContext;
+                var _waitResult = arr[2] as WaitResult;
+
+                //调用器为null表示已经退出
+                if (_context.Caller == null) return;
+
+                //如果通道状态为未连接，也退出
+                if (_channel.CommunicationState == CommunicationStates.Connected)
+                {
+                    //调用响应信息
+                    var resMsg = caller.InvokeResponse(_channel, _context);
+
+                    _waitResult.Set(resMsg);
+                }
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
         /// <summary>
@@ -202,21 +240,9 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            try
-            {
-                this.group.WaitForIdle(TimeSpan.FromSeconds(timeout));
-                this.smart.Shutdown();
-                this.smart.Dispose();
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                this.group = null;
-                this.smart = null;
-                this.callback = null;
-                this.caller = null;
-                this.status = null;
-            }
+            this.callback = null;
+            this.caller = null;
+            this.status = null;
         }
 
         #endregion

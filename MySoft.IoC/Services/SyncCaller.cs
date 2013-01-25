@@ -158,34 +158,27 @@ namespace MySoft.IoC.Services
             //从缓存中获取数据
             if (reqMsg.CacheTime <= 0) return null;
 
-            //获取CallerKey
-            var callKey = GetCallerKey(context.Caller);
-
             //定义回调函数
             Func<string, OperationContext, RequestMessage, byte[]> func = null;
 
             if (cache == null)
             {
-                //如果是状态服务，则使用内部缓存
-                if (reqMsg.InvokeMethod)
-                {
-                    callKey = string.Format("invoke_{0}", callKey);
-
-                    cache = InternalCache.Instance;
-
-                    //获取响应从远程缓存
-                    func = GetResponseFromRemoteCache;
-                }
-                else
-                {
-                    //获取响应从本地缓存
-                    func = GetResponseFromLocalCache;
-                }
+                //获取响应从本地缓存
+                func = GetResponseFromLocalCache;
             }
             else
             {
                 //获取响应从远程缓存
                 func = GetResponseFromRemoteCache;
+            }
+
+            //获取CallerKey
+            var callKey = GetCallerKey(context.Caller);
+
+            //如果是状态服务，则使用内部缓存
+            if (reqMsg.InvokeMethod)
+            {
+                callKey = string.Format("invoke_{0}", callKey);
             }
 
             return func(callKey, context, reqMsg);

@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Caching;
 using MySoft.Logger;
 using MySoft.Security;
+using MySoft.Threading;
 
 namespace MySoft
 {
@@ -456,10 +457,10 @@ namespace MySoft
                     {
                         if (!hashtable.ContainsKey(key))
                         {
-                            hashtable[key] = new ArrayList { type, timeout, func, pred };
+                            hashtable[key] = new ArrayList { type, timeout, func, state, pred };
 
                             //异步更新
-                            func.BeginInvoke(state, AsyncCallback, key);
+                            ManagedThreadPool.QueueUserWorkItem(WaitCallback, key);
                         }
                     }
                 }
@@ -475,29 +476,31 @@ namespace MySoft
         /// <summary>
         /// 缓存回调
         /// </summary>
-        /// <param name="ar"></param>
-        private static void AsyncCallback(IAsyncResult ar)
+        /// <param name="state"></param>
+        private static void WaitCallback(object state)
         {
-            var key = Convert.ToString(ar.AsyncState);
+            var key = Convert.ToString(state);
+            if (string.IsNullOrEmpty(key)) return;
 
             try
             {
                 var arr = hashtable[key] as ArrayList;
-                var type = (LocalCacheType)arr[0];
-                var timeout = (TimeSpan)arr[1];
-                var func = arr[2] as Func<object, T>;
-                var pred = arr[3] as Predicate<T>;
+                var _type = (LocalCacheType)arr[0];
+                var _timeout = (TimeSpan)arr[1];
+                var _func = arr[2] as Func<object, T>;
+                var _state = arr[3];
+                var _pred = arr[4] as Predicate<T>;
 
-                var internalObject = func.EndInvoke(ar);
+                var internalObject = _func(_state);
 
                 if (internalObject != null)
                 {
                     var success = true;
-                    if (pred != null)
+                    if (_pred != null)
                     {
                         try
                         {
-                            success = pred(internalObject);
+                            success = _pred(internalObject);
                         }
                         catch
                         {
@@ -507,7 +510,7 @@ namespace MySoft
 
                     if (success)
                     {
-                        InsertCache(type, GetFilePath(key), key, internalObject, timeout);
+                        InsertCache(_type, GetFilePath(key), key, internalObject, _timeout);
                     }
                 }
             }
@@ -526,8 +529,6 @@ namespace MySoft
                 {
                     hashtable.Remove(key);
                 }
-
-                ar.AsyncWaitHandle.Close();
             }
         }
 
@@ -554,12 +555,6 @@ namespace MySoft
                             var buffer = File.ReadAllBytes(path);
                             buffer = CompressionManager.DecompressGZip(buffer);
                             cacheObj = SerializationManager.DeserializeBin<CacheObject<T>>(buffer);
-
-                            if (timeout != TimeSpan.MaxValue)
-                            {
-                                //默认缓存5秒
-                                CacheHelper.Insert(key, cacheObj, (int)Math.Min(5, timeout.TotalSeconds));
-                            }
                         }
                     }
                 }
@@ -607,6 +602,9 @@ namespace MySoft
                         var buffer = SerializationManager.SerializeBin(cacheObj);
                         buffer = CompressionManager.CompressGZip(buffer);
                         File.WriteAllBytes(path, buffer);
+
+                        //默认缓存30秒
+                        CacheHelper.Insert(key, cacheObj, (int)Math.Min(30, timeout.TotalSeconds));
                     }
                 }
                 catch (ThreadInterruptedException ex) { }

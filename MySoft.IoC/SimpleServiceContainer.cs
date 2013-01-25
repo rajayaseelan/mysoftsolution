@@ -424,7 +424,11 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            container.Dispose();
+            if (container != null)
+            {
+                container.Dispose();
+                container = null;
+            }
         }
 
         #endregion

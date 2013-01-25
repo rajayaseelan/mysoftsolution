@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.IO;
 using System.Threading;
 using MySoft.Logger;
@@ -11,11 +10,6 @@ namespace MySoft.IoC
     /// </summary>
     internal static class ServiceCacheHelper
     {
-        /// <summary>
-        /// Hashtable.
-        /// </summary>
-        private static readonly Hashtable hashtable = new Hashtable();
-
         /// <summary>
         /// 从文件读取对象
         /// </summary>
@@ -58,88 +52,49 @@ namespace MySoft.IoC
 
             if (cacheObj == null)
             {
-                byte[] buffer = null;
-
-                try
-                {
-                    buffer = func(state);
-                }
-                catch (ThreadInterruptedException ex) { }
-                catch (ThreadAbortException ex)
-                {
-                    Thread.ResetAbort();
-                }
-
-                if (buffer != null)
-                {
-                    //插入缓存
-                    InsertCache(GetFilePath(key), key.UniqueId, buffer, timeout);
-                }
-
-                return buffer;
+                //获取数据缓存
+                return GetUpdateBuffer(key, timeout, func, state);
             }
-            else
+            else if (cacheObj.ExpiredTime < DateTime.Now)
             {
                 //如果数据过期，则更新之
-                if (cacheObj.ExpiredTime < DateTime.Now)
-                {
-                    lock (hashtable.SyncRoot)
-                    {
-                        if (!hashtable.ContainsKey(key.UniqueId))
-                        {
-                            hashtable[key.UniqueId] = new ArrayList { timeout, func };
+                var buffer = GetUpdateBuffer(key, timeout, func, state);
 
-                            //异步更新
-                            func.BeginInvoke(state, AsyncCallback, key);
-                        }
-                    }
-                }
-
-                return cacheObj.Value;
+                if (buffer != null) return buffer;
             }
+
+            return cacheObj.Value;
         }
 
         /// <summary>
-        /// 缓存回调
+        /// 获取数据缓存
         /// </summary>
-        /// <param name="ar"></param>
-        private static void AsyncCallback(IAsyncResult ar)
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <param name="func"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        private static byte[] GetUpdateBuffer(CacheKey key, TimeSpan timeout, Func<object, byte[]> func, object state)
         {
-            var key = ar.AsyncState as CacheKey;
-            if (key == null) return;
+            byte[] buffer = null;
 
             try
             {
-                var arr = hashtable[key.UniqueId] as ArrayList;
-                var timeout = (TimeSpan)arr[0];
-                var func = arr[1] as Func<object, byte[]>;
-
-                var buffer = func.EndInvoke(ar);
-
-                if (buffer != null)
-                {
-                    //插入缓存
-                    InsertCache(GetFilePath(key), key.UniqueId, buffer, timeout);
-                }
+                buffer = func(state);
             }
             catch (ThreadInterruptedException ex) { }
             catch (ThreadAbortException ex)
             {
                 Thread.ResetAbort();
             }
-            catch (Exception ex)
-            {
-                SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
-            }
-            finally
-            {
-                lock (hashtable.SyncRoot)
-                {
-                    hashtable.Remove(key.UniqueId);
-                }
 
-                ar.AsyncWaitHandle.Close();
+            if (buffer != null)
+            {
+                //插入缓存
+                InsertCache(GetFilePath(key), key.UniqueId, buffer, timeout);
             }
+
+            return buffer;
         }
 
         /// <summary>
@@ -157,19 +112,10 @@ namespace MySoft.IoC
             {
                 try
                 {
-                    lock (hashtable.SyncRoot)
+                    if (File.Exists(path))
                     {
-                        if (File.Exists(path))
-                        {
-                            var buffer = File.ReadAllBytes(path);
-                            cacheObj = SerializationManager.DeserializeBin<CacheObject<byte[]>>(buffer);
-
-                            if (timeout != TimeSpan.MaxValue)
-                            {
-                                //默认缓存5秒
-                                CacheHelper.Insert(key, cacheObj, (int)Math.Min(30, timeout.TotalSeconds));
-                            }
-                        }
+                        var buffer = File.ReadAllBytes(path);
+                        cacheObj = SerializationManager.DeserializeBin<CacheObject<byte[]>>(buffer);
                     }
                 }
                 catch (ThreadInterruptedException ex) { }
@@ -198,21 +144,21 @@ namespace MySoft.IoC
         {
             try
             {
-                lock (hashtable.SyncRoot)
+                var dir = Path.GetDirectoryName(path);
+
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+                //序列化成二进制
+                var cacheObj = new CacheObject<byte[]>
                 {
-                    var dir = Path.GetDirectoryName(path);
+                    ExpiredTime = DateTime.Now.Add(timeout),
+                    Value = buffer
+                };
 
-                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                File.WriteAllBytes(path, SerializationManager.SerializeBin(cacheObj));
 
-                    //序列化成二进制
-                    var cacheObj = new CacheObject<byte[]>
-                    {
-                        ExpiredTime = DateTime.Now.Add(timeout),
-                        Value = buffer
-                    };
-
-                    File.WriteAllBytes(path, SerializationManager.SerializeBin(cacheObj));
-                }
+                //默认缓存5秒
+                CacheHelper.Insert(key, cacheObj, (int)Math.Min(30, timeout.TotalSeconds));
             }
             catch (ThreadInterruptedException ex) { }
             catch (ThreadAbortException ex)

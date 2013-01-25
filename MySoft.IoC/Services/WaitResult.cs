@@ -55,6 +55,11 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Set(ResponseMessage resMsg)
         {
+            if (ev == null)
+            {
+                return false;
+            }
+
             try
             {
                 this.resMsg = resMsg;
@@ -73,17 +78,14 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            try
+            if (this.ev != null)
             {
                 this.ev.Close();
-            }
-            catch (Exception ex) { }
-            finally
-            {
                 this.ev = null;
-                this.reqMsg = null;
-                this.resMsg = null;
             }
+
+            this.reqMsg = null;
+            this.resMsg = null;
         }
 
         #endregion
