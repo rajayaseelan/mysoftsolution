@@ -3,7 +3,7 @@ using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {
-    internal interface ICaller
+    internal interface IDataContext
     {
         /// <summary>
         /// Caller信息
@@ -24,7 +24,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 调用上下文
     /// </summary>
-    internal class CallerContext : ICaller, IDisposable
+    internal class CallerContext : IDataContext, IDisposable
     {
         /// <summary>
         /// 消息Id

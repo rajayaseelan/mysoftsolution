@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections;
+using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
-using MySoft.Threading;
+using MT = MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -18,7 +19,7 @@ namespace MySoft.IoC
         private IServiceContainer container;
         private ServiceCaller caller;
         private ServerStatusService status;
-        private Semaphore semaphore;
+        private MT.Semaphore semaphore;
         private int timeout;
 
         /// <summary>
@@ -38,7 +39,7 @@ namespace MySoft.IoC
             this.caller = caller;
             this.status = status;
             this.timeout = timeout;
-            this.semaphore = new Semaphore(maxCaller);
+            this.semaphore = new MT.Semaphore(maxCaller);
         }
 
         /// <summary>
@@ -55,11 +56,8 @@ namespace MySoft.IoC
             {
                 using (var waitResult = new WaitResult(e.Request))
                 {
-                    using (var afc = System.Threading.ExecutionContext.SuppressFlow())
-                    {
-                        //创建一个工作项
-                        ManagedThreadPool.QueueUserWorkItem(WaitCallback, new ArrayList { channel, e, waitResult });
-                    }
+                    //异步处理
+                    ThreadPool.QueueUserWorkItem(WaitCallback, new ArrayList { channel, e, waitResult });
 
                     //等待超时响应
                     if (!waitResult.WaitOne(TimeSpan.FromSeconds(timeout)))
@@ -93,20 +91,25 @@ namespace MySoft.IoC
             try
             {
                 var arr = state as ArrayList;
-                var _channel = arr[0] as IScsServerClient;
-                var _context = arr[1] as CallerContext;
-                var _waitResult = arr[2] as WaitResult;
+                var channel = arr[0] as IScsServerClient;
+                var context = arr[1] as IDataContext;
+                var waitResult = arr[2] as WaitResult;
 
                 //调用器为null表示已经退出
-                if (_context.Caller == null) return;
+                if (context.Caller == null) return;
 
                 //如果通道状态为未连接，也退出
-                if (_channel.CommunicationState == CommunicationStates.Connected)
+                if (channel.CommunicationState == CommunicationStates.Connected)
                 {
                     //调用响应信息
-                    var resMsg = caller.InvokeResponse(_channel, _context);
+                    var resMsg = caller.InvokeResponse(channel, context);
 
-                    _waitResult.Set(resMsg);
+                    waitResult.Set(resMsg);
+                }
+                else
+                {
+                    //设置空响应
+                    waitResult.Set(null);
                 }
             }
             catch (Exception ex)

@@ -66,7 +66,7 @@ namespace MySoft.IoC
         /// <param name="channel"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public ResponseMessage InvokeResponse(IScsServerClient channel, ICaller e)
+        public ResponseMessage InvokeResponse(IScsServerClient channel, IDataContext e)
         {
             //获取上下文
             using (var context = GetOperationContext(channel, e.Caller))
