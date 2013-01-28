@@ -149,6 +149,9 @@ namespace MySoft.IoC.Services
 
             try
             {
+                //发送消息
+                reqProxy.SendRequest(reqMsg);
+
                 return GetResponseMessage(reqProxy, reqMsg);
             }
             finally
@@ -176,15 +179,10 @@ namespace MySoft.IoC.Services
                         hashtable[reqMsg.TransactionId] = waitResult;
                     }
 
-                    //发送消息
-                    reqProxy.SendRequest(reqMsg);
-
-                    var elapsedTime = TimeSpan.FromSeconds(node.Timeout);
-
                     //等待信号响应
-                    if (!waitResult.WaitOne(elapsedTime))
+                    if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))
                     {
-                        return GetTimeoutResponse(reqMsg, (int)elapsedTime.TotalMilliseconds);
+                        return GetTimeoutResponse(reqMsg);
                     }
 
                     return waitResult.Message;
@@ -196,8 +194,6 @@ namespace MySoft.IoC.Services
                         //用完后移除
                         hashtable.Remove(reqMsg.TransactionId);
                     }
-
-                    waitResult.Dispose();
                 }
             }
         }
@@ -206,12 +202,11 @@ namespace MySoft.IoC.Services
         /// 获取超时响应信息
         /// </summary>
         /// <param name="reqMsg"></param>
-        /// <param name="elapsedTime"></param>
         /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, int elapsedTime)
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg)
         {
             var title = string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
-               , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, elapsedTime, reqMsg.Parameters.ToString());
+               , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, node.Timeout * 1000, reqMsg.Parameters.ToString());
 
             //获取异常
             return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));

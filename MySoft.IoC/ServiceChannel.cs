@@ -1,15 +1,20 @@
 ﻿using System;
-using System.Collections;
-using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
 using MT = MySoft.Threading;
 
 namespace MySoft.IoC
 {
+    /// <summary>
+    /// 异步方法调用
+    /// </summary>
+    /// <param name="channel"></param>
+    /// <param name="e"></param>
+    /// <returns></returns>
+    internal delegate ResponseMessage AsyncMethodCaller(IScsServerClient channel, CallerContext e);
+
     /// <summary>
     /// 服务通道
     /// </summary>
@@ -54,22 +59,22 @@ namespace MySoft.IoC
 
             try
             {
-                using (var waitResult = new WaitResult(e.Request))
-                {
-                    //异步处理
-                    ThreadPool.QueueUserWorkItem(WaitCallback, new ArrayList { channel, e, waitResult });
+                //开始异步调用
+                var methodCaller = new AsyncMethodCaller(caller.InvokeResponse);
+                var ar = methodCaller.BeginInvoke(channel, e, null, null);
 
-                    //等待超时响应
-                    if (!waitResult.WaitOne(TimeSpan.FromSeconds(timeout)))
-                    {
-                        //获取异常响应
-                        e.Message = GetTimeoutResponse(e.Request);
-                    }
-                    else
-                    {
-                        //正常响应信息
-                        e.Message = waitResult.Message;
-                    }
+                //等待超时响应
+                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(timeout)))
+                {
+                    //获取异常响应
+                    e.Message = GetTimeoutResponse(e.Request);
+                }
+                else
+                {
+                    //正常响应信息
+                    e.Message = methodCaller.EndInvoke(ar); ;
+
+                    ar.AsyncWaitHandle.Close();
                 }
 
                 //处理上下文
@@ -79,41 +84,6 @@ namespace MySoft.IoC
             {
                 //释放一个控制器
                 semaphore.AddOne();
-            }
-        }
-
-        /// <summary>
-        /// 等待回调
-        /// </summary>
-        /// <param name="state"></param>
-        private void WaitCallback(object state)
-        {
-            try
-            {
-                var arr = state as ArrayList;
-                var channel = arr[0] as IScsServerClient;
-                var context = arr[1] as IDataContext;
-                var waitResult = arr[2] as WaitResult;
-
-                //调用器为null表示已经退出
-                if (context.Caller == null) return;
-
-                //如果通道状态为未连接，也退出
-                if (channel.CommunicationState == CommunicationStates.Connected)
-                {
-                    //调用响应信息
-                    var resMsg = caller.InvokeResponse(channel, context);
-
-                    waitResult.Set(resMsg);
-                }
-                else
-                {
-                    //设置空响应
-                    waitResult.Set(null);
-                }
-            }
-            catch (Exception ex)
-            {
             }
         }
 

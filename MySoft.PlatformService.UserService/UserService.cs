@@ -54,7 +54,10 @@ namespace MySoft.PlatformService.UserService
             //    return null;
             //}
 
-            //Thread.Sleep(30000);
+            if (id % 10 == 0)
+            {
+                Thread.Sleep(5000);
+            }
 
             var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
             var sb = new StringBuilder(name);
