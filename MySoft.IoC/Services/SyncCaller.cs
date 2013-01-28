@@ -282,7 +282,7 @@ namespace MySoft.IoC.Services
                                         , caller.Parameters).Replace(" ", "").Replace("\r\n", "").Replace("\t", "");
 
             //返回加密Key
-            return MD5.HexHash(Encoding.Default.GetBytes(callKey));
+            return MD5.HexHash(Encoding.Default.GetBytes(callKey.ToLower()));
         }
 
 
