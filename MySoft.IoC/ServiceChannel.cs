@@ -13,7 +13,7 @@ namespace MySoft.IoC
     /// <param name="channel"></param>
     /// <param name="e"></param>
     /// <returns></returns>
-    internal delegate ResponseMessage AsyncMethodCaller(IScsServerClient channel, CallerContext e);
+    internal delegate ResponseMessage AsyncMethodCaller(IScsServerClient channel, IDataContext e);
 
     /// <summary>
     /// 服务通道
