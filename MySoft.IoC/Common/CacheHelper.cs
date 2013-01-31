@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Threading;
 using MySoft.Logger;
@@ -11,6 +12,7 @@ namespace MySoft.IoC
     internal static class ServiceCacheHelper
     {
         private const int UPDATE_TIMEOUT = 30;
+        private static readonly Hashtable hashtable = new Hashtable();
 
         /// <summary>
         /// 从文件读取对象
@@ -50,22 +52,51 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static byte[] Get(CacheKey key, TimeSpan timeout, Func<object, byte[]> func, object state)
         {
-            var cacheObj = GetCache(GetFilePath(key), key.UniqueId);
+            object syncRoot = null;
 
-            if (cacheObj == null)
+            //计算锁key
+            lock (hashtable.SyncRoot)
             {
-                //获取数据缓存
-                return GetUpdateBuffer(key, timeout, func, state, false);
+                var lockKey = string.Format("{0}${1}", key.ServiceName, key.MethodName);
+
+                if (hashtable.ContainsKey(lockKey))
+                {
+                    syncRoot = hashtable[lockKey];
+                }
+                else
+                {
+                    syncRoot = new object();
+                    hashtable[lockKey] = syncRoot;
+                }
             }
-            else if (cacheObj.ExpiredTime < DateTime.Now)
+
+            lock (syncRoot)
             {
-                //如果数据过期，则更新之
-                var buffer = GetUpdateBuffer(key, timeout, func, state, true);
+                var cacheObj = GetCache(GetFilePath(key), key.UniqueId);
 
-                if (buffer != null) return buffer;
+                if (cacheObj == null)
+                {
+                    //获取数据缓存
+                    return GetUpdateBuffer(key, timeout, func, state, false);
+                }
+                else if (cacheObj.ExpiredTime < DateTime.Now)
+                {
+                    //如果数据过期，则更新之
+                    var buffer = GetUpdateBuffer(key, timeout, func, state, true);
+
+                    if (buffer != null)
+                    {
+                        return buffer;
+                    }
+                    else
+                    {
+                        //插入缓存
+                        InsertCache(GetFilePath(key), key.UniqueId, cacheObj.Value, timeout);
+                    }
+                }
+
+                return cacheObj.Value;
             }
-
-            return cacheObj.Value;
         }
 
         /// <summary>

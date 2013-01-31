@@ -3,18 +3,11 @@ using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using MT = MySoft.Threading;
+using MySoft.IoC.Services;
+using MySoft.Threading;
 
 namespace MySoft.IoC
 {
-    /// <summary>
-    /// 异步方法调用
-    /// </summary>
-    /// <param name="channel"></param>
-    /// <param name="e"></param>
-    /// <returns></returns>
-    internal delegate ResponseMessage AsyncMethodCaller(IScsServerClient channel, IDataContext e);
-
     /// <summary>
     /// 服务通道
     /// </summary>
@@ -24,7 +17,7 @@ namespace MySoft.IoC
         private IServiceContainer container;
         private ServiceCaller caller;
         private ServerStatusService status;
-        private MT.Semaphore semaphore;
+        private Semaphore semaphore;
         private int timeout;
 
         /// <summary>
@@ -44,7 +37,7 @@ namespace MySoft.IoC
             this.caller = caller;
             this.status = status;
             this.timeout = timeout;
-            this.semaphore = new MT.Semaphore(maxCaller);
+            this.semaphore = new Semaphore(maxCaller);
         }
 
         /// <summary>
@@ -54,36 +47,77 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         public void SendResponse(IScsServerClient channel, CallerContext e)
         {
+            //开始计时
+            var watch = Stopwatch.StartNew();
+
             //请求一个控制器
             semaphore.WaitOne();
 
             try
             {
-                //开始异步调用
-                var methodCaller = new AsyncMethodCaller(caller.InvokeResponse);
-                var ar = methodCaller.BeginInvoke(channel, e, null, null);
-
-                //等待超时响应
-                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(timeout)))
+                using (var channelResult = new ChannelResult(channel, e))
                 {
-                    //获取异常响应
-                    e.Message = GetTimeoutResponse(e.Request);
-                }
-                else
-                {
-                    //正常响应信息
-                    e.Message = methodCaller.EndInvoke(ar); ;
+                    //开始异步调用
+                    ManagedThreadPool.QueueUserWorkItem(WaitCallback, channelResult);
 
-                    ar.AsyncWaitHandle.Close();
+                    //等待超时响应
+                    if (!channelResult.WaitOne(TimeSpan.FromSeconds(timeout)))
+                    {
+                        //获取异常响应
+                        e.Message = GetTimeoutResponse(e.Request);
+                    }
+                    else
+                    {
+                        //正常响应信息
+                        e.Message = channelResult.Message;
+                    }
                 }
 
                 //处理上下文
-                HandleCallerContext(channel, e);
+                HandleCallerContext(channel, e, watch.ElapsedMilliseconds);
             }
             finally
             {
+                //停止记时
+                if (watch.IsRunning)
+                {
+                    watch.Stop();
+                }
+
                 //释放一个控制器
                 semaphore.AddOne();
+            }
+        }
+
+        /// <summary>
+        /// 响应信息
+        /// </summary>
+        /// <param name="state"></param>
+        private void WaitCallback(object state)
+        {
+            if (state == null) return;
+
+            try
+            {
+                var channelResult = state as ChannelResult;
+
+                if (channelResult.Completed)
+                {
+                    channelResult.Set(null);
+                }
+                else
+                {
+                    //调用响应信息
+                    var channel = channelResult.Channel;
+                    var context = channelResult.Context;
+
+                    var resMsg = caller.InvokeResponse(channel, context);
+
+                    channelResult.Set(resMsg);
+                }
+            }
+            catch (Exception ex)
+            {
             }
         }
 
@@ -111,7 +145,8 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="e"></param>
-        private void HandleCallerContext(IScsServerClient channel, CallerContext e)
+        /// <param name="elapsedTime"></param>
+        private void HandleCallerContext(IScsServerClient channel, CallerContext e, long elapsedTime)
         {
             if (e.Message != null)
             {
@@ -119,7 +154,7 @@ namespace MySoft.IoC
                 if (e.Request.ServiceName != typeof(IStatusService).FullName)
                 {
                     //处理响应信息
-                    HandleResponse(e.Caller, e.Message);
+                    HandleResponse(e.Caller, e.Message, elapsedTime);
                 }
 
                 //如果是Json方式调用，则需要处理异常
@@ -129,6 +164,18 @@ namespace MySoft.IoC
                     var error = ErrorHelper.GetInnerException(e.Message.Error);
 
                     e.Message.Error = new ApplicationException(error.Message);
+                }
+            }
+            else
+            {
+                //生成响应信息
+                var resMsg = IoCHelper.GetResponse(e.Request, null);
+
+                //不是从缓存读取，则响应与状态服务跳过
+                if (e.Request.ServiceName != typeof(IStatusService).FullName)
+                {
+                    //处理响应信息
+                    HandleResponse(e.Caller, resMsg, elapsedTime);
                 }
             }
 
@@ -141,12 +188,13 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="caller"></param>
         /// <param name="resMsg"></param>
-        private void HandleResponse(AppCaller caller, ResponseMessage resMsg)
+        /// <param name="elapsedTime"></param>
+        private void HandleResponse(AppCaller caller, ResponseMessage resMsg, long elapsedTime)
         {
             //调用参数
             var callArgs = new CallEventArgs(caller)
             {
-                ElapsedTime = resMsg.ElapsedTime,
+                ElapsedTime = elapsedTime,
                 Count = resMsg.Count,
                 Error = resMsg.Error,
                 Value = resMsg.Value
@@ -157,7 +205,20 @@ namespace MySoft.IoC
                 //开始调用
                 if (callback != null)
                 {
-                    callback(callArgs);
+                    //异步调用
+                    callback.BeginInvoke(callArgs, ar =>
+                    {
+                        try
+                        {
+                            //完成委托
+                            callback.EndInvoke(ar);
+                        }
+                        catch (Exception ex) { }
+                        finally
+                        {
+                            ar.AsyncWaitHandle.Close();
+                        }
+                    }, callArgs);
                 }
             }
             catch (Exception ex) { }

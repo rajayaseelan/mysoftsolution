@@ -27,7 +27,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 结果队列
         /// </summary>
-        private IDictionary<Guid, WaitResult> hashtable = new Dictionary<Guid, WaitResult>();
+        private IDictionary<string, WaitResult> hashtable = new Dictionary<string, WaitResult>();
 
         protected ServiceRequestPool reqPool;
         private volatile int poolSize;
@@ -93,14 +93,14 @@ namespace MySoft.IoC.Services
         /// 消息回调
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="args"></param>
-        protected virtual void OnMessageCallback(object sender, ServiceMessageEventArgs args)
+        /// <param name="e"></param>
+        protected virtual void OnMessageCallback(object sender, ServiceMessageEventArgs e)
         {
-            if (args.Result is ResponseMessage)
+            if (e.Result is ResponseMessage)
             {
-                var resMsg = args.Result as ResponseMessage;
+                var resMsg = e.Result as ResponseMessage;
 
-                QueueMessage(resMsg);
+                QueueMessage(e.MessageId, resMsg);
             }
         }
 
@@ -115,21 +115,22 @@ namespace MySoft.IoC.Services
             {
                 var resMsg = IoCHelper.GetResponse(e.Request, e.Error);
 
-                QueueMessage(resMsg);
+                QueueMessage(e.MessageId, resMsg);
             }
         }
 
         /// <summary>
         /// 添加消息到队列
         /// </summary>
+        /// <param name="messageId"></param>
         /// <param name="resMsg"></param>
-        private void QueueMessage(ResponseMessage resMsg)
+        private void QueueMessage(string messageId, ResponseMessage resMsg)
         {
             lock (hashtable)
             {
-                if (hashtable.ContainsKey(resMsg.TransactionId))
+                if (hashtable.ContainsKey(messageId))
                 {
-                    var waitResult = hashtable[resMsg.TransactionId];
+                    var waitResult = hashtable[messageId];
 
                     //数据响应
                     waitResult.Set(resMsg);
@@ -147,36 +148,20 @@ namespace MySoft.IoC.Services
             //获取一个请求
             var reqProxy = GetServiceRequest();
 
+            //消息Id
+            var messageId = reqMsg.TransactionId.ToString();
+
             try
             {
                 //发送消息
-                reqProxy.SendRequest(reqMsg);
+                reqProxy.SendRequest(messageId, reqMsg);
 
-                return GetResponseMessage(reqProxy, reqMsg);
-            }
-            finally
-            {
-                //加入队列
-                reqPool.Push(reqProxy);
-            }
-        }
-
-        /// <summary>
-        /// 获取响应消息
-        /// </summary>
-        /// <param name="reqProxy"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponseMessage(ServiceRequest reqProxy, RequestMessage reqMsg)
-        {
-            //处理数据
-            using (var waitResult = new WaitResult(reqMsg))
-            {
-                try
+                //处理数据
+                using (var waitResult = new WaitResult(reqMsg))
                 {
                     lock (hashtable)
                     {
-                        hashtable[reqMsg.TransactionId] = waitResult;
+                        hashtable[messageId] = waitResult;
                     }
 
                     //等待信号响应
@@ -187,14 +172,17 @@ namespace MySoft.IoC.Services
 
                     return waitResult.Message;
                 }
-                finally
+            }
+            finally
+            {
+                lock (hashtable)
                 {
-                    lock (hashtable)
-                    {
-                        //用完后移除
-                        hashtable.Remove(reqMsg.TransactionId);
-                    }
+                    //用完后移除
+                    hashtable.Remove(messageId);
                 }
+
+                //加入队列
+                reqPool.Push(reqProxy);
             }
         }
 

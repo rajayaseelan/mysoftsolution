@@ -7,7 +7,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 返回值对象
     /// </summary>
-    internal sealed class WaitResult : IDisposable
+    internal class WaitResult : IDisposable
     {
         private AutoResetEvent ev;
         private RequestMessage reqMsg;
@@ -76,7 +76,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 清理资源
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (this.ev != null)
             {

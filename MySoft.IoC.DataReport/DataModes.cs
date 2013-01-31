@@ -588,6 +588,8 @@ namespace MySoft.IoC.DataReport.Models
 
         protected Int32 _Id;
 
+        protected String _CallKey;
+
         protected String _AppName;
 
         protected String _IPAddress;
@@ -602,7 +604,9 @@ namespace MySoft.IoC.DataReport.Models
 
         protected Int32 _CallCount;
 
-        protected Int32 _ElapsedTime;
+        protected Int32 _RowCount;
+
+        protected Int64 _ElapsedTime;
 
         protected String _ServerIPAddress;
 
@@ -622,6 +626,19 @@ namespace MySoft.IoC.DataReport.Models
             {
                 this.OnPropertyValueChange(_.Id, _Id, value);
                 this._Id = value;
+            }
+        }
+
+        public String CallKey
+        {
+            get
+            {
+                return this._CallKey;
+            }
+            set
+            {
+                this.OnPropertyValueChange(_.CallKey, _CallKey, value);
+                this._CallKey = value;
             }
         }
 
@@ -716,7 +733,20 @@ namespace MySoft.IoC.DataReport.Models
             }
         }
 
-        public Int32 ElapsedTime
+        public Int32 RowCount
+        {
+            get
+            {
+                return this._RowCount;
+            }
+            set
+            {
+                this.OnPropertyValueChange(_.RowCount, _RowCount, value);
+                this._RowCount = value;
+            }
+        }
+
+        public Int64 ElapsedTime
         {
             get
             {
@@ -813,6 +843,7 @@ namespace MySoft.IoC.DataReport.Models
         {
             return new MySoft.Data.Field[] {
     					_.Id,
+    					_.CallKey,
     					_.AppName,
     					_.IPAddress,
     					_.HostName,
@@ -820,6 +851,7 @@ namespace MySoft.IoC.DataReport.Models
     					_.ServiceName,
     					_.MethodName,
     					_.CallCount,
+    					_.RowCount,
     					_.ElapsedTime,
     					_.ServerIPAddress,
     					_.ServerHostName,
@@ -834,6 +866,7 @@ namespace MySoft.IoC.DataReport.Models
         {
             return new object[] {
     					this._Id,
+    					this._CallKey,
     					this._AppName,
     					this._IPAddress,
     					this._HostName,
@@ -841,6 +874,7 @@ namespace MySoft.IoC.DataReport.Models
     					this._ServiceName,
     					this._MethodName,
     					this._CallCount,
+    					this._RowCount,
     					this._ElapsedTime,
     					this._ServerIPAddress,
     					this._ServerHostName,
@@ -856,6 +890,10 @@ namespace MySoft.IoC.DataReport.Models
             if ((false == reader.IsDBNull(_.Id)))
             {
                 this._Id = reader.GetInt32(_.Id);
+            }
+            if ((false == reader.IsDBNull(_.CallKey)))
+            {
+                this._CallKey = reader.GetString(_.CallKey);
             }
             if ((false == reader.IsDBNull(_.AppName)))
             {
@@ -885,9 +923,13 @@ namespace MySoft.IoC.DataReport.Models
             {
                 this._CallCount = reader.GetInt32(_.CallCount);
             }
+            if ((false == reader.IsDBNull(_.RowCount)))
+            {
+                this._RowCount = reader.GetInt32(_.RowCount);
+            }
             if ((false == reader.IsDBNull(_.ElapsedTime)))
             {
-                this._ElapsedTime = reader.GetInt32(_.ElapsedTime);
+                this._ElapsedTime = reader.GetInt64(_.ElapsedTime);
             }
             if ((false == reader.IsDBNull(_.ServerIPAddress)))
             {
@@ -943,6 +985,11 @@ namespace MySoft.IoC.DataReport.Models
             public static MySoft.Data.Field Id = new MySoft.Data.Field<ServiceCaller>("Id");
 
             /// <summary>
+            /// 字段名：CallKey - 数据类型：String
+            /// </summary>
+            public static MySoft.Data.Field CallKey = new MySoft.Data.Field<ServiceCaller>("CallKey");
+
+            /// <summary>
             /// 字段名：AppName - 数据类型：String
             /// </summary>
             public static MySoft.Data.Field AppName = new MySoft.Data.Field<ServiceCaller>("AppName");
@@ -978,7 +1025,12 @@ namespace MySoft.IoC.DataReport.Models
             public static MySoft.Data.Field CallCount = new MySoft.Data.Field<ServiceCaller>("CallCount");
 
             /// <summary>
-            /// 字段名：ElapsedTime - 数据类型：Int32
+            /// 字段名：RowCount - 数据类型：Int32
+            /// </summary>
+            public static MySoft.Data.Field RowCount = new MySoft.Data.Field<ServiceCaller>("RowCount");
+
+            /// <summary>
+            /// 字段名：ElapsedTime - 数据类型：Int64
             /// </summary>
             public static MySoft.Data.Field ElapsedTime = new MySoft.Data.Field<ServiceCaller>("ElapsedTime");
 
@@ -1034,13 +1086,15 @@ namespace MySoft.IoC.DataReport.Models
 
         protected DateTime _CallTime;
 
-        protected Int32 _ElapsedTime;
+        protected Int64 _ElapsedTime;
 
         protected String _ServerIPAddress;
 
         protected String _ServerHostName;
 
         protected Int32 _ServerPort;
+
+        protected String _ErrType;
 
         protected String _ErrMessage;
 
@@ -1163,7 +1217,7 @@ namespace MySoft.IoC.DataReport.Models
             }
         }
 
-        public Int32 ElapsedTime
+        public Int64 ElapsedTime
         {
             get
             {
@@ -1212,6 +1266,19 @@ namespace MySoft.IoC.DataReport.Models
             {
                 this.OnPropertyValueChange(_.ServerPort, _ServerPort, value);
                 this._ServerPort = value;
+            }
+        }
+
+        public String ErrType
+        {
+            get
+            {
+                return this._ErrType;
+            }
+            set
+            {
+                this.OnPropertyValueChange(_.ErrType, _ErrType, value);
+                this._ErrType = value;
             }
         }
 
@@ -1285,6 +1352,7 @@ namespace MySoft.IoC.DataReport.Models
     					_.ServerIPAddress,
     					_.ServerHostName,
     					_.ServerPort,
+    					_.ErrType,
     					_.ErrMessage,
     					_.AddTime};
         }
@@ -1308,6 +1376,7 @@ namespace MySoft.IoC.DataReport.Models
     					this._ServerIPAddress,
     					this._ServerHostName,
     					this._ServerPort,
+    					this._ErrType,
     					this._ErrMessage,
     					this._AddTime};
         }
@@ -1355,7 +1424,7 @@ namespace MySoft.IoC.DataReport.Models
             }
             if ((false == reader.IsDBNull(_.ElapsedTime)))
             {
-                this._ElapsedTime = reader.GetInt32(_.ElapsedTime);
+                this._ElapsedTime = reader.GetInt64(_.ElapsedTime);
             }
             if ((false == reader.IsDBNull(_.ServerIPAddress)))
             {
@@ -1368,6 +1437,10 @@ namespace MySoft.IoC.DataReport.Models
             if ((false == reader.IsDBNull(_.ServerPort)))
             {
                 this._ServerPort = reader.GetInt32(_.ServerPort);
+            }
+            if ((false == reader.IsDBNull(_.ErrType)))
+            {
+                this._ErrType = reader.GetString(_.ErrType);
             }
             if ((false == reader.IsDBNull(_.ErrMessage)))
             {
@@ -1455,7 +1528,7 @@ namespace MySoft.IoC.DataReport.Models
             public static MySoft.Data.Field CallTime = new MySoft.Data.Field<ServiceError>("CallTime");
 
             /// <summary>
-            /// 字段名：ElapsedTime - 数据类型：Int32
+            /// 字段名：ElapsedTime - 数据类型：Int64
             /// </summary>
             public static MySoft.Data.Field ElapsedTime = new MySoft.Data.Field<ServiceError>("ElapsedTime");
 
@@ -1473,6 +1546,11 @@ namespace MySoft.IoC.DataReport.Models
             /// 字段名：ServerPort - 数据类型：Int32
             /// </summary>
             public static MySoft.Data.Field ServerPort = new MySoft.Data.Field<ServiceError>("ServerPort");
+
+            /// <summary>
+            /// 字段名：ErrType - 数据类型：String
+            /// </summary>
+            public static MySoft.Data.Field ErrType = new MySoft.Data.Field<ServiceError>("ErrType");
 
             /// <summary>
             /// 字段名：ErrMessage - 数据类型：String
@@ -1516,7 +1594,7 @@ namespace MySoft.IoC.DataReport.Models
 
         protected DateTime _CallTime;
 
-        protected Int32 _ElapsedTime;
+        protected Int64 _ElapsedTime;
 
         protected String _ServerIPAddress;
 
@@ -1643,7 +1721,7 @@ namespace MySoft.IoC.DataReport.Models
             }
         }
 
-        public Int32 ElapsedTime
+        public Int64 ElapsedTime
         {
             get
             {
@@ -1820,7 +1898,7 @@ namespace MySoft.IoC.DataReport.Models
             }
             if ((false == reader.IsDBNull(_.ElapsedTime)))
             {
-                this._ElapsedTime = reader.GetInt32(_.ElapsedTime);
+                this._ElapsedTime = reader.GetInt64(_.ElapsedTime);
             }
             if ((false == reader.IsDBNull(_.ServerIPAddress)))
             {
@@ -1916,7 +1994,7 @@ namespace MySoft.IoC.DataReport.Models
             public static MySoft.Data.Field CallTime = new MySoft.Data.Field<ServiceTimeout>("CallTime");
 
             /// <summary>
-            /// 字段名：ElapsedTime - 数据类型：Int32
+            /// 字段名：ElapsedTime - 数据类型：Int64
             /// </summary>
             public static MySoft.Data.Field ElapsedTime = new MySoft.Data.Field<ServiceTimeout>("ElapsedTime");
 

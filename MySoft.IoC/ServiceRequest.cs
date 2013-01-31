@@ -38,6 +38,7 @@ namespace MySoft.IoC
 
         #endregion
 
+        private string messageId;
         private RequestMessage reqMsg;
         private IScsClient client;
         private ServerNode node;
@@ -65,10 +66,11 @@ namespace MySoft.IoC
         /// <summary>
         /// 发送数据包
         /// </summary>
+        /// <param name="messageId"></param>
         /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        public void SendRequest(RequestMessage reqMsg)
+        public void SendRequest(string messageId, RequestMessage reqMsg)
         {
+            this.messageId = messageId;
             this.reqMsg = reqMsg;
 
             //如果连接断开，直接抛出异常
@@ -90,7 +92,7 @@ namespace MySoft.IoC
             }
 
             //设置压缩与加密
-            IScsMessage message = new ScsResultMessage(reqMsg, reqMsg.TransactionId.ToString());
+            IScsMessage message = new ScsResultMessage(reqMsg, messageId);
 
             //发送消息
             client.SendMessage(message);
@@ -144,6 +146,7 @@ namespace MySoft.IoC
             {
                 OnError(sender, new ErrorMessageEventArgs
                 {
+                    MessageId = messageId,
                     Request = reqMsg,
                     Error = e.Error
                 });
@@ -154,7 +157,7 @@ namespace MySoft.IoC
         {
             var message = new ServiceMessageEventArgs
             {
-                Client = client,
+                MessageId = e.Message.RepliedMessageId,
                 Request = reqMsg
             };
 
@@ -180,12 +183,11 @@ namespace MySoft.IoC
                 {
                     //获取响应信息
                     var data = e.Message as ScsRawDataMessage;
-                    var transactionId = new Guid(e.Message.RepliedMessageId);
                     var buffer = CompressionManager.DecompressGZip(data.MessageData);
                     var resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
 
                     //设置同步返回传输Id
-                    resMsg.TransactionId = transactionId;
+                    resMsg.TransactionId = new Guid(message.MessageId);
                     resMsg.ElapsedTime = watch.ElapsedMilliseconds;
 
                     message.Result = resMsg;

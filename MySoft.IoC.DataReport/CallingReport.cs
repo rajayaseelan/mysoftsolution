@@ -17,15 +17,18 @@ namespace MySoft.IoC.DataReport
     {
         private IDictionary<string, IList<RecordEventArgs>> calls;
         private CastleServiceConfiguration config;
+        private long timeout = 1000;
 
         /// <summary>
         /// 初始化调用报表统计
         /// </summary>
-        /// <param name="_config"></param>
-        public CallingReport(CastleServiceConfiguration config)
+        /// <param name="config"></param>
+        /// <param name="timeout"></param>
+        public CallingReport(CastleServiceConfiguration config, long timeout)
         {
             this.config = config;
-            this.calls = new Dictionary<string, IList<RecordEventArgs>>();
+            this.calls = new SortedList<string, IList<RecordEventArgs>>();
+            if (timeout > 0) this.timeout = timeout;
 
             ThreadPool.QueueUserWorkItem(TimerSaveCalling);
         }
@@ -38,20 +41,24 @@ namespace MySoft.IoC.DataReport
         {
             while (true)
             {
+                //1分钟保存一次
+                Thread.Sleep(TimeSpan.FromMinutes(1));
+
                 try
                 {
                     IList<RecordEventArgs> records = null;
+                    string callKey = null;
 
                     lock (calls)
                     {
                         if (calls.Count > 0)
                         {
-                            var key = calls.Keys.ElementAtOrDefault(0);
+                            callKey = calls.Keys.ElementAtOrDefault(0);
 
-                            if (!string.IsNullOrEmpty(key))
+                            if (!string.IsNullOrEmpty(callKey))
                             {
-                                records = calls[key];
-                                calls.Remove(key);
+                                records = calls[callKey];
+                                calls.Remove(callKey);
                             }
                         }
                     }
@@ -59,16 +66,21 @@ namespace MySoft.IoC.DataReport
                     //记录统计数据
                     if (records != null && records.Count > 0)
                     {
-                        SaveCaller(records);
+                        var count = SaveCaller(callKey, records);
+
+                        if (count == -1) //存储失败，重新加入队列中
+                        {
+                            lock (calls)
+                            {
+                                calls[callKey] = records;
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    SimpleLog.Instance.WriteLogForDir("Timer", ex);
+                    SimpleLog.Instance.WriteLogForDir("SaveCaller", ex);
                 }
-
-                //30秒存一次
-                Thread.Sleep(TimeSpan.FromSeconds(30));
             }
         }
 
@@ -96,7 +108,7 @@ namespace MySoft.IoC.DataReport
             {
                 AddError(e);
             }
-            else if (e.ElapsedTime > 1000)
+            else if (e.ElapsedTime > timeout)
             {
                 AddTimeout(e);
             }
@@ -120,10 +132,11 @@ namespace MySoft.IoC.DataReport
                 MethodName = e.Caller.MethodName,
                 Parameters = e.Caller.Parameters,
                 CallTime = e.Caller.CallTime,
-                ElapsedTime = Convert.ToInt32(e.ElapsedTime),
+                ElapsedTime = e.ElapsedTime,
                 ServerHostName = e.ServerHostName,
                 ServerIPAddress = e.ServerIPAddress,
                 ServerPort = e.ServerPort,
+                ErrType = e.Error.GetType().FullName,
                 ErrMessage = ErrorHelper.GetHtmlError(e.Error),
                 AddTime = DateTime.Now
             };
@@ -147,7 +160,7 @@ namespace MySoft.IoC.DataReport
                 MethodName = e.Caller.MethodName,
                 Parameters = e.Caller.Parameters,
                 CallTime = e.Caller.CallTime,
-                ElapsedTime = Convert.ToInt32(e.ElapsedTime),
+                ElapsedTime = e.ElapsedTime,
                 ServerHostName = e.ServerHostName,
                 ServerIPAddress = e.ServerIPAddress,
                 ServerPort = e.ServerPort,
@@ -157,30 +170,30 @@ namespace MySoft.IoC.DataReport
             SaveData(timeout);
         }
 
-        private int SaveCaller(IList<RecordEventArgs> list)
+        private int SaveCaller(string key, IList<RecordEventArgs> list)
         {
             var dblist = list.GroupBy(p => new
             {
                 AppName = p.Caller.AppName,
                 IPAddress = p.Caller.IPAddress,
-                HostName = p.Caller.HostName,
                 AppPath = p.Caller.AppPath,
                 ServiceName = p.Caller.ServiceName,
                 MethodName = p.Caller.MethodName,
-                ServerHostName = p.ServerHostName,
                 ServerIPAddress = p.ServerIPAddress,
                 ServerPort = p.ServerPort
             }).Select(p => new ServiceCaller
             {
+                CallKey = key,
                 AppName = p.Key.AppName,
                 IPAddress = p.Key.IPAddress,
-                HostName = p.Key.HostName,
+                HostName = p.Max(c => c.Caller.HostName),
                 AppPath = p.Key.AppPath,
                 ServiceName = p.Key.ServiceName,
                 MethodName = p.Key.MethodName,
+                RowCount = p.Sum(c => c.Count),
                 CallCount = p.Count(),
-                ElapsedTime = Convert.ToInt32(p.Sum(c => c.ElapsedTime)),
-                ServerHostName = p.Key.ServerHostName,
+                ElapsedTime = p.Sum(c => c.ElapsedTime),
+                ServerHostName = p.Max(c => c.ServerHostName),
                 ServerIPAddress = p.Key.ServerIPAddress,
                 ServerPort = p.Key.ServerPort,
                 AddTime = DateTime.Now
@@ -204,7 +217,7 @@ namespace MySoft.IoC.DataReport
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Insert", ex);
+                SimpleLog.Instance.WriteLogForDir("InsertItem", ex);
 
                 return -1;
             }
@@ -242,7 +255,7 @@ namespace MySoft.IoC.DataReport
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Insert", ex);
+                SimpleLog.Instance.WriteLogForDir("InsertItems", ex);
 
                 return -1;
             }

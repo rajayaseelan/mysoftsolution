@@ -9,9 +9,9 @@ namespace MySoft.IoC.Messages
     public class ServiceMessageEventArgs : EventArgs
     {
         /// <summary>
-        /// 响应的消息
+        /// 消息Id
         /// </summary>
-        public object Result { get; set; }
+        public string MessageId { get; set; }
 
         /// <summary>
         /// 请求消息
@@ -19,9 +19,9 @@ namespace MySoft.IoC.Messages
         public RequestMessage Request { get; set; }
 
         /// <summary>
-        /// 返回通讯的Client对象
+        /// 响应的消息
         /// </summary>
-        public IScsClient Client { get; set; }
+        public object Result { get; set; }
     }
 
     /// <summary>
@@ -29,6 +29,11 @@ namespace MySoft.IoC.Messages
     /// </summary>
     public class ErrorMessageEventArgs : EventArgs
     {
+        /// <summary>
+        /// 消息Id
+        /// </summary>
+        public string MessageId { get; set; }
+
         /// <summary>
         /// 请求信息
         /// </summary>

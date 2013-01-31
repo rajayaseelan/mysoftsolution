@@ -155,6 +155,7 @@
     <Compile Include="Messages\ReturnMessage.cs" />
     <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
+    <Compile Include="Services\ChannelResult.cs" />
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>
