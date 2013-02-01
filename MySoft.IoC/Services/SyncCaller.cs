@@ -61,7 +61,7 @@ namespace MySoft.IoC.Services
 
             try
             {
-                if (enabledCache && reqMsg.CacheTime > 0)
+                if (CheckCache(reqMsg))
                 {
                     //从缓存获取数据
                     var item = GetResponseFromCache(service, context, reqMsg);
@@ -90,6 +90,16 @@ namespace MySoft.IoC.Services
                 //释放一个控制器
                 semaphore.Release();
             }
+        }
+
+        /// <summary>
+        /// 判断是否需要缓存
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private bool CheckCache(RequestMessage reqMsg)
+        {
+            return enabledCache && reqMsg.CacheTime > 0;
         }
 
         /// <summary>

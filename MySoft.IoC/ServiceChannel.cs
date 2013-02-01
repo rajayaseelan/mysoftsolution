@@ -7,6 +7,7 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using MT = MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -55,15 +56,13 @@ namespace MySoft.IoC
             using (var channelResult = new ChannelResult(channel, e))
             {
                 //开始异步调用
-                ThreadPool.UnsafeQueueUserWorkItem(WaitCallback, channelResult);
+                MT.ManagedThreadPool.QueueUserWorkItem(WaitCallback, channelResult);
 
                 //等待超时响应
                 if (!channelResult.WaitOne(TimeSpan.FromSeconds(timeout)))
                 {
-                    channelResult.Cancel();
-
                     //获取异常响应
-                    e.Message = GetTimeoutResponse(e.Request, "Work item canceled.");
+                    e.Message = GetTimeoutResponse(e.Request, "Work item timeout.");
                 }
                 else
                 {
@@ -86,9 +85,6 @@ namespace MySoft.IoC
 
             try
             {
-                //设置线程
-                channelResult.SetThread(Thread.CurrentThread);
-
                 //调用响应信息
                 var channel = channelResult.Channel;
                 var context = channelResult.Context;
@@ -99,6 +95,10 @@ namespace MySoft.IoC
                     var resMsg = caller.InvokeResponse(channel, context);
 
                     channelResult.Set(resMsg);
+                }
+                else
+                {
+                    channelResult.Set(null);
                 }
             }
             catch (Exception ex)
@@ -168,6 +168,11 @@ namespace MySoft.IoC
         /// <param name="count"></param>
         private void HandleResponse(AppCaller caller, ResponseMessage resMsg, int count)
         {
+            if (caller.ServiceName == typeof(IStatusService).FullName)
+            {
+                return;
+            }
+
             try
             {
                 //调用参数
