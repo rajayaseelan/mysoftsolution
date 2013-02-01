@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace MySoft.IoC
 {
     internal class CacheKey

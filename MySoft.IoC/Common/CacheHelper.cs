@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Threading;
 using MySoft.Logger;
 
@@ -19,7 +20,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static CacheObject<byte[]> GetCache(string filePath)
+        public static CacheItem GetCache(string filePath)
         {
             var key = Path.GetFileNameWithoutExtension(filePath);
 
@@ -35,7 +36,7 @@ namespace MySoft.IoC
         /// <param name="timeout"></param>
         /// <param name="func"></param>
         /// <returns></returns>
-        public static byte[] Get(CacheKey key, TimeSpan timeout, Func<byte[]> func)
+        public static ResponseItem Get(CacheKey key, TimeSpan timeout, Func<ResponseItem> func)
         {
             return Get(key, timeout, state => func(), null);
         }
@@ -50,15 +51,49 @@ namespace MySoft.IoC
         /// <param name="state"></param>
         /// <param name="pred"></param>
         /// <returns></returns>
-        public static byte[] Get(CacheKey key, TimeSpan timeout, Func<object, byte[]> func, object state)
+        public static ResponseItem Get(CacheKey key, TimeSpan timeout, Func<object, ResponseItem> func, object state)
+        {
+            var syncRoot = GetSyncRoot(key);
+
+            lock (syncRoot)
+            {
+                ResponseItem item = null;
+                var cacheObj = GetCache(GetFilePath(key), key.UniqueId);
+
+                if (cacheObj == null)
+                {
+                    //获取数据缓存
+                    item = GetResponseItem(key, timeout, func, state, false);
+                }
+                else if (cacheObj.ExpiredTime < DateTime.Now)
+                {
+                    //如果数据过期，则更新之
+                    item = GetResponseItem(key, timeout, func, state, true);
+                }
+
+                if (item == null && cacheObj != null)
+                {
+                    //实例化Item
+                    item = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
+                }
+
+                return item;
+            }
+        }
+
+        /// <summary>
+        /// 获取锁对象
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static object GetSyncRoot(CacheKey key)
         {
             object syncRoot = null;
 
-            //计算锁key
+            string lockKey = string.Format("{0}${1}", key.ServiceName, key.MethodName);
+
             lock (hashtable.SyncRoot)
             {
-                var lockKey = string.Format("{0}${1}", key.ServiceName, key.MethodName);
-
                 if (hashtable.ContainsKey(lockKey))
                 {
                     syncRoot = hashtable[lockKey];
@@ -70,33 +105,7 @@ namespace MySoft.IoC
                 }
             }
 
-            lock (syncRoot)
-            {
-                var cacheObj = GetCache(GetFilePath(key), key.UniqueId);
-
-                if (cacheObj == null)
-                {
-                    //获取数据缓存
-                    return GetUpdateBuffer(key, timeout, func, state, false);
-                }
-                else if (cacheObj.ExpiredTime < DateTime.Now)
-                {
-                    //如果数据过期，则更新之
-                    var buffer = GetUpdateBuffer(key, timeout, func, state, true);
-
-                    if (buffer != null)
-                    {
-                        return buffer;
-                    }
-                    else
-                    {
-                        //插入缓存
-                        InsertCache(GetFilePath(key), key.UniqueId, cacheObj.Value, timeout);
-                    }
-                }
-
-                return cacheObj.Value;
-            }
+            return syncRoot;
         }
 
         /// <summary>
@@ -108,9 +117,9 @@ namespace MySoft.IoC
         /// <param name="state"></param>
         /// <param name="async"></param>
         /// <returns></returns>
-        private static byte[] GetUpdateBuffer(CacheKey key, TimeSpan timeout, Func<object, byte[]> func, object state, bool async)
+        private static ResponseItem GetResponseItem(CacheKey key, TimeSpan timeout, Func<object, ResponseItem> func, object state, bool async)
         {
-            byte[] buffer = null;
+            ResponseItem item = null;
 
             try
             {
@@ -121,14 +130,14 @@ namespace MySoft.IoC
                     //等待30秒超时
                     if (ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(UPDATE_TIMEOUT)))
                     {
-                        buffer = func.EndInvoke(ar);
+                        item = func.EndInvoke(ar);
 
                         ar.AsyncWaitHandle.Close();
                     }
                 }
                 else
                 {
-                    buffer = func(state);
+                    item = func(state);
                 }
             }
             catch (ThreadInterruptedException ex) { }
@@ -142,14 +151,14 @@ namespace MySoft.IoC
             }
             finally
             {
-                if (buffer != null)
+                if (item != null && item.Buffer != null)
                 {
                     //插入缓存
-                    InsertCache(GetFilePath(key), key.UniqueId, buffer, timeout);
+                    InsertCache(GetFilePath(key), key.UniqueId, item, timeout);
                 }
             }
 
-            return buffer;
+            return item;
         }
 
         /// <summary>
@@ -158,9 +167,9 @@ namespace MySoft.IoC
         /// <param name="path"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        private static CacheObject<byte[]> GetCache(string path, string key)
+        private static CacheItem GetCache(string path, string key)
         {
-            var cacheObj = CacheHelper.Get<CacheObject<byte[]>>(key);
+            var cacheObj = CacheHelper.Get<CacheItem>(key);
 
             if (cacheObj == null)
             {
@@ -169,13 +178,18 @@ namespace MySoft.IoC
                     if (File.Exists(path))
                     {
                         var buffer = File.ReadAllBytes(path);
-                        cacheObj = SerializationManager.DeserializeBin<CacheObject<byte[]>>(buffer);
+                        cacheObj = SerializationManager.DeserializeBin<CacheItem>(buffer);
                     }
                 }
                 catch (ThreadInterruptedException ex) { }
                 catch (ThreadAbortException ex)
                 {
                     Thread.ResetAbort();
+                }
+                catch (SerializationException ex)
+                {
+                    try { File.Delete(path); }
+                    catch { }
                 }
                 catch (IOException ex) { }
                 catch (Exception ex)
@@ -192,9 +206,9 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="path"></param>
         /// <param name="key"></param>
-        /// <param name="buffer"></param>
+        /// <param name="item"></param>
         /// <param name="timeout"></param>
-        private static void InsertCache(string path, string key, byte[] buffer, TimeSpan timeout)
+        private static void InsertCache(string path, string key, ResponseItem item, TimeSpan timeout)
         {
             try
             {
@@ -203,10 +217,11 @@ namespace MySoft.IoC
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
                 //序列化成二进制
-                var cacheObj = new CacheObject<byte[]>
+                var cacheObj = new CacheItem
                 {
                     ExpiredTime = DateTime.Now.Add(timeout),
-                    Value = buffer
+                    Count = item.Count,
+                    Value = item.Buffer
                 };
 
                 File.WriteAllBytes(path, SerializationManager.SerializeBin(cacheObj));

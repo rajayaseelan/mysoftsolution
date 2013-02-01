@@ -55,7 +55,6 @@ namespace MySoft.IoC
             this.subscribed = subscribed;
 
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(node.IP, node.Port));
-            this.client.IsTimeoutDisconnect = !subscribed;
             this.client.Connected += client_Connected;
             this.client.Disconnected += client_Disconnected;
             this.client.MessageReceived += client_MessageReceived;

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-
+﻿
 namespace MySoft.IoC
 {
     /// <summary>
@@ -18,12 +16,17 @@ namespace MySoft.IoC
         /// <summary>
         /// The default max caller
         /// </summary>
-        public const int DEFAULT_SERVER_MAXCALLER = 30; //默认为30
+        public const int DEFAULT_CLIENT_MAXCALLER = 10; //默认为10
+
+        /// <summary>
+        /// The default max caller
+        /// </summary>
+        public const int DEFAULT_SERVER_MAXCALLER = 100; //默认为100
 
         /// <summary>
         /// The default client  call timeout number. 
         /// </summary>
-        public const int DEFAULT_CLIENT_TIMEOUT = 2 * 60; //2*60秒
+        public const int DEFAULT_CLIENT_TIMEOUT = 5 * 60; //5*60秒
 
         /// <summary>
         /// The default server  call timeout number. 

@@ -16,9 +16,14 @@ namespace MySoft.IoC
         RequestMessage Request { get; set; }
 
         /// <summary>
-        /// 缓冲数据
+        /// 缓存数据
         /// </summary>
         byte[] Buffer { get; set; }
+
+        /// <summary>
+        /// 记录数
+        /// </summary>
+        int Count { get; set; }
     }
 
     /// <summary>
@@ -42,12 +47,17 @@ namespace MySoft.IoC
         public RequestMessage Request { get; set; }
 
         /// <summary>
-        /// 响应信息
+        /// 响应消息
         /// </summary>
         public ResponseMessage Message { get; set; }
 
         /// <summary>
-        /// 缓冲数据
+        /// 记录数
+        /// </summary>
+        public int Count { get; set; }
+
+        /// <summary>
+        /// 缓存数据
         /// </summary>
         public byte[] Buffer { get; set; }
 
@@ -58,7 +68,6 @@ namespace MySoft.IoC
             this.Caller = null;
             this.Request = null;
             this.Message = null;
-            this.Buffer = null;
         }
 
         #endregion

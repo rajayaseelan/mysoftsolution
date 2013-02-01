@@ -54,7 +54,9 @@ namespace MySoft.PlatformService.UserService
             //    return null;
             //}
 
-            if (id % 10 == 0)
+            Thread.Sleep(5000);
+
+            if (id % 3 == 0)
             {
                 Thread.Sleep(5000);
             }

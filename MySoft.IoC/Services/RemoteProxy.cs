@@ -153,9 +153,6 @@ namespace MySoft.IoC.Services
 
             try
             {
-                //发送消息
-                reqProxy.SendRequest(messageId, reqMsg);
-
                 //处理数据
                 using (var waitResult = new WaitResult(reqMsg))
                 {
@@ -163,6 +160,9 @@ namespace MySoft.IoC.Services
                     {
                         hashtable[messageId] = waitResult;
                     }
+
+                    //发送消息
+                    reqProxy.SendRequest(messageId, reqMsg);
 
                     //等待信号响应
                     if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))

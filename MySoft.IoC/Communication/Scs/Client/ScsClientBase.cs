@@ -45,11 +45,6 @@ namespace MySoft.IoC.Communication.Scs.Client
         #region Public properties
 
         /// <summary>
-        /// Auto disconnected
-        /// </summary>
-        public bool IsTimeoutDisconnect { get; set; }
-
-        /// <summary>
         /// Timeout for connecting to a server (as milliseconds).
         /// Default value: 15 seconds (15000 ms).
         /// </summary>
@@ -120,7 +115,6 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// Default timeout value for connecting a server.
         /// </summary>
         private const int DefaultConnectionAttemptTimeout = 5000; //5 seconds.
-        private const int DefaultDisconnectionAttemptTimeout = 5 * 60000; //5 minutes.
 
         /// <summary>
         /// The communication channel that is used by client to send and receive messages.
@@ -144,7 +138,6 @@ namespace MySoft.IoC.Communication.Scs.Client
             _pingTimer = new Timer(30000);
             _pingTimer.Elapsed += PingTimer_Elapsed;
             ConnectTimeout = DefaultConnectionAttemptTimeout;
-            IsTimeoutDisconnect = true;
             WireProtocol = WireProtocolManager.GetDefaultWireProtocol();
         }
 
@@ -271,21 +264,7 @@ namespace MySoft.IoC.Communication.Scs.Client
         {
             try
             {
-                if (IsTimeoutDisconnect)
-                {
-                    //判断超时时间
-                    var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
-
-                    if (_communicationChannel.LastReceivedMessageTime < lastMinute && _communicationChannel.LastSentMessageTime < lastMinute)
-                    {
-                        //如果超过1分钟没响应，则断开链接
-                        Disconnect();
-                    }
-                }
-                else
-                {
-                    _communicationChannel.SendMessage(new ScsPingMessage());
-                }
+                _communicationChannel.SendMessage(new ScsPingMessage());
             }
             catch
             {

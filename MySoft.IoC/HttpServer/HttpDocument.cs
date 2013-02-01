@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Reflection;
+using System.Text;
 
 namespace MySoft.IoC.HttpServer
 {

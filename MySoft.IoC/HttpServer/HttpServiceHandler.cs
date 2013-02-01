@@ -3,19 +3,18 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Text;
 using System.Web;
-using MySoft.IoC.Configuration;
+using MySoft.Logger;
 using MySoft.Net.Http;
+using MySoft.RESTful;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using MySoft.Logger;
-using MySoft.RESTful;
 
 namespace MySoft.IoC.HttpServer
 {
     /// <summary>
     /// Castle服务处理器
     /// </summary>
-    public class HttpServiceHandler : IHTTPRequestHandler
+    internal class HttpServiceHandler : IHTTPRequestHandler
     {
         private HttpServiceCaller caller;
 

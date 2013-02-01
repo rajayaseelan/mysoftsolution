@@ -63,7 +63,7 @@ namespace MySoft.IoC
             while (true)
             {
                 //每秒推送一次
-                Thread.Sleep(1000);
+                Thread.Sleep(TimeSpan.FromSeconds(1));
 
                 try
                 {
@@ -87,7 +87,7 @@ namespace MySoft.IoC
             while (true)
             {
                 //每1分钟检测一次
-                Thread.Sleep(5000);
+                Thread.Sleep(TimeSpan.FromMinutes(1));
 
 #if DEBUG
                 IoCHelper.WriteLine(ConsoleColor.DarkGreen, "{0} => Socket async event args : {1}", DateTime.Now, CommunicationHelper.Count);
@@ -103,11 +103,7 @@ namespace MySoft.IoC
                     foreach (var channel in server.Clients.GetAllItems())
                     {
                         //判断状态
-                        if (channel.CommunicationState != CommunicationStates.Connected)
-                        {
-                            server.Clients.Remove(channel.ClientId);
-                            continue;
-                        }
+                        if (channel.UserToken != null) continue;
 
                         //判断是否超时
                         if (channel.LastReceivedMessageTime < lastMinute && channel.LastSentMessageTime < lastMinute)
@@ -116,7 +112,7 @@ namespace MySoft.IoC
                             channel.Disconnect();
 
 #if DEBUG
-                            IoCHelper.WriteLine(ConsoleColor.DarkBlue, "{0} => Server auto disconnect, client id : {1}", DateTime.Now, channel.ClientId);
+                            IoCHelper.WriteLine(ConsoleColor.DarkBlue, "{0} => Auto disconnect channel, endpoint : {1}", DateTime.Now, channel.RemoteEndPoint);
 #endif
                         }
                     }

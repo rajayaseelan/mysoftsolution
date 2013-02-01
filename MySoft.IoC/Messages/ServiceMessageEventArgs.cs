@@ -1,5 +1,4 @@
 ﻿using System;
-using MySoft.IoC.Communication.Scs.Client;
 
 namespace MySoft.IoC.Messages
 {

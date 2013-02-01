@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using MySoft.IoC.Callback;
-using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
@@ -12,6 +11,7 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Nodes;
+using MySoft.IoC.Services;
 using MySoft.Logger;
 using MySoft.Net.Http;
 
@@ -27,7 +27,6 @@ namespace MySoft.IoC
         private HTTPServer httpServer;
         private IScsServer server;
         private ScsTcpEndPoint epServer;
-        private ServiceCaller caller;
         private ServerStatusService status;
         private ServiceChannel client;
 
@@ -78,9 +77,18 @@ namespace MySoft.IoC
             this.status = new ServerStatusService(server, config, container);
             container.Register(typeof(IStatusService), status);
 
+            SyncCaller caller = null;
+
+            if (config.EnableCache)
+                caller = new SyncCaller(config.MaxCaller, true, null);
+            else
+                caller = new SyncCaller(config.MaxCaller, true);
+
             //实例化调用者
-            this.caller = new ServiceCaller(config, container);
-            this.client = new ServiceChannel(NotifyResult, container, caller, status, config.MaxCaller, config.Timeout);
+            var scaller = new ServiceCaller(config, container, caller);
+
+            this.client = new ServiceChannel(config, scaller, status, container);
+            this.client.Callback += NotifyResult;
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -95,7 +103,7 @@ namespace MySoft.IoC
                 //判断是否配置了NodeResolverType
                 nodeResolver = Create<IServerNodeResolver>(config.NodeResolverType) ?? new DefaultNodeResolver();
 
-                var httpCaller = new HttpServiceCaller(config, container);
+                var httpCaller = new HttpServiceCaller(config, container, caller);
 
                 //刷新服务委托
                 status.OnRefresh += (sender, args) => httpCaller.InitCaller(apiResolver);
@@ -244,7 +252,6 @@ namespace MySoft.IoC
                 server.Stop();
                 container.Dispose();
                 client.Dispose();
-                caller.Dispose();
             }
             catch (Exception ex) { }
             finally
@@ -252,7 +259,6 @@ namespace MySoft.IoC
                 httpServer = null;
                 server = null;
                 container = null;
-                caller = null;
                 status = null;
                 client = null;
             }
@@ -352,7 +358,7 @@ namespace MySoft.IoC
                     var reqMsg = message.MessageValue as RequestMessage;
 
                     //调用服务
-                    Send(channel, message.RepliedMessageId, reqMsg);
+                    SendResponse(channel, message.RepliedMessageId, reqMsg);
                 }
             }
             catch (Exception ex)
@@ -392,27 +398,23 @@ namespace MySoft.IoC
         /// <param name="channel"></param>
         /// <param name="messageId"></param>
         /// <param name="reqMsg"></param>
-        private void Send(IScsServerClient channel, string messageId, RequestMessage reqMsg)
+        private void SendResponse(IScsServerClient channel, string messageId, RequestMessage reqMsg)
         {
             try
             {
-                //连接状态
-                if (channel.CommunicationState == CommunicationStates.Connected)
-                {
-                    //获取AppPath
-                    var appPath = (channel.UserToken == null) ? null : (channel.UserToken as AppClient).AppPath;
+                //获取AppPath
+                var appPath = (channel.UserToken == null) ? null : (channel.UserToken as AppClient).AppPath;
 
-                    //实例化上下文
-                    using (var context = new CallerContext
-                     {
-                         MessageId = messageId,
-                         Request = reqMsg,
-                         Caller = CreateCaller(appPath, reqMsg)
-                     })
-                    {
-                        //发送消息
-                        client.SendResponse(channel, context);
-                    }
+                //实例化上下文
+                using (var context = new CallerContext
+                 {
+                     MessageId = messageId,
+                     Request = reqMsg,
+                     Caller = CreateCaller(appPath, reqMsg)
+                 })
+                {
+                    //发送消息
+                    client.SendResponse(channel, context);
                 }
             }
             catch (Exception ex)
@@ -430,13 +432,13 @@ namespace MySoft.IoC
         {
             try
             {
+                if (Completed != null)
+                {
+                    Completed(container, callArgs);
+                }
+
                 //响应消息
                 MessageCenter.Instance.Notify(callArgs);
-
-                if (OnCalling != null)
-                {
-                    OnCalling(container, callArgs);
-                }
             }
             catch
             {
@@ -514,9 +516,9 @@ namespace MySoft.IoC
         public event ErrorLogEventHandler OnError;
 
         /// <summary>
-        /// OnCalling event.
+        /// Completed event.
         /// </summary>
-        public event EventHandler<CallEventArgs> OnCalling;
+        public event EventHandler<CallEventArgs> Completed;
 
         #endregion
 

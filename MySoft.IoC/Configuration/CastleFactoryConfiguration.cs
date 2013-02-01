@@ -12,10 +12,11 @@ namespace MySoft.IoC.Configuration
     {
         private IDictionary<string, ServerNode> nodes;
         private CastleFactoryType type = CastleFactoryType.Local;
-        private string defaultKey, proxyServer;         //代理服务
-        private string appname;                         //host名称
-        private bool throwError = true;                 //抛出异常
-        private bool enableCache = true;                //是否缓存
+        private string defaultKey, proxyServer;                                 //代理服务
+        private string appname;                                                 //host名称
+        private bool throwError = true;                                         //抛出异常
+        private bool enableCache = true;                                        //是否缓存
+        private int maxCaller = ServiceConfig.DEFAULT_CLIENT_MAXCALLER;         //默认并发数为10
 
         /// <summary>
         /// 实例化CastleFactoryConfiguration
@@ -70,6 +71,9 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["appname"] != null && attribute["appname"].Value.Trim() != string.Empty)
                 appname = attribute["appname"].Value;
+
+            if (attribute["maxCaller"] != null && attribute["maxCaller"].Value.Trim() != string.Empty)
+                maxCaller = Convert.ToInt32(attribute["maxCaller"].Value);
 
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
@@ -196,6 +200,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return enableCache; }
             set { enableCache = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the maxCaller
+        /// </summary>
+        public int MaxCaller
+        {
+            get { return maxCaller; }
+            set { maxCaller = value; }
         }
 
         /// <summary>

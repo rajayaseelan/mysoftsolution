@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Threading;
 using MySoft.IoC.Communication.Scs.Server;
-using MySoft.IoC.Communication.Scs.Communication;
 
 namespace MySoft.IoC.Services
 {
@@ -13,6 +9,8 @@ namespace MySoft.IoC.Services
     internal class ChannelResult : WaitResult
     {
         private IScsServerClient channel;
+        private IDataContext context;
+        private Thread thread;
 
         /// <summary>
         /// 通道
@@ -21,8 +19,6 @@ namespace MySoft.IoC.Services
         {
             get { return channel; }
         }
-
-        private IDataContext context;
 
         /// <summary>
         /// 上下文
@@ -33,16 +29,25 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 是否完成
+        /// 设置线程
         /// </summary>
-        public bool Completed
+        /// <param name="thread"></param>
+        public void SetThread(Thread thread)
         {
-            get
-            {
-                if (channel == null) return true;
-                if (channel.CommunicationState != CommunicationStates.Connected) return true;
+            this.thread = thread;
+        }
 
-                return false;
+        /// <summary>
+        /// 结束线程
+        /// </summary>
+        public void Cancel()
+        {
+            try
+            {
+                if (thread != null) thread.Abort();
+            }
+            catch
+            {
             }
         }
 
@@ -62,6 +67,7 @@ namespace MySoft.IoC.Services
         {
             this.channel = null;
             this.context = null;
+            this.thread = null;
 
             base.Dispose();
         }

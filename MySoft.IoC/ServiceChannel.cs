@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
+using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
-using MySoft.Threading;
+using MySoft.Logger;
 
 namespace MySoft.IoC
 {
@@ -13,31 +15,26 @@ namespace MySoft.IoC
     /// </summary>
     internal class ServiceChannel : IDisposable
     {
-        private Action<CallEventArgs> callback;
-        private IServiceContainer container;
+        public event Action<CallEventArgs> Callback;
+
+        private ILog logger;
         private ServiceCaller caller;
         private ServerStatusService status;
-        private Semaphore semaphore;
         private int timeout;
 
         /// <summary>
         /// 实例化ServiceChannel
         /// </summary>
-        /// <param name="callback"></param>
-        /// <param name="container"></param>
+        /// <param name="config"></param>
         /// <param name="caller"></param>
         /// <param name="status"></param>
-        /// <param name="maxCaller"></param>
-        /// <param name="timeout"></param>
-        public ServiceChannel(Action<CallEventArgs> callback, IServiceContainer container, ServiceCaller caller
-                                , ServerStatusService status, int maxCaller, int timeout)
+        /// <param name="logger"></param>
+        public ServiceChannel(CastleServiceConfiguration config, ServiceCaller caller, ServerStatusService status, ILog logger)
         {
-            this.callback = callback;
-            this.container = container;
             this.caller = caller;
             this.status = status;
-            this.timeout = timeout;
-            this.semaphore = new Semaphore(maxCaller);
+            this.logger = logger;
+            this.timeout = config.Timeout;
         }
 
         /// <summary>
@@ -47,46 +44,36 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         public void SendResponse(IScsServerClient channel, CallerContext e)
         {
-            //开始计时
-            var watch = Stopwatch.StartNew();
+#if DEBUG
+            var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
+            var body = string.Format("Remote client【{0}】begin call service ({1},{2}).\r\nParameters => {3}",
+                                        message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters);
 
-            //请求一个控制器
-            semaphore.WaitOne();
+            logger.WriteLog(body, LogType.Normal);
+#endif
 
-            try
+            using (var channelResult = new ChannelResult(channel, e))
             {
-                using (var channelResult = new ChannelResult(channel, e))
+                //开始异步调用
+                ThreadPool.UnsafeQueueUserWorkItem(WaitCallback, channelResult);
+
+                //等待超时响应
+                if (!channelResult.WaitOne(TimeSpan.FromSeconds(timeout)))
                 {
-                    //开始异步调用
-                    ManagedThreadPool.QueueUserWorkItem(WaitCallback, channelResult);
+                    channelResult.Cancel();
 
-                    //等待超时响应
-                    if (!channelResult.WaitOne(TimeSpan.FromSeconds(timeout)))
-                    {
-                        //获取异常响应
-                        e.Message = GetTimeoutResponse(e.Request);
-                    }
-                    else
-                    {
-                        //正常响应信息
-                        e.Message = channelResult.Message;
-                    }
+                    //获取异常响应
+                    e.Message = GetTimeoutResponse(e.Request, "Work item canceled.");
                 }
-
-                //处理上下文
-                HandleCallerContext(channel, e, watch.ElapsedMilliseconds);
-            }
-            finally
-            {
-                //停止记时
-                if (watch.IsRunning)
+                else
                 {
-                    watch.Stop();
+                    //正常响应信息
+                    e.Message = channelResult.Message;
                 }
-
-                //释放一个控制器
-                semaphore.AddOne();
             }
+
+            //处理上下文
+            HandleCallerContext(channel, e);
         }
 
         /// <summary>
@@ -95,22 +82,20 @@ namespace MySoft.IoC
         /// <param name="state"></param>
         private void WaitCallback(object state)
         {
-            if (state == null) return;
+            var channelResult = state as ChannelResult;
 
             try
             {
-                var channelResult = state as ChannelResult;
+                //设置线程
+                channelResult.SetThread(Thread.CurrentThread);
 
-                if (channelResult.Completed)
-                {
-                    channelResult.Set(null);
-                }
-                else
-                {
-                    //调用响应信息
-                    var channel = channelResult.Channel;
-                    var context = channelResult.Context;
+                //调用响应信息
+                var channel = channelResult.Channel;
+                var context = channelResult.Context;
 
+                if (channel != null && channel.CommunicationState == CommunicationStates.Connected)
+                {
+                    //返回响应
                     var resMsg = caller.InvokeResponse(channel, context);
 
                     channelResult.Set(resMsg);
@@ -125,12 +110,13 @@ namespace MySoft.IoC
         /// 获取超时响应信息
         /// </summary>
         /// <param name="reqMsg"></param>
+        /// <param name="message"></param>
         /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg)
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, string message)
         {
             //获取异常响应信息
-            var body = string.Format("Async call service ({0}, {1})  timeout ({2}) ms.",
-                        reqMsg.ServiceName, reqMsg.MethodName, timeout * 1000);
+            var body = string.Format("Async call service ({0}, {1})  timeout ({2}) ms. {3}",
+                        reqMsg.ServiceName, reqMsg.MethodName, timeout * 1000, message);
 
             var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(body));
 
@@ -145,17 +131,13 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="e"></param>
-        /// <param name="elapsedTime"></param>
-        private void HandleCallerContext(IScsServerClient channel, CallerContext e, long elapsedTime)
+        private void HandleCallerContext(IScsServerClient channel, CallerContext e)
         {
+            //不是从缓存读取，则响应与状态服务跳过
             if (e.Message != null)
             {
-                //不是从缓存读取，则响应与状态服务跳过
-                if (e.Request.ServiceName != typeof(IStatusService).FullName)
-                {
-                    //处理响应信息
-                    HandleResponse(e.Caller, e.Message, elapsedTime);
-                }
+                //处理响应信息
+                HandleResponse(e.Caller, e.Message, e.Count);
 
                 //如果是Json方式调用，则需要处理异常
                 if (e.Request.InvokeMethod && e.Message.IsError)
@@ -168,15 +150,10 @@ namespace MySoft.IoC
             }
             else
             {
-                //生成响应信息
                 var resMsg = IoCHelper.GetResponse(e.Request, null);
 
-                //不是从缓存读取，则响应与状态服务跳过
-                if (e.Request.ServiceName != typeof(IStatusService).FullName)
-                {
-                    //处理响应信息
-                    HandleResponse(e.Caller, resMsg, elapsedTime);
-                }
+                //处理响应信息
+                HandleResponse(e.Caller, resMsg, e.Count);
             }
 
             //发送消息
@@ -188,44 +165,28 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="caller"></param>
         /// <param name="resMsg"></param>
-        /// <param name="elapsedTime"></param>
-        private void HandleResponse(AppCaller caller, ResponseMessage resMsg, long elapsedTime)
+        /// <param name="count"></param>
+        private void HandleResponse(AppCaller caller, ResponseMessage resMsg, int count)
         {
-            //调用参数
-            var callArgs = new CallEventArgs(caller)
-            {
-                ElapsedTime = elapsedTime,
-                Count = resMsg.Count,
-                Error = resMsg.Error,
-                Value = resMsg.Value
-            };
-
             try
             {
-                //开始调用
-                if (callback != null)
+                //调用参数
+                var callArgs = new CallEventArgs(caller)
                 {
-                    //异步调用
-                    callback.BeginInvoke(callArgs, ar =>
-                    {
-                        try
-                        {
-                            //完成委托
-                            callback.EndInvoke(ar);
-                        }
-                        catch (Exception ex) { }
-                        finally
-                        {
-                            ar.AsyncWaitHandle.Close();
-                        }
-                    }, callArgs);
-                }
-            }
-            catch (Exception ex) { }
-            finally
-            {
+                    ElapsedTime = resMsg.ElapsedTime,
+                    Count = Math.Max(resMsg.Count, count),
+                    Error = resMsg.Error,
+                    Value = resMsg.Value
+                };
+
                 //调用计数服务
                 status.Counter(callArgs);
+
+                //开始调用
+                if (Callback != null) Callback(callArgs);
+            }
+            catch (Exception ex)
+            {
             }
         }
 
@@ -244,7 +205,10 @@ namespace MySoft.IoC
             try
             {
                 //如果没有返回消息，则退出
-                if (e.Buffer == null && e.Message == null) return;
+                if (e.Buffer == null && e.Message == null)
+                {
+                    return;
+                }
 
                 IScsMessage message = null;
 
@@ -260,10 +224,9 @@ namespace MySoft.IoC
             {
                 //获取异常响应
                 var title = string.Format("Sending message ({0}, {1}) error.", e.Caller.ServiceName, e.Caller.MethodName);
-
                 var error = IoCHelper.GetException(e.Caller, title, ex);
 
-                container.WriteError(error);
+                throw error;
             }
         }
 
@@ -274,7 +237,6 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            this.callback = null;
             this.caller = null;
             this.status = null;
         }

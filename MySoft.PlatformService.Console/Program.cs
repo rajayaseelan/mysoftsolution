@@ -20,7 +20,7 @@ namespace MySoft.PlatformService.Console
             var server = new CastleService(config);
             server.OnLog += new LogEventHandler(server_OnLog);
             server.OnError += new ErrorLogEventHandler(server_OnError);
-            server.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
+            server.Completed += new EventHandler<CallEventArgs>(server_OnCalling);
             server.Start();
 
             //MySoft.IoC.DataReport.CallingReport.Init(config, server);

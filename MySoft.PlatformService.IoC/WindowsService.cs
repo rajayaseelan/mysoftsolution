@@ -54,7 +54,7 @@ namespace MySoft.PlatformService.IoC
 
             this.service.OnLog += new LogEventHandler(server_OnLog);
             this.service.OnError += new ErrorLogEventHandler(server_OnError);
-            this.service.OnCalling += new EventHandler<CallEventArgs>(server_OnCalling);
+            this.service.Completed += new EventHandler<CallEventArgs>(server_Completed);
 
             try
             {
@@ -135,7 +135,7 @@ namespace MySoft.PlatformService.IoC
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void server_OnCalling(object sender, CallEventArgs e)
+        void server_Completed(object sender, CallEventArgs e)
         {
             //调用服务，记入数据库
             if (recorder != null)

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MySoft.Net.Http;
-using MySoft.IoC.Configuration;
+﻿using MySoft.Net.Http;
 
 namespace MySoft.IoC.HttpServer
 {

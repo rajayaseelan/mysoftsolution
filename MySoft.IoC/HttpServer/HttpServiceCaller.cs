@@ -2,27 +2,31 @@
 using System.Collections;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC.HttpServer
 {
     /// <summary>
     /// Http服务调用
     /// </summary>
-    public class HttpServiceCaller
+    internal class HttpServiceCaller
     {
         private IServiceContainer container;
         private CastleServiceConfiguration config;
         private HttpCallerInfoCollection callers;
+        private SyncCaller caller;
 
         /// <summary>
         /// HttpServiceCaller初始化
         /// </summary>
         /// <param name="config"></param>
         /// <param name="container"></param>
-        public HttpServiceCaller(CastleServiceConfiguration config, IServiceContainer container)
+        /// <param name="caller"></param>
+        public HttpServiceCaller(CastleServiceConfiguration config, IServiceContainer container, SyncCaller caller)
         {
             this.config = config;
             this.container = container;
+            this.caller = caller;
             this.callers = new HttpCallerInfoCollection();
         }
 
@@ -205,7 +209,7 @@ namespace MySoft.IoC.HttpServer
             };
 
             //使用Invoke方式调用
-            using (var invoke = new InvokeCaller(conf, container, service, null))
+            using (var invoke = new InvokeCaller(conf, container, service, caller))
             {
                 return invoke.InvokeResponse(message);
             }
@@ -219,23 +223,19 @@ namespace MySoft.IoC.HttpServer
         private IService ParseService(string serviceName)
         {
             //处理数据返回InvokeData
-            IService service = null;
             string serviceKey = "Service_" + serviceName;
 
             if (container.Kernel.HasComponent(serviceKey))
             {
-                service = container.Resolve<IService>(serviceKey);
+                return container.Resolve<IService>(serviceKey);
             }
-
-            if (service == null)
+            else
             {
                 string body = string.Format("The server not find matching service ({0}).", serviceName);
 
                 //返回异常信息
                 throw new WarningException(body);
             }
-
-            return service;
         }
     }
 }

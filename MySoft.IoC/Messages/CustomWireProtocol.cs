@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Text;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
+﻿using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerialization;
-using MySoft.IoC.Services;
-using MySoft.Security;
-using System.Runtime.Serialization;
 
 namespace MySoft.IoC.Messages
 {

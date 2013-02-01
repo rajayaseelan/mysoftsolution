@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MySoft.IoC.Messages;
+﻿using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {

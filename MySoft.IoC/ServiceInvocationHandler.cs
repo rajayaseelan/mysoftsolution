@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
@@ -12,15 +11,15 @@ namespace MySoft.IoC
     /// <summary>
     /// The base impl class of the service interface, this class is used by service factory to emit service interface impl automatically at runtime.
     /// </summary>
-    public class ServiceInvocationHandler : IProxyInvocationHandler
+    internal class ServiceInvocationHandler<T> : IProxyInvocationHandler
+        where T : class
     {
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
         private IDictionary<string, string> errors;
         private IContainer container;
-        private SyncCaller syncCaller;
         private IService service;
-        private Type serviceType;
+        private SyncCaller caller;
         private IServiceLog logger;
         private string hostName;
         private string ipAddress;
@@ -31,15 +30,14 @@ namespace MySoft.IoC
         /// <param name="config"></param>
         /// <param name="container"></param>
         /// <param name="service"></param>
-        /// <param name="serviceType"></param>
-        /// <param name="cache"></param>
-        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, Type serviceType, IDataCache cache, IServiceLog logger)
+        /// <param name="caller"></param>
+        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, SyncCaller caller, IServiceLog logger)
         {
             this.config = config;
             this.container = container;
-            this.serviceType = serviceType;
             this.service = service;
             this.logger = logger;
+            this.caller = caller;
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -47,13 +45,7 @@ namespace MySoft.IoC
             this.cacheTimes = new Dictionary<string, int>();
             this.errors = new Dictionary<string, string>();
 
-            //实例化异步服务
-            if (config.EnableCache)
-                this.syncCaller = new SyncCaller(service, cache);
-            else
-                this.syncCaller = new SyncCaller(service);
-
-            var methods = CoreHelper.GetMethodsFromType(serviceType);
+            var methods = CoreHelper.GetMethodsFromType(typeof(T));
             foreach (var method in methods)
             {
                 var contract = CoreHelper.GetMemberAttribute<OperationContractAttribute>(method);
@@ -88,7 +80,7 @@ namespace MySoft.IoC
                 AppName = config.AppName,                       //应用名称
                 HostName = hostName,                            //客户端名称
                 IPAddress = ipAddress,                          //客户端IP地址
-                ServiceName = serviceType.FullName,             //服务名称
+                ServiceName = typeof(T).FullName,               //服务名称
                 MethodName = method.ToString(),                 //方法名称
                 TransactionId = Guid.NewGuid(),                 //传输ID号
                 MethodInfo = method,                            //设置调用方法
@@ -145,7 +137,7 @@ namespace MySoft.IoC
                     using (var context = GetOperationContext(reqMsg))
                     {
                         //异步调用服务
-                        resMsg = syncCaller.Run(context, reqMsg);
+                        resMsg = caller.Run(service, context, reqMsg).Message;
                     }
 
                     //写日志结束

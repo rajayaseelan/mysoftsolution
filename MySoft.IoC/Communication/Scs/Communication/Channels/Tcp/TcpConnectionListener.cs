@@ -12,8 +12,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
     /// </summary>
     internal class TcpConnectionListener : ConnectionListenerBase, ICommunicationProtocol
     {
-        private static readonly object syncRoot = new object();
-
         /// <summary>
         /// The endpoint address of the server to listen incoming connections.
         /// </summary>
@@ -168,14 +166,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <returns></returns>
         private SocketAsyncEventArgs CreateAsyncSEA()
         {
-            lock (syncRoot)
-            {
-                var e = CommunicationHelper.Pop(this);
+            var e = CommunicationHelper.Pop(this);
 
-                e.UserToken = _listenerSocket;
+            e.UserToken = _listenerSocket;
 
-                return e;
-            }
+            return e;
         }
 
         /// <summary>
@@ -184,19 +179,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void DisposeAsyncSEA(SocketAsyncEventArgs e)
         {
-            lock (syncRoot)
+            try
             {
-                try
-                {
-                    e.AcceptSocket = null;
-                    e.UserToken = null;
-                    e.SetBuffer(null, 0, 0);
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    CommunicationHelper.Push(e);
-                }
+                e.AcceptSocket = null;
+                e.UserToken = null;
+                e.SetBuffer(null, 0, 0);
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                CommunicationHelper.Push(e);
             }
         }
     }

@@ -55,11 +55,6 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Set(ResponseMessage resMsg)
         {
-            if (ev == null)
-            {
-                return false;
-            }
-
             try
             {
                 this.resMsg = resMsg;
@@ -78,11 +73,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         public virtual void Dispose()
         {
-            if (this.ev != null)
-            {
-                this.ev.Close();
-                this.ev = null;
-            }
+            this.ev.Close();
 
             this.reqMsg = null;
             this.resMsg = null;

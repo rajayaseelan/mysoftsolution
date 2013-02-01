@@ -1,5 +1,4 @@
 ﻿using System;
-using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
@@ -9,14 +8,14 @@ namespace MySoft.IoC
     /// <summary>
     /// 调用者
     /// </summary>
-    public class InvokeCaller : IDisposable
+    internal class InvokeCaller : IDisposable
     {
         private CastleFactoryConfiguration config;
+        private IContainer container;
+        private IService service;
+        private SyncCaller caller;
         private string hostName;
         private string ipAddress;
-        private IService service;
-        private IContainer container;
-        private SyncCaller syncCaller;
 
         /// <summary>
         /// 实例化InvokeCaller
@@ -24,18 +23,13 @@ namespace MySoft.IoC
         /// <param name="config"></param>
         /// <param name="container"></param>
         /// <param name="service"></param>
-        /// <param name="cache"></param>
-        public InvokeCaller(CastleFactoryConfiguration config, IContainer container, IService service, IDataCache cache)
+        /// <param name="caller"></param>
+        public InvokeCaller(CastleFactoryConfiguration config, IContainer container, IService service, SyncCaller caller)
         {
             this.config = config;
-            this.service = service;
             this.container = container;
-
-            //实例化异步服务
-            if (config.EnableCache)
-                this.syncCaller = new SyncCaller(service, cache);
-            else
-                this.syncCaller = new SyncCaller(service);
+            this.service = service;
+            this.caller = caller;
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -72,7 +66,7 @@ namespace MySoft.IoC
             using (var context = GetOperationContext(reqMsg))
             {
                 //异步调用服务
-                var resMsg = syncCaller.Run(context, reqMsg);
+                var resMsg = caller.Run(service, context, reqMsg).Message;
 
                 //如果有异常，向外抛出
                 if (resMsg.IsError) throw resMsg.Error;
@@ -117,7 +111,7 @@ namespace MySoft.IoC
         {
             this.service = null;
             this.container = null;
-            this.syncCaller = null;
+            this.caller = null;
         }
 
         #endregion

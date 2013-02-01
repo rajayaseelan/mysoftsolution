@@ -13,19 +13,20 @@ namespace MySoft.IoC
     internal class ServiceCaller : IDisposable
     {
         private IDictionary<string, Type> callbackTypes;
-        private IDictionary<string, SyncCaller> syncCallers;
         private IServiceContainer container;
+        private SyncCaller caller;
 
         /// <summary>
         /// 初始化ServiceCaller
         /// </summary>
         /// <param name="config"></param>
         /// <param name="container"></param>
-        public ServiceCaller(CastleServiceConfiguration config, IServiceContainer container)
+        /// <param name="caller"></param>
+        public ServiceCaller(CastleServiceConfiguration config, IServiceContainer container, SyncCaller caller)
         {
-            this.container = container;
             this.callbackTypes = new Dictionary<string, Type>();
-            this.syncCallers = new Dictionary<string, SyncCaller>();
+            this.container = container;
+            this.caller = caller;
 
             //初始化服务
             Init(container, config);
@@ -43,20 +44,6 @@ namespace MySoft.IoC
                 {
                     callbackTypes[type.FullName] = contract.CallbackType;
                 }
-
-                IService service = null;
-                string serviceKey = "Service_" + type.FullName;
-
-                if (container.Kernel.HasComponent(serviceKey))
-                {
-                    service = container.Resolve<IService>(serviceKey);
-
-                    //实例化SyncCaller
-                    if (config.EnableCache)
-                        syncCallers[type.FullName] = new SyncCaller(service, null);
-                    else
-                        syncCallers[type.FullName] = new SyncCaller(service);
-                }
             }
         }
 
@@ -71,18 +58,27 @@ namespace MySoft.IoC
             //获取上下文
             using (var context = GetOperationContext(channel, e.Caller))
             {
-                //解析服务
-                var syncCaller = GetAsyncCaller(e.Caller);
+                try
+                {
+                    //解析服务
+                    var service = ParseService(e.Caller);
 
-                byte[] buffer = null;
+                    //异步调用服务
+                    var item = caller.Run(service, context, e.Request);
 
-                //异步调用服务
-                var resMsg = syncCaller.Run(context, e.Request, out buffer);
+                    if (item == null) return null;
 
-                //如果消息为null
-                if (resMsg == null) e.Buffer = buffer;
+                    //设置响应值
+                    e.Buffer = item.Buffer;
+                    e.Count = item.Count;
 
-                return resMsg;
+                    return item.Message;
+                }
+                catch (Exception ex)
+                {
+                    //返回异常信息
+                    return IoCHelper.GetResponse(e.Request, ex);
+                }
             }
         }
 
@@ -113,23 +109,25 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Gets the syncCaller.
+        /// Gets the service.
         /// </summary>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private SyncCaller GetAsyncCaller(AppCaller caller)
+        private IService ParseService(AppCaller caller)
         {
-            lock (syncCallers)
+            string serviceKey = "Service_" + caller.ServiceName;
+
+            //判断服务是否存在
+            if (container.Kernel.HasComponent(serviceKey))
             {
-                if (!syncCallers.ContainsKey(caller.ServiceName))
-                {
-                    string body = string.Format("The server not find matching service ({0}).", caller.ServiceName);
+                return container.Resolve<IService>(serviceKey);
+            }
+            else
+            {
+                string body = string.Format("The server not find matching service ({0}).", caller.ServiceName);
 
-                    //获取异常
-                    throw IoCHelper.GetException(caller, body);
-                }
-
-                return syncCallers[caller.ServiceName];
+                //获取异常
+                throw IoCHelper.GetException(caller, body);
             }
         }
 
@@ -138,10 +136,7 @@ namespace MySoft.IoC
         public void Dispose()
         {
             callbackTypes.Clear();
-            syncCallers.Clear();
-
             callbackTypes = null;
-            syncCallers = null;
         }
 
         #endregion

@@ -8,9 +8,5 @@ namespace MySoft.IoC.Communication.Scs.Client
     public interface IScsClient : IMessenger, IConnectableClient
     {
         //Does not define any additional member
-        /// <summary>
-        /// 是否自动断开
-        /// </summary>
-        bool IsTimeoutDisconnect { get; set; }
     }
 }

@@ -2,14 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using MySoft.Security;
 
 namespace MySoft.IoC
 {
@@ -28,6 +26,7 @@ namespace MySoft.IoC
         private IServiceContainer container;
         private IDictionary<string, IService> proxies;
         private IDataCache cache;
+        private SyncCaller caller;
         private IServiceLog logger;
 
         /// <summary>
@@ -44,6 +43,8 @@ namespace MySoft.IoC
         {
             this.config = config;
             this.container = new SimpleServiceContainer(config.Type);
+
+            InitCaller(this.cache);
 
             container.OnLog += (log, type) =>
             {
@@ -82,6 +83,20 @@ namespace MySoft.IoC
                     this.proxies[p.Key.ToLower()] = proxy;
                 }
             }
+
+        }
+
+        /// <summary>
+        /// 初始化调用器
+        /// </summary>
+        /// <param name="cache"></param>
+        private void InitCaller(IDataCache cache)
+        {
+            //实例化异步服务
+            if (config.EnableCache)
+                this.caller = new SyncCaller(config.MaxCaller, false, cache);
+            else
+                this.caller = new SyncCaller(config.MaxCaller, false);
         }
 
         #region 创建单例
@@ -177,6 +192,8 @@ namespace MySoft.IoC
         public void RegisterCache(IDataCache cache)
         {
             this.cache = cache;
+
+            InitCaller(cache);
         }
 
         /// <summary>
@@ -307,7 +324,7 @@ namespace MySoft.IoC
 
             lock (hashtable.SyncRoot)
             {
-                var handler = new ServiceInvocationHandler(this.config, this.container, proxy, serviceType, cache, logger);
+                var handler = new ServiceInvocationHandler<IServiceInterfaceType>(config, container, proxy, caller, logger);
                 var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
 
                 //不缓存，直接返回服务
@@ -517,7 +534,7 @@ namespace MySoft.IoC
         private InvokeData GetInvokeData(IService service, InvokeMessage message)
         {
             //调用分布式服务
-            using (var caller = new InvokeCaller(config, container, service, cache))
+            using (var caller = new InvokeCaller(config, container, service, this.caller))
             {
                 return caller.InvokeResponse(message);
             }

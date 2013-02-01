@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Logger
