@@ -128,7 +128,7 @@ namespace MySoft.IoC
                     var ar = func.BeginInvoke(state, null, null);
 
                     //等待30秒超时
-                    if (ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(UPDATE_TIMEOUT)))
+                    if (ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(UPDATE_TIMEOUT), false))
                     {
                         item = func.EndInvoke(ar);
 
