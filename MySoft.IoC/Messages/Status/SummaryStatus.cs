@@ -8,37 +8,15 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public class SummaryStatus : SecondStatus
     {
-        private int runningSeconds;
         /// <summary>
         /// 运行总时间
         /// </summary>
-        public int RunningSeconds
-        {
-            get
-            {
-                return runningSeconds;
-            }
-            set
-            {
-                runningSeconds = value;
-            }
-        }
+        public int RunningSeconds { get; set; }
 
-        private int requestCount;
         /// <summary>
         /// 请求数
         /// </summary>
-        public new int RequestCount
-        {
-            get
-            {
-                return requestCount;
-            }
-            set
-            {
-                requestCount = value;
-            }
-        }
+        public new int RequestCount { get; set; }
 
         /// <summary>
         /// 平均请求数（每秒）
@@ -47,8 +25,8 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                if (runningSeconds > 0)
-                    return Math.Round((this.RequestCount * 1.0) / (runningSeconds * 1.0), 4);
+                if (RunningSeconds > 0)
+                    return Math.Round((RequestCount * 1.0) / (RunningSeconds * 1.0), 4);
                 else
                     return 0;
             }
@@ -61,8 +39,8 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                if (runningSeconds > 0)
-                    return Math.Round((this.SuccessCount * 1.0) / (runningSeconds * 1.0), 4);
+                if (RunningSeconds > 0)
+                    return Math.Round((SuccessCount * 1.0) / (RunningSeconds * 1.0), 4);
                 else
                     return 0;
             }
@@ -75,8 +53,8 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                if (runningSeconds > 0)
-                    return Math.Round((this.ErrorCount * 1.0) / (runningSeconds * 1.0), 4);
+                if (RunningSeconds > 0)
+                    return Math.Round((ErrorCount * 1.0) / (RunningSeconds * 1.0), 4);
                 else
                     return 0;
             }

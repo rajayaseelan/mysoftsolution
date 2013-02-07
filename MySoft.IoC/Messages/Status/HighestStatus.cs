@@ -8,84 +8,29 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public class HighestStatus : SecondStatus
     {
-        private int requestCount;
         /// <summary>
-        /// 请求数
+        /// 最大请求数
         /// </summary>
-        public new int RequestCount
-        {
-            get
-            {
-                return requestCount;
-            }
-            set
-            {
-                requestCount = value;
-            }
-        }
+        public new int RequestCount { get; set; }
 
-        private DateTime requestCountCounterTime;
         /// <summary>
         /// 最大请求发生时间
         /// </summary>
-        public DateTime RequestCountCounterTime
-        {
-            get
-            {
-                return requestCountCounterTime;
-            }
-            set
-            {
-                requestCountCounterTime = value;
-            }
-        }
+        public DateTime RequestCountCounterTime { get; set; }
 
-        private DateTime successCountCounterTime;
         /// <summary>
         /// 最多成功请求发生时间
         /// </summary>
-        public DateTime SuccessCountCounterTime
-        {
-            get
-            {
-                return successCountCounterTime;
-            }
-            set
-            {
-                successCountCounterTime = value;
-            }
-        }
+        public DateTime SuccessCountCounterTime { get; set; }
 
-        private DateTime errorCountCounterTime;
         /// <summary>
         /// 最多错误请求发生时间
         /// </summary>
-        public DateTime ErrorCountCounterTime
-        {
-            get
-            {
-                return errorCountCounterTime;
-            }
-            set
-            {
-                errorCountCounterTime = value;
-            }
-        }
+        public DateTime ErrorCountCounterTime { get; set; }
 
-        private DateTime elapsedTimeCounterTime;
         /// <summary>
         /// 最耗时请求发生时间
         /// </summary>
-        public DateTime ElapsedTimeCounterTime
-        {
-            get
-            {
-                return elapsedTimeCounterTime;
-            }
-            set
-            {
-                elapsedTimeCounterTime = value;
-            }
-        }
+        public DateTime ElapsedTimeCounterTime { get; set; }
     }
 }

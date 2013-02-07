@@ -7,6 +7,7 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -15,7 +16,7 @@ namespace MySoft.IoC
     /// </summary>
     internal class ServiceChannel : IDisposable
     {
-        public event Action<CallEventArgs> Callback;
+        public event EventHandler<CallEventArgs> Callback;
 
         private ILog logger;
         private ServiceCaller caller;
@@ -55,7 +56,7 @@ namespace MySoft.IoC
             using (var channelResult = new ChannelResult(channel, e))
             {
                 //开始异步调用
-                ThreadPool.QueueUserWorkItem(WaitCallback, channelResult);
+                ManagedThreadPool.QueueUserWorkItem(WaitCallback, channelResult);
 
                 //等待超时响应
                 if (!channelResult.WaitOne(TimeSpan.FromSeconds(timeout)))
@@ -67,11 +68,21 @@ namespace MySoft.IoC
                 {
                     //正常响应信息
                     e.Message = channelResult.Message;
+
+                    //不是从缓存读取，则响应与状态服务跳过
+                    if (e.Message == null)
+                    {
+                        //创建一个响应信息
+                        e.Message = IoCHelper.GetResponse(e.Request, null);
+                    }
                 }
             }
 
-            //处理上下文
-            HandleCallerContext(channel, e);
+            //处理响应信息
+            HandleResponse(e);
+
+            //发送消息
+            SendMessage(channel, e);
         }
 
         /// <summary>
@@ -126,71 +137,57 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 响应消息
-        /// </summary>
-        /// <param name="channel"></param>
-        /// <param name="e"></param>
-        private void HandleCallerContext(IScsServerClient channel, CallerContext e)
-        {
-            //不是从缓存读取，则响应与状态服务跳过
-            if (e.Message != null)
-            {
-                //处理响应信息
-                HandleResponse(e.Caller, e.Message, e.Count);
-
-                //如果是Json方式调用，则需要处理异常
-                if (e.Request.InvokeMethod && e.Message.IsError)
-                {
-                    //获取最底层异常信息
-                    var error = ErrorHelper.GetInnerException(e.Message.Error);
-
-                    e.Message.Error = new ApplicationException(error.Message);
-                }
-            }
-            else
-            {
-                var resMsg = IoCHelper.GetResponse(e.Request, null);
-
-                //处理响应信息
-                HandleResponse(e.Caller, resMsg, e.Count);
-            }
-
-            //发送消息
-            SendMessage(channel, e);
-        }
-
-        /// <summary>
         /// 处理消息
         /// </summary>
-        /// <param name="caller"></param>
-        /// <param name="resMsg"></param>
-        /// <param name="count"></param>
-        private void HandleResponse(AppCaller caller, ResponseMessage resMsg, int count)
+        /// <param name="e"></param>
+        private void HandleResponse(CallerContext e)
         {
-            if (caller.ServiceName == typeof(IStatusService).FullName)
-            {
-                return;
-            }
+            if (e.Message == null) return;
 
             try
             {
-                //调用参数
-                var callArgs = new CallEventArgs(caller)
+                //状态服务不统计
+                if (e.Caller.ServiceName != typeof(IStatusService).FullName)
                 {
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Count = Math.Max(resMsg.Count, count),
-                    Error = resMsg.Error,
-                    Value = resMsg.Value
-                };
+                    //调用参数
+                    var callArgs = new CallEventArgs(e.Caller)
+                    {
+                        ElapsedTime = e.Message.ElapsedTime,
+                        Count = Math.Max(e.Message.Count, e.Count),
+                        Error = e.Message.Error,
+                        Value = e.Message.Value
+                    };
 
-                //调用计数服务
-                status.Counter(callArgs);
+                    //调用计数服务
+                    status.Counter(callArgs);
 
-                //开始调用
-                if (Callback != null) Callback(callArgs);
+                    //开始调用
+                    if (Callback != null) Callback(this, callArgs);
+                }
             }
-            catch (Exception ex)
+            catch (Exception ex) { }
+            finally
             {
+                //设置消息异常
+                SetMessageError(e);
+            }
+        }
+
+        /// <summary>
+        /// 设置消息异常
+        /// </summary>
+        /// <param name="e"></param>
+        private void SetMessageError(CallerContext e)
+        {
+            if (e.Message == null) return;
+
+            //如果是Json方式调用，则需要处理异常
+            if (e.Request.InvokeMethod && e.Message.IsError)
+            {
+                //获取最底层异常信息
+                var error = ErrorHelper.GetInnerException(e.Message.Error);
+
+                e.Message.Error = new ApplicationException(error.Message);
             }
         }
 

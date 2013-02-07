@@ -52,14 +52,14 @@ namespace MySoft.IoC
         public ResponseMessage Message { get; set; }
 
         /// <summary>
-        /// 记录数
-        /// </summary>
-        public int Count { get; set; }
-
-        /// <summary>
         /// 缓存数据
         /// </summary>
         public byte[] Buffer { get; set; }
+
+        /// <summary>
+        /// 记录数
+        /// </summary>
+        public int Count { get; set; }
 
         #region IDisposable 成员
 

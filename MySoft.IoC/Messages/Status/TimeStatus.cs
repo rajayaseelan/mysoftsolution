@@ -11,21 +11,10 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public class TimeStatus : SecondStatus
     {
-        private DateTime counterTime;
         /// <summary>
         /// 记数时间
         /// </summary>
-        public DateTime CounterTime
-        {
-            get
-            {
-                return counterTime;
-            }
-            set
-            {
-                counterTime = value;
-            }
-        }
+        public DateTime CounterTime { get; set; }
     }
 
     /// <summary>

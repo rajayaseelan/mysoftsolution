@@ -427,14 +427,15 @@ namespace MySoft.IoC
         /// <summary>
         /// 响应结果
         /// </summary>
+        /// <param name="sender"></param>
         /// <param name="callArgs"></param>
-        private void NotifyResult(CallEventArgs callArgs)
+        private void NotifyResult(object sender, CallEventArgs callArgs)
         {
             try
             {
                 if (Completed != null)
                 {
-                    Completed(container, callArgs);
+                    Completed(sender, callArgs);
                 }
 
                 //响应消息

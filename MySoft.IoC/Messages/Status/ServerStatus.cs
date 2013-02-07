@@ -8,84 +8,29 @@ namespace MySoft.IoC.Messages
     [Serializable]
     public class ServerStatus
     {
-        private DateTime startDate;
         /// <summary>
         /// 开始时间
         /// </summary>
-        public DateTime StartDate
-        {
-            get
-            {
-                return startDate;
-            }
-            set
-            {
-                startDate = value;
-            }
-        }
+        public DateTime StartDate { get; set; }
 
-        private int totalHours;
         /// <summary>
         /// 统计小时数
         /// </summary>
-        public int TotalHours
-        {
-            get
-            {
-                return totalHours;
-            }
-            set
-            {
-                totalHours = value;
-            }
-        }
+        public int TotalHours { get; set; }
 
-        private SummaryStatus summary;
         /// <summary>
         /// 汇总状态信息
         /// </summary>
-        public SummaryStatus Summary
-        {
-            get
-            {
-                return summary;
-            }
-            set
-            {
-                summary = value;
-            }
-        }
+        public SummaryStatus Summary { get; set; }
 
-        private HighestStatus highest;
         /// <summary>
         /// 最高状态信息
         /// </summary>
-        public HighestStatus Highest
-        {
-            get
-            {
-                return highest;
-            }
-            set
-            {
-                highest = value;
-            }
-        }
+        public HighestStatus Highest { get; set; }
 
-        private TimeStatus latest;
         /// <summary>
         /// 最新状态信息
         /// </summary>
-        public TimeStatus Latest
-        {
-            get
-            {
-                return latest;
-            }
-            set
-            {
-                latest = value;
-            }
-        }
+        public TimeStatus Latest { get; set; }
     }
 }
