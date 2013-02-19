@@ -300,11 +300,7 @@ namespace MySoft.IoC
                     };
 
                     service = proxy;
-
-                    if (config.AppName == "InternalServer")
-                        isCacheService = true;
-                    else
-                        isCacheService = false;
+                    isCacheService = false;
                 }
             }
 

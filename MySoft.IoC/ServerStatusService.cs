@@ -102,9 +102,6 @@ namespace MySoft.IoC
                     //断开超时的连接
                     foreach (var channel in server.Clients.GetAllItems())
                     {
-                        //判断状态
-                        if (channel.UserToken != null) continue;
-
                         //判断是否超时
                         if (channel.LastReceivedMessageTime < lastMinute && channel.LastSentMessageTime < lastMinute)
                         {

@@ -5,9 +5,15 @@ namespace MySoft.PlatformService
 {
     public static class InstallerUtils
     {
+        private static ServiceController[] services;
+
         public static ServiceController LookupService(string serviceName)
         {
-            ServiceController[] services = ServiceController.GetServices();
+            if (services == null)
+            {
+                services = ServiceController.GetServices();
+            }
+
             foreach (ServiceController s in services)
             {
                 if (s.ServiceName.ToLower() == serviceName.ToLower())
@@ -25,7 +31,12 @@ namespace MySoft.PlatformService
         public static IList<ServiceInformation> GetServiceList(string contains, ServiceControllerStatus status)
         {
             IList<ServiceInformation> servicelist = new List<ServiceInformation>();
-            ServiceController[] services = ServiceController.GetServices();
+
+            if (services == null)
+            {
+                services = ServiceController.GetServices();
+            }
+
             foreach (ServiceController s in services)
             {
                 if (s.Status != status) continue;

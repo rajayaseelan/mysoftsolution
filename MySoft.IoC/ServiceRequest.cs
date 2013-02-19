@@ -223,7 +223,7 @@ namespace MySoft.IoC
             }
             catch (Exception e)
             {
-                throw new WarningException(string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", node.IP, node.Port, node.Key, e.Message));
+                throw new WarningException((int)SocketError.NotConnected, string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", node.IP, node.Port, node.Key, e.Message));
             }
         }
     }

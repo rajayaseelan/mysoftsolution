@@ -9,6 +9,32 @@ namespace MySoft.IoC
     public class WarningException : IoCException
     {
         /// <summary>
+        /// 状态码
+        /// </summary>
+        public int WarningCode
+        {
+            get
+            {
+                if (base.Data.Contains("WarningCode"))
+                    return Convert.ToInt32(base.Data["WarningCode"]);
+                else
+                    return -1;
+            }
+            set { base.Data["WarningCode"] = value; }
+        }
+
+        /// <summary>
+        /// 普通异常的构造方法
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="message"></param>
+        public WarningException(int code, string message)
+            : base(message)
+        {
+            this.WarningCode = code;
+        }
+
+        /// <summary>
         /// 普通异常的构造方法
         /// </summary>
         /// <param name="message"></param>
