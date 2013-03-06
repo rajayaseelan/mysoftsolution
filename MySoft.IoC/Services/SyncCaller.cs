@@ -14,34 +14,27 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class SyncCaller
     {
-        private Semaphore semaphore;
         private IDataCache cache;
-        private int maxCaller;
         private bool enabledCache;
         private bool fromServer;
 
         /// <summary>
         /// 实例化SyncCaller
         /// </summary>
-        /// <param name="maxCaller"></param>
         /// <param name="fromServer"></param>
-        public SyncCaller(int maxCaller, bool fromServer)
+        public SyncCaller(bool fromServer)
         {
-            this.maxCaller = maxCaller;
             this.fromServer = fromServer;
             this.enabledCache = false;
-
-            this.semaphore = new Semaphore(maxCaller, maxCaller);
         }
 
         /// <summary>
         /// 实例化SyncCaller
         /// </summary>
-        /// <param name="maxCaller"></param>
         /// <param name="fromServer"></param>
         /// <param name="cache"></param>
-        public SyncCaller(int maxCaller, bool fromServer, IDataCache cache)
-            : this(maxCaller, fromServer)
+        public SyncCaller(bool fromServer, IDataCache cache)
+            : this(fromServer)
         {
             this.cache = cache;
             this.enabledCache = true;
@@ -56,39 +49,28 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseItem Run(IService service, OperationContext context, RequestMessage reqMsg)
         {
-            //请求一个控制器
-            semaphore.WaitOne(Timeout.Infinite, false);
-
-            try
+            if (CheckCache(reqMsg))
             {
-                if (CheckCache(reqMsg))
+                //从缓存获取数据
+                var item = GetResponseFromCache(service, context, reqMsg);
+
+                //从缓存中获取数据
+                if (item != null)
                 {
-                    //从缓存获取数据
-                    var item = GetResponseFromCache(service, context, reqMsg);
-
-                    //从缓存中获取数据
-                    if (item != null)
-                    {
-                        SetResponse(reqMsg, item);
-                    }
-
-                    return item;
+                    SetResponse(reqMsg, item);
                 }
-                else
-                {
-                    //返回正常响应
-                    var resMsg = GetResponse(service, context, reqMsg);
 
-                    if (resMsg == null) return null;
-
-                    //实例化Item
-                    return new ResponseItem(resMsg);
-                }
+                return item;
             }
-            finally
+            else
             {
-                //释放一个控制器
-                semaphore.Release();
+                //返回正常响应
+                var resMsg = GetResponse(service, context, reqMsg);
+
+                if (resMsg == null) return null;
+
+                //实例化Item
+                return new ResponseItem(resMsg);
             }
         }
 

@@ -94,9 +94,9 @@ namespace MySoft.IoC
         {
             //实例化异步服务
             if (config.EnableCache)
-                this.caller = new SyncCaller(config.MaxCaller, false, cache);
+                this.caller = new SyncCaller(false, cache);
             else
-                this.caller = new SyncCaller(config.MaxCaller, false);
+                this.caller = new SyncCaller(false);
         }
 
         #region 创建单例

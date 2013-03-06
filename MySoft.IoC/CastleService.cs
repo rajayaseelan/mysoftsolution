@@ -80,9 +80,9 @@ namespace MySoft.IoC
             SyncCaller caller = null;
 
             if (config.EnableCache)
-                caller = new SyncCaller(config.MaxCaller, true, null);
+                caller = new SyncCaller(true, null);
             else
-                caller = new SyncCaller(config.MaxCaller, true);
+                caller = new SyncCaller(true);
 
             //实例化调用者
             var scaller = new ServiceCaller(config, container, caller);

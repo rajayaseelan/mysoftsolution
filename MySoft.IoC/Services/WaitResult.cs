@@ -42,6 +42,12 @@ namespace MySoft.IoC.Services
             {
                 return ev.WaitOne(timeout, false);
             }
+            catch (ThreadAbortException ex)
+            {
+                Thread.ResetAbort();
+
+                return false;
+            }
             catch
             {
                 return false;
@@ -59,6 +65,12 @@ namespace MySoft.IoC.Services
             {
                 this.resMsg = resMsg;
                 return ev.Set();
+            }
+            catch (ThreadAbortException ex)
+            {
+                Thread.ResetAbort();
+
+                return false;
             }
             catch
             {
