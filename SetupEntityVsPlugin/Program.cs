@@ -3,7 +3,7 @@ using System.Configuration;
 using System.IO;
 using System.Windows.Forms;
 
-namespace SetupNBearVsPlugin
+namespace  MySoft.Tools.SetupEntityVsPlugin
 {
     static class Program
     {
