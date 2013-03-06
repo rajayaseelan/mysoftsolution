@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Caching;
 using MySoft.Logger;
 using MySoft.Security;
+using MySoft.Threading;
 
 namespace MySoft
 {
@@ -271,7 +272,7 @@ namespace MySoft
     /// </summary>
     public static class CacheHelper<T>
     {
-        private const int UPDATE_TIMEOUT = 30;
+        private static readonly Hashtable hashtable = new Hashtable();
 
         #region 数据缓存
 
@@ -285,7 +286,7 @@ namespace MySoft
             var key = Path.GetFileNameWithoutExtension(filePath);
 
             //从文件读取对象
-            return GetCache(LocalCacheType.File, filePath, key);
+            return GetCacheItem(LocalCacheType.File, filePath, key);
         }
 
         /// <summary>
@@ -405,22 +406,87 @@ namespace MySoft
         /// <returns></returns>
         public static T Get(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
         {
-            var cacheObj = GetCache(type, GetFilePath(key), key);
+            var cacheItem = GetCacheItem(key);
 
-            if (cacheObj == null)
+            if (cacheItem == null)
             {
-                //获取更新对象
-                return GetUpdateObject(type, key, timeout, func, state, pred, false);
+                var cacheObj = GetCacheItem(type, GetFilePath(key), key);
+
+                if (cacheObj == null)
+                {
+                    //获取更新对象
+                    cacheItem = GetUpdateObject(type, key, timeout, func, state, pred);
+                }
+                else
+                {
+                    //存在直接返回缓存
+                    cacheItem = cacheObj.Value;
+
+                    if (cacheObj.ExpiredTime < DateTime.Now) //如果数据过期，则更新之
+                    {
+                        lock (hashtable.SyncRoot)
+                        {
+                            hashtable[key] = cacheItem;
+                        }
+
+                        //更新对象
+                        var tmpObject = new CacheUpdateItem<T>
+                        {
+                            Type = type,
+                            Key = key,
+                            Timeout = timeout,
+                            Func = func,
+                            State = state,
+                            Pred = pred
+                        };
+
+                        //异步更新缓存
+                        ManagedThreadPool.QueueUserWorkItem(UpdateCacheObject, tmpObject);
+                    }
+                }
             }
-            else if (cacheObj.ExpiredTime < DateTime.Now) //如果数据过期，则更新之
+
+            return cacheItem;
+        }
+
+        /// <summary>
+        /// 获取缓存对象
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static T GetCacheItem(string key)
+        {
+            lock (hashtable.SyncRoot)
             {
-                //如果数据过期，则更新之
-                var internalObject = GetUpdateObject(type, key, timeout, func, state, pred, true);
-
-                if (internalObject != null) return internalObject;
+                if (hashtable.ContainsKey(key))
+                {
+                    return (T)hashtable[key];
+                }
             }
 
-            return cacheObj.Value;
+            return default(T);
+        }
+
+        /// <summary>
+        /// 更新缓存对象
+        /// </summary>
+        /// <param name="state"></param>
+        private static void UpdateCacheObject(object state)
+        {
+            if (state == null) return;
+            var item = state as CacheUpdateItem<T>;
+
+            try
+            {
+                GetUpdateObject(item.Type, item.Key, item.Timeout, item.Func, item.State, item.Pred);
+            }
+            finally
+            {
+                lock (hashtable.SyncRoot)
+                {
+                    hashtable.Remove(item.Key);
+                }
+            }
         }
 
         /// <summary>
@@ -432,30 +498,14 @@ namespace MySoft
         /// <param name="func"></param>
         /// <param name="state"></param>
         /// <param name="pred"></param>
-        /// <param name="async"></param>
         /// <returns></returns>
-        private static T GetUpdateObject(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred, bool async)
+        private static T GetUpdateObject(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
         {
             T internalObject = default(T);
 
             try
             {
-                if (async)
-                {
-                    var ar = func.BeginInvoke(state, null, null);
-
-                    //等待30秒超时
-                    if (ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(UPDATE_TIMEOUT)))
-                    {
-                        internalObject = func.EndInvoke(ar);
-
-                        ar.AsyncWaitHandle.Close();
-                    }
-                }
-                else
-                {
-                    internalObject = func(state);
-                }
+                internalObject = func(state);
             }
             catch (ThreadInterruptedException ex) { }
             catch (ThreadAbortException ex)
@@ -484,7 +534,7 @@ namespace MySoft
 
                 if (success)
                 {
-                    InsertCache(type, GetFilePath(key), key, internalObject, timeout);
+                    InsertCacheItem(type, GetFilePath(key), key, internalObject, timeout);
                 }
             }
 
@@ -500,7 +550,7 @@ namespace MySoft
         /// <param name="path"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        private static CacheObject<T> GetCache(LocalCacheType type, string path, string key)
+        private static CacheObject<T> GetCacheItem(LocalCacheType type, string path, string key)
         {
             var cacheObj = CacheHelper.Get<CacheObject<T>>(key);
 
@@ -538,7 +588,7 @@ namespace MySoft
         /// <param name="key"></param>
         /// <param name="internalObject"></param>
         /// <param name="timeout"></param>
-        private static void InsertCache(LocalCacheType type, string path, string key, T internalObject, TimeSpan timeout)
+        private static void InsertCacheItem(LocalCacheType type, string path, string key, T internalObject, TimeSpan timeout)
         {
             var cacheObj = new CacheObject<T>
             {

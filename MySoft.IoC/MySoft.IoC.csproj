@@ -63,6 +63,7 @@
     <Compile Include="CallerContext.cs" />
     <Compile Include="Common\CacheHelper.cs" />
     <Compile Include="Common\CacheItem.cs" />
+    <Compile Include="Common\CacheUpdateItem.cs" />
     <Compile Include="Common\ResponseItem.cs" />
     <Compile Include="Common\CacheKey.cs" />
     <Compile Include="Common\Extensions.cs" />

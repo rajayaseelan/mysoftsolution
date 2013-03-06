@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Threading;
 using MySoft.Logger;
+using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -12,7 +13,6 @@ namespace MySoft.IoC
     /// </summary>
     internal static class ServiceCacheHelper
     {
-        private const int UPDATE_TIMEOUT = 30;
         private static readonly Hashtable hashtable = new Hashtable();
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace MySoft.IoC
             var key = Path.GetFileNameWithoutExtension(filePath);
 
             //从文件读取对象
-            return GetCache(filePath, key);
+            return GetCacheItem(filePath, key);
         }
 
         /// <summary>
@@ -53,59 +53,86 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static ResponseItem Get(CacheKey key, TimeSpan timeout, Func<object, ResponseItem> func, object state)
         {
-            var syncRoot = GetSyncRoot(key);
+            var cacheItem = GetResponseItem(key);
 
-            lock (syncRoot)
+            if (cacheItem == null)
             {
-                ResponseItem item = null;
-                var cacheObj = GetCache(GetFilePath(key), key.UniqueId);
+                var cacheObj = GetCacheItem(GetFilePath(key), key.UniqueId);
 
                 if (cacheObj == null)
                 {
                     //获取数据缓存
-                    item = GetResponseItem(key, timeout, func, state, false);
-                }
-                else if (cacheObj.ExpiredTime < DateTime.Now)
-                {
-                    //如果数据过期，则更新之
-                    item = GetResponseItem(key, timeout, func, state, true);
-                }
-
-                if (item == null && cacheObj != null)
-                {
-                    //实例化Item
-                    item = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
-                }
-
-                return item;
-            }
-        }
-
-        /// <summary>
-        /// 获取锁对象
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        private static object GetSyncRoot(CacheKey key)
-        {
-            object syncRoot = null;
-
-            string lockKey = string.Format("{0}${1}", key.ServiceName, key.MethodName);
-
-            lock (hashtable.SyncRoot)
-            {
-                if (hashtable.ContainsKey(lockKey))
-                {
-                    syncRoot = hashtable[lockKey];
+                    cacheItem = GetResponseItem(key, timeout, func, state);
                 }
                 else
                 {
-                    syncRoot = new object();
-                    hashtable[lockKey] = syncRoot;
+                    //获取数据缓存
+                    cacheItem = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
+
+                    if (cacheObj.ExpiredTime < DateTime.Now)
+                    {
+                        lock (hashtable.SyncRoot)
+                        {
+                            hashtable[key.ToString()] = cacheItem;
+                        }
+
+                        //更新对象
+                        var tmpObject = new CacheUpdateItem
+                        {
+                            Key = key,
+                            Timeout = timeout,
+                            Func = func,
+                            State = state
+                        };
+
+                        //异步更新缓存
+                        ManagedThreadPool.QueueUserWorkItem(UpdateCacheObject, tmpObject);
+                    }
                 }
             }
 
-            return syncRoot;
+            //返回缓存的对象
+            return cacheItem;
+        }
+
+        /// <summary>
+        /// 获取缓存对象
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static ResponseItem GetResponseItem(CacheKey key)
+        {
+            lock (hashtable.SyncRoot)
+            {
+                if (hashtable.ContainsKey(key.ToString()))
+                {
+                    return hashtable[key.ToString()] as ResponseItem;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 更新缓存对象
+        /// </summary>
+        /// <param name="state"></param>
+        private static void UpdateCacheObject(object state)
+        {
+            if (state == null) return;
+            var item = state as CacheUpdateItem;
+
+            try
+            {
+                GetResponseItem(item.Key, item.Timeout, item.Func, item.State);
+            }
+            finally
+            {
+                lock (hashtable.SyncRoot)
+                {
+                    hashtable.Remove(item.Key.ToString());
+                }
+            }
         }
 
         /// <summary>
@@ -115,30 +142,14 @@ namespace MySoft.IoC
         /// <param name="timeout"></param>
         /// <param name="func"></param>
         /// <param name="state"></param>
-        /// <param name="async"></param>
         /// <returns></returns>
-        private static ResponseItem GetResponseItem(CacheKey key, TimeSpan timeout, Func<object, ResponseItem> func, object state, bool async)
+        private static ResponseItem GetResponseItem(CacheKey key, TimeSpan timeout, Func<object, ResponseItem> func, object state)
         {
             ResponseItem item = null;
 
             try
             {
-                if (async)
-                {
-                    var ar = func.BeginInvoke(state, null, null);
-
-                    //等待30秒超时
-                    if (ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(UPDATE_TIMEOUT), false))
-                    {
-                        item = func.EndInvoke(ar);
-
-                        ar.AsyncWaitHandle.Close();
-                    }
-                }
-                else
-                {
-                    item = func(state);
-                }
+                item = func(state);
             }
             catch (ThreadInterruptedException ex) { }
             catch (ThreadAbortException ex)
@@ -154,7 +165,7 @@ namespace MySoft.IoC
                 if (item != null && item.Buffer != null)
                 {
                     //插入缓存
-                    InsertCache(GetFilePath(key), key.UniqueId, item, timeout);
+                    InsertCacheItem(GetFilePath(key), key.UniqueId, item, timeout);
                 }
             }
 
@@ -167,7 +178,7 @@ namespace MySoft.IoC
         /// <param name="path"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        private static CacheItem GetCache(string path, string key)
+        private static CacheItem GetCacheItem(string path, string key)
         {
             var cacheObj = CacheHelper.Get<CacheItem>(key);
 
@@ -208,7 +219,7 @@ namespace MySoft.IoC
         /// <param name="key"></param>
         /// <param name="item"></param>
         /// <param name="timeout"></param>
-        private static void InsertCache(string path, string key, ResponseItem item, TimeSpan timeout)
+        private static void InsertCacheItem(string path, string key, ResponseItem item, TimeSpan timeout)
         {
             try
             {

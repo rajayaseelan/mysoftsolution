@@ -21,6 +21,7 @@ namespace MySoft.IoC
         private ServiceCaller caller;
         private ServerStatusService status;
         private int timeout;
+        private Semaphore semaphore;
 
         /// <summary>
         /// 实例化ServiceChannel
@@ -35,6 +36,7 @@ namespace MySoft.IoC
             this.status = status;
             this.logger = logger;
             this.timeout = config.Timeout;
+            this.semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
         }
 
         /// <summary>
@@ -52,6 +54,28 @@ namespace MySoft.IoC
             logger.WriteLog(body, LogType.Normal);
 #endif
 
+            //请求一个控制器
+            semaphore.WaitOne(Timeout.Infinite, false);
+
+            try
+            {
+                //响应请求
+                HandleResponse(channel, e);
+            }
+            finally
+            {
+                //释放一个控制器
+                semaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// 处理响应
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="e"></param>
+        private void HandleResponse(IScsServerClient channel, CallerContext e)
+        {
             using (var channelResult = new ChannelResult(channel, e))
             {
                 //开始异步调用
@@ -237,6 +261,8 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
+            this.semaphore.Close();
+
             this.caller = null;
             this.status = null;
         }

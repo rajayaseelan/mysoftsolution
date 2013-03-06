@@ -263,19 +263,45 @@ namespace MySoft.RESTful
                 //进行认证处理
                 RESTfulResult authResult = new RESTfulResult { Code = (int)HttpStatusCode.OK };
 
-                //进行认证处理
-                if (Context != null)
-                {
-                    var type = Context.IsAuthorized(kind, method);
-                    authResult = AuthorizeRequest(type);
-                }
+                var token = new AuthorizeToken
+                            {
+                                RequestUri = GetRequestUri(),
+                                Method = request.Method,
+                                Headers = request.Headers,
+                                Parameters = request.UriTemplateMatch.QueryParameters,
+                                Cookies = GetCookies(),
+                                AuthorizeType = Context.IsAuthorized(kind, method)
+                            };
+
+                AuthorizeUser user = null;
+
+                //认证请求
+                authResult = AuthorizeRequest(token, ref user);
 
                 //认证成功
                 if (authResult.Code == (int)HttpStatusCode.OK)
                 {
+                    if (user == null)
+                    {
+                        //认证成功，设置上下文
+                        AuthorizeContext.Current = new AuthorizeContext { Token = token };
+                    }
+                    else
+                    {
+                        //认证成功，设置上下文
+                        AuthorizeContext.Current = new AuthorizeContext
+                        {
+                            Token = token,
+                            UserName = user.UserName,
+                            UserState = user.UserState
+                        };
+                    }
+
                     try
                     {
                         Type retType;
+
+                        //响应服务
                         result = Context.Invoke(kind, method, nvget, nvpost, out retType);
 
                         //设置返回成功
@@ -386,40 +412,23 @@ namespace MySoft.RESTful
         /// 进行认证
         /// </summary>
         /// <returns></returns>
-        private RESTfulResult AuthorizeRequest(AuthorizeType type)
+        private RESTfulResult AuthorizeRequest(AuthorizeToken token, ref AuthorizeUser user)
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
             response.StatusCode = HttpStatusCode.Unauthorized;
-
-            var token = new AuthorizeToken
-            {
-                RequestUri = GetRequestUri(),
-                Method = request.Method,
-                Headers = request.Headers,
-                Parameters = request.UriTemplateMatch.QueryParameters,
-                Cookies = GetCookies(),
-                AuthorizeType = type
-            };
-
-            //认证成功，设置上下文
-            AuthorizeContext.Current = new AuthorizeContext { Token = token };
 
             //实例化一个结果
             var restResult = new RESTfulResult { Code = (int)response.StatusCode };
 
             try
             {
-                var user = Authorize(token);
+                user = Authorize(token);
                 response.StatusCode = HttpStatusCode.OK;
 
                 //认证成功
                 restResult.Code = (int)response.StatusCode;
                 restResult.Message = "Authentication request success.";
-
-                //认证信息
-                AuthorizeContext.Current.UserName = user.UserName;
-                AuthorizeContext.Current.UserState = user.UserState;
             }
             catch (AuthorizeException ex)
             {

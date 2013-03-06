@@ -271,6 +271,7 @@
     <Compile Include="Threading\ManagedThreadPool.cs" />
     <Compile Include="Utils\Base64UrlHelper.cs" />
     <Compile Include="Utils\CacheObject.cs" />
+    <Compile Include="Utils\CacheUpdateItem.cs" />
     <Compile Include="Utils\CancellableTask.cs" />
     <Compile Include="Common\FtpClient.cs" />
     <Compile Include="Exception\BusinessException.cs" />
