@@ -13,3 +13,5 @@ Data Source=192.168.1.213; Initial Catalog=FundData; User Id=sa; Password=ShuMi&
 server=192.168.1.213;Database=FundUms;uid=sa;pwd=ShiMi&Fund123;
 server=192.168.1.213;Database=FundUms;uid=sa;pwd=ShuMi&Fund123;
 Server=192.168.1.213;Database=HZUnicom;Uid=sa;Pwd=ShuMi&Fund123;
+Data Source=192.168.1.213; Initial Catalog=Shumi.PlatformService; User Id=sa; Password=ShuMi&Fund123;
+Server=192.168.1.213;Database=Shumi.PlatformService;Uid=sa;Pwd=ShuMi&Fund123;

@@ -26,10 +26,19 @@
             初始化方法
             </summary>
         </member>
-        <member name="P:MySoft.PlatformService.IoC.WindowsService.StartMode">
+        <member name="M:MySoft.PlatformService.IoC.WindowsService.Start(MySoft.Installer.StartMode,System.Object)">
             <summary>
-            设置运行类型
+            启动服务
             </summary>
+            <param name="startMode"></param>
+            <param name="state"></param>
+        </member>
+        <member name="M:MySoft.PlatformService.IoC.WindowsService.server_Completed(System.Object,MySoft.IoC.Messages.CallEventArgs)">
+            <summary>
+            服务调用
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
         </member>
     </members>
 </doc>

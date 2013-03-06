@@ -36,8 +36,8 @@ copy ..\MySoft.PlatformService\bin\Release\MySoft.PlatformService.xml /Y
 copy ..\MySoft.Tools.EntityDesign\bin\Release\MySoft.Tools.EntityDesign.exe /Y
 copy ..\MySoft.Tools.EntityDesignVsPlugin\bin\Release\MySoft.Tools.EntityDesignVsPlugin.dll /Y
 copy ..\MySoft.Tools.EntityDesignVsPlugin\MySoft.Tools.EntityDesignVsPlugin.AddIn /Y
-copy ..\SetupEntityVsPlugin\bin\Release\SetupEntityVsPlugin.exe /Y
-copy ..\SetupEntityVsPlugin\bin\Release\SetupEntityVsPlugin.exe.config /Y
+copy ..\SetupEntityVsPlugin\bin\Release\MySoft.Tools.SetupEntityVsPlugin.exe /Y
+copy ..\SetupEntityVsPlugin\bin\Release\MySoft.Tools.SetupEntityVsPlugin.exe.config /Y
 
 copy ..\MySoft.Common\bin\Release\MySoft.Common.dll E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.Cache\bin\Release\MySoft.Cache.dll E:\SOURCE_SVN\MyReference\MySoft /Y
@@ -66,8 +66,8 @@ copy ..\MySoft.RESTful\bin\Release\MySoft.RESTful.xml E:\SOURCE_SVN\MyReference\
 copy ..\MySoft.Tools.EntityDesign\bin\Release\MySoft.Tools.EntityDesign.exe E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.Tools.EntityDesignVsPlugin\bin\Release\MySoft.Tools.EntityDesignVsPlugin.dll E:\SOURCE_SVN\MyReference\MySoft /Y
 copy ..\MySoft.Tools.EntityDesignVsPlugin\MySoft.Tools.EntityDesignVsPlugin.AddIn E:\SOURCE_SVN\MyReference\MySoft /Y
-copy ..\SetupEntityVsPlugin\bin\Release\SetupEntityVsPlugin.exe E:\SOURCE_SVN\MyReference\MySoft /Y
-copy ..\SetupEntityVsPlugin\bin\Release\SetupEntityVsPlugin.exe.config E:\SOURCE_SVN\MyReference\MySoft /Y
+copy ..\SetupEntityVsPlugin\bin\Release\MySoft.Tools.SetupEntityVsPlugin.exe E:\SOURCE_SVN\MyReference\MySoft /Y
+copy ..\SetupEntityVsPlugin\bin\Release\MySoft.Tools.SetupEntityVsPlugin.exe.config E:\SOURCE_SVN\MyReference\MySoft /Y
 
 pause
 @echo on
