@@ -122,6 +122,7 @@ namespace MySoft.RESTful.Business
                 //调用方法
                 object[] arguments = ParameterHelper.Convert(metadata.Parameters, nvget, nvpost);
                 instance = register.Resolve(metadata.Service);
+
                 return metadata.Method.FastInvoke(instance, arguments);
             }
             finally
