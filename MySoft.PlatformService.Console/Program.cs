@@ -10,6 +10,8 @@ namespace MySoft.PlatformService.Console
     {
         static void Main(string[] args)
         {
+            //var session = MySoft.Data.DbProviderFactory.CreateDbProvider("Northwind", Data.DbProviderType.MySql);
+
             var color = System.Console.ForegroundColor;
 
             System.Console.BackgroundColor = ConsoleColor.DarkBlue;
@@ -59,7 +61,7 @@ namespace MySoft.PlatformService.Console
             else
             {
                 //耗时小于1秒返回
-                if (e.ElapsedTime < 1000) return;
+                if (e.ElapsedTime < 30000) return;
 
                 var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
                 var body = string.Format("Remote client【{0}】call service ({1},{2}), result ({4}) rows, elapsed time ({5}) ms.\r\nParameters => {3}",

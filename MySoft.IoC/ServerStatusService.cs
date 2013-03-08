@@ -11,6 +11,7 @@ using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Nodes;
+using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -86,11 +87,12 @@ namespace MySoft.IoC
         {
             while (true)
             {
-                //每1分钟检测一次
-                Thread.Sleep(TimeSpan.FromMinutes(1));
+                //每10秒检测一次
+                Thread.Sleep(TimeSpan.FromSeconds(10));
 
 #if DEBUG
                 IoCHelper.WriteLine(ConsoleColor.DarkGreen, "{0} => Socket async event args : {1}", DateTime.Now, CommunicationHelper.Count);
+                IoCHelper.WriteLine(ConsoleColor.DarkGreen, "{0} => Thread pool waiting callbacks : {1}", DateTime.Now, ManagedThreadPool.WaitingCallbacks);
 #endif
 
                 try

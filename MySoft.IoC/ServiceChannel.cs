@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
@@ -7,6 +6,7 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -21,7 +21,6 @@ namespace MySoft.IoC
         private ServiceCaller caller;
         private ServerStatusService status;
         private int timeout;
-        private Semaphore semaphore;
 
         /// <summary>
         /// 实例化ServiceChannel
@@ -36,7 +35,6 @@ namespace MySoft.IoC
             this.status = status;
             this.logger = logger;
             this.timeout = config.Timeout;
-            this.semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
         }
 
         /// <summary>
@@ -51,35 +49,13 @@ namespace MySoft.IoC
             var body = string.Format("Remote client【{0}】begin call service ({1},{2}).\r\nParameters => {3}",
                                         message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters);
 
-            logger.WriteLog(body, LogType.Normal);
+            //IoCHelper.WriteLine(ConsoleColor.DarkGray, body);
 #endif
 
-            //请求一个控制器
-            semaphore.WaitOne(Timeout.Infinite, false);
-
-            try
-            {
-                //响应请求
-                HandleResponse(channel, e);
-            }
-            finally
-            {
-                //释放一个控制器
-                semaphore.Release();
-            }
-        }
-
-        /// <summary>
-        /// 处理响应
-        /// </summary>
-        /// <param name="channel"></param>
-        /// <param name="e"></param>
-        private void HandleResponse(IScsServerClient channel, CallerContext e)
-        {
             using (var channelResult = new ChannelResult(channel, e))
             {
                 //开始异步调用
-                ThreadPool.QueueUserWorkItem(WaitCallback, channelResult);
+                ManagedThreadPool.QueueUserWorkItem(WaitCallback, channelResult);
 
                 //等待超时响应
                 if (!channelResult.WaitOne(TimeSpan.FromSeconds(timeout)))
@@ -91,21 +67,14 @@ namespace MySoft.IoC
                 {
                     //正常响应信息
                     e.Message = channelResult.Message;
-
-                    //不是从缓存读取，则响应与状态服务跳过
-                    if (e.Message == null)
-                    {
-                        //创建一个响应信息
-                        e.Message = IoCHelper.GetResponse(e.Request, null);
-                    }
                 }
+
+                //处理响应信息
+                HandleResponse(e);
+
+                //发送消息
+                SendMessage(channel, e);
             }
-
-            //处理响应信息
-            HandleResponse(e);
-
-            //发送消息
-            SendMessage(channel, e);
         }
 
         /// <summary>
@@ -261,8 +230,6 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            this.semaphore.Close();
-
             this.caller = null;
             this.status = null;
         }

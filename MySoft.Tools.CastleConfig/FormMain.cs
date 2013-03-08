@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.IO;
 using System.Reflection;
 using System.Threading;
-using MySoft.Logger;
+using System.Windows.Forms;
 using MySoft.IoC;
+using MySoft.Logger;
+using MySoft.RESTful;
 
 namespace MySoft.Tools.CastleConfig
 {
@@ -49,24 +45,39 @@ namespace MySoft.Tools.CastleConfig
                 return;
             }
 
-            if (CreateConfig(filePath))
+            if (checkBox1.Checked)
             {
-                if (!string.IsNullOrEmpty(textBox2.Text.Trim()))
+                if (CreateConfig<PublishKindAttribute>(filePath))
                 {
-                    var filePath1 = textBox2.Text.Trim();
-                    if (File.Exists(filePath1))
-                    {
-                        try { File.Delete(filePath1); }
-                        catch { }
-                    }
-                    SimpleLog.WriteFile(filePath1, richTextBox1.Text);
-                }
 
-                MessageBox.Show("配置生成成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("配置生成成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("配置生成失败！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
             else
             {
-                MessageBox.Show("配置生成失败！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (CreateConfig<ServiceContractAttribute>(filePath))
+                {
+                    if (!string.IsNullOrEmpty(textBox2.Text.Trim()))
+                    {
+                        var filePath1 = textBox2.Text.Trim();
+                        if (File.Exists(filePath1))
+                        {
+                            try { File.Delete(filePath1); }
+                            catch { }
+                        }
+                        SimpleLog.WriteFile(filePath1, richTextBox1.Text);
+                    }
+
+                    MessageBox.Show("配置生成成功！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("配置生成失败！", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -82,12 +93,19 @@ namespace MySoft.Tools.CastleConfig
                 var filePath = openFileDialog1.FileName;
                 textBox1.Text = filePath;
 
-                var fileName = Path.GetFileNameWithoutExtension(filePath);
-                textBox2.Text = string.Format("{0}\\{1}.config", CoreHelper.GetFullPath("config"), fileName);
+                if (!checkBox1.Checked)
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(filePath);
+                    textBox2.Text = string.Format("{0}\\{1}.config", CoreHelper.GetFullPath("config"), fileName);
+                }
+                else
+                {
+                    textBox2.Text = string.Empty;
+                }
             }
         }
 
-        private bool CreateConfig(string filePath)
+        private bool CreateConfig<TAttribute>(string filePath)
         {
             var template = "\t\t<component id=\"{0}\" service=\"{1}, {2}\" type=\"{3}, {4}\"/>";
 
@@ -103,8 +121,9 @@ namespace MySoft.Tools.CastleConfig
                     if (typeInterfaces.Length == 0) continue;
 
                     var iface = typeInterfaces[0];
-                    var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(iface);
+                    var contract = CoreHelper.GetMemberAttribute<TAttribute>(iface);
                     if (contract == null) continue;
+
                     var obsolete = CoreHelper.GetMemberAttribute<ObsoleteAttribute>(iface);
                     if (obsolete != null) continue;
 
@@ -131,6 +150,18 @@ namespace MySoft.Tools.CastleConfig
             {
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
+            }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox1.Checked)
+            {
+                textBox2.Enabled = false;
+            }
+            else
+            {
+                textBox2.Enabled = true;
             }
         }
     }
