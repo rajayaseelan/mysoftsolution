@@ -3,6 +3,7 @@ using System.Collections;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
+using System.Linq;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -50,8 +51,11 @@ namespace MySoft.IoC.HttpServer
 
                 if (resolver != null)
                 {
+                    var httpApis = resolver.MethodResolver(type);
+                    httpApis = httpApis.OrderBy(p => p.Name).ToList();
+
                     //添加方法
-                    foreach (var httpApi in resolver.MethodResolver(type))
+                    foreach (var httpApi in httpApis)
                     {
                         //添加一个新的Caller
                         AddNewCaller(type, httpApi);
