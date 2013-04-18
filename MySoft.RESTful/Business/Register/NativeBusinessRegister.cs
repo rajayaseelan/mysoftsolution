@@ -74,6 +74,7 @@ namespace MySoft.RESTful.Business.Register
                     var kind = CoreHelper.GetMemberAttribute<PublishKindAttribute>(type);
                     if (kind == null) continue;
 
+                    if (string.IsNullOrEmpty(kind.Name)) kind.Name = type.Name;
                     kind.Name = kind.Name.ToLower();
 
                     //如果包含了相同的类别，则继续
@@ -86,7 +87,7 @@ namespace MySoft.RESTful.Business.Register
                         kindModel = new BusinessKindModel
                         {
                             Name = kind.Name,
-                            Description = kind.Description
+                            Description = string.IsNullOrEmpty(kind.Description) ? "暂无描述信息" : kind.Description,
                         };
 
                         pool.AddKindModel(kind.Name, kindModel);
@@ -98,6 +99,7 @@ namespace MySoft.RESTful.Business.Register
                         var method = CoreHelper.GetMemberAttribute<PublishMethodAttribute>(info);
                         if (method != null)
                         {
+                            if (string.IsNullOrEmpty(method.Name)) method.Name = info.Name;
                             method.Name = method.Name.ToLower();
 
                             //如果包含了相同的方法，则继续
@@ -118,7 +120,7 @@ namespace MySoft.RESTful.Business.Register
                             methodModel = new BusinessMethodModel
                             {
                                 Name = method.Name,
-                                Description = method.Description,
+                                Description = string.IsNullOrEmpty(method.Description) ? "暂无描述信息" : method.Description,
                                 HttpMethod = HttpMethod.GET,
                                 AuthorizeType = method.AuthorizeType,
                                 Method = info,
