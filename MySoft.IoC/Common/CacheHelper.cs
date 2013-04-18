@@ -13,8 +13,6 @@ namespace MySoft.IoC
     /// </summary>
     internal static class ServiceCacheHelper
     {
-        private static readonly Hashtable hashtable = new Hashtable();
-
         /// <summary>
         /// 从文件读取对象
         /// </summary>
@@ -53,13 +51,18 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static ResponseItem Get(CacheKey key, TimeSpan timeout, Func<object, ResponseItem> func, object state)
         {
-            var cacheItem = GetResponseItem(key);
+            ResponseItem cacheItem = null;
 
-            if (cacheItem == null)
+            var cacheObj = GetCacheItem(GetFilePath(key), key.UniqueId);
+
+            if (cacheObj == null)
             {
-                var cacheObj = GetCacheItem(GetFilePath(key), key.UniqueId);
-
-                if (cacheObj == null)
+                //获取数据缓存
+                cacheItem = GetResponseItem(key, timeout, func, state);
+            }
+            else
+            {
+                if (cacheObj.ExpiredTime < DateTime.Now)
                 {
                     //获取数据缓存
                     cacheItem = GetResponseItem(key, timeout, func, state);
@@ -68,71 +71,11 @@ namespace MySoft.IoC
                 {
                     //获取数据缓存
                     cacheItem = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
-
-                    if (cacheObj.ExpiredTime < DateTime.Now)
-                    {
-                        lock (hashtable.SyncRoot)
-                        {
-                            hashtable[key.ToString()] = cacheItem;
-                        }
-
-                        //更新对象
-                        var tmpObject = new CacheUpdateItem
-                        {
-                            Key = key,
-                            Timeout = timeout,
-                            Func = func,
-                            State = state
-                        };
-
-                        //异步更新缓存
-                        ManagedThreadPool.QueueUserWorkItem(UpdateCacheObject, tmpObject);
-                    }
                 }
             }
 
             //返回缓存的对象
             return cacheItem;
-        }
-
-        /// <summary>
-        /// 获取缓存对象
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        private static ResponseItem GetResponseItem(CacheKey key)
-        {
-            lock (hashtable.SyncRoot)
-            {
-                if (hashtable.ContainsKey(key.ToString()))
-                {
-                    return hashtable[key.ToString()] as ResponseItem;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// 更新缓存对象
-        /// </summary>
-        /// <param name="state"></param>
-        private static void UpdateCacheObject(object state)
-        {
-            if (state == null) return;
-            var item = state as CacheUpdateItem;
-
-            try
-            {
-                GetResponseItem(item.Key, item.Timeout, item.Func, item.State);
-            }
-            finally
-            {
-                lock (hashtable.SyncRoot)
-                {
-                    hashtable.Remove(item.Key.ToString());
-                }
-            }
         }
 
         /// <summary>

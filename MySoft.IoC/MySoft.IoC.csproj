@@ -63,7 +63,6 @@
     <Compile Include="CallerContext.cs" />
     <Compile Include="Common\CacheHelper.cs" />
     <Compile Include="Common\CacheItem.cs" />
-    <Compile Include="Common\CacheUpdateItem.cs" />
     <Compile Include="Common\ResponseItem.cs" />
     <Compile Include="Common\CacheKey.cs" />
     <Compile Include="Common\Extensions.cs" />
@@ -162,6 +161,7 @@
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Services\IServiceCallback.cs" />
     <Compile Include="Services\ServiceDiscoverFacility.cs" />
     <Compile Include="Messages\Status\AppCaller.cs" />
     <Compile Include="Messages\Status\AppClient.cs" />

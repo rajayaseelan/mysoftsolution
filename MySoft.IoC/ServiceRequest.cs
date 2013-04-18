@@ -6,39 +6,17 @@ using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Services;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// 服务请求类
     /// </summary>
-    public class ServiceRequest : IServerConnect
+    public class ServiceRequest
     {
-        /// <summary>
-        /// 数据回调
-        /// </summary>
-        public event EventHandler<ServiceMessageEventArgs> OnCallback;
-
-        /// <summary>
-        /// 错误回调
-        /// </summary>
-        public event EventHandler<ErrorMessageEventArgs> OnError;
-
-        #region IServerConnect 成员
-
-        /// <summary>
-        /// 连接服务器
-        /// </summary>
-        public event EventHandler<ConnectEventArgs> OnConnected;
-
-        /// <summary>
-        /// 断开服务器
-        /// </summary>
-        public event EventHandler<ConnectEventArgs> OnDisconnected;
-
-        #endregion
-
         private string messageId;
+        private IServiceCallback callback;
         private RequestMessage reqMsg;
         private IScsClient client;
         private ServerNode node;
@@ -47,10 +25,12 @@ namespace MySoft.IoC
         /// <summary>
         /// 实例化ServiceMessage
         /// </summary>
+        /// <param name="callback"></param>
         /// <param name="node"></param>
         /// <param name="subscribed"></param>
-        public ServiceRequest(ServerNode node, bool subscribed)
+        public ServiceRequest(IServiceCallback callback, ServerNode node, bool subscribed)
         {
+            this.callback = callback;
             this.node = node;
             this.subscribed = subscribed;
 
@@ -106,14 +86,11 @@ namespace MySoft.IoC
         {
             var error = new SocketException((int)SocketError.Success);
 
-            if (OnConnected != null)
+            callback.Connected(sender, new ConnectEventArgs(this.client)
             {
-                OnConnected(sender, new ConnectEventArgs(this.client)
-                {
-                    Error = error,
-                    Subscribed = subscribed
-                });
-            }
+                Error = error,
+                Subscribed = subscribed
+            });
         }
 
         /// <summary>
@@ -125,14 +102,11 @@ namespace MySoft.IoC
         {
             var error = new SocketException((int)SocketError.ConnectionReset);
 
-            if (OnDisconnected != null)
+            callback.Disconnected(sender, new ConnectEventArgs(this.client)
             {
-                OnDisconnected(sender, new ConnectEventArgs(this.client)
-                {
-                    Error = error,
-                    Subscribed = subscribed
-                });
-            }
+                Error = error,
+                Subscribed = subscribed
+            });
 
             //断开时响应错误信息
             client_MessageError(sender, new ErrorEventArgs(error));
@@ -141,15 +115,12 @@ namespace MySoft.IoC
         void client_MessageError(object sender, ErrorEventArgs e)
         {
             //输出错误信息
-            if (OnError != null)
+            callback.MessageError(sender, new ErrorMessageEventArgs
             {
-                OnError(sender, new ErrorMessageEventArgs
-                {
-                    MessageId = messageId,
-                    Request = reqMsg,
-                    Error = e.Error
-                });
-            }
+                MessageId = messageId,
+                Request = reqMsg,
+                Error = e.Error
+            });
         }
 
         void client_MessageReceived(object sender, MessageEventArgs e)
@@ -208,7 +179,7 @@ namespace MySoft.IoC
             }
 
             //把数据发送到客户端
-            if (OnCallback != null) OnCallback(this, message);
+            callback.MessageCallback(this, message);
         }
 
         /// <summary>

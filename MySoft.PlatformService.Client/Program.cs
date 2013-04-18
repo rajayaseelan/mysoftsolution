@@ -91,6 +91,16 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            var a = MySoft.Security.DES.Encrypt("as1234asvmiamsdif00", "123456780");
+            //for (int i = 0; i < 2; i++)
+            //{
+            //    a = MySoft.Security.AES.Encrypt(a, "12345678");
+            //}
+
+            Console.WriteLine(a.Length);
+            Console.WriteLine(a);
+            Console.ReadLine();
+
             //while (true)
             //{
             //    CacheHelper<IList<User>>.Get(LocalCacheType.File, "aaa", TimeSpan.FromSeconds(5), () => new List<User> { new User() });

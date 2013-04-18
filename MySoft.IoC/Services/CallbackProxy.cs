@@ -21,13 +21,15 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 初始化请求项
         /// </summary>
-        protected override void InitServiceRequest()
+        protected override void InitRequest()
         {
-            this.reqPool = new ServiceRequestPool(1);
+            reqPool = new ServiceRequestPool(1);
 
             lock (this.reqPool)
             {
-                this.reqPool.Push(CreateServiceRequest(true));
+                var req = new ServiceRequest(this, node, true);
+
+                reqPool.Push(req);
             }
         }
 
@@ -48,7 +50,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        protected override void OnMessageCallback(object sender, ServiceMessageEventArgs args)
+        public override void MessageCallback(object sender, ServiceMessageEventArgs args)
         {
             if (args.Result is CallbackMessage)
             {
@@ -82,7 +84,7 @@ namespace MySoft.IoC.Services
             else
             {
                 //调用基类处理
-                base.OnMessageCallback(sender, args);
+                base.MessageCallback(sender, args);
             }
         }
 

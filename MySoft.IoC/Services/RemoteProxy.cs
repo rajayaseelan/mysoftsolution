@@ -8,7 +8,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 服务代理
     /// </summary>
-    public class RemoteProxy : IService, IServerConnect
+    public class RemoteProxy : IService, IServiceCallback, IServerConnect
     {
         #region IServerConnect 成员
 
@@ -30,9 +30,9 @@ namespace MySoft.IoC.Services
         private IDictionary<string, WaitResult> hashtable = new Dictionary<string, WaitResult>();
 
         protected ServiceRequestPool reqPool;
+        protected ServerNode node;
         private volatile int poolSize;
         private ILog logger;
-        private ServerNode node;
 
         /// <summary>
         /// 实例化RemoteProxy
@@ -44,49 +44,48 @@ namespace MySoft.IoC.Services
             this.node = node;
             this.logger = logger;
 
-            InitServiceRequest();
+            InitRequest();
         }
 
         /// <summary>
         /// 初始化请求
         /// </summary>
-        protected virtual void InitServiceRequest()
+        protected virtual void InitRequest()
         {
-            this.reqPool = new ServiceRequestPool(node.MaxPool);
+            reqPool = new ServiceRequestPool(node.MaxPool);
 
-            lock (this.reqPool)
+            lock (reqPool)
             {
                 this.poolSize = node.MinPool;
 
                 //服务请求池化，使用最小的池初始化
                 for (int i = 0; i < node.MinPool; i++)
                 {
-                    this.reqPool.Push(CreateServiceRequest(false));
+                    var req = new ServiceRequest(this, node, false);
+
+                    reqPool.Push(req);
                 }
             }
         }
 
         /// <summary>
-        /// 创建一个服务请求项
+        /// 连接成功
         /// </summary>
-        /// <param name="subscribed"></param>
-        /// <returns></returns>
-        protected ServiceRequest CreateServiceRequest(bool subscribed)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public virtual void Connected(object sender, ConnectEventArgs e)
         {
-            var reqService = new ServiceRequest(node, subscribed);
-            reqService.OnCallback += OnMessageCallback;
-            reqService.OnError += OnMessageError;
-            reqService.OnConnected += (sender, args) =>
-            {
-                if (OnConnected != null) OnConnected(sender, args);
-            };
+            if (OnConnected != null) OnConnected(sender, e);
+        }
 
-            reqService.OnDisconnected += (sender, args) =>
-            {
-                if (OnDisconnected != null) OnDisconnected(sender, args);
-            };
-
-            return reqService;
+        /// <summary>
+        /// 断开连接
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public virtual void Disconnected(object sender, ConnectEventArgs e)
+        {
+            if (OnDisconnected != null) OnDisconnected(sender, e);
         }
 
         /// <summary>
@@ -94,7 +93,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void OnMessageCallback(object sender, ServiceMessageEventArgs e)
+        public virtual void MessageCallback(object sender, ServiceMessageEventArgs e)
         {
             if (e.Result is ResponseMessage)
             {
@@ -109,7 +108,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void OnMessageError(object sender, ErrorMessageEventArgs e)
+        public virtual void MessageError(object sender, ErrorMessageEventArgs e)
         {
             if (e.Request != null)
             {
@@ -222,7 +221,9 @@ namespace MySoft.IoC.Services
                                 poolSize++;
 
                                 //创建一个新的请求
-                                reqPool.Push(CreateServiceRequest(false));
+                                var req = new ServiceRequest(this, node, false);
+
+                                reqPool.Push(req);
                             }
                         }
 

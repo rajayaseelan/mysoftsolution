@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
@@ -6,7 +7,6 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
-using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -55,7 +55,7 @@ namespace MySoft.IoC
             using (var channelResult = new ChannelResult(channel, e))
             {
                 //开始异步调用
-                ManagedThreadPool.QueueUserWorkItem(WaitCallback, channelResult);
+                ThreadPool.QueueUserWorkItem(WaitCallback, channelResult);
 
                 //等待超时响应
                 if (!channelResult.WaitOne(TimeSpan.FromSeconds(timeout)))

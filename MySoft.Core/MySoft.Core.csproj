@@ -76,6 +76,7 @@
     <Compile Include="Aop\AopSwitcherAttribute.cs" />
     <Compile Include="Aop\IAopOperator.cs" />
     <Compile Include="Aop\IAopProxyFactory.cs" />
+    <Compile Include="Cache\CacheHelper.cs" />
     <Compile Include="Cache\IDataCache.cs" />
     <Compile Include="Common\BaseObject.cs" />
     <Compile Include="Json\Newtonsoft.Json\Serialization\DiagnosticsTraceWriter.cs" />
@@ -271,7 +272,6 @@
     <Compile Include="Threading\ManagedThreadPool.cs" />
     <Compile Include="Utils\Base64UrlHelper.cs" />
     <Compile Include="Utils\CacheObject.cs" />
-    <Compile Include="Utils\CacheUpdateItem.cs" />
     <Compile Include="Utils\CancellableTask.cs" />
     <Compile Include="Common\FtpClient.cs" />
     <Compile Include="Exception\BusinessException.cs" />
