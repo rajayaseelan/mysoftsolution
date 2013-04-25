@@ -28,6 +28,11 @@ namespace MySoft.Web.UI
         /// <summary>
         /// 实例化Ajax输出命名空间
         /// </summary>
+        public AjaxNamespaceAttribute() { }
+
+        /// <summary>
+        /// 实例化Ajax输出命名空间
+        /// </summary>
         /// <param name="name"></param>
         public AjaxNamespaceAttribute(string name)
         {

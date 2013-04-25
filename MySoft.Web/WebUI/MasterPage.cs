@@ -40,24 +40,6 @@ namespace MySoft.Web.UI
         }
 
         /// <summary>
-        /// 将指定url页面中的ajax调用所需js注册到本页
-        /// </summary>
-        /// <param name="path"></param>
-        protected void RegisterPageForAjax(string url)
-        {
-            WebHelper.RegisterPageForAjax(this.Page, url);
-        }
-
-        /// <summary>
-        /// 将指定url页面中的ajax调用所需js注册到本页
-        /// </summary>
-        /// <param name="path"></param>
-        protected void RegisterPageForAjax(Type urlType, string url)
-        {
-            WebHelper.RegisterPageForAjax(this.Page, urlType, url);
-        }
-
-        /// <summary>
         /// 添加对象到页面上
         /// </summary>
         /// <param name="ObjectName"></param>

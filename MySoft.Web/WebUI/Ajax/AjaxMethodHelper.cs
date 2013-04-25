@@ -23,11 +23,11 @@ namespace MySoft.Web.UI
 
     internal class AjaxMethodHelper
     {
-        private static Dictionary<Type, Dictionary<string, AsyncMethodInfo>> ajaxMethods;
+        private static IDictionary<Type, IDictionary<string, AsyncMethodInfo>> ajaxMethods;
 
         static AjaxMethodHelper()
         {
-            ajaxMethods = new Dictionary<Type, Dictionary<string, AsyncMethodInfo>>();
+            ajaxMethods = new Dictionary<Type, IDictionary<string, AsyncMethodInfo>>();
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace MySoft.Web.UI
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        public static Dictionary<string, AsyncMethodInfo> GetAjaxMethods(Type t)
+        public static IDictionary<string, AsyncMethodInfo> GetAjaxMethods(Type t)
         {
             if (!ajaxMethods.ContainsKey(t))
             {
@@ -48,7 +48,7 @@ namespace MySoft.Web.UI
             return ajaxMethods[t];
         }
 
-        private static Dictionary<string, AsyncMethodInfo> InternalGetAjaxMethods(Type type)
+        private static IDictionary<string, AsyncMethodInfo> InternalGetAjaxMethods(Type type)
         {
             var ret = new Dictionary<string, AsyncMethodInfo>();
             var mis = CoreHelper.GetMethodsFromType(type);

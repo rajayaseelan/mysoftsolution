@@ -21,20 +21,13 @@ namespace MySoft.Web
         /// 注册Ajax所需js到页面
         /// </summary>
         /// <param name="type"></param>
-        public static void RegisterPageForAjax(Page page, string url)
+        public static void RegisterPageForAjax(Page page)
         {
-            RegisterPageForAjax(page, page.GetType(), url);
-        }
+            var url = page.Request.Path;
+            var urlType = page.GetType();
 
-        /// <summary>
-        /// 注册Ajax所需js到页面
-        /// </summary>
-        /// <param name="type"></param>
-        public static void RegisterPageForAjax(Page page, Type urlType, string url)
-        {
             #region 生成当前path的资源文件
 
-            Type type = page.GetType();
             string ajaxKey = "AjaxProcess";
             if (url.IndexOf("?") >= 0) url = url.Remove(url.IndexOf("?"));
             if (page.Request.QueryString.Count > 0) url += page.Request.Url.Query;
@@ -46,7 +39,8 @@ namespace MySoft.Web
                 if (ajaxSpace != null) query += ";" + CoreHelper.Encrypt(ajaxSpace.Name ?? urlType.Name, ajaxKey);
             }
 
-            string urlResource = page.Request.ApplicationPath + (page.Request.ApplicationPath.EndsWith("/") ? "" : "/") + "Ajax/" + type.FullName + ".ashx?" + HttpUtility.UrlEncode(query);
+            string urlResource = page.Request.ApplicationPath + (page.Request.ApplicationPath.EndsWith("/") ? "" : "/") + "Ajax/"
+                + urlType.FullName + "," + urlType.Assembly.FullName.Split(',')[0] + ".ashx?" + HttpUtility.UrlEncode(query);
 
             #endregion
 

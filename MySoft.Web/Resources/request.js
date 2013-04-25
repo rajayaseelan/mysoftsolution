@@ -12,7 +12,7 @@
 function AJAXRequest() {
     var xmlPool = [], AJAX = this, ac = arguments.length, av = arguments;
     var xmlVersion = ["Msxml2.XMLHTTP.6.0", "Msxml2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"];
-    var emptyFun = function() { };
+    var emptyFun = function () { };
     var av = ac > 0 ? typeof (av[0]) == "object" ? av[0] : {} : {};
     var encode = av.charset ? av.charset.toUpperCase() == "UTF-8" ? encodeURIComponent : escape : encodeURIComponent;
     this.header = getp(av.header, null);
@@ -59,16 +59,19 @@ function AJAXRequest() {
         if (typeof (cb) == "function") return cb;
         else {
             cb = $VO(cb);
-            if (cb) return (function(obj) { $ST(cb, obj.responseText); });
+            if (cb) return (function (obj) { $ST(cb, obj.responseText); });
             else return emptyFun;
         }
+    };
+    function $navigator(exp) {
+        return navigator.userAgent.indexOf(exp) > 0;
     };
     function send(purl, pc, pcbf, pm, pa) {
         var purl, pc, pcbf, pm, pa, ct, ctf = false, xmlHttp = createRequest(), ac = arguments.length, av = arguments;
         if (!xmlHttp) return false;
         if (!pm || !purl || (pa == undefined)) return false;
         var ev = { url: purl, content: pc, method: pm };
-        purl+=(purl.indexOf("?")>-1?"&r=":"?r=")+Math.random();
+        purl += (purl.indexOf("?") > -1 ? "&r=" : "?r=") + Math.random();
         xmlHttp.open(pm, purl, pa);
         AJAX.onrequeststart(ev);
         xmlHttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
@@ -79,8 +82,8 @@ function AJAXRequest() {
                 xmlHttp.setRequestHeader(AJAX.header[i][0], AJAX.header[i][1]);
             }
         }
-        ct = setTimeout(function() { ctf = true; xmlHttp.abort(); }, AJAX.timeout);
-        if (window.ActiveXObject) {
+        ct = setTimeout(function () { ctf = true; xmlHttp.abort(); }, AJAX.timeout);
+        if ($navigator('MSIE') || $navigator('Chrome')) {
             xmlHttp.onreadystatechange = callbackRequest;
         } else {
             xmlHttp.onload = callbackRequest;
@@ -99,10 +102,10 @@ function AJAXRequest() {
         }
         if (pm == "POST") xmlHttp.send(pc); else xmlHttp.send(null);
     };
-    this.setcharset = function(cs) {
+    this.setcharset = function (cs) {
         if (cs.toUpperCase() == "UTF-8") encode = encodeURIComponent; else encode = escape;
     };
-    this.setcallback = function() {
+    this.setcallback = function () {
         var ac = arguments.length, av = arguments;
         if (ac <= 0) return;
         this.onrequeststart = av[0];
@@ -111,10 +114,10 @@ function AJAXRequest() {
         this.ontimeout = av[3];
         this.timeout = av[4]
     };
-    this.setheader = function(header) {
+    this.setheader = function (header) {
         this.header = getp(header, null);
     };
-    this.call = function() {
+    this.call = function () {
         var ac = arguments.length, av = arguments;
         var av = ac > 0 ? typeof (av[0]) == "object" ? av[0] : {} : {};
         this.url = getp(av.url, null);
@@ -125,7 +128,7 @@ function AJAXRequest() {
         this.oncomplete = getp(av.oncomplete, emptyFun);
         send(this.url, this.content, this.oncomplete, this.method, this.async);
     };
-    this.get = function() {
+    this.get = function () {
         var purl, pcbf, pa, ac = arguments.length, av = arguments;
         purl = ac > 0 ? av[0] : this.url;
         pcbf = ac > 1 ? $CB(av[1]) : this.oncomplete;
@@ -133,7 +136,7 @@ function AJAXRequest() {
         if (!purl && !pcbf) return false;
         send(purl, null, pcbf, "GET", pa);
     };
-    this.post = function() {
+    this.post = function () {
         var purl, pcbf, pa, pc, ac = arguments.length, av = arguments;
         purl = ac > 0 ? av[0] : this.url;
         pc = ac > 1 ? av[1] : null;
@@ -142,7 +145,7 @@ function AJAXRequest() {
         if (!purl && !pcbf) return false;
         send(purl, pc, pcbf, "POST", pa);
     };
-    this.postf = function() {
+    this.postf = function () {
         var fo, vaf, pcbf, purl, pc, pm, ac = arguments.length, av = arguments;
         fo = ac > 0 ? $VO(av[0]) : false;
         if (!fo || (fo && fo.nodeName != "FORM")) return false;
@@ -162,7 +165,7 @@ function AJAXRequest() {
         }
         else send(purl, pc, pcbf, "POST", true);
     };
-    this.update = function() {
+    this.update = function () {
         var purl, puo, pinv, pcnt, ac = arguments.length, av = arguments;
         puo = ac > 0 ? $CB(av[0]) : emptyFun;
         purl = ac > 1 ? av[1] : this.url;
@@ -171,18 +174,18 @@ function AJAXRequest() {
         if (pinv) {
             send(purl, null, puo, "GET", true);
             if (pcnt && --pcnt) {
-                var cf = function(cc) {
+                var cf = function (cc) {
                     send(purl, null, puo, "GET", true);
                     if (cc < 1) return; else cc--;
-                    setTimeout(function() { cf(cc); }, pinv);
+                    setTimeout(function () { cf(cc); }, pinv);
                 }
-                setTimeout(function() { cf(--pcnt); }, pinv);
+                setTimeout(function () { cf(--pcnt); }, pinv);
             }
-            else return (setInterval(function() { send(purl, null, puo, "GET", true); }, pinv));
+            else return (setInterval(function () { send(purl, null, puo, "GET", true); }, pinv));
         }
         else send(purl, null, puo, "GET", true);
     };
-    this.formToStr = function(fc) {
+    this.formToStr = function (fc) {
         var i, qs = '', and = '', ev = '';
         for (i = 0; i < fc.length; i++) {
             e = fc[i];

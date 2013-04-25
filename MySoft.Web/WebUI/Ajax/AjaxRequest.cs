@@ -1,16 +1,11 @@
-﻿using System;
+﻿using MySoft.Web.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Web;
-using System.Web.Caching;
 using System.Web.UI;
-using MySoft.Web.Configuration;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 
 namespace MySoft.Web.UI
 {
@@ -58,10 +53,14 @@ namespace MySoft.Web.UI
                         WebHelper.RegisterPageJsFile(info.CurrentPage, info.CurrentPage.ClientScript.GetWebResourceUrl(typeof(AjaxPage), "MySoft.Web.Resources.template.js"));
                     }
 
-                    WebHelper.RegisterPageForAjax(info.CurrentPage, info.CurrentPage.Request.Path);
+                    WebHelper.RegisterPageForAjax(info.CurrentPage);
                 }
                 else
                 {
+                    bool AjaxRequest = WebHelper.GetRequestParam<bool>(info.CurrentPage.Request, "X-Ajax-Request", false);
+                    bool AjaxLoad = WebHelper.GetRequestParam<bool>(info.CurrentPage.Request, "X-Ajax-Load", false);
+                    string AjaxKey = WebHelper.GetRequestParam<string>(info.CurrentPage.Request, "X-Ajax-Key", Guid.NewGuid().ToString());
+
                     var callbackParams = GetCallbackParams();
 
                     //只有启用Ajax，才调用初始化方法
@@ -71,17 +70,7 @@ namespace MySoft.Web.UI
                     if (info.CurrentPage is IAjaxProcessHandler)
                         (info.CurrentPage as IAjaxProcessHandler).OnAjaxProcess(callbackParams);
 
-                    bool AjaxRegister = WebHelper.GetRequestParam<bool>(info.CurrentPage.Request, "X-Ajax-Register", false);
-                    bool AjaxRequest = WebHelper.GetRequestParam<bool>(info.CurrentPage.Request, "X-Ajax-Request", false);
-                    bool AjaxLoad = WebHelper.GetRequestParam<bool>(info.CurrentPage.Request, "X-Ajax-Load", false);
-                    string AjaxKey = WebHelper.GetRequestParam<string>(info.CurrentPage.Request, "X-Ajax-Key", Guid.NewGuid().ToString());
-
-                    if (AjaxRegister)
-                    {
-                        //将value写入Response流
-                        WriteAjaxMethods(info.CurrentPage.GetType());
-                    }
-                    else if (AjaxRequest)
+                    if (AjaxRequest)
                     {
                         string AjaxMethodName = WebHelper.GetRequestParam<string>(info.CurrentPage.Request, "X-Ajax-Method", null);
 
@@ -112,10 +101,7 @@ namespace MySoft.Web.UI
                     }
                 }
             }
-            catch (ThreadAbortException)
-            {
-                Thread.ResetAbort();
-            }
+            catch (ThreadAbortException ex) { }
             catch (AjaxException ex)
             {
                 WriteErrorMessage("AjaxError: " + ex.Message);
@@ -139,29 +125,6 @@ namespace MySoft.Web.UI
         }
 
         #region Ajax类的处理
-
-        private void WriteAjaxMethods(Type ajaxType)
-        {
-            Dictionary<string, AsyncMethodInfo> ajaxMethods = AjaxMethodHelper.GetAjaxMethods(ajaxType);
-            List<AjaxMethodInfo> methodInfoList = new List<AjaxMethodInfo>();
-            List<string> paramList = new List<string>();
-            foreach (string key in ajaxMethods.Keys)
-            {
-                paramList.Clear();
-                AjaxMethodInfo methodInfo = new AjaxMethodInfo();
-                methodInfo.Name = key;
-                foreach (ParameterInfo pi in ajaxMethods[key].Method.GetParameters())
-                {
-                    paramList.Add(pi.Name);
-                }
-
-                methodInfo.Async = ajaxMethods[key].Async;
-                methodInfo.Paramters = paramList.ToArray();
-                methodInfoList.Add(methodInfo);
-            }
-
-            WriteToBuffer(methodInfoList.ToArray());
-        }
 
         /// <summary>
         /// 
@@ -353,51 +316,16 @@ namespace MySoft.Web.UI
         /// <param name="param"></param>
         private void WriteToBuffer(AjaxCallbackParam param)
         {
-            try
-            {
-                info.CurrentPage.Response.Clear();
+            info.CurrentPage.Response.Buffer = true;
+            info.CurrentPage.Response.Clear();
+            info.CurrentPage.Response.ClearContent();
 
-                if (param != null)
-                    info.CurrentPage.Response.Write(SerializationManager.SerializeJson(param));
-                else
-                    info.CurrentPage.Response.ContentType = "image/gif";
+            if (param != null)
+                info.CurrentPage.Response.Write(SerializationManager.SerializeJson(param));
+            else
+                info.CurrentPage.Response.ContentType = "image/gif";
 
-                info.CurrentPage.Response.Cache.SetNoStore();
-                info.CurrentPage.Response.Flush();
-                //info.CurrentPage.Response.End();
-
-                //完成请求
-                info.CurrentPage.Response.Close();
-                HttpContext.Current.ApplicationInstance.CompleteRequest();
-            }
-            catch
-            {
-                //不处理异常
-            }
-        }
-
-        /// <summary>
-        /// 将数据写入页面流
-        /// </summary>
-        /// <param name="methods"></param>
-        private void WriteToBuffer(AjaxMethodInfo[] methods)
-        {
-            try
-            {
-                info.CurrentPage.Response.Clear();
-                info.CurrentPage.Response.Write(SerializationManager.SerializeJson(methods));
-                info.CurrentPage.Response.Cache.SetNoStore();
-                info.CurrentPage.Response.Flush();
-                //info.CurrentPage.Response.End();
-
-                //完成请求
-                info.CurrentPage.Response.Close();
-                HttpContext.Current.ApplicationInstance.CompleteRequest();
-            }
-            catch
-            {
-                //不处理异常
-            }
+            info.CurrentPage.Response.End();
         }
 
         #endregion

@@ -102,15 +102,15 @@ namespace MySoft.Web
                                 else
                                 {
                                     //设置格式
+                                    context.Response.Buffer = true;
+                                    context.Response.Clear();
+                                    context.Response.ClearHeaders();
+
                                     SetContentType(context, file.Extension);
 
                                     //将文件写入流中
-                                    context.Response.Clear();
                                     context.Response.WriteFile(staticFile);
-
-                                    //结束请求
-                                    context.Response.Close();
-                                    context.ApplicationInstance.CompleteRequest();
+                                    context.Response.End();
                                 }
                             }
                         }
@@ -140,10 +140,7 @@ namespace MySoft.Web
                 IHttpHandler handler = PageParser.GetCompiledPageInstance(sendToUrlLessQString, applicationPath, context);
                 handler.ProcessRequest(context);
             }
-            catch (ThreadAbortException)
-            {
-                Thread.ResetAbort();
-            }
+            catch (ThreadAbortException) { }
             catch (Exception)
             {
                 throw;
