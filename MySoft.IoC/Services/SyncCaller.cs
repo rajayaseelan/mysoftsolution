@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using MySoft.Cache;
 using MySoft.IoC.Messages;
-using MySoft.Logger;
 using MySoft.Security;
 
 namespace MySoft.IoC.Services
@@ -14,8 +13,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class SyncCaller
     {
-        private IDataCache cache;
-        private bool enabledCache;
+        private IDictionary<string, QueueManager> hashtable;
         private bool fromServer;
 
         /// <summary>
@@ -25,19 +23,7 @@ namespace MySoft.IoC.Services
         public SyncCaller(bool fromServer)
         {
             this.fromServer = fromServer;
-            this.enabledCache = false;
-        }
-
-        /// <summary>
-        /// 实例化SyncCaller
-        /// </summary>
-        /// <param name="fromServer"></param>
-        /// <param name="cache"></param>
-        public SyncCaller(bool fromServer, IDataCache cache)
-            : this(fromServer)
-        {
-            this.cache = cache;
-            this.enabledCache = true;
+            this.hashtable = new Dictionary<string, QueueManager>();
         }
 
         /// <summary>
@@ -49,60 +35,80 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseItem Run(IService service, OperationContext context, RequestMessage reqMsg)
         {
-            if (CheckCache(reqMsg))
-            {
-                //从缓存获取数据
-                var item = GetResponseFromCache(service, context, reqMsg);
+            //获取callerKey
+            var callKey = GetCallerKey(reqMsg, context.Caller);
 
-                //从缓存中获取数据
-                if (item != null)
+            QueueManager manager = null;
+
+            lock (hashtable)
+            {
+                if (!hashtable.ContainsKey(callKey))
                 {
-                    SetResponse(reqMsg, item);
+                    hashtable[callKey] = new QueueManager();
                 }
 
-                return item;
+                manager = hashtable[callKey];
             }
-            else
+
+            //合并请求响应
+            using (var channelResult = new ChannelResult())
             {
-                //返回正常响应
-                var resMsg = GetResponse(service, context, reqMsg);
+                if (manager.Count == 0)
+                {
+                    manager.Add(channelResult);
 
-                if (resMsg == null) return null;
+                    Func<string, IService, OperationContext, RequestMessage, ResponseItem> func = null;
 
-                //实例化Item
-                return new ResponseItem(resMsg);
+                    if (NeedServerCache(reqMsg))
+                        func = GetResponseFromCache;
+                    else
+                        func = GetResponseFromService;
+
+                    //开始异步调用
+                    func.BeginInvoke(callKey, service, context, reqMsg, AsyncCallback, new ArrayList { callKey, manager, func });
+                }
+                else
+                {
+                    manager.Add(channelResult);
+                }
+
+                //永久等待超时
+                channelResult.WaitOne();
+
+                return channelResult.Message;
             }
         }
 
         /// <summary>
-        /// 判断是否需要缓存
+        /// 回调方法
         /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private bool CheckCache(RequestMessage reqMsg)
+        /// <param name="ar"></param>
+        private static void AsyncCallback(IAsyncResult ar)
         {
-            return enabledCache && reqMsg.CacheTime > 0;
-        }
-
-        /// <summary>
-        /// 获取响应信息
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        private void SetResponse(RequestMessage reqMsg, ResponseItem item)
-        {
-            if (!fromServer && item.Message == null)
+            try
             {
-                var buffer = CompressionManager.DecompressGZip(item.Buffer);
+                var arr = ar.AsyncState as ArrayList;
 
-                var resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
+                //回调方法
+                var callKey = Convert.ToString(arr[0]);
+                var _manager = arr[1] as QueueManager;
+                var _func = arr[2] as Func<string, IService, OperationContext, RequestMessage, ResponseItem>;
 
-                //设置同步返回传输Id
-                resMsg.TransactionId = reqMsg.TransactionId;
-
-                item.Buffer = null;
-                item.Message = resMsg;
+                try
+                {
+                    //响应请求
+                    _manager.Set(_func.EndInvoke(ar));
+                }
+                finally
+                {
+                    if (_manager != null) _manager.Clear();
+                }
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                //关闭句柄
+                ar.AsyncWaitHandle.Close();
             }
         }
 
@@ -145,47 +151,30 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 从缓存中获取数据
+        /// 获取响应从本地缓存
         /// </summary>
+        /// <param name="callKey"></param>
         /// <param name="service"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseItem GetResponseFromCache(IService service, OperationContext context, RequestMessage reqMsg)
+        private ResponseItem GetResponseFromService(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
         {
-            try
-            {
-                //定义回调函数
-                Func<string, IService, OperationContext, RequestMessage, ResponseItem> func = null;
+            //从本地获取数据
+            var resMsg = GetResponse(service, context, reqMsg);
 
-                if (cache == null)
-                {
-                    //获取响应从本地缓存
-                    func = GetResponseFromLocalCache;
-                }
-                else
-                {
-                    //获取响应从远程缓存
-                    func = GetResponseFromRemoteCache;
-                }
+            //实例化ResponseItem
+            return resMsg == null ? null : new ResponseItem(resMsg);
+        }
 
-                //获取CallerKey
-                var callKey = GetCallerKey(service, context.Caller);
-
-                //如果是状态服务，则使用内部缓存
-                if (reqMsg.InvokeMethod)
-                {
-                    callKey = string.Format("invoke_{0}", callKey);
-                }
-
-                return func(callKey, service, context, reqMsg);
-            }
-            catch (Exception ex)
-            {
-                SimpleLog.Instance.WriteLogForDir("SyncCaller", ex);
-
-                return null;
-            }
+        /// <summary>
+        /// 判断是否需要缓存
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private bool NeedServerCache(RequestMessage reqMsg)
+        {
+            return fromServer && reqMsg.EnableCache && reqMsg.CacheTime > 0;
         }
 
         /// <summary>
@@ -196,11 +185,9 @@ namespace MySoft.IoC.Services
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseItem GetResponseFromLocalCache(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        private ResponseItem GetResponseFromCache(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
         {
             //双缓存保护获取方式
-            var array = new ArrayList { service, context, reqMsg };
-
             var key = new CacheKey
             {
                 UniqueId = callKey,
@@ -209,108 +196,59 @@ namespace MySoft.IoC.Services
             };
 
             return ServiceCacheHelper.Get(key, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
-                    {
-                        var arr = state as ArrayList;
-                        var _service = arr[0] as IService;
-                        var _context = arr[1] as OperationContext;
-                        var _reqMsg = arr[2] as RequestMessage;
+            {
+                //获取响应信息项
+                var arr = state as ArrayList;
+                var _service = arr[0] as IService;
+                var _context = arr[1] as OperationContext;
+                var _reqMsg = arr[2] as RequestMessage;
 
-                        //同步请求响应数据
-                        var resMsg = GetResponse(_service, _context, _reqMsg);
+                //同步请求响应数据
+                var item = GetResponseFromService(callKey, service, context, reqMsg);
 
-                        if (resMsg == null) return null;
+                if (item != null && CheckResponse(item.Message))
+                {
+                    item.Buffer = GetResponseBuffer(item.Message);
+                }
 
-                        var item = new ResponseItem(resMsg);
+                return item;
 
-                        if (CheckResponse(resMsg))
-                        {
-                            var buffer = SerializationManager.SerializeBin(resMsg);
-                            buffer = CompressionManager.CompressGZip(buffer);
-
-                            item.Buffer = buffer;
-                        }
-
-                        return item;
-
-                    }, array);
+            }, new ArrayList { service, context, reqMsg });
         }
 
         /// <summary>
-        /// 获取响应从远程缓存
+        /// 获取缓冲
         /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="service"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
+        /// <param name="resMsg"></param>
         /// <returns></returns>
-        private ResponseItem GetResponseFromRemoteCache(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        private byte[] GetResponseBuffer(ResponseMessage resMsg)
         {
-            //定义一个响应值
-            ResponseItem item = null;
-
-            //从缓存获取
-            var cacheItem = cache.Get<CacheItem>(callKey);
-
-            if (cacheItem == null)
-            {
-                //同步请求响应数据
-                var resMsg = GetResponse(service, context, reqMsg);
-
-                if (resMsg == null) return null;
-
-                item = new ResponseItem(resMsg);
-
-                if (CheckResponse(resMsg))
-                {
-                    try
-                    {
-                        //序列化对象
-                        var buffer = SerializationManager.SerializeBin(resMsg);
-                        buffer = CompressionManager.CompressGZip(buffer);
-                        item.Buffer = buffer;
-
-                        var timeout = TimeSpan.FromSeconds(reqMsg.CacheTime);
-
-                        cacheItem = new CacheItem
-                        {
-                            ExpiredTime = DateTime.Now.Add(timeout),
-                            Count = resMsg.Count,
-                            Value = buffer
-                        };
-
-                        //插入缓存
-                        cache.Insert(callKey, cacheItem, timeout);
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-            else
-            {
-                //实例化Item
-                item = new ResponseItem { Buffer = cacheItem.Value, Count = cacheItem.Count };
-            }
-
-            return item;
+            var buffer = SerializationManager.SerializeBin(resMsg);
+            return CompressionManager.CompressGZip(buffer);
         }
 
         /// <summary>
         /// 获取CallerKey
         /// </summary>
-        /// <param name="service"></param>
+        /// <param name="reqMsg"></param>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private string GetCallerKey(IService service, AppCaller caller)
+        private string GetCallerKey(RequestMessage reqMsg, AppCaller caller)
         {
             //对Key进行组装
-            var callKey = string.Format("{0}${1}${2}${3}", service.ServiceName, caller.ServiceName, caller.MethodName
-                                        , caller.Parameters).Replace(" ", "").Replace("\r\n", "").Replace("\t", "");
+            var callKey = string.Format("{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
 
             //返回加密Key
-            return MD5.HexHash(Encoding.Default.GetBytes(callKey.ToLower()));
-        }
+            callKey = MD5.HexHash(Encoding.Default.GetBytes(callKey.ToLower()));
 
+            //如果是状态服务，则使用内部缓存
+            if (reqMsg.InvokeMethod)
+            {
+                callKey = string.Format("invoke_{0}", callKey);
+            }
+
+            return callKey;
+        }
 
         /// <summary>
         /// 检测响应是否有效
