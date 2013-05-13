@@ -34,7 +34,7 @@ namespace MySoft.Security
     /// <summary>
     /// MD5º”√‹
     /// </summary>
-    public sealed class MD5
+    public static class MD5
     {
         private static uint bitrol(uint n, byte c)
         {

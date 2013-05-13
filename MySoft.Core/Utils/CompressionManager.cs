@@ -9,7 +9,7 @@ namespace MySoft
     /// <summary>
     /// Compression Manager
     /// </summary>
-    public abstract class CompressionManager
+    public static class CompressionManager
     {
         #region SharpZip
 

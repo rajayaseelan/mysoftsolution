@@ -28,7 +28,7 @@ namespace MySoft.Tools.EntityDesign
                 try
                 {
                     XmlTextReader reader = new XmlTextReader(configFile);
-                    XmlSerializer serializer = new XmlSerializer(typeof(EntityDesignConfiguration));
+                    XmlSerializer serializer = SerializationManager.GetSerializer(typeof(EntityDesignConfiguration));
                     EntityDesignConfiguration config = (EntityDesignConfiguration)serializer.Deserialize(reader);
 
                     if (config != null)

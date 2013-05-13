@@ -55,15 +55,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            lock (queues)
-            {
-                while (queues.Count > 0)
-                {
-                    var result = queues.Dequeue();
-                    result.Dispose();
-                }
-            }
-
+            this.queues.Clear();
             this.queues = null;
         }
 

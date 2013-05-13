@@ -33,7 +33,7 @@ namespace MySoft.Security
 {
     using System;
 
-    public abstract class XXTEA
+    public static class XXTEA
     {
         private const UInt32 delta = 0x9E3779B9;
 

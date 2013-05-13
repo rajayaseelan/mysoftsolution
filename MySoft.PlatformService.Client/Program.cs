@@ -91,22 +91,22 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
-            //var list = new List<User>();
-            //list.AddRange(new User[] { new User { }, new User { } });
+            var list = new List<User>();
+            list.AddRange(new User[] { new User { }, new User { } });
 
-            //var buffer = SerializationManager.SerializeBin(list);
-            //list = SerializationManager.DeserializeBin<List<User>>(buffer);
+            var buffer = SerializationManager.SerializeBin(list);
+            list = SerializationManager.DeserializeBin<List<User>>(buffer);
 
-            //var str = SerializationManager.SerializeJson(list);
-            //list = SerializationManager.DeserializeJson<List<User>>(str);
+            var str = SerializationManager.SerializeJson(list);
+            list = SerializationManager.DeserializeJson<List<User>>(str);
 
-            //str = SerializationManager.SerializeXml(list);
-            //list = SerializationManager.DeserializeXml<List<User>>(str);
+            str = SerializationManager.SerializeXml(list);
+            list = SerializationManager.DeserializeXml<List<User>>(str);
 
-            //str = SerializationManager.SerializeXml(list, Encoding.UTF8);
-            //list = SerializationManager.DeserializeXml<List<User>>(str, Encoding.UTF8);
+            str = SerializationManager.SerializeXml(list, Encoding.UTF8);
+            list = SerializationManager.DeserializeXml<List<User>>(str, Encoding.UTF8);
 
-            //var a = list;
+            var a = list;
 
             //buffer = CompressionManager.Compress7Zip(buffer);
             //buffer = CompressionManager.Decompress7Zip(buffer);

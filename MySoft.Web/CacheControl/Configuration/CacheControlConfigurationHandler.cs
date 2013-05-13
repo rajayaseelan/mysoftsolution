@@ -18,7 +18,7 @@ namespace MySoft.Web.Configuration
         public object Create(object parent, object configContext, System.Xml.XmlNode section)
         {
             // Create an instance of XmlSerializer based on the StaticPageConfiguration type...
-            XmlSerializer ser = new XmlSerializer(typeof(CacheControlConfiguration));
+            XmlSerializer ser = SerializationManager.GetSerializer(typeof(CacheControlConfiguration));
 
             // Return the Deserialized object from the Web.config XML
             return ser.Deserialize(new XmlNodeReader(section));

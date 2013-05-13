@@ -42,7 +42,7 @@ namespace MySoft.Data
                 XmlTextReader reader = new XmlTextReader(configPath);
                 try
                 {
-                    XmlSerializer serializer = new XmlSerializer(typeof(TableSetting[]));
+                    XmlSerializer serializer = SerializationManager.GetSerializer(typeof(TableSetting[]));
                     _Settings = serializer.Deserialize(reader) as TableSetting[];
                 }
                 catch { }

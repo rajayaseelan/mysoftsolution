@@ -20,7 +20,7 @@ namespace MySoft.Web.Configuration
         public object Create(object parent, object configContext, System.Xml.XmlNode section)
         {
             // Create an instance of XmlSerializer based on the RedirectPageConfiguration type...
-            XmlSerializer ser = new XmlSerializer(typeof(RedirectPageConfiguration));
+            XmlSerializer ser = SerializationManager.GetSerializer(typeof(RedirectPageConfiguration));
 
             // Return the Deserialized object from the Web.config XML
             return ser.Deserialize(new XmlNodeReader(section));
