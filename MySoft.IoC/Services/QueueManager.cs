@@ -1,19 +1,22 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
     /// <summary>
     /// 队列管理
     /// </summary>
-    internal class QueueManager
+    internal class QueueManager : IDisposable
     {
+        private Queue<ChannelResult> queues;
+
         /// <summary>
-        /// 实例化队列
+        /// 实例化QueueManager
         /// </summary>
-        private readonly Queue<ChannelResult> queue = new Queue<ChannelResult>();
+        public QueueManager()
+        {
+            this.queues = new Queue<ChannelResult>();
+        }
 
         /// <summary>
         /// 添加到队列
@@ -21,9 +24,9 @@ namespace MySoft.IoC.Services
         /// <param name="result"></param>
         public void Add(ChannelResult result)
         {
-            lock (queue)
+            lock (queues)
             {
-                queue.Enqueue(result);
+                queues.Enqueue(result);
             }
         }
 
@@ -33,41 +36,37 @@ namespace MySoft.IoC.Services
         /// <param name="item"></param>
         public void Set(ResponseItem item)
         {
-            lock (queue)
-            {
-                while (queue.Count > 0)
-                {
-                    var result = queue.Dequeue();
-                    if (result == null) continue;
+            if (item == null) return;
 
+            lock (queues)
+            {
+                while (queues.Count > 0)
+                {
+                    var result = queues.Dequeue();
                     result.Set(item);
                 }
             }
         }
 
-        /// <summary>
-        /// 队列长度
-        /// </summary>
-        public int Count
-        {
-            get
-            {
-                lock (queue)
-                {
-                    return queue.Count;
-                }
-            }
-        }
+        #region IDisposable 成员
 
         /// <summary>
-        /// 清除队列
+        /// 清理资源
         /// </summary>
-        public void Clear()
+        public void Dispose()
         {
-            lock (queue)
+            lock (queues)
             {
-                queue.Clear();
+                while (queues.Count > 0)
+                {
+                    var result = queues.Dequeue();
+                    result.Dispose();
+                }
             }
+
+            this.queues = null;
         }
+
+        #endregion
     }
 }

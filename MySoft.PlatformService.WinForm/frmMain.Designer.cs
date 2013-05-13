@@ -40,10 +40,6 @@
             this.splitContainer4 = new System.Windows.Forms.SplitContainer();
             this.splitContainer6 = new System.Windows.Forms.SplitContainer();
             this.listAssembly = new ListControls.MessageListBox();
-            this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.刷新服务RToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.刷新WebAPI服务AToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listService = new ListControls.MessageListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.订阅此服务SToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -103,8 +99,6 @@
             this.lblError = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.tabPage6 = new System.Windows.Forms.TabPage();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -124,6 +118,12 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label12 = new System.Windows.Forms.Label();
             this.numericUpDown6 = new System.Windows.Forms.NumericUpDown();
+            this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.刷新服务RToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.刷新WebAPI服务AToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.tabPage6 = new System.Windows.Forms.TabPage();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage0.SuspendLayout();
@@ -133,7 +133,6 @@
             this.splitContainer6.Panel1.SuspendLayout();
             this.splitContainer6.Panel2.SuspendLayout();
             this.splitContainer6.SuspendLayout();
-            this.contextMenuStrip2.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.splitContainer5.Panel1.SuspendLayout();
             this.splitContainer5.Panel2.SuspendLayout();
@@ -170,6 +169,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown5)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown6)).BeginInit();
+            this.contextMenuStrip2.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -311,34 +311,6 @@
             this.listAssembly.Size = new System.Drawing.Size(302, 153);
             this.listAssembly.TabIndex = 12;
             // 
-            // contextMenuStrip2
-            // 
-            this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.刷新服务RToolStripMenuItem,
-            this.toolStripSeparator1,
-            this.刷新WebAPI服务AToolStripMenuItem});
-            this.contextMenuStrip2.Name = "contextMenuStrip2";
-            this.contextMenuStrip2.Size = new System.Drawing.Size(177, 54);
-            // 
-            // 刷新服务RToolStripMenuItem
-            // 
-            this.刷新服务RToolStripMenuItem.Name = "刷新服务RToolStripMenuItem";
-            this.刷新服务RToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
-            this.刷新服务RToolStripMenuItem.Text = "刷新分布式服务(&R)";
-            this.刷新服务RToolStripMenuItem.Click += new System.EventHandler(this.刷新服务RToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(173, 6);
-            // 
-            // 刷新WebAPI服务AToolStripMenuItem
-            // 
-            this.刷新WebAPI服务AToolStripMenuItem.Name = "刷新WebAPI服务AToolStripMenuItem";
-            this.刷新WebAPI服务AToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
-            this.刷新WebAPI服务AToolStripMenuItem.Text = "刷新WebAPI服务(&A)";
-            this.刷新WebAPI服务AToolStripMenuItem.Click += new System.EventHandler(this.刷新WebAPI服务AToolStripMenuItem_Click);
-            // 
             // listService
             // 
             this.listService.AutoScroll = true;
@@ -416,7 +388,7 @@
             this.panel4.Location = new System.Drawing.Point(0, 0);
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(573, 32);
-            this.panel4.TabIndex = 14;
+            this.panel4.TabIndex = 13;
             // 
             // autoCompleteTextbox1
             // 
@@ -429,7 +401,7 @@
             this.autoCompleteTextbox1.Name = "autoCompleteTextbox1";
             this.autoCompleteTextbox1.SelectedIndex = -1;
             this.autoCompleteTextbox1.Size = new System.Drawing.Size(498, 21);
-            this.autoCompleteTextbox1.TabIndex = 2;
+            this.autoCompleteTextbox1.TabIndex = 0;
             // 
             // label14
             // 
@@ -945,26 +917,6 @@
             this.tabPage4.Text = "状态信息";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
-            // tabPage5
-            // 
-            this.tabPage5.Location = new System.Drawing.Point(4, 22);
-            this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(887, 489);
-            this.tabPage5.TabIndex = 5;
-            this.tabPage5.Text = "WebAPI";
-            this.tabPage5.UseVisualStyleBackColor = true;
-            // 
-            // tabPage6
-            // 
-            this.tabPage6.Location = new System.Drawing.Point(4, 22);
-            this.tabPage6.Name = "tabPage6";
-            this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage6.Size = new System.Drawing.Size(887, 489);
-            this.tabPage6.TabIndex = 6;
-            this.tabPage6.Text = "OpenAPI";
-            this.tabPage6.UseVisualStyleBackColor = true;
-            // 
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
@@ -1219,6 +1171,54 @@
             0,
             0});
             // 
+            // contextMenuStrip2
+            // 
+            this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.刷新服务RToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.刷新WebAPI服务AToolStripMenuItem});
+            this.contextMenuStrip2.Name = "contextMenuStrip2";
+            this.contextMenuStrip2.Size = new System.Drawing.Size(177, 54);
+            // 
+            // 刷新服务RToolStripMenuItem
+            // 
+            this.刷新服务RToolStripMenuItem.Name = "刷新服务RToolStripMenuItem";
+            this.刷新服务RToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.刷新服务RToolStripMenuItem.Text = "刷新分布式服务(&R)";
+            this.刷新服务RToolStripMenuItem.Click += new System.EventHandler(this.刷新服务RToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(173, 6);
+            // 
+            // 刷新WebAPI服务AToolStripMenuItem
+            // 
+            this.刷新WebAPI服务AToolStripMenuItem.Name = "刷新WebAPI服务AToolStripMenuItem";
+            this.刷新WebAPI服务AToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.刷新WebAPI服务AToolStripMenuItem.Text = "刷新WebAPI服务(&A)";
+            this.刷新WebAPI服务AToolStripMenuItem.Click += new System.EventHandler(this.刷新WebAPI服务AToolStripMenuItem_Click);
+            // 
+            // tabPage5
+            // 
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(887, 489);
+            this.tabPage5.TabIndex = 5;
+            this.tabPage5.Text = "WebAPI";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // tabPage6
+            // 
+            this.tabPage6.Location = new System.Drawing.Point(4, 22);
+            this.tabPage6.Name = "tabPage6";
+            this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage6.Size = new System.Drawing.Size(887, 489);
+            this.tabPage6.TabIndex = 6;
+            this.tabPage6.Text = "OpenAPI";
+            this.tabPage6.UseVisualStyleBackColor = true;
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1252,7 +1252,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "分布式服务监控 v1.0";
+            this.Text = "分布式服务监控 v2.0";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
             this.Load += new System.EventHandler(this.frmMain_Load);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
@@ -1264,7 +1264,6 @@
             this.splitContainer6.Panel1.ResumeLayout(false);
             this.splitContainer6.Panel2.ResumeLayout(false);
             this.splitContainer6.ResumeLayout(false);
-            this.contextMenuStrip2.ResumeLayout(false);
             this.contextMenuStrip1.ResumeLayout(false);
             this.splitContainer5.Panel1.ResumeLayout(false);
             this.splitContainer5.Panel2.ResumeLayout(false);
@@ -1304,6 +1303,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown5)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown6)).EndInit();
+            this.contextMenuStrip2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1355,10 +1355,8 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.NumericUpDown numericUpDown5;
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip3;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip4;
-        private System.Windows.Forms.ToolStripMenuItem 刷新服务RToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 调用此服务CToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 调用此服务CToolStripMenuItem1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
@@ -1399,8 +1397,10 @@
         private System.Windows.Forms.Label lblError;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.Label label14;
         private AutoCompleteTextbox autoCompleteTextbox1;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
+        private System.Windows.Forms.ToolStripMenuItem 刷新服务RToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem 刷新WebAPI服务AToolStripMenuItem;
         private System.Windows.Forms.TabPage tabPage5;

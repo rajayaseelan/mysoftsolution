@@ -40,5 +40,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Messages
                        ? string.Format("ScsPingMessage [{0}]", MessageId)
                        : string.Format("ScsPingMessage [{0}] Replied To [{1}]", MessageId, RepliedMessageId);
         }
+
+        public override void Dispose()
+        {
+
+        }
     }
 }

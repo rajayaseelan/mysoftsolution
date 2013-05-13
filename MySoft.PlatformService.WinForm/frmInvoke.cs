@@ -17,13 +17,14 @@ namespace MySoft.PlatformService.WinForm
     {
         private string serviceName;
         private string methodName;
+        private int cacheTime;
         private ServerNode node;
         private IList<ParameterInfo> parameters;
         private IDictionary<string, TextBox> txtParameters;
         private string paramValue;
         private int timeout;
 
-        public frmInvoke(ServerNode node, string serviceName, string methodName, IList<ParameterInfo> parameters)
+        public frmInvoke(ServerNode node, string serviceName, MethodInfo method)
         {
             InitializeComponent();
 
@@ -31,13 +32,14 @@ namespace MySoft.PlatformService.WinForm
             this.timeout = node.Timeout;
             this.node.Timeout = 30;
             this.serviceName = serviceName;
-            this.methodName = methodName;
-            this.parameters = parameters;
+            this.methodName = method.FullName;
+            this.cacheTime = method.CacheTime;
+            this.parameters = method.Parameters;
             this.txtParameters = new Dictionary<string, TextBox>();
         }
 
-        public frmInvoke(ServerNode node, string serviceName, string methodName, IList<ParameterInfo> parameters, string paramValue)
-            : this(node, serviceName, methodName, parameters)
+        public frmInvoke(ServerNode node, string serviceName, MethodInfo method, string paramValue)
+            : this(node, serviceName, method)
         {
             this.paramValue = paramValue;
         }
@@ -239,15 +241,13 @@ namespace MySoft.PlatformService.WinForm
             {
                 ServiceName = serviceName,
                 MethodName = methodName,
-                Parameters = parameter
+                Parameters = parameter,
+                CacheTime = cacheTime
             };
 
             //启用线程进行数据填充
             var caller = new AsyncMethodCaller(AsyncCaller);
             var ar = caller.BeginInvoke(message, AsyncComplete, caller);
-
-            //清理资源
-            GC.Collect();
         }
 
         private InvokeData AsyncCaller(InvokeMessage message)
@@ -267,14 +267,8 @@ namespace MySoft.PlatformService.WinForm
             {
                 data = new InvokeResponse { Exception = ex };
             }
-            finally
-            {
-                if (watch.IsRunning)
-                {
-                    watch.Stop();
-                }
-            }
 
+            watch.Stop();
             data.ElapsedMilliseconds = watch.ElapsedMilliseconds;
 
             return data;
@@ -290,7 +284,6 @@ namespace MySoft.PlatformService.WinForm
                 var value = caller.EndInvoke(ar);
                 var data = value as InvokeResponse;
 
-                //设置响应信息
                 SetInvokeResponse(data);
             }
             catch (Exception ex) { }
@@ -298,12 +291,11 @@ namespace MySoft.PlatformService.WinForm
             {
                 ar.AsyncWaitHandle.Close();
             }
+
+            //清理资源
+            GC.Collect();
         }
 
-        /// <summary>
-        /// 设置响应信息
-        /// </summary>
-        /// <param name="data"></param>
         private void SetInvokeResponse(InvokeResponse data)
         {
             InvokeMethod(new Action(() =>

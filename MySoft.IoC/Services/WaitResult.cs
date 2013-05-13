@@ -9,8 +9,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class WaitResult : IDisposable
     {
-        private AutoResetEvent ev;
-        private RequestMessage reqMsg;
+        private EventWaitHandle ev;
         private ResponseMessage resMsg;
 
         /// <summary>
@@ -24,11 +23,9 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 实例化WaitResult
         /// </summary>
-        /// <param name="reqMsg"></param>
-        public WaitResult(RequestMessage reqMsg)
+        public WaitResult()
         {
             this.ev = new AutoResetEvent(false);
-            this.reqMsg = reqMsg;
         }
 
         /// <summary>
@@ -40,13 +37,10 @@ namespace MySoft.IoC.Services
         {
             try
             {
-                return ev.WaitOne(timeout, false);
-            }
-            catch (ThreadAbortException ex)
-            {
-                Thread.ResetAbort();
-
-                return false;
+                if (timeout == TimeSpan.Zero)
+                    return ev.WaitOne();
+                else
+                    return ev.WaitOne(timeout, false);
             }
             catch
             {
@@ -66,12 +60,6 @@ namespace MySoft.IoC.Services
                 this.resMsg = resMsg;
                 return ev.Set();
             }
-            catch (ThreadAbortException ex)
-            {
-                Thread.ResetAbort();
-
-                return false;
-            }
             catch
             {
                 return false;
@@ -83,12 +71,12 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 清理资源
         /// </summary>
-        public virtual void Dispose()
+        public void Dispose()
         {
-            this.ev.Close();
-
-            this.reqMsg = null;
             this.resMsg = null;
+
+            this.ev.Close();
+            this.ev = null;
         }
 
         #endregion

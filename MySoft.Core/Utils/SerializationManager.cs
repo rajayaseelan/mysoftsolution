@@ -50,22 +50,12 @@ namespace MySoft
         {
             if (obj == null) return new byte[0];
 
-            byte[] buffer = new byte[1024];
-            using (MemoryStream ms = new MemoryStream())
-            {
-                BinaryFormatter bformatter = new BinaryFormatter();
-                bformatter.Serialize(ms, obj);
-                ms.Position = 0;
+            var memoryStream = new MemoryStream();
 
-                if (ms.Length > buffer.Length)
-                {
-                    buffer = new byte[ms.Length];
-                }
+            new BinaryFormatter().Serialize(memoryStream, obj);
+            memoryStream.Close();
 
-                buffer = ms.ToArray();
-            }
-
-            return buffer;
+            return memoryStream.ToArray();
         }
 
         /// <summary>
@@ -136,16 +126,13 @@ namespace MySoft
                 return null;
             }
 
-            Object serializedObject;
-            using (MemoryStream ms = new MemoryStream(buffer))
-            {
-                ms.Position = 0;
-                BinaryFormatter b = new BinaryFormatter();
-                //b.TypeFormat = FormatterTypeStyle.TypesWhenNeeded;
-                serializedObject = b.Deserialize(ms);
-            }
+            var deserializeMemoryStream = new MemoryStream(buffer);
 
-            return serializedObject;
+            deserializeMemoryStream.Position = 0;
+            var binaryFormatter = new BinaryFormatter();
+            //b.TypeFormat = FormatterTypeStyle.TypesWhenNeeded;
+
+            return binaryFormatter.Deserialize(deserializeMemoryStream);
         }
 
         /// <summary>
@@ -271,26 +258,29 @@ namespace MySoft
             }
             else
             {
+                var namespaces = new XmlSerializerNamespaces();
+                namespaces.Add("", "");
+
                 if (encoding == Encoding.Default)
                 {
                     StringBuilder sb = new StringBuilder();
-                    using (StringWriter sw = new StringWriter(sb))
-                    {
-                        XmlSerializer serializer = new XmlSerializer(obj.GetType());
-                        serializer.Serialize(sw, obj);
-                        return sb.ToString();
-                    }
+                    StringWriter sw = new StringWriter(sb);
+
+                    XmlSerializer serializer = new XmlSerializer(obj.GetType());
+                    serializer.Serialize(sw, obj, namespaces);
+                    sw.Close();
+                    return sb.ToString();
                 }
                 else
                 {
-                    using (MemoryStream ms = new MemoryStream())
-                    using (XmlTextWriter xw = new XmlTextWriter(ms, encoding))
-                    {
-                        xw.Formatting = System.Xml.Formatting.Indented;
-                        XmlSerializer serializer = new XmlSerializer(obj.GetType());
-                        serializer.Serialize(xw, obj);
-                        return encoding.GetString(ms.ToArray());
-                    }
+                    MemoryStream ms = new MemoryStream();
+                    XmlTextWriter xw = new XmlTextWriter(ms, encoding);
+                    xw.Formatting = System.Xml.Formatting.Indented;
+                    XmlSerializer serializer = new XmlSerializer(obj.GetType());
+                    serializer.Serialize(xw, obj, namespaces);
+                    xw.Close();
+                    ms.Close();
+                    return encoding.GetString(ms.ToArray());
                 }
             }
         }
@@ -343,21 +333,17 @@ namespace MySoft
 
             if (encoding == Encoding.Default)
             {
-                using (StringReader sr = new StringReader(data))
-                {
-                    XmlSerializer serializer = new XmlSerializer(returnType);
-                    return serializer.Deserialize(sr);
-                }
+                StringReader sr = new StringReader(data);
+                XmlSerializer serializer = new XmlSerializer(returnType);
+                return serializer.Deserialize(sr);
             }
             else
             {
-                using (MemoryStream ms = new MemoryStream(encoding.GetBytes(data)))
-                using (StreamReader sr = new StreamReader(ms, encoding))
-                using (XmlReader xr = XmlReader.Create(sr))
-                {
-                    XmlSerializer serializer = new XmlSerializer(returnType);
-                    return serializer.Deserialize(xr);
-                }
+                MemoryStream ms = new MemoryStream(encoding.GetBytes(data));
+                StreamReader sr = new StreamReader(ms, encoding);
+                XmlReader xr = XmlReader.Create(sr);
+                XmlSerializer serializer = new XmlSerializer(returnType);
+                return serializer.Deserialize(xr);
             }
         }
 

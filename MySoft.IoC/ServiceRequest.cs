@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Net.Sockets;
 using MySoft.IoC.Communication.Scs.Client;
 using MySoft.IoC.Communication.Scs.Communication;
@@ -15,9 +14,8 @@ namespace MySoft.IoC
     /// </summary>
     public class ServiceRequest
     {
-        private string messageId;
-        private IServiceCallback callback;
         private RequestMessage reqMsg;
+        private IServiceCallback callback;
         private IScsClient client;
         private ServerNode node;
         private bool subscribed;
@@ -35,39 +33,29 @@ namespace MySoft.IoC
             this.subscribed = subscribed;
 
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(node.IP, node.Port));
+            this.client.KeepAlive = subscribed;
+            this.client.WireProtocol = new CustomWireProtocol(node.Compress);
+
             this.client.Connected += client_Connected;
             this.client.Disconnected += client_Disconnected;
+            this.client.MessageSent += client_MessageSent;
             this.client.MessageReceived += client_MessageReceived;
             this.client.MessageError += client_MessageError;
-            this.client.WireProtocol = new CustomWireProtocol(node.Compress);
         }
 
         /// <summary>
-        /// 发送数据包
+        /// 发送消息
         /// </summary>
         /// <param name="messageId"></param>
         /// <param name="reqMsg"></param>
-        public void SendRequest(string messageId, RequestMessage reqMsg)
+        public void SendMessage(string messageId, RequestMessage reqMsg)
         {
-            this.messageId = messageId;
             this.reqMsg = reqMsg;
 
             //如果连接断开，直接抛出异常
             if (client.CommunicationState != CommunicationStates.Connected)
             {
                 ConnectServer();
-
-                //发送客户端信息到服务端
-                var clientInfo = new AppClient
-                {
-                    AppPath = AppDomain.CurrentDomain.BaseDirectory,
-                    AppName = reqMsg.AppName,
-                    IPAddress = reqMsg.IPAddress,
-                    HostName = reqMsg.HostName
-                };
-
-                //发送消息
-                client.SendMessage(new ScsClientMessage(clientInfo));
             }
 
             //设置压缩与加密
@@ -112,74 +100,82 @@ namespace MySoft.IoC
             client_MessageError(sender, new ErrorEventArgs(error));
         }
 
-        void client_MessageError(object sender, ErrorEventArgs e)
+        void client_MessageSent(object sender, MessageEventArgs e)
         {
-            //输出错误信息
-            callback.MessageError(sender, new ErrorMessageEventArgs
-            {
-                MessageId = messageId,
-                Request = reqMsg,
-                Error = e.Error
-            });
+            //TODO
         }
 
         void client_MessageReceived(object sender, MessageEventArgs e)
         {
-            var message = new ServiceMessageEventArgs
+            try
             {
-                MessageId = e.Message.RepliedMessageId,
-                Request = reqMsg
-            };
-
-            //不是指定消息不处理
-            if (e.Message is ScsCallbackMessage)
-            {
-                //消息类型转换
-                var data = e.Message as ScsCallbackMessage;
-                message.Result = data.MessageValue;
-            }
-            else if (e.Message is ScsResultMessage)
-            {
-                //消息类型转换
-                var data = e.Message as ScsResultMessage;
-                message.Result = data.MessageValue;
-            }
-            else if (e.Message is ScsRawDataMessage)
-            {
-                //开始一个记时器
-                var watch = Stopwatch.StartNew();
-
-                try
+                if (e.Message is ScsCallbackMessage)
                 {
-                    //获取响应信息
-                    var data = e.Message as ScsRawDataMessage;
-                    var buffer = CompressionManager.DecompressGZip(data.MessageData);
-                    var resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
+                    //消息类型转换
+                    var data = e.Message as ScsCallbackMessage;
 
-                    //设置同步返回传输Id
-                    resMsg.TransactionId = new Guid(message.MessageId);
-                    resMsg.ElapsedTime = watch.ElapsedMilliseconds;
-
-                    message.Result = resMsg;
+                    //回调消息
+                    callback.MessageCallback(e.Message.RepliedMessageId, data.MessageValue);
                 }
-                catch (Exception ex)
+                else
                 {
-                    //出错时响应错误
-                    client_MessageError(sender, new ErrorEventArgs(ex));
+                    //定义消息
+                    ResponseMessage resMsg = null;
 
-                    return;
-                }
-                finally
-                {
-                    if (watch.IsRunning)
+                    if (e.Message is ScsResultMessage)
                     {
-                        watch.Stop();
+                        //消息类型转换
+                        var data = e.Message as ScsResultMessage;
+
+                        resMsg = data.MessageValue as ResponseMessage;
                     }
+                    else if (e.Message is ScsRawDataMessage)
+                    {
+                        try
+                        {
+                            //获取响应信息
+                            var data = e.Message as ScsRawDataMessage;
+                            var buffer = CompressionManager.DecompressGZip(data.MessageData);
+                            resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
+
+                            //设置同步返回传输Id
+                            resMsg.TransactionId = new Guid(e.Message.RepliedMessageId);
+                        }
+                        catch (Exception ex)
+                        {
+                            //出错时响应错误
+                            resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                        }
+                    }
+
+                    //把数据发送到客户端
+                    callback.MessageCallback(e.Message.RepliedMessageId, resMsg);
                 }
             }
+            catch (Exception ex)
+            {
+                //写异常日志
+                client_MessageError(sender, new ErrorEventArgs(ex));
+            }
+            finally
+            {
+                e.Message.Dispose();
+            }
+        }
 
-            //把数据发送到客户端
-            callback.MessageCallback(this, message);
+        /// <summary>
+        /// 错误回调
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void client_MessageError(object sender, ErrorEventArgs e)
+        {
+            //输出错误信息
+            var messageId = reqMsg.TransactionId.ToString();
+            var resMsg = IoCHelper.GetResponse(reqMsg, e.Error);
+
+            //设置异常消息
+            callback.MessageCallback(messageId, resMsg);
         }
 
         /// <summary>

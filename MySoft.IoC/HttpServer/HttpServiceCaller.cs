@@ -15,7 +15,7 @@ namespace MySoft.IoC.HttpServer
         private IServiceContainer container;
         private CastleServiceConfiguration config;
         private HttpCallerInfoCollection callers;
-        private SyncCaller caller;
+        private AsyncCaller caller;
 
         /// <summary>
         /// HttpServiceCaller初始化
@@ -23,7 +23,7 @@ namespace MySoft.IoC.HttpServer
         /// <param name="config"></param>
         /// <param name="container"></param>
         /// <param name="caller"></param>
-        public HttpServiceCaller(CastleServiceConfiguration config, IServiceContainer container, SyncCaller caller)
+        public HttpServiceCaller(CastleServiceConfiguration config, IServiceContainer container, AsyncCaller caller)
         {
             this.config = config;
             this.container = container;
@@ -209,7 +209,7 @@ namespace MySoft.IoC.HttpServer
             var conf = new CastleFactoryConfiguration
             {
                 AppName = "HttpServer",
-                EnableCache = config.EnableCache
+                EnableCache = true
             };
 
             //使用Invoke方式调用

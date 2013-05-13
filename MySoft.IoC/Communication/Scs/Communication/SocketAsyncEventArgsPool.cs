@@ -30,9 +30,9 @@ namespace MySoft.IoC.Communication.Scs.Communication
         {
             get
             {
-                lock (this.pool)
+                lock (pool)
                 {
-                    return this.pool.Count;
+                    return pool.Count;
                 }
             }
         }
@@ -43,12 +43,12 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// <returns>SocketAsyncEventArgs removed from the pool.</returns>
         internal SocketAsyncEventArgs Pop()
         {
-            lock (this.pool)
+            lock (pool)
             {
                 if (this.Count == 0)
                     return null;
                 else
-                    return this.pool.Pop();
+                    return pool.Pop();
             }
         }
 
@@ -63,9 +63,9 @@ namespace MySoft.IoC.Communication.Scs.Communication
                 throw new ArgumentNullException("Items added to a SocketAsyncEventArgsPool cannot be null");
             }
 
-            lock (this.pool)
+            lock (pool)
             {
-                this.pool.Push(item);
+                pool.Push(item);
             }
         }
     }

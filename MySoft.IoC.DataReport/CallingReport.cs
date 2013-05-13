@@ -141,6 +141,7 @@ namespace MySoft.IoC.DataReport
                 AddTime = DateTime.Now
             };
 
+            //存储数据
             SaveData(error);
         }
 
@@ -167,6 +168,7 @@ namespace MySoft.IoC.DataReport
                 AddTime = DateTime.Now
             };
 
+            //存储数据
             SaveData(timeout);
         }
 
@@ -234,20 +236,20 @@ namespace MySoft.IoC.DataReport
             try
             {
                 int count = 0;
-                using (DbTrans trans = DbSession.Default.BeginTrans())
+                using (var dbTrans = DbSession.Default.BeginTrans())
                 {
                     try
                     {
                         foreach (var item in items)
                         {
-                            count += trans.Insert(item);
+                            count += dbTrans.Insert(item);
                         }
 
-                        trans.Commit();
+                        dbTrans.Commit();
                     }
                     catch
                     {
-                        trans.Rollback();
+                        dbTrans.Rollback();
                     }
                 }
 

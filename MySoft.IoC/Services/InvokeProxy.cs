@@ -18,7 +18,7 @@ namespace MySoft.IoC.Services
         /// <param name="node"></param>
         /// <param name="logger"></param>
         public InvokeProxy(ServerNode node, ILog logger)
-            : base(node, logger) { }
+            : base(node, logger, false) { }
 
         /// <summary>
         /// Calls the service.
@@ -81,6 +81,7 @@ namespace MySoft.IoC.Services
         /// <param name="method"></param>
         private void HandleEnd(ResponseMessage resMsg, System.Reflection.MethodInfo method)
         {
+            if (resMsg == null) return;
             if (resMsg.IsError) return;
 
             var invokeData = resMsg.Value as InvokeData;

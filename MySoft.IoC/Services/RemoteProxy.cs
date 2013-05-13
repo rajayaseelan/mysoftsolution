@@ -8,7 +8,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 服务代理
     /// </summary>
-    public class RemoteProxy : IService, IServiceCallback, IServerConnect
+    public class RemoteProxy : IService, IServerConnect, IServiceCallback
     {
         #region IServerConnect 成员
 
@@ -24,46 +24,43 @@ namespace MySoft.IoC.Services
 
         #endregion
 
+        private ServiceRequestPool pool;
+        private ServerNode node;
+        private ILog logger;
+
         /// <summary>
         /// 结果队列
         /// </summary>
-        private IDictionary<string, WaitResult> hashtable = new Dictionary<string, WaitResult>();
-
-        protected ServiceRequestPool reqPool;
-        protected ServerNode node;
-        private volatile int poolSize;
-        private ILog logger;
+        private readonly IDictionary<string, WaitResult> hashtable;
 
         /// <summary>
         /// 实例化RemoteProxy
         /// </summary>
         /// <param name="node"></param>
-        /// <param name="container"></param>
-        public RemoteProxy(ServerNode node, ILog logger)
+        /// <param name="logger"></param>
+        /// <param name="subscribed"></param>
+        public RemoteProxy(ServerNode node, ILog logger, bool subscribed)
         {
             this.node = node;
             this.logger = logger;
+            this.hashtable = new Dictionary<string, WaitResult>();
 
-            InitRequest();
-        }
-
-        /// <summary>
-        /// 初始化请求
-        /// </summary>
-        protected virtual void InitRequest()
-        {
-            reqPool = new ServiceRequestPool(node.MaxPool);
-
-            lock (reqPool)
+            if (subscribed)
             {
-                this.poolSize = node.MinPool;
+                this.pool = new ServiceRequestPool(1);
 
-                //服务请求池化，使用最小的池初始化
-                for (int i = 0; i < node.MinPool; i++)
+                //加入队列
+                pool.Push(new ServiceRequest(this, node, true));
+            }
+            else
+            {
+                this.pool = new ServiceRequestPool(ServiceConfig.DEFAULT_CLIENT_MAXPOOL);
+
+                //最大池为100
+                for (int i = 0; i < ServiceConfig.DEFAULT_CLIENT_MAXPOOL; i++)
                 {
-                    var req = new ServiceRequest(this, node, false);
-
-                    reqPool.Push(req);
+                    //加入队列
+                    pool.Push(new ServiceRequest(this, node, false));
                 }
             }
         }
@@ -91,48 +88,26 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 消息回调
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public virtual void MessageCallback(object sender, ServiceMessageEventArgs e)
+        /// <param name="messageId"></param>
+        /// <param name="message"></param>
+        public virtual void MessageCallback(string messageId, CallbackMessage message)
         {
-            if (e.Result is ResponseMessage)
-            {
-                var resMsg = e.Result as ResponseMessage;
-
-                QueueMessage(e.MessageId, resMsg);
-            }
+            return;
         }
 
         /// <summary>
-        /// 异常处理
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public virtual void MessageError(object sender, ErrorMessageEventArgs e)
-        {
-            if (e.Request != null)
-            {
-                var resMsg = IoCHelper.GetResponse(e.Request, e.Error);
-
-                QueueMessage(e.MessageId, resMsg);
-            }
-        }
-
-        /// <summary>
-        /// 添加消息到队列
+        /// 消息回调
         /// </summary>
         /// <param name="messageId"></param>
-        /// <param name="resMsg"></param>
-        private void QueueMessage(string messageId, ResponseMessage resMsg)
+        /// <param name="message"></param>
+        public void MessageCallback(string messageId, ResponseMessage message)
         {
             lock (hashtable)
             {
+                //设置响应值
                 if (hashtable.ContainsKey(messageId))
                 {
-                    var waitResult = hashtable[messageId];
-
-                    //数据响应
-                    waitResult.Set(resMsg);
+                    hashtable[messageId].Set(message);
                 }
             }
         }
@@ -144,24 +119,47 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public virtual ResponseMessage CallService(RequestMessage reqMsg)
         {
-            //获取一个请求
-            var reqProxy = GetServiceRequest();
+            var reqProxy = pool.Pop();
 
-            //消息Id
-            var messageId = reqMsg.TransactionId.ToString();
+            if (reqProxy == null)
+            {
+                throw new WarningException("Service request exceeds the maximum number of pool.");
+            }
 
             try
             {
-                //处理数据
-                using (var waitResult = new WaitResult(reqMsg))
+                //发送请求
+                return GetResponse(reqProxy, reqMsg);
+            }
+            finally
+            {
+                pool.Push(reqProxy);
+            }
+        }
+
+        /// <summary>
+        /// 获取响应信息
+        /// </summary>
+        /// <param name="reqProxy"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponse(ServiceRequest reqProxy, RequestMessage reqMsg)
+        {
+            var messageId = reqMsg.TransactionId.ToString();
+
+            //发送消息并获取结果
+            using (var waitResult = new WaitResult())
+            {
+                try
                 {
                     lock (hashtable)
                     {
+                        //请求列表
                         hashtable[messageId] = waitResult;
                     }
 
                     //发送消息
-                    reqProxy.SendRequest(messageId, reqMsg);
+                    reqProxy.SendMessage(messageId, reqMsg);
 
                     //等待信号响应
                     if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))
@@ -169,19 +167,17 @@ namespace MySoft.IoC.Services
                         return GetTimeoutResponse(reqMsg);
                     }
 
+                    //返回响应的消息
                     return waitResult.Message;
                 }
-            }
-            finally
-            {
-                lock (hashtable)
+                finally
                 {
-                    //用完后移除
-                    hashtable.Remove(messageId);
+                    lock (hashtable)
+                    {
+                        //移除列表
+                        hashtable.Remove(messageId);
+                    }
                 }
-
-                //加入队列
-                reqPool.Push(reqProxy);
             }
         }
 
@@ -197,47 +193,6 @@ namespace MySoft.IoC.Services
 
             //获取异常
             return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
-        }
-
-        /// <summary>
-        /// 获取一个服务请求
-        /// </summary>
-        /// <returns></returns>
-        protected virtual ServiceRequest GetServiceRequest()
-        {
-            var reqProxy = reqPool.Pop();
-
-            if (reqProxy == null)
-            {
-                if (poolSize < node.MaxPool)
-                {
-                    lock (reqPool)
-                    {
-                        //一次性创建10个请求池
-                        for (int i = 0; i < 10; i++)
-                        {
-                            if (poolSize < node.MaxPool)
-                            {
-                                poolSize++;
-
-                                //创建一个新的请求
-                                var req = new ServiceRequest(this, node, false);
-
-                                reqPool.Push(req);
-                            }
-                        }
-
-                        //增加后再从池里弹出一个
-                        reqProxy = reqPool.Pop();
-                    }
-                }
-                else
-                {
-                    throw new WarningException(string.Format("Service request pool beyond the {0} limit.", node.MaxPool));
-                }
-            }
-
-            return reqProxy;
         }
 
         #region IService 成员

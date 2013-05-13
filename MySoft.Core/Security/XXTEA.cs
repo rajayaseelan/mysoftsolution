@@ -33,13 +33,9 @@ namespace MySoft.Security
 {
     using System;
 
-    public sealed class XXTEA
+    public abstract class XXTEA
     {
         private const UInt32 delta = 0x9E3779B9;
-
-        private XXTEA()
-        {
-        }
 
         /// <summary>
         /// º”√‹ ˝æ›

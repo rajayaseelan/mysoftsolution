@@ -10,7 +10,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// <summary>
         /// Max communication count.
         /// </summary>
-        private const int MaxCommunicationCount = 2000;
+        private const int MaxCommunicationCount = 10000;
 
         private static readonly SocketAsyncEventArgsPool pool;
 
@@ -49,7 +49,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
                 var tcpitem = item as TcpSocketAsyncEventArgs;
                 if (tcpitem == null) return null;
 
-                tcpitem.IsPushed = false;
+                tcpitem.IsPushing = false;
                 tcpitem.Channel = channel;
 
                 return item;
@@ -69,9 +69,9 @@ namespace MySoft.IoC.Communication.Scs.Communication
                 var tcpitem = item as TcpSocketAsyncEventArgs;
                 if (tcpitem == null) return;
 
-                if (tcpitem.IsPushed) return;
+                if (tcpitem.IsPushing) return;
 
-                tcpitem.IsPushed = true;
+                tcpitem.IsPushing = true;
                 tcpitem.Channel = null;
 
                 pool.Push(item);

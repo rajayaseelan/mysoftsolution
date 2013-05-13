@@ -12,14 +12,13 @@ namespace MySoft.IoC
     /// The base impl class of the service interface, this class is used by service factory to emit service interface impl automatically at runtime.
     /// </summary>
     internal class ServiceInvocationHandler<T> : IProxyInvocationHandler
-        where T : class
     {
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
         private IDictionary<string, string> errors;
         private IContainer container;
         private IService service;
-        private SyncCaller caller;
+        private AsyncCaller caller;
         private IServiceLog logger;
         private string hostName;
         private string ipAddress;
@@ -31,7 +30,7 @@ namespace MySoft.IoC
         /// <param name="container"></param>
         /// <param name="service"></param>
         /// <param name="caller"></param>
-        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, SyncCaller caller, IServiceLog logger)
+        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, AsyncCaller caller, IServiceLog logger)
         {
             this.config = config;
             this.container = container;
@@ -77,15 +76,17 @@ namespace MySoft.IoC
 
             var reqMsg = new RequestMessage
             {
-                AppName = config.AppName,                       //应用名称
-                HostName = hostName,                            //客户端名称
-                IPAddress = ipAddress,                          //客户端IP地址
-                ServiceName = typeof(T).FullName,               //服务名称
-                MethodName = method.ToString(),                 //方法名称
-                TransactionId = Guid.NewGuid(),                 //传输ID号
-                MethodInfo = method,                            //设置调用方法
-                Parameters = collection,                        //设置参数
-                RespType = ResponseType.Binary                  //数据类型
+                AppName = config.AppName,                           //应用名称
+                AppPath = AppDomain.CurrentDomain.BaseDirectory,    //应用路径
+                HostName = hostName,                                //客户端名称
+                IPAddress = ipAddress,                              //客户端IP地址
+                ServiceName = typeof(T).FullName,                   //服务名称
+                MethodName = method.ToString(),                     //方法名称
+                EnableCache = config.EnableCache,                   //是否缓存
+                TransactionId = Guid.NewGuid(),                     //传输ID号
+                MethodInfo = method,                                //设置调用方法
+                Parameters = collection,                            //设置参数
+                RespType = ResponseType.Binary                      //数据类型
             };
 
             //设置缓存时间
@@ -106,8 +107,15 @@ namespace MySoft.IoC
             {
                 returnValue = resMsg.Value;
 
-                //处理参数
-                IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
+                try
+                {
+                    //处理参数
+                    IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
+                }
+                finally
+                {
+                    resMsg.Parameters.Clear();
+                }
             }
 
             //返回结果

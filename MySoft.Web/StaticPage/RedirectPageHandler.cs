@@ -128,21 +128,24 @@ namespace MySoft.Web
 
                     if (rule.Timeout > 0 && span >= rule.Timeout)
                     {
-                        lock (hashtable.SyncRoot)
+                        if (!hashtable.ContainsKey(redirectUrl))
                         {
-                            if (!hashtable.ContainsKey(redirectUrl))
+                            lock (hashtable.SyncRoot)
                             {
-                                var item = new WorkerItem
+                                if (!hashtable.ContainsKey(redirectUrl))
                                 {
-                                    RedirectUrl = redirectUrl,
-                                    HtmlFile = htmlFile,
-                                    ValidateString = rule.ValidateString
-                                };
+                                    var item = new WorkerItem
+                                    {
+                                        RedirectUrl = redirectUrl,
+                                        HtmlFile = htmlFile,
+                                        ValidateString = rule.ValidateString
+                                    };
 
-                                hashtable[redirectUrl] = item;
+                                    hashtable[redirectUrl] = item;
 
-                                //更新页面
-                                UpdatePageItem(redirectUrl);
+                                    //更新页面
+                                    UpdatePageItem(redirectUrl);
+                                }
                             }
                         }
                     }

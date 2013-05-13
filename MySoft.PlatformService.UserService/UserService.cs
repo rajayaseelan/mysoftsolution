@@ -56,7 +56,15 @@ namespace MySoft.PlatformService.UserService
 
             if (id % 3 == 0)
             {
-                Thread.Sleep(5000);
+                Thread.Sleep(1000);
+            }
+            else if (id % 10 == 0)
+            {
+                throw new Exception("出错了！" + id);
+            }
+            else
+            {
+                Thread.Sleep(100);
             }
 
             var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');

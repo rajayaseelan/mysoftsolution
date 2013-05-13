@@ -14,7 +14,7 @@ namespace MySoft.IoC
     {
         private IDictionary<string, Type> callbackTypes;
         private IServiceContainer container;
-        private SyncCaller caller;
+        private AsyncCaller caller;
 
         /// <summary>
         /// 初始化ServiceCaller
@@ -22,7 +22,7 @@ namespace MySoft.IoC
         /// <param name="config"></param>
         /// <param name="container"></param>
         /// <param name="caller"></param>
-        public ServiceCaller(CastleServiceConfiguration config, IServiceContainer container, SyncCaller caller)
+        public ServiceCaller(CastleServiceConfiguration config, IServiceContainer container, AsyncCaller caller)
         {
             this.callbackTypes = new Dictionary<string, Type>();
             this.container = container;
@@ -53,32 +53,21 @@ namespace MySoft.IoC
         /// <param name="channel"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public ResponseMessage InvokeResponse(IScsServerClient channel, IDataContext e)
+        public void InvokeResponse(IScsServerClient channel, IDataContext e)
         {
             //获取上下文
             using (var context = GetOperationContext(channel, e.Caller))
             {
-                try
-                {
-                    //解析服务
-                    var service = ParseService(e.Caller);
+                //解析服务
+                var service = ParseService(e.Caller);
 
-                    //异步调用服务
-                    var item = caller.Run(service, context, e.Request);
+                //异步调用服务
+                var item = caller.Run(service, context, e.Request);
 
-                    if (item == null) return null;
-
-                    //设置响应值
-                    e.Buffer = item.Buffer;
-                    e.Count = item.Count;
-
-                    return item.Message;
-                }
-                catch (Exception ex)
-                {
-                    //返回异常信息
-                    return IoCHelper.GetResponse(e.Request, ex);
-                }
+                //设置响应值
+                e.Buffer = item.Buffer;
+                e.Count = item.Count;
+                e.Message = item.Message;
             }
         }
 

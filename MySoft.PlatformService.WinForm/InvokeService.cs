@@ -19,11 +19,6 @@ namespace MySoft.PlatformService.WinForm
         /// <summary>
         /// 方法名称
         /// </summary>
-        public string MethodName { get; set; }
-
-        /// <summary>
-        /// 参数信息
-        /// </summary>
-        public IList<ParameterInfo> Parameters { get; set; }
+        public MethodInfo Method { get; set; }
     }
 }

@@ -6,6 +6,11 @@ namespace MySoft.IoC
     internal interface IDataContext
     {
         /// <summary>
+        /// 消息Id
+        /// </summary>
+        string MessageId { get; set; }
+
+        /// <summary>
         /// Caller信息
         /// </summary>
         AppCaller Caller { get; set; }
@@ -14,6 +19,11 @@ namespace MySoft.IoC
         /// 请求信息
         /// </summary>
         RequestMessage Request { get; set; }
+
+        /// <summary>
+        /// 响应消息
+        /// </summary>
+        ResponseMessage Message { get; set; }
 
         /// <summary>
         /// 缓存数据

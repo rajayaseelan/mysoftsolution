@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -21,10 +22,17 @@ namespace MySoft.Cache
         /// <returns></returns>
         public static CacheObject<T> GetCache(string filePath)
         {
-            var key = Path.GetFileNameWithoutExtension(filePath);
-
             //从文件读取对象
-            return GetCacheItem(LocalCacheType.File, filePath, key);
+            if (File.Exists(filePath))
+            {
+                var buffer = File.ReadAllBytes(filePath);
+                buffer = CompressionManager.DecompressGZip(buffer);
+                var cacheObj = SerializationManager.DeserializeBin<CacheObject<T>>(buffer);
+
+                return cacheObj;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -193,7 +201,7 @@ namespace MySoft.Cache
         {
             T cacheItem = default(T);
 
-            var cacheObj = GetCacheItem(type, GetFilePath(key), key);
+            var cacheObj = GetCacheItem(type, GetFilePath(key), key, timeout);
 
             if (cacheObj == null)
             {
@@ -202,14 +210,15 @@ namespace MySoft.Cache
             }
             else
             {
-                if (cacheObj.ExpiredTime < DateTime.Now) //如果数据过期，则更新之
+                //判断是否过期
+                if (cacheObj.ExpiredTime < DateTime.Now)
                 {
                     //获取更新对象
                     cacheItem = GetUpdateObject(type, key, timeout, func, state, pred);
                 }
-                else
+
+                if (cacheItem == null)
                 {
-                    //存在直接返回缓存
                     cacheItem = cacheObj.Value;
                 }
             }
@@ -277,8 +286,9 @@ namespace MySoft.Cache
         /// <param name="type"></param>
         /// <param name="path"></param>
         /// <param name="key"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        private static CacheObject<T> GetCacheItem(LocalCacheType type, string path, string key)
+        private static CacheObject<T> GetCacheItem(LocalCacheType type, string path, string key, TimeSpan timeout)
         {
             var cacheObj = CacheHelper.Get<CacheObject<T>>(key);
 
@@ -286,11 +296,12 @@ namespace MySoft.Cache
             {
                 try
                 {
-                    if (File.Exists(path))
+                    cacheObj = GetCache(path);
+
+                    if (cacheObj != null)
                     {
-                        var buffer = File.ReadAllBytes(path);
-                        buffer = CompressionManager.DecompressGZip(buffer);
-                        cacheObj = SerializationManager.DeserializeBin<CacheObject<T>>(buffer);
+                        //默认缓存30秒
+                        CacheHelper.Insert(key, cacheObj, Math.Min(30, (int)timeout.TotalSeconds));
                     }
                 }
                 catch (ThreadInterruptedException ex) { }
@@ -335,9 +346,6 @@ namespace MySoft.Cache
                     var buffer = SerializationManager.SerializeBin(cacheObj);
                     buffer = CompressionManager.CompressGZip(buffer);
                     File.WriteAllBytes(path, buffer);
-
-                    //默认缓存30秒
-                    CacheHelper.Insert(key, cacheObj, (int)Math.Min(30, timeout.TotalSeconds));
                 }
                 catch (ThreadInterruptedException ex) { }
                 catch (ThreadAbortException ex)

@@ -91,15 +91,45 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
-            var a = MySoft.Security.DES.Encrypt("as1234asvmiamsdif00", "123456780");
-            //for (int i = 0; i < 2; i++)
-            //{
-            //    a = MySoft.Security.AES.Encrypt(a, "12345678");
-            //}
+            //var list = new List<User>();
+            //list.AddRange(new User[] { new User { }, new User { } });
 
-            Console.WriteLine(a.Length);
-            Console.WriteLine(a);
-            Console.ReadLine();
+            //var buffer = SerializationManager.SerializeBin(list);
+            //list = SerializationManager.DeserializeBin<List<User>>(buffer);
+
+            //var str = SerializationManager.SerializeJson(list);
+            //list = SerializationManager.DeserializeJson<List<User>>(str);
+
+            //str = SerializationManager.SerializeXml(list);
+            //list = SerializationManager.DeserializeXml<List<User>>(str);
+
+            //str = SerializationManager.SerializeXml(list, Encoding.UTF8);
+            //list = SerializationManager.DeserializeXml<List<User>>(str, Encoding.UTF8);
+
+            //var a = list;
+
+            //buffer = CompressionManager.Compress7Zip(buffer);
+            //buffer = CompressionManager.Decompress7Zip(buffer);
+
+            //buffer = CompressionManager.CompressDeflate(buffer);
+            //buffer = CompressionManager.DecompressDeflate(buffer);
+
+            //buffer = CompressionManager.CompressGZip(buffer);
+            //buffer = CompressionManager.DecompressGZip(buffer);
+
+            //buffer = CompressionManager.CompressSharpZip(buffer);
+            //buffer = CompressionManager.DecompressSharpZip(buffer);
+
+            //list = SerializationManager.DeserializeBin<List<User>>(buffer);
+            //var a = MySoft.Security.DES.Encrypt("as1234asvmiamsdif00", "123456780");
+            ////for (int i = 0; i < 2; i++)
+            ////{
+            ////    a = MySoft.Security.AES.Encrypt(a, "12345678");
+            ////}
+
+            //Console.WriteLine(a.Length);
+            //Console.WriteLine(a);
+            //Console.ReadLine();
 
             //while (true)
             //{
@@ -349,7 +379,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -429,7 +459,7 @@ namespace MySoft.PlatformService.Client
 
         static void Program_OnDisconnected(object sender, ConnectEventArgs e)
         {
-            Console.WriteLine(e.Channel.CommunicationState);
+            //Console.WriteLine(e.Channel.CommunicationState);
         }
 
         static Program()
@@ -488,12 +518,12 @@ namespace MySoft.PlatformService.Client
             //e.WaitOne();
 
             //var node = CastleFactory.Create().GetDefaultNode();
-            var service = CastleFactory.Create().GetChannel<IUserService>();
-
             //var service = new MySoft.PlatformService.UserService.UserService();
 
             while (true)
             {
+                var service = CastleFactory.Create().GetChannel<IUserService>();
+
                 try
                 {
                     Stopwatch watch = Stopwatch.StartNew();
@@ -509,7 +539,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 10);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 30);
                     //var value = service.GetUsersString(count, out length);
 
                     //var value = service.GetUser(new Random().Next(1, 10000));

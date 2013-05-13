@@ -25,12 +25,13 @@ namespace MySoft
                 return buffer;
             }
 
-            using (MemoryStream outStream = new MemoryStream())
-            using (DeflaterOutputStream compressStream = new DeflaterOutputStream(outStream, new Deflater(Deflater.BEST_COMPRESSION)))
-            {
-                CompressStream(new MemoryStream(buffer), compressStream);
-                return outStream.ToArray();
-            }
+            MemoryStream outStream = new MemoryStream();
+            DeflaterOutputStream compressStream = new DeflaterOutputStream(outStream, new Deflater(Deflater.BEST_COMPRESSION));
+            CompressStream(new MemoryStream(buffer), compressStream);
+            compressStream.Close();
+            outStream.Close();
+
+            return outStream.ToArray();
         }
 
         /// <summary>
@@ -45,13 +46,15 @@ namespace MySoft
                 return buffer;
             }
 
-            using (MemoryStream inStream = new MemoryStream(buffer))
-            using (InflaterInputStream unCompressStream = new InflaterInputStream(inStream))
-            using (MemoryStream outStream = new MemoryStream())
-            {
-                DecompressStream(unCompressStream, outStream);
-                return outStream.ToArray();
-            }
+            MemoryStream inStream = new MemoryStream(buffer);
+            InflaterInputStream unCompressStream = new InflaterInputStream(inStream);
+            MemoryStream outStream = new MemoryStream();
+            DecompressStream(unCompressStream, outStream);
+            inStream.Close();
+            unCompressStream.Close();
+            outStream.Close();
+
+            return outStream.ToArray();
         }
 
         #endregion
@@ -70,12 +73,13 @@ namespace MySoft
                 return buffer;
             }
 
-            using (MemoryStream outStream = new MemoryStream())
-            using (GZipStream compressStream = new GZipStream(outStream, CompressionMode.Compress, true))
-            {
-                CompressStream(new MemoryStream(buffer), compressStream);
-                return outStream.ToArray();
-            }
+            MemoryStream outStream = new MemoryStream();
+            GZipStream compressStream = new GZipStream(outStream, CompressionMode.Compress, true);
+            CompressStream(new MemoryStream(buffer), compressStream);
+            compressStream.Close();
+            outStream.Close();
+
+            return outStream.ToArray();
         }
 
         /// <summary>
@@ -90,13 +94,15 @@ namespace MySoft
                 return buffer;
             }
 
-            using (MemoryStream inStream = new MemoryStream(buffer))
-            using (GZipStream unCompressStream = new GZipStream(inStream, CompressionMode.Decompress, true))
-            using (MemoryStream outStream = new MemoryStream())
-            {
-                DecompressStream(unCompressStream, outStream);
-                return outStream.ToArray();
-            }
+            MemoryStream inStream = new MemoryStream(buffer);
+            GZipStream unCompressStream = new GZipStream(inStream, CompressionMode.Decompress, true);
+            MemoryStream outStream = new MemoryStream();
+            DecompressStream(unCompressStream, outStream);
+            inStream.Close();
+            unCompressStream.Close();
+            outStream.Close();
+
+            return outStream.ToArray();
         }
 
         #endregion
@@ -115,12 +121,13 @@ namespace MySoft
                 return buffer;
             }
 
-            using (MemoryStream outStream = new MemoryStream())
-            using (DeflateStream compressStream = new DeflateStream(outStream, CompressionMode.Compress, true))
-            {
-                CompressStream(new MemoryStream(buffer), compressStream);
-                return outStream.ToArray();
-            }
+            MemoryStream outStream = new MemoryStream();
+            DeflateStream compressStream = new DeflateStream(outStream, CompressionMode.Compress, true);
+            CompressStream(new MemoryStream(buffer), compressStream);
+            compressStream.Close();
+            outStream.Close();
+
+            return outStream.ToArray();
         }
 
         /// <summary>
@@ -135,13 +142,15 @@ namespace MySoft
                 return buffer;
             }
 
-            using (MemoryStream inStream = new MemoryStream(buffer))
-            using (DeflateStream unCompressStream = new DeflateStream(inStream, CompressionMode.Decompress, true))
-            using (MemoryStream outStream = new MemoryStream())
-            {
-                DecompressStream(unCompressStream, outStream);
-                return outStream.ToArray();
-            }
+            MemoryStream inStream = new MemoryStream(buffer);
+            DeflateStream unCompressStream = new DeflateStream(inStream, CompressionMode.Decompress, true);
+            MemoryStream outStream = new MemoryStream();
+            DecompressStream(unCompressStream, outStream);
+            inStream.Close();
+            unCompressStream.Close();
+            outStream.Close();
+
+            return outStream.ToArray();
         }
 
         #endregion
@@ -196,7 +205,6 @@ namespace MySoft
                     break;
                 writer.Write(buffer);
             }
-            writer.Close();
         }
 
         /// <summary>
@@ -215,7 +223,6 @@ namespace MySoft
                     break;
                 writer.Write(buffer);
             }
-            writer.Close();
         }
     }
 }

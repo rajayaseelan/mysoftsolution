@@ -5,13 +5,11 @@ using System.Data;
 using System.Linq;
 using System.Threading;
 using MySoft.IoC.Callback;
-using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Nodes;
-using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -30,7 +28,7 @@ namespace MySoft.IoC
         /// </summary>
         public event ServerNodeEventHandler OnServerNode;
 
-        private const int DefaultDisconnectionAttemptTimeout = 5 * 60000; //5 minutes.
+        private const int DefaultDisconnectionAttemptTimeout = 60000; //1 minutes.
 
         private CastleServiceConfiguration config;
         private IScsServer server;
@@ -87,13 +85,8 @@ namespace MySoft.IoC
         {
             while (true)
             {
-                //每10秒检测一次
-                Thread.Sleep(TimeSpan.FromSeconds(10));
-
-#if DEBUG
-                IoCHelper.WriteLine(ConsoleColor.DarkGreen, "{0} => Socket async event args : {1}", DateTime.Now, CommunicationHelper.Count);
-                IoCHelper.WriteLine(ConsoleColor.DarkGreen, "{0} => Thread pool waiting callbacks : {1}", DateTime.Now, ManagedThreadPool.WaitingCallbacks);
-#endif
+                //每1分钟检测一次
+                Thread.Sleep(TimeSpan.FromSeconds(30));
 
                 try
                 {
@@ -102,17 +95,12 @@ namespace MySoft.IoC
                     var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
 
                     //断开超时的连接
-                    foreach (var channel in server.Clients.GetAllItems())
+                    foreach (var communicationChannel in server.Clients.GetAllItems())
                     {
                         //判断是否超时
-                        if (channel.LastReceivedMessageTime < lastMinute && channel.LastSentMessageTime < lastMinute)
+                        if (communicationChannel.LastReceivedMessageTime < lastMinute && communicationChannel.LastSentMessageTime < lastMinute)
                         {
-                            //如果超过5分钟没响应，则断开链接
-                            channel.Disconnect();
-
-#if DEBUG
-                            IoCHelper.WriteLine(ConsoleColor.DarkBlue, "{0} => Auto disconnect channel, endpoint : {1}", DateTime.Now, channel.RemoteEndPoint);
-#endif
+                            communicationChannel.Disconnect();
                         }
                     }
                 }
@@ -293,11 +281,13 @@ namespace MySoft.IoC
                             ReturnTypeName = CoreHelper.GetTypeName(method.ReturnType),
                             ReturnTypeFullName = method.ReturnType.FullName,
                             IsPrimitive = CheckPrimitive(method.ReturnType),
-                            IsCollection = CheckCollection(method.ReturnType)
+                            IsCollection = CheckCollection(method.ReturnType),
+                            CacheTime = -1
                         };
 
                         if (contract2 != null)
                         {
+                            m.CacheTime = contract2.CacheTime;
                             m.MethodName = contract2.Name;
                             m.MethodDescription = contract2.Description;
                         }
@@ -451,13 +441,10 @@ namespace MySoft.IoC
         /// </summary>
         public void ClearServerStatus()
         {
-            lock (statuslist)
-            {
-                //重置统计时间
-                startTime = DateTime.Now;
+            //重置统计时间
+            startTime = DateTime.Now;
 
-                statuslist.Clear();
-            }
+            statuslist.Clear();
         }
 
         /// <summary>

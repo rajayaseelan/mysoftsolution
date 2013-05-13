@@ -19,12 +19,6 @@ namespace MySoft.IoC.Communication.Scs.Client
         event EventHandler Disconnected;
 
         /// <summary>
-        /// Timeout for connecting to a server (as milliseconds).
-        /// Default value: 15 seconds (15000 ms).
-        /// </summary>
-        int ConnectTimeout { get; set; }
-
-        /// <summary>
         /// Gets the current communication state.
         /// </summary>
         CommunicationStates CommunicationState { get; }

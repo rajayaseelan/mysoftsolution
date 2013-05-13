@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Threading;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
-using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
 using MySoft.Logger;
 
 namespace MySoft.IoC
@@ -20,21 +17,18 @@ namespace MySoft.IoC
         private ILog logger;
         private ServiceCaller caller;
         private ServerStatusService status;
-        private int timeout;
 
         /// <summary>
         /// 实例化ServiceChannel
         /// </summary>
-        /// <param name="config"></param>
         /// <param name="caller"></param>
         /// <param name="status"></param>
         /// <param name="logger"></param>
-        public ServiceChannel(CastleServiceConfiguration config, ServiceCaller caller, ServerStatusService status, ILog logger)
+        public ServiceChannel(ServiceCaller caller, ServerStatusService status, ILog logger)
         {
             this.caller = caller;
             this.status = status;
             this.logger = logger;
-            this.timeout = config.Timeout;
         }
 
         /// <summary>
@@ -44,88 +38,22 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         public void SendResponse(IScsServerClient channel, CallerContext e)
         {
-#if DEBUG
-            var message = string.Format("{0}：{1}({2})", e.Caller.AppName, e.Caller.HostName, e.Caller.IPAddress);
-            var body = string.Format("Remote client【{0}】begin call service ({1},{2}).\r\nParameters => {3}",
-                                        message, e.Caller.ServiceName, e.Caller.MethodName, e.Caller.Parameters);
-
-            //IoCHelper.WriteLine(ConsoleColor.DarkGray, body);
-#endif
-
-            using (var channelResult = new ChannelResult(channel, e))
-            {
-                //开始异步调用
-                ThreadPool.QueueUserWorkItem(WaitCallback, channelResult);
-
-                //等待超时响应
-                if (!channelResult.WaitOne(TimeSpan.FromSeconds(timeout)))
-                {
-                    //获取异常响应
-                    e.Message = GetTimeoutResponse(e.Request, "Work item timeout.");
-                }
-                else
-                {
-                    //正常响应信息
-                    e.Message = channelResult.Message;
-                }
-
-                //处理响应信息
-                HandleResponse(e);
-
-                //发送消息
-                SendMessage(channel, e);
-            }
-        }
-
-        /// <summary>
-        /// 响应信息
-        /// </summary>
-        /// <param name="state"></param>
-        private void WaitCallback(object state)
-        {
-            var channelResult = state as ChannelResult;
-
             try
             {
-                //调用响应信息
-                var channel = channelResult.Channel;
-                var context = channelResult.Context;
-
-                if (channel != null && channel.CommunicationState == CommunicationStates.Connected)
-                {
-                    //返回响应
-                    var resMsg = caller.InvokeResponse(channel, context);
-
-                    channelResult.Set(resMsg);
-                }
-                else
-                {
-                    channelResult.Set(null);
-                }
+                //获取响应信息
+                caller.InvokeResponse(channel, e);
             }
             catch (Exception ex)
             {
+                //获取异常响应信息
+                e.Message = IoCHelper.GetResponse(e.Request, ex);
             }
-        }
 
-        /// <summary>
-        /// 获取超时响应信息
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, string message)
-        {
-            //获取异常响应信息
-            var body = string.Format("Async call service ({0}, {1})  timeout ({2}) ms. {3}",
-                        reqMsg.ServiceName, reqMsg.MethodName, timeout * 1000, message);
+            //处理响应信息
+            HandleResponse(e);
 
-            var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(body));
-
-            //设置耗时时间
-            resMsg.ElapsedTime = timeout * 1000;
-
-            return resMsg;
+            //发送消息
+            SendMessage(channel, e);
         }
 
         /// <summary>
@@ -150,11 +78,11 @@ namespace MySoft.IoC
                         Value = e.Message.Value
                     };
 
-                    //调用计数服务
-                    status.Counter(callArgs);
+                    //开始异步调用
+                    var action = new Action<CallEventArgs>(AsyncCounter);
 
-                    //开始调用
-                    if (Callback != null) Callback(this, callArgs);
+                    //调用结束关闭句柄
+                    action.BeginInvoke(callArgs, null, null);
                 }
             }
             catch (Exception ex) { }
@@ -162,6 +90,26 @@ namespace MySoft.IoC
             {
                 //设置消息异常
                 SetMessageError(e);
+            }
+        }
+
+        /// <summary>
+        /// 异步调用方法
+        /// </summary>
+        /// <param name="callArgs"></param>
+        private void AsyncCounter(CallEventArgs callArgs)
+        {
+            try
+            {
+                //调用计数服务
+                status.Counter(callArgs);
+
+                //开始调用
+                if (Callback != null) Callback(this, callArgs);
+            }
+            catch (Exception ex)
+            {
+
             }
         }
 

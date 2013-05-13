@@ -92,9 +92,11 @@ namespace MySoft.IoC.Messages
         #region Private Members
 
         private string appName;
+        private string appPath;
         private string hostName;
         private string requestAddress;
         private bool invokeMethod;
+        private bool enableCache = true;
 
         #endregion
 
@@ -111,6 +113,22 @@ namespace MySoft.IoC.Messages
             set
             {
                 appName = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the appPath.
+        /// </summary>
+        /// <value>The name of the appPath.</value>
+        public string AppPath
+        {
+            get
+            {
+                return appPath;
+            }
+            set
+            {
+                appPath = value;
             }
         }
 
@@ -157,6 +175,21 @@ namespace MySoft.IoC.Messages
             set
             {
                 invokeMethod = value;
+            }
+        }
+
+        /// <summary>
+        /// enable cache
+        /// </summary>
+        public bool EnableCache
+        {
+            get
+            {
+                return enableCache;
+            }
+            set
+            {
+                enableCache = value;
             }
         }
 

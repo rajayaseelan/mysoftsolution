@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using ListControls;
 using MySoft.IoC;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
-using System.Net.Sockets;
-using System.Linq;
-using System.Threading;
-using System.Configuration;
-using MySoft.IoC.Communication;
 
 namespace MySoft.PlatformService.WinForm
 {
@@ -42,11 +39,11 @@ namespace MySoft.PlatformService.WinForm
                         StartMonitor(true);
 
                         var args = new ParseMessageEventArgs
-                            {
-                                MessageType = ParseMessageType.Error,
-                                LineHeader = string.Format("【{0}】 当前监控已经从服务器断开...", DateTime.Now),
-                                MessageText = string.Format("({0}){1}", e.Error.ErrorCode, e.Error.Message)
-                            };
+                        {
+                            MessageType = ParseMessageType.Error,
+                            LineHeader = string.Format("【{0}】 当前监控已经从服务器断开...", DateTime.Now),
+                            MessageText = string.Format("({0}){1}", e.Error.ErrorCode, e.Error.Message)
+                        };
 
                         listConnect.Items.Insert(0, args);
 
@@ -90,7 +87,7 @@ namespace MySoft.PlatformService.WinForm
             var ex = new IoCException(message, inner)
             {
                 ApplicationName = appClient.AppName,
-                ServiceName = "MySoft.PlatformService.Monitor",
+                ServiceName = "MySoft.PlatformService.WinForm",
                 ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", appClient.AppName, appClient.HostName, appClient.IPAddress)
             };
             SimpleLog.Instance.WriteLogWithSendMail(ex, emails);
@@ -427,10 +424,10 @@ namespace MySoft.PlatformService.WinForm
                 var key = autoCompleteTextbox1.Text.Trim();
                 if (methods.ContainsKey(key))
                 {
-                    var service = methods[key];
-                    SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", service.ServiceName, service.MethodName, defaultNode), () =>
+                    var method = methods[key];
+                    SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", method.ServiceName, method.Method.FullName, defaultNode), () =>
                     {
-                        frmInvoke frm = new frmInvoke(defaultNode, service.ServiceName, service.MethodName, service.Parameters);
+                        frmInvoke frm = new frmInvoke(defaultNode, method.ServiceName, method.Method);
                         return frm;
                     });
                 }
@@ -607,7 +604,7 @@ namespace MySoft.PlatformService.WinForm
 
                 SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", service.FullName, method.FullName, defaultNode), () =>
                 {
-                    frmInvoke frm = new frmInvoke(defaultNode, service.FullName, method.FullName, method.Parameters);
+                    frmInvoke frm = new frmInvoke(defaultNode, service.FullName, method);
                     return frm;
                 });
             }
@@ -755,8 +752,7 @@ namespace MySoft.PlatformService.WinForm
                         methods[key] = new InvokeService
                         {
                             ServiceName = s.FullName,
-                            MethodName = m.FullName,
-                            Parameters = m.Parameters
+                            Method = m
                         };
                     }
                 }
@@ -1023,7 +1019,7 @@ namespace MySoft.PlatformService.WinForm
 
             SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", service.FullName, method.FullName, defaultNode), () =>
             {
-                frmInvoke frm = new frmInvoke(defaultNode, service.FullName, method.FullName, method.Parameters, caller.Parameters);
+                frmInvoke frm = new frmInvoke(defaultNode, service.FullName, method, caller.Parameters);
                 return frm;
             });
         }

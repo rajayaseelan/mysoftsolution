@@ -18,5 +18,10 @@ namespace MySoft.IoC.Messages
         {
             this.MessageValue = value;
         }
+
+        public override void Dispose()
+        {
+            this.MessageValue = null;
+        }
     }
 }

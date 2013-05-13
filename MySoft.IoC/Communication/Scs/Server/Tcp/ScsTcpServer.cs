@@ -1,7 +1,7 @@
 ﻿using MySoft.IoC.Communication.Scs.Communication.Channels;
 using MySoft.IoC.Communication.Scs.Communication.Channels.Tcp;
-using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
+using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 
 namespace MySoft.IoC.Communication.Scs.Server.Tcp
 {

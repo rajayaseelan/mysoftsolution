@@ -8,5 +8,6 @@ namespace MySoft.IoC.Communication.Scs.Client
     public interface IScsClient : IMessenger, IConnectableClient
     {
         //Does not define any additional member
+        bool KeepAlive { get; set; }
     }
 }

@@ -15,8 +15,6 @@ namespace MySoft.IoC
         private string key = "default";
         private bool compress = false;
         private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
-        private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
-        private int minpool = ServiceConfig.DEFAULT_CLIENT_MINPOOL;
         private ResponseType resptype = ResponseType.Binary;
 
         /// <summary>
@@ -72,28 +70,6 @@ namespace MySoft.IoC
         {
             get { return timeout; }
             set { timeout = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the minpool.
-        /// </summary>
-        /// <value>The maxpool.</value>
-        [XmlElement("minpool")]
-        public int MinPool
-        {
-            get { return minpool; }
-            set { minpool = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the maxpool.
-        /// </summary>
-        /// <value>The maxpool.</value>
-        [XmlElement("maxpool")]
-        public int MaxPool
-        {
-            get { return maxpool; }
-            set { maxpool = value; }
         }
 
         /// <summary>

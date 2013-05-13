@@ -16,6 +16,7 @@ namespace MySoft.IoC.Configuration
         private string appname;                                                 //host名称
         private bool throwError = true;                                         //抛出异常
         private bool enableCache = true;                                        //是否缓存
+        private int maxCaller = ServiceConfig.DEFAULT_CLIENT_MAXCALLER;         //默认并发数为30
 
         /// <summary>
         /// 实例化CastleFactoryConfiguration
@@ -71,6 +72,9 @@ namespace MySoft.IoC.Configuration
             if (attribute["appname"] != null && attribute["appname"].Value.Trim() != string.Empty)
                 appname = attribute["appname"].Value;
 
+            if (attribute["maxCaller"] != null && attribute["maxCaller"].Value.Trim() != string.Empty)
+                maxCaller = Convert.ToInt32(attribute["maxCaller"].Value);
+
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
                 if (child.NodeType == XmlNodeType.Comment) continue;
@@ -87,14 +91,6 @@ namespace MySoft.IoC.Configuration
                     //超时时间，默认为1分钟
                     if (childattribute["timeout"] != null && childattribute["timeout"].Value.Trim() != string.Empty)
                         node.Timeout = Convert.ToInt32(childattribute["timeout"].Value);
-
-                    //最大连接池
-                    if (childattribute["maxpool"] != null && childattribute["maxpool"].Value.Trim() != string.Empty)
-                        node.MaxPool = Convert.ToInt32(childattribute["maxpool"].Value);
-
-                    //最小连接池
-                    if (childattribute["minpool"] != null && childattribute["minpool"].Value.Trim() != string.Empty)
-                        node.MinPool = Convert.ToInt32(childattribute["minpool"].Value);
 
                     if (childattribute["compress"] != null && childattribute["compress"].Value.Trim() != string.Empty)
                         node.Compress = Convert.ToBoolean(childattribute["compress"].Value);
@@ -196,6 +192,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return enableCache; }
             set { enableCache = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the maxCaller
+        /// </summary>
+        public int MaxCaller
+        {
+            get { return maxCaller; }
+            set { maxCaller = value; }
         }
 
         /// <summary>

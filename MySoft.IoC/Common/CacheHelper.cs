@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Threading;
 using MySoft.Logger;
-using MySoft.Threading;
 
 namespace MySoft.IoC
 {
@@ -20,10 +17,16 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static CacheItem GetCache(string filePath)
         {
-            var key = Path.GetFileNameWithoutExtension(filePath);
-
             //从文件读取对象
-            return GetCacheItem(filePath, key);
+            if (File.Exists(filePath))
+            {
+                var buffer = File.ReadAllBytes(filePath);
+                var cacheObj = SerializationManager.DeserializeBin<CacheItem>(buffer);
+
+                return cacheObj;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -43,31 +46,33 @@ namespace MySoft.IoC
         /// （本方法仅适应于本地缓存）
         /// 从缓存中获取数据，如获取失败，返回从指定的方法中获取
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="cacheKey"></param>
         /// <param name="timeout"></param>
         /// <param name="func"></param>
         /// <param name="state"></param>
-        /// <param name="pred"></param>
         /// <returns></returns>
-        public static ResponseItem Get(CacheKey key, TimeSpan timeout, Func<object, ResponseItem> func, object state)
+        public static ResponseItem Get(CacheKey cacheKey, TimeSpan timeout, Func<object, ResponseItem> func, object state)
         {
+            //定义缓存项
             ResponseItem cacheItem = null;
 
-            var cacheObj = GetCacheItem(GetFilePath(key), key.UniqueId);
+            var cacheObj = GetCacheItem(cacheKey, timeout);
 
             if (cacheObj == null)
             {
                 //获取数据缓存
-                cacheItem = GetResponseItem(key, timeout, func, state);
+                cacheItem = GetResponseItem(cacheKey, timeout, func, state);
             }
             else
             {
+                //判断是否过期
                 if (cacheObj.ExpiredTime < DateTime.Now)
                 {
                     //获取数据缓存
-                    cacheItem = GetResponseItem(key, timeout, func, state);
+                    cacheItem = GetResponseItem(cacheKey, timeout, func, state);
                 }
-                else
+
+                if (cacheItem == null || cacheItem.Buffer == null)
                 {
                     //获取数据缓存
                     cacheItem = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
@@ -108,7 +113,7 @@ namespace MySoft.IoC
                 if (item != null && item.Buffer != null)
                 {
                     //插入缓存
-                    InsertCacheItem(GetFilePath(key), key.UniqueId, item, timeout);
+                    InsertCacheItem(key, item, timeout);
                 }
             }
 
@@ -118,32 +123,33 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取缓存
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="key"></param>
+        /// <param name="cacheKey"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        private static CacheItem GetCacheItem(string path, string key)
+        private static CacheItem GetCacheItem(CacheKey cacheKey, TimeSpan timeout)
         {
+            var key = cacheKey.UniqueId;
             var cacheObj = CacheHelper.Get<CacheItem>(key);
 
             if (cacheObj == null)
             {
+                var path = GetFilePath(cacheKey);
+
                 try
                 {
-                    if (File.Exists(path))
+                    //从文件获取缓存
+                    cacheObj = GetCache(path);
+
+                    if (cacheObj != null)
                     {
-                        var buffer = File.ReadAllBytes(path);
-                        cacheObj = SerializationManager.DeserializeBin<CacheItem>(buffer);
+                        //默认缓存30秒
+                        CacheHelper.Insert(key, cacheObj, Math.Min(30, (int)timeout.TotalSeconds));
                     }
                 }
                 catch (ThreadInterruptedException ex) { }
                 catch (ThreadAbortException ex)
                 {
                     Thread.ResetAbort();
-                }
-                catch (SerializationException ex)
-                {
-                    try { File.Delete(path); }
-                    catch { }
                 }
                 catch (IOException ex) { }
                 catch (Exception ex)
@@ -162,48 +168,51 @@ namespace MySoft.IoC
         /// <param name="key"></param>
         /// <param name="item"></param>
         /// <param name="timeout"></param>
-        private static void InsertCacheItem(string path, string key, ResponseItem item, TimeSpan timeout)
+        private static void InsertCacheItem(CacheKey cacheKey, ResponseItem item, TimeSpan timeout)
         {
-            try
+            var key = cacheKey.UniqueId;
+
+            //序列化成二进制
+            var cacheObj = new CacheItem
             {
-                var dir = Path.GetDirectoryName(path);
+                ExpiredTime = DateTime.Now.Add(timeout),
+                Count = item.Count,
+                Value = item.Buffer
+            };
 
-                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            //默认缓存30秒
+            CacheHelper.Insert(key, cacheObj, Math.Min(30, (int)timeout.TotalSeconds));
 
-                //序列化成二进制
-                var cacheObj = new CacheItem
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                try
                 {
-                    ExpiredTime = DateTime.Now.Add(timeout),
-                    Count = item.Count,
-                    Value = item.Buffer
-                };
+                    var path = GetFilePath(cacheKey);
 
-                File.WriteAllBytes(path, SerializationManager.SerializeBin(cacheObj));
+                    //写入文件
+                    var buffer = SerializationManager.SerializeBin(cacheObj);
 
-                //默认缓存30秒
-                CacheHelper.Insert(key, cacheObj, (int)Math.Min(30, timeout.TotalSeconds));
-            }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex)
-            {
-                Thread.ResetAbort();
-            }
-            catch (IOException ex) { }
-            catch (Exception ex)
-            {
-                SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
-            }
+                    string dirPath = Path.GetDirectoryName(path);
+                    if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+                    File.WriteAllBytes(path, buffer);
+                }
+                catch (IOException ex) { }
+                catch (Exception ex)
+                {
+                    SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
+                }
+            });
         }
 
         /// <summary>
         /// 获取文件路径
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="cacheKey"></param>
         /// <returns></returns>
-        private static string GetFilePath(CacheKey key)
+        private static string GetFilePath(CacheKey cacheKey)
         {
             return CoreHelper.GetFullPath(string.Format("ServiceCache\\{0}\\{1}\\{2}.dat",
-                                            key.ServiceName, key.MethodName, key.UniqueId));
+                                            cacheKey.ServiceName, cacheKey.MethodName, cacheKey.UniqueId));
         }
     }
 }

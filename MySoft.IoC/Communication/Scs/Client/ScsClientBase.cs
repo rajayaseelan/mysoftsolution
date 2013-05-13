@@ -51,6 +51,11 @@ namespace MySoft.IoC.Communication.Scs.Client
         public int ConnectTimeout { get; set; }
 
         /// <summary>
+        /// Keep alive and to server socket.
+        /// </summary>
+        public bool KeepAlive { get; set; }
+
+        /// <summary>
         /// Gets/sets wire protocol that is used while reading and writing messages.
         /// </summary>
         public IScsWireProtocol WireProtocol
@@ -264,7 +269,10 @@ namespace MySoft.IoC.Communication.Scs.Client
         {
             try
             {
-                _communicationChannel.SendMessage(new ScsPingMessage());
+                if (KeepAlive)
+                {
+                    _communicationChannel.SendMessage(new ScsPingMessage());
+                }
             }
             catch
             {

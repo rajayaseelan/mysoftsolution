@@ -18,7 +18,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Messages
         /// </summary>
         public ScsTextMessage()
         {
-            
+
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Messages
         {
             RepliedMessageId = repliedMessageId;
         }
-        
+
         /// <summary>
         /// Creates a string to represents this object.
         /// </summary>
@@ -53,6 +53,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Messages
             return string.IsNullOrEmpty(RepliedMessageId)
                        ? string.Format("ScsTextMessage [{0}]: {1}", MessageId, Text)
                        : string.Format("ScsTextMessage [{0}] Replied To [{1}]: {2}", MessageId, RepliedMessageId, Text);
+        }
+
+        public override void Dispose()
+        {
+            this.Text = null;
         }
     }
 }

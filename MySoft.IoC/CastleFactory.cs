@@ -25,8 +25,7 @@ namespace MySoft.IoC
         private CastleFactoryConfiguration config;
         private IServiceContainer container;
         private IDictionary<string, IService> proxies;
-        private IDataCache cache;
-        private SyncCaller caller;
+        private AsyncCaller caller;
         private IServiceLog logger;
 
         /// <summary>
@@ -43,8 +42,7 @@ namespace MySoft.IoC
         {
             this.config = config;
             this.container = new SimpleServiceContainer(config.Type);
-
-            InitCaller(this.cache);
+            this.caller = new AsyncCaller(false, config.MaxCaller);
 
             container.OnLog += (log, type) =>
             {
@@ -62,14 +60,11 @@ namespace MySoft.IoC
             {
                 foreach (var p in config.Nodes)
                 {
-                    if (p.Value.MaxPool < 10) throw new WarningException("Minimum pool size 10.");
-                    if (p.Value.MaxPool > 500) throw new WarningException("Maximum pool size 500.");
-
                     RemoteProxy proxy = null;
                     if (p.Value.RespType == ResponseType.Json)
                         proxy = new InvokeProxy(p.Value, container);
                     else
-                        proxy = new RemoteProxy(p.Value, container);
+                        proxy = new RemoteProxy(p.Value, container, false);
 
                     proxy.OnConnected += (sender, args) =>
                     {
@@ -84,19 +79,6 @@ namespace MySoft.IoC
                 }
             }
 
-        }
-
-        /// <summary>
-        /// 初始化调用器
-        /// </summary>
-        /// <param name="cache"></param>
-        private void InitCaller(IDataCache cache)
-        {
-            //实例化异步服务
-            if (config.EnableCache)
-                this.caller = new SyncCaller(false, cache);
-            else
-                this.caller = new SyncCaller(false);
         }
 
         #region 创建单例
@@ -183,17 +165,6 @@ namespace MySoft.IoC
         public IList<ServerNode> GetServerNodes()
         {
             return proxies.Values.Cast<RemoteProxy>().Select(p => p.Node).ToList();
-        }
-
-        /// <summary>
-        /// 注册缓存
-        /// </summary>
-        /// <param name="cache"></param>
-        public void RegisterCache(IDataCache cache)
-        {
-            this.cache = cache;
-
-            InitCaller(cache);
         }
 
         /// <summary>
@@ -288,7 +259,7 @@ namespace MySoft.IoC
                     if (node.RespType == ResponseType.Json)
                         proxy = new InvokeProxy(node, container);
                     else
-                        proxy = new RemoteProxy(node, container);
+                        proxy = new RemoteProxy(node, container, false);
 
                     proxy.OnConnected += (sender, args) =>
                     {
@@ -321,21 +292,44 @@ namespace MySoft.IoC
             Type serviceType = typeof(IServiceInterfaceType);
             string serviceKey = string.Format("{0}${1}", serviceType.FullName, proxy.ServiceName);
 
-            lock (hashtable.SyncRoot)
+            //TODO : 这里发现了严重的逻辑错误，导致每次都会创建动态代理，造成CPU高与内存高。
+            if (isCacheService)
             {
-                var handler = new ServiceInvocationHandler<IServiceInterfaceType>(config, container, proxy, caller, logger);
-                var dynamicProxy = ProxyFactory.GetInstance().Create(handler, serviceType, true);
-
-                //不缓存，直接返回服务
-                if (!isCacheService) return (IServiceInterfaceType)dynamicProxy;
-
                 if (!hashtable.ContainsKey(serviceKey))
                 {
-                    hashtable[serviceKey] = dynamicProxy;
-                }
-            }
+                    lock (hashtable.SyncRoot)
+                    {
+                        if (!hashtable.ContainsKey(serviceKey))
+                        {
+                            //创建代理服务
+                            var dynamicProxy = CreateProxyHandler<IServiceInterfaceType>(proxy, serviceType);
 
-            return (IServiceInterfaceType)hashtable[serviceKey];
+                            hashtable[serviceKey] = dynamicProxy;
+                        }
+
+                    }
+                }
+
+                return (IServiceInterfaceType)hashtable[serviceKey];
+            }
+            else
+            {
+                //不缓存，直接返回服务
+                return CreateProxyHandler<IServiceInterfaceType>(proxy, serviceType);
+            }
+        }
+
+        /// <summary>
+        /// 获取代理服务
+        /// </summary>
+        /// <typeparam name="IServiceInterfaceType"></typeparam>
+        /// <param name="proxy"></param>
+        /// <param name="serviceType"></param>
+        /// <returns></returns>
+        private IServiceInterfaceType CreateProxyHandler<IServiceInterfaceType>(IService proxy, Type serviceType)
+        {
+            var handler = new ServiceInvocationHandler<IServiceInterfaceType>(this.config, this.container, proxy, caller, logger);
+            return (IServiceInterfaceType)ProxyFactory.GetInstance().Create(handler, serviceType, true);
         }
 
         #endregion
@@ -501,7 +495,7 @@ namespace MySoft.IoC
                     if (node.RespType == ResponseType.Json)
                         proxy = new InvokeProxy(node, container);
                     else
-                        proxy = new RemoteProxy(node, container);
+                        proxy = new RemoteProxy(node, container, false);
 
                     proxy.OnConnected += (sender, args) =>
                     {
@@ -665,8 +659,6 @@ namespace MySoft.IoC
             var arr = config.ProxyServer.Split('|');
 
             var server = ServerNode.Parse(arr[0]);
-            server.MinPool = 1;
-            server.MaxPool = 1;
             server.Timeout = 30;
 
             if (arr.Length > 1)

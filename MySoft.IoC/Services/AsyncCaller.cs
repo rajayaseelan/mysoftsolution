@@ -11,6 +11,16 @@ using MySoft.Security;
 namespace MySoft.IoC.Services
 {
     /// <summary>
+    /// 异步方法调用委托
+    /// </summary>
+    /// <param name="callKey"></param>
+    /// <param name="service"></param>
+    /// <param name="context"></param>
+    /// <param name="reqMsg"></param>
+    /// <returns></returns>
+    internal delegate ResponseItem AsyncMethodCaller(string callKey, IService service, OperationContext context, RequestMessage reqMsg);
+
+    /// <summary>
     /// 异步调用器
     /// </summary>
     internal class AsyncCaller
@@ -48,44 +58,68 @@ namespace MySoft.IoC.Services
                 //获取callerKey
                 var callKey = GetCallerKey(reqMsg, context.Caller);
 
-                QueueManager manager = null;
-
-                lock (hashtable)
+                //等待响应
+                using (var channelResult = new ChannelResult(reqMsg))
                 {
-                    if (!hashtable.ContainsKey(callKey))
+                    bool isInvokeService = false;
+
+                    lock (hashtable)
                     {
-                        hashtable[callKey] = new QueueManager();
-
-                        //定义委托
-                        Func<string, IService, OperationContext, RequestMessage, ResponseItem> func = null;
-
-                        if (NeedServiceCache(reqMsg))
+                        if (!hashtable.ContainsKey(callKey))
                         {
-                            if (fromServer)
-                                func = GetResponseFromFileCache;
-                            else
-                                func = GetResponseFromMemoryCache;
-                        }
-                        else
-                        {
-                            func = GetResponseFromLocalService;
+                            hashtable[callKey] = new QueueManager();
+                            isInvokeService = true;
                         }
 
-                        //开始异步调用
-                        func.BeginInvoke(callKey, service, context, reqMsg, AsyncCallback, new ArrayList { callKey, func });
+                        //添加到队列
+                        hashtable[callKey].Add(channelResult);
                     }
 
-                    manager = hashtable[callKey];
-                }
+                    if (isInvokeService)
+                    {
+                        //调用服务
+                        InvokeService(callKey, service, context, reqMsg);
+                    }
 
-                //返回响应消息
-                return manager.GetMessage(reqMsg);
+                    channelResult.WaitOne();
+
+                    //返回响应消息
+                    return channelResult.Message;
+                }
             }
             finally
             {
                 //释放一个控制器
                 semaphore.Release();
             }
+        }
+
+        /// <summary>
+        /// 响应服务
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="service"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        private void InvokeService(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        {
+            //定义委托
+            AsyncMethodCaller caller = null;
+
+            if (NeedServiceCache(reqMsg))
+            {
+                if (fromServer)
+                    caller = GetResponseFromFileCache;
+                else
+                    caller = GetResponseFromMemoryCache;
+            }
+            else
+            {
+                caller = GetResponseFromLocalService;
+            }
+
+            //开始异步调用
+            caller.BeginInvoke(callKey, service, context, reqMsg, AsyncCallback, new ArrayList { callKey, caller });
         }
 
         /// <summary>
@@ -96,27 +130,40 @@ namespace MySoft.IoC.Services
         {
             var arr = ar.AsyncState as ArrayList;
 
-            //回调方法
-            var _callKey = Convert.ToString(arr[0]);
+            QueueManager manager = null;
 
             lock (hashtable)
             {
-                try
+                //回调方法
+                var callKey = Convert.ToString(arr[0]);
+
+                if (hashtable.ContainsKey(callKey))
                 {
                     //获取管理Key
-                    var manager = hashtable[_callKey] as QueueManager;
+                    manager = hashtable[callKey] as QueueManager;
 
+                    //移除元素
+                    hashtable.Remove(callKey);
+                }
+            }
+
+            try
+            {
+                if (manager != null)
+                {
                     //转换成函数
-                    var _func = arr[1] as Func<string, IService, OperationContext, RequestMessage, ResponseItem>;
+                    var caller = arr[1] as AsyncMethodCaller;
 
                     //响应请求
-                    manager.Set(_func.EndInvoke(ar));
+                    manager.Set(caller.EndInvoke(ar));
+
+                    manager.Dispose();
                 }
-                finally
-                {
-                    //移除元素
-                    hashtable.Remove(_callKey);
-                }
+            }
+            finally
+            {
+                //释放资源
+                ar.AsyncWaitHandle.Close();
             }
         }
 
@@ -140,13 +187,13 @@ namespace MySoft.IoC.Services
                 //响应结果，清理资源
                 return service.CallService(reqMsg);
             }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex)
-            {
-                Thread.ResetAbort();
-            }
             catch (Exception ex)
             {
+                if (ex is ThreadAbortException)
+                {
+                    Thread.ResetAbort();
+                }
+
                 //获取异常响应
                 resMsg = IoCHelper.GetResponse(reqMsg, ex);
             }
@@ -172,7 +219,7 @@ namespace MySoft.IoC.Services
             var resMsg = GetResponse(service, context, reqMsg);
 
             //实例化ResponseItem
-            return resMsg == null ? null : new ResponseItem(resMsg);
+            return new ResponseItem(resMsg);
         }
 
         /// <summary>

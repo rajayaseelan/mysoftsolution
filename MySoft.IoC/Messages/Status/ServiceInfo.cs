@@ -101,6 +101,11 @@ namespace MySoft.IoC.Messages
         public bool IsCollection { get; set; }
 
         /// <summary>
+        /// 缓存时间
+        /// </summary>
+        public int CacheTime { get; set; }
+
+        /// <summary>
         /// 参数信息
         /// </summary>
         public IList<ParameterInfo> Parameters { get; set; }

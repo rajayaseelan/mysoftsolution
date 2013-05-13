@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using MySoft.IoC.Callback;
+using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
@@ -77,17 +78,11 @@ namespace MySoft.IoC
             this.status = new ServerStatusService(server, config, container);
             container.Register(typeof(IStatusService), status);
 
-            SyncCaller caller = null;
-
-            if (config.EnableCache)
-                caller = new SyncCaller(true, null);
-            else
-                caller = new SyncCaller(true);
-
             //实例化调用者
+            var caller = new AsyncCaller(true, config.MaxCaller);
             var scaller = new ServiceCaller(config, container, caller);
 
-            this.client = new ServiceChannel(config, scaller, status, container);
+            this.client = new ServiceChannel(scaller, status, container);
             this.client.Callback += NotifyResult;
 
             //判断是否启用httpServer
@@ -343,19 +338,28 @@ namespace MySoft.IoC
             try
             {
                 //只处理指定消息
-                if (e.Message is ScsClientMessage)
-                {
-                    var client = (e.Message as ScsClientMessage).Client;
-                    channel.UserToken = client;
-
-                    //响应客户端详细信息
-                    var endPoint = (channel.RemoteEndPoint as ScsTcpEndPoint);
-                    PushAppClient(endPoint, client);
-                }
-                else if (e.Message is ScsResultMessage)
+                if (e.Message is ScsResultMessage)
                 {
                     var message = e.Message as ScsResultMessage;
                     var reqMsg = message.MessageValue as RequestMessage;
+
+                    if (channel.UserToken == null)
+                    {
+                        var client = new AppClient
+                        {
+                            AppName = reqMsg.AppName,
+                            AppPath = reqMsg.AppPath,
+                            IPAddress = reqMsg.IPAddress,
+                            HostName = reqMsg.HostName
+                        };
+
+                        channel.UserToken = client;
+
+                        //响应客户端详细信息
+                        var endPoint = (channel.RemoteEndPoint as ScsTcpEndPoint);
+
+                        PushAppClient(endPoint, client);
+                    }
 
                     //调用服务
                     SendResponse(channel, message.RepliedMessageId, reqMsg);
@@ -366,20 +370,23 @@ namespace MySoft.IoC
                 //写异常日志
                 container.WriteError(ex);
             }
+            finally
+            {
+                e.Message.Dispose();
+            }
         }
 
         /// <summary>
         /// 获取AppCaller
         /// </summary>
-        /// <param name="appPath"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private AppCaller CreateCaller(string appPath, RequestMessage reqMsg)
+        private AppCaller CreateCaller(RequestMessage reqMsg)
         {
             //服务参数信息
             var caller = new AppCaller
             {
-                AppPath = appPath,
+                AppPath = reqMsg.AppPath,
                 AppName = reqMsg.AppName,
                 IPAddress = reqMsg.IPAddress,
                 HostName = reqMsg.HostName,
@@ -402,15 +409,12 @@ namespace MySoft.IoC
         {
             try
             {
-                //获取AppPath
-                var appPath = (channel.UserToken == null) ? null : (channel.UserToken as AppClient).AppPath;
-
                 //实例化上下文
                 using (var context = new CallerContext
                  {
                      MessageId = messageId,
                      Request = reqMsg,
-                     Caller = CreateCaller(appPath, reqMsg)
+                     Caller = CreateCaller(reqMsg)
                  })
                 {
                     //发送消息
@@ -466,8 +470,8 @@ namespace MySoft.IoC
         {
             if (connected)
             {
-                container.WriteLog(string.Format("[{2}] User connection ({0}:{1}).",
-                                    endPoint.IpAddress, endPoint.TcpPort, count), LogType.Information);
+                container.WriteLog(string.Format("[{2}/{3}] User connection ({0}:{1}).",
+                                    endPoint.IpAddress, endPoint.TcpPort, count, CommunicationHelper.Count), LogType.Information);
             }
             else
             {

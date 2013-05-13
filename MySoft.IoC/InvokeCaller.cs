@@ -13,7 +13,7 @@ namespace MySoft.IoC
         private CastleFactoryConfiguration config;
         private IContainer container;
         private IService service;
-        private SyncCaller caller;
+        private AsyncCaller caller;
         private string hostName;
         private string ipAddress;
 
@@ -24,7 +24,7 @@ namespace MySoft.IoC
         /// <param name="container"></param>
         /// <param name="service"></param>
         /// <param name="caller"></param>
-        public InvokeCaller(CastleFactoryConfiguration config, IContainer container, IService service, SyncCaller caller)
+        public InvokeCaller(CastleFactoryConfiguration config, IContainer container, IService service, AsyncCaller caller)
         {
             this.config = config;
             this.container = container;
@@ -48,10 +48,12 @@ namespace MySoft.IoC
             {
                 InvokeMethod = true,
                 AppName = config.AppName,                               //应用名称
+                AppPath = AppDomain.CurrentDomain.BaseDirectory,        //应用路径
                 HostName = hostName,                                    //客户端名称
                 IPAddress = ipAddress,                                  //客户端IP地址
                 ServiceName = message.ServiceName,                      //服务名称
                 MethodName = message.MethodName,                        //方法名称
+                EnableCache = config.EnableCache,                       //是否缓存
                 CacheTime = message.CacheTime,                          //缓存时间
                 TransactionId = Guid.NewGuid(),                         //Json字符串
                 RespType = ResponseType.Json                            //数据类型

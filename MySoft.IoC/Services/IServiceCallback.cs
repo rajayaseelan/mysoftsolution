@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MySoft.IoC.Messages;
+﻿using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
@@ -28,15 +24,15 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 消息回调
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void MessageCallback(object sender, ServiceMessageEventArgs e);
+        /// <param name="messageId"></param>
+        /// <param name="message"></param>
+        void MessageCallback(string messageId, CallbackMessage message);
 
         /// <summary>
-        /// 异常处理
+        /// 消息回调
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void MessageError(object sender, ErrorMessageEventArgs e);
+        /// <param name="messageId"></param>
+        /// <param name="message"></param>
+        void MessageCallback(string messageId, ResponseMessage message);
     }
 }

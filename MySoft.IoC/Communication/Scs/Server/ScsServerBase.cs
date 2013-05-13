@@ -143,6 +143,8 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             var channel = (IScsServerClient)sender;
 
+            channel.WireProtocol.Reset();
+            channel.WireProtocol = null;
             channel.Disconnected -= Client_Disconnected;
 
             lock (Clients)

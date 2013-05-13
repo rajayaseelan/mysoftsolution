@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 
@@ -28,7 +29,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// <summary>
         /// Maximum length of a message.
         /// </summary>
-        private const int MaxMessageLength = 1024 * 1024 * 32; //32 Mbytes.
+        private const int MaxMessageLength = 128 * 1024 * 1024; //128 Megabytes.
 
         /// <summary>
         /// This MemoryStream object is used to collect receiving bytes to build messages.
@@ -93,19 +94,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </returns>
         public IEnumerable<IScsMessage> CreateMessages(byte[] receivedBytes)
         {
-            if (_receiveMemoryStream == null) return new List<IScsMessage>();
-
-            lock (_receiveMemoryStream)
-            {
-                //Write all received bytes to the _receiveMemoryStream
-                _receiveMemoryStream.Write(receivedBytes, 0, receivedBytes.Length);
-                //Create a list to collect messages
-                var messages = new List<IScsMessage>();
-                //Read all available messages and add to messages collection
-                while (ReadSingleMessage(messages)) { }
-                //Return message list
-                return messages;
-            }
+            //Write all received bytes to the _receiveMemoryStream
+            _receiveMemoryStream.Write(receivedBytes, 0, receivedBytes.Length);
+            //Create a list to collect messages
+            var messages = new List<IScsMessage>();
+            //Read all available messages and add to messages collection
+            while (ReadSingleMessage(messages)) { }
+            //Return message list
+            return messages;
         }
 
         /// <summary>
@@ -136,11 +132,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </returns>
         protected virtual byte[] SerializeMessage(IScsMessage message)
         {
-            using (var memoryStream = new MemoryStream())
-            {
-                new BinaryFormatter().Serialize(memoryStream, message);
-                return memoryStream.ToArray();
-            }
+            var memoryStream = new MemoryStream();
+
+            new BinaryFormatter().Serialize(memoryStream, message);
+            memoryStream.Close();
+
+            return memoryStream.ToArray();
         }
 
         /// <summary>
@@ -156,21 +153,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         protected virtual IScsMessage DeserializeMessage(byte[] bytes)
         {
             //Create a MemoryStream to convert bytes to a stream
-            using (var deserializeMemoryStream = new MemoryStream(bytes))
+            var deserializeMemoryStream = new MemoryStream(bytes);
+
+            //Go to head of the stream
+            deserializeMemoryStream.Position = 0;
+
+            //Deserialize the message
+            var binaryFormatter = new BinaryFormatter
             {
-                //Go to head of the stream
-                deserializeMemoryStream.Position = 0;
+                AssemblyFormat = FormatterAssemblyStyle.Simple,
+                FilterLevel = TypeFilterLevel.Full,
+                Binder = new DeserializationAppDomainBinder()
+            };
 
-                //Deserialize the message
-                var binaryFormatter = new BinaryFormatter
-                {
-                    AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple,
-                    Binder = new DeserializationAppDomainBinder()
-                };
-
-                //Return the deserialized message
-                return (IScsMessage)binaryFormatter.Deserialize(deserializeMemoryStream);
-            }
+            //Return the deserialized message
+            return (IScsMessage)binaryFormatter.Deserialize(deserializeMemoryStream);
         }
 
         #endregion
@@ -201,8 +198,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             var messageLength = ReadInt32(_receiveMemoryStream);
             if (messageLength > MaxMessageLength)
             {
-                _receiveMemoryStream = new MemoryStream();
-                throw new CommunicationException("Message is too big (" + messageLength + " bytes). Max allowed length is " + MaxMessageLength + " bytes.");
+                throw new Exception("Message is too big (" + messageLength + " bytes). Max allowed length is " + MaxMessageLength + " bytes.");
             }
 
             //If message is zero-length (It must not be but good approach to check it)
@@ -217,7 +213,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
 
                 //Create a new memory stream from current except first 4-bytes.
                 var bytes = _receiveMemoryStream.ToArray();
-
                 _receiveMemoryStream = new MemoryStream();
                 _receiveMemoryStream.Write(bytes, 4, bytes.Length - 4);
                 return true;
@@ -233,19 +228,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             //Read bytes of serialized message and deserialize it
             var serializedMessageBytes = ReadByteArray(_receiveMemoryStream, messageLength);
 
-            try
-            {
-                if (serializedMessageBytes.Length > 0)
-                {
-                    messages.Add(DeserializeMessage(serializedMessageBytes));
-                }
-            }
-            catch (Exception ex)
-            {
-                _receiveMemoryStream = new MemoryStream();
-                throw;
-            }
-
             //Read remaining bytes to an array
             var remainingBytes = ReadByteArray(_receiveMemoryStream, (int)(_receiveMemoryStream.Length - (4 + messageLength)));
 
@@ -253,8 +235,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             _receiveMemoryStream = new MemoryStream();
             _receiveMemoryStream.Write(remainingBytes, 0, remainingBytes.Length);
 
+            messages.Add(DeserializeMessage(serializedMessageBytes));
+
             //Return true to re-call this method to try to read next message
-            return (remainingBytes.Length > 4);
+            return (_receiveMemoryStream.Length > 4);
         }
 
         /// <summary>
@@ -294,9 +278,22 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// <exception cref="EndOfStreamException">Throws EndOfStreamException if can not read from stream.</exception>
         private static byte[] ReadByteArray(Stream stream, int length)
         {
-            if (length == 0) return new byte[0];
+            var buffer = new byte[length];
+            var totalRead = 0;
+            //var bufferStream = new BufferedStream(stream);
 
-            return new BinaryReader(stream).ReadBytes(length);
+            while (totalRead < length)
+            {
+                var read = stream.Read(buffer, totalRead, length - totalRead);
+                if (read <= 0)
+                {
+                    throw new EndOfStreamException("Can not read from stream! Input stream is closed.");
+                }
+
+                totalRead += read;
+            }
+
+            return buffer;
         }
 
         #endregion
