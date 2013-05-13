@@ -156,12 +156,12 @@ namespace MySoft.IoC.Services
 
                     //响应请求
                     manager.Set(caller.EndInvoke(ar));
-
-                    manager.Dispose();
                 }
             }
             finally
             {
+                if (manager != null) manager.Dispose();
+
                 //释放资源
                 ar.AsyncWaitHandle.Close();
             }

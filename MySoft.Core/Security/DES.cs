@@ -27,12 +27,15 @@ namespace MySoft.Security
             byte[] rgbKey = Encoding.UTF8.GetBytes(encryptKey.Substring(0, 8));
             byte[] rgbIV = Keys;
             byte[] inputByteArray = Encoding.UTF8.GetBytes(encryptString);
+
             DESCryptoServiceProvider dCSP = new DESCryptoServiceProvider();
-            MemoryStream mStream = new MemoryStream();
-            CryptoStream cStream = new CryptoStream(mStream, dCSP.CreateEncryptor(rgbKey, rgbIV), CryptoStreamMode.Write);
-            cStream.Write(inputByteArray, 0, inputByteArray.Length);
-            cStream.FlushFinalBlock();
-            return Convert.ToBase64String(mStream.ToArray());
+            using (MemoryStream mStream = new MemoryStream())
+            using (CryptoStream cStream = new CryptoStream(mStream, dCSP.CreateEncryptor(rgbKey, rgbIV), CryptoStreamMode.Write))
+            {
+                cStream.Write(inputByteArray, 0, inputByteArray.Length);
+                cStream.FlushFinalBlock();
+                return Convert.ToBase64String(mStream.ToArray());
+            }
         }
 
         /// <summary>
@@ -48,13 +51,15 @@ namespace MySoft.Security
             byte[] rgbKey = Encoding.UTF8.GetBytes(decryptKey);
             byte[] rgbIV = Keys;
             byte[] inputByteArray = Convert.FromBase64String(decryptString);
-            DESCryptoServiceProvider DCSP = new DESCryptoServiceProvider();
 
-            MemoryStream mStream = new MemoryStream();
-            CryptoStream cStream = new CryptoStream(mStream, DCSP.CreateDecryptor(rgbKey, rgbIV), CryptoStreamMode.Write);
-            cStream.Write(inputByteArray, 0, inputByteArray.Length);
-            cStream.FlushFinalBlock();
-            return Encoding.UTF8.GetString(mStream.ToArray());
+            DESCryptoServiceProvider DCSP = new DESCryptoServiceProvider();
+            using (MemoryStream mStream = new MemoryStream())
+            using (CryptoStream cStream = new CryptoStream(mStream, DCSP.CreateDecryptor(rgbKey, rgbIV), CryptoStreamMode.Write))
+            {
+                cStream.Write(inputByteArray, 0, inputByteArray.Length);
+                cStream.FlushFinalBlock();
+                return Encoding.UTF8.GetString(mStream.ToArray());
+            }
         }
 
         #region DES加密解密
@@ -71,12 +76,14 @@ namespace MySoft.Security
             byte[] inputByteArray = data;
 
             DESCryptoServiceProvider dCSP = new DESCryptoServiceProvider();
-            MemoryStream mStream = new MemoryStream();
-            CryptoStream cStream = new CryptoStream(mStream, dCSP.CreateEncryptor(rgbKey, rgbIV), CryptoStreamMode.Write);
-            cStream.Write(inputByteArray, 0, inputByteArray.Length);
-            cStream.FlushFinalBlock();
+            using (MemoryStream mStream = new MemoryStream())
+            using (CryptoStream cStream = new CryptoStream(mStream, dCSP.CreateEncryptor(rgbKey, rgbIV), CryptoStreamMode.Write))
+            {
+                cStream.Write(inputByteArray, 0, inputByteArray.Length);
+                cStream.FlushFinalBlock();
 
-            return mStream.ToArray();
+                return mStream.ToArray();
+            }
         }
 
         /// DES解密
@@ -90,12 +97,14 @@ namespace MySoft.Security
             byte[] inputByteArray = data;
 
             DESCryptoServiceProvider DCSP = new DESCryptoServiceProvider();
-            MemoryStream mStream = new MemoryStream();
-            CryptoStream cStream = new CryptoStream(mStream, DCSP.CreateDecryptor(rgbKey, rgbIV), CryptoStreamMode.Write);
-            cStream.Write(inputByteArray, 0, inputByteArray.Length);
-            cStream.FlushFinalBlock();
+            using (MemoryStream mStream = new MemoryStream())
+            using (CryptoStream cStream = new CryptoStream(mStream, DCSP.CreateDecryptor(rgbKey, rgbIV), CryptoStreamMode.Write))
+            {
+                cStream.Write(inputByteArray, 0, inputByteArray.Length);
+                cStream.FlushFinalBlock();
 
-            return mStream.ToArray();
+                return mStream.ToArray();
+            }
         }
 
         #endregion
