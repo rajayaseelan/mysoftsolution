@@ -2,6 +2,7 @@
 using System.ServiceProcess;
 using System.Threading;
 using MySoft.Installer;
+using MySoft.Installer.Configuration;
 using MySoft.Logger;
 
 namespace MySoft.PlatformService
@@ -20,8 +21,16 @@ namespace MySoft.PlatformService
             // 运行服务
             if (args.Length == 0)
             {
+                var config = InstallerConfiguration.GetConfig();
+                var service = server.GetWindowsService();
+
+                if (service == null)
+                {
+                    throw new Exception(string.Format("启动服务{0}失败，详情请查看错误日志！", config.ServiceName));
+                }
+
                 ServiceBase[] ServicesToRun;
-                ServicesToRun = new ServiceBase[] { new BusinessService(server.GetWindowsService()) };
+                ServicesToRun = new ServiceBase[] { new BusinessService(service) };
                 ServiceBase.Run(ServicesToRun);
                 return;
             }

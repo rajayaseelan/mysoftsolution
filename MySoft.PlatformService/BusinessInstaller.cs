@@ -11,13 +11,10 @@ namespace MySoft.PlatformService
     [RunInstaller(true)]
     public partial class BusinessInstaller : System.Configuration.Install.Installer
     {
-        private bool _initialized = false;
-        private InstallerConfiguration config;
+        private static bool _Initialized = false;
 
-        public BusinessInstaller(InstallerConfiguration config)
+        public BusinessInstaller()
         {
-            this.config = config;
-
             BeforeInstall += BusinessInstaller_BeforeInstall;
             BeforeUninstall += BusinessInstaller_BeforeUninstall;
 
@@ -26,12 +23,22 @@ namespace MySoft.PlatformService
 
         void BusinessInstaller_BeforeUninstall(object sender, InstallEventArgs e)
         {
-            if (!_initialized) Initialize(config);
+            if (!_Initialized)
+            {
+                var config = InstallerConfiguration.GetConfig();
+
+                Initialize(config);
+            }
         }
 
         void BusinessInstaller_BeforeInstall(object sender, InstallEventArgs e)
         {
-            if (!_initialized) Initialize(config);
+            if (!_Initialized)
+            {
+                var config = InstallerConfiguration.GetConfig();
+
+                Initialize(config);
+            }
         }
 
         /// <summary>
@@ -39,7 +46,10 @@ namespace MySoft.PlatformService
         /// </summary>
         private void Initialize(InstallerConfiguration config)
         {
+            _Initialized = true;
+
             if (config == null) return;
+
             string _ServiceName = config.ServiceName;
             string _DisplayName = config.DisplayName;
             string _Description = config.Description;
@@ -72,10 +82,8 @@ namespace MySoft.PlatformService
             si.StartType = ServiceStartMode.Automatic;
 
             // adding				
-            this.Installers.Add(spi);
             this.Installers.Add(si);
-
-            this._initialized = true;
+            this.Installers.Add(spi);
         }
     }
 }

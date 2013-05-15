@@ -377,8 +377,7 @@ namespace MySoft.PlatformService
             installer.BeforeUninstall += new InstallEventHandler((obj, state) => { Console.WriteLine("服务正在卸载......"); });
             installer.AfterUninstall += new InstallEventHandler((obj, state) => { Console.WriteLine("服务卸载完成！"); });
 
-            var config = InstallerConfiguration.GetConfig();
-            BusinessInstaller businessInstaller = new BusinessInstaller(config);
+            BusinessInstaller businessInstaller = new BusinessInstaller();
             installer.Installers.Add(businessInstaller);
             string logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "installer.log");
             string path = string.Format("/assemblypath={0}", System.Reflection.Assembly.GetExecutingAssembly().Location);
