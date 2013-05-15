@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Configuration.Install;
 using System.ServiceProcess;
+using Microsoft.Win32;
 using MySoft.Installer.Configuration;
 
 namespace MySoft.PlatformService
@@ -9,12 +11,27 @@ namespace MySoft.PlatformService
     [RunInstaller(true)]
     public partial class BusinessInstaller : System.Configuration.Install.Installer
     {
+        private bool _initialized = false;
+        private InstallerConfiguration config;
+
         public BusinessInstaller(InstallerConfiguration config)
         {
-            BeforeInstall += new InstallEventHandler((obj, state) => { Initialize(config); });
-            BeforeUninstall += new InstallEventHandler((obj, state) => { Initialize(config); });
+            this.config = config;
+
+            BeforeInstall += BusinessInstaller_BeforeInstall;
+            BeforeUninstall += BusinessInstaller_BeforeUninstall;
 
             InitializeComponent();
+        }
+
+        void BusinessInstaller_BeforeUninstall(object sender, InstallEventArgs e)
+        {
+            if (!_initialized) Initialize(config);
+        }
+
+        void BusinessInstaller_BeforeInstall(object sender, InstallEventArgs e)
+        {
+            if (!_initialized) Initialize(config);
         }
 
         /// <summary>
@@ -57,6 +74,8 @@ namespace MySoft.PlatformService
             // adding				
             this.Installers.Add(spi);
             this.Installers.Add(si);
+
+            this._initialized = true;
         }
     }
 }

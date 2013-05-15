@@ -12,8 +12,8 @@ namespace MySoft.IoC
     /// </summary>
     internal class ServiceCaller : IDisposable
     {
+        private readonly IServiceContainer container;
         private IDictionary<string, Type> callbackTypes;
-        private IServiceContainer container;
         private AsyncCaller caller;
 
         /// <summary>

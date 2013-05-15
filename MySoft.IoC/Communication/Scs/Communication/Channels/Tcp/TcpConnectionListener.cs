@@ -16,6 +16,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private readonly ScsTcpEndPoint _endPoint;
 
+        private readonly CommunicationHelper _helper;
+
         /// <summary>
         /// Server socket to listen incoming connection requests.
         /// </summary>
@@ -35,9 +37,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Creates a new TcpConnectionListener for given endpoint.
         /// </summary>
         /// <param name="endPoint">The endpoint address of the server to listen incoming connections</param>
-        public TcpConnectionListener(ScsTcpEndPoint endPoint)
+        public TcpConnectionListener(ScsTcpEndPoint endPoint, CommunicationHelper helper)
         {
             _endPoint = endPoint;
+            _helper = helper;
         }
 
         /// <summary>
@@ -103,7 +106,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     var clientSocket = _listenerSocket.AcceptSocket();
                     if (clientSocket.Connected)
                     {
-                        OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
+                        var channel = new TcpCommunicationChannel(clientSocket, _helper);
+
+                        OnCommunicationChannelConnected(channel);
                     }
                 }
                 catch

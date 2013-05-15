@@ -527,10 +527,9 @@ namespace MySoft.IoC
         private InvokeData GetInvokeData(IService service, InvokeMessage message)
         {
             //调用分布式服务
-            using (var caller = new InvokeCaller(config, container, service, this.caller))
-            {
-                return caller.InvokeResponse(message);
-            }
+            var caller = new InvokeCaller(config, container, service, this.caller);
+
+            return caller.InvokeResponse(message);
         }
 
         /// <summary>

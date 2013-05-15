@@ -132,12 +132,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </returns>
         protected virtual byte[] SerializeMessage(IScsMessage message)
         {
-            var memoryStream = new MemoryStream();
-
-            new BinaryFormatter().Serialize(memoryStream, message);
-            memoryStream.Close();
-
-            return memoryStream.ToArray();
+            using (var memoryStream = new MemoryStream())
+            {
+                new BinaryFormatter().Serialize(memoryStream, message);
+                return memoryStream.ToArray();
+            }
         }
 
         /// <summary>
@@ -153,21 +152,22 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         protected virtual IScsMessage DeserializeMessage(byte[] bytes)
         {
             //Create a MemoryStream to convert bytes to a stream
-            var deserializeMemoryStream = new MemoryStream(bytes);
-
-            //Go to head of the stream
-            deserializeMemoryStream.Position = 0;
-
-            //Deserialize the message
-            var binaryFormatter = new BinaryFormatter
+            using (var deserializeMemoryStream = new MemoryStream(bytes))
             {
-                AssemblyFormat = FormatterAssemblyStyle.Simple,
-                FilterLevel = TypeFilterLevel.Full,
-                Binder = new DeserializationAppDomainBinder()
-            };
+                //Go to head of the stream
+                deserializeMemoryStream.Position = 0;
 
-            //Return the deserialized message
-            return (IScsMessage)binaryFormatter.Deserialize(deserializeMemoryStream);
+                //Deserialize the message
+                var binaryFormatter = new BinaryFormatter
+                {
+                    AssemblyFormat = FormatterAssemblyStyle.Simple,
+                    FilterLevel = TypeFilterLevel.Full,
+                    Binder = new DeserializationAppDomainBinder()
+                };
+
+                //Return the deserialized message
+                return (IScsMessage)binaryFormatter.Deserialize(deserializeMemoryStream);
+            }
         }
 
         #endregion

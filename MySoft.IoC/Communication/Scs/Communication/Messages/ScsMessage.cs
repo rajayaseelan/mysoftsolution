@@ -60,10 +60,5 @@ namespace MySoft.IoC.Communication.Scs.Communication.Messages
                        ? string.Format("ScsMessage [{0}]", MessageId)
                        : string.Format("ScsMessage [{0}] Replied To [{1}]", MessageId, RepliedMessageId);
         }
-
-        /// <summary>
-        /// Dispose represents this object.
-        /// </summary>
-        public abstract void Dispose();
     }
 }

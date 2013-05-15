@@ -15,69 +15,42 @@ namespace MySoft.PlatformService
     /// </summary>
     public class InstallerServer
     {
-        private InstallerConfiguration config;
         private IServiceRun service;
-
-        /// <summary>
-        /// 安装配置
-        /// </summary>
-        public InstallerConfiguration InstallerConfig
-        {
-            get
-            {
-                if (config == null)
-                {
-                    try
-                    {
-                        //读取配置节
-                        this.config = InstallerConfiguration.GetConfig();
-                        if (this.config == null) throw new Exception("加载服务安装配置节失败！");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ErrorHelper.GetErrorWithoutHtml(ex));
-
-                        //写错误日志
-                        SimpleLog.Instance.WriteLogForDir("ServiceRun", ex);
-                    }
-                }
-
-                return config;
-            }
-        }
 
         /// <summary>
         /// 当前服务
         /// </summary>
-        public IServiceRun WindowsService
+        public IServiceRun GetWindowsService()
         {
-            get
+            var config = InstallerConfiguration.GetConfig();
+
+            if (config == null) return null;
+
+            if (service == null)
             {
-                if (InstallerConfig == null) return null;
-                if (service == null)
+                #region 动态加载服务
+
+                try
                 {
-                    #region 动态加载服务
+                    var type = Type.GetType(config.ServiceType);
+                    if (type == null) throw new Exception(string.Format("加载服务{0}失败！", config.ServiceType));
+                    this.service = (IServiceRun)Activator.CreateInstance(type);
+                    this.service.Init();
+                }
+                catch (Exception ex)
+                {
+                    var inner = ErrorHelper.GetInnerException(ex);
 
-                    try
-                    {
-                        var type = Type.GetType(InstallerConfig.ServiceType);
-                        if (type == null) throw new Exception(string.Format("加载服务{0}失败！", InstallerConfig.ServiceType));
-                        this.service = (IServiceRun)Activator.CreateInstance(type);
-                        this.service.Init();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ErrorHelper.GetErrorWithoutHtml(ex));
+                    Console.WriteLine(inner.ToString());
 
-                        //写错误日志
-                        SimpleLog.Instance.WriteLogForDir("ServiceRun", ex);
-                    }
-
-                    #endregion
+                    //写错误日志
+                    SimpleLog.Instance.WriteLogForDir("ServiceRun", inner);
                 }
 
-                return service;
+                #endregion
             }
+
+            return service;
         }
 
         /// <summary>
@@ -152,13 +125,16 @@ namespace MySoft.PlatformService
         /// <returns></returns>
         public bool StartConsole(StartMode startMode, object state)
         {
-            if (InstallerConfig == null)
+            var config = InstallerConfiguration.GetConfig();
+
+            if (config == null)
             {
                 Console.WriteLine("无效的服务配置项！");
                 return false;
             }
 
-            ServiceController controller = InstallerUtils.LookupService(InstallerConfig.ServiceName);
+            ServiceController controller = InstallerUtils.LookupService(config.ServiceName);
+
             if (controller != null)
             {
                 if (controller.Status == ServiceControllerStatus.Running)
@@ -168,9 +144,11 @@ namespace MySoft.PlatformService
                 }
             }
 
-            if (WindowsService != null)
+            var winrun = GetWindowsService();
+
+            if (winrun != null)
             {
-                WindowsService.Start(startMode, state);
+                winrun.Start(startMode, state);
 
                 Console.WriteLine("控制台已经启动......");
                 return true;
@@ -187,9 +165,11 @@ namespace MySoft.PlatformService
         /// </summary>
         public void StopConsole()
         {
-            if (WindowsService != null)
+            var winrun = GetWindowsService();
+
+            if (winrun != null)
             {
-                WindowsService.Stop();
+                winrun.Stop();
 
                 Console.WriteLine("控制台已经退出......");
             }
@@ -200,15 +180,17 @@ namespace MySoft.PlatformService
         /// </summary>
         public void StartService(string serviceName)
         {
+            var config = InstallerConfiguration.GetConfig();
+
             if (string.IsNullOrEmpty(serviceName))
             {
-                if (InstallerConfig == null)
+                if (config == null)
                 {
                     Console.WriteLine("无效的服务配置项！");
                     return;
                 }
 
-                serviceName = InstallerConfig.ServiceName;
+                serviceName = config.ServiceName;
             }
 
             if (string.IsNullOrEmpty(serviceName))
@@ -218,6 +200,7 @@ namespace MySoft.PlatformService
             }
 
             ServiceController controller = InstallerUtils.LookupService(serviceName);
+
             if (controller != null)
             {
                 if (controller.Status == ServiceControllerStatus.Stopped)
@@ -255,15 +238,17 @@ namespace MySoft.PlatformService
         /// </summary>
         public void StopService(string serviceName)
         {
+            var config = InstallerConfiguration.GetConfig();
+
             if (string.IsNullOrEmpty(serviceName))
             {
-                if (InstallerConfig == null)
+                if (config == null)
                 {
                     Console.WriteLine("无效的服务配置项！");
                     return;
                 }
 
-                serviceName = InstallerConfig.ServiceName;
+                serviceName = config.ServiceName;
             }
 
             if (string.IsNullOrEmpty(serviceName))
@@ -273,6 +258,7 @@ namespace MySoft.PlatformService
             }
 
             ServiceController controller = InstallerUtils.LookupService(serviceName);
+
             if (controller != null)
             {
                 if (controller.Status == ServiceControllerStatus.Running)
@@ -310,19 +296,26 @@ namespace MySoft.PlatformService
         /// </summary>
         public void InstallService()
         {
-            if (InstallerConfig == null)
+            var config = InstallerConfiguration.GetConfig();
+
+            if (config == null)
             {
                 Console.WriteLine("无效的服务配置项！");
                 return;
             }
 
-            ServiceController controller = InstallerUtils.LookupService(InstallerConfig.ServiceName);
+            ServiceController controller = InstallerUtils.LookupService(config.ServiceName);
+
             if (controller == null)
             {
                 try
                 {
-                    TransactedInstaller installer = GetTransactedInstaller();
-                    installer.Install(new Hashtable());
+                    using (TransactedInstaller installer = GetTransactedInstaller())
+                    {
+                        installer.Install(new Hashtable());
+                        installer.Installers.Clear();
+                        installer.Context = null;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -331,7 +324,7 @@ namespace MySoft.PlatformService
             }
             else
             {
-                Console.WriteLine("服务{0}已经存在,请先卸载后再执行此命令！", InstallerConfig.ServiceName);
+                Console.WriteLine("服务{0}已经存在,请先卸载后再执行此命令！", config.ServiceName);
             }
         }
 
@@ -340,19 +333,26 @@ namespace MySoft.PlatformService
         /// </summary>
         public void UninstallService()
         {
-            if (InstallerConfig == null)
+            var config = InstallerConfiguration.GetConfig();
+
+            if (config == null)
             {
                 Console.WriteLine("无效的服务配置项！");
                 return;
             }
 
-            ServiceController controller = InstallerUtils.LookupService(InstallerConfig.ServiceName);
+            ServiceController controller = InstallerUtils.LookupService(config.ServiceName);
+
             if (controller != null)
             {
                 try
                 {
-                    TransactedInstaller installer = GetTransactedInstaller();
-                    installer.Uninstall(null);
+                    using (TransactedInstaller installer = GetTransactedInstaller())
+                    {
+                        installer.Uninstall(null);
+                        installer.Installers.Clear();
+                        installer.Context = null;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -361,7 +361,7 @@ namespace MySoft.PlatformService
             }
             else
             {
-                Console.WriteLine("服务{0}尚未安装,输入'/?'查看帮助！", InstallerConfig.ServiceName);
+                Console.WriteLine("服务{0}尚未安装,输入'/?'查看帮助！", config.ServiceName);
             }
         }
 
@@ -377,7 +377,8 @@ namespace MySoft.PlatformService
             installer.BeforeUninstall += new InstallEventHandler((obj, state) => { Console.WriteLine("服务正在卸载......"); });
             installer.AfterUninstall += new InstallEventHandler((obj, state) => { Console.WriteLine("服务卸载完成！"); });
 
-            BusinessInstaller businessInstaller = new BusinessInstaller(InstallerConfig);
+            var config = InstallerConfiguration.GetConfig();
+            BusinessInstaller businessInstaller = new BusinessInstaller(config);
             installer.Installers.Add(businessInstaller);
             string logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "installer.log");
             string path = string.Format("/assemblypath={0}", System.Reflection.Assembly.GetExecutingAssembly().Location);

@@ -3,7 +3,7 @@ using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {
-    internal interface IDataContext
+    internal interface IDataContext : IDisposable
     {
         /// <summary>
         /// 消息Id
@@ -39,7 +39,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 调用上下文
     /// </summary>
-    internal class CallerContext : IDataContext, IDisposable
+    internal class CallerContext : IDataContext
     {
         /// <summary>
         /// 消息Id
@@ -75,6 +75,7 @@ namespace MySoft.IoC
 
         public void Dispose()
         {
+            this.Buffer = null;
             this.Caller = null;
             this.Request = null;
             this.Message = null;

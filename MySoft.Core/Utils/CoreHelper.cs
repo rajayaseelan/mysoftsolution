@@ -135,16 +135,17 @@ namespace MySoft
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static object CloneObject(object obj)
+        public static T CloneObject<T>(object obj)
         {
-            if (obj == null) return null;
+            if (obj == null) return default(T);
 
             using (MemoryStream stream = new MemoryStream())
             {
                 BinaryFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(stream, obj);
+
                 stream.Position = 0;
-                return formatter.Deserialize(stream);
+                return (T)formatter.Deserialize(stream);
             }
         }
 

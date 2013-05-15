@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
+using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Channels;
 using MySoft.IoC.Communication.Scs.Communication.Channels.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
@@ -33,8 +35,7 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
             return new TcpCommunicationChannel(
                 TcpHelper.ConnectToServer(
                     new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort),
-                    ConnectTimeout
-                    ));
+                        ConnectTimeout), _helper);
         }
     }
 }

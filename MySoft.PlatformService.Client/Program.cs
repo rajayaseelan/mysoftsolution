@@ -544,7 +544,7 @@ namespace MySoft.PlatformService.Client
 
                     //var value = service.GetUser(new Random().Next(1, 10000));
 
-                    var value = service.GetUser(count, count);
+                    var value = service.GetUsers();
 
                     //var user = service.GetUser(counter);
 
@@ -555,7 +555,9 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Id + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Count + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+
+                    value.Clear();
 
                     //var clients = service1.GetClientList();
 

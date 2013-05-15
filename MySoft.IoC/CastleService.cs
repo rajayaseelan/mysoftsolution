@@ -246,16 +246,9 @@ namespace MySoft.IoC
 
                 server.Stop();
                 container.Dispose();
-                client.Dispose();
             }
-            catch (Exception ex) { }
-            finally
+            catch (Exception ex)
             {
-                httpServer = null;
-                server = null;
-                container = null;
-                status = null;
-                client = null;
             }
         }
 
@@ -271,14 +264,16 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         private void server_ClientConnected(object sender, ServerClientEventArgs e)
         {
+            IScsServer server = sender as IScsServer;
+
             try
             {
-                e.Channel.MessageSent += Channel_MessageSent;
                 e.Channel.MessageReceived += Channel_MessageReceived;
                 e.Channel.MessageError += Channel_MessageError;
 
+                //输出信息
                 var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
-                PushConnectInfo(endPoint, true, e.ConnectCount);
+                PushConnectInfo(server, endPoint, true);
             }
             catch (Exception ex)
             {
@@ -294,35 +289,21 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         private void server_ClientDisconnected(object sender, ServerClientEventArgs e)
         {
+            IScsServer server = sender as IScsServer;
+
             try
             {
-                e.Channel.MessageSent -= Channel_MessageSent;
                 e.Channel.MessageReceived -= Channel_MessageReceived;
                 e.Channel.MessageError -= Channel_MessageError;
 
+                //输出信息
                 var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
-                PushConnectInfo(endPoint, false, e.ConnectCount);
+                PushConnectInfo(server, endPoint, false);
             }
             catch (Exception ex)
             {
                 //写异常日志
                 container.WriteError(ex);
-            }
-        }
-
-        /// <summary>
-        /// 数据发送
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Channel_MessageSent(object sender, MessageEventArgs e)
-        {
-            var channel = sender as IScsServerClient;
-
-            //如果是结果消息
-            if (e.Message is ScsResultMessage)
-            {
-                //统计处理
             }
         }
 
@@ -369,10 +350,6 @@ namespace MySoft.IoC
             {
                 //写异常日志
                 container.WriteError(ex);
-            }
-            finally
-            {
-                e.Message.Dispose();
             }
         }
 
@@ -463,20 +440,20 @@ namespace MySoft.IoC
         /// <summary>
         /// 推送链接信息
         /// </summary>
+        /// <param name="server"></param>
         /// <param name="endPoint"></param>
         /// <param name="connected"></param>
-        /// <param name="count"></param>
-        private void PushConnectInfo(ScsTcpEndPoint endPoint, bool connected, int count)
+        private void PushConnectInfo(IScsServer server, ScsTcpEndPoint endPoint, bool connected)
         {
             if (connected)
             {
                 container.WriteLog(string.Format("[{2}/{3}] User connection ({0}:{1}).",
-                                    endPoint.IpAddress, endPoint.TcpPort, count, CommunicationHelper.Count), LogType.Information);
+                                    endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count, server.CommunicationCount), LogType.Information);
             }
             else
             {
-                container.WriteLog(string.Format("[{2}] User Disconnection ({0}:{1}).",
-                                    endPoint.IpAddress, endPoint.TcpPort, count), LogType.Error);
+                container.WriteLog(string.Format("[{2}/{3}] User Disconnection ({0}:{1}).",
+                                    endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count, server.CommunicationCount), LogType.Error);
             }
 
             //推送连接信息

@@ -13,11 +13,6 @@ namespace MySoft.IoC.Communication.Scs.Server
         public IScsServerClient Channel { get; private set; }
 
         /// <summary>
-        /// Get or set server client count.
-        /// </summary>
-        public int ConnectCount { get; set; }
-
-        /// <summary>
         /// Creates a new ServerClientEventArgs object.
         /// </summary>
         /// <param name="channel">Client that is associated with this event</param>

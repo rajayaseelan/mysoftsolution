@@ -14,8 +14,6 @@ namespace MySoft.IoC.Communication.Scs.Server
     {
         #region Public events
 
-        private int ConnectCount = 0;
-
         /// <summary>
         /// This event is raised when a new client is connected.
         /// </summary>
@@ -39,6 +37,11 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// A collection of clients that are connected to the server.
         /// </summary>
         public ThreadSafeSortedList<long, IScsServerClient> Clients { get; private set; }
+
+        /// <summary>
+        /// Get communication count.
+        /// </summary>
+        public abstract int CommunicationCount { get; }
 
         #endregion
 
@@ -127,7 +130,6 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 Clients[channel.ClientId] = channel;
 
-                Interlocked.Increment(ref ConnectCount);
                 OnClientConnected(channel);
             }
 
@@ -143,15 +145,12 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             var channel = (IScsServerClient)sender;
 
-            channel.WireProtocol.Reset();
-            channel.WireProtocol = null;
             channel.Disconnected -= Client_Disconnected;
 
             lock (Clients)
             {
                 Clients.Remove(channel.ClientId);
 
-                Interlocked.Decrement(ref ConnectCount);
                 OnClientDisconnected(channel);
             }
         }
@@ -171,7 +170,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 try
                 {
-                    handler(this, new ServerClientEventArgs(channel) { ConnectCount = ConnectCount });
+                    handler(this, new ServerClientEventArgs(channel));
                 }
                 catch
                 {
@@ -190,7 +189,7 @@ namespace MySoft.IoC.Communication.Scs.Server
             {
                 try
                 {
-                    handler(this, new ServerClientEventArgs(client) { ConnectCount = ConnectCount });
+                    handler(this, new ServerClientEventArgs(client));
                 }
                 catch
                 {

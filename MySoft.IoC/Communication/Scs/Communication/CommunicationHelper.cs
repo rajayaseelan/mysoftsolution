@@ -7,21 +7,17 @@ namespace MySoft.IoC.Communication.Scs.Communication
     /// </summary>
     internal class CommunicationHelper
     {
-        /// <summary>
-        /// Max communication count.
-        /// </summary>
-        private const int MaxCommunicationCount = 10000;
-
-        private static readonly SocketAsyncEventArgsPool pool;
+        private volatile SocketAsyncEventArgsPool pool;
 
         /// <summary>
         /// 实例化CommunicationHelper
         /// </summary>
-        static CommunicationHelper()
+        /// <param name="maxCommunicationCount"></param>
+        public CommunicationHelper(int maxCommunicationCount)
         {
-            pool = new SocketAsyncEventArgsPool(MaxCommunicationCount);
+            this.pool = new SocketAsyncEventArgsPool(maxCommunicationCount);
 
-            for (int i = 0; i < MaxCommunicationCount; i++)
+            for (int i = 0; i < maxCommunicationCount; i++)
             {
                 pool.Push(new TcpSocketAsyncEventArgs());
             }
@@ -30,7 +26,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// <summary>
         /// Pool count.
         /// </summary>
-        internal static int Count
+        internal int Count
         {
             get { return pool.Count; }
         }
@@ -40,7 +36,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// </summary>
         /// <param name="channel"></param>
         /// <returns></returns>
-        internal static SocketAsyncEventArgs Pop(ICommunicationProtocol channel)
+        internal SocketAsyncEventArgs Pop(ICommunicationProtocol channel)
         {
             lock (pool)
             {
@@ -60,7 +56,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// Push SocketAsyncEventArgs.
         /// </summary>
         /// <returns></returns>
-        internal static void Push(SocketAsyncEventArgs item)
+        internal void Push(SocketAsyncEventArgs item)
         {
             if (item == null) return;
 

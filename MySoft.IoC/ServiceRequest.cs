@@ -157,10 +157,6 @@ namespace MySoft.IoC
                 //写异常日志
                 client_MessageError(sender, new ErrorEventArgs(ex));
             }
-            finally
-            {
-                e.Message.Dispose();
-            }
         }
 
         /// <summary>

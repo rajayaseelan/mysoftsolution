@@ -55,10 +55,5 @@ namespace MySoft.IoC.Communication.Scs.Communication.Messages
                        ? string.Format("ScsRawDataMessage [{0}]: {1} bytes", MessageId, messageLength)
                        : string.Format("ScsRawDataMessage [{0}] Replied To [{1}]: {2} bytes", MessageId, RepliedMessageId, messageLength);
         }
-
-        public override void Dispose()
-        {
-            this.MessageData = null;
-        }
     }
 }

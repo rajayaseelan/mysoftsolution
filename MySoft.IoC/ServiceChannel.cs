@@ -10,7 +10,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务通道
     /// </summary>
-    internal class ServiceChannel : IDisposable
+    internal class ServiceChannel
     {
         public event EventHandler<CallEventArgs> Callback;
 
@@ -170,18 +170,5 @@ namespace MySoft.IoC
                 throw error;
             }
         }
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        public void Dispose()
-        {
-            this.caller = null;
-            this.status = null;
-        }
-
-        #endregion
     }
 }

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Xml;
@@ -15,6 +18,25 @@ namespace MySoft
     /// </summary>
     public static class SerializationManager
     {
+        #region Nested classes
+
+        /// <summary>
+        /// This class is used in deserializing to allow deserializing objects that are defined
+        /// in assemlies that are load in runtime (like PlugIns).
+        /// </summary>
+        internal sealed class DeserializationAppDomainBinder : SerializationBinder
+        {
+            public override Type BindToType(string assemblyName, string typeName)
+            {
+                var toAssemblyName = assemblyName.Split(',')[0];
+                return (from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                        where assembly.FullName.Split(',')[0] == toAssemblyName
+                        select assembly.GetType(typeName)).FirstOrDefault();
+            }
+        }
+
+        #endregion
+
         #region Nested Types
 
         /// <summary>
@@ -128,8 +150,14 @@ namespace MySoft
             using (var deserializeMemoryStream = new MemoryStream(buffer))
             {
                 deserializeMemoryStream.Position = 0;
-                var binaryFormatter = new BinaryFormatter();
-                //b.TypeFormat = FormatterTypeStyle.TypesWhenNeeded;
+
+                //Deserialize the message
+                var binaryFormatter = new BinaryFormatter
+                {
+                    AssemblyFormat = FormatterAssemblyStyle.Simple,
+                    FilterLevel = TypeFilterLevel.Full,
+                    Binder = new DeserializationAppDomainBinder()
+                };
 
                 return binaryFormatter.Deserialize(deserializeMemoryStream);
             }
