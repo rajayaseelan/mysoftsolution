@@ -356,9 +356,10 @@ namespace MySoft.PlatformService
                 {
                     using (TransactedInstaller installer = GetTransactedInstaller())
                     {
-                        installer.Install(new Hashtable());
-                        installer.Installers.Clear();
-                        installer.Context = null;
+                        IDictionary savedState = new Hashtable();
+
+                        installer.Install(savedState);
+                        installer.Commit(savedState);
                     }
                 }
                 catch (Exception ex)
@@ -394,8 +395,7 @@ namespace MySoft.PlatformService
                     using (TransactedInstaller installer = GetTransactedInstaller())
                     {
                         installer.Uninstall(null);
-                        installer.Installers.Clear();
-                        installer.Context = null;
+                        installer.Commit(null);
                     }
                 }
                 catch (Exception ex)

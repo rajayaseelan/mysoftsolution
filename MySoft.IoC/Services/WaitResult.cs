@@ -38,9 +38,9 @@ namespace MySoft.IoC.Services
             try
             {
                 if (timeout == TimeSpan.Zero)
-                    return ev.WaitOne(Timeout.Infinite, false);
+                    return ev.WaitOne(Timeout.Infinite, true);
                 else
-                    return ev.WaitOne(timeout, false);
+                    return ev.WaitOne(timeout, true);
             }
             catch
             {

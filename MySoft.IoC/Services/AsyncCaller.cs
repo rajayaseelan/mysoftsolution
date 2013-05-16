@@ -144,10 +144,7 @@ namespace MySoft.IoC.Services
             //调用服务
             var ar = InvokeService(callKey, service, context, reqMsg);
 
-            ar.AsyncWaitHandle.WaitOne(Timeout.Infinite, false);
-
-            //释放资源，必写
-            ar.AsyncWaitHandle.Close();
+            ar.AsyncWaitHandle.WaitOne(Timeout.Infinite, true);
 
             try
             {
@@ -162,6 +159,11 @@ namespace MySoft.IoC.Services
                 var resMsg = IoCHelper.GetResponse(reqMsg, ex);
 
                 return new ResponseItem(resMsg);
+            }
+            finally
+            {
+                //释放资源，必写
+                ar.AsyncWaitHandle.Close();
             }
         }
 

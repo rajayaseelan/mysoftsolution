@@ -434,13 +434,13 @@ namespace MySoft.IoC
         {
             try
             {
+                //响应消息
+                MessageCenter.Instance.Notify(callArgs);
+
                 if (Completed != null)
                 {
                     Completed(sender, callArgs);
                 }
-
-                //响应消息
-                MessageCenter.Instance.Notify(callArgs);
             }
             catch
             {
