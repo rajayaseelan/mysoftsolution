@@ -186,9 +186,11 @@ namespace MySoft.IoC
                              AppName = p.AppName,
                              IPAddress = p.IPAddress,
                              AppPath = p.AppPath,
+                             AppVersion = p.AppVersion
                          })
                          .Select(p => new ClientInfo
                          {
+                             AppVersion = p.Key.AppVersion,
                              AppPath = p.Key.AppPath,
                              AppName = p.Key.AppName,
                              IPAddress = p.Key.IPAddress,
@@ -209,6 +211,7 @@ namespace MySoft.IoC
                         .GroupBy(p => p.IpAddress)
                         .Select(g => new ClientInfo
                         {
+                            AppVersion = "Unknown Version",
                             AppPath = "Unknown Path",
                             AppName = "Unknown",
                             IPAddress = g.Key,

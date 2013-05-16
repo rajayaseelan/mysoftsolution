@@ -328,9 +328,10 @@ namespace MySoft.IoC.Services
                 if (resMsg != null)
                 {
                     //实例化新对象
-                    long elapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
+                    resMsg = NewResponse(reqMsg, resMsg);
 
-                    resMsg = NewResponse(reqMsg, resMsg, elapsedTime);
+                    //设置时间
+                    resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
                 }
 
                 return (resMsg == null) ? null : new ResponseItem(resMsg);
@@ -349,9 +350,8 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
-        /// <param name="elapsedTime"></param>
         /// <returns></returns>
-        private ResponseMessage NewResponse(RequestMessage reqMsg, ResponseMessage resMsg, long elapsedTime)
+        private ResponseMessage NewResponse(RequestMessage reqMsg, ResponseMessage resMsg)
         {
             var response = new ResponseMessage
             {
@@ -359,7 +359,7 @@ namespace MySoft.IoC.Services
                 ServiceName = resMsg.ServiceName,
                 MethodName = resMsg.MethodName,
                 Parameters = resMsg.Parameters,
-                ElapsedTime = elapsedTime,
+                ElapsedTime = resMsg.ElapsedTime,
                 Error = resMsg.Error,
                 Value = resMsg.Value
             };
