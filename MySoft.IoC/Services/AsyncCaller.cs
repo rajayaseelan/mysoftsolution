@@ -58,28 +58,46 @@ namespace MySoft.IoC.Services
                 //获取callerKey
                 var callKey = GetCallerKey(reqMsg, context.Caller);
 
+                //返回响应信息
+                return InvokeResponse(callKey, service, context, reqMsg);
+            }
+            finally
+            {
+                //释放一个控制器
+                semaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// 返回响应信息
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="service"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseItem InvokeResponse(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        {
+            bool invokeService;
+
+            var manager = GetManager(callKey, out invokeService);
+
+            if (invokeService)
+            {
+                //获取响应信息
+                var resMsg = GetResponseItem(callKey, service, context, reqMsg);
+
+                //设置响应信息
+                SetResponseItem(callKey, resMsg);
+
+                return resMsg;
+            }
+            else
+            {
                 //等待响应
                 using (var channelResult = new ChannelResult(reqMsg))
                 {
-                    bool isInvokeService = false;
-
-                    lock (hashtable)
-                    {
-                        if (!hashtable.ContainsKey(callKey))
-                        {
-                            hashtable[callKey] = new QueueManager();
-                            isInvokeService = true;
-                        }
-
-                        //添加到队列
-                        hashtable[callKey].Add(channelResult);
-                    }
-
-                    if (isInvokeService)
-                    {
-                        //调用服务
-                        InvokeService(callKey, service, context, reqMsg);
-                    }
+                    manager.Add(channelResult);
 
                     channelResult.WaitOne();
 
@@ -87,10 +105,90 @@ namespace MySoft.IoC.Services
                     return channelResult.Message;
                 }
             }
-            finally
+        }
+
+        /// <summary>
+        /// 获取管理器
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="invokeService"></param>
+        /// <returns></returns>
+        private QueueManager GetManager(string callKey, out bool invokeService)
+        {
+            //是否异步调用变量
+            invokeService = false;
+
+            lock (hashtable)
             {
-                //释放一个控制器
-                semaphore.Release();
+                if (!hashtable.ContainsKey(callKey))
+                {
+                    hashtable[callKey] = new QueueManager();
+
+                    invokeService = true;
+                }
+            }
+
+            return hashtable[callKey];
+        }
+
+        /// <summary>
+        /// 获取响应信息
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="service"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseItem GetResponseItem(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        {
+            //调用服务
+            var ar = InvokeService(callKey, service, context, reqMsg);
+
+            ar.AsyncWaitHandle.WaitOne(Timeout.Infinite, false);
+
+            //释放资源，必写
+            ar.AsyncWaitHandle.Close();
+
+            try
+            {
+                //异步回调
+                var caller = ar.AsyncState as AsyncMethodCaller;
+
+                return caller.EndInvoke(ar);
+            }
+            catch (Exception ex)
+            {
+                //获取异常响应
+                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
+
+                return new ResponseItem(resMsg);
+            }
+        }
+
+        /// <summary>
+        /// 设置响应信息
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="resMsg"></param>
+        private void SetResponseItem(string callKey, ResponseItem resMsg)
+        {
+            lock (hashtable)
+            {
+                if (hashtable.ContainsKey(callKey))
+                {
+                    try
+                    {
+                        var manager = hashtable[callKey];
+
+                        //设置响应消息
+                        manager.Set(resMsg);
+                    }
+                    finally
+                    {
+                        //移除元素
+                        hashtable.Remove(callKey);
+                    }
+                }
             }
         }
 
@@ -101,7 +199,7 @@ namespace MySoft.IoC.Services
         /// <param name="service"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
-        private void InvokeService(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        private IAsyncResult InvokeService(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
         {
             //定义委托
             AsyncMethodCaller caller = null;
@@ -119,52 +217,7 @@ namespace MySoft.IoC.Services
             }
 
             //开始异步调用
-            caller.BeginInvoke(callKey, service, context, reqMsg, AsyncCallback, new ArrayList { callKey, caller });
-        }
-
-        /// <summary>
-        /// 回调方法
-        /// </summary>
-        /// <param name="ar"></param>
-        private void AsyncCallback(IAsyncResult ar)
-        {
-            var arr = ar.AsyncState as ArrayList;
-
-            QueueManager manager = null;
-
-            lock (hashtable)
-            {
-                //回调方法
-                var callKey = Convert.ToString(arr[0]);
-
-                if (hashtable.ContainsKey(callKey))
-                {
-                    //获取管理Key
-                    manager = hashtable[callKey] as QueueManager;
-
-                    //移除元素
-                    hashtable.Remove(callKey);
-                }
-            }
-
-            try
-            {
-                if (manager != null)
-                {
-                    //转换成函数
-                    var caller = arr[1] as AsyncMethodCaller;
-
-                    //响应请求
-                    manager.Set(caller.EndInvoke(ar));
-                }
-            }
-            finally
-            {
-                if (manager != null) manager.Dispose();
-
-                //释放资源
-                ar.AsyncWaitHandle.Close();
-            }
+            return caller.BeginInvoke(callKey, service, context, reqMsg, null, caller);
         }
 
         /// <summary>

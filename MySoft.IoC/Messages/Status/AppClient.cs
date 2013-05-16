@@ -9,6 +9,11 @@ namespace MySoft.IoC.Messages
     public class AppClient
     {
         /// <summary>
+        /// 版本号
+        /// </summary>
+        public string AppVersion { get; set; }
+
+        /// <summary>
         /// 应用路径
         /// </summary>
         public string AppPath { get; set; }

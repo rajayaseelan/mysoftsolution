@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Configuration.Install;
 using System.IO;
 using System.ServiceProcess;
+using System.Threading;
 using MySoft.Installer;
 using MySoft.Installer.Configuration;
 using MySoft.Logger;
@@ -15,16 +16,36 @@ namespace MySoft.PlatformService
     /// </summary>
     public class InstallerServer
     {
+        public static readonly InstallerServer Instance = new InstallerServer();
+
         private IServiceRun service;
 
         /// <summary>
-        /// 当前服务
+        /// 获取WinService
         /// </summary>
-        public IServiceRun GetWindowsService()
+        /// <returns></returns>
+        public IServiceRun GetWinService()
+        {
+            return service;
+        }
+
+        /// <summary>
+        /// 获取Win配置项
+        /// </summary>
+        /// <returns></returns>
+        public InstallerConfiguration GetWinConfig()
+        {
+            return InstallerConfiguration.GetConfig();
+        }
+
+        /// <summary>
+        /// 实例化InstallerServer
+        /// </summary>
+        private InstallerServer()
         {
             var config = InstallerConfiguration.GetConfig();
 
-            if (config == null) return null;
+            if (config == null) return;
 
             if (service == null)
             {
@@ -34,8 +55,8 @@ namespace MySoft.PlatformService
                 {
                     var type = Type.GetType(config.ServiceType);
                     if (type == null) throw new Exception(string.Format("加载服务{0}失败！", config.ServiceType));
-                    this.service = (IServiceRun)Activator.CreateInstance(type);
-                    this.service.Init();
+
+                    this.service = Activator.CreateInstance(type) as IServiceRun;
                 }
                 catch (Exception ex)
                 {
@@ -49,8 +70,6 @@ namespace MySoft.PlatformService
 
                 #endregion
             }
-
-            return service;
         }
 
         /// <summary>
@@ -107,11 +126,18 @@ namespace MySoft.PlatformService
             {
                 foreach (var controller in list)
                 {
-                    Console.WriteLine("------------------------------------------------------------------------");
-                    Console.WriteLine("服务名：{0} ({1})", controller.ServiceName, controller.Status);
-                    Console.WriteLine("显示名：{0}", controller.DisplayName);
-                    Console.WriteLine("描  述：{0}", controller.Description);
-                    Console.WriteLine("路  径：{0}", controller.ServicePath);
+                    try
+                    {
+                        Console.WriteLine("------------------------------------------------------------------------");
+                        Console.WriteLine("服务名：{0} ({1})", controller.ServiceName, controller.Status);
+                        Console.WriteLine("显示名：{0}", controller.DisplayName);
+                        Console.WriteLine("描  述：{0}", controller.Description);
+                        Console.WriteLine("路  径：{0}", controller.ServicePath);
+                    }
+                    finally
+                    {
+                        controller.Dispose();
+                    }
                 }
                 Console.WriteLine("------------------------------------------------------------------------");
             }
@@ -137,18 +163,24 @@ namespace MySoft.PlatformService
 
             if (controller != null)
             {
-                if (controller.Status == ServiceControllerStatus.Running)
+                try
                 {
-                    Console.WriteLine("服务已经启动,不能从控制台启动,请先停止服务后再执行该命令！");
-                    return false;
+                    if (controller.Status == ServiceControllerStatus.Running)
+                    {
+                        Console.WriteLine("服务已经启动,不能从控制台启动,请先停止服务后再执行该命令！");
+                        return false;
+                    }
+                }
+                finally
+                {
+                    controller.Dispose();
                 }
             }
 
-            var winrun = GetWindowsService();
-
-            if (winrun != null)
+            if (service != null)
             {
-                winrun.Start(startMode, state);
+                service.Init();
+                service.Start(startMode, state);
 
                 Console.WriteLine("控制台已经启动......");
                 return true;
@@ -165,11 +197,9 @@ namespace MySoft.PlatformService
         /// </summary>
         public void StopConsole()
         {
-            var winrun = GetWindowsService();
-
-            if (winrun != null)
+            if (service != null)
             {
-                winrun.Stop();
+                service.Stop();
 
                 Console.WriteLine("控制台已经退出......");
             }
@@ -203,28 +233,35 @@ namespace MySoft.PlatformService
 
             if (controller != null)
             {
-                if (controller.Status == ServiceControllerStatus.Stopped)
+                try
                 {
-                    Console.WriteLine("正在启动服务{0}......", serviceName);
-                    try
+                    if (controller.Status == ServiceControllerStatus.Stopped)
                     {
-                        controller.Start();
-                        controller.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(30));
-                        controller.Refresh();
+                        Console.WriteLine("正在启动服务{0}......", serviceName);
+                        try
+                        {
+                            controller.Start();
+                            controller.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(30));
+                            controller.Refresh();
 
-                        if (controller.Status == ServiceControllerStatus.Running)
-                            Console.WriteLine("启动服务{0}成功！", serviceName);
-                        else
-                            Console.WriteLine("启动服务{0}失败！", serviceName);
+                            if (controller.Status == ServiceControllerStatus.Running)
+                                Console.WriteLine("启动服务{0}成功！", serviceName);
+                            else
+                                Console.WriteLine("启动服务{0}失败！", serviceName);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Console.WriteLine(ex.Message);
+                        Console.WriteLine("服务{0}已经启动！", serviceName);
                     }
                 }
-                else
+                finally
                 {
-                    Console.WriteLine("服务{0}已经启动！", serviceName);
+                    controller.Dispose();
                 }
             }
             else
@@ -261,28 +298,35 @@ namespace MySoft.PlatformService
 
             if (controller != null)
             {
-                if (controller.Status == ServiceControllerStatus.Running)
+                try
                 {
-                    Console.WriteLine("正在停止服务{0}.....", serviceName);
-                    try
+                    if (controller.Status == ServiceControllerStatus.Running)
                     {
-                        controller.Stop();
-                        controller.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(30));
-                        controller.Refresh();
+                        Console.WriteLine("正在停止服务{0}.....", serviceName);
+                        try
+                        {
+                            controller.Stop();
+                            controller.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(30));
+                            controller.Refresh();
 
-                        if (controller.Status == ServiceControllerStatus.Stopped)
-                            Console.WriteLine("停止服务{0}成功！", serviceName);
-                        else
-                            Console.WriteLine("停止服务{0}失败！", serviceName);
+                            if (controller.Status == ServiceControllerStatus.Stopped)
+                                Console.WriteLine("停止服务{0}成功！", serviceName);
+                            else
+                                Console.WriteLine("停止服务{0}失败！", serviceName);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Console.WriteLine(ex.Message);
+                        Console.WriteLine("服务{0}已经停止！", serviceName);
                     }
                 }
-                else
+                finally
                 {
-                    Console.WriteLine("服务{0}已经停止！", serviceName);
+                    controller.Dispose();
                 }
             }
             else
@@ -357,6 +401,10 @@ namespace MySoft.PlatformService
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    controller.Dispose();
                 }
             }
             else

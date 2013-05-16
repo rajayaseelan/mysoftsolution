@@ -64,15 +64,8 @@ namespace MySoft.IoC
 
             //服务端注入内存处理
             this.container = new SimpleServiceContainer(CastleFactoryType.Local);
-            this.container.OnError += error =>
-            {
-                if (OnError != null) OnError(error);
-                else SimpleLog.Instance.WriteLog(error);
-            };
-            this.container.OnLog += (log, type) =>
-            {
-                if (OnLog != null) OnLog(log, type);
-            };
+            this.container.OnError += Instance_OnError;
+            this.container.OnLog += Instance_OnLog;
 
             //注册状态服务
             this.status = new ServerStatusService(server, config, container);
@@ -115,11 +108,30 @@ namespace MySoft.IoC
             }
 
             //绑定事件
-            MessageCenter.Instance.OnLog += (log, type) => container.WriteLog(log, type);
-            MessageCenter.Instance.OnError += error => container.WriteError(error);
+            MessageCenter.Instance.OnLog += Instance_OnLog;
+            MessageCenter.Instance.OnError += Instance_OnError;
 
             //发布日志
             PublishService(status.GetServiceList());
+        }
+
+        /// <summary>
+        /// 正常日志
+        /// </summary>
+        /// <param name="log"></param>
+        /// <param name="type"></param>
+        private void Instance_OnLog(string log, LogType type)
+        {
+            if (OnLog != null) OnLog(log, type);
+        }
+
+        /// <summary>
+        /// 错误日志
+        /// </summary>
+        /// <param name="exception"></param>
+        private void Instance_OnError(Exception exception)
+        {
+            if (OnError != null) OnError(exception);
         }
 
         private void PublishService(IList<ServiceInfo> list)
@@ -193,21 +205,12 @@ namespace MySoft.IoC
                     container.WriteLog("Http server stoped.", LogType.Normal);
                 };
 
-                httpServer.OnServerException += httpServer_OnServerException;
+                httpServer.OnServerException += Instance_OnError;
                 httpServer.Start();
             }
 
             //启动服务
             server.Start();
-        }
-
-        /// <summary>
-        /// HttpServer异常
-        /// </summary>
-        /// <param name="ex"></param>
-        void httpServer_OnServerException(Exception ex)
-        {
-            if (OnError != null) OnError(ex);
         }
 
         /// <summary>
@@ -245,10 +248,25 @@ namespace MySoft.IoC
                 }
 
                 server.Stop();
-                container.Dispose();
+
+                httpServer.OnServerException -= Instance_OnError;
+
+                container.OnError -= Instance_OnError;
+                container.OnLog -= Instance_OnLog;
+
+                //解除事件
+                MessageCenter.Instance.OnLog -= Instance_OnLog;
+                MessageCenter.Instance.OnError -= Instance_OnError;
             }
-            catch (Exception ex)
+            catch (Exception ex) { }
+            finally
             {
+                container.Dispose();
+
+                httpServer = null;
+                server = null;
+                container = null;
+                status = null;
             }
         }
 
@@ -328,6 +346,7 @@ namespace MySoft.IoC
                     {
                         var client = new AppClient
                         {
+                            AppVersion = reqMsg.AppVersion,
                             AppName = reqMsg.AppName,
                             AppPath = reqMsg.AppPath,
                             IPAddress = reqMsg.IPAddress,
@@ -363,6 +382,7 @@ namespace MySoft.IoC
             //服务参数信息
             var caller = new AppCaller
             {
+                AppVersion = reqMsg.AppVersion,
                 AppPath = reqMsg.AppPath,
                 AppName = reqMsg.AppName,
                 IPAddress = reqMsg.IPAddress,

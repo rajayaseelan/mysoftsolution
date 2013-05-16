@@ -1,9 +1,6 @@
 ﻿using System;
 using System.ServiceProcess;
-using System.Threading;
 using MySoft.Installer;
-using MySoft.Installer.Configuration;
-using MySoft.Logger;
 
 namespace MySoft.PlatformService
 {
@@ -12,25 +9,22 @@ namespace MySoft.PlatformService
         [STAThread]
         static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Program_UnhandledException);
-            Thread.GetDomain().UnhandledException += new UnhandledExceptionEventHandler(Program_UnhandledException);
-
-            InstallerServer server = new InstallerServer();
             string optionalArgs = string.Empty;
 
             // 运行服务
             if (args.Length == 0)
             {
-                var config = InstallerConfiguration.GetConfig();
-                var service = server.GetWindowsService();
+                var service = InstallerServer.Instance.GetWinService();
 
                 if (service == null)
                 {
+                    var config = InstallerServer.Instance.GetWinConfig();
+
                     throw new Exception(string.Format("启动服务{0}失败，详情请查看错误日志！", config.ServiceName));
                 }
 
                 ServiceBase[] ServicesToRun;
-                ServicesToRun = new ServiceBase[] { new BusinessService(service) };
+                ServicesToRun = new ServiceBase[] { new BusinessService() };
                 ServiceBase.Run(ServicesToRun);
                 return;
             }
@@ -68,7 +62,7 @@ namespace MySoft.PlatformService
                                 string status = null;
                                 if (args.Length >= 2) contains = args[1].Trim();
                                 if (args.Length >= 3) status = args[2].Trim();
-                                server.ListService(contains, status);
+                                InstallerServer.Instance.ListService(contains, status);
                             }
                             break;
                         case "/c":
@@ -76,10 +70,10 @@ namespace MySoft.PlatformService
                         case "-c":
                         case "-console":
                             {
-                                if (server.StartConsole(StartMode.Console, null))
+                                if (InstallerServer.Instance.StartConsole(StartMode.Console, null))
                                 {
                                     Console.ReadLine();
-                                    server.StopConsole();
+                                    InstallerServer.Instance.StopConsole();
                                 }
                                 else
                                 {
@@ -94,10 +88,10 @@ namespace MySoft.PlatformService
                             {
                                 object state = null;
                                 if (args.Length >= 2) state = args[1].Trim();
-                                if (server.StartConsole(StartMode.Debug, state))
+                                if (InstallerServer.Instance.StartConsole(StartMode.Debug, state))
                                 {
                                     Console.ReadLine();
-                                    server.StopConsole();
+                                    InstallerServer.Instance.StopConsole();
                                 }
                                 else
                                 {
@@ -112,7 +106,7 @@ namespace MySoft.PlatformService
                             {
                                 string service = null;
                                 if (args.Length == 2) service = args[1].Trim();
-                                server.StartService(service);
+                                InstallerServer.Instance.StartService(service);
                             }
                             break;
                         case "/p":
@@ -122,7 +116,7 @@ namespace MySoft.PlatformService
                             {
                                 string service = null;
                                 if (args.Length == 2) service = args[1].Trim();
-                                server.StopService(service);
+                                InstallerServer.Instance.StopService(service);
                             }
                             break;
                         case "/r":
@@ -132,21 +126,21 @@ namespace MySoft.PlatformService
                             {
                                 string service = null;
                                 if (args.Length == 2) service = args[1].Trim();
-                                server.StopService(service);
-                                server.StartService(service);
+                                InstallerServer.Instance.StopService(service);
+                                InstallerServer.Instance.StartService(service);
                             }
                             break;
                         case "/i":
                         case "/install":
                         case "-i":
                         case "-install":
-                            server.InstallService();
+                            InstallerServer.Instance.InstallService();
                             break;
                         case "/u":
                         case "/uninstall":
                         case "-u":
                         case "-uninstall":
-                            server.UninstallService();
+                            InstallerServer.Instance.UninstallService();
                             break;
                         default:
                             Console.WriteLine("输入的命令无效，输入/?显示帮助！");
@@ -158,12 +152,6 @@ namespace MySoft.PlatformService
             {
                 Console.BackgroundColor = color;
             }
-        }
-
-        static void Program_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            var exception = e.ExceptionObject as Exception;
-            SimpleLog.Instance.WriteLogForDir("ServiceRun", exception);
         }
 
         static void PrintHelp()

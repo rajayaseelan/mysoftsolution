@@ -379,7 +379,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -539,7 +539,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 30);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1);
                     //var value = service.GetUsersString(count, out length);
 
                     //var value = service.GetUser(new Random().Next(1, 10000));
@@ -557,7 +557,7 @@ namespace MySoft.PlatformService.Client
 
                     Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Count + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
-                    value.Clear();
+                    //value.Clear();
 
                     //var clients = service1.GetClientList();
 

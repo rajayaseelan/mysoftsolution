@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ServiceProcess;
+using System.Threading;
 using MySoft.Installer;
 using MySoft.Logger;
 
@@ -8,10 +9,24 @@ namespace MySoft.PlatformService
     public partial class BusinessService : ServiceBase
     {
         private readonly IServiceRun service;
-        public BusinessService(IServiceRun service)
+
+        public BusinessService()
         {
-            this.service = service;
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(BusinessService_UnhandledException);
+            Thread.GetDomain().UnhandledException += new UnhandledExceptionEventHandler(BusinessService_UnhandledException);
+
+            //获取Win服务项
+            this.service = InstallerServer.Instance.GetWinService();
+            this.service.Init();
+
             InitializeComponent();
+        }
+
+        static void BusinessService_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var exception = e.ExceptionObject as Exception;
+
+            SimpleLog.Instance.WriteLogForDir("ServiceRun", exception);
         }
 
         protected override void OnStart(string[] args)

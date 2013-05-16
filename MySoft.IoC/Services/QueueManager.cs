@@ -6,7 +6,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 队列管理
     /// </summary>
-    internal class QueueManager : IDisposable
+    internal class QueueManager
     {
         private Queue<ChannelResult> queues;
 
@@ -47,27 +47,5 @@ namespace MySoft.IoC.Services
                 }
             }
         }
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        public void Dispose()
-        {
-            lock (queues)
-            {
-                while (queues.Count > 0)
-                {
-                    var result = queues.Dequeue();
-                    result.Dispose();
-                }
-            }
-
-            this.queues.Clear();
-            this.queues = null;
-        }
-
-        #endregion
     }
 }

@@ -93,6 +93,7 @@ namespace MySoft.IoC.Messages
 
         private string appName;
         private string appPath;
+        private string appVersion;
         private string hostName;
         private string requestAddress;
         private bool invokeMethod;
@@ -129,6 +130,21 @@ namespace MySoft.IoC.Messages
             set
             {
                 appPath = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the appVersion.
+        /// </summary>
+        public string AppVersion
+        {
+            get
+            {
+                return appVersion;
+            }
+            set
+            {
+                appVersion = value;
             }
         }
 

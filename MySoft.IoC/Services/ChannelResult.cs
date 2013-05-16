@@ -24,19 +24,19 @@ namespace MySoft.IoC.Services
                 {
                     //实例化ResponseItem
                     return new ResponseItem()
-                    {
-                        Count = count,
-                        Buffer = buffer
-                    };
+                                {
+                                    Count = count,
+                                    Buffer = buffer
+                                };
                 }
                 else
                 {
                     //实例化ResponseItem
                     return new ResponseItem(waitResult.Message)
-                            {
-                                Count = count,
-                                Buffer = buffer
-                            };
+                                {
+                                    Count = count,
+                                    Buffer = buffer
+                                };
                 }
             }
         }
@@ -83,15 +83,15 @@ namespace MySoft.IoC.Services
             else
             {
                 var resMsg = new ResponseMessage
-                {
-                    TransactionId = reqMsg.TransactionId,
-                    ServiceName = resItem.Message.ServiceName,
-                    MethodName = resItem.Message.MethodName,
-                    Parameters = resItem.Message.Parameters,
-                    ElapsedTime = resItem.Message.ElapsedTime,
-                    Error = resItem.Message.Error,
-                    Value = resItem.Message.Value
-                };
+                                {
+                                    TransactionId = reqMsg.TransactionId,
+                                    ServiceName = resItem.Message.ServiceName,
+                                    MethodName = resItem.Message.MethodName,
+                                    Parameters = resItem.Message.Parameters,
+                                    ElapsedTime = resItem.Message.ElapsedTime,
+                                    Error = resItem.Message.Error,
+                                    Value = resItem.Message.Value
+                                };
 
                 return waitResult.Set(resMsg);
             }

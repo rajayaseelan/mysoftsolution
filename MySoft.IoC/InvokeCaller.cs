@@ -47,6 +47,7 @@ namespace MySoft.IoC
             var reqMsg = new RequestMessage
             {
                 InvokeMethod = true,
+                AppVersion = "v2.5",                                    //版本号
                 AppName = config.AppName,                               //应用名称
                 AppPath = AppDomain.CurrentDomain.BaseDirectory,        //应用路径
                 HostName = hostName,                                    //客户端名称
@@ -87,7 +88,8 @@ namespace MySoft.IoC
         {
             var caller = new AppCaller
             {
-                AppPath = AppDomain.CurrentDomain.BaseDirectory,
+                AppVersion = reqMsg.AppVersion,
+                AppPath = reqMsg.AppPath,
                 AppName = reqMsg.AppName,
                 IPAddress = reqMsg.IPAddress,
                 HostName = reqMsg.HostName,
