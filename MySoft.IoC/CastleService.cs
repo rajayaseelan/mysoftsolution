@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
@@ -29,7 +30,7 @@ namespace MySoft.IoC
         private IScsServer server;
         private ScsTcpEndPoint epServer;
         private ServerStatusService status;
-        private ServiceChannel client;
+        private ServiceCaller caller;
 
         /// <summary>
         /// Gets the service container.
@@ -72,11 +73,8 @@ namespace MySoft.IoC
             container.Register(typeof(IStatusService), status);
 
             //实例化调用者
-            var caller = new AsyncCaller(true, config.MaxCaller);
-            var scaller = new ServiceCaller(config, container, caller);
-
-            this.client = new ServiceChannel(scaller, status, container);
-            this.client.Callback += NotifyResult;
+            var acaller = new AsyncCaller(true, config.MaxCaller);
+            this.caller = new ServiceCaller(config, container, acaller);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -91,7 +89,7 @@ namespace MySoft.IoC
                 //判断是否配置了NodeResolverType
                 nodeResolver = Create<IServerNodeResolver>(config.NodeResolverType) ?? new DefaultNodeResolver();
 
-                var httpCaller = new HttpServiceCaller(config, container, caller);
+                var httpCaller = new HttpServiceCaller(config, container, acaller);
 
                 //刷新服务委托
                 status.OnRefresh += (sender, args) => httpCaller.InitCaller(apiResolver);
@@ -267,6 +265,7 @@ namespace MySoft.IoC
                 server = null;
                 container = null;
                 status = null;
+                caller = null;
             }
         }
 
@@ -375,6 +374,38 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="messageId"></param>
+        /// <param name="reqMsg"></param>
+        private void SendResponse(IScsServerClient channel, string messageId, RequestMessage reqMsg)
+        {
+            //实例化上下文
+            using (var client = new ServiceChannel(channel, messageId, reqMsg))
+            {
+                try
+                {
+                    var appCaller = CreateCaller(reqMsg);
+
+                    //响应消息
+                    var item = caller.HandleResponse(channel, appCaller, reqMsg);
+
+                    //异步调用
+                    AsyncCounter(appCaller, item);
+
+                    //发送消息
+                    client.SendResponse(item);
+                }
+                catch (Exception ex)
+                {
+                    //写异常日志
+                    container.WriteError(ex);
+                }
+            }
+        }
+
+        /// <summary>
         /// 获取AppCaller
         /// </summary>
         /// <param name="reqMsg"></param>
@@ -399,54 +430,51 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 发送消息
+        /// 同步调用方法
         /// </summary>
-        /// <param name="channel"></param>
-        /// <param name="messageId"></param>
-        /// <param name="reqMsg"></param>
-        private void SendResponse(IScsServerClient channel, string messageId, RequestMessage reqMsg)
+        /// <param name="appCaller"></param>
+        /// <param name="item"></param>
+        private void AsyncCounter(AppCaller appCaller, ResponseItem item)
         {
-            try
-            {
-                //实例化上下文
-                using (var context = new CallerContext
-                 {
-                     MessageId = messageId,
-                     Request = reqMsg,
-                     Caller = CreateCaller(reqMsg)
-                 })
-                {
-                    //发送消息
-                    client.SendResponse(channel, context);
-                }
-            }
-            catch (Exception ex)
-            {
-                //写异常日志
-                container.WriteError(ex);
-            }
-        }
+            //调用参数
+            var callArgs = new CallEventArgs(appCaller);
 
-        /// <summary>
-        /// 响应结果
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="callArgs"></param>
-        private void NotifyResult(object sender, CallEventArgs callArgs)
-        {
-            try
+            if (item.Message == null) //从缓存获取
             {
-                //响应消息
-                MessageCenter.Instance.Notify(callArgs);
+                callArgs.ElapsedTime = 0;
+                callArgs.Count = item.Count;
+                callArgs.Value = item.Buffer;
+            }
+            else
+            {
+                callArgs.ElapsedTime = item.Message.ElapsedTime;
+                callArgs.Count = item.Message.Count;
+                callArgs.Error = item.Message.Error;
+                callArgs.Value = item.Message.Value;
+            };
 
-                if (Completed != null)
-                {
-                    Completed(sender, callArgs);
-                }
-            }
-            catch
+            //异步处理
+            ThreadPool.QueueUserWorkItem(state =>
             {
-            }
+                try
+                {
+                    var args = state as CallEventArgs;
+
+                    //响应消息
+                    MessageCenter.Instance.Notify(args);
+
+                    //调用计数服务
+                    status.Counter(args);
+
+                    if (Completed != null)
+                    {
+                        Completed(this, args);
+                    }
+                }
+                catch (Exception ex)
+                {
+                }
+            }, callArgs);
         }
 
         /// <summary>

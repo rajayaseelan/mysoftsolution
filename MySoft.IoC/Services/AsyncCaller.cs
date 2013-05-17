@@ -319,27 +319,18 @@ namespace MySoft.IoC.Services
 
                     var response = GetResponse(_service, _context, _reqMsg);
 
-                    //如果值为null，直接返回
-                    if (response.Value == null) return new CacheResponse(response);
-
                     //创建缓存对象
-                    return new CacheResponse(response)
-                    {
-                        Buffer = SerializationManager.SerializeBin(response.Value)
-                    };
+                    return new CacheResponse(response);
 
                 }, new ArrayList { service, context, reqMsg }, CheckResponse);
 
-                if (resMsg != null)
-                {
-                    //实例化新对象
-                    resMsg = NewResponse(reqMsg, resMsg);
 
-                    //设置时间
-                    resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
-                }
+                //设置新参数
+                var newMsg = NewResponse(reqMsg, resMsg);
 
-                return (resMsg == null) ? null : new ResponseItem(resMsg);
+                newMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
+
+                return new ResponseItem(newMsg);
             }
             finally
             {
@@ -358,6 +349,8 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage NewResponse(RequestMessage reqMsg, ResponseMessage resMsg)
         {
+            if (resMsg.Value != null) resMsg.Value = null;
+
             var response = new ResponseMessage
             {
                 TransactionId = reqMsg.TransactionId,
@@ -365,24 +358,18 @@ namespace MySoft.IoC.Services
                 MethodName = resMsg.MethodName,
                 Parameters = resMsg.Parameters,
                 ElapsedTime = resMsg.ElapsedTime,
-                Error = resMsg.Error,
-                Value = resMsg.Value
+                Error = resMsg.Error
             };
 
             //设置返回参数
             if (resMsg is CacheResponse)
             {
-                if (resMsg.Value != null) resMsg.Value = null;
+                //通过Buffer反序列化成对象
+                var cacheResponse = resMsg as CacheResponse;
 
-                if (response.Value == null)
+                if (cacheResponse.Buffer != null)
                 {
-                    //通过Buffer反序列化成对象
-                    var cacheResponse = resMsg as CacheResponse;
-
-                    if (cacheResponse.Buffer != null)
-                    {
-                        response.Value = SerializationManager.DeserializeBin(cacheResponse.Buffer);
-                    }
+                    response.Value = SerializationManager.DeserializeBin(cacheResponse.Buffer);
                 }
             }
 

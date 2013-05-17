@@ -25,11 +25,17 @@ namespace MySoft.IoC
             this.ElapsedTime = resMsg.ElapsedTime;
             this.Error = resMsg.Error;
             this.Value = resMsg.Value;
+
+            if (resMsg.Value != null)
+            {
+                //存储buffer值
+                this.Buffer = SerializationManager.SerializeBin(resMsg.Value);
+            }
         }
 
         /// <summary>
         /// 缓存数据
         /// </summary>
-        public byte[] Buffer { get; set; }
+        public byte[] Buffer { get; private set; }
     }
 }

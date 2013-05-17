@@ -75,7 +75,7 @@ namespace MySoft.IoC
                 if (cacheObj.ExpiredTime < DateTime.Now)
                 {
                     //更新缓存项
-                    UpdateCacheItem(cacheKey, func, state, timeout);
+                    cacheItem = GetResponseItem(cacheKey, func, state, timeout);
                 }
 
                 //获取数据缓存
@@ -93,22 +93,23 @@ namespace MySoft.IoC
         /// <param name="func"></param>
         /// <param name="state"></param>
         /// <param name="timeout"></param>
-        private static void UpdateCacheItem(CacheKey cacheKey, Func<object, ResponseItem> func, object state, TimeSpan timeout)
+        private static ResponseItem GetResponseItem(CacheKey cacheKey, Func<object, ResponseItem> func, object state, TimeSpan timeout)
         {
-            //获取数据缓存
-            var updateItem = new CacheUpdateItem
-            {
-                Key = cacheKey,
-                Func = func,
-                State = state,
-                Timeout = timeout
-            };
+            //开始异步调用
+            var ar = func.BeginInvoke(state, null, null);
 
-            //异步更新缓存
-            ThreadPool.QueueUserWorkItem(item =>
+            //等待超时，返回null
+            var waitTimeout = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_UPDATE_TIMEOUT);
+
+            if (!ar.AsyncWaitHandle.WaitOne(waitTimeout, false))
+            {
+                return null;
+            }
+
+            try
             {
                 //获取数据缓存
-                var cacheItem = func(state);
+                var cacheItem = func.EndInvoke(ar);
 
                 if (cacheItem != null && cacheItem.Buffer != null)
                 {
@@ -116,7 +117,13 @@ namespace MySoft.IoC
                     InsertCacheItem(cacheKey, cacheItem, timeout);
                 }
 
-            }, updateItem);
+                return cacheItem;
+            }
+            finally
+            {
+                //关闭句柄
+                ar.AsyncWaitHandle.Close();
+            }
         }
 
         /// <summary>

@@ -51,23 +51,29 @@ namespace MySoft.IoC
         /// 调用方法
         /// </summary>
         /// <param name="channel"></param>
-        /// <param name="e"></param>
+        /// <param name="appCaller"></param>
+        /// <param name="reqMsg"></param>
         /// <returns></returns>
-        public void InvokeResponse(IScsServerClient channel, IDataContext e)
+        public ResponseItem HandleResponse(IScsServerClient channel, AppCaller appCaller, RequestMessage reqMsg)
         {
             //获取上下文
-            using (var context = GetOperationContext(channel, e.Caller))
+            using (var context = GetOperationContext(channel, appCaller))
             {
-                //解析服务
-                var service = ParseService(e.Caller);
+                try
+                {
+                    //解析服务
+                    var service = ParseService(appCaller);
 
-                //异步调用服务
-                var item = caller.Run(service, context, e.Request);
+                    //异步调用服务
+                    return caller.Run(service, context, reqMsg);
+                }
+                catch (Exception ex)
+                {
+                    //获取异常响应信息
+                    var resMsg = IoCHelper.GetResponse(reqMsg, ex);
 
-                //设置响应值
-                e.Buffer = item.Buffer;
-                e.Count = item.Count;
-                e.Message = item.Message;
+                    return new ResponseItem(resMsg);
+                }
             }
         }
 

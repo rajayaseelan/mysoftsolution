@@ -21,7 +21,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -60,11 +60,9 @@
     <Compile Include="Aspect\CastleInterface.cs" />
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
-    <Compile Include="CallerContext.cs" />
     <Compile Include="Common\CacheHelper.cs" />
     <Compile Include="Common\CacheItem.cs" />
     <Compile Include="Common\CacheResponse.cs" />
-    <Compile Include="Common\CacheUpdateItem.cs" />
     <Compile Include="Common\ResponseItem.cs" />
     <Compile Include="Common\CacheKey.cs" />
     <Compile Include="Common\Extensions.cs" />

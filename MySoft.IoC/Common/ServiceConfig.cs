@@ -33,6 +33,11 @@ namespace MySoft.IoC
         /// </summary>
         public const int DEFAULT_CLIENT_MAXPOOL = 100; //默认为100
 
+        /// <summary>
+        /// The default update timeout.
+        /// </summary>
+        public const int DEFAULT_UPDATE_TIMEOUT = 10; //默认为10秒
+
         #endregion
     }
 }

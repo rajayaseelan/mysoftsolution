@@ -213,9 +213,10 @@ namespace MySoft.IoC.HttpServer
             };
 
             //使用Invoke方式调用
-            var invoke = new InvokeCaller(conf, container, service, caller);
-
-            return invoke.InvokeResponse(message);
+            using (var invoke = new InvokeCaller(conf, container, service, caller))
+            {
+                return invoke.InvokeResponse(message);
+            }
         }
 
         /// <summary>

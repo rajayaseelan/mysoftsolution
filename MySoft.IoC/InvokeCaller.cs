@@ -8,12 +8,12 @@ namespace MySoft.IoC
     /// <summary>
     /// 调用者
     /// </summary>
-    internal class InvokeCaller
+    internal class InvokeCaller : IDisposable
     {
-        private readonly CastleFactoryConfiguration config;
-        private readonly IContainer container;
-        private readonly IService service;
-        private readonly AsyncCaller caller;
+        private CastleFactoryConfiguration config;
+        private IContainer container;
+        private IService service;
+        private AsyncCaller caller;
         private string hostName;
         private string ipAddress;
 
@@ -105,5 +105,20 @@ namespace MySoft.IoC
                 Caller = caller
             };
         }
+
+        #region IDisposable 成员
+
+        /// <summary>
+        /// dispose resource.
+        /// </summary>
+        public void Dispose()
+        {
+            this.config = null;
+            this.container = null;
+            this.service = null;
+            this.caller = null;
+        }
+
+        #endregion
     }
 }
