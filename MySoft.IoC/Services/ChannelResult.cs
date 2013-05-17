@@ -20,24 +20,12 @@ namespace MySoft.IoC.Services
         {
             get
             {
-                if (waitResult.Message == null)
+                //实例化ResponseItem
+                return new ResponseItem(waitResult.Message)
                 {
-                    //实例化ResponseItem
-                    return new ResponseItem()
-                                {
-                                    Count = count,
-                                    Buffer = buffer
-                                };
-                }
-                else
-                {
-                    //实例化ResponseItem
-                    return new ResponseItem(waitResult.Message)
-                                {
-                                    Count = count,
-                                    Buffer = buffer
-                                };
-                }
+                    Count = count,
+                    Buffer = buffer
+                };
             }
         }
 
@@ -75,26 +63,19 @@ namespace MySoft.IoC.Services
                 return waitResult.Set(null);
             }
 
-            //判断传输Key是否一致
-            if (resItem.Message.TransactionId == reqMsg.TransactionId)
+            //重新实例化消息对象
+            var resMsg = new ResponseMessage
             {
-                return waitResult.Set(resItem.Message);
-            }
-            else
-            {
-                var resMsg = new ResponseMessage
-                                {
-                                    TransactionId = reqMsg.TransactionId,
-                                    ServiceName = resItem.Message.ServiceName,
-                                    MethodName = resItem.Message.MethodName,
-                                    Parameters = resItem.Message.Parameters,
-                                    ElapsedTime = resItem.Message.ElapsedTime,
-                                    Error = resItem.Message.Error,
-                                    Value = resItem.Message.Value
-                                };
+                TransactionId = reqMsg.TransactionId,
+                ServiceName = resItem.Message.ServiceName,
+                MethodName = resItem.Message.MethodName,
+                Parameters = resItem.Message.Parameters,
+                ElapsedTime = resItem.Message.ElapsedTime,
+                Error = resItem.Message.Error,
+                Value = resItem.Message.Value
+            };
 
-                return waitResult.Set(resMsg);
-            }
+            return waitResult.Set(resMsg);
         }
 
         #region IDisposable 成员

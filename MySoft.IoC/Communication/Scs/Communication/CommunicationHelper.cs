@@ -5,19 +5,23 @@ namespace MySoft.IoC.Communication.Scs.Communication
     /// <summary>
     /// CommunicationHelper
     /// </summary>
-    internal class CommunicationHelper
+    internal static class CommunicationHelper
     {
-        private volatile SocketAsyncEventArgsPool pool;
+        /// <summary>
+        /// Max communication count.
+        /// </summary>
+        private const int MaxCommunicationCount = 2000;
+
+        private static SocketAsyncEventArgsPool pool;
 
         /// <summary>
         /// 实例化CommunicationHelper
         /// </summary>
-        /// <param name="maxCommunicationCount"></param>
-        public CommunicationHelper(int maxCommunicationCount)
+        static CommunicationHelper()
         {
-            this.pool = new SocketAsyncEventArgsPool(maxCommunicationCount);
+            pool = new SocketAsyncEventArgsPool(MaxCommunicationCount);
 
-            for (int i = 0; i < maxCommunicationCount; i++)
+            for (int i = 0; i < MaxCommunicationCount; i++)
             {
                 pool.Push(new TcpSocketAsyncEventArgs());
             }
@@ -26,9 +30,15 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// <summary>
         /// Pool count.
         /// </summary>
-        internal int Count
+        internal static int Count
         {
-            get { return pool.Count; }
+            get
+            {
+                lock (pool)
+                {
+                    return pool.Count;
+                }
+            }
         }
 
         /// <summary>
@@ -36,7 +46,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// </summary>
         /// <param name="channel"></param>
         /// <returns></returns>
-        internal SocketAsyncEventArgs Pop(ICommunicationProtocol channel)
+        internal static SocketAsyncEventArgs Pop(ICommunicationProtocol channel)
         {
             lock (pool)
             {
@@ -56,7 +66,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// Push SocketAsyncEventArgs.
         /// </summary>
         /// <returns></returns>
-        internal void Push(SocketAsyncEventArgs item)
+        internal static void Push(SocketAsyncEventArgs item)
         {
             if (item == null) return;
 

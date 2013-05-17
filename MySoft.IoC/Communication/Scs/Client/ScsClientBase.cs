@@ -12,13 +12,6 @@ namespace MySoft.IoC.Communication.Scs.Client
     /// </summary>
     internal abstract class ScsClientBase : IScsClient
     {
-        /// <summary>
-        /// Max communication count.
-        /// </summary>
-        private const int MaxCommunicationCount = 200;
-
-        protected static readonly CommunicationHelper _helper = new CommunicationHelper(MaxCommunicationCount);
-
         #region Public events
 
         /// <summary>
@@ -256,10 +249,6 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// <param name="e">Event arguments</param>
         private void CommunicationChannel_Disconnected(object sender, EventArgs e)
         {
-#if DEBUG
-            Console.WriteLine("Client communication helper count: {0}", _helper.Count);
-#endif
-
             _pingTimer.Stop();
 
             OnDisconnected();

@@ -468,12 +468,12 @@ namespace MySoft.IoC
             if (connected)
             {
                 container.WriteLog(string.Format("[{2}/{3}] User connection ({0}:{1}).",
-                                    endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count, server.CommunicationCount), LogType.Information);
+                                    endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count, CommunicationHelper.Count), LogType.Information);
             }
             else
             {
                 container.WriteLog(string.Format("[{2}/{3}] User Disconnection ({0}:{1}).",
-                                    endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count, server.CommunicationCount), LogType.Error);
+                                    endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count, CommunicationHelper.Count), LogType.Error);
             }
 
             //推送连接信息

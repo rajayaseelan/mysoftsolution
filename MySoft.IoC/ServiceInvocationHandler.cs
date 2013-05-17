@@ -109,15 +109,8 @@ namespace MySoft.IoC
             {
                 returnValue = resMsg.Value;
 
-                try
-                {
-                    //处理参数
-                    IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
-                }
-                finally
-                {
-                    resMsg.Parameters.Clear();
-                }
+                //处理参数
+                IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
             }
 
             //返回结果

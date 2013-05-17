@@ -38,11 +38,6 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// </summary>
         public ThreadSafeSortedList<long, IScsServerClient> Clients { get; private set; }
 
-        /// <summary>
-        /// Get communication count.
-        /// </summary>
-        public abstract int CommunicationCount { get; }
-
         #endregion
 
         #region Private properties

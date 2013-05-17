@@ -36,11 +36,6 @@ namespace MySoft.IoC.Communication.Scs.Server
         ScsEndPoint EndPoint { get; }
 
         /// <summary>
-        /// Get communication count.
-        /// </summary>
-        int CommunicationCount { get; }
-
-        /// <summary>
         /// Starts the server.
         /// </summary>
         void Start();

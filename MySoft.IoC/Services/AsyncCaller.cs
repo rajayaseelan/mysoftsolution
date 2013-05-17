@@ -144,7 +144,7 @@ namespace MySoft.IoC.Services
             //调用服务
             var ar = InvokeService(callKey, service, context, reqMsg);
 
-            ar.AsyncWaitHandle.WaitOne(Timeout.Infinite, true);
+            ar.AsyncWaitHandle.WaitOne();
 
             try
             {

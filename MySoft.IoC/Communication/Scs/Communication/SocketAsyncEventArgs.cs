@@ -42,7 +42,26 @@ namespace MySoft.IoC.Communication.Scs.Communication
             }
             catch (Exception ex)
             {
+                DisposeAsyncSEA(e);
+            }
+        }
 
+        /// <summary>
+        /// Dispose socket event args.
+        /// </summary>
+        /// <param name="e"></param>
+        private void DisposeAsyncSEA(SocketAsyncEventArgs e)
+        {
+            try
+            {
+                e.AcceptSocket = null;
+                e.UserToken = null;
+                e.SetBuffer(null, 0, 0);
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                CommunicationHelper.Push(e);
             }
         }
     }

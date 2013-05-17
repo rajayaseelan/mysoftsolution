@@ -11,8 +11,11 @@ namespace MySoft.IoC
 
         public ResponseItem(ResponseMessage resMsg)
         {
-            this.Message = resMsg;
-            this.Count = resMsg.Count;
+            if (resMsg != null)
+            {
+                this.Message = resMsg;
+                this.Count = resMsg.Count;
+            }
         }
 
         /// <summary>

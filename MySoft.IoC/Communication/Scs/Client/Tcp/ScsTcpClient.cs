@@ -35,7 +35,7 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
             return new TcpCommunicationChannel(
                 TcpHelper.ConnectToServer(
                     new IPEndPoint(IPAddress.Parse(_serverEndPoint.IpAddress), _serverEndPoint.TcpPort),
-                        ConnectTimeout), _helper);
+                        ConnectTimeout));
         }
     }
 }

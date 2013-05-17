@@ -12,13 +12,6 @@ namespace MySoft.IoC.Communication.Scs.Server.Tcp
     internal class ScsTcpServer : ScsServerBase
     {
         /// <summary>
-        /// Max communication count.
-        /// </summary>
-        private const int MaxCommunicationCount = 2000;
-
-        private readonly CommunicationHelper _helper = new CommunicationHelper(MaxCommunicationCount);
-
-        /// <summary>
         /// The endpoint address of the server to listen incoming connections.
         /// </summary>
         private readonly ScsTcpEndPoint _endPoint;
@@ -29,14 +22,6 @@ namespace MySoft.IoC.Communication.Scs.Server.Tcp
         public override ScsEndPoint EndPoint
         {
             get { return _endPoint; }
-        }
-
-        /// <summary>
-        /// Get communication count.
-        /// </summary>
-        public override int CommunicationCount
-        {
-            get { return _helper.Count; }
         }
 
         /// <summary>
@@ -54,7 +39,7 @@ namespace MySoft.IoC.Communication.Scs.Server.Tcp
         /// <returns>Created listener object</returns>
         protected override IConnectionListener CreateConnectionListener()
         {
-            return new TcpConnectionListener(_endPoint, _helper);
+            return new TcpConnectionListener(_endPoint);
         }
     }
 }
