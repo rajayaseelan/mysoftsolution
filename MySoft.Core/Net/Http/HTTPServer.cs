@@ -277,8 +277,11 @@ namespace MySoft.Net.Http
                     }
                 }
             }
-            catch (Exception)
-            { }
+            catch (Exception) { }
+            finally
+            {
+                ar.AsyncWaitHandle.Close();
+            }
         }
 
         private void SendErrorResponse(HTTPServerSession session, HTTPServerResponse.HTTPStatus status)

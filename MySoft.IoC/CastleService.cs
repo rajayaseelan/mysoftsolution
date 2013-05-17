@@ -342,6 +342,8 @@ namespace MySoft.IoC
                     var message = e.Message as ScsResultMessage;
                     var reqMsg = message.MessageValue as RequestMessage;
 
+                    if (reqMsg == null) throw new NullReferenceException("The request object is empty or null.");
+
                     if (channel.UserToken == null)
                     {
                         var client = new AppClient

@@ -319,6 +319,9 @@ namespace MySoft.IoC.Services
 
                     var response = GetResponse(_service, _context, _reqMsg);
 
+                    //如果值为null，直接返回
+                    if (response.Value == null) return new CacheResponse(response);
+
                     //创建缓存对象
                     return new CacheResponse(response)
                     {
@@ -376,7 +379,10 @@ namespace MySoft.IoC.Services
                     //通过Buffer反序列化成对象
                     var cacheResponse = resMsg as CacheResponse;
 
-                    response.Value = SerializationManager.DeserializeBin(cacheResponse.Buffer);
+                    if (cacheResponse.Buffer != null)
+                    {
+                        response.Value = SerializationManager.DeserializeBin(cacheResponse.Buffer);
+                    }
                 }
             }
 

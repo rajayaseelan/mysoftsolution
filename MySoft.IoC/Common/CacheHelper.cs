@@ -61,22 +61,25 @@ namespace MySoft.IoC
             if (cacheObj == null)
             {
                 //获取数据缓存
-                cacheItem = GetResponseItem(cacheKey, timeout, func, state);
+                cacheItem = func(state);
+
+                if (cacheItem != null && cacheItem.Buffer != null)
+                {
+                    //插入缓存
+                    InsertCacheItem(cacheKey, cacheItem, timeout);
+                }
             }
             else
             {
                 //判断是否过期
                 if (cacheObj.ExpiredTime < DateTime.Now)
                 {
-                    //获取数据缓存
-                    cacheItem = GetResponseItem(cacheKey, timeout, func, state);
+                    //更新缓存项
+                    UpdateCacheItem(cacheKey, func, state, timeout);
                 }
 
-                if (cacheItem == null || cacheItem.Buffer == null)
-                {
-                    //获取数据缓存
-                    cacheItem = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
-                }
+                //获取数据缓存
+                cacheItem = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
             }
 
             //返回缓存的对象
@@ -84,40 +87,36 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 获取数据缓存
+        /// 更新缓存项
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="timeout"></param>
+        /// <param name="cacheKey"></param>
         /// <param name="func"></param>
         /// <param name="state"></param>
-        /// <returns></returns>
-        private static ResponseItem GetResponseItem(CacheKey key, TimeSpan timeout, Func<object, ResponseItem> func, object state)
+        /// <param name="timeout"></param>
+        private static void UpdateCacheItem(CacheKey cacheKey, Func<object, ResponseItem> func, object state, TimeSpan timeout)
         {
-            ResponseItem item = null;
+            //获取数据缓存
+            var updateItem = new CacheUpdateItem
+            {
+                Key = cacheKey,
+                Func = func,
+                State = state,
+                Timeout = timeout
+            };
 
-            try
+            //异步更新缓存
+            ThreadPool.QueueUserWorkItem(item =>
             {
-                item = func(state);
-            }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex)
-            {
-                Thread.ResetAbort();
-            }
-            catch (Exception ex)
-            {
-                SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
-            }
-            finally
-            {
-                if (item != null && item.Buffer != null)
+                //获取数据缓存
+                var cacheItem = func(state);
+
+                if (cacheItem != null && cacheItem.Buffer != null)
                 {
                     //插入缓存
-                    InsertCacheItem(key, item, timeout);
+                    InsertCacheItem(cacheKey, cacheItem, timeout);
                 }
-            }
 
-            return item;
+            }, updateItem);
         }
 
         /// <summary>
@@ -164,8 +163,7 @@ namespace MySoft.IoC
         /// <summary>
         /// 插入缓存
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="key"></param>
+        /// <param name="cacheKey"></param>
         /// <param name="item"></param>
         /// <param name="timeout"></param>
         private static void InsertCacheItem(CacheKey cacheKey, ResponseItem item, TimeSpan timeout)
@@ -183,25 +181,22 @@ namespace MySoft.IoC
             //默认缓存30秒
             CacheHelper.Insert(key, cacheObj, Math.Min(30, (int)timeout.TotalSeconds));
 
-            ThreadPool.QueueUserWorkItem(state =>
+            try
             {
-                try
-                {
-                    var path = GetFilePath(cacheKey);
+                var path = GetFilePath(cacheKey);
 
-                    //写入文件
-                    var buffer = SerializationManager.SerializeBin(cacheObj);
+                //写入文件
+                var buffer = SerializationManager.SerializeBin(cacheObj);
 
-                    string dirPath = Path.GetDirectoryName(path);
-                    if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
-                    File.WriteAllBytes(path, buffer);
-                }
-                catch (IOException ex) { }
-                catch (Exception ex)
-                {
-                    SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
-                }
-            });
+                string dirPath = Path.GetDirectoryName(path);
+                if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+                File.WriteAllBytes(path, buffer);
+            }
+            catch (IOException ex) { }
+            catch (Exception ex)
+            {
+                SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
+            }
         }
 
         /// <summary>

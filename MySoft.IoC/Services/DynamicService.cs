@@ -96,6 +96,9 @@ namespace MySoft.IoC.Services
             }
             finally
             {
+                //清理参数
+                reqMsg.Parameters.Clear();
+
                 //释放对象
                 container.Release(instance);
             }
