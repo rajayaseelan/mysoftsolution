@@ -239,9 +239,6 @@ namespace MySoft.IoC
         private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService service, ServerNode node)
             where IServiceInterfaceType : class
         {
-            //是否缓存服务
-            var isCacheService = true;
-
             if (service == null)
             {
                 if (node == null)
@@ -249,9 +246,26 @@ namespace MySoft.IoC
                     throw new WarningException("Server node can't for empty.");
                 }
 
+                //获取代理服务
+                service = GetProxyService(node);
+            }
+
+            //返回通道服务
+            return GetProxyChannel<IServiceInterfaceType>(service, true);
+        }
+
+        /// <summary>
+        /// 获取代理服务
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        private IService GetProxyService(ServerNode node)
+        {
+            lock (proxies)
+            {
                 if (proxies.ContainsKey(node.Key.ToLower()))
                 {
-                    service = proxies[node.Key.ToLower()];
+                    return proxies[node.Key.ToLower()];
                 }
                 else
                 {
@@ -270,13 +284,11 @@ namespace MySoft.IoC
                         if (OnDisconnected != null) OnDisconnected(sender, args);
                     };
 
-                    service = proxy;
-                    isCacheService = false;
+                    proxies[node.Key.ToLower()] = proxy;
+
+                    return proxy;
                 }
             }
-
-            //返回通道服务
-            return GetProxyChannel<IServiceInterfaceType>(service, isCacheService);
         }
 
         /// <summary>
@@ -292,21 +304,15 @@ namespace MySoft.IoC
             Type serviceType = typeof(IServiceInterfaceType);
             string serviceKey = string.Format("{0}${1}", serviceType.FullName, proxy.ServiceName);
 
-            //TODO : 这里发现了严重的逻辑错误，导致每次都会创建动态代理，造成CPU高与内存高。
             if (isCacheService)
             {
-                if (!hashtable.ContainsKey(serviceKey))
+                lock (hashtable.SyncRoot)
                 {
-                    lock (hashtable.SyncRoot)
+                    if (!hashtable.ContainsKey(serviceKey))
                     {
-                        if (!hashtable.ContainsKey(serviceKey))
-                        {
-                            //创建代理服务
-                            var dynamicProxy = CreateProxyHandler<IServiceInterfaceType>(proxy, serviceType);
-
-                            hashtable[serviceKey] = dynamicProxy;
-                        }
-
+                        //创建代理服务
+                        var dynamicProxy = CreateProxyHandler<IServiceInterfaceType>(proxy, serviceType);
+                        hashtable[serviceKey] = dynamicProxy;
                     }
                 }
 
@@ -397,7 +403,7 @@ namespace MySoft.IoC
                 throw new IoCException("Callback type cannot be the null.");
 
             //实例化代理回调
-            CallbackProxy proxy = new CallbackProxy(callback, node, container);
+            var proxy = new CallbackProxy(callback, node, container);
 
             proxy.OnConnected += (sender, args) =>
             {
@@ -484,30 +490,8 @@ namespace MySoft.IoC
                     throw new WarningException("Server node can't for empty.");
                 }
 
-                //获取服务节点
-                if (proxies.ContainsKey(node.Key.ToLower()))
-                {
-                    service = proxies[node.Key.ToLower()];
-                }
-                else
-                {
-                    RemoteProxy proxy = null;
-                    if (node.RespType == ResponseType.Json)
-                        proxy = new InvokeProxy(node, container);
-                    else
-                        proxy = new RemoteProxy(node, container, false);
-
-                    proxy.OnConnected += (sender, args) =>
-                    {
-                        if (OnConnected != null) OnConnected(sender, args);
-                    };
-                    proxy.OnDisconnected += (sender, args) =>
-                    {
-                        if (OnDisconnected != null) OnDisconnected(sender, args);
-                    };
-
-                    service = proxy;
-                }
+                //获取代理服务
+                service = GetProxyService(node);
             }
 
             //获取服务内容

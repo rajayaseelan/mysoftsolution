@@ -7,6 +7,10 @@ namespace MySoft.IoC
     public enum CastleFactoryType
     {
         /// <summary>
+        /// None
+        /// </summary>
+        None,
+        /// <summary>
         /// Local
         /// </summary>
         Local,

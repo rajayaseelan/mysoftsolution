@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Threading;
 using MySoft.Logger;
@@ -71,11 +72,16 @@ namespace MySoft.IoC
             }
             else
             {
-                //判断是否过期
-                if (cacheObj.ExpiredTime < DateTime.Now)
+                lock (cacheObj)
                 {
-                    //更新缓存项
-                    cacheItem = GetResponseItem(cacheKey, func, state, timeout);
+                    //判断是否过期
+                    if (cacheObj.ExpiredTime < DateTime.Now)
+                    {
+                        cacheObj.ExpiredTime = DateTime.Now.Add(timeout);
+
+                        //更新缓存项
+                        UpdateCacheItem(cacheKey, func, state, timeout);
+                    }
                 }
 
                 //获取数据缓存
@@ -93,37 +99,33 @@ namespace MySoft.IoC
         /// <param name="func"></param>
         /// <param name="state"></param>
         /// <param name="timeout"></param>
-        private static ResponseItem GetResponseItem(CacheKey cacheKey, Func<object, ResponseItem> func, object state, TimeSpan timeout)
+        private static void UpdateCacheItem(CacheKey cacheKey, Func<object, ResponseItem> func, object state, TimeSpan timeout)
         {
             //开始异步调用
-            var ar = func.BeginInvoke(state, null, null);
-
-            //等待超时，返回null
-            var waitTimeout = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_UPDATE_TIMEOUT);
-
-            if (!ar.AsyncWaitHandle.WaitOne(waitTimeout, false))
+            func.BeginInvoke(state, ar =>
             {
-                return null;
-            }
-
-            try
-            {
-                //获取数据缓存
-                var cacheItem = func.EndInvoke(ar);
-
-                if (cacheItem != null && cacheItem.Buffer != null)
+                try
                 {
-                    //插入缓存
-                    InsertCacheItem(cacheKey, cacheItem, timeout);
-                }
+                    var arr = ar.AsyncState as ArrayList;
+                    var _key = arr[0] as CacheKey;
+                    var _func = arr[1] as Func<object, ResponseItem>;
+                    var _timeout = (TimeSpan)arr[2];
 
-                return cacheItem;
-            }
-            finally
-            {
-                //关闭句柄
-                ar.AsyncWaitHandle.Close();
-            }
+                    //获取数据缓存
+                    var cacheItem = _func.EndInvoke(ar);
+
+                    if (cacheItem != null && cacheItem.Buffer != null)
+                    {
+                        //插入缓存
+                        InsertCacheItem(_key, cacheItem, _timeout);
+                    }
+                }
+                finally
+                {
+                    //关闭句柄
+                    ar.AsyncWaitHandle.Close();
+                }
+            }, new ArrayList { cacheKey, func, timeout });
         }
 
         /// <summary>

@@ -55,7 +55,6 @@ namespace MySoft.IoC.Communication.Scs.Communication
                 var tcpitem = item as TcpSocketAsyncEventArgs;
                 if (tcpitem == null) return null;
 
-                tcpitem.IsPushing = false;
                 tcpitem.Channel = channel;
 
                 return item;
@@ -73,11 +72,8 @@ namespace MySoft.IoC.Communication.Scs.Communication
             lock (pool)
             {
                 var tcpitem = item as TcpSocketAsyncEventArgs;
-                if (tcpitem == null) return;
+                if (tcpitem == null || tcpitem.Channel == null) return;
 
-                if (tcpitem.IsPushing) return;
-
-                tcpitem.IsPushing = true;
                 tcpitem.Channel = null;
 
                 pool.Push(item);

@@ -14,11 +14,6 @@ namespace MySoft.IoC.Communication.Scs.Communication
         public ICommunicationProtocol Channel { get; set; }
 
         /// <summary>
-        /// 是否已经入队列
-        /// </summary>
-        public bool IsPushing { get; set; }
-
-        /// <summary>
         /// 完成事件
         /// </summary>
         /// <param name="e"></param>

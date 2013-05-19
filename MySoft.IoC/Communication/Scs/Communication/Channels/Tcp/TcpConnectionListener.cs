@@ -103,7 +103,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     var clientSocket = _listenerSocket.AcceptSocket();
                     if (clientSocket.Connected)
                     {
-                        var channel = new TcpCommunicationChannel(clientSocket);
+                        var channel = new TcpCommunicationChannel(clientSocket, true);
 
                         OnCommunicationChannelConnected(channel);
                     }

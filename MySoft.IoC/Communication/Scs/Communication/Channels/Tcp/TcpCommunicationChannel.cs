@@ -16,7 +16,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 2 * 1024; //2KB
+        private const int ReceiveBufferSize = 4 * 1024; //4KB
 
         #region Public properties
 
@@ -57,6 +57,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private volatile bool _running;
 
+        private bool _fromServer;
+
         #endregion
 
         #region Constructor
@@ -66,9 +68,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         /// <param name="clientSocket">A connected Socket object that is
         /// used to communicate over network</param>
-        public TcpCommunicationChannel(Socket clientSocket)
+        public TcpCommunicationChannel(Socket clientSocket, bool fromServer)
         {
             this._clientSocket = clientSocket;
+            this._fromServer = fromServer;
 
             // Disable the Nagle Algorithm for this tcp socket.  
             this._clientSocket.NoDelay = true;
@@ -98,14 +101,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             try
             {
-                _clientSocket.Shutdown(SocketShutdown.Send);
-
-                byte[] buffer = new byte[0x1000];
-                while (_clientSocket.Poll(50000, SelectMode.SelectRead))
-                    if (_clientSocket.Receive(buffer, SocketFlags.Partial) == 0)
-                        break;
-
-                _clientSocket.Shutdown(SocketShutdown.Receive);
+                //Showdown client socket.
+                _clientSocket.Shutdown(SocketShutdown.Both);
                 _clientSocket.Close();
             }
             catch (Exception ex) { }
@@ -141,7 +138,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 if (!_clientSocket.ReceiveAsync(_receiveEventArgs))
                 {
 #if DEBUG
-                    Console.WriteLine("Receiving...");
+                    IoCHelper.WriteLine(ConsoleColor.DarkGray, "{0} receiving message...", (_fromServer ? "[Server]" : "[Client]"));
 #endif
 
                     (this as ICommunicationProtocol).ReceiveCompleted(_receiveEventArgs);
@@ -185,7 +182,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     if (!_clientSocket.SendAsync(_sendEventArgs))
                     {
 #if DEBUG
-                        Console.WriteLine("Sending...");
+                        IoCHelper.WriteLine(ConsoleColor.DarkGray, "{0} sending message...", (_fromServer ? "[Server]" : "[Client]"));
 #endif
 
                         (this as ICommunicationProtocol).SendCompleted(_sendEventArgs);
@@ -264,7 +261,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         if (!_clientSocket.ReceiveAsync(e))
                         {
 #if DEBUG
-                            Console.WriteLine("Receiving...");
+                            IoCHelper.WriteLine(ConsoleColor.DarkGray, "{0} receiving message...", (_fromServer ? "[Server]" : "[Client]"));
 #endif
 
                             (this as ICommunicationProtocol).ReceiveCompleted(e);
@@ -297,6 +294,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Copy buffer.
             Buffer.BlockCopy(buffer, 0, receivedBytes, 0, bytesTransferred);
 
+            Array.Clear(buffer, 0, bytesTransferred);
+
             //Read messages according to current wire protocol
             var messages = WireProtocol.CreateMessages(receivedBytes);
 
@@ -318,6 +317,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private SocketAsyncEventArgs CreateAsyncSEA(byte[] buffer, object token)
         {
             var e = CommunicationHelper.Pop(this);
+
+#if DEBUG
+            IoCHelper.WriteLine(ConsoleColor.DarkCyan, "{1} pop communication tcp socket event async count: {0}", CommunicationHelper.Count, (_fromServer ? "[Server]" : "[Client]"));
+#endif
 
             e.AcceptSocket = _clientSocket;
             if (token != null)
@@ -349,6 +352,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 CommunicationHelper.Push(e);
             }
+#if DEBUG
+            IoCHelper.WriteLine(ConsoleColor.DarkRed, "{1} push communication tcp socket event async count: {0}", CommunicationHelper.Count, (_fromServer ? "[Server]" : "[Client]"));
+#endif
         }
     }
 }

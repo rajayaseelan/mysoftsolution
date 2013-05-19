@@ -17,15 +17,25 @@ namespace MySoft.IoC
         private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
         private ResponseType resptype = ResponseType.Binary;
 
+        private ServerNode() { }
+
         /// <summary>
-        /// Gets or sets the key.
+        /// Gets the key.
         /// </summary>
         /// <value>The name.</value>
         [XmlAttribute("key")]
         public string Key
         {
-            get { return key; }
-            set { key = value; }
+            get
+            {
+                if (string.IsNullOrEmpty(key))
+                {
+                    return string.Format("{0}:{1}", ip, port);
+                }
+
+                return key;
+            }
+            internal set { key = value; }
         }
 
         /// <summary>
@@ -91,7 +101,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static ServerNode Parse(string ip, int port)
         {
-            return new ServerNode { Key = string.Format("{0}:{1}", ip, port), IP = ip, Port = port };
+            return new ServerNode { IP = ip, Port = port };
         }
 
         /// <summary>

@@ -122,13 +122,16 @@ namespace MySoft.IoC.Configuration
                 //判断是否配置了服务信息
                 if (string.IsNullOrEmpty(proxyServer))
                 {
-                    if (nodes.Count == 0)
-                        throw new WarningException("Not configure any server node.");
-
-                    //判断是否包含默认的服务
-                    if (!nodes.ContainsKey(defaultKey))
+                    if (type != CastleFactoryType.None)
                     {
-                        throw new WarningException("Not find the default service node 【" + defaultKey + "】.");
+                        if (nodes.Count == 0)
+                            throw new WarningException("Not configure any server node.");
+
+                        //判断是否包含默认的服务
+                        if (!nodes.ContainsKey(defaultKey))
+                        {
+                            throw new WarningException("Not find the default service node 【" + defaultKey + "】.");
+                        }
                     }
                 }
             }

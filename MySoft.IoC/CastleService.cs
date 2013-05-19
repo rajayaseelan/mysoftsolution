@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
 using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
@@ -453,28 +452,24 @@ namespace MySoft.IoC
                 callArgs.Value = item.Message.Value;
             };
 
-            //异步处理
-            ThreadPool.QueueUserWorkItem(state =>
+            try
             {
-                try
+                //响应消息
+                MessageCenter.Instance.Notify(callArgs);
+
+                //调用计数服务
+                status.Counter(callArgs);
+
+                if (Completed != null)
                 {
-                    var args = state as CallEventArgs;
-
-                    //响应消息
-                    MessageCenter.Instance.Notify(args);
-
-                    //调用计数服务
-                    status.Counter(args);
-
-                    if (Completed != null)
-                    {
-                        Completed(this, args);
-                    }
+                    Completed(this, callArgs);
                 }
-                catch (Exception ex)
-                {
-                }
-            }, callArgs);
+            }
+            catch (Exception ex)
+            {
+                //写异常日志
+                container.WriteError(ex);
+            }
         }
 
         /// <summary>
