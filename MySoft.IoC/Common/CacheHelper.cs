@@ -144,12 +144,12 @@ namespace MySoft.IoC
 
             if (cacheObj == null)
             {
-                var path = GetFilePath(cacheKey);
-
                 try
                 {
                     lock (GetSyncRoot(cacheKey))
                     {
+                        var path = GetFilePath(cacheKey);
+
                         //从文件获取缓存
                         cacheObj = GetCache(path);
                     }
