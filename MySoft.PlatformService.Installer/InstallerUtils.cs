@@ -1,20 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.ServiceProcess;
 
-namespace MySoft.PlatformService
+namespace MySoft.PlatformService.Installer
 {
     public static class InstallerUtils
     {
-        private static ServiceController[] services;
-
         public static ServiceController LookupService(string serviceName)
         {
-            if (services == null)
-            {
-                services = ServiceController.GetServices();
-            }
-
-            foreach (ServiceController s in services)
+            foreach (ServiceController s in ServiceController.GetServices())
             {
                 if (s.ServiceName.ToLower() == serviceName.ToLower())
                 {
@@ -32,12 +25,7 @@ namespace MySoft.PlatformService
         {
             IList<ServiceInformation> servicelist = new List<ServiceInformation>();
 
-            if (services == null)
-            {
-                services = ServiceController.GetServices();
-            }
-
-            foreach (ServiceController s in services)
+            foreach (ServiceController s in ServiceController.GetServices())
             {
                 if (s.Status != status) continue;
                 if (string.IsNullOrEmpty(contains))
@@ -67,8 +55,8 @@ namespace MySoft.PlatformService
         public static IList<ServiceInformation> GetServiceList(string contains)
         {
             IList<ServiceInformation> servicelist = new List<ServiceInformation>();
-            ServiceController[] services = ServiceController.GetServices();
-            foreach (ServiceController s in services)
+
+            foreach (ServiceController s in ServiceController.GetServices())
             {
                 if (string.IsNullOrEmpty(contains))
                 {

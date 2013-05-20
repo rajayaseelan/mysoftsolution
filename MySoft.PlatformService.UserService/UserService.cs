@@ -24,7 +24,7 @@ namespace MySoft.PlatformService.UserService
         }
 
         [AspectSwitcher(true, Description = "获取用户")]
-        public virtual User GetUser(int id, int id1)
+        public virtual User GetUser(int id)
         {
             //if (id % 10 == 0)
             //{
@@ -80,11 +80,6 @@ namespace MySoft.PlatformService.UserService
         public User GetUserForName(string name)
         {
             return new User { Id = name.Length, Name = name };
-        }
-
-        public string GetUser(object user)
-        {
-            return (user as UserInfo).Name;
         }
 
         public string GetUser(NameValueCollection nv)
@@ -191,6 +186,8 @@ namespace MySoft.PlatformService.UserService
 
         public IList<UserInfo> GetUsers()
         {
+            throw new NotImplementedException("abce");
+
             var list = new List<UserInfo>();
 
             for (int i = 0; i < 1000; i++)

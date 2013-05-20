@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.ComponentModel;
 using System.Configuration.Install;
 using System.ServiceProcess;
-using Microsoft.Win32;
 using MySoft.Installer.Configuration;
 
-namespace MySoft.PlatformService
+namespace MySoft.PlatformService.Installer
 {
     [RunInstaller(true)]
     public partial class BusinessInstaller : System.Configuration.Install.Installer
@@ -53,8 +51,10 @@ namespace MySoft.PlatformService
             string _ServiceName = config.ServiceName;
             string _DisplayName = config.DisplayName;
             string _Description = config.Description;
+            string _Type = config.Type;
             string _UserName = config.UserName;
             string _Password = config.Password;
+            bool _AutoRun = config.AutoRun;
 
             if (string.IsNullOrEmpty(_DisplayName))
             {
@@ -63,27 +63,48 @@ namespace MySoft.PlatformService
 
             ServiceProcessInstaller spi = new ServiceProcessInstaller();
 
-            //指定服务帐号类型
-            if (String.IsNullOrEmpty(_UserName) || String.IsNullOrEmpty(_Password))
+            switch (_Type.ToLower())
             {
-                spi.Account = ServiceAccount.LocalSystem;
-            }
-            else
-            {
-                spi.Account = ServiceAccount.User;
-                spi.Username = _UserName;
-                spi.Password = _Password;
+                case "network":
+                    spi.Account = ServiceAccount.NetworkService;
+                    break;
+                case "local":
+                    spi.Account = ServiceAccount.LocalService;
+                    break;
+                case "system":
+                    spi.Account = ServiceAccount.LocalSystem;
+                    break;
+                case "user":
+                    if (String.IsNullOrEmpty(_UserName) || String.IsNullOrEmpty(_Password))
+                    {
+                        spi.Account = ServiceAccount.NetworkService;
+                    }
+                    else
+                    {
+                        //指定服务帐号类型
+                        spi.Account = ServiceAccount.User;
+                        spi.Username = _UserName;
+                        spi.Password = _Password;
+                    }
+                    break;
+                default:
+                    spi.Account = ServiceAccount.NetworkService;
+                    break;
             }
 
             ServiceInstaller si = new ServiceInstaller();
             si.ServiceName = _ServiceName;
             si.DisplayName = _DisplayName + " (Paltform Service)";
             si.Description = _Description + " (平台服务中心)";
-            si.StartType = ServiceStartMode.Automatic;
 
-            // adding				
-            this.Installers.Add(si);
+            if (_AutoRun)
+                si.StartType = ServiceStartMode.Automatic;
+            else
+                si.StartType = ServiceStartMode.Manual;
+
+            //Adding installer				
             this.Installers.Add(spi);
+            this.Installers.Add(si);
         }
     }
 }

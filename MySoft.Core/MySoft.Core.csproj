@@ -352,7 +352,6 @@
     <Compile Include="Net\Ftp\FtpSession.cs" />
     <Compile Include="Net\Ftp\SessionConnected.cs" />
     <Compile Include="Net\Ftp\SessionDisconnected.cs" />
-    <Compile Include="Installer\IServiceRun.cs" />
     <Compile Include="Common\ResponseResult.cs" />
     <Compile Include="Exception\MySoftException.cs" />
     <Compile Include="Installer\Configuration\InstallerConfiguration.cs" />

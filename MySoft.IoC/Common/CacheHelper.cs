@@ -11,6 +11,9 @@ namespace MySoft.IoC
     /// </summary>
     internal static class ServiceCacheHelper
     {
+        //读文件同步对象
+        private static readonly Hashtable hashtable = new Hashtable();
+
         /// <summary>
         /// 从文件读取对象
         /// </summary>
@@ -145,8 +148,11 @@ namespace MySoft.IoC
 
                 try
                 {
-                    //从文件获取缓存
-                    cacheObj = GetCache(path);
+                    lock (GetSyncRoot(cacheKey))
+                    {
+                        //从文件获取缓存
+                        cacheObj = GetCache(path);
+                    }
 
                     if (cacheObj != null)
                     {
@@ -192,14 +198,17 @@ namespace MySoft.IoC
 
             try
             {
-                var path = GetFilePath(cacheKey);
+                lock (GetSyncRoot(cacheKey))
+                {
+                    var path = GetFilePath(cacheKey);
 
-                //写入文件
-                var buffer = SerializationManager.SerializeBin(cacheObj);
+                    //写入文件
+                    var buffer = SerializationManager.SerializeBin(cacheObj);
 
-                string dirPath = Path.GetDirectoryName(path);
-                if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
-                File.WriteAllBytes(path, buffer);
+                    string dirPath = Path.GetDirectoryName(path);
+                    if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+                    File.WriteAllBytes(path, buffer);
+                }
             }
             catch (IOException ex) { }
             catch (Exception ex)
@@ -217,6 +226,26 @@ namespace MySoft.IoC
         {
             return CoreHelper.GetFullPath(string.Format("ServiceCache\\{0}\\{1}\\{2}.dat",
                                             cacheKey.ServiceName, cacheKey.MethodName, cacheKey.UniqueId));
+        }
+
+        /// <summary>
+        /// 获取同步Root
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <returns></returns>
+        private static object GetSyncRoot(CacheKey cacheKey)
+        {
+            lock (hashtable.SyncRoot)
+            {
+                string key = string.Format("{0}${1}", cacheKey.ServiceName, cacheKey.MethodName);
+
+                if (!hashtable.ContainsKey(key))
+                {
+                    hashtable[key] = new object();
+                }
+
+                return hashtable[key];
+            }
         }
     }
 }

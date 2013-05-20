@@ -1,7 +1,7 @@
 ﻿using System.ServiceProcess;
 using Microsoft.Win32;
 
-namespace MySoft.PlatformService
+namespace MySoft.PlatformService.Installer
 {
     /// <summary>
     /// 服务信息

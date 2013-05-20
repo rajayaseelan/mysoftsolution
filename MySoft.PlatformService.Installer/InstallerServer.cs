@@ -4,12 +4,11 @@ using System.Collections.Generic;
 using System.Configuration.Install;
 using System.IO;
 using System.ServiceProcess;
-using System.Threading;
 using MySoft.Installer;
 using MySoft.Installer.Configuration;
 using MySoft.Logger;
 
-namespace MySoft.PlatformService
+namespace MySoft.PlatformService.Installer
 {
     /// <summary>
     /// 安装服务类
@@ -17,60 +16,6 @@ namespace MySoft.PlatformService
     public class InstallerServer
     {
         public static readonly InstallerServer Instance = new InstallerServer();
-
-        private IServiceRun service;
-
-        /// <summary>
-        /// 获取WinService
-        /// </summary>
-        /// <returns></returns>
-        public IServiceRun GetWinService()
-        {
-            return service;
-        }
-
-        /// <summary>
-        /// 获取Win配置项
-        /// </summary>
-        /// <returns></returns>
-        public InstallerConfiguration GetWinConfig()
-        {
-            return InstallerConfiguration.GetConfig();
-        }
-
-        /// <summary>
-        /// 实例化InstallerServer
-        /// </summary>
-        private InstallerServer()
-        {
-            var config = InstallerConfiguration.GetConfig();
-
-            if (config == null) return;
-
-            if (service == null)
-            {
-                #region 动态加载服务
-
-                try
-                {
-                    var type = Type.GetType(config.ServiceType);
-                    if (type == null) throw new Exception(string.Format("加载服务{0}失败！", config.ServiceType));
-
-                    this.service = Activator.CreateInstance(type) as IServiceRun;
-                }
-                catch (Exception ex)
-                {
-                    var inner = ErrorHelper.GetInnerException(ex);
-
-                    Console.WriteLine(inner.ToString());
-
-                    //写错误日志
-                    SimpleLog.Instance.WriteLogForDir("ServiceRun", inner);
-                }
-
-                #endregion
-            }
-        }
 
         /// <summary>
         /// 列出服务
@@ -140,68 +85,6 @@ namespace MySoft.PlatformService
                     }
                 }
                 Console.WriteLine("------------------------------------------------------------------------");
-            }
-        }
-
-        /// <summary>
-        /// 从控制台运行
-        /// </summary>
-        /// <param name="startMode"></param>
-        /// <param name="state"></param>
-        /// <returns></returns>
-        public bool StartConsole(StartMode startMode, object state)
-        {
-            var config = InstallerConfiguration.GetConfig();
-
-            if (config == null)
-            {
-                Console.WriteLine("无效的服务配置项！");
-                return false;
-            }
-
-            ServiceController controller = InstallerUtils.LookupService(config.ServiceName);
-
-            if (controller != null)
-            {
-                try
-                {
-                    if (controller.Status == ServiceControllerStatus.Running)
-                    {
-                        Console.WriteLine("服务已经启动,不能从控制台启动,请先停止服务后再执行该命令！");
-                        return false;
-                    }
-                }
-                finally
-                {
-                    controller.Dispose();
-                }
-            }
-
-            if (service != null)
-            {
-                service.Init();
-                service.Start(startMode, state);
-
-                Console.WriteLine("控制台已经启动......");
-                return true;
-            }
-            else
-            {
-                Console.WriteLine("无效的服务启动项！");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 从控制台停止
-        /// </summary>
-        public void StopConsole()
-        {
-            if (service != null)
-            {
-                service.Stop();
-
-                Console.WriteLine("控制台已经退出......");
             }
         }
 
@@ -359,7 +242,7 @@ namespace MySoft.PlatformService
                         IDictionary savedState = new Hashtable();
 
                         installer.Install(savedState);
-                        installer.Commit(savedState);
+                        installer.Installers.Clear();
                     }
                 }
                 catch (Exception ex)
@@ -395,7 +278,7 @@ namespace MySoft.PlatformService
                     using (TransactedInstaller installer = GetTransactedInstaller())
                     {
                         installer.Uninstall(null);
-                        installer.Commit(null);
+                        installer.Installers.Clear();
                     }
                 }
                 catch (Exception ex)
@@ -419,6 +302,20 @@ namespace MySoft.PlatformService
         /// <returns></returns>
         private TransactedInstaller GetTransactedInstaller()
         {
+            var config = InstallerConfiguration.GetConfig();
+            var servicePath = config.ServicePath;
+
+            if (!File.Exists(servicePath))
+            {
+                servicePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, servicePath);
+            }
+
+            //判断文件是否存在，不存在则不安装。
+            if (!File.Exists(servicePath))
+            {
+                throw new FileNotFoundException("找不到文件路径：" + servicePath);
+            }
+
             TransactedInstaller installer = new TransactedInstaller();
             installer.BeforeInstall += new InstallEventHandler((obj, state) => { Console.WriteLine("服务正在安装......"); });
             installer.AfterInstall += new InstallEventHandler((obj, state) => { Console.WriteLine("服务安装完成！"); });
@@ -428,8 +325,9 @@ namespace MySoft.PlatformService
             BusinessInstaller businessInstaller = new BusinessInstaller();
             installer.Installers.Add(businessInstaller);
             string logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "installer.log");
-            string path = string.Format("/assemblypath={0}", System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string path = string.Format("/assemblypath={0}", servicePath);
             string[] cmd = { path };
+
             InstallContext context = new InstallContext(logFile, cmd);
             installer.Context = context;
 

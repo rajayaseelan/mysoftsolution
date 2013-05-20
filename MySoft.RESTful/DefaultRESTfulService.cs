@@ -328,7 +328,7 @@ namespace MySoft.RESTful
                         var error = new Exception(errorMessage, ex);
 
                         //记录错误日志
-                        SimpleLog.Instance.WriteLogForDir("RESTful\\" + kind, error);
+                        SimpleLog.Instance.WriteLogForDir("RESTfulError\\" + kind, error);
                     }
                     finally
                     {
@@ -440,6 +440,19 @@ namespace MySoft.RESTful
                 restResult.Message = ex.Message;
             }
 
+            //未认证写错误日志
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                //如果参数大于0
+                var coll = request.UriTemplateMatch.QueryParameters;
+
+                var errorMessage = string.Format("{0} - {1}", restResult.Code, restResult.Message);
+                errorMessage = string.Format("{0}\r\n\tRequest Uri:{1}", errorMessage, GetRequestUri());
+                errorMessage = string.Format("{0}\r\n\tGET Parameters:{1}", errorMessage, GetParameters(coll));
+
+                SimpleLog.Instance.WriteLogForDir("AuthError", new AuthorizeException(errorMessage));
+            }
+
             return restResult;
         }
 
@@ -469,7 +482,7 @@ namespace MySoft.RESTful
 
                 if (!string.IsNullOrEmpty(host))
                 {
-                    uri = new Uri(host + HttpContext.Current.Request.RawUrl);
+                    uri = new Uri(host.TrimEnd('/') + HttpContext.Current.Request.RawUrl);
                 }
             }
             else if (WebOperationContext.Current != null)
@@ -479,7 +492,7 @@ namespace MySoft.RESTful
 
                 if (!string.IsNullOrEmpty(host))
                 {
-                    uri = new Uri(host + uri.ToString().Replace(uri.GetLeftPart(UriPartial.Authority), ""));
+                    uri = new Uri(host.TrimEnd('/') + uri.ToString().Replace(uri.GetLeftPart(UriPartial.Authority), ""));
                 }
             }
 

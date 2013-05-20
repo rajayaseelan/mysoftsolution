@@ -32,13 +32,19 @@ namespace MySoft.Installer.Configuration
             return obj;
         }
 
+        public InstallerConfiguration()
+        {
+            this.AutoRun = true;
+            this.Type = "network";
+        }
+
         #region Public Properties
 
         /// <summary>
-        /// 服务信息
+        /// 服务路径
         /// </summary>
-        [XmlElement("serviceType")]
-        public string ServiceType { get; set; }
+        [XmlElement("servicePath")]
+        public string ServicePath { get; set; }
 
         /// <summary>
         /// 服务名称
@@ -59,6 +65,12 @@ namespace MySoft.Installer.Configuration
         public string Description { get; set; }
 
         /// <summary>
+        /// 帐户类型
+        /// </summary>
+        [XmlAttribute("type")]
+        public string Type { get; set; }
+
+        /// <summary>
         /// 用户名
         /// </summary>
         [XmlAttribute("userName")]
@@ -69,6 +81,12 @@ namespace MySoft.Installer.Configuration
         /// </summary>
         [XmlAttribute("password")]
         public string Password { get; set; }
+
+        /// <summary>
+        /// 自动启动
+        /// </summary>
+        [XmlAttribute("autoRun")]
+        public bool AutoRun { get; set; }
 
         #endregion
     }

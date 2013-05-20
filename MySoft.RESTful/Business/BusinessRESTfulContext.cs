@@ -153,8 +153,8 @@ namespace MySoft.RESTful.Business
 
             #endregion
 
-            string uri = string.Format("http://{0}/", requestUri.Authority.Replace("127.0.0.1", DnsHelper.GetIPAddress()));
-            html = html.Replace("${uri}", uri);
+            string uri = string.Format("{0}://{1}/", requestUri.Scheme, requestUri.Host.Replace("127.0.0.1", DnsHelper.GetIPAddress()));
+            html = html.Replace("${uri}", uri + GetRootPath(requestUri));
 
             var sb = new StringBuilder();
             foreach (BusinessKindModel e in pool.KindMethods.Values.OrderBy(p => p.Name).ToList())
@@ -242,14 +242,6 @@ namespace MySoft.RESTful.Business
                     {
                         anchor.Append("<br/>");
                         anchor.Append(CreateAnchorHtml(requestUri, e, model, plist, model.HttpMethod, "jsonp"));
-
-                        if (model.Method.ReturnType == typeof(string))
-                        {
-                            anchor.Append("<br/>");
-                            anchor.Append(CreateAnchorHtml(requestUri, e, model, plist, model.HttpMethod, "text"));
-                            anchor.Append("<br/>");
-                            anchor.Append(CreateAnchorHtml(requestUri, e, model, plist, model.HttpMethod, "html"));
-                        }
                     }
 
                     template = template.Replace("${uri}", anchor.ToString());
@@ -259,7 +251,22 @@ namespace MySoft.RESTful.Business
                 table.Append(items.ToString());
             }
 
-            return html.Replace("${body}", table.ToString());
+            return html.Replace("${body}", table.ToString()).Replace("/help", "/" + GetRootPath(requestUri) + "help");
+        }
+
+        /// <summary>
+        /// 获取根节点
+        /// </summary>
+        private string GetRootPath(Uri uri)
+        {
+            var root = string.Empty;
+
+            var localPath = uri.LocalPath;
+            var arr = localPath.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (arr.Length > 0) root = arr[0] + "/";
+
+            return root;
         }
 
         private string GetMethodParameter(BusinessMethodModel model, string kind, string method)
@@ -354,9 +361,9 @@ namespace MySoft.RESTful.Business
         {
             string url = string.Empty;
             if (mode == HttpMethod.GET && plist.Count > 0)
-                url = string.Format("/{0}.{1}.{2}?{3}", e.Name, model.Name, format, string.Join("&", plist.ToArray()));
+                url = string.Format("/" + GetRootPath(requestUri) + "{0}.{1}.{2}?{3}", e.Name, model.Name, format, string.Join("&", plist.ToArray()));
             else
-                url = string.Format("/{0}.{1}.{2}", e.Name, model.Name, format);
+                url = string.Format("/" + GetRootPath(requestUri) + "{0}.{1}.{2}", e.Name, model.Name, format);
 
             if (!string.IsNullOrEmpty(requestUri.Query))
             {

@@ -91,6 +91,7 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            #region aaa
             //var list = new List<User>();
             //list.AddRange(new User[] { new User { }, new User { } });
 
@@ -176,6 +177,7 @@ namespace MySoft.PlatformService.Client
             //Console.WriteLine(ret);
 
             //Console.ReadLine();
+            #endregion
 
             #region test
 
@@ -379,7 +381,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -522,7 +524,8 @@ namespace MySoft.PlatformService.Client
 
             while (true)
             {
-                var service = CastleFactory.Create().GetChannel<IUserService>();
+                var node = ServerNode.Parse("127.0.0.1", 9982);
+                var service = CastleFactory.Create().GetChannel<IUserService>(node);
 
                 try
                 {
@@ -539,12 +542,10 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
                     //var value = service.GetUsersString(count, out length);
 
-                    //var value = service.GetUser(new Random().Next(1, 10000));
-
-                    var value = service.GetUsers();
+                    var value = service.GetUser(new Random().Next(1, count));
 
                     //var user = service.GetUser(counter);
 
@@ -555,7 +556,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Count + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Name.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //value.Clear();
 

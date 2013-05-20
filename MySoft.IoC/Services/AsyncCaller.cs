@@ -231,9 +231,6 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage GetResponse(IService service, OperationContext context, RequestMessage reqMsg)
         {
-            //定义一个响应值
-            ResponseMessage resMsg = null;
-
             //设置上下文
             OperationContext.Current = context;
 
@@ -250,14 +247,12 @@ namespace MySoft.IoC.Services
                 }
 
                 //获取异常响应
-                resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                return IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {
                 OperationContext.Current = null;
             }
-
-            return resMsg;
         }
 
         /// <summary>
