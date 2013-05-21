@@ -64,7 +64,7 @@ namespace MySoft.IoC
                 //获取最底层异常信息
                 var error = ErrorHelper.GetInnerException(item.Message.Error);
 
-                item.Message.Error = new ApplicationException(error.Message);
+                item.Message.Error = new Exception(error.Message);
             }
         }
 

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using MySoft.Cache;
 using MySoft.IoC.Configuration;
-using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
@@ -26,7 +25,7 @@ namespace MySoft.IoC
         private IServiceContainer container;
         private IDictionary<string, IService> proxies;
         private AsyncCaller caller;
-        private IServiceLog logger;
+        private IServiceCall call;
 
         /// <summary>
         /// Gets the service container.
@@ -170,10 +169,10 @@ namespace MySoft.IoC
         /// <summary>
         /// 注册日志依赖
         /// </summary>
-        /// <param name="logger"></param>
-        public void RegisterLogger(IServiceLog logger)
+        /// <param name="call"></param>
+        public void RegisterLogger(IServiceCall call)
         {
-            this.logger = logger;
+            this.call = call;
         }
 
         /// <summary>
@@ -334,7 +333,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         private IServiceInterfaceType CreateProxyHandler<IServiceInterfaceType>(IService proxy, Type serviceType)
         {
-            var handler = new ServiceInvocationHandler<IServiceInterfaceType>(this.config, this.container, proxy, caller, logger);
+            var handler = new ServiceInvocationHandler<IServiceInterfaceType>(this.config, this.container, proxy, this.caller, this.call, this.container);
             return (IServiceInterfaceType)ProxyFactory.GetInstance().Create(handler, serviceType, true);
         }
 
@@ -511,7 +510,7 @@ namespace MySoft.IoC
         private InvokeData GetInvokeData(IService service, InvokeMessage message)
         {
             //调用分布式服务
-            using (var caller = new InvokeCaller(config, container, service, this.caller))
+            using (var caller = new InvokeCaller(config, this.container, service, this.caller, this.call, this.container))
             {
                 return caller.InvokeResponse(message);
             }

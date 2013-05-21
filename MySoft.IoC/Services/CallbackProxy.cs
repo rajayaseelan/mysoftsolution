@@ -21,9 +21,9 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 消息回调
         /// </summary>
-        /// <param name="messageId"></param>
-        /// <param name="message"></param>
-        public override void MessageCallback(string messageId, CallbackMessage message)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public override void MessageCallback(object sender, CallbackMessageEventArgs e)
         {
             if (callback != null)
             {
@@ -34,14 +34,14 @@ namespace MySoft.IoC.Services
                 if (interfaces.Length > 0)
                 {
                     //判断类型是否相同
-                    if (interfaces.Any(type => type.FullName == message.ServiceName))
+                    if (interfaces.Any(type => type.FullName == e.Message.ServiceName))
                     {
                         try
                         {
-                            var method = CoreHelper.GetMethodFromType(callbackType, message.MethodName);
+                            var method = CoreHelper.GetMethodFromType(callbackType, e.Message.MethodName);
 
                             //执行委托
-                            method.FastInvoke(callback, message.Parameters);
+                            method.FastInvoke(callback, e.Message.Parameters);
                         }
                         catch (Exception ex)
                         {

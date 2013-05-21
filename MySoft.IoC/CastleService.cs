@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using MySoft.IoC.Callback;
-using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
@@ -492,13 +491,13 @@ namespace MySoft.IoC
         {
             if (connected)
             {
-                container.WriteLog(string.Format("[{2}/{3}] User connection ({0}:{1}).",
-                                    endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count, CommunicationHelper.Count), LogType.Information);
+                container.WriteLog(string.Format("[{2}] User connection ({0}:{1}).",
+                                    endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count), LogType.Information);
             }
             else
             {
-                container.WriteLog(string.Format("[{2}/{3}] User Disconnection ({0}:{1}).",
-                                    endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count, CommunicationHelper.Count), LogType.Error);
+                container.WriteLog(string.Format("[{2}] User Disconnection ({0}:{1}).",
+                                    endPoint.IpAddress, endPoint.TcpPort, server.Clients.Count), LogType.Error);
             }
 
             //推送连接信息

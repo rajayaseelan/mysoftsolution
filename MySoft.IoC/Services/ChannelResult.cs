@@ -9,7 +9,6 @@ namespace MySoft.IoC.Services
     internal class ChannelResult : IDisposable
     {
         private WaitResult waitResult;
-        private RequestMessage reqMsg;
         private int count;
         private byte[] buffer;
 
@@ -35,8 +34,7 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         public ChannelResult(RequestMessage reqMsg)
         {
-            this.reqMsg = reqMsg;
-            this.waitResult = new WaitResult();
+            this.waitResult = new WaitResult(reqMsg);
         }
 
         /// <summary>
@@ -58,24 +56,7 @@ namespace MySoft.IoC.Services
             this.count = resItem.Count;
             this.buffer = resItem.Buffer;
 
-            if (resItem.Message == null)
-            {
-                return waitResult.Set(null);
-            }
-
-            //重新实例化消息对象
-            var resMsg = new ResponseMessage
-            {
-                TransactionId = reqMsg.TransactionId,
-                ServiceName = resItem.Message.ServiceName,
-                MethodName = resItem.Message.MethodName,
-                Parameters = resItem.Message.Parameters,
-                ElapsedTime = resItem.Message.ElapsedTime,
-                Error = resItem.Message.Error,
-                Value = resItem.Message.Value
-            };
-
-            return waitResult.Set(resMsg);
+            return waitResult.Set(resItem.Message);
         }
 
         #region IDisposable 成员
@@ -89,7 +70,6 @@ namespace MySoft.IoC.Services
 
             this.waitResult = null;
             this.buffer = null;
-            this.reqMsg = null;
         }
 
         #endregion

@@ -24,15 +24,15 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 消息回调
         /// </summary>
-        /// <param name="messageId"></param>
-        /// <param name="message"></param>
-        void MessageCallback(string messageId, CallbackMessage message);
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void MessageCallback(object sender, CallbackMessageEventArgs e);
 
         /// <summary>
         /// 消息回调
         /// </summary>
-        /// <param name="messageId"></param>
-        /// <param name="message"></param>
-        void MessageCallback(string messageId, ResponseMessage message);
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void MessageCallback(object sender, ResponseMessageEventArgs e);
     }
 }

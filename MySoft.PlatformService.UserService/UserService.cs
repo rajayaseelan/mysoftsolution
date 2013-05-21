@@ -26,6 +26,8 @@ namespace MySoft.PlatformService.UserService
         [AspectSwitcher(true, Description = "获取用户")]
         public virtual User GetUser(int id)
         {
+            throw new NullReferenceException("对象为空！");
+
             //if (id % 10 == 0)
             //{
             //Thread.Sleep(5000);
@@ -53,6 +55,8 @@ namespace MySoft.PlatformService.UserService
             //{
             //    return null;
             //}
+
+            Thread.Sleep(5000);
 
             if (id % 3 == 0)
             {

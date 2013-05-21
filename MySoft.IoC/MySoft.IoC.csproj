@@ -80,6 +80,8 @@
     <Compile Include="Communication\Threading\Timer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Messages\CallbackMessageEventArgs.cs" />
+    <Compile Include="Messages\ResponseMessageEventArgs.cs" />
     <Compile Include="Nodes\DefaultNodeResolver.cs" />
     <Compile Include="HttpServer\TcpDocument.cs" />
     <Compile Include="Nodes\IServerNodeResolver.cs" />
@@ -149,7 +151,7 @@
     <Compile Include="HttpServer\HttpServiceCaller.cs" />
     <Compile Include="HttpServer\HttpServiceResult.cs" />
     <Compile Include="HttpServer\HttpServiceHandler.cs" />
-    <Compile Include="Common\IServiceLog.cs" />
+    <Compile Include="Common\IServiceCall.cs" />
     <Compile Include="InvokeCaller.cs" />
     <Compile Include="Messages\CallMessage.cs" />
     <Compile Include="Messages\InvokeMessage.cs" />

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
+using MySoft.Logger;
 
 namespace MySoft.IoC
 {
@@ -14,6 +16,8 @@ namespace MySoft.IoC
         private IContainer container;
         private IService service;
         private AsyncCaller caller;
+        private IServiceCall call;
+        private ILog logger;
         private string hostName;
         private string ipAddress;
 
@@ -24,12 +28,14 @@ namespace MySoft.IoC
         /// <param name="container"></param>
         /// <param name="service"></param>
         /// <param name="caller"></param>
-        public InvokeCaller(CastleFactoryConfiguration config, IContainer container, IService service, AsyncCaller caller)
+        public InvokeCaller(CastleFactoryConfiguration config, IContainer container, IService service, AsyncCaller caller, IServiceCall call, ILog logger)
         {
             this.config = config;
             this.container = container;
             this.service = service;
+            this.call = call;
             this.caller = caller;
+            this.logger = logger;
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -65,17 +71,53 @@ namespace MySoft.IoC
             //给参数赋值
             reqMsg.Parameters["InvokeParameter"] = message.Parameters;
 
+            //定义响应的消息
+            var resMsg = GetResponse(reqMsg);
+
+            //如果有异常，向外抛出
+            if (resMsg.IsError)
+            {
+                if (logger != null) logger.WriteError(resMsg.Error);
+
+                throw resMsg.Error;
+            }
+
+            return resMsg.Value as InvokeData;
+        }
+
+        /// <summary>
+        /// 获取响应信息
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponse(RequestMessage reqMsg)
+        {
             //获取上下文
             using (var context = GetOperationContext(reqMsg))
             {
-                //异步调用服务
-                var resMsg = caller.Run(service, context, reqMsg).Message;
+                //写日志开始
+                call.BeginRequest(reqMsg);
 
-                //如果有异常，向外抛出
-                if (resMsg.IsError) throw resMsg.Error;
+                //开始一个记时器
+                var watch = Stopwatch.StartNew();
 
-                //返回数据
-                return resMsg.Value as InvokeData;
+                try
+                {
+                    //异步调用服务
+                    var resMsg = caller.Run(service, context, reqMsg).Message;
+
+                    //写日志结束
+                    call.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
+
+                    return resMsg;
+                }
+                finally
+                {
+                    if (watch.IsRunning)
+                    {
+                        watch.Stop();
+                    }
+                }
             }
         }
 
@@ -117,6 +159,8 @@ namespace MySoft.IoC
             this.container = null;
             this.service = null;
             this.caller = null;
+            this.call = null;
+            this.logger = null;
         }
 
         #endregion

@@ -16,7 +16,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 4 * 1024; //4KB
+        private const int ReceiveBufferSize = 2 * 1024; //2KB
 
         #region Public properties
 
@@ -43,21 +43,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         private readonly Socket _clientSocket;
 
         /// <summary>
-        /// This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private readonly object _syncLock;
-
-        /// <summary>
         /// This buffer is used to receive bytes 
         /// </summary>
         private byte[] _receiveBuffer;
+
+        private readonly bool _fromServer;
 
         /// <summary>
         /// A flag to control thread's running
         /// </summary>
         private volatile bool _running;
-
-        private bool _fromServer;
 
         #endregion
 
@@ -76,7 +71,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             // Disable the Nagle Algorithm for this tcp socket.  
             this._clientSocket.NoDelay = true;
 
-            this._syncLock = new object();
             this._receiveBuffer = new byte[ReceiveBufferSize];
 
             var endPoint = _clientSocket.RemoteEndPoint as IPEndPoint;
@@ -109,8 +103,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 WireProtocol.Reset();
-
-                WireProtocol = null;
                 _receiveBuffer = null;
             }
 
@@ -165,37 +157,34 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 return;
             }
 
-            lock (_syncLock)
+            //Create a byte array from message according to current protocol
+            var messageBytes = WireProtocol.GetBytes(message);
+
+            //Data packet size.
+            message.DataLength = messageBytes.Length;
+
+            //Socket send messages event args.
+            var _sendEventArgs = CreateAsyncSEA(messageBytes, message);
+
+            try
             {
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
-
-                //Data packet size.
-                message.DataLength = messageBytes.Length;
-
-                //Socket send messages event args.
-                var _sendEventArgs = CreateAsyncSEA(messageBytes, message);
-
-                try
+                //Send all bytes to the remote application
+                if (!_clientSocket.SendAsync(_sendEventArgs))
                 {
-                    //Send all bytes to the remote application
-                    if (!_clientSocket.SendAsync(_sendEventArgs))
-                    {
 #if DEBUG
-                        IoCHelper.WriteLine(ConsoleColor.DarkGray, "{0} sending message...", (_fromServer ? "[Server]" : "[Client]"));
+                    IoCHelper.WriteLine(ConsoleColor.DarkGray, "{0} sending message...", (_fromServer ? "[Server]" : "[Client]"));
 #endif
 
-                        (this as ICommunicationProtocol).SendCompleted(_sendEventArgs);
-                    }
+                    (this as ICommunicationProtocol).SendCompleted(_sendEventArgs);
                 }
-                catch (Exception ex)
-                {
-                    DisposeAsyncSEA(_sendEventArgs);
+            }
+            catch (Exception ex)
+            {
+                DisposeAsyncSEA(_sendEventArgs);
 
-                    Disconnect();
+                Disconnect();
 
-                    throw;
-                }
+                throw;
             }
         }
 
@@ -217,6 +206,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                 OnMessageSent(e.UserToken as IScsMessage);
             }
+            catch (Exception ex) { }
             finally
             {
                 DisposeAsyncSEA(e);
@@ -253,6 +243,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     {
                         //Show error.
                         OnMessageError(ex);
+
+                        throw;
                     }
 
                     if (_running)
@@ -294,8 +286,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Copy buffer.
             Buffer.BlockCopy(buffer, 0, receivedBytes, 0, bytesTransferred);
 
-            Array.Clear(buffer, 0, bytesTransferred);
-
             //Read messages according to current wire protocol
             var messages = WireProtocol.CreateMessages(receivedBytes);
 
@@ -322,6 +312,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             IoCHelper.WriteLine(ConsoleColor.DarkCyan, "{1} pop communication tcp socket event async count: {0}", CommunicationHelper.Count, (_fromServer ? "[Server]" : "[Client]"));
 #endif
 
+            if (e == null) return null;
+
             e.AcceptSocket = _clientSocket;
             if (token != null)
             {
@@ -341,6 +333,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private void DisposeAsyncSEA(SocketAsyncEventArgs e)
         {
+            if (e == null) return;
+
             try
             {
                 e.AcceptSocket = null;

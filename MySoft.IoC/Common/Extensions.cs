@@ -1,5 +1,4 @@
-﻿using MySoft.IoC.Logger;
-using MySoft.IoC.Messages;
+﻿using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {
@@ -12,9 +11,9 @@ namespace MySoft.IoC
         /// 请求开始
         /// </summary>
         /// <param name="reqMsg"></param>
-        internal static void BeginRequest(this IServiceLog logger, RequestMessage reqMsg)
+        internal static void BeginRequest(this IServiceCall call, RequestMessage reqMsg)
         {
-            if (logger == null) return;
+            if (call == null) return;
 
             try
             {
@@ -29,7 +28,7 @@ namespace MySoft.IoC
                 };
 
                 //开始调用
-                logger.Begin(callMsg);
+                call.BeginCall(callMsg);
             }
             catch
             {
@@ -42,9 +41,9 @@ namespace MySoft.IoC
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <param name="elapsedMilliseconds"></param>
-        internal static void EndRequest(this IServiceLog logger, RequestMessage reqMsg, ResponseMessage resMsg, long elapsedMilliseconds)
+        internal static void EndRequest(this IServiceCall call, RequestMessage reqMsg, ResponseMessage resMsg, long elapsedMilliseconds)
         {
-            if (logger == null) return;
+            if (call == null) return;
 
             try
             {
@@ -69,7 +68,7 @@ namespace MySoft.IoC
                 };
 
                 //结束调用
-                logger.End(callMsg, returnMsg, elapsedMilliseconds);
+                call.EndCall(callMsg, returnMsg, elapsedMilliseconds);
             }
             catch
             {

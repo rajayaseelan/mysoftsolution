@@ -88,9 +88,9 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 消息回调
         /// </summary>
-        /// <param name="messageId"></param>
-        /// <param name="message"></param>
-        public virtual void MessageCallback(string messageId, CallbackMessage message)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public virtual void MessageCallback(object sender, CallbackMessageEventArgs e)
         {
             return;
         }
@@ -98,16 +98,16 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 消息回调
         /// </summary>
-        /// <param name="messageId"></param>
-        /// <param name="message"></param>
-        public void MessageCallback(string messageId, ResponseMessage message)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public virtual void MessageCallback(object sender, ResponseMessageEventArgs e)
         {
             lock (hashtable)
             {
                 //设置响应值
-                if (hashtable.ContainsKey(messageId))
+                if (hashtable.ContainsKey(e.MessageId))
                 {
-                    hashtable[messageId].Set(message);
+                    hashtable[e.MessageId].Set(e.Message);
                 }
             }
         }
@@ -128,8 +128,13 @@ namespace MySoft.IoC.Services
 
             try
             {
+                var messageId = reqMsg.TransactionId.ToString();
+
+                //发送消息
+                reqProxy.SendMessage(messageId, reqMsg);
+
                 //发送请求
-                return GetResponse(reqProxy, reqMsg);
+                return GetResponse(messageId, reqMsg);
             }
             finally
             {
@@ -140,15 +145,13 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取响应信息
         /// </summary>
-        /// <param name="reqProxy"></param>
+        /// <param name="messageId"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(ServiceRequest reqProxy, RequestMessage reqMsg)
+        private ResponseMessage GetResponse(string messageId, RequestMessage reqMsg)
         {
-            var messageId = reqMsg.TransactionId.ToString();
-
             //发送消息并获取结果
-            using (var waitResult = new WaitResult())
+            using (var waitResult = new WaitResult(reqMsg))
             {
                 try
                 {
@@ -157,9 +160,6 @@ namespace MySoft.IoC.Services
                         //请求列表
                         hashtable[messageId] = waitResult;
                     }
-
-                    //发送消息
-                    reqProxy.SendMessage(messageId, reqMsg);
 
                     //等待信号响应
                     if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))

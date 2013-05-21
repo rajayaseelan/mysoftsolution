@@ -137,7 +137,7 @@ namespace MySoft.IoC.DataReport
                 ServerIPAddress = e.ServerIPAddress,
                 ServerPort = e.ServerPort,
                 ErrType = e.Error.GetType().FullName,
-                ErrMessage = ErrorHelper.GetHtmlError(e.Error),
+                ErrMessage = ErrorHelper.GetErrorWithoutHtml(e.Error),
                 AddTime = DateTime.Now
             };
 

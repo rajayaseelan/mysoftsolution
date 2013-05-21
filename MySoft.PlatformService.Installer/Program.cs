@@ -10,10 +10,6 @@ namespace MySoft.PlatformService.Installer
         static void Main(string[] args)
         {
             Console.Title = "PlatformService Installer";
-            Console.BackgroundColor = ConsoleColor.Black;
-
-            var color = Console.BackgroundColor;
-            Console.BackgroundColor = ConsoleColor.DarkBlue;
 
             string optionalArgs = string.Empty;
 
@@ -21,7 +17,6 @@ namespace MySoft.PlatformService.Installer
             if (args.Length == 0)
             {
                 Console.WriteLine("请输入有效的参数信息，详情请查阅/help!");
-                Console.BackgroundColor = color;
                 return;
             }
             else
@@ -29,84 +24,77 @@ namespace MySoft.PlatformService.Installer
                 optionalArgs = args[0];
             }
 
-            try
+            if (!string.IsNullOrEmpty(optionalArgs))
             {
-                if (!string.IsNullOrEmpty(optionalArgs))
+                switch (optionalArgs.ToLower())
                 {
-                    switch (optionalArgs.ToLower())
-                    {
-                        case "/?":
-                        case "/h":
-                        case "/help":
-                        case "-?":
-                        case "-h":
-                        case "-help":
-                            PrintHelp();
-                            break;
-                        case "/l":
-                        case "/list":
-                        case "-l":
-                        case "-list":
-                            {
-                                string contains = null;
-                                string status = null;
-                                if (args.Length >= 2) contains = args[1].Trim();
-                                if (args.Length >= 3) status = args[2].Trim();
-                                InstallerServer.Instance.ListService(contains, status);
-                            }
-                            break;
-                        case "/s":
-                        case "/start":
-                        case "-s":
-                        case "-start":
-                            {
-                                string service = null;
-                                if (args.Length == 2) service = args[1].Trim();
-                                InstallerServer.Instance.StartService(service);
-                            }
-                            break;
-                        case "/p":
-                        case "/stop":
-                        case "-p":
-                        case "-stop":
-                            {
-                                string service = null;
-                                if (args.Length == 2) service = args[1].Trim();
-                                InstallerServer.Instance.StopService(service);
-                            }
-                            break;
-                        case "/r":
-                        case "/restart":
-                        case "-r":
-                        case "-restart":
-                            {
-                                string service = null;
-                                if (args.Length == 2) service = args[1].Trim();
-                                InstallerServer.Instance.StopService(service);
-                                InstallerServer.Instance.StartService(service);
-                            }
-                            break;
-                        case "/i":
-                        case "/install":
-                        case "-i":
-                        case "-install":
-                            InstallerServer.Instance.InstallService();
-                            break;
-                        case "/u":
-                        case "/uninstall":
-                        case "-u":
-                        case "-uninstall":
-                            InstallerServer.Instance.UninstallService();
-                            break;
-                        default:
-                            Console.WriteLine("输入的命令无效，输入/?显示帮助！");
-                            break;
-                    }
+                    case "/?":
+                    case "/h":
+                    case "/help":
+                    case "-?":
+                    case "-h":
+                    case "-help":
+                        PrintHelp();
+                        break;
+                    case "/l":
+                    case "/list":
+                    case "-l":
+                    case "-list":
+                        {
+                            string contains = null;
+                            string status = null;
+                            if (args.Length >= 2) contains = args[1].Trim();
+                            if (args.Length >= 3) status = args[2].Trim();
+                            InstallerServer.Instance.ListService(contains, status);
+                        }
+                        break;
+                    case "/s":
+                    case "/start":
+                    case "-s":
+                    case "-start":
+                        {
+                            string service = null;
+                            if (args.Length == 2) service = args[1].Trim();
+                            InstallerServer.Instance.StartService(service);
+                        }
+                        break;
+                    case "/p":
+                    case "/stop":
+                    case "-p":
+                    case "-stop":
+                        {
+                            string service = null;
+                            if (args.Length == 2) service = args[1].Trim();
+                            InstallerServer.Instance.StopService(service);
+                        }
+                        break;
+                    case "/r":
+                    case "/restart":
+                    case "-r":
+                    case "-restart":
+                        {
+                            string service = null;
+                            if (args.Length == 2) service = args[1].Trim();
+                            InstallerServer.Instance.StopService(service);
+                            InstallerServer.Instance.StartService(service);
+                        }
+                        break;
+                    case "/i":
+                    case "/install":
+                    case "-i":
+                    case "-install":
+                        InstallerServer.Instance.InstallService();
+                        break;
+                    case "/u":
+                    case "/uninstall":
+                    case "-u":
+                    case "-uninstall":
+                        InstallerServer.Instance.UninstallService();
+                        break;
+                    default:
+                        Console.WriteLine("输入的命令无效，输入/?显示帮助！");
+                        break;
                 }
-            }
-            finally
-            {
-                Console.BackgroundColor = color;
             }
         }
 

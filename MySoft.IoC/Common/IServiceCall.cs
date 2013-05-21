@@ -1,17 +1,17 @@
 ﻿using MySoft.IoC.Messages;
 
-namespace MySoft.IoC.Logger
+namespace MySoft.IoC
 {
     /// <summary>
-    /// 执行并输出日志的接口
+    /// 执行服务请求接口
     /// </summary>
-    public interface IServiceLog
+    public interface IServiceCall
     {
         /// <summary>
         /// 开始执行命令
         /// </summary>
         /// <param name="reqMsg"></param>
-        void Begin(CallMessage reqMsg);
+        void BeginCall(CallMessage reqMsg);
 
         /// <summary>
         /// 结束执行命令
@@ -19,6 +19,6 @@ namespace MySoft.IoC.Logger
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <param name="elapsedTime"></param>
-        void End(CallMessage reqMsg, ReturnMessage resMsg, long elapsedTime);
+        void EndCall(CallMessage reqMsg, ReturnMessage resMsg, long elapsedTime);
     }
 }

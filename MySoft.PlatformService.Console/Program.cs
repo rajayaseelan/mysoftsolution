@@ -10,12 +10,6 @@ namespace MySoft.PlatformService.Console
     {
         static void Main(string[] args)
         {
-            //var session = MySoft.Data.DbProviderFactory.CreateDbProvider("Northwind", Data.DbProviderType.MySql);
-
-            var color = System.Console.ForegroundColor;
-
-            System.Console.BackgroundColor = ConsoleColor.DarkBlue;
-            System.Console.ForegroundColor = ConsoleColor.White;
             server_OnLog("Server ready started...", LogType.Normal);
 
             var config = CastleServiceConfiguration.GetConfig();
@@ -25,13 +19,10 @@ namespace MySoft.PlatformService.Console
             server.Completed += new EventHandler<CallEventArgs>(server_OnCalling);
             server.Start();
 
-            //MySoft.IoC.DataReport.CallingReport.Init(config, server);
-
             server_OnLog(string.Format("Tcp server host -> {0}", server.ServerUrl), LogType.Normal);
             server_OnLog(string.Format("Server publish ({0}) services.", server.ServiceCount), LogType.Normal);
             server_OnLog(string.Format("Press any key to exit and stop service..."), LogType.Normal);
 
-            System.Console.ForegroundColor = color;
             System.Console.ReadLine();
 
             server_OnLog("Server ready stopped...", LogType.Normal);

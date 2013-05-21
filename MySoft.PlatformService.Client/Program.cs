@@ -13,16 +13,16 @@ using MySoft.PlatformService.UserService;
 
 namespace MySoft.PlatformService.Client
 {
-    public class ServiceLog : IServiceLog
+    public class ServiceCall : IServiceCall
     {
-        #region IServiceLog 成员
+        #region IServiceCall 成员
 
-        public void Begin(CallMessage reqMsg)
+        public void BeginCall(CallMessage reqMsg)
         {
             //throw new NotImplementedException();
         }
 
-        public void End(CallMessage reqMsg, ReturnMessage resMsg, long elapsedTime)
+        public void EndCall(CallMessage reqMsg, ReturnMessage resMsg, long elapsedTime)
         {
             //throw new NotImplementedException();
         }
@@ -374,14 +374,15 @@ namespace MySoft.PlatformService.Client
 
             #endregion
 
-            CastleFactory.Create().RegisterLogger(new ServiceLog());
+            CastleFactory.Create().OnError += Program_OnError;
+            //CastleFactory.Create().RegisterLogger(new ServiceCall());
             CastleFactory.Create().OnDisconnected += Program_OnDisconnected;
 
             //var watch = Stopwatch.StartNew();
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -545,6 +546,13 @@ namespace MySoft.PlatformService.Client
                     int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
                     //var value = service.GetUsersString(count, out length);
 
+                    var v = CastleFactory.Create().Invoke(node, new InvokeMessage
+                    {
+                        ServiceName = typeof(IUserService).FullName,
+                        MethodName = typeof(IUserService).GetMethod("GetUsers").ToString(),
+                        Parameters = null
+                    });
+
                     var value = service.GetUser(new Random().Next(1, count));
 
                     //var user = service.GetUser(counter);
@@ -576,7 +584,7 @@ namespace MySoft.PlatformService.Client
 
         static void Program_OnError(Exception error)
         {
-            Console.WriteLine(error.Message);
+            Console.WriteLine(error.ToString());
         }
 
         static void castle_OnError(Exception error)

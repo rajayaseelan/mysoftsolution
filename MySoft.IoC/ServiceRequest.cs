@@ -18,6 +18,7 @@ namespace MySoft.IoC
         private IServiceCallback callback;
         private IScsClient client;
         private ServerNode node;
+        private string messageId;
         private bool subscribed;
 
         /// <summary>
@@ -50,6 +51,7 @@ namespace MySoft.IoC
         /// <param name="reqMsg"></param>
         public void SendMessage(string messageId, RequestMessage reqMsg)
         {
+            this.messageId = messageId;
             this.reqMsg = reqMsg;
 
             //如果连接断开，直接抛出异常
@@ -113,43 +115,30 @@ namespace MySoft.IoC
                 {
                     //消息类型转换
                     var data = e.Message as ScsCallbackMessage;
+                    var value = new CallbackMessageEventArgs
+                    {
+                        MessageId = data.RepliedMessageId,
+                        Request = reqMsg,
+                        Message = data.MessageValue
+                    };
 
                     //回调消息
-                    callback.MessageCallback(e.Message.RepliedMessageId, data.MessageValue);
+                    callback.MessageCallback(this, value);
                 }
                 else
                 {
-                    //定义消息
-                    ResponseMessage resMsg = null;
+                    //获取响应消息
+                    var resMsg = GetResponseMessage(e);
 
-                    if (e.Message is ScsResultMessage)
+                    var value = new ResponseMessageEventArgs
                     {
-                        //消息类型转换
-                        var data = e.Message as ScsResultMessage;
-
-                        resMsg = data.MessageValue as ResponseMessage;
-                    }
-                    else if (e.Message is ScsRawDataMessage)
-                    {
-                        try
-                        {
-                            //获取响应信息
-                            var data = e.Message as ScsRawDataMessage;
-                            var buffer = CompressionManager.DecompressGZip(data.MessageData);
-                            resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
-
-                            //设置同步返回传输Id
-                            resMsg.TransactionId = new Guid(e.Message.RepliedMessageId);
-                        }
-                        catch (Exception ex)
-                        {
-                            //出错时响应错误
-                            resMsg = IoCHelper.GetResponse(reqMsg, ex);
-                        }
-                    }
+                        MessageId = e.Message.RepliedMessageId,
+                        Request = reqMsg,
+                        Message = resMsg
+                    };
 
                     //把数据发送到客户端
-                    callback.MessageCallback(e.Message.RepliedMessageId, resMsg);
+                    callback.MessageCallback(this, value);
                 }
             }
             catch (Exception ex)
@@ -160,6 +149,45 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 获取响应消息
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponseMessage(MessageEventArgs e)
+        {
+            //定义消息
+            ResponseMessage resMsg = null;
+
+            if (e.Message is ScsResultMessage)
+            {
+                //消息类型转换
+                var data = e.Message as ScsResultMessage;
+
+                resMsg = data.MessageValue as ResponseMessage;
+            }
+            else if (e.Message is ScsRawDataMessage)
+            {
+                try
+                {
+                    //获取响应信息
+                    var data = e.Message as ScsRawDataMessage;
+                    var buffer = CompressionManager.DecompressGZip(data.MessageData);
+                    resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
+
+                    //设置同步返回传输Id
+                    resMsg.TransactionId = new Guid(e.Message.RepliedMessageId);
+                }
+                catch (Exception ex)
+                {
+                    //出错时响应错误
+                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                }
+            }
+
+            return resMsg;
+        }
+
+        /// <summary>
         /// 错误回调
         /// </summary>
         /// <param name="sender"></param>
@@ -167,11 +195,17 @@ namespace MySoft.IoC
         void client_MessageError(object sender, ErrorEventArgs e)
         {
             //输出错误信息
-            var messageId = reqMsg.TransactionId.ToString();
             var resMsg = IoCHelper.GetResponse(reqMsg, e.Error);
 
-            //设置异常消息
-            callback.MessageCallback(messageId, resMsg);
+            var value = new ResponseMessageEventArgs
+            {
+                MessageId = messageId,
+                Request = reqMsg,
+                Message = resMsg
+            };
+
+            //把数据发送到客户端
+            callback.MessageCallback(this, value);
         }
 
         /// <summary>

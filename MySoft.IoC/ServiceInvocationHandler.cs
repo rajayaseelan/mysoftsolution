@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using MySoft.IoC.Configuration;
-using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
+using MySoft.Logger;
 
 namespace MySoft.IoC
 {
@@ -19,7 +19,8 @@ namespace MySoft.IoC
         private IContainer container;
         private IService service;
         private AsyncCaller caller;
-        private IServiceLog logger;
+        private IServiceCall call;
+        private ILog logger;
         private string hostName;
         private string ipAddress;
 
@@ -30,13 +31,14 @@ namespace MySoft.IoC
         /// <param name="container"></param>
         /// <param name="service"></param>
         /// <param name="caller"></param>
-        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, AsyncCaller caller, IServiceLog logger)
+        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, AsyncCaller caller, IServiceCall call, ILog logger)
         {
             this.config = config;
             this.container = container;
             this.service = service;
-            this.logger = logger;
+            this.call = call;
             this.caller = caller;
+            this.logger = logger;
 
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
@@ -103,7 +105,7 @@ namespace MySoft.IoC
             object returnValue = null;
 
             //调用方法
-            var resMsg = CallService(reqMsg);
+            var resMsg = InvokeRequest(reqMsg);
 
             if (resMsg != null)
             {
@@ -122,40 +124,22 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="reqMsg">Name of the sub service.</param>
         /// <returns>The result.</returns>
-        protected virtual ResponseMessage CallService(RequestMessage reqMsg)
+        private ResponseMessage InvokeRequest(RequestMessage reqMsg)
         {
-            ResponseMessage resMsg = null;
-
             try
             {
-                //写日志开始
-                logger.BeginRequest(reqMsg);
-
-                //开始一个记时器
-                var watch = Stopwatch.StartNew();
-
-                try
-                {
-                    //获取上下文
-                    using (var context = GetOperationContext(reqMsg))
-                    {
-                        //异步调用服务
-                        resMsg = caller.Run(service, context, reqMsg).Message;
-                    }
-
-                    //写日志结束
-                    logger.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
-                }
-                finally
-                {
-                    if (watch.IsRunning)
-                    {
-                        watch.Stop();
-                    }
-                }
+                //定义响应的消息
+                var resMsg = GetResponse(reqMsg);
 
                 //如果有异常，向外抛出
-                if (resMsg.IsError) throw resMsg.Error;
+                if (resMsg.IsError)
+                {
+                    if (logger != null) logger.WriteError(resMsg.Error);
+
+                    throw resMsg.Error;
+                }
+
+                return resMsg;
             }
             catch (BusinessException ex)
             {
@@ -173,7 +157,43 @@ namespace MySoft.IoC
                 }
             }
 
-            return resMsg;
+            return null;
+        }
+
+        /// <summary>
+        /// 获取响应信息
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponse(RequestMessage reqMsg)
+        {
+            //获取上下文
+            using (var context = GetOperationContext(reqMsg))
+            {
+                //写日志开始
+                call.BeginRequest(reqMsg);
+
+                //开始一个记时器
+                var watch = Stopwatch.StartNew();
+
+                try
+                {
+                    //异步调用服务
+                    var resMsg = caller.Run(service, context, reqMsg).Message;
+
+                    //写日志结束
+                    call.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
+
+                    return resMsg;
+                }
+                finally
+                {
+                    if (watch.IsRunning)
+                    {
+                        watch.Stop();
+                    }
+                }
+            }
         }
 
         /// <summary>
