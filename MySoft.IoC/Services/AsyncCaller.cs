@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using MySoft.Cache;
 using MySoft.IoC.Messages;
 using MySoft.Security;
 
@@ -206,17 +205,9 @@ namespace MySoft.IoC.Services
             AsyncMethodCaller caller = null;
 
             if (NeedCacheResult(reqMsg))
-            {
-                //invoke方式调用
-                if (reqMsg.InvokeMethod)
-                    caller = GetResponseFromMemoryCache;
-                else
-                    caller = GetResponseFromFileCache;
-            }
+                caller = GetResponseFromFileCache;
             else
-            {
                 caller = GetResponseFromLocalService;
-            }
 
             //开始异步调用
             return caller.BeginInvoke(callKey, service, context, reqMsg, null, caller);
@@ -280,32 +271,6 @@ namespace MySoft.IoC.Services
         private bool NeedCacheResult(RequestMessage reqMsg)
         {
             return fromServer && reqMsg.EnableCache && reqMsg.CacheTime > 0;
-        }
-
-        /// <summary>
-        /// 从本地获取数据
-        /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="service"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseItem GetResponseFromMemoryCache(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
-        {
-            //调用缓存处理结果
-            var resMsg = CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
-            {
-                //获取响应信息项
-                var arr = state as ArrayList;
-                var _service = arr[0] as IService;
-                var _context = arr[1] as OperationContext;
-                var _reqMsg = arr[2] as RequestMessage;
-
-                return GetResponse(_service, _context, _reqMsg);
-
-            }, new ArrayList { service, context, reqMsg }, CheckResponse);
-
-            return new ResponseItem(resMsg);
         }
 
         /// <summary>
