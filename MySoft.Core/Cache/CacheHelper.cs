@@ -58,9 +58,6 @@ namespace MySoft.Cache
             }
             else
             {
-                //移除缓存
-                CacheHelper.Remove(key);
-
                 try
                 {
                     var path = GetFilePath(key);
@@ -68,11 +65,9 @@ namespace MySoft.Cache
                     {
                         File.Delete(path);
                     }
-                }
-                catch (ThreadInterruptedException ex) { }
-                catch (ThreadAbortException ex)
-                {
-                    Thread.ResetAbort();
+
+                    //移除缓存
+                    CacheHelper.Remove(key);
                 }
                 catch (IOException ex) { }
                 catch (Exception ex)
@@ -244,11 +239,6 @@ namespace MySoft.Cache
             {
                 internalObject = func(state);
             }
-            catch (ThreadInterruptedException ex) { }
-            catch (ThreadAbortException ex)
-            {
-                Thread.ResetAbort();
-            }
             catch (Exception ex)
             {
                 SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
@@ -304,11 +294,6 @@ namespace MySoft.Cache
                         CacheHelper.Insert(key, cacheObj, Math.Min(30, (int)timeout.TotalSeconds));
                     }
                 }
-                catch (ThreadInterruptedException ex) { }
-                catch (ThreadAbortException ex)
-                {
-                    Thread.ResetAbort();
-                }
                 catch (IOException ex) { }
                 catch (Exception ex)
                 {
@@ -347,11 +332,6 @@ namespace MySoft.Cache
                     buffer = CompressionManager.CompressGZip(buffer);
                     File.WriteAllBytes(path, buffer);
                 }
-                catch (ThreadInterruptedException ex) { }
-                catch (ThreadAbortException ex)
-                {
-                    Thread.ResetAbort();
-                }
                 catch (IOException ex) { }
                 catch (Exception ex)
                 {
@@ -361,7 +341,7 @@ namespace MySoft.Cache
             else
             {
                 //默认缓存1天
-                CacheHelper.Insert(key, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
+                CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
             }
         }
 

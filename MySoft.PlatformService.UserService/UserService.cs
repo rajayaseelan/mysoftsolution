@@ -26,7 +26,7 @@ namespace MySoft.PlatformService.UserService
         [AspectSwitcher(true, Description = "获取用户")]
         public virtual User GetUser(int id)
         {
-            throw new NullReferenceException("对象为空！");
+            //throw new NullReferenceException("对象为空！");
 
             //if (id % 10 == 0)
             //{
@@ -190,7 +190,7 @@ namespace MySoft.PlatformService.UserService
 
         public IList<UserInfo> GetUsers()
         {
-            throw new NotImplementedException("abce");
+            //throw new NotImplementedException("abce");
 
             var list = new List<UserInfo>();
 

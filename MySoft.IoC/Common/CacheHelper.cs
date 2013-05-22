@@ -160,11 +160,6 @@ namespace MySoft.IoC
                         CacheHelper.Insert(key, cacheObj, Math.Min(30, (int)timeout.TotalSeconds));
                     }
                 }
-                catch (ThreadInterruptedException ex) { }
-                catch (ThreadAbortException ex)
-                {
-                    Thread.ResetAbort();
-                }
                 catch (IOException ex) { }
                 catch (Exception ex)
                 {

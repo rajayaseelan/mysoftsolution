@@ -16,7 +16,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 2 * 1024; //2KB
+        private const int ReceiveBufferSize = 4 * 1024; //4KB
 
         #region Public properties
 
@@ -232,19 +232,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 //Receive data success.
                 if (e.SocketError == SocketError.Success && e.BytesTransferred > 0)
                 {
+                    LastReceivedMessageTime = DateTime.Now;
+
                     try
                     {
-                        LastReceivedMessageTime = DateTime.Now;
-
                         //处理接收的缓冲数据
                         OnBufferReceived(e.Buffer, e.BytesTransferred);
                     }
-                    catch (SerializationException ex)
+                    catch (Exception ex)
                     {
-                        //Show error.
                         OnMessageError(ex);
-
-                        throw;
                     }
 
                     if (_running)

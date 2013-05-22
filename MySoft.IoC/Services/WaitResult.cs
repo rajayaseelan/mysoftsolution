@@ -28,7 +28,7 @@ namespace MySoft.IoC.Services
         public WaitResult(RequestMessage reqMsg)
         {
             this.reqMsg = reqMsg;
-            this.ev = new AutoResetEvent(false);
+            this.ev = new ManualResetEvent(false);
         }
 
         /// <summary>

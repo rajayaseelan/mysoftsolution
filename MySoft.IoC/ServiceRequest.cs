@@ -117,7 +117,7 @@ namespace MySoft.IoC
                     var data = e.Message as ScsCallbackMessage;
                     var value = new CallbackMessageEventArgs
                     {
-                        MessageId = data.RepliedMessageId,
+                        MessageId = messageId,
                         Request = reqMsg,
                         Message = data.MessageValue
                     };
@@ -128,13 +128,11 @@ namespace MySoft.IoC
                 else
                 {
                     //获取响应消息
-                    var resMsg = GetResponseMessage(e);
-
                     var value = new ResponseMessageEventArgs
                     {
-                        MessageId = e.Message.RepliedMessageId,
+                        MessageId = messageId,
                         Request = reqMsg,
-                        Message = resMsg
+                        Message = GetResponseMessage(e)
                     };
 
                     //把数据发送到客户端
@@ -173,9 +171,6 @@ namespace MySoft.IoC
                     var data = e.Message as ScsRawDataMessage;
                     var buffer = CompressionManager.DecompressGZip(data.MessageData);
                     resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
-
-                    //设置同步返回传输Id
-                    resMsg.TransactionId = new Guid(e.Message.RepliedMessageId);
                 }
                 catch (Exception ex)
                 {

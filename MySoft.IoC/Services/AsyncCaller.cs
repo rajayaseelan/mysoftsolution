@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using MySoft.Cache;
@@ -206,12 +205,13 @@ namespace MySoft.IoC.Services
             //定义委托
             AsyncMethodCaller caller = null;
 
-            if (NeedServiceCache(reqMsg))
+            if (NeedCacheResult(reqMsg))
             {
-                if (fromServer)
-                    caller = GetResponseFromFileCache;
-                else
+                //invoke方式调用
+                if (reqMsg.InvokeMethod)
                     caller = GetResponseFromMemoryCache;
+                else
+                    caller = GetResponseFromFileCache;
             }
             else
             {
@@ -277,9 +277,9 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private bool NeedServiceCache(RequestMessage reqMsg)
+        private bool NeedCacheResult(RequestMessage reqMsg)
         {
-            return reqMsg.EnableCache && reqMsg.CacheTime > 0;
+            return fromServer && reqMsg.EnableCache && reqMsg.CacheTime > 0;
         }
 
         /// <summary>
@@ -292,83 +292,20 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseItem GetResponseFromMemoryCache(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
         {
-            //本地缓存Key
-            callKey = string.Format("memory_{0}", callKey);
-
-            //开始一个记时器
-            var watch = Stopwatch.StartNew();
-
-            try
+            //调用缓存处理结果
+            var resMsg = CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
             {
-                //计算缓存时间
-                int timeout = Math.Min(30, reqMsg.CacheTime);
+                //获取响应信息项
+                var arr = state as ArrayList;
+                var _service = arr[0] as IService;
+                var _context = arr[1] as OperationContext;
+                var _reqMsg = arr[2] as RequestMessage;
 
-                //调用缓存处理结果
-                var resMsg = CacheHelper<ResponseMessage>.Get(callKey, TimeSpan.FromSeconds(timeout), state =>
-                {
-                    //获取响应信息项
-                    var arr = state as ArrayList;
-                    var _service = arr[0] as IService;
-                    var _context = arr[1] as OperationContext;
-                    var _reqMsg = arr[2] as RequestMessage;
+                return GetResponse(_service, _context, _reqMsg);
 
-                    var response = GetResponse(_service, _context, _reqMsg);
+            }, new ArrayList { service, context, reqMsg }, CheckResponse);
 
-                    //创建缓存对象
-                    return new CacheResponse(response);
-
-                }, new ArrayList { service, context, reqMsg }, CheckResponse);
-
-
-                //设置新参数
-                var newMsg = NewResponse(reqMsg, resMsg);
-
-                newMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
-
-                return new ResponseItem(newMsg);
-            }
-            finally
-            {
-                if (watch.IsRunning)
-                {
-                    watch.Stop();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 新响应对象
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage NewResponse(RequestMessage reqMsg, ResponseMessage resMsg)
-        {
-            if (resMsg.Value != null) resMsg.Value = null;
-
-            var response = new ResponseMessage
-            {
-                TransactionId = reqMsg.TransactionId,
-                ServiceName = resMsg.ServiceName,
-                MethodName = resMsg.MethodName,
-                Parameters = resMsg.Parameters,
-                ElapsedTime = resMsg.ElapsedTime,
-                Error = resMsg.Error
-            };
-
-            //设置返回参数
-            if (resMsg is CacheResponse)
-            {
-                //通过Buffer反序列化成对象
-                var cacheResponse = resMsg as CacheResponse;
-
-                if (cacheResponse.Buffer != null)
-                {
-                    response.Value = SerializationManager.DeserializeBin(cacheResponse.Buffer);
-                }
-            }
-
-            return response;
+            return new ResponseItem(resMsg);
         }
 
         /// <summary>

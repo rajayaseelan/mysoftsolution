@@ -49,14 +49,14 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.查看缓存文件内容VToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.gridDataQuery = new System.Windows.Forms.DataGridView();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.webBrowser1 = new System.Windows.Forms.WebBrowser();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.查看缓存文件内容VToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -64,10 +64,10 @@
             this.splitContainer1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gridDataQuery)).BeginInit();
             this.tabPage3.SuspendLayout();
-            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -89,12 +89,12 @@
             this.numericUpDown1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.numericUpDown1.Location = new System.Drawing.Point(468, 14);
             this.numericUpDown1.Maximum = new decimal(new int[] {
-            120,
+            60,
             0,
             0,
             0});
             this.numericUpDown1.Minimum = new decimal(new int[] {
-            10,
+            1,
             0,
             0,
             0});
@@ -289,6 +289,20 @@
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = "";
             // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.查看缓存文件内容VToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(187, 26);
+            // 
+            // 查看缓存文件内容VToolStripMenuItem
+            // 
+            this.查看缓存文件内容VToolStripMenuItem.Name = "查看缓存文件内容VToolStripMenuItem";
+            this.查看缓存文件内容VToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.查看缓存文件内容VToolStripMenuItem.Text = "查看缓存文件内容(&V)";
+            this.查看缓存文件内容VToolStripMenuItem.Click += new System.EventHandler(this.查看缓存文件内容VToolStripMenuItem_Click);
+            // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.gridDataQuery);
@@ -357,20 +371,6 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // contextMenuStrip1
-            // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.查看缓存文件内容VToolStripMenuItem});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(189, 48);
-            // 
-            // 查看缓存文件内容VToolStripMenuItem
-            // 
-            this.查看缓存文件内容VToolStripMenuItem.Name = "查看缓存文件内容VToolStripMenuItem";
-            this.查看缓存文件内容VToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
-            this.查看缓存文件内容VToolStripMenuItem.Text = "查看缓存文件内容(&V)";
-            this.查看缓存文件内容VToolStripMenuItem.Click += new System.EventHandler(this.查看缓存文件内容VToolStripMenuItem_Click);
-            // 
             // frmInvoke
             // 
             this.AcceptButton = this.button1;
@@ -395,10 +395,10 @@
             this.splitContainer1.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
+            this.contextMenuStrip1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.gridDataQuery)).EndInit();
             this.tabPage3.ResumeLayout(false);
-            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

@@ -526,7 +526,7 @@ namespace MySoft.PlatformService.Client
             while (true)
             {
                 var node = ServerNode.Parse("127.0.0.1", 9982);
-                var service = CastleFactory.Create().GetChannel<IUserService>(node);
+                //var service = CastleFactory.Create().GetChannel<IUserService>(node);
 
                 try
                 {
@@ -543,17 +543,20 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1);
                     //var value = service.GetUsersString(count, out length);
+
+                    var p = SerializationManager.SerializeJson(new { id = count });
 
                     var v = CastleFactory.Create().Invoke(node, new InvokeMessage
                     {
                         ServiceName = typeof(IUserService).FullName,
-                        MethodName = typeof(IUserService).GetMethod("GetUsers").ToString(),
-                        Parameters = null
+                        MethodName = typeof(IUserService).GetMethod("GetUser", new Type[] { typeof(int) }).ToString(),
+                        Parameters = p,
+                        CacheTime = 30
                     });
 
-                    var value = service.GetUser(new Random().Next(1, count));
+                    //var value = service.GetUser(new Random().Next(1, count));
 
                     //var user = service.GetUser(counter);
 
@@ -564,7 +567,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Name.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + v.Value.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //value.Clear();
 
