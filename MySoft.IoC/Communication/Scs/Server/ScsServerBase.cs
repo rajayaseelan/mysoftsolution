@@ -140,8 +140,6 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             var channel = (IScsServerClient)sender;
 
-            channel.Disconnected -= Client_Disconnected;
-
             lock (Clients)
             {
                 Clients.Remove(channel.ClientId);

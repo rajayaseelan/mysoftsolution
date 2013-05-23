@@ -19,11 +19,6 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 响应消息
-        /// </summary>
-        public ResponseMessage Message { get; set; }
-
-        /// <summary>
         /// 缓存数据
         /// </summary>
         public byte[] Buffer { get; set; }
@@ -32,5 +27,10 @@ namespace MySoft.IoC
         /// 记录数
         /// </summary>
         public int Count { get; set; }
+
+        /// <summary>
+        /// 响应消息
+        /// </summary>
+        public ResponseMessage Message { get; set; }
     }
 }

@@ -16,7 +16,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 2 * 1024; //2KB
+        private const int ReceiveBufferSize = 8 * 1024; //8KB
 
         #region Public properties
 
@@ -343,6 +343,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 CommunicationHelper.Push(e);
             }
+
 #if DEBUG
             IoCHelper.WriteLine(ConsoleColor.DarkRed, "[{0}] {1} push tcp socket event async count: {2}", DateTime.Now, (_fromServer ? "[Server]" : "[Client]"), CommunicationHelper.Count);
 #endif

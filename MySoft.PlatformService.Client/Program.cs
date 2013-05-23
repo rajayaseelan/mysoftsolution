@@ -386,7 +386,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -519,6 +519,12 @@ namespace MySoft.PlatformService.Client
             }
         }
 
+        [Serializable]
+        public class TmpUser
+        {
+            public string UserName { get; set; }
+        }
+
         static void DoWork1(object state)
         {
             var e = state as ManualResetEvent;
@@ -547,7 +553,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    //int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1000);
                     //var value = service.GetUsersString(count, out length);
 
                     //var p = SerializationManager.SerializeJson(new { id = count });
@@ -560,9 +566,11 @@ namespace MySoft.PlatformService.Client
                     //    CacheTime = 5
                     //});
 
-                    //var value = service.GetUser(count);
+                    var a = count.ToString().PadRight(1000000, '#');
 
-                    var value = service.GetUsers();
+                    var value = service.GetUser(a);
+
+                    //var value = service.GetUsers();
 
                     //var user = service.GetUser(counter);
 
@@ -573,9 +581,9 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Count + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.ToString().Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
-                    value.Clear();
+                    //value.Clear();
 
                     //var clients = service1.GetClientList();
 
@@ -586,8 +594,6 @@ namespace MySoft.PlatformService.Client
                     string msg = ErrorHelper.GetInnerException(ex).Message;
                     Console.WriteLine("[{0}] {1}", DateTime.Now, msg);
                 }
-
-                Thread.Sleep(1000);
             }
         }
 

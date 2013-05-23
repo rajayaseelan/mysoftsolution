@@ -149,7 +149,7 @@ namespace MySoft.IoC.HttpServer
 
                 //转换成JsonString
                 var parameters = ConvertJsonString(get, post);
-                string jsonString = caller.CallMethod(methodName, parameters);
+                string jsonString = caller.CallService(methodName, parameters);
 
                 if (callMethod.TypeString)
                 {

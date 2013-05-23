@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using MySoft.IoC.Communication.Scs.Communication;
-using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using MySoft.Security;
 
@@ -43,39 +41,6 @@ namespace MySoft.IoC.Services
 
             try
             {
-                //获取callerKey
-                var callKey = GetCallerKey(reqMsg, context.Caller);
-
-                //返回响应信息
-                return InvokeResponse(callKey, service, context, reqMsg);
-            }
-            finally
-            {
-                //释放一个控制器
-                semaphore.Release();
-            }
-        }
-
-        /// <summary>
-        /// 异步调用服务
-        /// </summary>
-        /// <param name="channel"></param>
-        /// <param name="service"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        public ResponseItem Run(IScsServerClient channel, IService service, OperationContext context, RequestMessage reqMsg)
-        {
-            //请求一个控制器
-            semaphore.WaitOne();
-
-            try
-            {
-                if (channel.CommunicationState != CommunicationStates.Connected)
-                {
-                    return null;
-                }
-
                 //获取callerKey
                 var callKey = GetCallerKey(reqMsg, context.Caller);
 

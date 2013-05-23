@@ -232,8 +232,6 @@ namespace MySoft.IoC
         /// </summary>
         public void Stop()
         {
-            if (server == null) return;
-
             try
             {
                 if (config.HttpEnabled)
@@ -242,29 +240,13 @@ namespace MySoft.IoC
                 }
 
                 server.Stop();
-
-                httpServer.OnServerException -= Instance_OnError;
-
-                container.OnError -= Instance_OnError;
-                container.OnLog -= Instance_OnLog;
-
-                //解除事件
-                MessageCenter.Instance.OnLog -= Instance_OnLog;
-                MessageCenter.Instance.OnError -= Instance_OnError;
             }
             catch (Exception ex) { }
             finally
             {
                 container.Dispose();
-
-                httpServer = null;
-                server = null;
-                container = null;
-                status = null;
-                caller = null;
             }
         }
-
 
         #endregion
 
@@ -286,6 +268,7 @@ namespace MySoft.IoC
 
                 //输出信息
                 var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
+
                 PushConnectInfo(server, endPoint, true);
             }
             catch (Exception ex)
@@ -311,6 +294,7 @@ namespace MySoft.IoC
 
                 //输出信息
                 var endPoint = (e.Channel.RemoteEndPoint as ScsTcpEndPoint);
+
                 PushConnectInfo(server, endPoint, false);
             }
             catch (Exception ex)
@@ -389,8 +373,8 @@ namespace MySoft.IoC
 
                     if (item == null) return;
 
-                    //异步调用
-                    AsyncCounter(appCaller, item);
+                    //数据计数
+                    DataCounter(appCaller, item);
 
                     //发送消息
                     client.SendResponse(item);
@@ -401,6 +385,43 @@ namespace MySoft.IoC
                     container.WriteError(ex);
                 }
             }
+        }
+
+        /// <summary>
+        /// 数据计数
+        /// </summary>
+        /// <param name="appCaller"></param>
+        /// <param name="item"></param>
+        private void DataCounter(AppCaller appCaller, ResponseItem item)
+        {
+            if (item == null) return;
+
+            //调用参数
+            CallEventArgs callArgs = null;
+
+            if (item.Message == null)
+            {
+                callArgs = new CallEventArgs(appCaller)
+                {
+                    Count = item.Count,
+                    Value = item.Buffer
+                };
+            }
+            else
+            {
+                callArgs = new CallEventArgs(appCaller)
+                {
+                    ElapsedTime = item.Message.ElapsedTime,
+                    Count = item.Message.Count,
+                    Value = item.Message.Value,
+                    Error = item.Message.Error
+                };
+            }
+
+            //异步调用
+            var func = new Action<CallEventArgs>(AsyncCounter);
+
+            func.BeginInvoke(callArgs, null, null);
         }
 
         /// <summary>
@@ -430,27 +451,9 @@ namespace MySoft.IoC
         /// <summary>
         /// 同步调用方法
         /// </summary>
-        /// <param name="appCaller"></param>
-        /// <param name="item"></param>
-        private void AsyncCounter(AppCaller appCaller, ResponseItem item)
+        /// <param name="callArgs"></param>
+        private void AsyncCounter(CallEventArgs callArgs)
         {
-            //调用参数
-            var callArgs = new CallEventArgs(appCaller);
-
-            if (item.Message == null) //从缓存获取
-            {
-                callArgs.ElapsedTime = 0;
-                callArgs.Count = item.Count;
-                callArgs.Value = item.Buffer;
-            }
-            else
-            {
-                callArgs.ElapsedTime = item.Message.ElapsedTime;
-                callArgs.Count = item.Message.Count;
-                callArgs.Error = item.Message.Error;
-                callArgs.Value = item.Message.Value;
-            };
-
             try
             {
                 //响应消息

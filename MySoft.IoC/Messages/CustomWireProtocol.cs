@@ -29,7 +29,7 @@ namespace MySoft.IoC.Messages
             var buffer = base.SerializeMessage(message);
             if (compress)
             {
-                buffer = CompressionManager.CompressSharpZip(buffer);
+                buffer = CompressionManager.CompressDeflate(buffer);
             }
 
             return buffer;
@@ -44,7 +44,7 @@ namespace MySoft.IoC.Messages
         {
             if (compress)
             {
-                buffer = CompressionManager.DecompressSharpZip(buffer);
+                buffer = CompressionManager.DecompressDeflate(buffer);
             }
 
             return base.DeserializeMessage(buffer);

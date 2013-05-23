@@ -168,7 +168,7 @@ namespace MySoft.IoC.HttpServer
         /// <param name="name"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public string CallMethod(string name, string parameters)
+        public string CallService(string name, string parameters)
         {
             if (callers.ContainsKey(name))
             {

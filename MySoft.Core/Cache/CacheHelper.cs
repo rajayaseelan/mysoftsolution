@@ -195,25 +195,28 @@ namespace MySoft.Cache
         {
             T cacheItem = default(T);
 
-            var cacheObj = GetCacheItem(type, GetFilePath(key), key, timeout);
+            lock (GetSyncRoot(key))
+            {
+                var cacheObj = GetCacheItem(type, GetFilePath(key), key, timeout);
 
-            if (cacheObj == null)
-            {
-                //获取更新对象
-                cacheItem = GetUpdateObject(type, key, timeout, func, state, pred);
-            }
-            else
-            {
-                //判断是否过期
-                if (cacheObj.ExpiredTime < DateTime.Now)
+                if (cacheObj == null)
                 {
                     //获取更新对象
                     cacheItem = GetUpdateObject(type, key, timeout, func, state, pred);
                 }
-
-                if (cacheItem == null)
+                else
                 {
-                    cacheItem = cacheObj.Value;
+                    //判断是否过期
+                    if (cacheObj.ExpiredTime < DateTime.Now)
+                    {
+                        //获取更新对象
+                        cacheItem = GetUpdateObject(type, key, timeout, func, state, pred);
+                    }
+
+                    if (cacheItem == null)
+                    {
+                        cacheItem = cacheObj.Value;
+                    }
                 }
             }
 
@@ -285,10 +288,7 @@ namespace MySoft.Cache
             {
                 try
                 {
-                    lock (GetSyncRoot(key))
-                    {
-                        cacheObj = GetCache(path);
-                    }
+                    cacheObj = GetCache(path);
 
                     if (cacheObj != null)
                     {
@@ -332,12 +332,9 @@ namespace MySoft.Cache
                     var buffer = SerializationManager.SerializeBin(cacheObj);
                     buffer = CompressionManager.CompressGZip(buffer);
 
-                    lock (GetSyncRoot(key))
-                    {
-                        var dir = Path.GetDirectoryName(path);
-                        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                        File.WriteAllBytes(path, buffer);
-                    }
+                    var dir = Path.GetDirectoryName(path);
+                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                    File.WriteAllBytes(path, buffer);
                 }
                 catch (IOException ex) { }
                 catch (Exception ex)
@@ -348,7 +345,7 @@ namespace MySoft.Cache
             else
             {
                 //默认缓存1天
-                CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
+                CacheHelper.Insert(key, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
             }
         }
 

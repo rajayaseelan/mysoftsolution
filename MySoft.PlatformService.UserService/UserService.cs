@@ -23,6 +23,11 @@ namespace MySoft.PlatformService.UserService
             return new User { Id = name.Length, Name = name };
         }
 
+        public object GetUser(object user)
+        {
+            return user;
+        }
+
         [AspectSwitcher(true, Description = "获取用户")]
         public virtual User GetUser(int id)
         {

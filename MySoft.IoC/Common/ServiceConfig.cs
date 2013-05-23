@@ -21,10 +21,10 @@ namespace MySoft.IoC
         /// <summary>
         /// The client default max caller
         /// </summary>
-        public const int DEFAULT_CLIENT_MAXCALLER = 30; //默认并发数30
+        public const int DEFAULT_CLIENT_MAXCALLER = 10; //默认并发数10
 
         /// <summary>
-        /// The default client  call timeout number. 
+        /// The default client call timeout number. 
         /// </summary>
         public const int DEFAULT_CLIENT_TIMEOUT = 30; //30秒
 
@@ -36,7 +36,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The current framework version.
         /// </summary>
-        public const string CURRENT_FRAMEWORK_VERSION = "v3.5"; //当前版本
+        public const string CURRENT_FRAMEWORK_VERSION = "v3.6"; //当前版本
 
         #endregion
     }

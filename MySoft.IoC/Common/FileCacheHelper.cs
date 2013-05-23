@@ -62,30 +62,33 @@ namespace MySoft.IoC
             //定义缓存项
             ResponseItem cacheItem = null;
 
-            var cacheObj = GetCacheItem(cacheKey, timeout);
-
-            if (cacheObj == null)
+            lock (GetSyncRoot(cacheKey))
             {
-                //获取数据缓存
-                cacheItem = func(state);
+                var cacheObj = GetCacheItem(cacheKey, timeout);
 
-                if (cacheItem != null && cacheItem.Buffer != null)
+                if (cacheObj == null)
                 {
-                    //插入缓存
-                    InsertCacheItem(cacheKey, cacheItem, timeout);
-                }
-            }
-            else
-            {
-                //判断是否过期
-                if (cacheObj.ExpiredTime < DateTime.Now)
-                {
-                    //更新缓存项
-                    UpdateCacheItem(cacheKey, func, state, timeout);
-                }
+                    //获取数据缓存
+                    cacheItem = func(state);
 
-                //获取数据缓存
-                cacheItem = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
+                    if (cacheItem != null && cacheItem.Buffer != null)
+                    {
+                        //插入缓存
+                        InsertCacheItem(cacheKey, cacheItem, timeout);
+                    }
+                }
+                else
+                {
+                    //判断是否过期
+                    if (cacheObj.ExpiredTime < DateTime.Now)
+                    {
+                        //更新缓存项
+                        UpdateCacheItem(cacheKey, func, state, timeout);
+                    }
+
+                    //获取数据缓存
+                    cacheItem = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
+                }
             }
 
             //返回缓存的对象
@@ -138,11 +141,8 @@ namespace MySoft.IoC
         {
             var path = GetFilePath(cacheKey);
 
-            lock (GetSyncRoot(cacheKey.UniqueId))
-            {
-                //从文件获取缓存
-                return GetCache(path);
-            }
+            //从文件获取缓存
+            return GetCache(path);
         }
 
         /// <summary>
@@ -153,8 +153,6 @@ namespace MySoft.IoC
         /// <param name="timeout"></param>
         private static void InsertCacheItem(CacheKey cacheKey, ResponseItem item, TimeSpan timeout)
         {
-            var key = cacheKey.UniqueId;
-
             //序列化成二进制
             var cacheObj = new CacheItem
             {
@@ -170,7 +168,7 @@ namespace MySoft.IoC
                 //写入文件
                 var buffer = SerializationManager.SerializeBin(cacheObj);
 
-                lock (GetSyncRoot(cacheKey.UniqueId))
+                lock (GetSyncRoot(cacheKey))
                 {
                     string dirPath = Path.GetDirectoryName(path);
                     if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
@@ -201,10 +199,13 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取同步Root
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="cacheKey"></param>
         /// <returns></returns>
-        private static object GetSyncRoot(string key)
+        private static object GetSyncRoot(CacheKey cacheKey)
         {
+            //var key = string.Format("{0}${1}", cacheKey.ServiceName, cacheKey.MethodName);
+            var key = cacheKey.UniqueId;
+
             lock (hashtable.SyncRoot)
             {
                 if (!hashtable.ContainsKey(key))

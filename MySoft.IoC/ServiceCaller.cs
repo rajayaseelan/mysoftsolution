@@ -64,7 +64,7 @@ namespace MySoft.IoC
                 var context = GetOperationContext(channel, appCaller);
 
                 //异步调用服务
-                return caller.Run(channel, service, context, reqMsg);
+                return caller.Run(service, context, reqMsg);
             }
             catch (Exception ex)
             {

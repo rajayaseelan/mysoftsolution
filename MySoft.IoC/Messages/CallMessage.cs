@@ -6,7 +6,7 @@ namespace MySoft.IoC.Messages
     /// 消息基类
     /// </summary>
     [Serializable]
-    public class ServiceMessage
+    public abstract class ServiceMessage
     {
         /// <summary>
         /// 服务名称
