@@ -379,14 +379,14 @@ namespace MySoft.PlatformService.Client
             #endregion
 
             CastleFactory.Create().OnError += Program_OnError;
-            //CastleFactory.Create().RegisterLogger(new ServiceCall());
+            CastleFactory.Create().Register(new ServiceCall());
             CastleFactory.Create().OnDisconnected += Program_OnDisconnected;
 
             //var watch = Stopwatch.StartNew();
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
