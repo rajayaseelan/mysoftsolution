@@ -33,6 +33,11 @@ namespace MySoft.IoC
         /// </summary>
         public const int DEFAULT_CLIENT_MAXPOOL = 100; //默认为100
 
+        /// <summary>
+        /// The current framework version.
+        /// </summary>
+        public const string CURRENT_FRAMEWORK_VERSION = "v3.5"; //当前版本
+
         #endregion
     }
 }

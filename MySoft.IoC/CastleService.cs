@@ -71,7 +71,7 @@ namespace MySoft.IoC
             container.Register(typeof(IStatusService), status);
 
             //实例化调用者
-            var acaller = new AsyncCaller(true, config.MaxCaller);
+            var acaller = new AsyncCaller(config.MaxCaller);
             this.caller = new ServiceCaller(config, container, acaller);
 
             //判断是否启用httpServer

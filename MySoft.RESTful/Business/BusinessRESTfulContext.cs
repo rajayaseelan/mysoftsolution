@@ -259,14 +259,17 @@ namespace MySoft.RESTful.Business
         /// </summary>
         private string GetRootPath(Uri uri)
         {
-            var root = string.Empty;
+            var rootsb = new StringBuilder();
+            foreach (var s in uri.Segments)
+            {
+                if (string.IsNullOrEmpty(s)) break;
+                if (s == "/") continue;
+                if (s.ToLower().StartsWith("help")) break;
 
-            var localPath = uri.LocalPath;
-            var arr = localPath.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
+                rootsb.Append(s);
+            }
 
-            if (arr.Length > 0) root = arr[0] + "/";
-
-            return root;
+            return rootsb.ToString();
         }
 
         private string GetMethodParameter(BusinessMethodModel model, string kind, string method)

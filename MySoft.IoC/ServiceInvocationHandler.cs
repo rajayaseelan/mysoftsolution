@@ -79,18 +79,18 @@ namespace MySoft.IoC
             var reqMsg = new RequestMessage
             {
                 InvokeMethod = false,
-                AppVersion = "v2.5",                                //版本号
-                AppName = config.AppName,                           //应用名称
-                AppPath = AppDomain.CurrentDomain.BaseDirectory,    //应用路径
-                HostName = hostName,                                //客户端名称
-                IPAddress = ipAddress,                              //客户端IP地址
-                ServiceName = typeof(T).FullName,                   //服务名称
-                MethodName = method.ToString(),                     //方法名称
-                EnableCache = config.EnableCache,                   //是否缓存
-                TransactionId = Guid.NewGuid(),                     //传输ID号
-                MethodInfo = method,                                //设置调用方法
-                Parameters = collection,                            //设置参数
-                RespType = ResponseType.Binary                      //数据类型
+                AppVersion = ServiceConfig.CURRENT_FRAMEWORK_VERSION,       //版本号
+                AppName = config.AppName,                                   //应用名称
+                AppPath = AppDomain.CurrentDomain.BaseDirectory,            //应用路径
+                HostName = hostName,                                        //客户端名称
+                IPAddress = ipAddress,                                      //客户端IP地址
+                ServiceName = typeof(T).FullName,                           //服务名称
+                MethodName = method.ToString(),                             //方法名称
+                EnableCache = config.EnableCache,                           //是否缓存
+                TransactionId = Guid.NewGuid(),                             //传输ID号
+                MethodInfo = method,                                        //设置调用方法
+                Parameters = collection,                                    //设置参数
+                RespType = ResponseType.Binary                              //数据类型
             };
 
             //设置缓存时间

@@ -91,6 +91,10 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            var uri = new Uri("http://test.openapi.fund123.cn/openapi/help/user");
+
+            var a = uri.OriginalString;
+
             #region aaa
             //var list = new List<User>();
             //list.AddRange(new User[] { new User { }, new User { } });

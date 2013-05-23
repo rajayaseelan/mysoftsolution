@@ -41,7 +41,7 @@ namespace MySoft.IoC
         {
             this.config = config;
             this.container = new SimpleServiceContainer(config.Type);
-            this.caller = new AsyncCaller(false, config.MaxCaller);
+            this.caller = new AsyncCaller(config.MaxCaller);
 
             container.OnLog += (log, type) =>
             {
@@ -167,10 +167,10 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// 注册日志依赖
+        /// 注册接口调用依赖
         /// </summary>
         /// <param name="call"></param>
-        public void RegisterLogger(IServiceCall call)
+        public void Register(IServiceCall call)
         {
             this.call = call;
         }
