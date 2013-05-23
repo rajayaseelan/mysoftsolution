@@ -75,6 +75,8 @@ namespace MySoft
             using (var memoryStream = new MemoryStream())
             {
                 new BinaryFormatter().Serialize(memoryStream, obj);
+                memoryStream.Close();
+
                 return memoryStream.ToArray();
             }
         }

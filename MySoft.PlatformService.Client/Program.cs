@@ -530,7 +530,7 @@ namespace MySoft.PlatformService.Client
             while (true)
             {
                 var node = ServerNode.Parse("127.0.0.1", 9982);
-                //var service = CastleFactory.Create().GetChannel<IUserService>(node);
+                var service = CastleFactory.Create().GetChannel<IUserService>(node);
 
                 try
                 {
@@ -547,20 +547,22 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1);
+                    //int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
                     //var value = service.GetUsersString(count, out length);
 
-                    var p = SerializationManager.SerializeJson(new { id = count });
+                    //var p = SerializationManager.SerializeJson(new { id = count });
 
-                    var v = CastleFactory.Create().Invoke(node, new InvokeMessage
-                    {
-                        ServiceName = typeof(IUserService).FullName,
-                        MethodName = typeof(IUserService).GetMethod("GetUser", new Type[] { typeof(int) }).ToString(),
-                        Parameters = p,
-                        CacheTime = 30
-                    });
+                    //var v = CastleFactory.Create().Invoke(node, new InvokeMessage
+                    //{
+                    //    ServiceName = typeof(IUserService).FullName,
+                    //    MethodName = typeof(IUserService).GetMethod("GetUser", new Type[] { typeof(int) }).ToString(),
+                    //    Parameters = p,
+                    //    CacheTime = 5
+                    //});
 
-                    //var value = service.GetUser(new Random().Next(1, count));
+                    //var value = service.GetUser(count);
+
+                    var value = service.GetUsers();
 
                     //var user = service.GetUser(counter);
 
@@ -571,9 +573,9 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + v.Value.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Count + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
-                    //value.Clear();
+                    value.Clear();
 
                     //var clients = service1.GetClientList();
 
@@ -581,17 +583,17 @@ namespace MySoft.PlatformService.Client
                 }
                 catch (Exception ex)
                 {
-                    string msg = ex.Message;
+                    string msg = ErrorHelper.GetInnerException(ex).Message;
                     Console.WriteLine("[{0}] {1}", DateTime.Now, msg);
                 }
 
-                //Thread.Sleep(1000);
+                Thread.Sleep(1000);
             }
         }
 
         static void Program_OnError(Exception error)
         {
-            Console.WriteLine(error.ToString());
+            //Console.WriteLine(error.ToString());
         }
 
         static void castle_OnError(Exception error)

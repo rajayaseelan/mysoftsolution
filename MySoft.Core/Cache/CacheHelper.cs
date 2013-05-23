@@ -2,7 +2,6 @@
 using System.Collections;
 using System.IO;
 using System.Text;
-using System.Threading;
 using MySoft.Logger;
 using MySoft.Security;
 
@@ -286,12 +285,15 @@ namespace MySoft.Cache
             {
                 try
                 {
-                    cacheObj = GetCache(path);
+                    lock (GetSyncRoot(key))
+                    {
+                        cacheObj = GetCache(path);
+                    }
 
                     if (cacheObj != null)
                     {
-                        //默认缓存30秒
-                        CacheHelper.Insert(key, cacheObj, Math.Min(30, (int)timeout.TotalSeconds));
+                        //默认缓存60秒
+                        CacheHelper.Insert(key, cacheObj, Math.Min(60, (int)timeout.TotalSeconds));
                     }
                 }
                 catch (IOException ex) { }
@@ -322,15 +324,20 @@ namespace MySoft.Cache
 
             if (type == LocalCacheType.File)
             {
+                //默认缓存60秒
+                CacheHelper.Insert(key, cacheObj, Math.Min(60, (int)timeout.TotalSeconds));
+
                 try
                 {
-                    var dir = Path.GetDirectoryName(path);
-
-                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
                     var buffer = SerializationManager.SerializeBin(cacheObj);
                     buffer = CompressionManager.CompressGZip(buffer);
-                    File.WriteAllBytes(path, buffer);
+
+                    lock (GetSyncRoot(key))
+                    {
+                        var dir = Path.GetDirectoryName(path);
+                        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                        File.WriteAllBytes(path, buffer);
+                    }
                 }
                 catch (IOException ex) { }
                 catch (Exception ex)
@@ -354,6 +361,27 @@ namespace MySoft.Cache
         {
             var cacheKey = MD5.HexHash(Encoding.Default.GetBytes(key));
             return CoreHelper.GetFullPath(string.Format("LocalCache\\{0}.dat", cacheKey));
+        }
+
+        //读文件同步
+        private static readonly Hashtable hashtable = new Hashtable();
+
+        /// <summary>
+        /// 获取同步Root
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static object GetSyncRoot(string key)
+        {
+            lock (hashtable.SyncRoot)
+            {
+                if (!hashtable.ContainsKey(key))
+                {
+                    hashtable[key] = new object();
+                }
+
+                return hashtable[key];
+            }
         }
     }
 

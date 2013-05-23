@@ -9,7 +9,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 操作上下文对象
     /// </summary>
-    public class OperationContext : IDisposable
+    public class OperationContext
     {
         /// <summary>
         /// 当前上下文对象
@@ -106,20 +106,5 @@ namespace MySoft.IoC
                 return (ICallbackService)dynamicProxy;
             }
         }
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// Dispose operation context.
-        /// </summary>
-        public void Dispose()
-        {
-            this.channel = null;
-            this.container = null;
-            this.caller = null;
-            this.dynamicProxy = null;
-        }
-
-        #endregion
     }
 }

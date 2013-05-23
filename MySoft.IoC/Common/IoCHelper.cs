@@ -262,7 +262,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static CacheObject<InvokeData> GetCache(string filePath)
         {
-            var cacheObj = ServiceCacheHelper.GetCache(filePath);
+            var cacheObj = FileCacheHelper.GetCache(filePath);
             var buffer = CompressionManager.DecompressGZip(cacheObj.Value);
             var resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
 

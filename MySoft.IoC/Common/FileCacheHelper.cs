@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
-using System.Threading;
 using MySoft.Logger;
 
 namespace MySoft.IoC
 {
     /// <summary>
-    /// 缓存扩展类
+    /// 文件缓存帮助类
     /// </summary>
-    internal static class ServiceCacheHelper
+    internal static class FileCacheHelper
     {
-        //读文件同步对象
-        private static readonly Hashtable hashtable = new Hashtable();
-
         /// <summary>
         /// 从文件读取对象
         /// </summary>
@@ -21,13 +17,19 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static CacheItem GetCache(string filePath)
         {
-            //从文件读取对象
-            if (File.Exists(filePath))
+            try
             {
-                var buffer = File.ReadAllBytes(filePath);
-                var cacheObj = SerializationManager.DeserializeBin<CacheItem>(buffer);
-
-                return cacheObj;
+                //从文件读取对象
+                if (File.Exists(filePath))
+                {
+                    var buffer = File.ReadAllBytes(filePath);
+                    return SerializationManager.DeserializeBin<CacheItem>(buffer);
+                }
+            }
+            catch (IOException ex) { }
+            catch (Exception ex)
+            {
+                SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
             }
 
             return null;
@@ -75,16 +77,11 @@ namespace MySoft.IoC
             }
             else
             {
-                lock (cacheObj)
+                //判断是否过期
+                if (cacheObj.ExpiredTime < DateTime.Now)
                 {
-                    //判断是否过期
-                    if (cacheObj.ExpiredTime < DateTime.Now)
-                    {
-                        cacheObj.ExpiredTime = DateTime.Now.Add(timeout);
-
-                        //更新缓存项
-                        UpdateCacheItem(cacheKey, func, state, timeout);
-                    }
+                    //更新缓存项
+                    UpdateCacheItem(cacheKey, func, state, timeout);
                 }
 
                 //获取数据缓存
@@ -139,35 +136,13 @@ namespace MySoft.IoC
         /// <returns></returns>
         private static CacheItem GetCacheItem(CacheKey cacheKey, TimeSpan timeout)
         {
-            var key = cacheKey.UniqueId;
-            var cacheObj = CacheHelper.Get<CacheItem>(key);
+            var path = GetFilePath(cacheKey);
 
-            if (cacheObj == null)
+            lock (GetSyncRoot(cacheKey.UniqueId))
             {
-                try
-                {
-                    lock (GetSyncRoot(cacheKey))
-                    {
-                        var path = GetFilePath(cacheKey);
-
-                        //从文件获取缓存
-                        cacheObj = GetCache(path);
-                    }
-
-                    if (cacheObj != null)
-                    {
-                        //默认缓存30秒
-                        CacheHelper.Insert(key, cacheObj, Math.Min(30, (int)timeout.TotalSeconds));
-                    }
-                }
-                catch (IOException ex) { }
-                catch (Exception ex)
-                {
-                    SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
-                }
+                //从文件获取缓存
+                return GetCache(path);
             }
-
-            return cacheObj;
         }
 
         /// <summary>
@@ -188,18 +163,15 @@ namespace MySoft.IoC
                 Value = item.Buffer
             };
 
-            //默认缓存30秒
-            CacheHelper.Insert(key, cacheObj, Math.Min(30, (int)timeout.TotalSeconds));
-
             try
             {
-                lock (GetSyncRoot(cacheKey))
+                var path = GetFilePath(cacheKey);
+
+                //写入文件
+                var buffer = SerializationManager.SerializeBin(cacheObj);
+
+                lock (GetSyncRoot(cacheKey.UniqueId))
                 {
-                    var path = GetFilePath(cacheKey);
-
-                    //写入文件
-                    var buffer = SerializationManager.SerializeBin(cacheObj);
-
                     string dirPath = Path.GetDirectoryName(path);
                     if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
                     File.WriteAllBytes(path, buffer);
@@ -223,17 +195,18 @@ namespace MySoft.IoC
                                             cacheKey.ServiceName, cacheKey.MethodName, cacheKey.UniqueId));
         }
 
+        //读文件同步
+        private static readonly Hashtable hashtable = new Hashtable();
+
         /// <summary>
         /// 获取同步Root
         /// </summary>
-        /// <param name="cacheKey"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        private static object GetSyncRoot(CacheKey cacheKey)
+        private static object GetSyncRoot(string key)
         {
             lock (hashtable.SyncRoot)
             {
-                string key = string.Format("{0}${1}", cacheKey.ServiceName, cacheKey.MethodName);
-
                 if (!hashtable.ContainsKey(key))
                 {
                     hashtable[key] = new object();

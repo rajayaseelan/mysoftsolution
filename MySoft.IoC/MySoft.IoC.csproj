@@ -61,7 +61,7 @@
     <Compile Include="Aspect\CastleInterface.cs" />
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
-    <Compile Include="Common\CacheHelper.cs" />
+    <Compile Include="Common\FileCacheHelper.cs" />
     <Compile Include="Common\CacheItem.cs" />
     <Compile Include="Common\ResponseItem.cs" />
     <Compile Include="Common\CacheKey.cs" />
@@ -163,6 +163,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\IServiceCallback.cs" />
+    <Compile Include="Services\AsyncHandler.cs" />
     <Compile Include="Services\QueueManager.cs" />
     <Compile Include="Services\ServiceDiscoverFacility.cs" />
     <Compile Include="Messages\Status\AppCaller.cs" />

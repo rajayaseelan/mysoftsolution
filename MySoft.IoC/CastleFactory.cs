@@ -41,7 +41,7 @@ namespace MySoft.IoC
         {
             this.config = config;
             this.container = new SimpleServiceContainer(config.Type);
-            this.caller = new AsyncCaller(config.MaxCaller);
+            this.caller = new AsyncCaller(false, config.MaxCaller);
 
             container.OnLog += (log, type) =>
             {
@@ -493,24 +493,8 @@ namespace MySoft.IoC
                 service = GetProxyService(node);
             }
 
-            //获取服务内容
-            return GetInvokeData(service, message);
-        }
-
-        #endregion
-
-        #region Private Service
-
-        /// <summary>
-        /// 获取调用的数据
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        private InvokeData GetInvokeData(IService service, InvokeMessage message)
-        {
             //调用分布式服务
-            using (var caller = new InvokeCaller(config, this.container, service, this.caller, this.call, this.container))
+            using (var caller = new InvokeCaller(this.config, this.container, service, this.caller, this.call, this.container))
             {
                 return caller.InvokeResponse(message);
             }
@@ -612,8 +596,8 @@ namespace MySoft.IoC
                 {
                     var cacheKey = string.Format("{0}${1}", config.ProxyServer, nodeKey);
 
-                    //从缓存中获取节点
-                    return CacheHelper<IList<ServerNode>>.Get(LocalCacheType.File, cacheKey, TimeSpan.FromMinutes(5)
+                    //从缓存中获取节点（缓存1小时）
+                    return CacheHelper<IList<ServerNode>>.Get(LocalCacheType.File, cacheKey, TimeSpan.FromHours(1)
                                                         , state =>
                                                         {
                                                             var arr = state as ArrayList;

@@ -10,7 +10,7 @@ namespace MySoft.IoC.HttpServer
     /// <summary>
     /// Http服务调用
     /// </summary>
-    internal class HttpServiceCaller
+    internal class HttpServiceCaller : IDisposable
     {
         private IServiceContainer container;
         private CastleServiceConfiguration config;
@@ -22,12 +22,11 @@ namespace MySoft.IoC.HttpServer
         /// </summary>
         /// <param name="config"></param>
         /// <param name="container"></param>
-        /// <param name="caller"></param>
-        public HttpServiceCaller(CastleServiceConfiguration config, IServiceContainer container, AsyncCaller caller)
+        public HttpServiceCaller(CastleServiceConfiguration config, IServiceContainer container)
         {
             this.config = config;
             this.container = container;
-            this.caller = caller;
+            this.caller = new AsyncCaller(false, config.MaxCaller);
             this.callers = new HttpCallerInfoCollection();
         }
 
@@ -185,38 +184,27 @@ namespace MySoft.IoC.HttpServer
                 //创建服务
                 var service = ParseService(message.ServiceName);
 
-                //定义响应数据体
-                var invokeData = GetInvokeData(service, message);
-
-                //如果缓存不为null，则返回缓存数据
-                if (invokeData != null)
+                var conf = new CastleFactoryConfiguration
                 {
-                    return invokeData.Value;
+                    AppName = "HttpServer",
+                    EnableCache = true,
+                    MaxCaller = config.MaxCaller
+                };
+
+                using (var invoke = new InvokeCaller(conf, this.container, service, this.caller, null, this.container))
+                {
+                    //定义响应数据体
+                    var invokeData = invoke.InvokeResponse(message);
+
+                    //如果缓存不为null，则返回缓存数据
+                    if (invokeData != null)
+                    {
+                        return invokeData.Value;
+                    }
                 }
             }
 
             return "null";
-        }
-
-        /// <summary>
-        /// 返回响应数据
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        private InvokeData GetInvokeData(IService service, InvokeMessage message)
-        {
-            var conf = new CastleFactoryConfiguration
-            {
-                AppName = "HttpServer",
-                EnableCache = true
-            };
-
-            //使用Invoke方式调用
-            using (var invoke = new InvokeCaller(conf, this.container, service, caller, null, container))
-            {
-                return invoke.InvokeResponse(message);
-            }
         }
 
         /// <summary>
@@ -241,5 +229,18 @@ namespace MySoft.IoC.HttpServer
                 throw new WarningException(body);
             }
         }
+
+        #region IDisposable 成员
+
+        public void Dispose()
+        {
+            caller = null;
+            container = null;
+            config = null;
+            callers.Clear();
+            callers = null;
+        }
+
+        #endregion
     }
 }

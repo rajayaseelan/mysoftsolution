@@ -10,7 +10,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// <summary>
         /// Max communication count.
         /// </summary>
-        private const int MaxCommunicationCount = 2000;
+        private const int MaxCommunicationCount = 10000;
 
         private static SocketAsyncEventArgsPool pool;
 

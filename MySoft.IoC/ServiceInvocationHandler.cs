@@ -167,31 +167,30 @@ namespace MySoft.IoC
         /// <returns></returns>
         private ResponseMessage GetResponse(RequestMessage reqMsg)
         {
-            //获取上下文
-            using (var context = GetOperationContext(reqMsg))
+            //开始一个记时器
+            var watch = Stopwatch.StartNew();
+
+            try
             {
                 //写日志开始
                 call.BeginRequest(reqMsg);
 
-                //开始一个记时器
-                var watch = Stopwatch.StartNew();
+                //获取上下文
+                var context = GetOperationContext(reqMsg);
 
-                try
+                //异步调用服务
+                var resMsg = caller.Run(service, context, reqMsg).Message;
+
+                //写日志结束
+                call.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
+
+                return resMsg;
+            }
+            finally
+            {
+                if (watch.IsRunning)
                 {
-                    //异步调用服务
-                    var resMsg = caller.Run(service, context, reqMsg).Message;
-
-                    //写日志结束
-                    call.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
-
-                    return resMsg;
-                }
-                finally
-                {
-                    if (watch.IsRunning)
-                    {
-                        watch.Stop();
-                    }
+                    watch.Stop();
                 }
             }
         }

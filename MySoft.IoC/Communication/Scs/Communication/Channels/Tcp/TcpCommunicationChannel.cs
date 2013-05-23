@@ -16,7 +16,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 4 * 1024; //4KB
+        private const int ReceiveBufferSize = 2 * 1024; //2KB
 
         #region Public properties
 
@@ -130,7 +130,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 if (!_clientSocket.ReceiveAsync(_receiveEventArgs))
                 {
 #if DEBUG
-                    IoCHelper.WriteLine(ConsoleColor.DarkGray, "{0} receiving message...", (_fromServer ? "[Server]" : "[Client]"));
+                    IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] {1} receiving message...", DateTime.Now, (_fromServer ? "[Server]" : "[Client]"));
 #endif
 
                     (this as ICommunicationProtocol).ReceiveCompleted(_receiveEventArgs);
@@ -172,7 +172,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 if (!_clientSocket.SendAsync(_sendEventArgs))
                 {
 #if DEBUG
-                    IoCHelper.WriteLine(ConsoleColor.DarkGray, "{0} sending message...", (_fromServer ? "[Server]" : "[Client]"));
+                    IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] {1} sending message...", DateTime.Now, (_fromServer ? "[Server]" : "[Client]"));
 #endif
 
                     (this as ICommunicationProtocol).SendCompleted(_sendEventArgs);
@@ -250,7 +250,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                         if (!_clientSocket.ReceiveAsync(e))
                         {
 #if DEBUG
-                            IoCHelper.WriteLine(ConsoleColor.DarkGray, "{0} receiving message...", (_fromServer ? "[Server]" : "[Client]"));
+                            IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] {1} receiving message...", DateTime.Now, (_fromServer ? "[Server]" : "[Client]"));
 #endif
 
                             (this as ICommunicationProtocol).ReceiveCompleted(e);
@@ -306,7 +306,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             var e = CommunicationHelper.Pop(this);
 
 #if DEBUG
-            IoCHelper.WriteLine(ConsoleColor.DarkCyan, "{1} pop communication tcp socket event async count: {0}", CommunicationHelper.Count, (_fromServer ? "[Server]" : "[Client]"));
+            IoCHelper.WriteLine(ConsoleColor.DarkCyan, "[{0}] {1} pop tcp socket event async count: {2}", DateTime.Now, (_fromServer ? "[Server]" : "[Client]"), CommunicationHelper.Count);
 #endif
 
             if (e == null) return null;
@@ -344,7 +344,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 CommunicationHelper.Push(e);
             }
 #if DEBUG
-            IoCHelper.WriteLine(ConsoleColor.DarkRed, "{1} push communication tcp socket event async count: {0}", CommunicationHelper.Count, (_fromServer ? "[Server]" : "[Client]"));
+            IoCHelper.WriteLine(ConsoleColor.DarkRed, "[{0}] {1} push tcp socket event async count: {2}", DateTime.Now, (_fromServer ? "[Server]" : "[Client]"), CommunicationHelper.Count);
 #endif
         }
     }

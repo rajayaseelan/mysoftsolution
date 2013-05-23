@@ -26,51 +26,6 @@ namespace MySoft.PlatformService.UserService
         [AspectSwitcher(true, Description = "获取用户")]
         public virtual User GetUser(int id)
         {
-            //throw new NullReferenceException("对象为空！");
-
-            //if (id % 10 == 0)
-            //{
-            //Thread.Sleep(5000);
-            //}
-            //throw new Exception("出错了。");
-
-            //Thread.Sleep(2100);
-
-            //if (id % 10 == 0)
-            //{
-            //Thread.Sleep(1000 * 6);
-            //Thread.Sleep(100);
-            //}
-            //else
-            //{
-            //    Thread.Sleep(1030);
-            //}
-
-            //throw new NullReferenceException();
-
-            //Thread.Sleep(1000 * 10);
-
-            //.PadRight(id, '*')
-            //if (id % 100 == 0)
-            //{
-            //    return null;
-            //}
-
-            Thread.Sleep(5000);
-
-            if (id % 3 == 0)
-            {
-                Thread.Sleep(1000);
-            }
-            else if (id % 10 == 0)
-            {
-                throw new Exception("出错了！" + id);
-            }
-            else
-            {
-                Thread.Sleep(100);
-            }
-
             var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
             var sb = new StringBuilder(name);
             for (int i = 0; i < 10; i++)

@@ -21,12 +21,11 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="config"></param>
         /// <param name="container"></param>
-        /// <param name="caller"></param>
-        public ServiceCaller(CastleServiceConfiguration config, IServiceContainer container, AsyncCaller caller)
+        public ServiceCaller(CastleServiceConfiguration config, IServiceContainer container)
         {
             this.callbackTypes = new Dictionary<string, Type>();
             this.container = container;
-            this.caller = caller;
+            this.caller = new AsyncCaller(true, config.MaxCaller);
 
             //初始化服务
             Init(container, config);
@@ -56,24 +55,23 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseItem HandleResponse(IScsServerClient channel, AppCaller appCaller, RequestMessage reqMsg)
         {
-            //获取上下文
-            using (var context = GetOperationContext(channel, appCaller))
+            try
             {
-                try
-                {
-                    //解析服务
-                    var service = ParseService(appCaller);
+                //解析服务
+                var service = ParseService(appCaller);
 
-                    //异步调用服务
-                    return caller.Run(service, context, reqMsg);
-                }
-                catch (Exception ex)
-                {
-                    //获取异常响应信息
-                    var resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                //获取上下文
+                var context = GetOperationContext(channel, appCaller);
 
-                    return new ResponseItem(resMsg);
-                }
+                //异步调用服务
+                return caller.Run(channel, service, context, reqMsg);
+            }
+            catch (Exception ex)
+            {
+                //获取异常响应信息
+                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
+
+                return new ResponseItem(resMsg);
             }
         }
 
@@ -130,6 +128,7 @@ namespace MySoft.IoC
 
         public void Dispose()
         {
+            caller = null;
             callbackTypes.Clear();
             callbackTypes = null;
         }

@@ -132,11 +132,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </returns>
         protected virtual byte[] SerializeMessage(IScsMessage message)
         {
-            using (var memoryStream = new MemoryStream())
-            {
-                new BinaryFormatter().Serialize(memoryStream, message);
-                return memoryStream.ToArray();
-            }
+            return SerializationManager.SerializeBin(message);
         }
 
         /// <summary>
@@ -152,22 +148,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         protected virtual IScsMessage DeserializeMessage(byte[] bytes)
         {
             //Create a MemoryStream to convert bytes to a stream
-            using (var deserializeMemoryStream = new MemoryStream(bytes))
-            {
-                //Go to head of the stream
-                deserializeMemoryStream.Position = 0;
-
-                //Deserialize the message
-                var binaryFormatter = new BinaryFormatter
-                {
-                    AssemblyFormat = FormatterAssemblyStyle.Simple,
-                    FilterLevel = TypeFilterLevel.Full,
-                    Binder = new DeserializationAppDomainBinder()
-                };
-
-                //Return the deserialized message
-                return (IScsMessage)binaryFormatter.Deserialize(deserializeMemoryStream);
-            }
+            return SerializationManager.DeserializeBin<IScsMessage>(bytes);
         }
 
         #endregion
@@ -294,25 +275,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             }
 
             return buffer;
-        }
-
-        #endregion
-
-        #region Nested classes
-
-        /// <summary>
-        /// This class is used in deserializing to allow deserializing objects that are defined
-        /// in assemlies that are load in runtime (like PlugIns).
-        /// </summary>
-        protected sealed class DeserializationAppDomainBinder : SerializationBinder
-        {
-            public override Type BindToType(string assemblyName, string typeName)
-            {
-                var toAssemblyName = assemblyName.Split(',')[0];
-                return (from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                        where assembly.FullName.Split(',')[0] == toAssemblyName
-                        select assembly.GetType(typeName)).FirstOrDefault();
-            }
         }
 
         #endregion

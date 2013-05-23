@@ -11,7 +11,6 @@ using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Nodes;
-using MySoft.IoC.Services;
 using MySoft.Logger;
 using MySoft.Net.Http;
 
@@ -71,8 +70,7 @@ namespace MySoft.IoC
             container.Register(typeof(IStatusService), status);
 
             //实例化调用者
-            var acaller = new AsyncCaller(config.MaxCaller);
-            this.caller = new ServiceCaller(config, container, acaller);
+            this.caller = new ServiceCaller(config, container);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -87,7 +85,7 @@ namespace MySoft.IoC
                 //判断是否配置了NodeResolverType
                 nodeResolver = Create<IServerNodeResolver>(config.NodeResolverType) ?? new DefaultNodeResolver();
 
-                var httpCaller = new HttpServiceCaller(config, container, acaller);
+                var httpCaller = new HttpServiceCaller(config, container);
 
                 //刷新服务委托
                 status.OnRefresh += (sender, args) => httpCaller.InitCaller(apiResolver);
@@ -388,6 +386,8 @@ namespace MySoft.IoC
 
                     //响应消息
                     var item = caller.HandleResponse(channel, appCaller, reqMsg);
+
+                    if (item == null) return;
 
                     //异步调用
                     AsyncCounter(appCaller, item);
