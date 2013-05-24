@@ -566,9 +566,9 @@ namespace MySoft.PlatformService.Client
                     //    CacheTime = 5
                     //});
 
-                    var a = count.ToString().PadRight(1000000, '#');
+                    //var a = count.ToString().PadRight(1000000, '#');
 
-                    var value = service.GetUser(a);
+                    var value = service.GetUser(count);
 
                     //var value = service.GetUsers();
 

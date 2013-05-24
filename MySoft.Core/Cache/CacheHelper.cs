@@ -344,8 +344,8 @@ namespace MySoft.Cache
             }
             else
             {
-                //默认缓存1天
-                CacheHelper.Insert(key, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
+                //默认缓存2倍于当前过期时间
+                CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds * 2);
             }
         }
 
