@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 using System.IO;
 using MySoft.Logger;
 
@@ -64,30 +65,49 @@ namespace MySoft.IoC
 
             lock (GetSyncRoot(cacheKey))
             {
-                var cacheObj = GetCacheItem(cacheKey, timeout);
+                //开始一个记时器
+                var watch = Stopwatch.StartNew();
 
-                if (cacheObj == null)
+                try
                 {
-                    //获取数据缓存
-                    cacheItem = func(state);
+                    var cacheObj = GetCacheItem(cacheKey, timeout);
 
-                    if (cacheItem != null && cacheItem.Buffer != null)
+                    if (cacheObj == null)
                     {
-                        //插入缓存
-                        InsertCacheItem(cacheKey, cacheItem, timeout);
+                        //获取数据缓存
+                        cacheItem = func(state);
+
+                        if (cacheItem != null && cacheItem.Buffer != null)
+                        {
+                            //插入缓存
+                            InsertCacheItem(cacheKey, cacheItem, timeout);
+                        }
+                    }
+                    else
+                    {
+                        //判断是否过期
+                        if (cacheObj.ExpiredTime < DateTime.Now)
+                        {
+                            //更新缓存项
+                            UpdateCacheItem(cacheKey, func, state, timeout);
+                        }
+
+                        //获取数据缓存
+                        cacheItem = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
+                    }
+
+                    if (cacheItem != null)
+                    {
+                        //设置时间
+                        cacheItem.ElapsedTime = watch.ElapsedMilliseconds;
                     }
                 }
-                else
+                finally
                 {
-                    //判断是否过期
-                    if (cacheObj.ExpiredTime < DateTime.Now)
+                    if (watch.IsRunning)
                     {
-                        //更新缓存项
-                        UpdateCacheItem(cacheKey, func, state, timeout);
+                        watch.Stop();
                     }
-
-                    //获取数据缓存
-                    cacheItem = new ResponseItem { Buffer = cacheObj.Value, Count = cacheObj.Count };
                 }
             }
 

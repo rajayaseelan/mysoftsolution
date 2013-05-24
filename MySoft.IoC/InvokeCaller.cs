@@ -106,7 +106,18 @@ namespace MySoft.IoC
                 var context = GetOperationContext(reqMsg);
 
                 //异步调用服务
-                var resMsg = caller.Run(service, context, reqMsg).Message;
+                var item = caller.Run(service, context, reqMsg);
+
+                var resMsg = item.Message;
+
+                if (item.Message == null)
+                {
+                    resMsg = IoCHelper.DeserializeObject(item.Buffer);
+
+                    //设置耗时时间
+                    item.ElapsedTime = watch.ElapsedMilliseconds;
+                    resMsg.ElapsedTime = item.ElapsedTime;
+                }
 
                 //写日志结束
                 call.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);

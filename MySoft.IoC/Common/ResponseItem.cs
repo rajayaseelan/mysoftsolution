@@ -15,8 +15,14 @@ namespace MySoft.IoC
             {
                 this.Message = resMsg;
                 this.Count = resMsg.Count;
+                this.ElapsedTime = resMsg.ElapsedTime;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the value
+        /// </summary>
+        public long ElapsedTime { get; set; }
 
         /// <summary>
         /// 缓存数据

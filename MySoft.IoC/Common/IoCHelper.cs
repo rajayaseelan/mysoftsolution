@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using MySoft.Cache;
 using MySoft.IoC.Messages;
 using Newtonsoft.Json.Linq;
 
@@ -10,6 +11,28 @@ namespace MySoft.IoC
     /// </summary>
     public static class IoCHelper
     {
+        /// <summary>
+        /// 序列化对象
+        /// </summary>
+        /// <param name="resMsg"></param>
+        /// <returns></returns>
+        internal static byte[] SerializeObject(ResponseMessage resMsg)
+        {
+            var buffer = SerializationManager.SerializeBin(resMsg);
+            return CompressionManager.CompressGZip(buffer);
+        }
+
+        /// <summary>
+        /// 反序列化对象
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
+        internal static ResponseMessage DeserializeObject(byte[] buffer)
+        {
+            buffer = CompressionManager.DecompressGZip(buffer);
+            return SerializationManager.DeserializeBin<ResponseMessage>(buffer);
+        }
+
         /// <summary>
         /// 控制台输出
         /// </summary>
@@ -263,8 +286,7 @@ namespace MySoft.IoC
         public static CacheObject<InvokeData> GetCache(string filePath)
         {
             var cacheObj = FileCacheHelper.GetCache(filePath);
-            var buffer = CompressionManager.DecompressGZip(cacheObj.Value);
-            var resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
+            var resMsg = DeserializeObject(cacheObj.Value);
 
             //定义响应数据
             InvokeData invokeData = null;

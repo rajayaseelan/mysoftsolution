@@ -1,4 +1,5 @@
-﻿using MySoft.IoC.Messages;
+﻿using System;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {
@@ -30,8 +31,9 @@ namespace MySoft.IoC
                 //开始调用
                 call.BeginCall(callMsg);
             }
-            catch
+            catch (Exception ex)
             {
+                //TODO
             }
         }
 
@@ -70,8 +72,9 @@ namespace MySoft.IoC
                 //结束调用
                 call.EndCall(callMsg, returnMsg, elapsedMilliseconds);
             }
-            catch
+            catch (Exception ex)
             {
+                //TODO
             }
         }
     }

@@ -403,6 +403,7 @@ namespace MySoft.IoC
             {
                 callArgs = new CallEventArgs(appCaller)
                 {
+                    ElapsedTime = item.ElapsedTime,
                     Count = item.Count,
                     Value = item.Buffer
                 };

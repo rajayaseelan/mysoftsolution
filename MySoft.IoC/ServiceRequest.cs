@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Net.Sockets;
 using MySoft.IoC.Communication.Scs.Client;
 using MySoft.IoC.Communication.Scs.Communication;
@@ -166,34 +165,22 @@ namespace MySoft.IoC
             }
             else if (e.Message is ScsRawDataMessage)
             {
-                //开始一个记时器
-                var watch = Stopwatch.StartNew();
-
                 try
                 {
                     //获取响应信息
                     var data = e.Message as ScsRawDataMessage;
-                    var buffer = CompressionManager.DecompressGZip(data.MessageData);
-                    resMsg = SerializationManager.DeserializeBin<ResponseMessage>(buffer);
+                    resMsg = IoCHelper.DeserializeObject(data.MessageData);
 
                     if (resMsg != null)
                     {
                         //设置返回参数
                         resMsg.TransactionId = new Guid(messageId);
-                        resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
                     }
                 }
                 catch (Exception ex)
                 {
                     //出错时响应错误
                     resMsg = IoCHelper.GetResponse(reqMsg, ex);
-                }
-                finally
-                {
-                    if (watch.IsRunning)
-                    {
-                        watch.Stop();
-                    }
                 }
             }
 

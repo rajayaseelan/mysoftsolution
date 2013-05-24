@@ -1,4 +1,5 @@
 ﻿using System;
+using MySoft.Cache;
 
 namespace MySoft.IoC
 {

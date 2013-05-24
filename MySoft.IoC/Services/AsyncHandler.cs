@@ -133,7 +133,15 @@ namespace MySoft.IoC.Services
             return CacheHelper<ResponseItem>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime), () =>
             {
                 //同步请求响应数据
-                return GetResponseFromService();
+                var item = GetResponseFromService();
+
+                if (item != null && CheckResponse(item.Message))
+                {
+                    item.Buffer = IoCHelper.SerializeObject(item.Message);
+                    item.Message = null;
+                }
+
+                return item;
             });
         }
 
@@ -158,8 +166,7 @@ namespace MySoft.IoC.Services
 
                 if (item != null && CheckResponse(item.Message))
                 {
-                    var buffer = SerializationManager.SerializeBin(item.Message);
-                    item.Buffer = CompressionManager.CompressGZip(buffer);
+                    item.Buffer = IoCHelper.SerializeObject(item.Message);
                     item.Message = null;
                 }
 
