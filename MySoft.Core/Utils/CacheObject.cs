@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MySoft
+namespace MySoft.Cache
 {
     /// <summary>
     /// 缓存对象
