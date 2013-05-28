@@ -633,32 +633,5 @@ namespace MySoft.PlatformService.WinForm
             {
             }
         }
-
-        private void 查看缓存文件内容VToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                openFileDialog1.FileName = string.Empty;
-                openFileDialog1.Multiselect = false;
-                openFileDialog1.Filter = "缓存文件(*.dat)|*.dat";
-                var result = openFileDialog1.ShowDialog();
-
-                if (result == System.Windows.Forms.DialogResult.OK)
-                {
-                    var filePath = openFileDialog1.FileName;
-                    var data = IoCHelper.GetCache(filePath);
-
-                    //设置响应信息
-                    SetInvokeResponse(new InvokeResponse(data.Value));
-
-                    MessageBox.Show(string.Format("缓存过期时间：{0}，记录数：{1}", data.ExpiredTime, data.Value.Count)
-                                        , "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
     }
 }

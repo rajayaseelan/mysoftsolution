@@ -16,7 +16,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 8 * 1024; //8KB
+        private const int ReceiveBufferSize = 2 * 1024; //2KB
 
         #region Public properties
 
@@ -42,17 +42,17 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private readonly Socket _clientSocket;
 
-        /// <summary>
-        /// This buffer is used to receive bytes 
-        /// </summary>
-        private byte[] _receiveBuffer;
-
         private readonly bool _fromServer;
 
         /// <summary>
         /// A flag to control thread's running
         /// </summary>
         private volatile bool _running;
+
+        /// <summary>
+        /// This buffer is used to receive bytes 
+        /// </summary>
+        private volatile byte[] _receiveBuffer;
 
         #endregion
 
@@ -103,7 +103,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 WireProtocol.Reset();
-                _receiveBuffer = null;
             }
 
             CommunicationState = CommunicationStates.Disconnected;

@@ -33,12 +33,11 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取响应信息
         /// </summary>
-        /// <param name="fromServer"></param>
         /// <returns></returns>
-        public ResponseItem GetResponseItem(bool fromServer)
+        public ResponseItem GetResponseItem()
         {
             //开始请求
-            var ar = BeginRequest(fromServer);
+            var ar = BeginRequest();
 
             try
             {
@@ -66,21 +65,15 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 开始请求
         /// </summary>
-        /// <param name="fromServer"></param>
         /// <returns></returns>
-        private IAsyncResult BeginRequest(bool fromServer)
+        private IAsyncResult BeginRequest()
         {
             //定义委托
             Func<ResponseItem> caller;
 
             //是否需要缓存
             if (NeedCacheResult(reqMsg))
-            {
-                if (fromServer)
-                    caller = GetResponseFromFile;
-                else
-                    caller = GetResponseFromCache;
-            }
+                caller = GetResponseFromCache;
             else
                 caller = GetResponseFromService;
 
@@ -131,35 +124,6 @@ namespace MySoft.IoC.Services
         {
             //获取内存缓存
             return CacheHelper<ResponseItem>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime), () =>
-            {
-                //同步请求响应数据
-                var item = GetResponseFromService();
-
-                if (item != null && CheckResponse(item.Message))
-                {
-                    item.Buffer = IoCHelper.SerializeObject(item.Message);
-                    item.Message = null;
-                }
-
-                return item;
-            });
-        }
-
-        /// <summary>
-        /// 获取响应从本地缓存
-        /// </summary>
-        /// <returns></returns>
-        private ResponseItem GetResponseFromFile()
-        {
-            //双缓存保护获取方式
-            var key = new CacheKey
-            {
-                UniqueId = callKey,
-                ServiceName = reqMsg.ServiceName,
-                MethodName = reqMsg.MethodName.Substring(reqMsg.MethodName.IndexOf(' ') + 1)
-            };
-
-            return FileCacheHelper.Get(key, TimeSpan.FromSeconds(reqMsg.CacheTime), () =>
             {
                 //同步请求响应数据
                 var item = GetResponseFromService();

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -10,6 +12,7 @@ using System.Text;
 using MySoft.RESTful.Business.Pool;
 using MySoft.RESTful.Business.Register;
 using MySoft.RESTful.Utils;
+using Newtonsoft.Json;
 
 namespace MySoft.RESTful.Business
 {
@@ -29,6 +32,11 @@ namespace MySoft.RESTful.Business
         /// 业务注册
         /// </summary>
         private IBusinessRegister register;
+
+        /// <summary>
+        /// 服务控制器
+        /// </summary>
+        private IServiceController controller;
 
         /// <summary>
         /// 实例化BusinessRESTfulContext
@@ -59,12 +67,28 @@ namespace MySoft.RESTful.Business
         {
             this.pool = pool;
             this.register = register;
+            this.controller = CreateController();
+
             Init();
         }
 
         private void Init()
         {
             register.Register(pool);
+        }
+
+        private IServiceController CreateController()
+        {
+            var appType = ConfigurationManager.AppSettings["ServiceControllerType"];
+            if (string.IsNullOrEmpty(appType))
+            {
+                return new DefaultServiceController();
+            }
+            else
+            {
+                var type = Type.GetType(appType, true);
+                return Activator.CreateInstance(type) as IServiceController;
+            }
         }
 
         /// <summary>
@@ -117,16 +141,46 @@ namespace MySoft.RESTful.Business
             //实例对象
             object instance = null;
 
+            //开始记时
+            var watch = Stopwatch.StartNew();
+
             try
             {
                 //调用方法
-                object[] arguments = ParameterHelper.Convert(metadata.Parameters, nvget, nvpost);
-                instance = register.Resolve(metadata.Service);
+                var jobj = ParameterHelper.ConvertJObject(nvget, nvpost);
+                object[] arguments = ParameterHelper.Convert(metadata.Parameters, jobj);
 
-                return metadata.Method.FastInvoke(instance, arguments);
+                var appCaller = new AppCaller
+                {
+                    Service = metadata.Service,
+                    Method = metadata.Method,
+                    Parameters = arguments,
+                    AppData = new AppData
+                    {
+                        Kind = kind,
+                        Method = method,
+                        Parameters = jobj.ToString(Formatting.Indented)
+                    }
+                };
+
+                //开始调用
+                controller.BeginCall(appCaller);
+
+                instance = register.Resolve(metadata.Service);
+                var value = metadata.Method.FastInvoke(instance, arguments);
+
+                //结束调用
+                controller.EndCall(appCaller, value, watch.ElapsedMilliseconds);
+
+                return value;
             }
             finally
             {
+                if (watch.IsRunning)
+                {
+                    watch.Stop();
+                }
+
                 register.Release(instance);
             }
         }

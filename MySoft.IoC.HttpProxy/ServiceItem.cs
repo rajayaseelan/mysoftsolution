@@ -12,14 +12,34 @@ namespace MySoft.IoC.HttpProxy
     public class ServiceItem
     {
         /// <summary>
-        /// 代理服务器
+        /// 服务器地址
         /// </summary>
-        public string ProxyServer { get; set; }
+        public string ServerUri { get; set; }
 
         /// <summary>
         /// 方法名称
         /// </summary>
-        public string Name { get; set; }
+        public string CallerName { get; set; }
+
+        /// <summary>
+        /// 服务名称
+        /// </summary>
+        public string ServiceName { get; set; }
+
+        /// <summary>
+        /// 方法名称
+        /// </summary>
+        public string MethodName { get; set; }
+
+        /// <summary>
+        /// 缓存时间
+        /// </summary>
+        public int CacheTime { get; set; }
+
+        /// <summary>
+        /// 认证参数
+        /// </summary>
+        public string AuthParameter { get; set; }
 
         /// <summary>
         /// 是否认证
@@ -27,8 +47,8 @@ namespace MySoft.IoC.HttpProxy
         public bool Authorized { get; set; }
 
         /// <summary>
-        /// 是否String类型
+        /// 响应方式
         /// </summary>
-        public bool TypeString { get; set; }
+        public HttpMethod HttpMethod { get; set; }
     }
 }

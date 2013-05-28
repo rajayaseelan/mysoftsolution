@@ -26,7 +26,7 @@ namespace MySoft.IoC.HttpServer
         {
             this.config = config;
             this.container = container;
-            this.caller = new AsyncCaller(false, config.MaxCaller);
+            this.caller = new AsyncCaller(config.MaxCaller);
             this.callers = new HttpCallerInfoCollection();
         }
 
@@ -71,7 +71,6 @@ namespace MySoft.IoC.HttpServer
                 CacheTime = httpApi.CacheTime,
                 Service = serviceType,
                 Method = httpApi.Method,
-                TypeString = httpApi.Method.ReturnType == typeof(string),
                 Description = httpApi.Description,
                 Authorized = httpApi.Authorized,
                 AuthParameter = httpApi.AuthParameter,
@@ -137,9 +136,14 @@ namespace MySoft.IoC.HttpServer
             {
                 array.Add(new
                 {
-                    Name = caller.CallerName,
+                    ServerUri = string.Format("{0}:{1}", DnsHelper.GetIPAddress(), config.Port),
+                    CallerName = caller.CallerName,
+                    ServiceName = caller.Service.FullName,
+                    MethodName = caller.Method.ToString(),
+                    CacheTime = caller.CacheTime,
+                    AuthParameter = caller.AuthParameter,
                     Authorized = caller.Authorized,
-                    TypeString = caller.TypeString
+                    HttpMethod = caller.HttpMethod
                 });
             }
 

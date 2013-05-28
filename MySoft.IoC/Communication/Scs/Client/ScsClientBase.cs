@@ -253,6 +253,10 @@ namespace MySoft.IoC.Communication.Scs.Client
 
             OnDisconnected();
 
+            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
+            _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
+            _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
+            _communicationChannel.MessageError -= CommunicationChannel_MessageError;
             _communicationChannel = null;
         }
 

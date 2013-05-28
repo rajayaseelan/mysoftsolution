@@ -278,42 +278,6 @@ namespace MySoft.IoC
             return exception;
         }
 
-        /// <summary>
-        /// 获取对象
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public static CacheObject<InvokeData> GetCache(string filePath)
-        {
-            var cacheObj = FileCacheHelper.GetCache(filePath);
-            var resMsg = DeserializeObject(cacheObj.Value);
-
-            //定义响应数据
-            InvokeData invokeData = null;
-
-            if (resMsg.Value is InvokeData)
-            {
-                invokeData = resMsg.Value as InvokeData;
-            }
-            else
-            {
-                invokeData = new InvokeData
-                {
-                    Value = SerializationManager.SerializeJson(resMsg.Value),
-                    Count = resMsg.Count,
-                    ElapsedTime = resMsg.ElapsedTime,
-                    OutParameters = resMsg.Parameters.ToString()
-                };
-            }
-
-            //返回缓存数据
-            return new CacheObject<InvokeData>
-            {
-                ExpiredTime = cacheObj.ExpiredTime,
-                Value = invokeData
-            };
-        }
-
         #endregion
 
         #region 私有方法

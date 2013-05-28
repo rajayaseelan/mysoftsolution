@@ -101,7 +101,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public static ServerNode Parse(string ip, int port)
         {
-            return new ServerNode { IP = ip, Port = port };
+            return new ServerNode { Key = string.Format("{0}:{1}", ip, port), IP = ip, Port = port };
         }
 
         /// <summary>

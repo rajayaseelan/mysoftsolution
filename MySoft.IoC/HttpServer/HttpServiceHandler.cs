@@ -151,15 +151,6 @@ namespace MySoft.IoC.HttpServer
                 var parameters = ConvertJsonString(get, post);
                 string jsonString = caller.CallService(methodName, parameters);
 
-                if (callMethod.TypeString)
-                {
-                    //如果返回是字符串类型，则设置为文本返回
-                    response.ContentType = "text/plain;charset=utf-8";
-
-                    //转换成string类型
-                    jsonString = SerializationManager.DeserializeJson<string>(jsonString);
-                }
-
                 SendResponse(response, jsonString);
             }
             catch (HTTPMessageException ex)
@@ -200,6 +191,8 @@ namespace MySoft.IoC.HttpServer
         /// <returns></returns>
         private NameValueCollection ConvertCollection(string data)
         {
+            if (string.IsNullOrEmpty(data)) return null;
+
             //处理成Form方式
             var values = HttpUtility.ParseQueryString(data, Encoding.UTF8);
 
@@ -237,7 +230,7 @@ namespace MySoft.IoC.HttpServer
         private string ConvertJsonString(NameValueCollection nvget, NameValueCollection nvpost)
         {
             var obj = new JObject();
-            if (nvget.Count > 0)
+            if (nvget != null && nvget.Count > 0)
             {
                 foreach (var key in nvget.AllKeys)
                 {
@@ -245,7 +238,7 @@ namespace MySoft.IoC.HttpServer
                 }
             }
 
-            if (nvpost.Count > 0)
+            if (nvpost != null && nvpost.Count > 0)
             {
                 foreach (var key in nvpost.AllKeys)
                 {

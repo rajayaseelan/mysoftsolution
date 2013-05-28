@@ -60,6 +60,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Business\AppCaller.cs" />
+    <Compile Include="Business\DefaultServiceController.cs" />
+    <Compile Include="Business\IServiceController.cs" />
     <Compile Include="IContainer.cs" />
     <Compile Include="Business\BusinessKindModel.cs" />
     <Compile Include="Business\BusinessMethodModel.cs" />

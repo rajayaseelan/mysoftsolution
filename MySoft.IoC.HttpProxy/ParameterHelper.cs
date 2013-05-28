@@ -2,68 +2,18 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Web;
 using MySoft.Logger;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MySoft.RESTful.Utils
+namespace MySoft.IoC.HttpProxy
 {
     /// <summary>
-    /// 参数处理
+    /// 参数服务
     /// </summary>
-    public class ParameterHelper
+    public static class ParameterHelper
     {
-        /// <summary>
-        /// 参数解析
-        /// </summary>
-        /// <param name="paramters"></param>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public static object[] Convert(ParameterInfo[] paramters, JObject obj)
-        {
-            List<object> args = new List<object>();
-
-            foreach (ParameterInfo info in paramters)
-            {
-                var type = GetElementType(info.ParameterType);
-
-                var property = obj.Properties().SingleOrDefault(p => string.Compare(p.Name, info.Name, true) == 0);
-                if (property != null)
-                {
-                    try
-                    {
-                        var json = property.Value.ToString(Formatting.None);
-                        if (string.IsNullOrEmpty(json))
-                        {
-                            //参数值为空时使用默认值
-                            args.Add(CoreHelper.GetTypeDefaultValue(type));
-                        }
-                        else
-                        {
-                            //获取Json值
-                            var jsonValue = CoreHelper.ConvertJsonValue(type, json);
-                            args.Add(jsonValue);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new RESTfulException((int)HttpStatusCode.BadRequest, string.Format("Parameter [{0}] did not match type [{1}].",
-                            info.Name, CoreHelper.GetTypeName(type)));
-                    }
-                }
-                else
-                {
-                    throw new RESTfulException((int)HttpStatusCode.BadRequest, "Parameter [" + info.Name + "] is not found.");
-                }
-            }
-
-            return args.ToArray();
-        }
-
         /// <summary>
         /// 转换成JObject
         /// </summary>
@@ -107,6 +57,8 @@ namespace MySoft.RESTful.Utils
         /// <returns></returns>
         public static NameValueCollection ConvertCollection(string data)
         {
+            if (string.IsNullOrEmpty(data)) return null;
+
             //处理成Form方式
             var values = HttpUtility.ParseQueryString(data, Encoding.UTF8);
 
@@ -146,17 +98,6 @@ namespace MySoft.RESTful.Utils
                 return value;
 
             return HttpUtility.UrlDecode(value, Encoding.UTF8);
-        }
-
-        /// <summary>
-        /// 获取基元类型
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        private static Type GetElementType(Type type)
-        {
-            if (type.IsByRef) type = type.GetElementType();
-            return type;
         }
     }
 }

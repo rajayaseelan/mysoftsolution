@@ -371,8 +371,7 @@ namespace MySoft.RESTful
             //设置返回值
             ret = new RESTfulResult { Code = code, Message = ErrorHelper.GetInnerException(exception).Message };
 
-            var errorMessage = string.Format("\r\n\tCode:[{0}]\r\n\tError:[{1}]\r\n\tMethod:[{2}.{3}]", code,
-                    ErrorHelper.GetInnerException(exception).Message, kind, method);
+            var errorMessage = string.Format("\r\n\tCode:[{0}]\r\n\tError:[{1}]\r\n\tMethod:[{2}.{3}]", code, ret.Message, kind, method);
 
             //请求地址
             errorMessage = string.Format("{0}\r\n\tRequest Uri:{1}", errorMessage, GetRequestUri());
@@ -437,7 +436,7 @@ namespace MySoft.RESTful
             }
             catch (Exception ex)
             {
-                restResult.Message = ex.Message;
+                restResult.Message = ErrorHelper.GetInnerException(ex).Message;
             }
 
             //未认证写错误日志

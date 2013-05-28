@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using SM = System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using System.Text;
-using System.IO;
+using SM = System.ServiceModel;
 
 namespace MySoft.IoC.HttpProxy
 {

@@ -12,7 +12,7 @@ namespace MySoft.IoC
         /// 请求开始
         /// </summary>
         /// <param name="reqMsg"></param>
-        internal static void BeginRequest(this IServiceCall call, RequestMessage reqMsg)
+        internal static void BeginCall(this IServiceCall call, RequestMessage reqMsg)
         {
             if (call == null) return;
 
@@ -43,7 +43,7 @@ namespace MySoft.IoC
         /// <param name="reqMsg"></param>
         /// <param name="resMsg"></param>
         /// <param name="elapsedMilliseconds"></param>
-        internal static void EndRequest(this IServiceCall call, RequestMessage reqMsg, ResponseMessage resMsg, long elapsedMilliseconds)
+        internal static void EndCall(this IServiceCall call, RequestMessage reqMsg, ResponseMessage resMsg, long elapsedMilliseconds)
         {
             if (call == null) return;
 

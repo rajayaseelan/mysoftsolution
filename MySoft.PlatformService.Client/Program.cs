@@ -91,9 +91,10 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
-            var uri = new Uri("http://test.openapi.fund123.cn/openapi/help/user");
 
-            var a = uri.OriginalString;
+            var a = new HttpHelper().Reader("http://127.0.0.1:8012/api");
+            var b = a;
+
 
             #region aaa
             //var list = new List<User>();
@@ -556,19 +557,19 @@ namespace MySoft.PlatformService.Client
                     int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1000);
                     //var value = service.GetUsersString(count, out length);
 
-                    //var p = SerializationManager.SerializeJson(new { id = count });
+                    var p = SerializationManager.SerializeJson(new { id = count });
 
-                    //var v = CastleFactory.Create().Invoke(node, new InvokeMessage
-                    //{
-                    //    ServiceName = typeof(IUserService).FullName,
-                    //    MethodName = typeof(IUserService).GetMethod("GetUser", new Type[] { typeof(int) }).ToString(),
-                    //    Parameters = p,
-                    //    CacheTime = 5
-                    //});
+                    var v = CastleFactory.Create().Invoke(node, new InvokeMessage
+                    {
+                        ServiceName = typeof(IUserService).FullName,
+                        MethodName = typeof(IUserService).GetMethod("GetUser", new Type[] { typeof(int) }).ToString(),
+                        Parameters = p,
+                        CacheTime = 30
+                    });
 
                     //var a = count.ToString().PadRight(1000000, '#');
 
-                    var value = service.GetUser(count);
+                    //var value = service.GetUser(count);
 
                     //var value = service.GetUsers();
 
@@ -581,7 +582,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Name.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + v.Value.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //value.Clear();
 

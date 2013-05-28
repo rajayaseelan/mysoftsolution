@@ -100,7 +100,7 @@ namespace MySoft.IoC
             try
             {
                 //写日志开始
-                call.BeginRequest(reqMsg);
+                call.BeginCall(reqMsg);
 
                 //获取上下文
                 var context = GetOperationContext(reqMsg);
@@ -112,15 +112,15 @@ namespace MySoft.IoC
 
                 if (item.Message == null)
                 {
+                    //反序列化对象
                     resMsg = IoCHelper.DeserializeObject(item.Buffer);
-
-                    //设置耗时时间
-                    item.ElapsedTime = watch.ElapsedMilliseconds;
-                    resMsg.ElapsedTime = item.ElapsedTime;
                 }
 
+                //设置耗时时间
+                resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
+
                 //写日志结束
-                call.EndRequest(reqMsg, resMsg, watch.ElapsedMilliseconds);
+                call.EndCall(reqMsg, resMsg, watch.ElapsedMilliseconds);
 
                 return resMsg;
             }

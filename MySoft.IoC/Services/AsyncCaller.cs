@@ -13,16 +13,13 @@ namespace MySoft.IoC.Services
     {
         private IDictionary<string, QueueManager> hashtable;
         private Semaphore semaphore;
-        private bool fromServer;
 
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
-        /// <param name="fromServer"></param>
         /// <param name="maxCaller"></param>
-        public AsyncCaller(bool fromServer, int maxCaller)
+        public AsyncCaller(int maxCaller)
         {
-            this.fromServer = fromServer;
             this.semaphore = new Semaphore(maxCaller, maxCaller);
             this.hashtable = new Dictionary<string, QueueManager>();
         }
@@ -73,7 +70,7 @@ namespace MySoft.IoC.Services
                 var handler = new AsyncHandler(callKey, service, context, reqMsg);
 
                 //获取响应信息
-                var resMsg = handler.GetResponseItem(fromServer);
+                var resMsg = handler.GetResponseItem();
 
                 //设置响应信息
                 SetResponseItem(callKey, resMsg);

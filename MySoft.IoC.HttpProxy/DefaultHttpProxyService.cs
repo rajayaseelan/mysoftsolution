@@ -11,9 +11,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
+using MySoft.IoC.Messages;
 using MySoft.Logger;
 using MySoft.RESTful;
 using MySoft.Security;
+using Newtonsoft.Json;
 
 namespace MySoft.IoC.HttpProxy
 {
@@ -25,7 +27,6 @@ namespace MySoft.IoC.HttpProxy
     public class DefaultHttpProxyService : IHttpProxyService
     {
         const string HTTP_PROXY_API = "{0}/{1}";
-        const string HTTP_PROXY_URL = "{0}/{1}?{2}";
         private HttpHelper helper;
         private IList<string> proxyServers;
         private IDictionary<string, IList<ServiceItem>> services;
@@ -72,8 +73,6 @@ namespace MySoft.IoC.HttpProxy
                     //判断是否有更新
                     if (!isError)
                     {
-                        items.ForEach(p => p.ProxyServer = proxyServer);
-
                         lock (services)
                         {
                             //如果存在，则判断是否一致
@@ -113,7 +112,7 @@ namespace MySoft.IoC.HttpProxy
             {
                 //数据缓存1分钟
                 var url = string.Format(HTTP_PROXY_API, proxyServer, "api");
-                var jsonString = helper.Reader(url, 60);
+                var jsonString = helper.Reader(url);
 
                 //将数据反系列化成对象
                 var items = SerializationManager.DeserializeJson<IList<ServiceItem>>(jsonString);
@@ -121,8 +120,10 @@ namespace MySoft.IoC.HttpProxy
 
                 isError = false;
             }
-            catch
+            catch (Exception ex)
             {
+                SimpleLog.Instance.WriteLogForDir("WebAPI", ex);
+
                 isError = true;
                 //TODO
             }
@@ -147,30 +148,28 @@ namespace MySoft.IoC.HttpProxy
             //认证用户信息
             ServiceItem service;
             var header = new WebHeaderCollection();
-            var jsonString = AuthorizeMethod(name, header, out service);
+            var jsonString = AuthorizeMethod(name, HttpMethod.GET, out service);
 
             //如果jsonString为null，则继续处理
             if (string.IsNullOrEmpty(jsonString))
             {
                 try
                 {
-                    //数据缓存5秒
-                    var url = string.Empty;
-                    if (query.Count > 0)
+                    var jobj = ParameterHelper.ConvertJObject(query, null);
+                    if (service.Authorized && !string.IsNullOrEmpty(service.AuthParameter))
                     {
-                        url = string.Format(HTTP_PROXY_URL, service.ProxyServer, name, query.ToString());
-                    }
-                    else
-                    {
-                        url = string.Format(HTTP_PROXY_API, service.ProxyServer, name);
+                        jobj[service.AuthParameter] = AuthorizeContext.Current.UserName;
                     }
 
-                    jsonString = helper.Reader(url, header);
+                    //调用服务
+                    jsonString = Invoke(service, jobj.ToString(Formatting.Indented));
 
-                    if (service.TypeString)
+                    if (query.AllKeys.Contains("format"))
                     {
+                        jsonString = SerializationManager.DeserializeJson<string>(jsonString);
+
                         //如果返回是字符串类型，则设置为文本返回
-                        var format = query["format"] ?? "text";
+                        var format = query["format"];
                         switch (format)
                         {
                             case "html":
@@ -179,11 +178,14 @@ namespace MySoft.IoC.HttpProxy
                             case "xml":
                                 response.ContentType = "text/xml;charset=utf-8";
                                 break;
-                            case "text":
                             default:
                                 response.ContentType = "text/plain;charset=utf-8";
                                 break;
                         }
+
+                        //转换成utf8返回
+                        var bytes = Encoding.UTF8.GetBytes(jsonString);
+                        return new MemoryStream(bytes);
                     }
 
                     //判断是否需要回调
@@ -230,17 +232,10 @@ namespace MySoft.IoC.HttpProxy
                         }
                     }
                 }
-                catch (WebException ex)
+                catch (Exception ex)
                 {
-                    var rep = (ex.Response as HttpWebResponse);
-                    var stream = rep.GetResponseStream();
-                    using (var sr = new StreamReader(stream))
-                    {
-                        jsonString = sr.ReadToEnd();
-                    }
-
-                    response.StatusCode = rep.StatusCode;
-                    response.StatusDescription = rep.StatusDescription;
+                    response.StatusCode = HttpStatusCode.BadRequest;
+                    jsonString = SerializationManager.SerializeJson(new { Code = (int)response.StatusCode, Message = ex.Message });
                 }
                 finally
                 {
@@ -271,7 +266,7 @@ namespace MySoft.IoC.HttpProxy
             //认证用户信息
             ServiceItem service;
             var header = new WebHeaderCollection();
-            var jsonString = AuthorizeMethod(name, header, out service);
+            var jsonString = AuthorizeMethod(name, HttpMethod.POST, out service);
 
             //如果jsonString为null，则继续处理
             if (string.IsNullOrEmpty(jsonString))
@@ -284,47 +279,22 @@ namespace MySoft.IoC.HttpProxy
                         postValue = sr.ReadToEnd();
                     }
 
-                    var url = string.Empty;
-                    if (query.Count > 0)
+                    //转换面对象
+                    var nvpost = ParameterHelper.ConvertCollection(postValue);
+
+                    var jobj = ParameterHelper.ConvertJObject(query, nvpost);
+                    if (service.Authorized && !string.IsNullOrEmpty(service.AuthParameter))
                     {
-                        url = string.Format(HTTP_PROXY_URL, service.ProxyServer, name, query.ToString());
-                    }
-                    else
-                    {
-                        url = string.Format(HTTP_PROXY_API, service.ProxyServer, name);
+                        jobj[service.AuthParameter] = AuthorizeContext.Current.UserName;
                     }
 
-                    jsonString = helper.Poster(url, postValue, header);
-                    if (service.TypeString)
-                    {
-                        //如果返回是字符串类型，则设置为文本返回
-                        var format = query["format"] ?? "text";
-                        switch (format)
-                        {
-                            case "html":
-                                response.ContentType = "text/html;charset=utf-8";
-                                break;
-                            case "xml":
-                                response.ContentType = "text/xml;charset=utf-8";
-                                break;
-                            case "text":
-                            default:
-                                response.ContentType = "text/plain;charset=utf-8";
-                                break;
-                        }
-                    }
+                    //调用服务
+                    jsonString = Invoke(service, jobj.ToString(Formatting.Indented));
                 }
-                catch (WebException ex)
+                catch (Exception ex)
                 {
-                    var rep = (ex.Response as HttpWebResponse);
-                    var output = rep.GetResponseStream();
-                    using (var sr = new StreamReader(output))
-                    {
-                        jsonString = sr.ReadToEnd();
-                    }
-
-                    response.StatusCode = rep.StatusCode;
-                    response.StatusDescription = rep.StatusDescription;
+                    response.StatusCode = HttpStatusCode.BadRequest;
+                    jsonString = SerializationManager.SerializeJson(new { Code = (int)response.StatusCode, Message = ex.Message });
                 }
             }
 
@@ -390,15 +360,15 @@ namespace MySoft.IoC.HttpProxy
 
                 //文档缓存1分钟
                 var url = string.Format(HTTP_PROXY_API, proxyServer, method);
-                string html = helper.Reader(url, 60);
+                string html = helper.Reader(url);
 
                 //转换成utf8返回
                 response.ContentType = "text/html;charset=utf-8";
                 var regex = new Regex(@"<title>([\s\S]+?) 处的操作</title>", RegexOptions.IgnoreCase);
                 if (regex.IsMatch(html))
                 {
-                    url = GetRequestUri().GetLeftPart(UriPartial.Authority);
-                    html = html.Replace(regex.Match(html).Result("$1"), url);
+                    var host = GetRequestUri().GetLeftPart(UriPartial.Authority);
+                    html = html.Replace(regex.Match(html).Result("$1"), host + "/");
                 }
 
                 if (string.IsNullOrEmpty(content)) content = html;
@@ -438,10 +408,12 @@ namespace MySoft.IoC.HttpProxy
                     string.Concat(@"<div id=""content"">", sb.ToString(), "</div>"));
 
             response.ContentType = "text/html;charset=utf-8";
-            return new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+            var buffer = Encoding.UTF8.GetBytes(content);
+            return new MemoryStream(buffer);
         }
 
-        private string AuthorizeMethod(string name, WebHeaderCollection header, out ServiceItem service)
+        private string AuthorizeMethod(string name, HttpMethod method, out ServiceItem service)
         {
             service = null;
             var response = WebOperationContext.Current.OutgoingResponse;
@@ -453,7 +425,7 @@ namespace MySoft.IoC.HttpProxy
                 var item = new HttpProxyResult { Code = (int)response.StatusCode, Message = "Service 【" + name + "】 not found." };
                 return SerializeJson(item);
             }
-            else if (!GetServiceItems().Any(p => string.Compare(p.Name, name, true) == 0))
+            else if (!GetServiceItems().Any(p => string.Compare(p.CallerName, name, true) == 0))
             {
                 response.StatusCode = HttpStatusCode.NotFound;
                 var item = new HttpProxyResult { Code = (int)response.StatusCode, Message = "Method 【" + name + "】 not found." };
@@ -463,12 +435,19 @@ namespace MySoft.IoC.HttpProxy
             {
                 #region 进行认证处理
 
-                service = GetServiceItems().Single(p => string.Compare(p.Name, name, true) == 0);
+                service = GetServiceItems().Single(p => string.Compare(p.CallerName, name, true) == 0);
+
+                if (service.HttpMethod == HttpMethod.POST && method == HttpMethod.GET)
+                {
+                    response.StatusCode = HttpStatusCode.MethodNotAllowed;
+                    var item = new HttpProxyResult { Code = (int)response.StatusCode, Message = "Method 【" + name + "】 not allowed [GET]." };
+                    return SerializeJson(item);
+                }
 
                 //认证处理
                 if (service.Authorized)
                 {
-                    var result = AuthorizeHeader(header);
+                    var result = Authorize();
                     if (result.Code == (int)HttpStatusCode.OK)
                         return null;
                     else
@@ -481,7 +460,7 @@ namespace MySoft.IoC.HttpProxy
             return null;
         }
 
-        private HttpProxyResult AuthorizeHeader(WebHeaderCollection header)
+        private HttpProxyResult Authorize()
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
@@ -504,9 +483,6 @@ namespace MySoft.IoC.HttpProxy
             try
             {
                 var user = Authorize(token);
-                response.StatusCode = HttpStatusCode.OK;
-
-                header["X-AuthParameter"] = HttpUtility.UrlEncode(user.UserName, Encoding.UTF8);
                 response.StatusCode = HttpStatusCode.OK;
 
                 //认证信息
@@ -620,5 +596,30 @@ namespace MySoft.IoC.HttpProxy
         }
 
         #endregion
+
+        /// <summary>
+        /// 响应服务项
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        private string Invoke(ServiceItem item, string parameters)
+        {
+            var node = ServerNode.Parse(item.ServerUri);
+
+            //执行消息
+            var message = new InvokeMessage
+            {
+                ServiceName = item.ServiceName,
+                MethodName = item.MethodName,
+                Parameters = parameters,
+                CacheTime = item.CacheTime
+            };
+
+            //执行服务
+            var invokeData = CastleFactory.Create().Invoke(node, message);
+
+            return invokeData.Value;
+        }
     }
 }

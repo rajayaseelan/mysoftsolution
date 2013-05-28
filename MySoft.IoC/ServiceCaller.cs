@@ -25,7 +25,7 @@ namespace MySoft.IoC
         {
             this.callbackTypes = new Dictionary<string, Type>();
             this.container = container;
-            this.caller = new AsyncCaller(true, config.MaxCaller);
+            this.caller = new AsyncCaller(config.MaxCaller);
 
             //初始化服务
             Init(container, config);

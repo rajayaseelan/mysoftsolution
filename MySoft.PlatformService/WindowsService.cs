@@ -22,6 +22,9 @@ namespace MySoft.PlatformService
 
         public WindowsService()
         {
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(WindowsService_UnhandledException);
+            Thread.GetDomain().UnhandledException += new UnhandledExceptionEventHandler(WindowsService_UnhandledException);
+
             var config = CastleServiceConfiguration.GetConfig();
             this.service = new CastleService(config);
 
@@ -59,6 +62,17 @@ namespace MySoft.PlatformService
 
             //初始化组件
             InitializeComponent();
+        }
+
+        /// <summary>
+        /// 处理线程异常
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void WindowsService_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var exception = e.ExceptionObject as Exception;
+            SimpleLog.Instance.WriteLogWithSendMail(exception, mailTo);
         }
 
         protected override void OnStart(string[] args)

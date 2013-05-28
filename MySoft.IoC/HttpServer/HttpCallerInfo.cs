@@ -53,10 +53,5 @@ namespace MySoft.IoC.HttpServer
         /// Http方式
         /// </summary>
         public HttpMethod HttpMethod { get; set; }
-
-        /// <summary>
-        /// 是否字符串
-        /// </summary>
-        public bool TypeString { get; set; }
     }
 }
