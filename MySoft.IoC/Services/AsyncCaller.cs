@@ -41,7 +41,7 @@ namespace MySoft.IoC.Services
                 //获取callerKey
                 var callKey = GetCallerKey(reqMsg, context.Caller);
 
-                //返回响应信息
+                //响应方法
                 return InvokeResponse(callKey, service, context, reqMsg);
             }
             finally
@@ -52,7 +52,7 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 返回响应信息
+        /// 响应信息
         /// </summary>
         /// <param name="callKey"></param>
         /// <param name="service"></param>
@@ -61,21 +61,15 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseItem InvokeResponse(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
         {
+            //返回响应信息
             bool invokeService;
 
             var manager = GetManager(callKey, out invokeService);
 
             if (invokeService)
             {
-                var handler = new AsyncHandler(callKey, service, context, reqMsg);
-
-                //获取响应信息
-                var resMsg = handler.GetResponseItem();
-
-                //设置响应信息
-                SetResponseItem(callKey, resMsg);
-
-                return resMsg;
+                //响应服务
+                return GetResponse(manager, callKey, service, context, reqMsg);
             }
 
             //等待响应
@@ -87,6 +81,45 @@ namespace MySoft.IoC.Services
 
                 //返回响应消息
                 return channelResult.Message;
+            }
+        }
+
+        /// <summary>
+        /// 响应服务并返回队列请求
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="callKey"></param>
+        /// <param name="service"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        private ResponseItem GetResponse(QueueManager manager, string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        {
+            try
+            {
+                //异步处理器
+                var handler = new AsyncHandler(callKey, service, context, reqMsg);
+
+                //开始异步请求
+                var ar = handler.BeginInvoke(null);
+
+                //等待响应
+                ar.AsyncWaitHandle.WaitOne();
+
+                //获取响应信息
+                var resMsg = handler.EndInvoke(ar);
+
+                //设置响应消息
+                manager.Set(resMsg);
+
+                return resMsg;
+            }
+            finally
+            {
+                //移除元素
+                lock (hashtable)
+                {
+                    hashtable.Remove(callKey);
+                }
             }
         }
 
@@ -109,35 +142,8 @@ namespace MySoft.IoC.Services
 
                     invokeService = true;
                 }
-            }
 
-            return hashtable[callKey];
-        }
-
-        /// <summary>
-        /// 设置响应信息
-        /// </summary>
-        /// <param name="callKey"></param>
-        /// <param name="resMsg"></param>
-        private void SetResponseItem(string callKey, ResponseItem resMsg)
-        {
-            lock (hashtable)
-            {
-                if (hashtable.ContainsKey(callKey))
-                {
-                    try
-                    {
-                        var manager = hashtable[callKey];
-
-                        //设置响应消息
-                        manager.Set(resMsg);
-                    }
-                    finally
-                    {
-                        //移除元素
-                        hashtable.Remove(callKey);
-                    }
-                }
+                return hashtable[callKey];
             }
         }
 

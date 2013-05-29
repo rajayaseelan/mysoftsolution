@@ -36,7 +36,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The current framework version.
         /// </summary>
-        public const string CURRENT_FRAMEWORK_VERSION = "v3.6"; //当前版本
+        public const string CURRENT_FRAMEWORK_VERSION = "v3.8"; //当前版本
 
         #endregion
     }

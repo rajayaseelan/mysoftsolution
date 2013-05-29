@@ -102,8 +102,6 @@ namespace MySoft.IoC.Services
             }
             finally
             {
-                reqMsg.Parameters.Clear();
-
                 // Õ∑≈∂‘œÛ
                 container.Release(instance);
             }

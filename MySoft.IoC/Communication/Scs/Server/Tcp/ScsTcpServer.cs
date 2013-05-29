@@ -1,5 +1,4 @@
-﻿using MySoft.IoC.Communication.Scs.Communication;
-using MySoft.IoC.Communication.Scs.Communication.Channels;
+﻿using MySoft.IoC.Communication.Scs.Communication.Channels;
 using MySoft.IoC.Communication.Scs.Communication.Channels.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;

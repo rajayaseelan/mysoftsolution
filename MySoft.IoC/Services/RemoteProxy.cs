@@ -54,10 +54,10 @@ namespace MySoft.IoC.Services
             }
             else
             {
-                this.pool = new ServiceRequestPool(ServiceConfig.DEFAULT_CLIENT_MAXPOOL);
+                this.pool = new ServiceRequestPool(node.MaxPool);
 
                 //最大池为100
-                for (int i = 0; i < ServiceConfig.DEFAULT_CLIENT_MAXPOOL; i++)
+                for (int i = 0; i < node.MaxPool; i++)
                 {
                     //加入队列
                     pool.Push(new ServiceRequest(this, node, false));

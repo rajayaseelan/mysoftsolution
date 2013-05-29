@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MySoft.IoC.Services
 {
@@ -24,7 +23,7 @@ namespace MySoft.IoC.Services
         /// <param name="result"></param>
         public void Add(ChannelResult result)
         {
-            lock (queues)
+            lock (this.queues)
             {
                 queues.Enqueue(result);
             }
@@ -38,7 +37,7 @@ namespace MySoft.IoC.Services
         {
             if (item == null) return;
 
-            lock (queues)
+            lock (this.queues)
             {
                 while (queues.Count > 0)
                 {

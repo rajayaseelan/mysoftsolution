@@ -1,5 +1,4 @@
-﻿using System;
-namespace MySoft.IoC.Communication.Scs.Communication.Messages
+﻿namespace MySoft.IoC.Communication.Scs.Communication.Messages
 {
     /// <summary>
     /// Represents a message that is sent and received by server and client.

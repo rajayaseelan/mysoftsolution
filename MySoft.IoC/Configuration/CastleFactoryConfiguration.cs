@@ -98,6 +98,10 @@ namespace MySoft.IoC.Configuration
                     if (childattribute["format"] != null && childattribute["format"].Value.Trim() != string.Empty)
                         node.RespType = (ResponseType)Enum.Parse(typeof(ResponseType), childattribute["format"].Value, true);
 
+                    //最大连接池
+                    if (childattribute["maxpool"] != null && childattribute["maxpool"].Value.Trim() != string.Empty)
+                        node.MaxPool = Convert.ToInt32(childattribute["maxpool"].Value);
+
                     //处理默认的服务
                     if (string.IsNullOrEmpty(defaultKey))
                     {

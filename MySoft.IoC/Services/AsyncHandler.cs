@@ -31,18 +31,34 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 获取响应信息
+        /// 开始请求
         /// </summary>
+        /// <param name="callback"></param>
         /// <returns></returns>
-        public ResponseItem GetResponseItem()
+        public IAsyncResult BeginInvoke(AsyncCallback callback)
         {
-            //开始请求
-            var ar = BeginRequest();
+            //定义委托
+            Func<ResponseItem> caller;
 
+            //是否需要缓存
+            if (NeedCacheResult(reqMsg))
+                caller = GetResponseFromCache;
+            else
+                caller = GetResponseFromService;
+
+            //开始异步调用
+            return caller.BeginInvoke(callback, caller);
+        }
+
+        /// <summary>
+        /// 结束请求
+        /// </summary>
+        /// <param name="ar"></param>
+        /// <returns></returns>
+        public ResponseItem EndInvoke(IAsyncResult ar)
+        {
             try
             {
-                ar.AsyncWaitHandle.WaitOne();
-
                 var caller = ar.AsyncState as Func<ResponseItem>;
 
                 //异步回调
@@ -60,25 +76,6 @@ namespace MySoft.IoC.Services
                 //释放资源，必写
                 ar.AsyncWaitHandle.Close();
             }
-        }
-
-        /// <summary>
-        /// 开始请求
-        /// </summary>
-        /// <returns></returns>
-        private IAsyncResult BeginRequest()
-        {
-            //定义委托
-            Func<ResponseItem> caller;
-
-            //是否需要缓存
-            if (NeedCacheResult(reqMsg))
-                caller = GetResponseFromCache;
-            else
-                caller = GetResponseFromService;
-
-            //开始异步调用
-            return caller.BeginInvoke(null, caller);
         }
 
         /// <summary>
