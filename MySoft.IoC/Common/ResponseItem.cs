@@ -1,10 +1,12 @@
-﻿using MySoft.IoC.Messages;
+﻿using System;
+using MySoft.IoC.Messages;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// 缓存项
     /// </summary>
+    [Serializable]
     internal class ResponseItem
     {
         public ResponseItem() { }

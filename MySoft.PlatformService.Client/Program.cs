@@ -91,11 +91,6 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
-
-            var a = new HttpHelper().Reader("http://127.0.0.1:8012/api");
-            var b = a;
-
-
             #region aaa
             //var list = new List<User>();
             //list.AddRange(new User[] { new User { }, new User { } });
@@ -537,6 +532,8 @@ namespace MySoft.PlatformService.Client
             while (true)
             {
                 var node = ServerNode.Parse("127.0.0.1", 9982);
+                node.MaxPool = 1000;
+
                 var service = CastleFactory.Create().GetChannel<IUserService>(node);
 
                 try
@@ -554,7 +551,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1000);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1);
                     //var value = service.GetUsersString(count, out length);
 
                     var p = SerializationManager.SerializeJson(new { id = count });
@@ -564,10 +561,10 @@ namespace MySoft.PlatformService.Client
                         ServiceName = typeof(IUserService).FullName,
                         MethodName = typeof(IUserService).GetMethod("GetUser", new Type[] { typeof(int) }).ToString(),
                         Parameters = p,
-                        CacheTime = 30
+                        CacheTime = 10
                     });
 
-                    //var a = count.ToString().PadRight(1000000, '#');
+                    ////var a = count.ToString().PadRight(1000000, '#');
 
                     //var value = service.GetUser(count);
 
@@ -589,6 +586,13 @@ namespace MySoft.PlatformService.Client
                     //var clients = service1.GetClientList();
 
                     //Console.WriteLine("{0} => {1}", DateTime.Now, clients.Count);
+                }
+                catch (TimeoutException ex)
+                {
+                    SimpleLog.Instance.WriteLogForDir("Timeout", ex);
+
+                    string msg = ErrorHelper.GetInnerException(ex).Message;
+                    Console.WriteLine("[{0}] {1}", DateTime.Now, msg);
                 }
                 catch (Exception ex)
                 {

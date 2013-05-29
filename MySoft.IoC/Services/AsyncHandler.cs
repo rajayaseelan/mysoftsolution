@@ -119,8 +119,16 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseItem GetResponseFromCache()
         {
+            var type = LocalCacheType.Memory;
+
+            //参数为0的采用文件缓存
+            if (reqMsg.Parameters.Count == 0)
+            {
+                type = LocalCacheType.File;
+            }
+
             //获取内存缓存
-            return CacheHelper<ResponseItem>.Get(callKey, TimeSpan.FromSeconds(reqMsg.CacheTime), () =>
+            return CacheHelper<ResponseItem>.Get(type, callKey, TimeSpan.FromSeconds(reqMsg.CacheTime), () =>
             {
                 //同步请求响应数据
                 var item = GetResponseFromService();

@@ -33,19 +33,30 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseItem Run(IService service, OperationContext context, RequestMessage reqMsg)
         {
+            //获取callerKey
+            var callKey = GetCallerKey(reqMsg, context.Caller);
+
             //请求一个控制器
             semaphore.WaitOne();
 
             try
             {
-                //获取callerKey
-                var callKey = GetCallerKey(reqMsg, context.Caller);
+                //返回响应信息
+                bool newStart;
+
+                var manager = GetManager(callKey, out newStart);
 
                 //响应方法
-                return InvokeResponse(callKey, service, context, reqMsg);
+                return InvokeResponse(manager, newStart, callKey, service, context, reqMsg);
             }
             finally
             {
+                //移除元素
+                lock (hashtable)
+                {
+                    hashtable.Remove(callKey);
+                }
+
                 //释放一个控制器
                 semaphore.Release();
             }
@@ -54,22 +65,24 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 响应信息
         /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="newStart"></param>
         /// <param name="callKey"></param>
         /// <param name="service"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseItem InvokeResponse(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        private ResponseItem InvokeResponse(QueueManager manager, bool newStart, string callKey, IService service, OperationContext context, RequestMessage reqMsg)
         {
-            //返回响应信息
-            bool invokeService;
-
-            var manager = GetManager(callKey, out invokeService);
-
-            if (invokeService)
+            if (newStart)
             {
                 //响应服务
-                return GetResponse(manager, callKey, service, context, reqMsg);
+                var resMsg = GetResponse(callKey, service, context, reqMsg);
+
+                //设置响应消息
+                manager.Set(resMsg);
+
+                return resMsg;
             }
 
             //等待响应
@@ -87,52 +100,35 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 响应服务并返回队列请求
         /// </summary>
-        /// <param name="manager"></param>
         /// <param name="callKey"></param>
         /// <param name="service"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
-        private ResponseItem GetResponse(QueueManager manager, string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        private ResponseItem GetResponse(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
         {
-            try
-            {
-                //异步处理器
-                var handler = new AsyncHandler(callKey, service, context, reqMsg);
+            //异步处理器
+            var handler = new AsyncHandler(callKey, service, context, reqMsg);
 
-                //开始异步请求
-                var ar = handler.BeginInvoke(null);
+            //开始异步请求
+            var ar = handler.BeginInvoke(null);
 
-                //等待响应
-                ar.AsyncWaitHandle.WaitOne();
+            //等待响应
+            ar.AsyncWaitHandle.WaitOne();
 
-                //获取响应信息
-                var resMsg = handler.EndInvoke(ar);
-
-                //设置响应消息
-                manager.Set(resMsg);
-
-                return resMsg;
-            }
-            finally
-            {
-                //移除元素
-                lock (hashtable)
-                {
-                    hashtable.Remove(callKey);
-                }
-            }
+            //获取响应信息
+            return handler.EndInvoke(ar);
         }
 
         /// <summary>
         /// 获取管理器
         /// </summary>
         /// <param name="callKey"></param>
-        /// <param name="invokeService"></param>
+        /// <param name="newStart"></param>
         /// <returns></returns>
-        private QueueManager GetManager(string callKey, out bool invokeService)
+        private QueueManager GetManager(string callKey, out bool newStart)
         {
             //是否异步调用变量
-            invokeService = false;
+            newStart = false;
 
             lock (hashtable)
             {
@@ -140,7 +136,7 @@ namespace MySoft.IoC.Services
                 {
                     hashtable[callKey] = new QueueManager();
 
-                    invokeService = true;
+                    newStart = true;
                 }
 
                 return hashtable[callKey];

@@ -31,6 +31,8 @@ namespace MySoft.PlatformService.UserService
         [AspectSwitcher(true, Description = "获取用户")]
         public virtual User GetUser(int id)
         {
+            Thread.Sleep(1000);
+
             var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
             var sb = new StringBuilder(name);
             for (int i = 0; i < 10; i++)
