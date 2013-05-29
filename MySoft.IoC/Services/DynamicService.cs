@@ -83,12 +83,6 @@ namespace MySoft.IoC.Services
 
             try
             {
-                if (instance != null)
-                {
-                    //真正的服务名称
-                    resMsg.ServiceName = instance.GetType().FullName;
-                }
-
                 //参数赋值
                 object[] parameters = IoCHelper.CreateParameters(callMethod, reqMsg.Parameters);
 

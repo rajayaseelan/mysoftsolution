@@ -10,7 +10,6 @@ namespace MySoft.IoC.Services
     internal class WaitResult : IDisposable
     {
         private EventWaitHandle ev;
-        private RequestMessage reqMsg;
         private ResponseMessage resMsg;
 
         /// <summary>
@@ -24,10 +23,8 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 实例化WaitResult
         /// </summary>
-        /// <param name="reqMsg"></param>
-        public WaitResult(RequestMessage reqMsg)
+        public WaitResult()
         {
-            this.reqMsg = reqMsg;
             this.ev = new ManualResetEvent(false);
         }
 
@@ -60,21 +57,7 @@ namespace MySoft.IoC.Services
         {
             try
             {
-                if (resMsg != null)
-                {
-                    //重新实例化消息对象
-                    this.resMsg = new ResponseMessage
-                    {
-                        TransactionId = reqMsg.TransactionId,
-                        ServiceName = resMsg.ServiceName,
-                        MethodName = resMsg.MethodName,
-                        Parameters = resMsg.Parameters,
-                        ElapsedTime = resMsg.ElapsedTime,
-                        Error = resMsg.Error,
-                        Value = resMsg.Value
-                    };
-                }
-
+                this.resMsg = resMsg;
                 return ev.Set();
             }
             catch
@@ -90,7 +73,6 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            this.reqMsg = null;
             this.resMsg = null;
 
             this.ev.Close();

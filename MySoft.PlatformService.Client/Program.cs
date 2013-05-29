@@ -551,24 +551,24 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1);
-                    //var value = service.GetUsersString(count, out length);
+                    //int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1);
+                    ////var value = service.GetUsersString(count, out length);
 
-                    var p = SerializationManager.SerializeJson(new { id = count });
+                    //var p = SerializationManager.SerializeJson(new { id = count });
 
-                    var v = CastleFactory.Create().Invoke(node, new InvokeMessage
-                    {
-                        ServiceName = typeof(IUserService).FullName,
-                        MethodName = typeof(IUserService).GetMethod("GetUser", new Type[] { typeof(int) }).ToString(),
-                        Parameters = p,
-                        CacheTime = 10
-                    });
+                    //var v = CastleFactory.Create().Invoke(node, new InvokeMessage
+                    //{
+                    //    ServiceName = typeof(IUserService).FullName,
+                    //    MethodName = typeof(IUserService).GetMethod("GetUser", new Type[] { typeof(int) }).ToString(),
+                    //    Parameters = p,
+                    //    CacheTime = 10
+                    //});
 
                     ////var a = count.ToString().PadRight(1000000, '#');
 
                     //var value = service.GetUser(count);
 
-                    //var value = service.GetUsers();
+                    var value = service.GetUsers();
 
                     //var user = service.GetUser(counter);
 
@@ -579,7 +579,7 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + v.Value.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Count + " timeout: " + watch.ElapsedMilliseconds + " ms.");
 
                     //value.Clear();
 

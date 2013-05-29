@@ -151,7 +151,7 @@ namespace MySoft.IoC.Services
         private ResponseMessage GetResponse(string messageId, RequestMessage reqMsg)
         {
             //发送消息并获取结果
-            using (var waitResult = new WaitResult(reqMsg))
+            using (var waitResult = new WaitResult())
             {
                 try
                 {

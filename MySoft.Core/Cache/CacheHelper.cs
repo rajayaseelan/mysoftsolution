@@ -70,7 +70,7 @@ namespace MySoft.Cache
                     }
 
                     //移除缓存
-                    CacheHelper.Remove(key);
+                    CacheHelper.Remove("file_" + key);
                 }
                 catch (IOException ex) { }
                 catch (Exception ex)
@@ -325,7 +325,7 @@ namespace MySoft.Cache
         /// <returns></returns>
         private static CacheObject<T> GetFileCacheItem(LocalCacheType type, string key, TimeSpan timeout)
         {
-            var cacheObj = CacheHelper.Get<CacheObject<T>>(key);
+            var cacheObj = CacheHelper.Get<CacheObject<T>>("file_" + key);
 
             if (cacheObj == null)
             {
@@ -336,7 +336,7 @@ namespace MySoft.Cache
                     if (cacheObj != null)
                     {
                         //默认缓存60秒
-                        CacheHelper.Insert(key, cacheObj, Math.Min(60, (int)timeout.TotalSeconds));
+                        CacheHelper.Insert("file_" + key, cacheObj, Math.Min(60, (int)timeout.TotalSeconds));
                     }
                 }
                 catch (IOException ex) { }
@@ -365,9 +365,6 @@ namespace MySoft.Cache
                     Value = internalObject,
                     ExpiredTime = DateTime.Now.Add(timeout)
                 };
-
-                //默认缓存60秒
-                CacheHelper.Insert(key, cacheObj, Math.Min(60, (int)timeout.TotalSeconds));
 
                 try
                 {
