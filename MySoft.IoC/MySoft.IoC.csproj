@@ -155,13 +155,14 @@
     <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
     <Compile Include="Services\AsyncCaller.cs" />
-    <Compile Include="Services\ChannelResult.cs" />
+    <Compile Include="Services\ChannelResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\IServiceCallback.cs" />
     <Compile Include="Services\AsyncHandler.cs" />
-    <Compile Include="Services\QueueManager.cs" />
     <Compile Include="Services\ServiceDiscoverFacility.cs" />
     <Compile Include="Messages\Status\AppCaller.cs" />
     <Compile Include="Messages\Status\AppClient.cs" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using MySoft.Cache;
 using MySoft.IoC.Messages;
@@ -46,8 +47,9 @@ namespace MySoft.IoC.Services
         /// 开始请求
         /// </summary>
         /// <param name="callback"></param>
+        /// <param name="state"></param>
         /// <returns></returns>
-        public IAsyncResult BeginInvoke(AsyncCallback callback)
+        public IAsyncResult BeginInvoke(AsyncCallback callback, object @state)
         {
             //定义委托
             Func<ResponseItem> caller;
@@ -59,7 +61,7 @@ namespace MySoft.IoC.Services
                 caller = GetResponseFromService;
 
             //开始异步调用
-            return caller.BeginInvoke(callback, caller);
+            return caller.BeginInvoke(callback, @state);
         }
 
         /// <summary>
@@ -71,17 +73,13 @@ namespace MySoft.IoC.Services
         {
             try
             {
-                var caller = ar.AsyncState as Func<ResponseItem>;
+                //异步委托
+                var func = (ar as AsyncResult).AsyncDelegate;
+
+                var caller = func as Func<ResponseItem>;
 
                 //异步回调
                 return caller.EndInvoke(ar);
-            }
-            catch (Exception ex)
-            {
-                //获取异常响应
-                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                return new ResponseItem(resMsg);
             }
             finally
             {

@@ -40,10 +40,11 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 等待信号
         /// </summary>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        public bool WaitOne()
+        public bool WaitOne(TimeSpan timeout)
         {
-            return waitResult.WaitOne(TimeSpan.Zero);
+            return waitResult.WaitOne(timeout);
         }
 
         /// <summary>

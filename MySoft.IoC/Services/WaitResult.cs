@@ -22,6 +22,12 @@ namespace MySoft.IoC.Services
             {
                 if (resMsg == null) return null;
 
+                //如果传输Id一样直接返回
+                if (reqMsg.TransactionId == resMsg.TransactionId)
+                {
+                    return resMsg;
+                }
+
                 //实例化新消息
                 return new ResponseMessage
                 {
