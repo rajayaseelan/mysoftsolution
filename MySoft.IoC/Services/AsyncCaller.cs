@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using MySoft.IoC.Messages;
 using MySoft.Security;
@@ -10,15 +11,20 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class AsyncCaller
     {
+        private IDictionary<string, QueueManager> hashtable;
         private Semaphore semaphore;
+        private bool isAsync;
 
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
+        /// <param name="isAsync"></param>
         /// <param name="maxCaller"></param>
-        public AsyncCaller(int maxCaller)
+        public AsyncCaller(bool isAsync, int maxCaller)
         {
+            this.isAsync = isAsync;
             this.semaphore = new Semaphore(maxCaller, maxCaller);
+            this.hashtable = new Dictionary<string, QueueManager>();
         }
 
         /// <summary>
@@ -38,7 +44,7 @@ namespace MySoft.IoC.Services
                 //获取callerKey
                 var callKey = GetCallerKey(reqMsg, context.Caller);
 
-                return GetResponse(callKey, service, context, reqMsg);
+                return InvokeResponse(callKey, service, context, reqMsg);
             }
             finally
             {
@@ -48,25 +54,100 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 响应服务并返回队列请求
+        /// 响应信息
         /// </summary>
         /// <param name="callKey"></param>
         /// <param name="service"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
-        private ResponseItem GetResponse(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        /// <returns></returns>
+        private ResponseItem InvokeResponse(string callKey, IService service, OperationContext context, RequestMessage reqMsg)
+        {
+            //返回响应信息
+            bool newStart;
+
+            var manager = GetManager(callKey, out newStart);
+
+            if (newStart)
+            {
+                //响应服务
+                var item = GetResponse(callKey, manager, service, context, reqMsg);
+
+                //设置响应消息
+                manager.Set(item);
+
+                return item;
+            }
+
+            //等待响应
+            using (var channelResult = new ChannelResult(reqMsg))
+            {
+                manager.Add(channelResult);
+
+                channelResult.WaitOne();
+
+                //返回响应消息
+                return channelResult.Message;
+            }
+        }
+
+        /// <summary>
+        /// 响应服务并返回队列请求
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="manager"></param>
+        /// <param name="service"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseItem GetResponse(string callKey, QueueManager manager, IService service, OperationContext context, RequestMessage reqMsg)
         {
             //异步处理器
             var handler = new AsyncHandler(callKey, service, context, reqMsg);
 
-            //开始异步请求
-            var ar = handler.BeginInvoke(null);
+            if (isAsync)
+            {
+                //开始异步请求
+                var ar = handler.BeginInvoke(null);
 
-            //等待响应
-            ar.AsyncWaitHandle.WaitOne();
+                //等待响应
+                ar.AsyncWaitHandle.WaitOne();
 
-            //获取响应信息
-            return handler.EndInvoke(ar);
+                //获取响应信息
+                return handler.EndInvoke(ar);
+            }
+            else
+            {
+                //获取响应信息
+                return handler.Invoke();
+            }
+        }
+
+        /// <summary>
+        /// 获取管理器
+        /// </summary>
+        /// <param name="callKey"></param>
+        /// <param name="newStart"></param>
+        /// <returns></returns>
+        private QueueManager GetManager(string callKey, out bool newStart)
+        {
+            //是否异步调用变量
+            newStart = false;
+
+            lock (hashtable)
+            {
+                if (!hashtable.ContainsKey(callKey))
+                {
+                    hashtable[callKey] = new QueueManager();
+                }
+
+                if (hashtable[callKey].Count == 0)
+                {
+                    newStart = true;
+                }
+
+                return hashtable[callKey];
+            }
         }
 
         /// <summary>

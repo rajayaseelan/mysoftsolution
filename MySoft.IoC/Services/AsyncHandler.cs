@@ -31,6 +31,18 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// 直接响应结果
+        /// </summary>
+        /// <returns></returns>
+        public ResponseItem Invoke()
+        {
+            if (NeedCacheResult(reqMsg))
+                return GetResponseFromCache();
+            else
+                return GetResponseFromService();
+        }
+
+        /// <summary>
         /// 开始请求
         /// </summary>
         /// <param name="callback"></param>
@@ -133,14 +145,15 @@ namespace MySoft.IoC.Services
                 //同步请求响应数据
                 var item = GetResponseFromService();
 
-                if (item != null && CheckResponse(item.Message))
+                if (CheckResponse(item.Message))
                 {
                     item.Buffer = IoCHelper.SerializeObject(item.Message);
                     item.Message = null;
                 }
 
                 return item;
-            });
+
+            }, response => response.Count > 0);
         }
 
         /// <summary>

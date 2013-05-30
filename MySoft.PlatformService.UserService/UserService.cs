@@ -28,10 +28,10 @@ namespace MySoft.PlatformService.UserService
             return user;
         }
 
-        [AspectSwitcher(true, Description = "获取用户")]
+        //[AspectSwitcher(true, Description = "获取用户")]
         public virtual User GetUser(int id)
         {
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
 
             var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
             var sb = new StringBuilder(name);
@@ -152,6 +152,8 @@ namespace MySoft.PlatformService.UserService
 
         public IList<UserInfo> GetUsers()
         {
+            return null;
+
             //throw new NotImplementedException("abce");
 
             var list = new List<UserInfo>();

@@ -131,10 +131,10 @@ namespace MySoft.IoC.Services
                 var messageId = reqMsg.TransactionId.ToString();
 
                 //发送消息
-                reqProxy.SendMessage(messageId, reqMsg);
+                var func = new Action<string, RequestMessage>(reqProxy.SendMessage);
 
                 //发送请求
-                return GetResponse(messageId, reqMsg);
+                return GetResponse(func, messageId, reqMsg);
             }
             finally
             {
@@ -145,13 +145,14 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取响应信息
         /// </summary>
+        /// <param name="func"></param>
         /// <param name="messageId"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(string messageId, RequestMessage reqMsg)
+        private ResponseMessage GetResponse(Action<string, RequestMessage> func, string messageId, RequestMessage reqMsg)
         {
             //发送消息并获取结果
-            using (var waitResult = new WaitResult())
+            using (var waitResult = new WaitResult(reqMsg))
             {
                 try
                 {
@@ -160,6 +161,9 @@ namespace MySoft.IoC.Services
                         //请求列表
                         hashtable[messageId] = waitResult;
                     }
+
+                    //同步调用
+                    func.Invoke(messageId, reqMsg);
 
                     //等待信号响应
                     if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))

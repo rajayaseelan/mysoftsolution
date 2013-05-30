@@ -26,7 +26,7 @@ namespace MySoft.IoC.HttpServer
         {
             this.config = config;
             this.container = container;
-            this.caller = new AsyncCaller(config.MaxCaller);
+            this.caller = new AsyncCaller(true, config.MaxCaller);
             this.callers = new HttpCallerInfoCollection();
         }
 

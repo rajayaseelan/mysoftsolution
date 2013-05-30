@@ -156,6 +156,10 @@ namespace MySoft.IoC.Messages
                         return count;
                     }
                 }
+                else if (val is InvokeData)
+                {
+                    return (_value as InvokeData).Count;
+                }
             }
             catch (Exception ex)
             {

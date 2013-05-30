@@ -18,6 +18,20 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// 对象数
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                lock (this.queues)
+                {
+                    return queues.Count;
+                }
+            }
+        }
+
+        /// <summary>
         /// 添加到队列
         /// </summary>
         /// <param name="result"></param>

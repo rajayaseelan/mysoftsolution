@@ -1,4 +1,5 @@
 ﻿using System;
+using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
@@ -33,6 +34,8 @@ namespace MySoft.IoC
         /// <param name="item"></param>
         public void SendResponse(ResponseItem item)
         {
+            if (channel.CommunicationState != CommunicationStates.Connected) return;
+
             //设置异常消息
             SetMessageError(item);
 
