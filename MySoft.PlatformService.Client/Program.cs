@@ -532,6 +532,7 @@ namespace MySoft.PlatformService.Client
             while (true)
             {
                 var node = ServerNode.Parse("127.0.0.1", 9982);
+                node.Timeout = 5;
                 node.MaxPool = 1000;
 
                 var service = CastleFactory.Create().GetChannel<IUserService>(node);
@@ -551,7 +552,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1000);
+                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1);
                     ////var value = service.GetUsersString(count, out length);
 
                     //var p = SerializationManager.SerializeJson(new { id = count });

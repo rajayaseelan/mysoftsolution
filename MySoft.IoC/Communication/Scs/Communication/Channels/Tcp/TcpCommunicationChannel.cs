@@ -102,6 +102,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 WireProtocol.Reset();
+
+                _receiveBuffer = null;
+                WireProtocol = null;
             }
 
             CommunicationState = CommunicationStates.Disconnected;
@@ -234,8 +237,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                     try
                     {
-                        //处理接收的缓冲数据
+                        //Receive buffer data.
                         OnBufferReceived(e.Buffer, e.BytesTransferred);
+
+                        //Clear buffer.
+                        Array.Clear(e.Buffer, 0, e.BytesTransferred);
                     }
                     catch (Exception ex)
                     {

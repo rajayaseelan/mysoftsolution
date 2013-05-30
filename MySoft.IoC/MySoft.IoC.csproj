@@ -155,9 +155,6 @@
     <Compile Include="ServerStatusService.cs" />
     <Compile Include="ServiceCaller.cs" />
     <Compile Include="Services\AsyncCaller.cs" />
-    <Compile Include="Services\ChannelResult.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -232,6 +229,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="HttpServer\Template\Service\helpitem.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Services\Tasks\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

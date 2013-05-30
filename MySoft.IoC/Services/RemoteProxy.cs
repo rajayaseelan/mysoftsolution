@@ -29,11 +29,6 @@ namespace MySoft.IoC.Services
         private ILog logger;
 
         /// <summary>
-        /// 结果队列
-        /// </summary>
-        private readonly IDictionary<string, WaitResult> hashtable;
-
-        /// <summary>
         /// 实例化RemoteProxy
         /// </summary>
         /// <param name="node"></param>
@@ -43,7 +38,6 @@ namespace MySoft.IoC.Services
         {
             this.node = node;
             this.logger = logger;
-            this.hashtable = new Dictionary<string, WaitResult>();
 
             if (subscribed)
             {
@@ -92,7 +86,7 @@ namespace MySoft.IoC.Services
         /// <param name="e"></param>
         public virtual void MessageCallback(object sender, CallbackMessageEventArgs e)
         {
-            return;
+            //TODO
         }
 
         /// <summary>
@@ -102,14 +96,7 @@ namespace MySoft.IoC.Services
         /// <param name="e"></param>
         public virtual void MessageCallback(object sender, ResponseMessageEventArgs e)
         {
-            lock (hashtable)
-            {
-                //设置响应值
-                if (hashtable.ContainsKey(e.MessageId))
-                {
-                    hashtable[e.MessageId].Set(e.Message);
-                }
-            }
+            //TODO
         }
 
         /// <summary>
@@ -128,42 +115,14 @@ namespace MySoft.IoC.Services
 
             try
             {
-                var messageId = reqMsg.TransactionId.ToString();
+                //消息Id
+                var messageId = Guid.NewGuid().ToString();
 
-                //发送消息
-                var func = new Action<string, RequestMessage>(reqProxy.SendMessage);
-
-                //发送请求
-                return GetResponse(func, messageId, reqMsg);
-            }
-            finally
-            {
-                pool.Push(reqProxy);
-            }
-        }
-
-        /// <summary>
-        /// 获取响应信息
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="messageId"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponse(Action<string, RequestMessage> func, string messageId, RequestMessage reqMsg)
-        {
-            //发送消息并获取结果
-            using (var waitResult = new WaitResult(reqMsg))
-            {
-                try
+                //发送消息并获取结果
+                using (var waitResult = new WaitResult(reqMsg))
                 {
-                    lock (hashtable)
-                    {
-                        //请求列表
-                        hashtable[messageId] = waitResult;
-                    }
-
                     //同步调用
-                    func.Invoke(messageId, reqMsg);
+                    reqProxy.InvokeMessage(messageId, waitResult);
 
                     //等待信号响应
                     if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))
@@ -174,14 +133,10 @@ namespace MySoft.IoC.Services
                     //返回响应的消息
                     return waitResult.Message;
                 }
-                finally
-                {
-                    lock (hashtable)
-                    {
-                        //移除列表
-                        hashtable.Remove(messageId);
-                    }
-                }
+            }
+            finally
+            {
+                pool.Push(reqProxy);
             }
         }
 

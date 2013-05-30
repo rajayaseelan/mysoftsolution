@@ -77,7 +77,7 @@ namespace MySoft.Logger
                         try
                         {
                             var message = string.Format("[{0}] => {1}{2}{3}{2}", DateTime.Now, ex.ToString(),
-                                    Environment.NewLine, string.Empty.PadRight(200, '='));
+                                    Environment.NewLine, string.Empty.PadRight(150, '='));
 
                             File.AppendAllText(item.FilePath + ".err", message, Encoding.UTF8);
                         }
@@ -434,7 +434,7 @@ namespace MySoft.Logger
             if (!isOriginal)
             {
                 log = string.Format("[{0}] => {1}{2}{3}{2}", DateTime.Now, log,
-                                    Environment.NewLine, string.Empty.PadRight(200, '='));
+                                    Environment.NewLine, string.Empty.PadRight(150, '='));
             }
 
             var loginfo = new LogInfo { FilePath = filePath, Log = log, IsAppend = !coverFile };

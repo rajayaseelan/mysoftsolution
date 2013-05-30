@@ -16,9 +16,9 @@ namespace MySoft.IoC.Callback
         #region MessageCenter 的单例实现
 
         //线程同步锁；
-        private static readonly object _syncLock = new object();
-        private static MessageCenter _instance;
-        private Hashtable _listeners = new Hashtable();
+        private static readonly object syncRoot = new object();
+        private static MessageCenter instance;
+        private IDictionary<string, MessageListener> listeners = new Dictionary<string, MessageListener>();
 
         /// <summary>
         /// 返回 MessageCenter 的唯一实例；
@@ -27,18 +27,18 @@ namespace MySoft.IoC.Callback
         {
             get
             {
-                if (_instance == null)
+                if (instance == null)
                 {
-                    lock (_syncLock)
+                    lock (syncRoot)
                     {
-                        if (_instance == null)
+                        if (instance == null)
                         {
-                            _instance = new MessageCenter();
+                            instance = new MessageCenter();
                         }
                     }
                 }
 
-                return _instance;
+                return instance;
             }
         }
 
@@ -49,9 +49,9 @@ namespace MySoft.IoC.Callback
         {
             get
             {
-                lock (_listeners.SyncRoot)
+                lock (listeners)
                 {
-                    return _listeners.Count;
+                    return listeners.Count;
                 }
             }
         }
@@ -65,15 +65,15 @@ namespace MySoft.IoC.Callback
         /// <returns></returns>
         public MessageListener GetListener(IScsServerClient channel)
         {
-            if (_listeners.Count == 0) return null;
+            if (listeners.Count == 0) return null;
 
             var listenerKey = channel.RemoteEndPoint.ToString();
 
-            lock (_listeners.SyncRoot)
+            lock (listeners)
             {
-                if (_listeners.ContainsKey(listenerKey))
+                if (listeners.ContainsKey(listenerKey))
                 {
-                    return _listeners[listenerKey] as MessageListener;
+                    return listeners[listenerKey];
                 }
             }
 
@@ -88,16 +88,16 @@ namespace MySoft.IoC.Callback
         {
             var listenerKey = listener.Channel.RemoteEndPoint.ToString();
 
-            lock (_listeners.SyncRoot)
+            lock (listeners)
             {
-                if (_listeners.ContainsKey(listenerKey))
+                if (listeners.ContainsKey(listenerKey))
                 {
                     throw new InvalidOperationException("Listeners have already registered.");
                 }
                 else
                 {
                     if (OnLog != null) OnLog(string.Format("Add listener ({0}).", listenerKey), LogType.Warning);
-                    _listeners[listenerKey] = listener;
+                    listeners[listenerKey] = listener;
                 }
             }
         }
@@ -110,12 +110,12 @@ namespace MySoft.IoC.Callback
         {
             var listenerKey = listener.Channel.RemoteEndPoint.ToString();
 
-            lock (_listeners.SyncRoot)
+            lock (listeners)
             {
-                if (_listeners.ContainsKey(listenerKey))
+                if (listeners.ContainsKey(listenerKey))
                 {
                     if (OnLog != null) OnLog(string.Format("Remove listener ({0}).", listenerKey), LogType.Error);
-                    _listeners.Remove(listenerKey);
+                    listeners.Remove(listenerKey);
                 }
                 else
                 {
@@ -130,16 +130,16 @@ namespace MySoft.IoC.Callback
         /// <param name="status"></param>
         public void Notify(ServerStatus status)
         {
-            if (_listeners.Count == 0) return;
+            if (listeners.Count == 0) return;
 
-            IList<MessageListener> listeners = null;
+            IList<MessageListener> _listeners = null;
 
-            lock (_listeners.SyncRoot)
+            lock (listeners)
             {
-                listeners = _listeners.Values.Cast<MessageListener>().ToList();
+                _listeners = listeners.Values.ToList();
             }
 
-            foreach (MessageListener lstn in listeners)
+            foreach (MessageListener lstn in _listeners)
             {
                 try
                 {
@@ -176,16 +176,16 @@ namespace MySoft.IoC.Callback
         /// <param name="callArgs"></param>
         public void Notify(CallEventArgs callArgs)
         {
-            if (_listeners.Count == 0) return;
+            if (listeners.Count == 0) return;
 
-            IList<MessageListener> listeners = null;
+            IList<MessageListener> _listeners = null;
 
-            lock (_listeners.SyncRoot)
+            lock (listeners)
             {
-                listeners = _listeners.Values.Cast<MessageListener>().ToList();
+                _listeners = listeners.Values.ToList();
             }
 
-            foreach (MessageListener lstn in listeners)
+            foreach (MessageListener lstn in _listeners)
             {
                 try
                 {
@@ -248,16 +248,16 @@ namespace MySoft.IoC.Callback
         /// <param name="connectInfo"></param>
         public void Notify(ConnectInfo connectInfo)
         {
-            if (_listeners.Count == 0) return;
+            if (listeners.Count == 0) return;
 
-            IList<MessageListener> listeners = null;
+            IList<MessageListener> _listeners = null;
 
-            lock (_listeners.SyncRoot)
+            lock (listeners)
             {
-                listeners = _listeners.Values.Cast<MessageListener>().ToList();
+                _listeners = listeners.Values.ToList();
             }
 
-            foreach (MessageListener lstn in listeners)
+            foreach (MessageListener lstn in _listeners)
             {
                 try
                 {
@@ -290,16 +290,16 @@ namespace MySoft.IoC.Callback
         /// <param name="appClient"></param>
         public void Notify(string ipAddress, int port, AppClient appClient)
         {
-            if (_listeners.Count == 0) return;
+            if (listeners.Count == 0) return;
 
-            IList<MessageListener> listeners = null;
+            IList<MessageListener> _listeners = null;
 
-            lock (_listeners.SyncRoot)
+            lock (listeners)
             {
-                listeners = _listeners.Values.Cast<MessageListener>().ToList();
+                _listeners = listeners.Values.ToList();
             }
 
-            foreach (MessageListener lstn in listeners)
+            foreach (MessageListener lstn in _listeners)
             {
                 try
                 {

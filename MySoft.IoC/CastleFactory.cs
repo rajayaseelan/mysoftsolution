@@ -15,8 +15,8 @@ namespace MySoft.IoC
     /// </summary>
     public class CastleFactory : IServerConnect, ILogable, IErrorLogable
     {
-        //线程同步锁；
-        private static Hashtable hashtable = new Hashtable();
+        private static IDictionary<string, object> hashtable = new Dictionary<string, object>();
+        private static readonly object syncRoot = new object();
         private static CastleFactory singleton = null;
 
         #region Create Service Factory
@@ -100,7 +100,7 @@ namespace MySoft.IoC
         {
             if (singleton == null)
             {
-                lock (hashtable.SyncRoot)
+                lock (syncRoot)
                 {
                     if (singleton == null)
                     {
@@ -305,7 +305,7 @@ namespace MySoft.IoC
 
             if (isCacheService)
             {
-                lock (hashtable.SyncRoot)
+                lock (hashtable)
                 {
                     if (!hashtable.ContainsKey(serviceKey))
                     {
@@ -579,7 +579,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         private IList<ServerNode> GetCacheServerNodes(string nodeKey, string serviceName)
         {
-            lock (hashtable.SyncRoot)
+            lock (syncRoot)
             {
                 //获取服务节点
                 if (proxies.Count > 0)

@@ -51,7 +51,7 @@ namespace MySoft
 
                 if (ex.InnerException != null)
                 {
-                    sbLog.AppendLine("".PadRight(200, '-'));
+                    sbLog.AppendLine(string.Empty.PadRight(150, '-'));
                     sbLog.Append(GetErrorWithoutHtml(ex.InnerException));
                 }
 

@@ -12,9 +12,9 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务请求类
     /// </summary>
-    public class ServiceRequest
+    internal class ServiceRequest
     {
-        private RequestMessage reqMsg;
+        private WaitResult waitResult;
         private IServiceCallback callback;
         private IScsClient client;
         private ServerNode node;
@@ -48,11 +48,11 @@ namespace MySoft.IoC
         /// 发送消息
         /// </summary>
         /// <param name="messageId"></param>
-        /// <param name="reqMsg"></param>
-        public void SendMessage(string messageId, RequestMessage reqMsg)
+        /// <param name="waitResult"></param>
+        public void InvokeMessage(string messageId, WaitResult waitResult)
         {
             this.messageId = messageId;
-            this.reqMsg = reqMsg;
+            this.waitResult = waitResult;
 
             //如果连接断开，直接抛出异常
             if (client.CommunicationState != CommunicationStates.Connected)
@@ -61,7 +61,7 @@ namespace MySoft.IoC
             }
 
             //设置压缩与加密
-            IScsMessage message = new ScsResultMessage(reqMsg, messageId);
+            IScsMessage message = new ScsResultMessage(waitResult.Request, messageId);
 
             //发送消息
             client.SendMessage(message);
@@ -72,11 +72,11 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void client_Connected(object sender, EventArgs e)
+        private void client_Connected(object sender, EventArgs e)
         {
             var error = new SocketException((int)SocketError.Success);
 
-            callback.Connected(sender, new ConnectEventArgs(this.client)
+            callback.Connected(this, new ConnectEventArgs(this.client)
             {
                 Error = error,
                 Subscribed = subscribed
@@ -88,11 +88,11 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void client_Disconnected(object sender, EventArgs e)
+        private void client_Disconnected(object sender, EventArgs e)
         {
             var error = new SocketException((int)SocketError.ConnectionReset);
 
-            callback.Disconnected(sender, new ConnectEventArgs(this.client)
+            callback.Disconnected(this, new ConnectEventArgs(this.client)
             {
                 Error = error,
                 Subscribed = subscribed
@@ -102,12 +102,12 @@ namespace MySoft.IoC
             client_MessageError(sender, new ErrorEventArgs(error));
         }
 
-        void client_MessageSent(object sender, MessageEventArgs e)
+        private void client_MessageSent(object sender, MessageEventArgs e)
         {
             //TODO
         }
 
-        void client_MessageReceived(object sender, MessageEventArgs e)
+        private void client_MessageReceived(object sender, MessageEventArgs e)
         {
             try
             {
@@ -118,7 +118,7 @@ namespace MySoft.IoC
                     var value = new CallbackMessageEventArgs
                     {
                         MessageId = messageId,
-                        Request = reqMsg,
+                        Request = waitResult.Request,
                         Message = data.MessageValue
                     };
 
@@ -131,9 +131,12 @@ namespace MySoft.IoC
                     var value = new ResponseMessageEventArgs
                     {
                         MessageId = messageId,
-                        Request = reqMsg,
+                        Request = waitResult.Request,
                         Message = GetResponseMessage(e)
                     };
+
+                    //设置响应
+                    waitResult.Set(value.Message);
 
                     //把数据发送到客户端
                     callback.MessageCallback(this, value);
@@ -173,14 +176,14 @@ namespace MySoft.IoC
 
                     if (resMsg != null)
                     {
-                        //设置返回参数
-                        resMsg.TransactionId = new Guid(messageId);
+                        //传输Id值
+                        resMsg.TransactionId = waitResult.Request.TransactionId;
                     }
                 }
                 catch (Exception ex)
                 {
                     //出错时响应错误
-                    resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                    resMsg = IoCHelper.GetResponse(waitResult.Request, ex);
                 }
             }
 
@@ -192,17 +195,20 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void client_MessageError(object sender, ErrorEventArgs e)
+        private void client_MessageError(object sender, ErrorEventArgs e)
         {
             //输出错误信息
-            var resMsg = IoCHelper.GetResponse(reqMsg, e.Error);
+            var resMsg = IoCHelper.GetResponse(waitResult.Request, e.Error);
 
             var value = new ResponseMessageEventArgs
             {
                 MessageId = messageId,
-                Request = reqMsg,
+                Request = waitResult.Request,
                 Message = resMsg
             };
+
+            //设置响应
+            waitResult.Set(value.Message);
 
             //把数据发送到客户端
             callback.MessageCallback(this, value);

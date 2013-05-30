@@ -14,6 +14,14 @@ namespace MySoft.IoC.Services
         private ResponseMessage resMsg;
 
         /// <summary>
+        /// 请求消息
+        /// </summary>
+        internal RequestMessage Request
+        {
+            get { return reqMsg; }
+        }
+
+        /// <summary>
         /// 消息对象
         /// </summary>
         public ResponseMessage Message
@@ -31,7 +39,6 @@ namespace MySoft.IoC.Services
                 //实例化新消息
                 return new ResponseMessage
                 {
-                    TransactionId = reqMsg.TransactionId,
                     ServiceName = resMsg.ServiceName,
                     MethodName = resMsg.MethodName,
                     Parameters = resMsg.Parameters,

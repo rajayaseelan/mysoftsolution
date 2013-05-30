@@ -24,7 +24,7 @@ namespace MySoft.IoC.Messages
     internal class TimeStatusCollection
     {
         private int maxCount;
-        private Hashtable hashtable = new Hashtable();
+        private IDictionary<string, TimeStatus> hashtable = new Dictionary<string, TimeStatus>();
 
         public TimeStatusCollection(int maxCount)
         {
@@ -40,21 +40,21 @@ namespace MySoft.IoC.Messages
         {
             string key = value.ToString("yyyyMMddHHmmss");
 
-            lock (hashtable.SyncRoot)
+            lock (hashtable)
             {
                 if (!hashtable.ContainsKey(key))
                 {
                     //如果总数大于传入的总数
                     if (hashtable.Count > 0 && hashtable.Count >= maxCount)
                     {
-                        var firstKey = hashtable.Keys.Cast<string>().Min();
+                        var firstKey = hashtable.Keys.Min();
                         if (firstKey != null) hashtable.Remove(firstKey);
                     }
 
                     hashtable[key] = new TimeStatus { CounterTime = value };
                 }
 
-                return hashtable[key] as TimeStatus;
+                return hashtable[key];
             }
         }
 
@@ -65,7 +65,7 @@ namespace MySoft.IoC.Messages
         {
             get
             {
-                lock (hashtable.SyncRoot)
+                lock (hashtable)
                 {
                     return hashtable.Count;
                 }
@@ -78,7 +78,7 @@ namespace MySoft.IoC.Messages
         /// <returns></returns>
         public IList<TimeStatus> ToList()
         {
-            lock (hashtable.SyncRoot)
+            lock (hashtable)
             {
                 return hashtable.Values.Cast<TimeStatus>().ToList();
             }
@@ -90,11 +90,11 @@ namespace MySoft.IoC.Messages
         /// <returns></returns>
         public TimeStatus GetNewest()
         {
-            lock (hashtable.SyncRoot)
+            lock (hashtable)
             {
                 if (hashtable.Count > 0)
                 {
-                    var lastKey = hashtable.Keys.Cast<string>().Max();
+                    var lastKey = hashtable.Keys.Max();
                     if (lastKey != null)
                     {
                         return hashtable[lastKey] as TimeStatus;
@@ -110,7 +110,7 @@ namespace MySoft.IoC.Messages
         /// </summary>
         public void Clear()
         {
-            lock (hashtable.SyncRoot)
+            lock (hashtable)
             {
                 hashtable.Clear();
             }

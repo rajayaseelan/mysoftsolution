@@ -9,7 +9,7 @@ namespace MySoft.IoC.HttpServer
     /// </summary>
     public sealed class HttpCallerInfoCollection
     {
-        private Hashtable hashtable = new Hashtable();
+        private IDictionary<string, HttpCallerInfo> hashtable = new Dictionary<string, HttpCallerInfo>();
 
         /// <summary>
         /// 判断是否存在
@@ -18,7 +18,7 @@ namespace MySoft.IoC.HttpServer
         /// <returns></returns>
         public bool ContainsKey(string key)
         {
-            lock (hashtable.SyncRoot)
+            lock (hashtable)
             {
                 key = key.ToLower();
                 return hashtable.ContainsKey(key);
@@ -32,7 +32,7 @@ namespace MySoft.IoC.HttpServer
         {
             get
             {
-                lock (hashtable.SyncRoot)
+                lock (hashtable)
                 {
                     return hashtable.Count;
                 }
@@ -44,7 +44,7 @@ namespace MySoft.IoC.HttpServer
         /// </summary>
         public void Clear()
         {
-            lock (hashtable.SyncRoot)
+            lock (hashtable)
             {
                 hashtable.Clear();
             }
@@ -56,9 +56,9 @@ namespace MySoft.IoC.HttpServer
         /// <returns></returns>
         public IList<HttpCallerInfo> ToValueList()
         {
-            lock (hashtable.SyncRoot)
+            lock (hashtable)
             {
-                return hashtable.Values.Cast<HttpCallerInfo>().ToList();
+                return hashtable.Values.ToList();
             }
         }
 
@@ -71,18 +71,16 @@ namespace MySoft.IoC.HttpServer
         {
             get
             {
-                lock (hashtable.SyncRoot)
+                lock (hashtable)
                 {
-                    key = key.ToLower();
-                    return hashtable[key] as HttpCallerInfo;
+                    return hashtable[key.ToLower()];
                 }
             }
             set
             {
-                lock (hashtable.SyncRoot)
+                lock (hashtable)
                 {
-                    key = key.ToLower();
-                    hashtable[key] = value;
+                    hashtable[key.ToLower()] = value;
                 }
             }
         }

@@ -203,39 +203,8 @@ namespace MySoft.Cache
             {
                 if (type == LocalCacheType.File)
                 {
-                    var cacheObj = GetFileCacheItem(type, key, timeout);
-
-                    if (cacheObj == null)
-                    {
-                        //获取更新对象
-                        cacheItem = GetUpdateObject(type, key, timeout, func, state, pred);
-                    }
-                    else
-                    {
-                        //判断是否过期
-                        if (cacheObj.ExpiredTime < DateTime.Now)
-                        {
-                            //延长过期时间
-                            cacheObj.ExpiredTime = DateTime.Now.Add(timeout);
-
-                            func.BeginInvoke(state, ar =>
-                            {
-                                try
-                                {
-                                    var internalObject = func.EndInvoke(ar);
-
-                                    //更新缓存项
-                                    UpdateCacheItem(internalObject, type, key, timeout, pred);
-                                }
-                                catch (Exception ex)
-                                {
-                                    SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
-                                }
-                            }, null);
-                        }
-
-                        cacheItem = cacheObj.Value;
-                    }
+                    //从文件获取缓存
+                    cacheItem = GetObjectFromFile(type, key, timeout, func, state, pred);
                 }
                 else
                 {
@@ -251,6 +220,57 @@ namespace MySoft.Cache
             }
 
             return cacheItem;
+        }
+
+        /// <summary>
+        /// 从文件获取缓存
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <param name="func"></param>
+        /// <param name="state"></param>
+        /// <param name="pred"></param>
+        private static T GetObjectFromFile(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
+        {
+            var cacheObj = GetFileCacheItem(type, key, timeout);
+
+            if (cacheObj == null)
+            {
+                //获取更新对象
+                return GetUpdateObject(type, key, timeout, func, state, pred);
+            }
+            else
+            {
+                //判断是否过期
+                if (cacheObj.ExpiredTime < DateTime.Now)
+                {
+                    //延长过期时间
+                    cacheObj.ExpiredTime = DateTime.Now.Add(timeout);
+
+                    func.BeginInvoke(state, ar =>
+                    {
+                        try
+                        {
+                            var internalObject = func.EndInvoke(ar);
+
+                            //更新缓存项
+                            UpdateCacheItem(internalObject, type, key, timeout, pred);
+                        }
+                        catch (Exception ex)
+                        {
+                            SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
+                        }
+                        finally
+                        {
+                            //关闭句柄
+                            ar.AsyncWaitHandle.Close();
+                        }
+                    }, null);
+                }
+
+                return cacheObj.Value;
+            }
         }
 
         /// <summary>
