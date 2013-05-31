@@ -86,7 +86,8 @@ namespace MySoft.Net.Http
                 _socket.Shutdown(SocketShutdown.Both);
                 _socket.Close();
             }
-            catch (Exception ex)
+            catch (Exception ex) { }
+            finally
             {
                 _socket = null;
             }
