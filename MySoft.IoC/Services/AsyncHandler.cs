@@ -140,11 +140,11 @@ namespace MySoft.IoC.Services
                 type = LocalCacheType.File;
             }
 
-            //获取callerKey
-            var callKey = GetCallerKey(reqMsg, context.Caller);
+            //获取cacheKey
+            var cacheKey = GetCacheKey(reqMsg, context.Caller);
 
             //获取内存缓存
-            return CacheHelper<ResponseItem>.Get(type, callKey, TimeSpan.FromSeconds(reqMsg.CacheTime), () =>
+            return CacheHelper<ResponseItem>.Get(type, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), () =>
             {
                 //同步请求响应数据
                 var item = GetResponseFromService();
@@ -196,26 +196,26 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 获取CallerKey
+        /// 获取cacheKey
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private string GetCallerKey(RequestMessage reqMsg, AppCaller caller)
+        private string GetCacheKey(RequestMessage reqMsg, AppCaller caller)
         {
             //对Key进行组装
-            var callKey = string.Format("{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
+            var cacheKey = string.Format("{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
 
             //返回加密Key
-            callKey = MD5.HexHash(Encoding.Default.GetBytes(callKey.ToLower()));
+            cacheKey = MD5.HexHash(Encoding.Default.GetBytes(cacheKey.ToLower()));
 
             //如果是状态服务，则使用内部缓存
             if (reqMsg.InvokeMethod)
             {
-                callKey = string.Format("invoke_{0}", callKey);
+                cacheKey = string.Format("invoke_{0}", cacheKey);
             }
 
-            return callKey;
+            return cacheKey;
         }
     }
 }
