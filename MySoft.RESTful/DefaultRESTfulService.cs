@@ -359,14 +359,20 @@ namespace MySoft.RESTful
             var response = WebOperationContext.Current.OutgoingResponse;
             var request = WebOperationContext.Current.IncomingRequest;
 
+            response.StatusCode = HttpStatusCode.BadRequest;
             int code = (int)HttpStatusCode.BadRequest;
-            if (exception is RESTfulException)
-            {
-                code = (exception as RESTfulException).Code;
-            }
 
             //转换状态码
-            response.StatusCode = (HttpStatusCode)code;
+            if (exception is RESTfulException)
+            {
+                response.StatusCode = HttpStatusCode.BadRequest;
+                code = (exception as RESTfulException).Code;
+            }
+            else if (exception is BusinessException)
+            {
+                response.StatusCode = HttpStatusCode.Forbidden;
+                code = (exception as BusinessException).Code;
+            }
 
             //设置返回值
             ret = new RESTfulResult { Code = code, Message = ErrorHelper.GetInnerException(exception).Message };

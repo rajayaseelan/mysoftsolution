@@ -135,7 +135,7 @@ namespace MySoft.RESTful.Business
             //处理请求类型
             if (metadata.HttpMethod == HttpMethod.POST && context.IncomingRequest.Method.ToUpper() == "GET")
             {
-                throw new RESTfulException((int)HttpStatusCode.MethodNotAllowed, "Resources can only by the [" + metadata.HttpMethod + "] way to acquire.");
+                throw new RESTfulException(HttpStatusCode.MethodNotAllowed, "Resources can only by the [" + metadata.HttpMethod + "] way to acquire.");
             }
 
             //实例对象

@@ -97,14 +97,14 @@ namespace MySoft.RESTful.Business.Pool
             BusinessMethodModel method = null;
             if (kind == null)
             {
-                throw new RESTfulException((int)HttpStatusCode.NotFound, businessKindName + ", did not found!");
+                throw new RESTfulException(HttpStatusCode.NotFound, businessKindName + ", did not found!");
             }
             else
             {
                 method = kind.MethodModels.Where(e => e.Key.Equals(businessMethodName, StringComparison.OrdinalIgnoreCase)).Select(v => v.Value).SingleOrDefault();
                 if (method == null)
                 {
-                    throw new RESTfulException((int)HttpStatusCode.NotFound, businessMethodName + ", did not found!");
+                    throw new RESTfulException(HttpStatusCode.NotFound, businessMethodName + ", did not found!");
                 }
             }
 

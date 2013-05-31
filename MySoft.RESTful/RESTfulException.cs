@@ -8,6 +8,7 @@ namespace MySoft.RESTful
     public class RESTfulException : MySoftException
     {
         private int code = (int)HttpStatusCode.OK;
+
         /// <summary>
         /// 状态码
         /// </summary>
@@ -26,6 +27,17 @@ namespace MySoft.RESTful
             : base(message)
         {
             this.code = code;
+        }
+
+        /// <summary>
+        /// 实例 化RESTfulException
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="message"></param>
+        public RESTfulException(HttpStatusCode code, string message)
+            : base(message)
+        {
+            this.code = (int)code;
         }
     }
 }
