@@ -39,6 +39,7 @@ namespace MySoft.IoC.Services
                 //实例化新消息
                 return new ResponseMessage
                 {
+                    TransactionId = reqMsg.TransactionId,
                     ServiceName = resMsg.ServiceName,
                     MethodName = resMsg.MethodName,
                     Parameters = resMsg.Parameters,

@@ -16,12 +16,12 @@ namespace MySoft.IoC
         /// <summary>
         /// The server default max caller
         /// </summary>
-        public const int DEFAULT_SERVER_MAXCALLER = 100; //默认并发数100
+        public const int DEFAULT_SERVER_MAXCALLER = 1000; //默认并发数1000
 
         /// <summary>
         /// The client default max caller
         /// </summary>
-        public const int DEFAULT_CLIENT_MAXCALLER = 10; //默认并发数10
+        public const int DEFAULT_CLIENT_MAXCALLER = 100; //默认并发数100
 
         /// <summary>
         /// The default client call timeout number. 
@@ -36,7 +36,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default pool number.
         /// </summary>
-        public const int DEFAULT_CLIENT_MAXPOOL = 10; //默认为10
+        public const int DEFAULT_CLIENT_MAXPOOL = 100; //默认为100
 
         /// <summary>
         /// The current framework version.

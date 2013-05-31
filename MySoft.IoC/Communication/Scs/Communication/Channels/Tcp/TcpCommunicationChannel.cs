@@ -97,7 +97,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             _running = false;
 
             CommunicationState = CommunicationStates.Disconnected;
-            OnDisconnected();
 
             try
             {
@@ -114,6 +113,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 _receiveBuffer = null;
                 WireProtocol = null;
             }
+
+            //Disconnected
+            OnDisconnected();
         }
 
         #endregion

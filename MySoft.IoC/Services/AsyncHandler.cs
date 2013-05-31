@@ -51,13 +51,7 @@ namespace MySoft.IoC.Services
         public IAsyncResult BeginDoTask(AsyncCallback callback, object state)
         {
             //定义委托
-            Func<ResponseItem> func = null;
-
-            //是否需要缓存
-            if (NeedCacheResult(reqMsg))
-                func = GetResponseFromCache;
-            else
-                func = GetResponseFromService;
+            var func = new Func<ResponseItem>(DoTask);
 
             return func.BeginInvoke(callback, state);
         }

@@ -33,15 +33,15 @@ namespace MySoft.PlatformService.UserService
         {
             //Thread.Sleep(1000);
 
-            //var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
-            //var sb = new StringBuilder(name);
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    sb.Append(name);
-            //}
+            var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
+            var sb = new StringBuilder(name);
+            for (int i = 0; i < 10; i++)
+            {
+                sb.Append(name);
+            }
             //Thread.Sleep(5000);
 
-            return new User { Id = id, Name = id.ToString().PadRight(10000, '#') };
+            return new User { Id = id, Name = sb.ToString() };
         }
 
         public User GetUserForName(string name)
