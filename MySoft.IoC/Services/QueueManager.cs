@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MySoft.IoC.Services
 {
@@ -53,10 +54,17 @@ namespace MySoft.IoC.Services
 
             lock (this.queues)
             {
-                while (queues.Count > 0)
+                try
                 {
-                    var result = queues.Dequeue();
-                    result.Set(item);
+                    while (queues.Count > 0)
+                    {
+                        var result = queues.Dequeue();
+                        result.Set(item);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    queues.Clear();
                 }
             }
         }
