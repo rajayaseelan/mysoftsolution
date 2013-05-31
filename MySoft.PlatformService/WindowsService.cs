@@ -25,6 +25,30 @@ namespace MySoft.PlatformService
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(WindowsService_UnhandledException);
             Thread.GetDomain().UnhandledException += new UnhandledExceptionEventHandler(WindowsService_UnhandledException);
 
+            //处理邮件地址
+            string address = ConfigurationManager.AppSettings["SendMailAddress"];
+            if (!string.IsNullOrEmpty(address)) mailTo = address.Split(',', ';', '|');
+
+            try
+            {
+                Init();
+            }
+            catch (Exception ex)
+            {
+                SimpleLog.Instance.WriteLogForDir("ServiceRun", ex.ToString());
+
+                throw;
+            }
+
+            //初始化组件
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        private void Init()
+        {
             var config = CastleServiceConfiguration.GetConfig();
             this.service = new CastleService(config);
 
@@ -55,13 +79,6 @@ namespace MySoft.PlatformService
             catch (Exception ex)
             {
             }
-
-            //处理邮件地址
-            string address = ConfigurationManager.AppSettings["SendMailAddress"];
-            if (!string.IsNullOrEmpty(address)) mailTo = address.Split(',', ';', '|');
-
-            //初始化组件
-            InitializeComponent();
         }
 
         /// <summary>
