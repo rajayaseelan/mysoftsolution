@@ -54,18 +54,15 @@ namespace MySoft.Cache
                             catch { }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        //TODO
-                    }
+                    catch (Exception ex) { }
                     finally
                     {
                         hashtable.Remove(cacheKey);
                     }
                 }
 
-                //暂停10毫秒
-                Thread.Sleep(10);
+                //暂停1秒
+                Thread.Sleep(1000);
             }
         }
 
@@ -76,32 +73,44 @@ namespace MySoft.Cache
         /// <returns></returns>
         public object Get(string cacheKey)
         {
-            var obj = cache.GetObject(cacheKey);
-
-            //处理缓存
-            if (obj != null)
+            //如果key存在，则不保存
+            if (!hashtable.ContainsKey(cacheKey))
             {
-                //如果key存在，则不保存
-                if (!hashtable.ContainsKey(cacheKey))
+                lock (hashtable.SyncRoot)
                 {
-                    //获取过期时间
-                    var timeSpanKey = string.Format("SessionCache_{0}", cacheKey);
-                    var timeSpan = CacheHelper.Get(timeSpanKey);
-
-                    if (timeSpan != null)
+                    if (!hashtable.ContainsKey(cacheKey))
                     {
-                        var item = new SessionItem
-                        {
-                            Key = cacheKey,
-                            TimeSpan = (TimeSpan)timeSpan
-                        };
+                        var value = cache.GetObject(cacheKey);
 
-                        hashtable[cacheKey] = item;
+                        if (value != null)
+                        {
+                            //获取过期时间
+                            var timeSpanKey = string.Format("SessionCache_{0}", cacheKey);
+                            var timeSpan = CacheHelper.Get(timeSpanKey);
+
+                            if (timeSpan != null)
+                            {
+                                var item = new SessionItem
+                                {
+                                    Key = cacheKey,
+                                    TimeSpan = (TimeSpan)timeSpan,
+                                    Value = value
+                                };
+
+                                hashtable[cacheKey] = item;
+                            }
+                        }
                     }
                 }
             }
 
-            return obj;
+            //返回值
+            if (hashtable.ContainsKey(cacheKey))
+            {
+                return (hashtable[cacheKey] as SessionItem).Value;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -157,6 +166,11 @@ namespace MySoft.Cache
             /// 时间
             /// </summary>
             public TimeSpan TimeSpan { get; set; }
+
+            /// <summary>
+            /// 数据
+            /// </summary>
+            public object Value { get; set; }
         }
     }
 }

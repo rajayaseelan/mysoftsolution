@@ -34,6 +34,8 @@ namespace MySoft.IoC
         /// <param name="item"></param>
         public void SendResponse(ResponseItem item)
         {
+            if (channel.CommunicationState != CommunicationStates.Connected) return;
+
             //设置异常消息
             SetMessageError(item);
 

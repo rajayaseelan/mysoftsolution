@@ -79,6 +79,13 @@ namespace MySoft.IoC.Services
                 //异步回调
                 return func.EndInvoke(ar);
             }
+            catch (Exception ex)
+            {
+                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
+
+                //实例化ResponseItem
+                return new ResponseItem(resMsg);
+            }
             finally
             {
                 //释放资源，必写
@@ -144,8 +151,15 @@ namespace MySoft.IoC.Services
 
                 if (CheckResponse(item.Message))
                 {
-                    item.Buffer = IoCHelper.SerializeObject(item.Message);
-                    item.Message = null;
+                    try
+                    {
+                        item.Buffer = IoCHelper.SerializeObject(item.Message);
+                        item.Message = null;
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
                 }
 
                 return item;

@@ -81,15 +81,15 @@ namespace MySoft.Net.Http
 
         public void Abort()
         {
-            _socket.Shutdown(SocketShutdown.Send);
-
-            byte[] buffer = new byte[0x1000];
-            while (_socket.Poll(50000, SelectMode.SelectRead))
-                if (_socket.Receive(buffer, SocketFlags.Partial) == 0)
-                    break;
-
-            _socket.Shutdown(SocketShutdown.Receive);
-            _socket.Close();
+            try
+            {
+                _socket.Shutdown(SocketShutdown.Both);
+                _socket.Close();
+            }
+            catch (Exception ex)
+            {
+                _socket = null;
+            }
         }
 
         public int ReadByte()

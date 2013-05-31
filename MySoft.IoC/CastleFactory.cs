@@ -260,34 +260,33 @@ namespace MySoft.IoC
         /// <returns></returns>
         private IService GetProxyService(ServerNode node)
         {
-            lock (proxies)
+            if (!proxies.ContainsKey(node.Key.ToLower()))
             {
-                if (proxies.ContainsKey(node.Key.ToLower()))
+                lock (syncRoot)
                 {
-                    return proxies[node.Key.ToLower()];
-                }
-                else
-                {
-                    RemoteProxy proxy = null;
-                    if (node.RespType == ResponseType.Json)
-                        proxy = new InvokeProxy(node, container);
-                    else
-                        proxy = new RemoteProxy(node, container, false);
-
-                    proxy.OnConnected += (sender, args) =>
+                    if (!proxies.ContainsKey(node.Key.ToLower()))
                     {
-                        if (OnConnected != null) OnConnected(sender, args);
-                    };
-                    proxy.OnDisconnected += (sender, args) =>
-                    {
-                        if (OnDisconnected != null) OnDisconnected(sender, args);
-                    };
+                        RemoteProxy proxy = null;
+                        if (node.RespType == ResponseType.Json)
+                            proxy = new InvokeProxy(node, container);
+                        else
+                            proxy = new RemoteProxy(node, container, false);
 
-                    proxies[node.Key.ToLower()] = proxy;
+                        proxy.OnConnected += (sender, args) =>
+                        {
+                            if (OnConnected != null) OnConnected(sender, args);
+                        };
+                        proxy.OnDisconnected += (sender, args) =>
+                        {
+                            if (OnDisconnected != null) OnDisconnected(sender, args);
+                        };
 
-                    return proxy;
+                        proxies[node.Key.ToLower()] = proxy;
+                    }
                 }
             }
+
+            return proxies[node.Key.ToLower()];
         }
 
         /// <summary>
@@ -305,13 +304,16 @@ namespace MySoft.IoC
 
             if (isCacheService)
             {
-                lock (hashtable)
+                if (!hashtable.ContainsKey(serviceKey))
                 {
-                    if (!hashtable.ContainsKey(serviceKey))
+                    lock (hashtable)
                     {
-                        //创建代理服务
-                        var dynamicProxy = CreateProxyHandler<IServiceInterfaceType>(proxy, serviceType);
-                        hashtable[serviceKey] = dynamicProxy;
+                        if (!hashtable.ContainsKey(serviceKey))
+                        {
+                            //创建代理服务
+                            var dynamicProxy = CreateProxyHandler<IServiceInterfaceType>(proxy, serviceType);
+                            hashtable[serviceKey] = dynamicProxy;
+                        }
                     }
                 }
 
@@ -579,40 +581,44 @@ namespace MySoft.IoC
         /// <returns></returns>
         private IList<ServerNode> GetCacheServerNodes(string nodeKey, string serviceName)
         {
-            lock (syncRoot)
+            //获取服务节点
+            if (proxies.Count > 0)
             {
-                //获取服务节点
-                if (proxies.Count > 0)
-                {
-                    var node = GetServerNode(nodeKey);
+                var node = GetServerNode(nodeKey);
+                if (node != null) return new ServerNode[] { node };
+            };
 
-                    if (node != null)
-                    {
-                        return new ServerNode[] { node };
-                    }
-                };
-
-                if (!string.IsNullOrEmpty(config.ProxyServer))
-                {
-                    var cacheKey = string.Format("{0}${1}", config.ProxyServer, nodeKey);
-
-                    //从缓存中获取节点（缓存1小时）
-                    return CacheHelper<IList<ServerNode>>.Get(LocalCacheType.File, cacheKey, TimeSpan.FromHours(1)
-                                                        , state =>
-                                                        {
-                                                            var arr = state as ArrayList;
-                                                            var key = Convert.ToString(arr[0]);
-                                                            var name = Convert.ToString(arr[1]);
-
-                                                            //获取节点
-                                                            return GetServerNodesFromChannel(key, name);
-
-                                                        }, new ArrayList { nodeKey, serviceName });
-                }
-
-                //返回空列表
-                return new ServerNode[0];
+            if (!string.IsNullOrEmpty(config.ProxyServer))
+            {
+                return GetServerNodes(nodeKey, serviceName);
             }
+
+            //返回空列表
+            return new ServerNode[0];
+        }
+
+        /// <summary>
+        /// 获取节点列表
+        /// </summary>
+        /// <param name="nodeKey"></param>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        private IList<ServerNode> GetServerNodes(string nodeKey, string serviceName)
+        {
+            var cacheKey = string.Format("{0}${1}", config.ProxyServer, nodeKey);
+
+            //从缓存中获取节点（缓存1小时）
+            return CacheHelper<IList<ServerNode>>.Get(LocalCacheType.File, cacheKey, TimeSpan.FromHours(1)
+                                                , state =>
+                                                {
+                                                    var arr = state as ArrayList;
+                                                    var key = Convert.ToString(arr[0]);
+                                                    var name = Convert.ToString(arr[1]);
+
+                                                    //获取节点
+                                                    return GetServerNodesFromChannel(key, name);
+
+                                                }, new ArrayList { nodeKey, serviceName });
         }
 
         /// <summary>
@@ -623,19 +629,26 @@ namespace MySoft.IoC
         /// <returns></returns>
         private IList<ServerNode> GetServerNodesFromChannel(string nodeKey, string serviceName)
         {
-            var arr = config.ProxyServer.Split('|');
-
-            var server = ServerNode.Parse(arr[0]);
-            server.Timeout = 30;
-
-            if (arr.Length > 1)
+            try
             {
-                server.Compress = Convert.ToBoolean(arr[1]);
+                var arr = config.ProxyServer.Split('|');
+
+                var server = ServerNode.Parse(arr[0]);
+                server.Timeout = 30;
+
+                if (arr.Length > 1)
+                {
+                    server.Compress = Convert.ToBoolean(arr[1]);
+                }
+
+                if (server != null)
+                {
+                    return GetChannel<IStatusService>(server).GetServerNodes(nodeKey, serviceName);
+                }
             }
-
-            if (server != null)
+            catch (Exception ex)
             {
-                return GetChannel<IStatusService>(server).GetServerNodes(nodeKey, serviceName);
+                //TODO
             }
 
             //返回空列表

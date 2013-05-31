@@ -54,18 +54,15 @@ namespace MySoft.Cache
                             catch { }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        //TODO
-                    }
+                    catch (Exception ex) { }
                     finally
                     {
                         hashtable.Remove(cacheKey);
                     }
                 }
 
-                //暂停10毫秒
-                Thread.Sleep(10);
+                //暂停1秒
+                Thread.Sleep(1000);
             }
         }
 
@@ -79,10 +76,21 @@ namespace MySoft.Cache
             if (hashtable.ContainsKey(cacheKey))
             {
                 var item = hashtable[cacheKey] as QueueItem;
+
                 return item.Value;
             }
 
-            return cache.GetObject(cacheKey);
+            //内存中缓存30秒以提高性能
+            var value = CacheHelper.Get(cacheKey);
+
+            if (value == null)
+            {
+                value = cache.GetObject(cacheKey);
+
+                CacheHelper.Insert(cacheKey, value, 30);
+            }
+
+            return value;
         }
 
         /// <summary>
@@ -122,6 +130,8 @@ namespace MySoft.Cache
             {
                 hashtable.Remove(cacheKey);
             }
+
+            CacheHelper.Remove(cacheKey);
 
             cache.RemoveObject(cacheKey);
         }
