@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using MySoft.IoC.Callback;
+﻿using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
@@ -13,6 +8,11 @@ using MySoft.IoC.Messages;
 using MySoft.IoC.Nodes;
 using MySoft.Logger;
 using MySoft.Net.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Text;
 
 namespace MySoft.IoC
 {
@@ -46,6 +46,9 @@ namespace MySoft.IoC
         /// <param name="config"></param>
         public CastleService(CastleServiceConfiguration config)
         {
+            ServicePointManager.DefaultConnectionLimit = config.MaxCaller;
+            ServicePointManager.Expect100Continue = false;
+
             this.config = config;
 
             if (string.Compare(config.Host, "any", true) == 0)
@@ -429,6 +432,7 @@ namespace MySoft.IoC
                     var _func = ar.AsyncState as Action<CallEventArgs>;
                     _func.EndInvoke(ar);
                 }
+                catch (Exception ex) { }
                 finally
                 {
                     ar.AsyncWaitHandle.Close();

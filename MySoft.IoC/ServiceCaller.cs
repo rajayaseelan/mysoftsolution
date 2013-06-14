@@ -15,6 +15,7 @@ namespace MySoft.IoC
         private readonly IServiceContainer container;
         private IDictionary<string, Type> callbackTypes;
         private AsyncCaller caller;
+        private TimeSpan timeout;
 
         /// <summary>
         /// 初始化ServiceCaller
@@ -25,7 +26,8 @@ namespace MySoft.IoC
         {
             this.callbackTypes = new Dictionary<string, Type>();
             this.container = container;
-            this.caller = new AsyncCaller(true, config.MaxCaller);
+            this.caller = new AsyncCaller(config.MaxCaller);
+            this.timeout = TimeSpan.FromSeconds(config.Timeout);
 
             //初始化服务
             Init(container, config);
@@ -64,7 +66,7 @@ namespace MySoft.IoC
                 var context = GetOperationContext(channel, appCaller);
 
                 //异步调用服务
-                return caller.Run(service, context, reqMsg);
+                return caller.AsyncRun(service, context, reqMsg, timeout);
             }
             catch (Exception ex)
             {

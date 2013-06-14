@@ -90,7 +90,10 @@
     <Compile Include="Creator\Query\QuerySection.cs" />
     <Compile Include="Creator\Query\ViewEntity.cs" />
     <Compile Include="Creator\UpdateCreator.cs" />
+    <Compile Include="Data\Expression\GroupByClipBuilder.cs" />
+    <Compile Include="Data\Expression\OrderByClipBuilder.cs" />
     <Compile Include="Data\Expression\SQLParameter.cs" />
+    <Compile Include="Data\Expression\WhereClipBuilder.cs" />
     <Compile Include="Data\Query\TableEntity.cs" />
     <Compile Include="Data\Query\TopQuery.cs" />
     <Compile Include="Data\Query\UnionQuery.cs" />
@@ -309,7 +312,7 @@
     <Compile Include="Data\Session\DbHelper.cs" />
     <Compile Include="Data\Session\Entity.cs" />
     <Compile Include="Design\IField.cs" />
-    <Compile Include="Logger\IExecuteLog.cs" />
+    <Compile Include="Logger\IExecuteCommand.cs" />
     <Compile Include="Data\Session\IDbProvider.cs" />
     <Compile Include="Data\Query\SqlSection.cs" />
     <Compile Include="Data\Query\PageSection.cs" />

@@ -39,7 +39,7 @@ namespace MySoft.PlatformService.UserService
             {
                 sb.Append(name);
             }
-            //Thread.Sleep(5000);
+            Thread.Sleep(5000);
 
             return new User { Id = id, Name = sb.ToString() };
         }

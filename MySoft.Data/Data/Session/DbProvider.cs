@@ -17,7 +17,7 @@ namespace MySoft.Data
         private char leftToken;
         private char rightToken;
         private char paramPrefixToken;
-        private IExecuteLog logger;
+        private IExecuteCommand logger;
         private bool throwError = true;
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace MySoft.Data
         /// <summary>
         /// »’÷æ“¿¿µ
         /// </summary>
-        internal IExecuteLog Logger
+        internal IExecuteCommand Logger
         {
             set { logger = value; }
         }
@@ -820,7 +820,7 @@ namespace MySoft.Data
             {
                 try
                 {
-                    logger.Begin(command);
+                    logger.BeginExecute(command);
                 }
                 catch
                 {
@@ -847,7 +847,7 @@ namespace MySoft.Data
                         Error = ex,
                         Count = GetCount(result)
                     };
-                    logger.End(command, retMsg, elapsedTime);
+                    logger.EndExecute(command, retMsg, elapsedTime);
                 }
                 catch
                 {

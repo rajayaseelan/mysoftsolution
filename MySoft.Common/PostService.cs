@@ -45,17 +45,11 @@ namespace MySoft.Common
     /// </summary>
     public class PostService
     {
-        static PostService()
-        {
-            ServicePointManager.Expect100Continue = false;
-        }
-
         HttpResponse Response = HttpContext.Current.Response;
         HttpRequest Request = HttpContext.Current.Request;
         //		HttpServerUtility	Server		= HttpContext.Current.Server;
 
         #region 发送和接收流信息
-
 
         #region 发送数据
 
@@ -214,7 +208,6 @@ namespace MySoft.Common
             return res;
         }
         #endregion
-
 
         #region 接收数据
         /// <summary>

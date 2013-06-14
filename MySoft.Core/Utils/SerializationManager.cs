@@ -318,7 +318,7 @@ namespace MySoft
         /// <summary>
         /// Deserializes the specified return type.
         /// </summary>
-        /// <param name="returnType">Type of the return.</param>
+        /// <param name="T">Type of the return.</param>
         /// <param name="data">The data.</param>
         /// <returns></returns>
         public static T DeserializeXml<T>(string data)

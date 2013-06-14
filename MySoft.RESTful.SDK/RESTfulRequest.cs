@@ -13,11 +13,6 @@ namespace MySoft.RESTful.SDK
     /// </summary>
     public class RESTfulRequest
     {
-        static RESTfulRequest()
-        {
-            ServicePointManager.Expect100Continue = false;
-        }
-
         private Encoding encoding = Encoding.UTF8;
         /// <summary>
         /// 编码方式

@@ -35,7 +35,7 @@ namespace MySoft.Data
         /// ◊¢≤·»’÷æ“¿¿µ
         /// </summary>
         /// <param name="logger"></param>
-        void RegisterLogger(IExecuteLog logger);
+        void RegisterLogger(IExecuteCommand logger);
 
         /// <summary>
         /// ◊¢≤·ª∫¥Ê“¿¿µ

@@ -1036,7 +1036,7 @@ namespace MySoft.Data
         /// ◊¢≤·»’÷æ“¿¿µ
         /// </summary>
         /// <param name="logger"></param>
-        public void RegisterLogger(IExecuteLog logger)
+        public void RegisterLogger(IExecuteCommand logger)
         {
             this.dbProvider.Logger = logger;
         }

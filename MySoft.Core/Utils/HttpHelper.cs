@@ -11,11 +11,6 @@ namespace MySoft
     /// </summary>
     public class HttpHelper
     {
-        static HttpHelper()
-        {
-            ServicePointManager.Expect100Continue = false;
-        }
-
         private Encoding encoding = Encoding.UTF8;
         private int timeout = 30 * 1000;
 

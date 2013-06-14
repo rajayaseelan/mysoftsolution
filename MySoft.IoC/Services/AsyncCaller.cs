@@ -10,19 +10,14 @@ namespace MySoft.IoC.Services
     internal class AsyncCaller
     {
         private Semaphore semaphore;
-        private bool isAsync;
-        private TimeSpan timeout;
 
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
-        /// <param name="isAsync"></param>
         /// <param name="maxCaller"></param>
-        public AsyncCaller(bool isAsync, int maxCaller)
+        public AsyncCaller(int maxCaller)
         {
-            this.isAsync = isAsync;
             this.semaphore = new Semaphore(maxCaller, maxCaller);
-            this.timeout = TimeSpan.FromSeconds(ServiceConfig.DEFAULT_SERVER_TIMEOUT);
         }
 
         /// <summary>
@@ -31,8 +26,9 @@ namespace MySoft.IoC.Services
         /// <param name="service"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        public ResponseItem Run(IService service, OperationContext context, RequestMessage reqMsg)
+        public ResponseItem AsyncRun(IService service, OperationContext context, RequestMessage reqMsg, TimeSpan timeout)
         {
             //请求一个控制器
             semaphore.WaitOne();
@@ -42,24 +38,43 @@ namespace MySoft.IoC.Services
                 //异步处理器
                 var handler = new AsyncHandler(service, context, reqMsg);
 
-                if (isAsync)
-                {
-                    //Invoke响应
-                    var ar = handler.BeginDoTask(null, null);
+                //Invoke响应
+                var ar = handler.BeginDoTask(null, null);
 
-                    //超时返回
-                    if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
-                    {
-                        return GetTimeoutResponse(reqMsg);
-                    }
-
-                    return handler.EndDoTask(ar);
-                }
-                else
+                //超时返回
+                if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
                 {
-                    //同步响应
-                    return handler.DoTask();
+                    return GetTimeoutResponse(reqMsg, timeout);
                 }
+
+                return handler.EndDoTask(ar);
+            }
+            finally
+            {
+                //释放一个控制器
+                semaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// 异步调用服务
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        public ResponseItem SyncRun(IService service, OperationContext context, RequestMessage reqMsg)
+        {
+            //请求一个控制器
+            semaphore.WaitOne();
+
+            try
+            {
+                //异步处理器
+                var handler = new AsyncHandler(service, context, reqMsg);
+
+                //同步响应
+                return handler.DoTask();
             }
             finally
             {
@@ -72,10 +87,11 @@ namespace MySoft.IoC.Services
         /// 获取超时响应信息
         /// </summary>
         /// <param name="reqMsg"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        private ResponseItem GetTimeoutResponse(RequestMessage reqMsg)
+        private ResponseItem GetTimeoutResponse(RequestMessage reqMsg, TimeSpan timeout)
         {
-            var title = string.Format("Remote invoke service ({0}, {1}) timeout ({2}) ms.", reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
+            var title = string.Format("Async invoke service ({0}, {1}) timeout ({2}) ms.", reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
 
             //获取异常
             var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));

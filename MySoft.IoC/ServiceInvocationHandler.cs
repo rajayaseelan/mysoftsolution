@@ -179,7 +179,7 @@ namespace MySoft.IoC
                 var context = GetOperationContext(reqMsg);
 
                 //异步调用服务
-                var item = caller.Run(service, context, reqMsg);
+                var item = caller.SyncRun(service, context, reqMsg);
 
                 var resMsg = item.Message;
 

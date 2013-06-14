@@ -382,7 +382,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -463,11 +463,6 @@ namespace MySoft.PlatformService.Client
         static void Program_OnDisconnected(object sender, ConnectEventArgs e)
         {
             //Console.WriteLine(e.Channel.CommunicationState);
-        }
-
-        static Program()
-        {
-            ServicePointManager.Expect100Continue = false;
         }
 
         static void GetRequestString()

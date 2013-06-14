@@ -140,6 +140,7 @@ namespace MySoft.Logger
         /// <summary>
         /// 写错误日志
         /// </summary>
+        /// <param name="dir"></param>
         /// <param name="ex"></param>
         public void WriteLogForDir(string dir, Exception ex)
         {
