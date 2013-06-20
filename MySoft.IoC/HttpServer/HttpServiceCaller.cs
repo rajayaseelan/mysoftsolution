@@ -195,16 +195,15 @@ namespace MySoft.IoC.HttpServer
                     MaxCaller = config.MaxCaller
                 };
 
-                using (var invoke = new InvokeCaller(conf, this.container, service, this.caller, null, this.container))
-                {
-                    //定义响应数据体
-                    var invokeData = invoke.InvokeResponse(message);
+                var invoke = new InvokeCaller(conf, this.container, service, this.caller, null, this.container);
 
-                    //如果缓存不为null，则返回缓存数据
-                    if (invokeData != null)
-                    {
-                        return invokeData.Value;
-                    }
+                //定义响应数据体
+                var invokeData = invoke.InvokeResponse(message);
+
+                //如果缓存不为null，则返回缓存数据
+                if (invokeData != null)
+                {
+                    return invokeData.Value;
                 }
             }
 
@@ -238,11 +237,7 @@ namespace MySoft.IoC.HttpServer
 
         public void Dispose()
         {
-            caller = null;
-            container = null;
-            config = null;
             callers.Clear();
-            callers = null;
         }
 
         #endregion

@@ -9,7 +9,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务通道
     /// </summary>
-    internal class ServiceChannel : IDisposable
+    internal class ServiceChannel
     {
         private IScsServerClient channel;
         private string messageId;
@@ -70,18 +70,5 @@ namespace MySoft.IoC
                 item.Message.Error = new Exception(error.Message);
             }
         }
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// dispose resource.
-        /// </summary>
-        public void Dispose()
-        {
-            this.channel = null;
-            this.reqMsg = null;
-        }
-
-        #endregion
     }
 }

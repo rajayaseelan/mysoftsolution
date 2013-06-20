@@ -105,11 +105,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            this.reqMsg = null;
-            this.resMsg = null;
-
             this.ev.Close();
-            this.ev = null;
         }
 
         #endregion

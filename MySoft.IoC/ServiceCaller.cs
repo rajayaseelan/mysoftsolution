@@ -130,9 +130,7 @@ namespace MySoft.IoC
 
         public void Dispose()
         {
-            caller = null;
             callbackTypes.Clear();
-            callbackTypes = null;
         }
 
         #endregion

@@ -26,9 +26,14 @@ namespace MySoft.RESTful
         public WebHeaderCollection Headers { get; set; }
 
         /// <summary>
-        /// 参数信息
+        /// GET参数信息
         /// </summary>
         public NameValueCollection Parameters { get; set; }
+
+        /// <summary>
+        /// POST参数信息
+        /// </summary>
+        public NameValueCollection Values { get; set; }
 
         /// <summary>
         /// Cookie信息
@@ -46,6 +51,7 @@ namespace MySoft.RESTful
         public AuthorizeToken()
         {
             this.Parameters = new NameValueCollection();
+            this.Values = new NameValueCollection();
             this.Cookies = new HttpCookieCollection();
             this.AuthorizeType = AuthorizeType.User;
         }

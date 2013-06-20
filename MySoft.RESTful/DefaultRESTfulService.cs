@@ -70,7 +70,7 @@ namespace MySoft.RESTful
             }
             else
             {
-                string result = GetResponseString(ParameterFormat.Json, kind, method, null, null);
+                string result = GetResponseString(ParameterFormat.Json, kind, method, query, null);
                 result = string.Format("{0}({1});", jsoncallback, result ?? "{}");
                 return new MemoryStream(Encoding.UTF8.GetBytes(result));
             }
@@ -109,8 +109,8 @@ namespace MySoft.RESTful
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
-
             var query = request.UriTemplateMatch.QueryParameters;
+
             var callback = query["callback"];
             string result = string.Empty;
 
@@ -124,7 +124,7 @@ namespace MySoft.RESTful
             }
             else
             {
-                result = GetResponseString(ParameterFormat.Jsonp, kind, method, null, null);
+                result = GetResponseString(ParameterFormat.Jsonp, kind, method, query, null);
                 response.ContentType = "text/javascript;charset=utf-8";
                 result = string.Format("{0}({1});", callback, result ?? "{}");
             }
@@ -191,6 +191,7 @@ namespace MySoft.RESTful
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
+            var query = request.UriTemplateMatch.QueryParameters;
 
             NameValueCollection nvs = null;
             if (stream != null)
@@ -203,7 +204,7 @@ namespace MySoft.RESTful
                 nvs = ParameterHelper.ConvertCollection(streamValue);
             }
 
-            string result = GetResponseString(format, kind, method, null, nvs);
+            string result = GetResponseString(format, kind, method, query, nvs);
             if (string.IsNullOrEmpty(result)) return new MemoryStream();
 
             //转换成buffer
@@ -268,7 +269,8 @@ namespace MySoft.RESTful
                                 RequestUri = GetRequestUri(),
                                 Method = request.Method,
                                 Headers = request.Headers,
-                                Parameters = request.UriTemplateMatch.QueryParameters,
+                                Parameters = nvget,
+                                Values = nvpost,
                                 Cookies = GetCookies(),
                                 AuthorizeType = Context.IsAuthorized(kind, method)
                             };
@@ -276,7 +278,7 @@ namespace MySoft.RESTful
                 AuthorizeUser user = null;
 
                 //认证请求
-                authResult = AuthorizeRequest(token, ref user);
+                authResult = AuthorizeRequest(kind, method, token, ref user);
 
                 //认证成功
                 if (authResult.Code == (int)HttpStatusCode.OK)
@@ -347,6 +349,64 @@ namespace MySoft.RESTful
         }
 
         /// <summary>
+        /// 进行认证
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <param name="method"></param>
+        /// <param name="token"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        private RESTfulResult AuthorizeRequest(string kind, string method, AuthorizeToken token, ref AuthorizeUser user)
+        {
+            var request = WebOperationContext.Current.IncomingRequest;
+            var response = WebOperationContext.Current.OutgoingResponse;
+            response.StatusCode = HttpStatusCode.Unauthorized;
+
+            //实例化一个结果
+            var ret = new RESTfulResult { Code = (int)response.StatusCode };
+
+            try
+            {
+                user = Authorize(token);
+                response.StatusCode = HttpStatusCode.OK;
+
+                //认证成功
+                ret.Code = (int)response.StatusCode;
+                ret.Message = "Authentication request success.";
+            }
+            catch (AuthorizeException ex)
+            {
+                ret.Code = ex.Code;
+                ret.Message = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                ret.Message = ErrorHelper.GetInnerException(ex).Message;
+            }
+
+            //未认证写错误日志
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                var message = GetMessage(request.Method, ret.Code, ret.Message, kind, method, token.Parameters, token.Values);
+
+                SimpleLog.Instance.WriteLogForDir("AuthError", new AuthorizeException(message));
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// 进行认证处理
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        protected virtual AuthorizeUser Authorize(AuthorizeToken token)
+        {
+            //返回认证失败
+            throw new AuthorizeException(401, "Authentication request fail.");
+        }
+
+        /// <summary>
         /// 获取错误消息
         /// </summary>
         /// <param name="exception"></param>
@@ -377,12 +437,28 @@ namespace MySoft.RESTful
             //设置返回值
             ret = new RESTfulResult { Code = code, Message = ErrorHelper.GetInnerException(exception).Message };
 
-            var errorMessage = string.Format("\r\n\tCode:[{0}]\r\n\tError:[{1}]\r\n\tMethod:[{2}.{3}]", code, ret.Message, kind, method);
+            return GetMessage(request.Method, ret.Code, ret.Message, kind, method, nvget, nvpost);
+        }
+
+        /// <summary>
+        /// 获取消息
+        /// </summary>
+        /// <param name="httpMethod"></param>
+        /// <param name="code"></param>
+        /// <param name="message"></param>
+        /// <param name="kind"></param>
+        /// <param name="method"></param>
+        /// <param name="nvget"></param>
+        /// <param name="nvpost"></param>
+        /// <returns></returns>
+        private string GetMessage(string httpMethod, int code, string message, string kind, string method, NameValueCollection nvget, NameValueCollection nvpost)
+        {
+            var errorMessage = string.Format("\r\n\tCode:[{0}]\r\n\tError:[{1}]\r\n\tMethod:[{2}.{3}]", code, message, kind, method);
 
             //请求地址
             errorMessage = string.Format("{0}\r\n\tRequest Uri:{1}", errorMessage, GetRequestUri());
 
-            if (request.Method.ToUpper() == "POST")
+            if (httpMethod.ToUpper() == "POST")
             {
                 errorMessage = string.Format("{0}\r\n\tGET Parameters:{1}\r\n\tPOST Parameters:{2}",
                                                 errorMessage, GetParameters(nvget), GetParameters(nvpost));
@@ -411,65 +487,6 @@ namespace MySoft.RESTful
             }
 
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// 进行认证
-        /// </summary>
-        /// <returns></returns>
-        private RESTfulResult AuthorizeRequest(AuthorizeToken token, ref AuthorizeUser user)
-        {
-            var request = WebOperationContext.Current.IncomingRequest;
-            var response = WebOperationContext.Current.OutgoingResponse;
-            response.StatusCode = HttpStatusCode.Unauthorized;
-
-            //实例化一个结果
-            var restResult = new RESTfulResult { Code = (int)response.StatusCode };
-
-            try
-            {
-                user = Authorize(token);
-                response.StatusCode = HttpStatusCode.OK;
-
-                //认证成功
-                restResult.Code = (int)response.StatusCode;
-                restResult.Message = "Authentication request success.";
-            }
-            catch (AuthorizeException ex)
-            {
-                restResult.Code = ex.Code;
-                restResult.Message = ex.Message;
-            }
-            catch (Exception ex)
-            {
-                restResult.Message = ErrorHelper.GetInnerException(ex).Message;
-            }
-
-            //未认证写错误日志
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                //如果参数大于0
-                var coll = request.UriTemplateMatch.QueryParameters;
-
-                var errorMessage = string.Format("{0} - {1}", restResult.Code, restResult.Message);
-                errorMessage = string.Format("{0}\r\n\tRequest Uri:{1}", errorMessage, GetRequestUri());
-                errorMessage = string.Format("{0}\r\n\tGET Parameters:{1}", errorMessage, GetParameters(coll));
-
-                SimpleLog.Instance.WriteLogForDir("AuthError", new AuthorizeException(errorMessage));
-            }
-
-            return restResult;
-        }
-
-        /// <summary>
-        /// 进行认证处理
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        protected virtual AuthorizeUser Authorize(AuthorizeToken token)
-        {
-            //返回认证失败
-            throw new AuthorizeException(401, "Authentication request fail.");
         }
 
         #region 获取Uri及Cookie

@@ -496,10 +496,10 @@ namespace MySoft.IoC
             }
 
             //调用分布式服务
-            using (var caller = new InvokeCaller(this.config, this.container, service, this.caller, this.call, this.container))
-            {
-                return caller.InvokeResponse(message);
-            }
+            var caller = new InvokeCaller(this.config, this.container, service, this.caller, this.call, this.container);
+
+            //返回响应信息
+            return caller.InvokeResponse(message);
         }
 
         /// <summary>
