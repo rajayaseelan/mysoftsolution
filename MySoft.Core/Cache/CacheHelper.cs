@@ -5,6 +5,7 @@ using System.Collections;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Linq;
 
 namespace MySoft.Cache
 {
@@ -429,9 +430,14 @@ namespace MySoft.Cache
         /// <returns></returns>
         private static string GetFilePath(string key)
         {
-            var cacheKey = MD5.HexHash(Encoding.Default.GetBytes(key));
+            var arr = key.Split('$');
 
-            return CoreHelper.GetFullPath(string.Format("LocalCache\\{0}.dat", cacheKey));
+            var fileName = arr.Last();
+            var rootPath = string.Join("\\", arr.Where(p => p != fileName).ToArray());
+
+            var filePath = Path.Combine(rootPath, MD5.HexHash(Encoding.Default.GetBytes(fileName)));
+
+            return CoreHelper.GetFullPath(string.Format("LocalCache\\{0}.dat", filePath));
         }
 
         //读文件同步
