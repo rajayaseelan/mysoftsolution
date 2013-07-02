@@ -393,31 +393,31 @@ namespace MySoft.IoC
         /// 数据计数
         /// </summary>
         /// <param name="appCaller"></param>
-        /// <param name="item"></param>
-        private void DataCounter(AppCaller appCaller, ResponseItem item)
+        /// <param name="resMsg"></param>
+        private void DataCounter(AppCaller appCaller, ResponseMessage resMsg)
         {
-            if (item == null) return;
+            if (resMsg == null) return;
 
             //调用参数
             CallEventArgs callArgs = null;
 
-            if (item.Message == null)
+            if (resMsg is ResponseBuffer)
             {
                 callArgs = new CallEventArgs(appCaller)
                 {
-                    ElapsedTime = item.ElapsedTime,
-                    Count = item.Count,
-                    Value = item.Buffer
+                    ElapsedTime = resMsg.ElapsedTime,
+                    Count = resMsg.Count,
+                    Value = (resMsg as ResponseBuffer).Buffer
                 };
             }
             else
             {
                 callArgs = new CallEventArgs(appCaller)
                 {
-                    ElapsedTime = item.Message.ElapsedTime,
-                    Count = item.Message.Count,
-                    Value = item.Message.Value,
-                    Error = item.Message.Error
+                    ElapsedTime = resMsg.ElapsedTime,
+                    Count = resMsg.Count,
+                    Value = resMsg.Value,
+                    Error = resMsg.Error
                 };
             }
 

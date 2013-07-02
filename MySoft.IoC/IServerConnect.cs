@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MySoft.IoC.Communication.Scs.Client;
+using System;
 using System.Net.Sockets;
-using MySoft.IoC.Communication.Scs.Client;
 
 namespace MySoft.IoC
 {

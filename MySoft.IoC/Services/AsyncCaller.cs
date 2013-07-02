@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MySoft.IoC.Messages;
+using System;
 using System.Threading;
-using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {
@@ -9,15 +9,18 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class AsyncCaller
     {
+        private bool serverCache;
         private Semaphore semaphore;
 
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
         /// <param name="maxCaller"></param>
-        public AsyncCaller(int maxCaller)
+        /// <param name="serverCache"></param>
+        public AsyncCaller(int maxCaller, bool serverCache)
         {
             this.semaphore = new Semaphore(maxCaller, maxCaller);
+            this.serverCache = serverCache;
         }
 
         /// <summary>
@@ -28,7 +31,7 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        public ResponseItem AsyncRun(IService service, OperationContext context, RequestMessage reqMsg, TimeSpan timeout)
+        public ResponseMessage AsyncRun(IService service, OperationContext context, RequestMessage reqMsg, TimeSpan timeout)
         {
             //请求一个控制器
             semaphore.WaitOne();
@@ -36,7 +39,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //异步处理器
-                var handler = new AsyncHandler(service, context, reqMsg);
+                var handler = new AsyncHandler(service, context, reqMsg, serverCache);
 
                 //Invoke响应
                 var ar = handler.BeginDoTask(null, null);
@@ -63,7 +66,7 @@ namespace MySoft.IoC.Services
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        public ResponseItem SyncRun(IService service, OperationContext context, RequestMessage reqMsg)
+        public ResponseMessage SyncRun(IService service, OperationContext context, RequestMessage reqMsg)
         {
             //请求一个控制器
             semaphore.WaitOne();
@@ -71,7 +74,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //异步处理器
-                var handler = new AsyncHandler(service, context, reqMsg);
+                var handler = new AsyncHandler(service, context, reqMsg, serverCache);
 
                 //同步响应
                 return handler.DoTask();
@@ -89,14 +92,12 @@ namespace MySoft.IoC.Services
         /// <param name="reqMsg"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        private ResponseItem GetTimeoutResponse(RequestMessage reqMsg, TimeSpan timeout)
+        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg, TimeSpan timeout)
         {
             var title = string.Format("Async invoke service ({0}, {1}) timeout ({2}) ms.", reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
 
             //获取异常
-            var resMsg = IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
-
-            return new ResponseItem(resMsg);
+            return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
         }
     }
 }

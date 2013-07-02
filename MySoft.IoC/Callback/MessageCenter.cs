@@ -1,10 +1,10 @@
-﻿using System;
+﻿using MySoft.IoC.Communication.Scs.Server;
+using MySoft.IoC.Messages;
+using MySoft.Logger;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using MySoft.IoC.Communication.Scs.Server;
-using MySoft.IoC.Messages;
-using MySoft.Logger;
 
 namespace MySoft.IoC.Callback
 {

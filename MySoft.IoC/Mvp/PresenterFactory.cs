@@ -1,7 +1,7 @@
-using System.Configuration;
 using Castle.Core.Resource;
 using Castle.Windsor;
 using Castle.Windsor.Configuration.Interpreters;
+using System.Configuration;
 
 namespace MySoft.IoC.Mvp
 {

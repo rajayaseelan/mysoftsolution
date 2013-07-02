@@ -1,5 +1,5 @@
-﻿using System;
-using MySoft.IoC.Messages;
+﻿using MySoft.IoC.Messages;
+using System;
 
 namespace MySoft.IoC.Logger
 {

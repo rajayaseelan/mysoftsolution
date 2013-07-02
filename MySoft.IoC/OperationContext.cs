@@ -1,8 +1,8 @@
-﻿using System;
-using System.Runtime.Remoting.Messaging;
-using MySoft.IoC.Callback;
+﻿using MySoft.IoC.Callback;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
+using System;
+using System.Runtime.Remoting.Messaging;
 
 namespace MySoft.IoC
 {

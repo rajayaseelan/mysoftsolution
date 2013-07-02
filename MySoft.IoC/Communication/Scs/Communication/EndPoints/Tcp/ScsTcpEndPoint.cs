@@ -1,9 +1,9 @@
-﻿using System;
-using System.Net;
-using MySoft.IoC.Communication.Scs.Client;
+﻿using MySoft.IoC.Communication.Scs.Client;
 using MySoft.IoC.Communication.Scs.Client.Tcp;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Communication.Scs.Server.Tcp;
+using System;
+using System.Net;
 
 namespace MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp
 {

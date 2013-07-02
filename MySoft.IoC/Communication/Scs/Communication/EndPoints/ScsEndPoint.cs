@@ -1,7 +1,7 @@
-﻿using System;
-using MySoft.IoC.Communication.Scs.Client;
+﻿using MySoft.IoC.Communication.Scs.Client;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Server;
+using System;
 
 namespace MySoft.IoC.Communication.Scs.Communication.EndPoints
 {

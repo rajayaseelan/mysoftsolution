@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using MySoft.IoC.Communication.Scs.Server;
+﻿using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
+using System;
+using System.Collections.Generic;
 
 namespace MySoft.IoC
 {
@@ -26,7 +26,7 @@ namespace MySoft.IoC
         {
             this.callbackTypes = new Dictionary<string, Type>();
             this.container = container;
-            this.caller = new AsyncCaller(config.MaxCaller);
+            this.caller = new AsyncCaller(config.MaxCaller, true);
             this.timeout = TimeSpan.FromSeconds(config.Timeout);
 
             //初始化服务
@@ -55,7 +55,7 @@ namespace MySoft.IoC
         /// <param name="appCaller"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        public ResponseItem HandleResponse(IScsServerClient channel, AppCaller appCaller, RequestMessage reqMsg)
+        public ResponseMessage HandleResponse(IScsServerClient channel, AppCaller appCaller, RequestMessage reqMsg)
         {
             try
             {
@@ -71,9 +71,7 @@ namespace MySoft.IoC
             catch (Exception ex)
             {
                 //获取异常响应信息
-                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                return new ResponseItem(resMsg);
+                return IoCHelper.GetResponse(reqMsg, ex);
             }
         }
 

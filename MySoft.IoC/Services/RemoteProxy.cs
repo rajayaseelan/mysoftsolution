@@ -1,7 +1,7 @@
-using System;
-using System.Collections.Generic;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using System;
+using System.Collections.Generic;
 
 namespace MySoft.IoC.Services
 {
@@ -24,6 +24,7 @@ namespace MySoft.IoC.Services
 
         #endregion
 
+        private IDictionary<string, WaitResult> hashtable;
         private ServiceRequestPool pool;
         private ServerNode node;
         private ILog logger;
@@ -38,6 +39,7 @@ namespace MySoft.IoC.Services
         {
             this.node = node;
             this.logger = logger;
+            this.hashtable = new Dictionary<string, WaitResult>();
 
             if (subscribed)
             {
@@ -96,7 +98,13 @@ namespace MySoft.IoC.Services
         /// <param name="e"></param>
         public virtual void MessageCallback(object sender, ResponseMessageEventArgs e)
         {
-            //TODO
+            lock (hashtable)
+            {
+                if (hashtable.ContainsKey(e.MessageId))
+                {
+                    hashtable[e.MessageId].Set(e.Message);
+                }
+            }
         }
 
         /// <summary>
@@ -118,20 +126,30 @@ namespace MySoft.IoC.Services
                 //消息Id
                 var messageId = Guid.NewGuid().ToString();
 
-                //发送消息并获取结果
-                using (var waitResult = new WaitResult(reqMsg))
+                using (var waitResult = new WaitResult())
                 {
-                    //同步调用
-                    reqProxy.InvokeMessage(messageId, waitResult);
+                    //添加信号量对象
+                    lock (hashtable) hashtable[messageId] = waitResult;
 
-                    //等待信号响应
-                    if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))
+                    try
                     {
-                        return GetTimeoutResponse(reqMsg);
-                    }
+                        //发送消息
+                        reqProxy.SendRequest(messageId, reqMsg);
 
-                    //返回响应的消息
-                    return waitResult.Message;
+                        //等待信号响应
+                        if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))
+                        {
+                            return GetTimeoutResponse(reqMsg);
+                        }
+
+                        //返回响应的消息
+                        return waitResult.Message;
+                    }
+                    finally
+                    {
+                        //移除信号量对象
+                        lock (hashtable) hashtable.Remove(messageId);
+                    }
                 }
             }
             finally

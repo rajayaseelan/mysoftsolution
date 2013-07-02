@@ -1,6 +1,6 @@
-﻿using System;
-using MySoft.IoC.Communication.Scs.Communication.EndPoints;
+﻿using MySoft.IoC.Communication.Scs.Communication.EndPoints;
 using MySoft.IoC.Communication.Scs.Communication.Messengers;
+using System;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Channels
 {

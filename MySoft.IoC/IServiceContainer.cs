@@ -1,7 +1,7 @@
-using System;
-using System.Collections.Generic;
 using Castle.MicroKernel;
 using MySoft.Logger;
+using System;
+using System.Collections.Generic;
 
 namespace MySoft.IoC
 {

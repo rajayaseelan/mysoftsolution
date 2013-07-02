@@ -1,7 +1,7 @@
-﻿using System;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
+﻿using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
+using System;
 
 namespace MySoft.IoC.Callback
 {

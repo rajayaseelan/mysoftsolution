@@ -1,6 +1,6 @@
+using MySoft.IoC.Messages;
 using System;
 using System.Diagnostics;
-using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {

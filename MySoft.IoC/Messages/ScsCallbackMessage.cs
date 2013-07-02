@@ -1,5 +1,5 @@
-﻿using System;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
+﻿using MySoft.IoC.Communication.Scs.Communication.Messages;
+using System;
 
 namespace MySoft.IoC.Messages
 {

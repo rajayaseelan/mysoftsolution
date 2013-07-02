@@ -125,6 +125,11 @@ namespace MySoft.IoC.Messages
             }
         }
 
+        /// <summary>
+        /// 获取记录数
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
         private int GetCount(object val)
         {
             if (val == null) return 0;
@@ -160,12 +165,13 @@ namespace MySoft.IoC.Messages
                 {
                     return (_value as InvokeData).Count;
                 }
+
+                return 1;
             }
             catch (Exception ex)
             {
+                return -1;
             }
-
-            return 1;
         }
     }
 }

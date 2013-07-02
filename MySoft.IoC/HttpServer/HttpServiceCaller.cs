@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
-using MySoft.IoC.Configuration;
+﻿using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
+using System;
+using System.Collections;
+using System.Linq;
 
 namespace MySoft.IoC.HttpServer
 {
@@ -26,7 +26,7 @@ namespace MySoft.IoC.HttpServer
         {
             this.config = config;
             this.container = container;
-            this.caller = new AsyncCaller(config.MaxCaller);
+            this.caller = new AsyncCaller(config.MaxCaller, true);
             this.callers = new HttpCallerInfoCollection();
         }
 
@@ -195,7 +195,7 @@ namespace MySoft.IoC.HttpServer
                     MaxCaller = config.MaxCaller
                 };
 
-                var invoke = new InvokeCaller(conf, this.container, service, this.caller, null, this.container);
+                var invoke = new InvokeCaller(conf, this.container, null, service, this.caller);
 
                 //定义响应数据体
                 var invokeData = invoke.InvokeResponse(message);

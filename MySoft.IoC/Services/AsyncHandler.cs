@@ -1,10 +1,10 @@
-﻿using System;
+﻿using MySoft.Cache;
+using MySoft.IoC.Messages;
+using MySoft.Security;
+using System;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
-using MySoft.Cache;
-using MySoft.IoC.Messages;
-using MySoft.Security;
 
 namespace MySoft.IoC.Services
 {
@@ -16,6 +16,7 @@ namespace MySoft.IoC.Services
         private IService service;
         private OperationContext context;
         private RequestMessage reqMsg;
+        private bool serverCache;
 
         /// <summary>
         /// 实例化AsyncHandler
@@ -23,18 +24,20 @@ namespace MySoft.IoC.Services
         /// <param name="service"></param>
         /// <param name="context"></param>
         /// <param name="reqMsg"></param>
-        public AsyncHandler(IService service, OperationContext context, RequestMessage reqMsg)
+        /// <param name="serverCache"></param>
+        public AsyncHandler(IService service, OperationContext context, RequestMessage reqMsg, bool serverCache)
         {
             this.service = service;
             this.context = context;
             this.reqMsg = reqMsg;
+            this.serverCache = serverCache;
         }
 
         /// <summary>
         /// 直接响应结果
         /// </summary>
         /// <returns></returns>
-        public ResponseItem DoTask()
+        public ResponseMessage DoTask()
         {
             if (NeedCacheResult(reqMsg))
                 return GetResponseFromCache();
@@ -51,7 +54,7 @@ namespace MySoft.IoC.Services
         public IAsyncResult BeginDoTask(AsyncCallback callback, object state)
         {
             //定义委托
-            var func = new Func<ResponseItem>(DoTask);
+            var func = new Func<ResponseMessage>(DoTask);
 
             return func.BeginInvoke(callback, state);
         }
@@ -61,24 +64,21 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="ar"></param>
         /// <returns></returns>
-        public ResponseItem EndDoTask(IAsyncResult ar)
+        public ResponseMessage EndDoTask(IAsyncResult ar)
         {
             try
             {
                 //异步委托
                 var @delegate = (ar as AsyncResult).AsyncDelegate;
 
-                var func = @delegate as Func<ResponseItem>;
+                var func = @delegate as Func<ResponseMessage>;
 
                 //异步回调
                 return func.EndInvoke(ar);
             }
             catch (Exception ex)
             {
-                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                //实例化ResponseItem
-                return new ResponseItem(resMsg);
+                return IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {
@@ -91,7 +91,7 @@ namespace MySoft.IoC.Services
         /// 获取响应从本地缓存
         /// </summary>
         /// <returns></returns>
-        private ResponseItem GetResponseFromService()
+        private ResponseMessage GetResponseFromService()
         {
             //设置上下文
             OperationContext.Current = context;
@@ -99,20 +99,14 @@ namespace MySoft.IoC.Services
             try
             {
                 //响应结果，清理资源
-                var resMsg = service.CallService(reqMsg);
-
-                //实例化ResponseItem
-                return new ResponseItem(resMsg);
+                return service.CallService(reqMsg);
             }
             catch (Exception ex)
             {
                 if (ex is ThreadAbortException)
                     Thread.ResetAbort();
 
-                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                //实例化ResponseItem
-                return new ResponseItem(resMsg);
+                return IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {
@@ -124,41 +118,42 @@ namespace MySoft.IoC.Services
         /// 从内存获取数据项
         /// </summary>
         /// <returns></returns>
-        private ResponseItem GetResponseFromCache()
+        private ResponseMessage GetResponseFromCache()
         {
-            var type = LocalCacheType.Memory;
-
-            //参数为0的采用文件缓存
-            if (reqMsg.Parameters.Count == 0)
-            {
-                type = LocalCacheType.File;
-            }
-
             //获取cacheKey
-            var cacheKey = GetCacheKey(reqMsg, context.Caller);
+            var cacheKey = GetCacheKey(context.Caller);
+
+            //服务端采用文件缓存
+            var type = serverCache ? LocalCacheType.File : LocalCacheType.Memory;
 
             //获取内存缓存
-            return CacheHelper<ResponseItem>.Get(type, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), () =>
+            var cacheMsg = CacheHelper<ResponseMessage>.Get(type, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), () =>
             {
                 //同步请求响应数据
-                var item = GetResponseFromService();
+                var resMsg = GetResponseFromService();
 
-                if (CheckResponse(item.Message))
+                if (CheckResponse(resMsg))
                 {
-                    try
+                    resMsg = new ResponseBuffer
                     {
-                        item.Buffer = IoCHelper.SerializeObject(item.Message);
-                        item.Message = null;
-                    }
-                    catch (Exception ex)
-                    {
-
-                    }
+                        TransactionId = reqMsg.TransactionId,
+                        ServiceName = resMsg.ServiceName,
+                        MethodName = resMsg.MethodName,
+                        Parameters = resMsg.Parameters,
+                        ElapsedTime = resMsg.ElapsedTime,
+                        Error = resMsg.Error,
+                        Buffer = IoCHelper.SerializeObject(resMsg.Value)
+                    };
                 }
 
-                return item;
+                return resMsg;
 
-            }, response => response.Count > 0);
+            }, p => p is ResponseBuffer);
+
+            //传输Id不同
+            cacheMsg.TransactionId = reqMsg.TransactionId;
+
+            return cacheMsg;
         }
 
         /// <summary>
@@ -179,37 +174,25 @@ namespace MySoft.IoC.Services
         private bool CheckResponse(ResponseMessage resMsg)
         {
             if (resMsg == null) return false;
+            if (resMsg is ResponseBuffer) return false;
 
             //如果符合条件，则缓存 
-            if (!resMsg.IsError && resMsg.Count > 0)
-            {
-                return true;
-            }
-
-            return false;
+            return !resMsg.IsError && resMsg.Count > 0;
         }
 
         /// <summary>
         /// 获取cacheKey
         /// </summary>
-        /// <param name="reqMsg"></param>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private string GetCacheKey(RequestMessage reqMsg, AppCaller caller)
+        private string GetCacheKey(AppCaller caller)
         {
+            var cacheKey = caller.Parameters.ToLower();
+
+            cacheKey = cacheKey.Replace("\r\n", "").Replace("\t", "").Replace(" ", "");
+
             //对Key进行组装
-            var cacheKey = string.Format("{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
-
-            //返回加密Key
-            cacheKey = MD5.HexHash(Encoding.Default.GetBytes(cacheKey.ToLower()));
-
-            //如果是状态服务，则使用内部缓存
-            if (reqMsg.InvokeMethod)
-            {
-                cacheKey = string.Format("invoke_{0}", cacheKey);
-            }
-
-            return cacheKey;
+            return string.Join("_$$_", new[] { caller.ServiceName, caller.MethodName.Split(' ')[1], cacheKey });
         }
     }
 }

@@ -1,12 +1,12 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MySoft.IoC
 {
@@ -41,7 +41,7 @@ namespace MySoft.IoC
         {
             this.config = config;
             this.container = new SimpleServiceContainer(config.Type);
-            this.caller = new AsyncCaller(config.MaxCaller);
+            this.caller = new AsyncCaller(config.MaxCaller, false);
 
             container.OnLog += (log, type) =>
             {
@@ -335,7 +335,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         private IServiceInterfaceType CreateProxyHandler<IServiceInterfaceType>(IService proxy, Type serviceType)
         {
-            var handler = new ServiceInvocationHandler<IServiceInterfaceType>(this.config, this.container, proxy, this.caller, this.call, this.container);
+            var handler = new ServiceInvocationHandler<IServiceInterfaceType>(this.config, this.container, this.call, proxy, this.caller);
             return (IServiceInterfaceType)ProxyFactory.GetInstance().Create(handler, serviceType, true);
         }
 
@@ -496,7 +496,7 @@ namespace MySoft.IoC
             }
 
             //调用分布式服务
-            var caller = new InvokeCaller(this.config, this.container, service, this.caller, this.call, this.container);
+            var caller = new InvokeCaller(this.config, this.container, this.call, service, this.caller);
 
             //返回响应信息
             return caller.InvokeResponse(message);

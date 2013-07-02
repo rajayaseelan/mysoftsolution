@@ -1,7 +1,7 @@
+using MySoft.IoC.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MySoft.IoC.Messages;
 
 namespace MySoft.IoC.Services
 {

@@ -1,6 +1,6 @@
-﻿using System;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
+﻿using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Communication.Protocols;
+using System;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Messengers
 {

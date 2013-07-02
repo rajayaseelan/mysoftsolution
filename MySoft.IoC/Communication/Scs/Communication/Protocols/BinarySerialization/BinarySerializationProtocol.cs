@@ -1,7 +1,7 @@
-﻿using System;
+﻿using MySoft.IoC.Communication.Scs.Communication.Messages;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerialization
 {

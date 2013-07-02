@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
+﻿using MySoft.IoC.Communication.Scs.Communication.Messages;
+using System.Collections.Generic;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Protocols
 {

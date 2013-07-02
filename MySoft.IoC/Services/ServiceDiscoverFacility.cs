@@ -1,8 +1,8 @@
-using System.Collections;
-using System.Linq;
 using Castle.Core;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Facilities;
+using System.Collections;
+using System.Linq;
 
 namespace MySoft.IoC.Services
 {

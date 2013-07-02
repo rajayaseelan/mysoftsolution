@@ -1,8 +1,8 @@
-﻿using System;
-using MySoft.IoC.Communication.Scs.Communication;
+﻿using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
+using System;
 
 namespace MySoft.IoC
 {
@@ -31,23 +31,15 @@ namespace MySoft.IoC
         /// <summary>
         /// 发送消息
         /// </summary>
-        /// <param name="item"></param>
-        public void SendResponse(ResponseItem item)
+        /// <param name="resMsg"></param>
+        public void SendResponse(ResponseMessage resMsg)
         {
             if (channel.CommunicationState != CommunicationStates.Connected) return;
 
             //设置异常消息
-            SetMessageError(item);
+            SetMessageError(resMsg);
 
-            //如果没有返回消息，则退出
-            if (item.Buffer == null && item.Message == null) return;
-
-            IScsMessage message = null;
-
-            if (item.Buffer != null)
-                message = new ScsRawDataMessage(item.Buffer, messageId);
-            else
-                message = new ScsResultMessage(item.Message, messageId);
+            IScsMessage message = new ScsResultMessage(resMsg, messageId);
 
             //发送消息
             channel.SendMessage(message);
@@ -56,18 +48,16 @@ namespace MySoft.IoC
         /// <summary>
         /// 设置异常消息
         /// </summary>
-        /// <param name="item"></param>
-        private void SetMessageError(ResponseItem item)
+        /// <param name="resMsg"></param>
+        private void SetMessageError(ResponseMessage resMsg)
         {
-            if (item.Message == null) return;
-
             //如果是Json方式调用，则需要处理异常
-            if (reqMsg.InvokeMethod && item.Message.IsError)
+            if (reqMsg.InvokeMethod && resMsg.IsError)
             {
                 //获取最底层异常信息
-                var error = ErrorHelper.GetInnerException(item.Message.Error);
+                var error = ErrorHelper.GetInnerException(resMsg.Error);
 
-                item.Message.Error = new Exception(error.Message);
+                resMsg.Error = new Exception(error.Message);
             }
         }
     }

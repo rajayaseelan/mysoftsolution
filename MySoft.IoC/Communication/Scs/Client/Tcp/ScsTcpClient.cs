@@ -1,7 +1,7 @@
-﻿using System.Net;
-using MySoft.IoC.Communication.Scs.Communication.Channels;
+﻿using MySoft.IoC.Communication.Scs.Communication.Channels;
 using MySoft.IoC.Communication.Scs.Communication.Channels.Tcp;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using System.Net;
 
 namespace MySoft.IoC.Communication.Scs.Client.Tcp
 {

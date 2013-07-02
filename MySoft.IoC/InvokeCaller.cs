@@ -1,23 +1,17 @@
-﻿using System;
-using System.Diagnostics;
-using MySoft.IoC.Configuration;
+﻿using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using System;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// 调用者
     /// </summary>
-    internal class InvokeCaller
+    internal class InvokeCaller : BaseServiceHandler
     {
         private CastleFactoryConfiguration config;
-        private IContainer container;
-        private IService service;
-        private AsyncCaller caller;
-        private IServiceCall call;
-        private ILog logger;
         private string hostName;
         private string ipAddress;
 
@@ -26,19 +20,13 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="config"></param>
         /// <param name="container"></param>
+        /// <param name="call"></param>
         /// <param name="service"></param>
         /// <param name="caller"></param>
-        /// <param name="call"></param>
-        /// <param name="logger"></param>
-        public InvokeCaller(CastleFactoryConfiguration config, IContainer container, IService service, AsyncCaller caller, IServiceCall call, ILog logger)
+        public InvokeCaller(CastleFactoryConfiguration config, IServiceContainer container, IServiceCall call, IService service, AsyncCaller caller)
+            : base(container, call, service, caller)
         {
             this.config = config;
-            this.container = container;
-            this.service = service;
-            this.call = call;
-            this.caller = caller;
-            this.logger = logger;
-
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
         }
@@ -73,91 +61,14 @@ namespace MySoft.IoC
             //给参数赋值
             reqMsg.Parameters["InvokeParameter"] = message.Parameters;
 
-            //定义响应的消息
-            var resMsg = GetResponse(reqMsg);
+            var resMsg = CallService(reqMsg);
 
-            //如果有异常，向外抛出
-            if (resMsg.IsError)
+            if (resMsg != null)
             {
-                if (logger != null) logger.WriteError(resMsg.Error);
-
-                throw resMsg.Error;
+                return resMsg.Value as InvokeData;
             }
 
-            return resMsg.Value as InvokeData;
-        }
-
-        /// <summary>
-        /// 获取响应信息
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponse(RequestMessage reqMsg)
-        {
-            //开始一个记时器
-            var watch = Stopwatch.StartNew();
-
-            try
-            {
-                //写日志开始
-                call.BeginCall(reqMsg);
-
-                //获取上下文
-                var context = GetOperationContext(reqMsg);
-
-                //异步调用服务
-                var item = caller.SyncRun(service, context, reqMsg);
-
-                var resMsg = item.Message;
-
-                if (item.Message == null)
-                {
-                    //反序列化对象
-                    resMsg = IoCHelper.DeserializeObject(item.Buffer);
-                }
-
-                //设置耗时时间
-                resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
-
-                //写日志结束
-                call.EndCall(reqMsg, resMsg, watch.ElapsedMilliseconds);
-
-                return resMsg;
-            }
-            finally
-            {
-                if (watch.IsRunning)
-                {
-                    watch.Stop();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 获取上下文对象
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private OperationContext GetOperationContext(RequestMessage reqMsg)
-        {
-            var caller = new AppCaller
-            {
-                AppVersion = reqMsg.AppVersion,
-                AppPath = reqMsg.AppPath,
-                AppName = reqMsg.AppName,
-                IPAddress = reqMsg.IPAddress,
-                HostName = reqMsg.HostName,
-                ServiceName = reqMsg.ServiceName,
-                MethodName = reqMsg.MethodName,
-                Parameters = reqMsg.Parameters.ToString(),
-                CallTime = DateTime.Now
-            };
-
-            return new OperationContext
-            {
-                Container = container,
-                Caller = caller
-            };
+            return null;
         }
     }
 }

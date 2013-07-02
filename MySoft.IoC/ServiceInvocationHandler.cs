@@ -1,45 +1,35 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using MySoft.Logger;
+using System;
+using System.Collections.Generic;
 
 namespace MySoft.IoC
 {
     /// <summary>
     /// The base impl class of the service interface, this class is used by service factory to emit service interface impl automatically at runtime.
     /// </summary>
-    internal class ServiceInvocationHandler<T> : IProxyInvocationHandler
+    internal class ServiceInvocationHandler<T> : BaseServiceHandler, IProxyInvocationHandler
     {
         private CastleFactoryConfiguration config;
         private IDictionary<string, int> cacheTimes;
         private IDictionary<string, string> errors;
-        private IContainer container;
-        private IService service;
-        private AsyncCaller caller;
-        private IServiceCall call;
-        private ILog logger;
         private string hostName;
         private string ipAddress;
 
         /// <summary>
-        ///  Initializes a new instance of the <see cref="ServiceInvocationHandler"/> class.
+        /// Initializes a new instance of the <see cref="ServiceInvocationHandler"/> class.
         /// </summary>
         /// <param name="config"></param>
         /// <param name="container"></param>
+        /// <param name="call"></param>
         /// <param name="service"></param>
         /// <param name="caller"></param>
-        public ServiceInvocationHandler(CastleFactoryConfiguration config, IContainer container, IService service, AsyncCaller caller, IServiceCall call, ILog logger)
+        public ServiceInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IServiceCall call, IService service, AsyncCaller caller)
+            : base(container, call, service, caller)
         {
             this.config = config;
-            this.container = container;
-            this.service = service;
-            this.call = call;
-            this.caller = caller;
-            this.logger = logger;
-
             this.hostName = DnsHelper.GetHostName();
             this.ipAddress = DnsHelper.GetIPAddress();
 
@@ -128,25 +118,12 @@ namespace MySoft.IoC
         {
             try
             {
-                //定义响应的消息
-                var resMsg = GetResponse(reqMsg);
-
-                //如果有异常，向外抛出
-                if (resMsg.IsError)
-                {
-                    if (logger != null) logger.WriteError(resMsg.Error);
-
-                    throw resMsg.Error;
-                }
-
-                return resMsg;
-            }
-            catch (BusinessException ex)
-            {
-                throw;
+                return CallService(reqMsg);
             }
             catch (Exception ex)
             {
+                if (ex is BusinessException) throw;
+
                 if (config.ThrowError)
                 {
                     //判断是否有自定义异常
@@ -158,79 +135,6 @@ namespace MySoft.IoC
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// 获取响应信息
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponse(RequestMessage reqMsg)
-        {
-            //开始一个记时器
-            var watch = Stopwatch.StartNew();
-
-            try
-            {
-                //写日志开始
-                call.BeginCall(reqMsg);
-
-                //获取上下文
-                var context = GetOperationContext(reqMsg);
-
-                //异步调用服务
-                var item = caller.SyncRun(service, context, reqMsg);
-
-                var resMsg = item.Message;
-
-                if (item.Message == null)
-                {
-                    //反序列化对象
-                    resMsg = IoCHelper.DeserializeObject(item.Buffer);
-                }
-
-                //设置耗时时间
-                resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, watch.ElapsedMilliseconds);
-
-                //写日志结束
-                call.EndCall(reqMsg, resMsg, watch.ElapsedMilliseconds);
-
-                return resMsg;
-            }
-            finally
-            {
-                if (watch.IsRunning)
-                {
-                    watch.Stop();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 获取上下文对象
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private OperationContext GetOperationContext(RequestMessage reqMsg)
-        {
-            var caller = new AppCaller
-            {
-                AppVersion = reqMsg.AppVersion,
-                AppPath = reqMsg.AppPath,
-                AppName = reqMsg.AppName,
-                IPAddress = reqMsg.IPAddress,
-                HostName = reqMsg.HostName,
-                ServiceName = reqMsg.ServiceName,
-                MethodName = reqMsg.MethodName,
-                Parameters = reqMsg.Parameters.ToString(),
-                CallTime = DateTime.Now
-            };
-
-            return new OperationContext
-            {
-                Container = container,
-                Caller = caller
-            };
         }
 
         #endregion

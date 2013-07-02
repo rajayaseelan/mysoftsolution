@@ -1,9 +1,9 @@
-﻿using System;
-using System.Timers;
-using MySoft.IoC.Communication.Scs.Communication;
+﻿using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.Channels;
 using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Communication.Protocols;
+using System;
+using System.Timers;
 
 namespace MySoft.IoC.Communication.Scs.Client
 {

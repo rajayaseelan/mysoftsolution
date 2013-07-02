@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MySoft.IoC.Communication.Scs.Communication;
+using System;
 using System.Timers;
-using MySoft.IoC.Communication.Scs.Communication;
 
 namespace MySoft.IoC.Communication.Scs.Client
 {

@@ -1,7 +1,7 @@
-﻿using System;
-using System.Linq;
-using MySoft.IoC.Messages;
+﻿using MySoft.IoC.Messages;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Linq;
 
 namespace MySoft.IoC
 {
@@ -13,11 +13,13 @@ namespace MySoft.IoC
         /// <summary>
         /// 序列化对象
         /// </summary>
-        /// <param name="resMsg"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        internal static byte[] SerializeObject(ResponseMessage resMsg)
+        internal static byte[] SerializeObject(object value)
         {
-            var buffer = SerializationManager.SerializeBin(resMsg);
+            if (value == null) return new byte[0];
+
+            var buffer = SerializationManager.SerializeBin(value);
             return CompressionManager.CompressGZip(buffer);
         }
 
@@ -26,10 +28,12 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        internal static ResponseMessage DeserializeObject(byte[] buffer)
+        internal static object DeserializeObject(byte[] buffer)
         {
+            if (buffer == null || buffer.Length == 0) return null;
+
             buffer = CompressionManager.DecompressGZip(buffer);
-            return SerializationManager.DeserializeBin<ResponseMessage>(buffer);
+            return SerializationManager.DeserializeBin(buffer);
         }
 
         /// <summary>
