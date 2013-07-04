@@ -12,30 +12,26 @@ namespace MySoft.IoC
     internal class ServiceChannel
     {
         private IScsServerClient channel;
-        private string messageId;
         private RequestMessage reqMsg;
 
         /// <summary>
         /// 实例化ServiceChannel
         /// </summary>
         /// <param name="channel"></param>
-        /// <param name="messageId"></param>
         /// <param name="reqMsg"></param>
-        public ServiceChannel(IScsServerClient channel, string messageId, RequestMessage reqMsg)
+        public ServiceChannel(IScsServerClient channel, RequestMessage reqMsg)
         {
             this.channel = channel;
-            this.messageId = messageId;
             this.reqMsg = reqMsg;
         }
 
         /// <summary>
         /// 发送消息
         /// </summary>
+        /// <param name="messageId"></param>
         /// <param name="resMsg"></param>
-        public void SendResponse(ResponseMessage resMsg)
+        public void SendResponse(string messageId, ResponseMessage resMsg)
         {
-            if (channel.CommunicationState != CommunicationStates.Connected) return;
-
             //设置异常消息
             SetMessageError(resMsg);
 

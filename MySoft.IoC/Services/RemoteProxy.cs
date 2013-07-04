@@ -124,7 +124,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //ÏûÏ¢Id
-                var messageId = Guid.NewGuid().ToString();
+                var messageId = reqMsg.TransactionId.ToString();
 
                 using (var waitResult = new WaitResult())
                 {

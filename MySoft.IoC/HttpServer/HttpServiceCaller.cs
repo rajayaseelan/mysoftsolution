@@ -1,4 +1,5 @@
-﻿using MySoft.IoC.Configuration;
+﻿using MySoft.Cache;
+using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using System;
@@ -26,7 +27,7 @@ namespace MySoft.IoC.HttpServer
         {
             this.config = config;
             this.container = container;
-            this.caller = new AsyncCaller(config.MaxCaller, true);
+            this.caller = new AsyncCaller(LocalCacheType.Memory);
             this.callers = new HttpCallerInfoCollection();
         }
 
@@ -191,8 +192,7 @@ namespace MySoft.IoC.HttpServer
                 var conf = new CastleFactoryConfiguration
                 {
                     AppName = "HttpServer",
-                    EnableCache = true,
-                    MaxCaller = config.MaxCaller
+                    EnableCache = true
                 };
 
                 var invoke = new InvokeCaller(conf, this.container, null, service, this.caller);

@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 4 * 1024; //4KB
+        private const int ReceiveBufferSize = 2 * 1024; //2KB
 
         #region Public properties
 
@@ -39,7 +39,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Socket object to send/reveice messages.
         /// </summary>
-        private Socket _clientSocket;
+        private readonly Socket _clientSocket;
 
         private bool _fromServer;
 
@@ -51,7 +51,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// This buffer is used to receive bytes 
         /// </summary>
-        private volatile byte[] _receiveBuffer;
+        private byte[] _receiveBuffer;
 
         #endregion
 
@@ -69,10 +69,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             // Disable the Nagle Algorithm for this tcp socket.  
             this._clientSocket.NoDelay = true;
-            this._clientSocket.SendBufferSize = ReceiveBufferSize;
-            this._clientSocket.ReceiveBufferSize = ReceiveBufferSize;
-            this._clientSocket.SendTimeout = 1000;
-            this._clientSocket.ReceiveTimeout = 1000;
 
             this._receiveBuffer = new byte[ReceiveBufferSize];
 
@@ -108,10 +104,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             finally
             {
                 WireProtocol.Reset();
-
-                _clientSocket = null;
                 _receiveBuffer = null;
-                WireProtocol = null;
             }
 
             //Disconnected

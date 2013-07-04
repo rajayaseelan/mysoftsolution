@@ -86,7 +86,7 @@ namespace MySoft.IoC
             while (true)
             {
                 //每1分钟检测一次
-                Thread.Sleep(TimeSpan.FromSeconds(30));
+                Thread.Sleep(TimeSpan.FromMinutes(1));
 
                 try
                 {
@@ -95,12 +95,12 @@ namespace MySoft.IoC
                     var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
 
                     //断开超时的连接
-                    foreach (var communicationChannel in server.Clients.GetAllItems())
+                    foreach (var channel in server.Clients.GetAllItems())
                     {
                         //判断是否超时
-                        if (communicationChannel.LastReceivedMessageTime < lastMinute && communicationChannel.LastSentMessageTime < lastMinute)
+                        if (channel.LastReceivedMessageTime < lastMinute && channel.LastSentMessageTime < lastMinute)
                         {
-                            communicationChannel.Disconnect();
+                            channel.Disconnect();
                         }
                     }
                 }
@@ -556,6 +556,8 @@ namespace MySoft.IoC
         {
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
             var channel = OperationContext.Current.Channel;
+
+            channel.Canceled = false;
             MessageCenter.Instance.AddListener(new MessageListener(channel, callback, options, subscribeTypes));
         }
 
@@ -564,9 +566,13 @@ namespace MySoft.IoC
         /// </summary>
         public void Unsubscribe()
         {
-            var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
             var channel = OperationContext.Current.Channel;
-            MessageCenter.Instance.RemoveListener(new MessageListener(channel, callback));
+            var listener = MessageCenter.Instance.GetListener(channel);
+            if (listener == null)
+                throw new WarningException("Please enable to subscribe.");
+
+            channel.Canceled = true;
+            MessageCenter.Instance.RemoveListener(listener);
         }
 
         /// <summary>

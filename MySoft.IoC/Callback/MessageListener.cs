@@ -93,7 +93,10 @@ namespace MySoft.IoC.Callback
         /// <param name="connectInfo"></param>
         public void Notify(ConnectInfo connectInfo)
         {
-            _innerListener.Push(connectInfo);
+            lock (_channel)
+            {
+                _innerListener.Push(connectInfo);
+            }
         }
 
         /// <summary>
@@ -104,7 +107,10 @@ namespace MySoft.IoC.Callback
         /// <param name="appClient"></param>
         public void Notify(string ipAddress, int port, AppClient appClient)
         {
-            _innerListener.Change(ipAddress, port, appClient);
+            lock (_channel)
+            {
+                _innerListener.Change(ipAddress, port, appClient);
+            }
         }
 
         /// <summary>
@@ -113,8 +119,11 @@ namespace MySoft.IoC.Callback
         /// <param name="status"></param>
         public void Notify(ServerStatus status)
         {
-            _pushTime = DateTime.Now;
-            _innerListener.Push(status);
+            lock (_channel)
+            {
+                _pushTime = DateTime.Now;
+                _innerListener.Push(status);
+            }
         }
 
         /// <summary>
@@ -123,7 +132,10 @@ namespace MySoft.IoC.Callback
         /// <param name="callError"></param>
         public void Notify(CallError callError)
         {
-            _innerListener.Push(callError);
+            lock (_channel)
+            {
+                _innerListener.Push(callError);
+            }
         }
 
         /// <summary>
@@ -132,7 +144,10 @@ namespace MySoft.IoC.Callback
         /// <param name="callTimeout"></param>
         public void Notify(CallTimeout callTimeout)
         {
-            _innerListener.Push(callTimeout);
+            lock (_channel)
+            {
+                _innerListener.Push(callTimeout);
+            }
         }
     }
 }

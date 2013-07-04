@@ -38,7 +38,6 @@ namespace MySoft.IoC
         private IScsServerClient channel;
         private IContainer container;
         private AppCaller caller;
-        private object dynamicProxy;
         private object syncRoot = new object();
 
         /// <summary>
@@ -96,14 +95,9 @@ namespace MySoft.IoC
             {
                 lock (syncRoot)
                 {
-                    if (dynamicProxy == null)
-                    {
-                        var handler = new CallbackInvocationHandler(callbackType, channel);
-                        dynamicProxy = ProxyFactory.GetInstance().Create(handler, typeof(ICallbackService), true);
-                    }
+                    var handler = new CallbackInvocationHandler(callbackType, channel);
+                    return (ICallbackService)ProxyFactory.GetInstance().Create(handler, typeof(ICallbackService), true);
                 }
-
-                return (ICallbackService)dynamicProxy;
             }
         }
     }

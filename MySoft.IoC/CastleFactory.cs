@@ -41,7 +41,7 @@ namespace MySoft.IoC
         {
             this.config = config;
             this.container = new SimpleServiceContainer(config.Type);
-            this.caller = new AsyncCaller(config.MaxCaller, false);
+            this.caller = new AsyncCaller(LocalCacheType.Memory);
 
             container.OnLog += (log, type) =>
             {

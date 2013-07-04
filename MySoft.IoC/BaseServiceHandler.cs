@@ -85,7 +85,7 @@ namespace MySoft.IoC
                 //获取上下文
                 var context = GetOperationContext(reqMsg);
 
-                //异步调用服务
+                //同步调用服务
                 var resMsg = caller.SyncRun(service, context, reqMsg);
 
                 elapsedTime = watch.ElapsedMilliseconds;

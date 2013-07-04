@@ -3,7 +3,6 @@ using MySoft.IoC.Messages;
 using MySoft.Logger;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace MySoft.IoC.Callback
@@ -18,7 +17,7 @@ namespace MySoft.IoC.Callback
         //线程同步锁；
         private static readonly object syncRoot = new object();
         private static MessageCenter instance;
-        private IDictionary<string, MessageListener> listeners = new Dictionary<string, MessageListener>();
+        private Hashtable listeners = Hashtable.Synchronized(new Hashtable());
 
         /// <summary>
         /// 返回 MessageCenter 的唯一实例；
@@ -49,10 +48,7 @@ namespace MySoft.IoC.Callback
         {
             get
             {
-                lock (listeners)
-                {
-                    return listeners.Count;
-                }
+                return listeners.Count;
             }
         }
 
@@ -69,12 +65,9 @@ namespace MySoft.IoC.Callback
 
             var listenerKey = channel.RemoteEndPoint.ToString();
 
-            lock (listeners)
+            if (listeners.ContainsKey(listenerKey))
             {
-                if (listeners.ContainsKey(listenerKey))
-                {
-                    return listeners[listenerKey];
-                }
+                return listeners[listenerKey] as MessageListener;
             }
 
             return null;
@@ -88,17 +81,14 @@ namespace MySoft.IoC.Callback
         {
             var listenerKey = listener.Channel.RemoteEndPoint.ToString();
 
-            lock (listeners)
+            if (listeners.ContainsKey(listenerKey))
             {
-                if (listeners.ContainsKey(listenerKey))
-                {
-                    throw new InvalidOperationException("Listeners have already registered.");
-                }
-                else
-                {
-                    if (OnLog != null) OnLog(string.Format("Add listener ({0}).", listenerKey), LogType.Warning);
-                    listeners[listenerKey] = listener;
-                }
+                throw new InvalidOperationException("Listeners have already registered.");
+            }
+            else
+            {
+                if (OnLog != null) OnLog(string.Format("Add listener ({0}).", listenerKey), LogType.Warning);
+                listeners[listenerKey] = listener;
             }
         }
 
@@ -110,17 +100,14 @@ namespace MySoft.IoC.Callback
         {
             var listenerKey = listener.Channel.RemoteEndPoint.ToString();
 
-            lock (listeners)
+            if (listeners.ContainsKey(listenerKey))
             {
-                if (listeners.ContainsKey(listenerKey))
-                {
-                    if (OnLog != null) OnLog(string.Format("Remove listener ({0}).", listenerKey), LogType.Error);
-                    listeners.Remove(listenerKey);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Listeners don't exist.");
-                }
+                if (OnLog != null) OnLog(string.Format("Remove listener ({0}).", listenerKey), LogType.Error);
+                listeners.Remove(listenerKey);
+            }
+            else
+            {
+                throw new InvalidOperationException("Listeners don't exist.");
             }
         }
 
@@ -132,14 +119,7 @@ namespace MySoft.IoC.Callback
         {
             if (listeners.Count == 0) return;
 
-            IList<MessageListener> _listeners = null;
-
-            lock (listeners)
-            {
-                _listeners = listeners.Values.ToList();
-            }
-
-            foreach (MessageListener lstn in _listeners)
+            foreach (MessageListener lstn in listeners.Values.Cast<MessageListener>().ToList())
             {
                 try
                 {
@@ -178,14 +158,7 @@ namespace MySoft.IoC.Callback
         {
             if (listeners.Count == 0) return;
 
-            IList<MessageListener> _listeners = null;
-
-            lock (listeners)
-            {
-                _listeners = listeners.Values.ToList();
-            }
-
-            foreach (MessageListener lstn in _listeners)
+            foreach (MessageListener lstn in listeners.Values.Cast<MessageListener>().ToList())
             {
                 try
                 {
@@ -250,14 +223,7 @@ namespace MySoft.IoC.Callback
         {
             if (listeners.Count == 0) return;
 
-            IList<MessageListener> _listeners = null;
-
-            lock (listeners)
-            {
-                _listeners = listeners.Values.ToList();
-            }
-
-            foreach (MessageListener lstn in _listeners)
+            foreach (MessageListener lstn in listeners.Values.Cast<MessageListener>().ToList())
             {
                 try
                 {
@@ -292,14 +258,7 @@ namespace MySoft.IoC.Callback
         {
             if (listeners.Count == 0) return;
 
-            IList<MessageListener> _listeners = null;
-
-            lock (listeners)
-            {
-                _listeners = listeners.Values.ToList();
-            }
-
-            foreach (MessageListener lstn in _listeners)
+            foreach (MessageListener lstn in listeners.Values.Cast<MessageListener>().ToList())
             {
                 try
                 {
@@ -334,6 +293,7 @@ namespace MySoft.IoC.Callback
             if (OnError != null)
             {
                 var listenerKey = lstn.Channel.RemoteEndPoint.ToString();
+
                 var error = new ApplicationException(string.Format("Notify listener ({0}) error.", listenerKey), ex);
                 OnError(error);
             }

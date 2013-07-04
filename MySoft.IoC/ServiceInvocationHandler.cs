@@ -104,6 +104,11 @@ namespace MySoft.IoC
                 //处理参数
                 IoCHelper.SetRefParameters(method, resMsg.Parameters, parameters);
             }
+            else
+            {
+                //默认值
+                returnValue = CoreHelper.GetTypeDefaultValue(method.ReturnType);
+            }
 
             //返回结果
             return returnValue;

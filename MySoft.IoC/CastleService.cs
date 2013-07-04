@@ -365,22 +365,20 @@ namespace MySoft.IoC
         private void SendResponse(IScsServerClient channel, string messageId, RequestMessage reqMsg)
         {
             //实例化上下文
-            var client = new ServiceChannel(channel, messageId, reqMsg);
+            var client = new ServiceChannel(channel, reqMsg);
 
             try
             {
                 var appCaller = CreateCaller(reqMsg);
 
                 //响应消息
-                var item = caller.HandleResponse(channel, appCaller, reqMsg);
-
-                if (item == null) return;
+                var resMsg = caller.HandleResponse(channel, appCaller, reqMsg);
 
                 //数据计数
-                DataCounter(appCaller, item);
+                DataCounter(appCaller, resMsg);
 
                 //发送消息
-                client.SendResponse(item);
+                client.SendResponse(messageId, resMsg);
             }
             catch (Exception ex)
             {

@@ -81,24 +81,16 @@ namespace MySoft.IoC.Services
             //解析服务
             var instance = container.Resolve(serviceType);
 
-            try
-            {
-                //参数赋值
-                object[] parameters = IoCHelper.CreateParameters(callMethod, reqMsg.Parameters);
+            //参数赋值
+            object[] parameters = IoCHelper.CreateParameters(callMethod, reqMsg.Parameters);
 
-                //调用对应的服务
-                resMsg.Value = callMethod.FastInvoke(instance, parameters);
+            //调用对应的服务
+            resMsg.Value = callMethod.FastInvoke(instance, parameters);
 
-                //处理返回参数
-                IoCHelper.SetRefParameters(callMethod, parameters, resMsg.Parameters);
+            //处理返回参数
+            IoCHelper.SetRefParameters(callMethod, parameters, resMsg.Parameters);
 
-                return resMsg;
-            }
-            finally
-            {
-                //释放对象
-                container.Release(instance);
-            }
+            return resMsg;
         }
 
         /// <summary>

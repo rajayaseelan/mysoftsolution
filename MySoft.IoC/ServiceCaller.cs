@@ -1,9 +1,11 @@
-﻿using MySoft.IoC.Communication.Scs.Server;
+﻿using MySoft.Cache;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -14,6 +16,7 @@ namespace MySoft.IoC
     {
         private readonly IServiceContainer container;
         private IDictionary<string, Type> callbackTypes;
+        private Semaphore semaphore;
         private AsyncCaller caller;
         private TimeSpan timeout;
 
@@ -26,7 +29,8 @@ namespace MySoft.IoC
         {
             this.callbackTypes = new Dictionary<string, Type>();
             this.container = container;
-            this.caller = new AsyncCaller(config.MaxCaller, true);
+            this.caller = new AsyncCaller(LocalCacheType.File);
+            this.semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
             this.timeout = TimeSpan.FromSeconds(config.Timeout);
 
             //初始化服务
@@ -65,8 +69,28 @@ namespace MySoft.IoC
                 //获取上下文
                 var context = GetOperationContext(channel, appCaller);
 
-                //异步调用服务
-                return caller.AsyncRun(service, context, reqMsg, timeout);
+                //状态服务同步调用
+                if (reqMsg.ServiceName == typeof(IStatusService).FullName)
+                {
+                    //同步调用服务
+                    return caller.SyncRun(service, context, reqMsg);
+                }
+                else
+                {
+                    //请求一个控制器
+                    semaphore.WaitOne();
+
+                    try
+                    {
+                        //异步调用服务
+                        return caller.AsyncRun(service, context, reqMsg, timeout);
+                    }
+                    finally
+                    {
+                        //释放一个控制器
+                        semaphore.Release();
+                    }
+                }
             }
             catch (Exception ex)
             {
