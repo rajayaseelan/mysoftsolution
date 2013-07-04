@@ -25,6 +25,11 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// Gets the enable cache of the service.
+        /// </summary>
+        public bool EnableCache { get { return true; } }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BaseService"/> class.
         /// </summary>
         /// <param name="serviceName">Name of the service.</param>

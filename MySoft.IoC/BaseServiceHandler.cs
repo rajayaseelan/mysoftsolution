@@ -13,7 +13,6 @@ namespace MySoft.IoC
         private IServiceContainer container;
         private IServiceCall call;
         private IService service;
-        private AsyncCaller caller;
 
         /// <summary>
         /// 实例化BaseServiceHandler
@@ -22,12 +21,11 @@ namespace MySoft.IoC
         /// <param name="call"></param>
         /// <param name="service"></param>
         /// <param name="caller"></param>
-        public BaseServiceHandler(IServiceContainer container, IServiceCall call, IService service, AsyncCaller caller)
+        public BaseServiceHandler(IServiceContainer container, IServiceCall call, IService service)
         {
             this.container = container;
             this.call = call;
             this.service = service;
-            this.caller = caller;
         }
 
         /// <summary>
@@ -56,7 +54,16 @@ namespace MySoft.IoC
                     //反序列化对象
                     var buffer = (resMsg as ResponseBuffer).Buffer;
 
-                    resMsg.Value = IoCHelper.DeserializeObject(buffer);
+                    resMsg = new ResponseMessage
+                    {
+                        TransactionId = resMsg.TransactionId,
+                        ServiceName = resMsg.ServiceName,
+                        MethodName = resMsg.MethodName,
+                        Parameters = resMsg.Parameters,
+                        ElapsedTime = resMsg.ElapsedTime,
+                        Error = resMsg.Error,
+                        Value = IoCHelper.DeserializeObject(buffer)
+                    };
                 }
 
                 //设置耗时时间
@@ -79,21 +86,24 @@ namespace MySoft.IoC
 
             try
             {
-                //写日志开始
-                call.BeginCall(reqMsg);
+                using (var caller = new AsyncCaller(service))
+                {
+                    //写日志开始
+                    call.BeginCall(reqMsg);
 
-                //获取上下文
-                var context = GetOperationContext(reqMsg);
+                    //获取上下文
+                    var context = GetOperationContext(reqMsg);
 
-                //同步调用服务
-                var resMsg = caller.SyncRun(service, context, reqMsg);
+                    //同步调用服务
+                    var resMsg = caller.SyncRun(context, reqMsg);
 
-                elapsedTime = watch.ElapsedMilliseconds;
+                    elapsedTime = watch.ElapsedMilliseconds;
 
-                //写日志结束
-                call.EndCall(reqMsg, resMsg, watch.ElapsedMilliseconds);
+                    //写日志结束
+                    call.EndCall(reqMsg, resMsg, watch.ElapsedMilliseconds);
 
-                return resMsg;
+                    return resMsg;
+                }
             }
             finally
             {

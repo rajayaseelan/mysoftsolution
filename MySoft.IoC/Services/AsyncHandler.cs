@@ -13,17 +13,14 @@ namespace MySoft.IoC.Services
     internal class AsyncHandler
     {
         private IService service;
-        private LocalCacheType cacheType;
 
         /// <summary>
         /// 实例化AsyncHandler
         /// </summary>
         /// <param name="service"></param>
-        /// <param name="cacheType"></param>
-        public AsyncHandler(IService service, LocalCacheType cacheType)
+        public AsyncHandler(IService service)
         {
             this.service = service;
-            this.cacheType = cacheType;
         }
 
         /// <summary>
@@ -120,7 +117,7 @@ namespace MySoft.IoC.Services
             var cacheKey = GetCacheKey(context.Caller);
 
             //获取内存缓存
-            var cacheMsg = CacheHelper<ResponseMessage>.Get(cacheType, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
+            var cacheMsg = CacheHelper<ResponseMessage>.Get(LocalCacheType.File, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
             {
                 var arr = state as ArrayList;
                 var _context = arr[0] as OperationContext;
@@ -160,7 +157,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private bool NeedCacheResult(RequestMessage reqMsg)
         {
-            return reqMsg.EnableCache && reqMsg.CacheTime > 0;
+            return service.EnableCache && reqMsg.EnableCache && reqMsg.CacheTime > 0;
         }
 
         /// <summary>

@@ -85,6 +85,30 @@ namespace MySoft.IoC.Services
             if (resMsg.IsError) return;
 
             var invokeData = resMsg.Value as InvokeData;
+
+            if (invokeData == null && resMsg is ResponseBuffer)
+            {
+                //反序列化对象
+                var buffer = (resMsg as ResponseBuffer).Buffer;
+
+                invokeData = IoCHelper.DeserializeObject(buffer) as InvokeData;
+            }
+
+            //处理参数
+            HandleParameters(resMsg, method, invokeData);
+
+            //处理值
+            HandleValue(resMsg, method, invokeData);
+        }
+
+        /// <summary>
+        /// 处理参数
+        /// </summary>
+        /// <param name="resMsg"></param>
+        /// <param name="method"></param>
+        /// <param name="invokeData"></param>
+        private void HandleParameters(ResponseMessage resMsg, System.Reflection.MethodInfo method, InvokeData invokeData)
+        {
             var pis = method.GetParameters().Where(p => p.ParameterType.IsByRef);
             if (pis.Count() > 0)
             {
@@ -96,28 +120,43 @@ namespace MySoft.IoC.Services
                         foreach (var p in pis)
                         {
                             var type = GetElementType(p.ParameterType);
-                            if (type == typeof(void))
-                            {
-                                resMsg.Parameters[p.Name] = null;
-                            }
-                            else
-                            {
-                                var jsonString = jobject[p.Name].ToString(Formatting.Indented);
-                                var obj = SerializationManager.DeserializeJson(type, jsonString);
-                                resMsg.Parameters[p.Name] = obj;
-                            }
+                            var jsonString = jobject[p.Name].ToString(Formatting.Indented);
+                            var obj = SerializationManager.DeserializeJson(type, jsonString);
+
+                            resMsg.Parameters[p.Name] = obj;
                         }
                     }
                 }
             }
+        }
 
+        /// <summary>
+        /// 处理值
+        /// </summary>
+        /// <param name="resMsg"></param>
+        /// <param name="method"></param>
+        /// <param name="invokeData"></param>
+        private void HandleValue(ResponseMessage resMsg, System.Reflection.MethodInfo method, InvokeData invokeData)
+        {
             //处理返回值
             var returnType = GetElementType(method.ReturnType);
 
             if (returnType == typeof(void))
+            {
                 resMsg.Value = null;
+            }
             else
-                resMsg.Value = SerializationManager.DeserializeJson(returnType, invokeData.Value);
+            {
+                if (resMsg is ResponseBuffer)
+                {
+                    var value = SerializationManager.DeserializeJson(returnType, invokeData.Value);
+                    (resMsg as ResponseBuffer).Buffer = IoCHelper.SerializeObject(value);
+                }
+                else
+                {
+                    resMsg.Value = SerializationManager.DeserializeJson(returnType, invokeData.Value);
+                }
+            }
         }
 
         /// <summary>

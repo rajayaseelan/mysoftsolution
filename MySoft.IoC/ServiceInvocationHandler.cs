@@ -1,7 +1,5 @@
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
-using MySoft.Logger;
 using System;
 using System.Collections.Generic;
 
@@ -25,9 +23,8 @@ namespace MySoft.IoC
         /// <param name="container"></param>
         /// <param name="call"></param>
         /// <param name="service"></param>
-        /// <param name="caller"></param>
-        public ServiceInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IServiceCall call, IService service, AsyncCaller caller)
-            : base(container, call, service, caller)
+        public ServiceInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IServiceCall call, IService service)
+            : base(container, call, service)
         {
             this.config = config;
             this.hostName = DnsHelper.GetHostName();

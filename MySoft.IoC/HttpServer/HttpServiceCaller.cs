@@ -1,7 +1,5 @@
-﻿using MySoft.Cache;
-using MySoft.IoC.Configuration;
+﻿using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services;
 using System;
 using System.Collections;
 using System.Linq;
@@ -16,7 +14,6 @@ namespace MySoft.IoC.HttpServer
         private IServiceContainer container;
         private CastleServiceConfiguration config;
         private HttpCallerInfoCollection callers;
-        private AsyncCaller caller;
 
         /// <summary>
         /// HttpServiceCaller初始化
@@ -27,7 +24,6 @@ namespace MySoft.IoC.HttpServer
         {
             this.config = config;
             this.container = container;
-            this.caller = new AsyncCaller(LocalCacheType.Memory);
             this.callers = new HttpCallerInfoCollection();
         }
 
@@ -195,7 +191,7 @@ namespace MySoft.IoC.HttpServer
                     EnableCache = true
                 };
 
-                var invoke = new InvokeCaller(conf, this.container, null, service, this.caller);
+                var invoke = new InvokeCaller(conf, this.container, null, service);
 
                 //定义响应数据体
                 var invokeData = invoke.InvokeResponse(message);

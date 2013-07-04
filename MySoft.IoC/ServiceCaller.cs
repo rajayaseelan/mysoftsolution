@@ -1,5 +1,4 @@
-﻿using MySoft.Cache;
-using MySoft.IoC.Communication.Scs.Server;
+﻿using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
@@ -17,7 +16,6 @@ namespace MySoft.IoC
         private readonly IServiceContainer container;
         private IDictionary<string, Type> callbackTypes;
         private Semaphore semaphore;
-        private AsyncCaller caller;
         private TimeSpan timeout;
 
         /// <summary>
@@ -29,7 +27,6 @@ namespace MySoft.IoC
         {
             this.callbackTypes = new Dictionary<string, Type>();
             this.container = container;
-            this.caller = new AsyncCaller(LocalCacheType.File);
             this.semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
             this.timeout = TimeSpan.FromSeconds(config.Timeout);
 
@@ -61,41 +58,32 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseMessage HandleResponse(IScsServerClient channel, AppCaller appCaller, RequestMessage reqMsg)
         {
+            //请求一个控制器
+            semaphore.WaitOne();
+
             try
             {
                 //解析服务
                 var service = ParseService(appCaller);
 
-                //获取上下文
-                var context = GetOperationContext(channel, appCaller);
-
-                //状态服务同步调用
-                if (reqMsg.ServiceName == typeof(IStatusService).FullName)
+                using (var caller = new AsyncCaller(service))
                 {
-                    //同步调用服务
-                    return caller.SyncRun(service, context, reqMsg);
-                }
-                else
-                {
-                    //请求一个控制器
-                    semaphore.WaitOne();
+                    //获取上下文
+                    var context = GetOperationContext(channel, appCaller);
 
-                    try
-                    {
-                        //异步调用服务
-                        return caller.AsyncRun(service, context, reqMsg, timeout);
-                    }
-                    finally
-                    {
-                        //释放一个控制器
-                        semaphore.Release();
-                    }
+                    //异步调用服务
+                    return caller.AsyncRun(context, reqMsg, timeout);
                 }
             }
             catch (Exception ex)
             {
                 //获取异常响应信息
                 return IoCHelper.GetResponse(reqMsg, ex);
+            }
+            finally
+            {
+                //释放一个控制器
+                semaphore.Release();
             }
         }
 

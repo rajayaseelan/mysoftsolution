@@ -1,5 +1,4 @@
-﻿using MySoft.IoC.Communication.Scs.Communication;
-using MySoft.IoC.Communication.Scs.Communication.Messages;
+﻿using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using System;

@@ -190,6 +190,11 @@ namespace MySoft.IoC.Services
             }
         }
 
+        /// <summary>
+        /// Gets the enable cache of the service.
+        /// </summary>
+        public bool EnableCache { get { return false; } }
+
         #endregion
     }
 }

@@ -8,6 +8,10 @@ namespace MySoft.IoC
     public interface IService
     {
         /// <summary>
+        /// Gets the enable cache of the service.
+        /// </summary>
+        bool EnableCache { get; }
+        /// <summary>
         /// Gets the name of the service.
         /// </summary>
         /// <value>The name of the service.</value>

@@ -24,7 +24,6 @@ namespace MySoft.IoC
         private CastleFactoryConfiguration config;
         private IServiceContainer container;
         private IDictionary<string, IService> proxies;
-        private AsyncCaller caller;
         private IServiceCall call;
 
         /// <summary>
@@ -41,7 +40,6 @@ namespace MySoft.IoC
         {
             this.config = config;
             this.container = new SimpleServiceContainer(config.Type);
-            this.caller = new AsyncCaller(LocalCacheType.Memory);
 
             container.OnLog += (log, type) =>
             {
@@ -335,7 +333,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         private IServiceInterfaceType CreateProxyHandler<IServiceInterfaceType>(IService proxy, Type serviceType)
         {
-            var handler = new ServiceInvocationHandler<IServiceInterfaceType>(this.config, this.container, this.call, proxy, this.caller);
+            var handler = new ServiceInvocationHandler<IServiceInterfaceType>(this.config, this.container, this.call, proxy);
             return (IServiceInterfaceType)ProxyFactory.GetInstance().Create(handler, serviceType, true);
         }
 
@@ -496,7 +494,7 @@ namespace MySoft.IoC
             }
 
             //调用分布式服务
-            var caller = new InvokeCaller(this.config, this.container, this.call, service, this.caller);
+            var caller = new InvokeCaller(this.config, this.container, this.call, service);
 
             //返回响应信息
             return caller.InvokeResponse(message);
