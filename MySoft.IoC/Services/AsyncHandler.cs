@@ -130,7 +130,7 @@ namespace MySoft.IoC.Services
                 {
                     resMsg = new ResponseBuffer
                     {
-                        TransactionId = _reqMsg.TransactionId,
+                        TransactionId = resMsg.TransactionId,
                         ServiceName = resMsg.ServiceName,
                         MethodName = resMsg.MethodName,
                         Parameters = resMsg.Parameters,
