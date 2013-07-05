@@ -20,7 +20,6 @@ namespace MySoft.IoC
         /// <param name="container"></param>
         /// <param name="call"></param>
         /// <param name="service"></param>
-        /// <param name="caller"></param>
         public BaseServiceHandler(IServiceContainer container, IServiceCall call, IService service)
         {
             this.container = container;

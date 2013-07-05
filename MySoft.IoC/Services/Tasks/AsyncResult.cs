@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Threading;
 
 namespace MySoft.IoC.Services.Tasks
 {
     internal class AsyncResult<TResult> : AsyncResultNoResult
     {
+        // Current thread on async result.
+        public Thread CurrentThread { get; set; }
+
         // Field set when operation completes
         private TResult m_result = default(TResult);
 

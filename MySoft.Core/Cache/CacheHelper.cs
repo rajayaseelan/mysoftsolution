@@ -206,89 +206,41 @@ namespace MySoft.Cache
         /// <returns></returns>
         public static T Get(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
         {
-            T cacheItem = default(T);
+            T cacheObject = default(T);
 
             lock (GetSyncRoot(key))
             {
                 //从内存获取
-                var cacheObj = CacheHelper.Get<CacheObject<T>>(key);
+                cacheObject = CacheHelper.Get<T>(key);
 
-                if (cacheObj == null && type == LocalCacheType.File)
+                if (cacheObject == null && type == LocalCacheType.File)
                 {
                     //从文件获取缓存
-                    cacheObj = GetFileCacheItem(key, timeout);
+                    var cacheObj = GetCache(GetFilePath(key));
+
+                    if (cacheObj != null && cacheObj.ExpiredTime > DateTime.Now)
+                    {
+                        cacheObject = cacheObj.Value;
+
+                        //默认缓存60秒
+                        CacheHelper.Insert(key, cacheObject, (int)timeout.TotalSeconds);
+                    }
                 }
 
-                if (cacheObj == null)
+                //判断是否过期
+                if (cacheObject == null)
                 {
                     //获取更新对象
-                    cacheItem = GetUpdateObject(type, key, timeout, func, state, pred);
-                }
-                else
-                {
-                    //判断是否过期
-                    if (cacheObj.ExpiredTime < DateTime.Now)
-                    {
-                        //延长过期时间
-                        cacheObj.ExpiredTime = DateTime.Now.Add(timeout);
-
-                        UpdateCacheAsync(type, key, timeout, func, state, pred);
-                    }
-
-                    cacheItem = cacheObj.Value;
+                    cacheObject = GetUpdateObject(type, key, timeout, func, state, pred);
                 }
             }
 
-            return cacheItem;
+            return cacheObject;
         }
 
         #endregion
 
         #region 私有方法
-
-        /// <summary>
-        /// 异步更新缓存
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="key"></param>
-        /// <param name="timeout"></param>
-        /// <param name="func"></param>
-        /// <param name="state"></param>
-        /// <param name="pred"></param>
-        private static void UpdateCacheAsync(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
-        {
-            func.BeginInvoke(state, ar =>
-            {
-                var arr = ar.AsyncState as ArrayList;
-
-                try
-                {
-                    var _func = arr[0] as Func<object, T>;
-                    var _type = (LocalCacheType)arr[1];
-                    var _key = Convert.ToString(arr[2]);
-                    var _timeout = (TimeSpan)arr[3];
-                    var _pred = arr[4] as Predicate<T>;
-
-                    var internalObject = _func.EndInvoke(ar);
-
-#if DEBUG
-                    Console.WriteLine("[{0}][{1}][{2}][{3}]", DateTime.Now, _type, _timeout, _key);
-#endif
-
-                    //更新缓存项
-                    UpdateCacheSync(internalObject, _type, _key, _timeout, _pred);
-                }
-                catch (Exception ex)
-                {
-                    SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
-                }
-                finally
-                {
-                    //关闭句柄
-                    ar.AsyncWaitHandle.Close();
-                }
-            }, new ArrayList { func, type, key, timeout, pred });
-        }
 
         /// <summary>
         /// 获取更新对象
@@ -306,6 +258,10 @@ namespace MySoft.Cache
 
             try
             {
+#if DEBUG
+                Console.WriteLine("[{0}][{1}][{2}][{3}]", DateTime.Now, type, timeout, key);
+#endif
+
                 internalObject = func(state);
 
                 //更新缓存项
@@ -352,34 +308,6 @@ namespace MySoft.Cache
         }
 
         /// <summary>
-        /// 获取缓存
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="timeout"></param>
-        /// <returns></returns>
-        private static CacheObject<T> GetFileCacheItem(string key, TimeSpan timeout)
-        {
-            try
-            {
-                var cacheObj = GetCache(GetFilePath(key));
-
-                if (cacheObj != null)
-                {
-                    //默认缓存60秒
-                    CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
-                }
-
-                return cacheObj;
-            }
-            catch (Exception ex)
-            {
-                SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// 插入缓存
         /// </summary>
         /// <param name="type"></param>
@@ -388,19 +316,19 @@ namespace MySoft.Cache
         /// <param name="timeout"></param>
         private static void InsertCacheItem(LocalCacheType type, string key, T internalObject, TimeSpan timeout)
         {
-            var cacheObj = new CacheObject<T>
-            {
-                Value = internalObject,
-                ExpiredTime = DateTime.Now.Add(timeout)
-            };
+            //插入内存
+            CacheHelper.Insert(key, internalObject, (int)timeout.TotalSeconds);
 
             if (type == LocalCacheType.File)
             {
-                //插入内存
-                CacheHelper.Insert(key, cacheObj, (int)timeout.TotalSeconds);
-
                 try
                 {
+                    var cacheObj = new CacheObject<T>
+                    {
+                        Value = internalObject,
+                        ExpiredTime = DateTime.Now.Add(timeout)
+                    };
+
                     var buffer = SerializationManager.SerializeBin(cacheObj);
 
                     //获取文件路径
@@ -416,11 +344,6 @@ namespace MySoft.Cache
                     SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
                 }
             }
-            else
-            {
-                //插入内存
-                CacheHelper.Insert(key, cacheObj, (int)TimeSpan.FromDays(1).TotalSeconds);
-            }
         }
 
         /// <summary>
@@ -430,7 +353,7 @@ namespace MySoft.Cache
         /// <returns></returns>
         private static string GetFilePath(string key)
         {
-            var arr = key.Split('$');
+            var arr = key.Split(new[] { "_$$_" }, StringSplitOptions.RemoveEmptyEntries);
 
             var fileName = arr.Last();
             var rootPath = string.Join("\\", arr.Where(p => p != fileName).ToArray());

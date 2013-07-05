@@ -21,12 +21,12 @@ namespace MySoft.IoC
         /// <summary>
         /// The default client call timeout number. 
         /// </summary>
-        public const int DEFAULT_CLIENT_TIMEOUT = 30; //30秒
+        public const int DEFAULT_CLIENT_TIMEOUT = 60; //60秒
 
         /// <summary>
         /// The default server call timeout number. 
         /// </summary>
-        public const int DEFAULT_SERVER_TIMEOUT = 15; //15秒
+        public const int DEFAULT_SERVER_TIMEOUT = 30; //30秒
 
         /// <summary>
         /// The default pool number.

@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -420,21 +421,7 @@ namespace MySoft.IoC
             }
 
             //异步调用
-            var func = new Action<CallEventArgs>(AsyncCounter);
-
-            func.BeginInvoke(callArgs, ar =>
-            {
-                try
-                {
-                    var _func = ar.AsyncState as Action<CallEventArgs>;
-                    _func.EndInvoke(ar);
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    ar.AsyncWaitHandle.Close();
-                }
-            }, func);
+            ThreadPool.QueueUserWorkItem(AsyncCounter, callArgs);
         }
 
         /// <summary>
@@ -464,11 +451,13 @@ namespace MySoft.IoC
         /// <summary>
         /// 同步调用方法
         /// </summary>
-        /// <param name="callArgs"></param>
-        private void AsyncCounter(CallEventArgs callArgs)
+        /// <param name="state"></param>
+        private void AsyncCounter(object state)
         {
             try
             {
+                var callArgs = state as CallEventArgs;
+
                 //响应消息
                 MessageCenter.Instance.Notify(callArgs);
 

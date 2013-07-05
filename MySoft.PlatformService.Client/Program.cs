@@ -91,6 +91,18 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            var guid = Guid.NewGuid();
+
+            //var aa = CoreHelper.GetTypeDefaultValue(typeof(void));
+
+            //var a = SerializationManager.DeserializeJson(typeof(void), "null");
+
+            //var dict = new Dictionary<string, string>() { { "aa", "1" }, { "bb", "2" } };
+            //var json = SerializationManager.SerializeJson(dict);
+
+            //Console.WriteLine(json);
+            //Console.ReadLine();
+
             #region aaa
             //var list = new List<User>();
             //list.AddRange(new User[] { new User { }, new User { } });
@@ -382,7 +394,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -526,15 +538,14 @@ namespace MySoft.PlatformService.Client
 
             while (true)
             {
-                var node = ServerNode.Parse("127.0.0.1", 9982);
-                node.Timeout = 5;
-                node.MaxPool = 1000;
-
-                var service = CastleFactory.Create().GetChannel<IUserService>(node);
+                var service = CastleFactory.Create().GetChannel<IUserService>();
 
                 try
                 {
                     Stopwatch watch = Stopwatch.StartNew();
+
+                    var users = service.GetUsers();
+                    //users.Clear();
 
                     //int length = 1;
                     //UserInfo user;
@@ -547,7 +558,7 @@ namespace MySoft.PlatformService.Client
                     //UserInfo info = service.GetUserInfo("maoyong_" + Guid.NewGuid(), out userid, out guid, out user);
 
                     //int length;
-                    int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1);
+                    // int count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 1000);
                     ////var value = service.GetUsersString(count, out length);
 
                     //var p = SerializationManager.SerializeJson(new { id = count });
@@ -562,7 +573,7 @@ namespace MySoft.PlatformService.Client
 
                     ////var a = count.ToString().PadRight(1000000, '#');
 
-                    var value = service.GetUser(count);
+                    //var value = service.GetUser(count);
 
                     //var value = service.GetUsers();
 
@@ -575,7 +586,16 @@ namespace MySoft.PlatformService.Client
 
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Name.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine("¡¾" + counter + "¡¿times => " + users.Count + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+
+                    //if (value != null)
+                    //{
+                    //    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Name.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    //}
+                    //else
+                    //{
+                    //    Console.WriteLine("¡¾" + counter + "¡¿times => timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    //}
 
                     //value.Clear();
 

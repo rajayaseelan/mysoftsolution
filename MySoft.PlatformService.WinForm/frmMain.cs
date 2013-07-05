@@ -1,13 +1,14 @@
-﻿using System;
+﻿using ListControls;
+using MySoft.IoC;
+using MySoft.IoC.Messages;
+using MySoft.Logger;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
-using ListControls;
-using MySoft.IoC;
-using MySoft.IoC.Messages;
-using MySoft.Logger;
 
 namespace MySoft.PlatformService.WinForm
 {
@@ -136,6 +137,8 @@ namespace MySoft.PlatformService.WinForm
                         Convert.ToInt32(numericUpDown3.Value), Convert.ToInt32(numericUpDown5.Value),
                         Convert.ToInt32(numericUpDown1.Value), Convert.ToInt32(numericUpDown4.Value), checkBox4.Checked);
 
+                    listener.Context = SynchronizationContext.Current;
+
                     service = CastleFactory.Create().GetChannel<IStatusService>(defaultNode, listener);
 
                     //var services = service.GetServiceList();
@@ -155,6 +158,7 @@ namespace MySoft.PlatformService.WinForm
                     {
                         service.Subscribe(options);
 
+                        tabControl1.Tag = true;
                         button1.Text = "停止监控";
                         button1.Tag = label1.Text;
                         label1.Text = "正在进行监控...";
@@ -200,6 +204,7 @@ namespace MySoft.PlatformService.WinForm
                     checkedListBox1.Items.Clear();
                     checkedListBox2.Items.Clear();
 
+                    tabControl1.Tag = false;
                     label1.Text = button1.Tag.ToString();
                     button1.Text = "开始监控";
                     button1.Tag = null;
@@ -446,7 +451,7 @@ namespace MySoft.PlatformService.WinForm
         void TimeoutItems_OnItemInserted(int index)
         {
             //统计
-            var ar = this.BeginInvoke(new Action(() =>
+            this.Invoke(new Action(() =>
             {
                 var timeOuts = new List<CallTimeout>();
                 var totalCount = Convert.ToInt32(numericUpDown6.Value);
@@ -509,8 +514,6 @@ namespace MySoft.PlatformService.WinForm
 
                 listTotal.Invalidate();
             }));
-
-            this.EndInvoke(ar);
         }
 
         void listError_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -760,7 +763,7 @@ namespace MySoft.PlatformService.WinForm
                 //处理自动完成列表
                 autoCompleteTextbox1.AutoCompleteList = methods.Select(p => p.Key).ToList();
 
-                this.Text = string.Format("分布式服务监控 v1.0 【当前服务器节点({0}:{1}) 服务数:{2} 接口数:{3}】",
+                this.Text = string.Format("分布式服务监控 v2.0 【当前服务器节点({0}:{1}) 服务数:{2} 接口数:{3}】",
                     node.IP, node.Port, services.Count, services.Sum(p => p.Methods.Count));
             }
             catch (Exception ex)
@@ -1286,239 +1289,5 @@ namespace MySoft.PlatformService.WinForm
 
             return true;
         }
-    }
-
-    public class StatusListener : IStatusListener
-    {
-        private TabControl control;
-        private MessageListBox box1;
-        private MessageListBox box2;
-        private MessageListBox box3;
-        private int rowCount;
-        private int outCount;
-        private int warningTimeout;
-        private int timeout;
-        private bool writeLog;
-        private readonly object _syncLock;
-
-        public StatusListener(TabControl control, MessageListBox box1, MessageListBox box2, MessageListBox box3, int rowCount, int outCount, int warningTimeout, int timeout, bool writeLog)
-        {
-            this.control = control;
-            this.box1 = box1;
-            this.box2 = box2;
-            this.box3 = box3;
-            this.rowCount = rowCount;
-            this.outCount = outCount;
-            this.warningTimeout = warningTimeout;
-            this.timeout = timeout;
-            this.writeLog = writeLog;
-
-            this._syncLock = new object();
-        }
-
-        #region IStatusListener 成员
-
-        //服务端定时状态信息
-        public void Push(ServerStatus serverStatus) { }
-
-        public void Push(ConnectInfo connectInfo)
-        {
-            if (connectInfo == null) return;
-
-            lock (_syncLock)
-            {
-                var ar = box1.BeginInvoke(new Action(() =>
-                {
-                    if (box1.Items.Count >= rowCount)
-                    {
-                        box1.Items.RemoveAt(box1.Items.Count - 1);
-                    }
-
-                    var msgType = ParseMessageType.Info;
-                    if (!connectInfo.Connected)
-                    {
-                        msgType = ParseMessageType.Error;
-                    }
-
-                    box1.Items.Insert(0,
-                        new ParseMessageEventArgs
-                        {
-                            MessageType = msgType,
-                            LineHeader = string.Format("【{0}】 {1}:{2} {3}", connectInfo.ConnectTime, connectInfo.IPAddress, connectInfo.Port, connectInfo.Connected ? "连接" : "断开"),
-                            MessageText = string.Format("{0}:{1} {4} {2}:{3}", connectInfo.IPAddress, connectInfo.Port, connectInfo.ServerIPAddress, connectInfo.ServerPort, connectInfo.Connected ? "Connect to" : "Disconnect from"),
-                            Source = connectInfo
-                        });
-
-                    box1.Invalidate();
-                    control.TabPages[1].Text = "连接信息(" + box1.Items.Count + ")";
-
-                    if (writeLog)
-                    {
-                        var item = box1.Items[0];
-                        var message = string.Format("{0}\r\n{1}", item.LineHeader, item.MessageText);
-                        SimpleLog.Instance.WriteLogForDir("ConnectInfo", message);
-                    }
-                }));
-
-                try
-                {
-                    box1.EndInvoke(ar);
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    ar.AsyncWaitHandle.Close();
-                }
-            }
-        }
-
-        public void Change(string ipAddress, int port, AppClient appClient)
-        {
-            if (appClient == null) return;
-
-            lock (_syncLock)
-            {
-                var ar = box1.BeginInvoke(new Action(() =>
-                {
-                    for (int i = 0; i < box1.Items.Count; i++)
-                    {
-                        var args = box1.Items[i];
-                        if (args.Source == null) continue;
-
-                        var connect = args.Source as ConnectInfo;
-                        if (connect.AppName == null && connect.IPAddress == ipAddress && connect.Port == port)
-                        {
-                            connect.IPAddress = appClient.IPAddress;
-                            connect.AppName = appClient.AppName;
-                            connect.HostName = appClient.HostName;
-
-                            args.LineHeader += string.Format("  【{0} <=> {1}】", appClient.AppName, appClient.HostName);
-                            break;
-                        }
-                    }
-
-                    box1.Invalidate();
-                }));
-
-                try
-                {
-                    box1.EndInvoke(ar);
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    ar.AsyncWaitHandle.Close();
-                }
-            }
-        }
-
-        public void Push(CallTimeout callTimeout)
-        {
-            if (callTimeout == null) return;
-
-            lock (_syncLock)
-            {
-                var ar = box2.BeginInvoke(new Action(() =>
-                {
-                    if (box2.Items.Count >= rowCount)
-                    {
-                        box2.Items.RemoveAt(box2.Items.Count - 1);
-                    }
-
-                    var msgType = ParseMessageType.None;
-                    if (callTimeout.ElapsedTime >= timeout)
-                        msgType = ParseMessageType.Error;
-                    else if (callTimeout.ElapsedTime >= warningTimeout)
-                        msgType = ParseMessageType.Warning;
-                    else if (callTimeout.Count >= outCount)
-                        msgType = ParseMessageType.Question;
-
-                    box2.Items.Insert(0,
-                        new ParseMessageEventArgs
-                        {
-                            MessageType = msgType,
-                            LineHeader = string.Format("【{0}】 [{3}] Timeout => ({1} rows)：{2} ms.", callTimeout.Caller.CallTime, callTimeout.Count, callTimeout.ElapsedTime, callTimeout.Caller.AppName),
-                            MessageText = string.Format("{0},{1}", callTimeout.Caller.ServiceName, callTimeout.Caller.MethodName),
-                            // + "\r\n" + callTimeout.Caller.Parameters
-                            Source = callTimeout
-                        });
-
-                    box2.Invalidate();
-                    control.TabPages[2].Text = "警告信息(" + box2.Items.Count + ")";
-
-                    if (writeLog && (msgType == ParseMessageType.Error || callTimeout.Count >= outCount))
-                    {
-                        var item = box2.Items[0];
-                        var message = string.Format("{0}\r\n{1}\r\n{2}", item.LineHeader, item.MessageText,
-                            (item.Source as CallTimeout).Caller.Parameters);
-
-                        if (callTimeout.Count >= outCount)
-                            SimpleLog.Instance.WriteLogForDir("CallCount", message);
-
-                        if (msgType == ParseMessageType.Error)
-                            SimpleLog.Instance.WriteLogForDir("CallTimeout", message);
-                    }
-                }));
-
-                try
-                {
-                    box2.EndInvoke(ar);
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    ar.AsyncWaitHandle.Close();
-                }
-            }
-        }
-
-        public void Push(CallError callError)
-        {
-            if (callError == null) return;
-
-            lock (_syncLock)
-            {
-                var ar = box3.BeginInvoke(new Action(() =>
-                {
-                    if (box3.Items.Count >= rowCount)
-                    {
-                        box3.Items.RemoveAt(box3.Items.Count - 1);
-                    }
-
-                    box3.Items.Insert(0,
-                        new ParseMessageEventArgs
-                        {
-                            MessageType = ParseMessageType.Error,
-                            LineHeader = string.Format("【{0}】 [{2}] Error => {1}", callError.Caller.CallTime, callError.Message, callError.Caller.AppName),
-                            MessageText = string.Format("{0},{1}", callError.Caller.ServiceName, callError.Caller.MethodName),
-                            //+ "\r\n" + callError.Caller.Parameters
-                            Source = callError
-                        });
-
-                    box3.Invalidate();
-                    control.TabPages[3].Text = "异常信息(" + box3.Items.Count + ")";
-
-                    if (writeLog)
-                    {
-                        var item = box3.Items[0];
-                        var message = string.Format("{0}\r\n{1}\r\n{2}\r\n{3}", item.LineHeader, item.MessageText,
-                            (item.Source as CallError).Caller.Parameters, (item.Source as CallError).Error);
-                        SimpleLog.Instance.WriteLogForDir("CallError", message);
-                    }
-                }));
-
-                try
-                {
-                    box3.EndInvoke(ar);
-                }
-                catch (Exception ex) { }
-                finally
-                {
-                    ar.AsyncWaitHandle.Close();
-                }
-            }
-        }
-
-        #endregion
     }
 }

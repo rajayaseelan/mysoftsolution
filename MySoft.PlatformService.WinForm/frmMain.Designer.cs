@@ -40,6 +40,10 @@
             this.splitContainer4 = new System.Windows.Forms.SplitContainer();
             this.splitContainer6 = new System.Windows.Forms.SplitContainer();
             this.listAssembly = new ListControls.MessageListBox();
+            this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.刷新服务RToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.刷新WebAPI服务AToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listService = new ListControls.MessageListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.订阅此服务SToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -99,6 +103,8 @@
             this.lblError = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.tabPage6 = new System.Windows.Forms.TabPage();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -118,12 +124,6 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label12 = new System.Windows.Forms.Label();
             this.numericUpDown6 = new System.Windows.Forms.NumericUpDown();
-            this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.刷新服务RToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.刷新WebAPI服务AToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.tabPage6 = new System.Windows.Forms.TabPage();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage0.SuspendLayout();
@@ -133,6 +133,7 @@
             this.splitContainer6.Panel1.SuspendLayout();
             this.splitContainer6.Panel2.SuspendLayout();
             this.splitContainer6.SuspendLayout();
+            this.contextMenuStrip2.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.splitContainer5.Panel1.SuspendLayout();
             this.splitContainer5.Panel2.SuspendLayout();
@@ -169,7 +170,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown5)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown6)).BeginInit();
-            this.contextMenuStrip2.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -311,6 +311,34 @@
             this.listAssembly.Size = new System.Drawing.Size(302, 153);
             this.listAssembly.TabIndex = 12;
             // 
+            // contextMenuStrip2
+            // 
+            this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.刷新服务RToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.刷新WebAPI服务AToolStripMenuItem});
+            this.contextMenuStrip2.Name = "contextMenuStrip2";
+            this.contextMenuStrip2.Size = new System.Drawing.Size(185, 54);
+            // 
+            // 刷新服务RToolStripMenuItem
+            // 
+            this.刷新服务RToolStripMenuItem.Name = "刷新服务RToolStripMenuItem";
+            this.刷新服务RToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.刷新服务RToolStripMenuItem.Text = "刷新分布式服务(&R)";
+            this.刷新服务RToolStripMenuItem.Click += new System.EventHandler(this.刷新服务RToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(181, 6);
+            // 
+            // 刷新WebAPI服务AToolStripMenuItem
+            // 
+            this.刷新WebAPI服务AToolStripMenuItem.Name = "刷新WebAPI服务AToolStripMenuItem";
+            this.刷新WebAPI服务AToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.刷新WebAPI服务AToolStripMenuItem.Text = "刷新WebAPI服务(&A)";
+            this.刷新WebAPI服务AToolStripMenuItem.Click += new System.EventHandler(this.刷新WebAPI服务AToolStripMenuItem_Click);
+            // 
             // listService
             // 
             this.listService.AutoScroll = true;
@@ -331,19 +359,19 @@
             this.订阅此服务SToolStripMenuItem,
             this.退订此服务UToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(154, 48);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(152, 48);
             // 
             // 订阅此服务SToolStripMenuItem
             // 
             this.订阅此服务SToolStripMenuItem.Name = "订阅此服务SToolStripMenuItem";
-            this.订阅此服务SToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.订阅此服务SToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.订阅此服务SToolStripMenuItem.Text = "订阅此服务(&S)";
             this.订阅此服务SToolStripMenuItem.Click += new System.EventHandler(this.订阅此服务SToolStripMenuItem_Click);
             // 
             // 退订此服务UToolStripMenuItem
             // 
             this.退订此服务UToolStripMenuItem.Name = "退订此服务UToolStripMenuItem";
-            this.退订此服务UToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.退订此服务UToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.退订此服务UToolStripMenuItem.Text = "退订此服务(&U)";
             this.退订此服务UToolStripMenuItem.Click += new System.EventHandler(this.退订此服务UToolStripMenuItem_Click);
             // 
@@ -507,31 +535,31 @@
             this.全选AToolStripMenuItem,
             this.退订此应用UToolStripMenuItem2});
             this.contextMenuStrip5.Name = "contextMenuStrip5";
-            this.contextMenuStrip5.Size = new System.Drawing.Size(154, 76);
+            this.contextMenuStrip5.Size = new System.Drawing.Size(152, 76);
             // 
             // 添加应用AToolStripMenuItem
             // 
             this.添加应用AToolStripMenuItem.Name = "添加应用AToolStripMenuItem";
-            this.添加应用AToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.添加应用AToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.添加应用AToolStripMenuItem.Text = "添加应用(&A)";
             this.添加应用AToolStripMenuItem.Click += new System.EventHandler(this.添加应用AToolStripMenuItem_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(150, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(148, 6);
             // 
             // 全选AToolStripMenuItem
             // 
             this.全选AToolStripMenuItem.Name = "全选AToolStripMenuItem";
-            this.全选AToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.全选AToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.全选AToolStripMenuItem.Text = "全选(&A)";
             this.全选AToolStripMenuItem.Click += new System.EventHandler(this.全选AToolStripMenuItem_Click);
             // 
             // 退订此应用UToolStripMenuItem2
             // 
             this.退订此应用UToolStripMenuItem2.Name = "退订此应用UToolStripMenuItem2";
-            this.退订此应用UToolStripMenuItem2.Size = new System.Drawing.Size(153, 22);
+            this.退订此应用UToolStripMenuItem2.Size = new System.Drawing.Size(151, 22);
             this.退订此应用UToolStripMenuItem2.Text = "退订此应用(&U)";
             this.退订此应用UToolStripMenuItem2.Click += new System.EventHandler(this.退订此应用UToolStripMenuItem2_Click);
             // 
@@ -552,19 +580,19 @@
             this.toolStripMenuItem1,
             this.toolStripMenuItem2});
             this.contextMenuStrip6.Name = "contextMenuStrip5";
-            this.contextMenuStrip6.Size = new System.Drawing.Size(154, 48);
+            this.contextMenuStrip6.Size = new System.Drawing.Size(152, 48);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(151, 22);
             this.toolStripMenuItem1.Text = "全选(&A)";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(153, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(151, 22);
             this.toolStripMenuItem2.Text = "退订此服务(&U)";
             this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
@@ -651,50 +679,50 @@
             this.订阅此服务SToolStripMenuItem1,
             this.退订此服务UToolStripMenuItem1});
             this.contextMenuStrip3.Name = "contextMenuStrip3";
-            this.contextMenuStrip3.Size = new System.Drawing.Size(154, 126);
+            this.contextMenuStrip3.Size = new System.Drawing.Size(152, 126);
             // 
             // 调用此服务CToolStripMenuItem
             // 
             this.调用此服务CToolStripMenuItem.Name = "调用此服务CToolStripMenuItem";
-            this.调用此服务CToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.调用此服务CToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.调用此服务CToolStripMenuItem.Text = "调用此服务(&C)";
             this.调用此服务CToolStripMenuItem.Click += new System.EventHandler(this.调用此服务CToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(150, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(148, 6);
             // 
             // 订阅此应用SToolStripMenuItem
             // 
             this.订阅此应用SToolStripMenuItem.Name = "订阅此应用SToolStripMenuItem";
-            this.订阅此应用SToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.订阅此应用SToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.订阅此应用SToolStripMenuItem.Text = "订阅此应用(&S)";
             this.订阅此应用SToolStripMenuItem.Click += new System.EventHandler(this.订阅此应用SToolStripMenuItem_Click);
             // 
             // 退订此应用UToolStripMenuItem
             // 
             this.退订此应用UToolStripMenuItem.Name = "退订此应用UToolStripMenuItem";
-            this.退订此应用UToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.退订此应用UToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.退订此应用UToolStripMenuItem.Text = "退订此应用(&U)";
             this.退订此应用UToolStripMenuItem.Click += new System.EventHandler(this.退订此应用UToolStripMenuItem_Click);
             // 
             // toolStripSeparator6
             // 
             this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(150, 6);
+            this.toolStripSeparator6.Size = new System.Drawing.Size(148, 6);
             // 
             // 订阅此服务SToolStripMenuItem1
             // 
             this.订阅此服务SToolStripMenuItem1.Name = "订阅此服务SToolStripMenuItem1";
-            this.订阅此服务SToolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
+            this.订阅此服务SToolStripMenuItem1.Size = new System.Drawing.Size(151, 22);
             this.订阅此服务SToolStripMenuItem1.Text = "订阅此服务(&S)";
             this.订阅此服务SToolStripMenuItem1.Click += new System.EventHandler(this.订阅此服务SToolStripMenuItem1_Click);
             // 
             // 退订此服务UToolStripMenuItem1
             // 
             this.退订此服务UToolStripMenuItem1.Name = "退订此服务UToolStripMenuItem1";
-            this.退订此服务UToolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
+            this.退订此服务UToolStripMenuItem1.Size = new System.Drawing.Size(151, 22);
             this.退订此服务UToolStripMenuItem1.Text = "退订此服务(&U)";
             this.退订此服务UToolStripMenuItem1.Click += new System.EventHandler(this.退订此服务UToolStripMenuItem1_Click);
             // 
@@ -821,50 +849,50 @@
             this.订阅此服务SToolStripMenuItem2,
             this.退订此服务UToolStripMenuItem2});
             this.contextMenuStrip4.Name = "contextMenuStrip4";
-            this.contextMenuStrip4.Size = new System.Drawing.Size(154, 126);
+            this.contextMenuStrip4.Size = new System.Drawing.Size(152, 126);
             // 
             // 调用此服务CToolStripMenuItem1
             // 
             this.调用此服务CToolStripMenuItem1.Name = "调用此服务CToolStripMenuItem1";
-            this.调用此服务CToolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
+            this.调用此服务CToolStripMenuItem1.Size = new System.Drawing.Size(151, 22);
             this.调用此服务CToolStripMenuItem1.Text = "调用此服务(&C)";
             this.调用此服务CToolStripMenuItem1.Click += new System.EventHandler(this.调用此服务CToolStripMenuItem1_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(150, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(148, 6);
             // 
             // 订阅此应用SToolStripMenuItem1
             // 
             this.订阅此应用SToolStripMenuItem1.Name = "订阅此应用SToolStripMenuItem1";
-            this.订阅此应用SToolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
+            this.订阅此应用SToolStripMenuItem1.Size = new System.Drawing.Size(151, 22);
             this.订阅此应用SToolStripMenuItem1.Text = "订阅此应用(&S)";
             this.订阅此应用SToolStripMenuItem1.Click += new System.EventHandler(this.订阅此应用SToolStripMenuItem1_Click);
             // 
             // 退订此应用UToolStripMenuItem1
             // 
             this.退订此应用UToolStripMenuItem1.Name = "退订此应用UToolStripMenuItem1";
-            this.退订此应用UToolStripMenuItem1.Size = new System.Drawing.Size(153, 22);
+            this.退订此应用UToolStripMenuItem1.Size = new System.Drawing.Size(151, 22);
             this.退订此应用UToolStripMenuItem1.Text = "退订此应用(&U)";
             this.退订此应用UToolStripMenuItem1.Click += new System.EventHandler(this.退订此应用UToolStripMenuItem1_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(150, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(148, 6);
             // 
             // 订阅此服务SToolStripMenuItem2
             // 
             this.订阅此服务SToolStripMenuItem2.Name = "订阅此服务SToolStripMenuItem2";
-            this.订阅此服务SToolStripMenuItem2.Size = new System.Drawing.Size(153, 22);
+            this.订阅此服务SToolStripMenuItem2.Size = new System.Drawing.Size(151, 22);
             this.订阅此服务SToolStripMenuItem2.Text = "订阅此服务(&S)";
             this.订阅此服务SToolStripMenuItem2.Click += new System.EventHandler(this.订阅此服务SToolStripMenuItem2_Click);
             // 
             // 退订此服务UToolStripMenuItem2
             // 
             this.退订此服务UToolStripMenuItem2.Name = "退订此服务UToolStripMenuItem2";
-            this.退订此服务UToolStripMenuItem2.Size = new System.Drawing.Size(153, 22);
+            this.退订此服务UToolStripMenuItem2.Size = new System.Drawing.Size(151, 22);
             this.退订此服务UToolStripMenuItem2.Text = "退订此服务(&U)";
             this.退订此服务UToolStripMenuItem2.Click += new System.EventHandler(this.退订此服务UToolStripMenuItem2_Click);
             // 
@@ -916,6 +944,26 @@
             this.tabPage4.TabIndex = 4;
             this.tabPage4.Text = "状态信息";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // tabPage5
+            // 
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(887, 489);
+            this.tabPage5.TabIndex = 5;
+            this.tabPage5.Text = "WebAPI";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // tabPage6
+            // 
+            this.tabPage6.Location = new System.Drawing.Point(4, 22);
+            this.tabPage6.Name = "tabPage6";
+            this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage6.Size = new System.Drawing.Size(887, 489);
+            this.tabPage6.TabIndex = 6;
+            this.tabPage6.Text = "OpenAPI";
+            this.tabPage6.UseVisualStyleBackColor = true;
             // 
             // checkBox1
             // 
@@ -1171,54 +1219,6 @@
             0,
             0});
             // 
-            // contextMenuStrip2
-            // 
-            this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.刷新服务RToolStripMenuItem,
-            this.toolStripSeparator1,
-            this.刷新WebAPI服务AToolStripMenuItem});
-            this.contextMenuStrip2.Name = "contextMenuStrip2";
-            this.contextMenuStrip2.Size = new System.Drawing.Size(177, 54);
-            // 
-            // 刷新服务RToolStripMenuItem
-            // 
-            this.刷新服务RToolStripMenuItem.Name = "刷新服务RToolStripMenuItem";
-            this.刷新服务RToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
-            this.刷新服务RToolStripMenuItem.Text = "刷新分布式服务(&R)";
-            this.刷新服务RToolStripMenuItem.Click += new System.EventHandler(this.刷新服务RToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(173, 6);
-            // 
-            // 刷新WebAPI服务AToolStripMenuItem
-            // 
-            this.刷新WebAPI服务AToolStripMenuItem.Name = "刷新WebAPI服务AToolStripMenuItem";
-            this.刷新WebAPI服务AToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
-            this.刷新WebAPI服务AToolStripMenuItem.Text = "刷新WebAPI服务(&A)";
-            this.刷新WebAPI服务AToolStripMenuItem.Click += new System.EventHandler(this.刷新WebAPI服务AToolStripMenuItem_Click);
-            // 
-            // tabPage5
-            // 
-            this.tabPage5.Location = new System.Drawing.Point(4, 22);
-            this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(887, 489);
-            this.tabPage5.TabIndex = 5;
-            this.tabPage5.Text = "WebAPI";
-            this.tabPage5.UseVisualStyleBackColor = true;
-            // 
-            // tabPage6
-            // 
-            this.tabPage6.Location = new System.Drawing.Point(4, 22);
-            this.tabPage6.Name = "tabPage6";
-            this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage6.Size = new System.Drawing.Size(887, 489);
-            this.tabPage6.TabIndex = 6;
-            this.tabPage6.Text = "OpenAPI";
-            this.tabPage6.UseVisualStyleBackColor = true;
-            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1264,6 +1264,7 @@
             this.splitContainer6.Panel1.ResumeLayout(false);
             this.splitContainer6.Panel2.ResumeLayout(false);
             this.splitContainer6.ResumeLayout(false);
+            this.contextMenuStrip2.ResumeLayout(false);
             this.contextMenuStrip1.ResumeLayout(false);
             this.splitContainer5.Panel1.ResumeLayout(false);
             this.splitContainer5.Panel2.ResumeLayout(false);
@@ -1303,7 +1304,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown5)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown6)).EndInit();
-            this.contextMenuStrip2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

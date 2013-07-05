@@ -327,7 +327,7 @@ namespace MySoft.RESTful
                         result = ret;
 
                         //重新定义一个异常
-                        var error = new Exception(errorMessage, ex);
+                        var error = new Exception(errorMessage, ex.InnerException);
 
                         //记录错误日志
                         SimpleLog.Instance.WriteLogForDir("RESTfulError\\" + kind, error);
@@ -365,6 +365,8 @@ namespace MySoft.RESTful
             //实例化一个结果
             var ret = new RESTfulResult { Code = (int)response.StatusCode };
 
+            Exception innerException = null;
+
             try
             {
                 user = Authorize(token);
@@ -378,10 +380,21 @@ namespace MySoft.RESTful
             {
                 ret.Code = ex.Code;
                 ret.Message = ex.Message;
+
+                innerException = ex.InnerException;
+            }
+            catch (BusinessException ex)
+            {
+                ret.Code = ex.Code;
+                ret.Message = ex.Message;
+
+                innerException = ex.InnerException;
             }
             catch (Exception ex)
             {
                 ret.Message = ErrorHelper.GetInnerException(ex).Message;
+
+                innerException = ex.InnerException;
             }
 
             //未认证写错误日志
@@ -389,7 +402,7 @@ namespace MySoft.RESTful
             {
                 var message = GetMessage(request.Method, ret.Code, ret.Message, kind, method, token.Parameters, token.Values);
 
-                SimpleLog.Instance.WriteLogForDir("AuthError", new AuthorizeException(message));
+                SimpleLog.Instance.WriteLogForDir("AuthError", new Exception(message, innerException));
             }
 
             return ret;
@@ -422,20 +435,30 @@ namespace MySoft.RESTful
             response.StatusCode = HttpStatusCode.BadRequest;
             int code = (int)HttpStatusCode.BadRequest;
 
+            string errorMsg = string.Empty;
+
             //转换状态码
             if (exception is RESTfulException)
             {
                 response.StatusCode = HttpStatusCode.BadRequest;
                 code = (exception as RESTfulException).Code;
+
+                errorMsg = exception.Message;
             }
             else if (exception is BusinessException)
             {
                 response.StatusCode = HttpStatusCode.Forbidden;
                 code = (exception as BusinessException).Code;
+
+                errorMsg = exception.Message;
+            }
+            else
+            {
+                errorMsg = ErrorHelper.GetInnerException(exception).Message;
             }
 
             //设置返回值
-            ret = new RESTfulResult { Code = code, Message = ErrorHelper.GetInnerException(exception).Message };
+            ret = new RESTfulResult { Code = code, Message = errorMsg };
 
             return GetMessage(request.Method, ret.Code, ret.Message, kind, method, nvget, nvpost);
         }
