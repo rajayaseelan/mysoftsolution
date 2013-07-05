@@ -327,7 +327,7 @@ namespace MySoft.RESTful
                         result = ret;
 
                         //重新定义一个异常
-                        var error = new Exception(errorMessage, ex.InnerException);
+                        var error = new Exception(errorMessage, ex);
 
                         //记录错误日志
                         SimpleLog.Instance.WriteLogForDir("RESTfulError\\" + kind, error);
@@ -381,20 +381,20 @@ namespace MySoft.RESTful
                 ret.Code = ex.Code;
                 ret.Message = ex.Message;
 
-                innerException = ex.InnerException;
+                innerException = ex;
             }
             catch (BusinessException ex)
             {
                 ret.Code = ex.Code;
                 ret.Message = ex.Message;
 
-                innerException = ex.InnerException;
+                innerException = ex;
             }
             catch (Exception ex)
             {
                 ret.Message = ErrorHelper.GetInnerException(ex).Message;
 
-                innerException = ex.InnerException;
+                innerException = ex;
             }
 
             //未认证写错误日志
