@@ -37,7 +37,7 @@ namespace MySoft.IoC
         private Type callbackType;
         private IScsServerClient channel;
         private IContainer container;
-        private AppCaller caller;
+        private AppCaller appCaller;
         private object syncRoot = new object();
 
         /// <summary>
@@ -54,8 +54,8 @@ namespace MySoft.IoC
         /// </summary>
         public AppCaller Caller
         {
-            get { return caller; }
-            internal set { caller = value; }
+            get { return appCaller; }
+            internal set { appCaller = value; }
         }
 
         /// <summary>

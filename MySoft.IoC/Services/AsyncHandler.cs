@@ -15,14 +15,17 @@ namespace MySoft.IoC.Services
     internal class AsyncHandler
     {
         private IService service;
+        private ServiceCacheType type;
 
         /// <summary>
         /// 实例化AsyncHandler
         /// </summary>
         /// <param name="service"></param>
-        public AsyncHandler(IService service)
+        /// <param name="type"></param>
+        public AsyncHandler(IService service, ServiceCacheType type)
         {
             this.service = service;
+            this.type = type;
         }
 
         /// <summary>
@@ -171,8 +174,11 @@ namespace MySoft.IoC.Services
             //获取cacheKey
             var cacheKey = GetCacheKey(context.Caller);
 
+            //转换成对应的缓存类型
+            var cacheType = type == ServiceCacheType.Memory ? LocalCacheType.Memory : LocalCacheType.File;
+
             //获取内存缓存
-            var cacheMsg = CacheHelper<ResponseMessage>.Get(LocalCacheType.File, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
+            var cacheMsg = CacheHelper<ResponseMessage>.Get(cacheType, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
             {
                 var arr = state as ArrayList;
                 var _context = arr[0] as OperationContext;
@@ -212,7 +218,9 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private bool NeedCacheResult(RequestMessage reqMsg)
         {
-            return service.EnableCache && reqMsg.EnableCache && reqMsg.CacheTime > 0;
+            if (type == ServiceCacheType.None) return false;
+
+            return reqMsg.EnableCache && reqMsg.CacheTime > 0;
         }
 
         /// <summary>
@@ -232,18 +240,18 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取cacheKey
         /// </summary>
-        /// <param name="caller"></param>
+        /// <param name="appCaller"></param>
         /// <returns></returns>
-        private string GetCacheKey(AppCaller caller)
+        private string GetCacheKey(AppCaller appCaller)
         {
-            var cacheKey = caller.Parameters.ToLower();
+            var cacheKey = appCaller.Parameters.ToLower();
 
             cacheKey = cacheKey.Replace("\r\n", "").Replace("\t", "").Replace(" ", "");
 
             //对Key进行组装
-            var methodName = caller.MethodName.Substring(caller.MethodName.IndexOf(' ') + 1);
+            var methodName = appCaller.MethodName.Substring(appCaller.MethodName.IndexOf(' ') + 1);
 
-            return string.Join("_$$_", new[] { caller.ServiceName, methodName, cacheKey });
+            return string.Join("_$$_", new[] { appCaller.ServiceName, methodName, cacheKey });
         }
     }
 }

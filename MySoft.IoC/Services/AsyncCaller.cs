@@ -1,4 +1,5 @@
-﻿using MySoft.IoC.Messages;
+﻿using MySoft.Cache;
+using MySoft.IoC.Messages;
 using System;
 
 namespace MySoft.IoC.Services
@@ -14,9 +15,10 @@ namespace MySoft.IoC.Services
         /// 实例化AsyncCaller
         /// </summary>
         /// <param name="service"></param>
-        public AsyncCaller(IService service)
+        /// <param name="type"></param>
+        public AsyncCaller(IService service, ServiceCacheType type)
         {
-            this.handler = new AsyncHandler(service);
+            this.handler = new AsyncHandler(service, type);
         }
 
         /// <summary>

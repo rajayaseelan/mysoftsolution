@@ -65,7 +65,7 @@ namespace MySoft.PlatformService.UserService
         string GetDateTime(Guid guid, DateTime time, UserInfo user, Sex sex);
 
         //[HttpInvoke(Name = "user.getuser", Description = "获取用户")]
-        [OperationContract(CacheTime = 60)]
+        [OperationContract(CacheTime = 10)]
         IList<UserInfo> GetUsers();
 
         //[HttpInvoke(Name = "user.getuser", Description = "获取用户", Authorized = true, AuthParameter = "name")]

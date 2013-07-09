@@ -161,6 +161,7 @@
     </Compile>
     <Compile Include="Services\IServiceCallback.cs" />
     <Compile Include="Services\AsyncHandler.cs" />
+    <Compile Include="Services\ServiceCacheType.cs" />
     <Compile Include="Services\ServiceDiscoverFacility.cs" />
     <Compile Include="Messages\Status\AppCaller.cs" />
     <Compile Include="Messages\Status\AppClient.cs" />

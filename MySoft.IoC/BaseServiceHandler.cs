@@ -1,4 +1,6 @@
-﻿using MySoft.IoC.Messages;
+﻿using MySoft.Cache;
+using MySoft.IoC.Configuration;
+using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using System;
 using System.Diagnostics;
@@ -10,6 +12,7 @@ namespace MySoft.IoC
     /// </summary>
     internal class BaseServiceHandler
     {
+        private CastleFactoryConfiguration config;
         private IServiceContainer container;
         private IServiceCall call;
         private IService service;
@@ -17,12 +20,15 @@ namespace MySoft.IoC
         /// <summary>
         /// 实例化BaseServiceHandler
         /// </summary>
+        /// <param name="config"></param>
         /// <param name="container"></param>
         /// <param name="call"></param>
         /// <param name="service"></param>
-        public BaseServiceHandler(IServiceContainer container, IServiceCall call, IService service)
+        public BaseServiceHandler(CastleFactoryConfiguration config, IServiceContainer container, IServiceCall call, IService service)
         {
+            this.config = config;
             this.container = container;
+
             this.call = call;
             this.service = service;
         }
@@ -85,7 +91,7 @@ namespace MySoft.IoC
 
             try
             {
-                using (var caller = new AsyncCaller(service))
+                using (var caller = new AsyncCaller(service, config.CacheType))
                 {
                     //写日志开始
                     call.BeginCall(reqMsg);

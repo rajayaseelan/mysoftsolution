@@ -24,7 +24,7 @@ namespace MySoft.IoC
         /// <param name="call"></param>
         /// <param name="service"></param>
         public ServiceInvocationHandler(CastleFactoryConfiguration config, IServiceContainer container, IServiceCall call, IService service)
-            : base(container, call, service)
+            : base(config, container, call, service)
         {
             this.config = config;
             this.hostName = DnsHelper.GetHostName();

@@ -3,9 +3,9 @@ using MySoft.Security;
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Linq;
 
 namespace MySoft.Cache
 {
@@ -206,36 +206,53 @@ namespace MySoft.Cache
         /// <returns></returns>
         public static T Get(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
         {
-            T cacheObject = default(T);
+            T internalObject = default(T);
 
             lock (GetSyncRoot(key))
             {
                 //从内存获取
-                cacheObject = CacheHelper.Get<T>(key);
+                internalObject = CacheHelper.Get<T>(key);
 
-                if (cacheObject == null && type == LocalCacheType.File)
+                //判断是否过期
+                if (internalObject == null && type == LocalCacheType.File)
                 {
-                    //从文件获取缓存
-                    var cacheObj = GetCache(GetFilePath(key));
-
-                    if (cacheObj != null && cacheObj.ExpiredTime > DateTime.Now)
-                    {
-                        cacheObject = cacheObj.Value;
-
-                        //默认缓存60秒
-                        CacheHelper.Insert(key, cacheObject, (int)timeout.TotalSeconds);
-                    }
+                    internalObject = GetObjectFromFile(key, timeout);
                 }
 
                 //判断是否过期
-                if (cacheObject == null)
+                if (internalObject == null)
                 {
                     //获取更新对象
-                    cacheObject = GetUpdateObject(type, key, timeout, func, state, pred);
+                    internalObject = GetUpdateObject(type, key, timeout, func, state, pred);
                 }
+
             }
 
-            return cacheObject;
+            return internalObject;
+        }
+
+        /// <summary>
+        /// 获取缓存对象
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        private static T GetObjectFromFile(string key, TimeSpan timeout)
+        {
+            T internalObject = default(T);
+
+            //从文件获取缓存
+            var cacheObject = GetCache(GetFilePath(key));
+
+            if (cacheObject != null && cacheObject.ExpiredTime > DateTime.Now)
+            {
+                internalObject = cacheObject.Value;
+
+                //默认缓存60秒
+                CacheHelper.Insert(key, cacheObject, (int)timeout.TotalSeconds);
+            }
+
+            return internalObject;
         }
 
         #endregion
@@ -254,23 +271,14 @@ namespace MySoft.Cache
         /// <returns></returns>
         private static T GetUpdateObject(LocalCacheType type, string key, TimeSpan timeout, Func<object, T> func, object state, Predicate<T> pred)
         {
-            T internalObject = default(T);
-
-            try
-            {
 #if DEBUG
                 Console.WriteLine("[{0}][{1}][{2}][{3}]", DateTime.Now, type, timeout, key);
 #endif
 
-                internalObject = func(state);
+            var internalObject = func(state);
 
-                //更新缓存项
-                UpdateCacheSync(internalObject, type, key, timeout, pred);
-            }
-            catch (Exception ex)
-            {
-                SimpleLog.Instance.WriteLogForDir("CacheHelper", ex);
-            }
+            //更新缓存项
+            UpdateCacheSync(internalObject, type, key, timeout, pred);
 
             return internalObject;
         }

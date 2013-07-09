@@ -249,16 +249,16 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取IoCException
         /// </summary>
-        /// <param name="caller"></param>
+        /// <param name="appCaller"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public static IoCException GetException(AppCaller caller, string message)
+        public static IoCException GetException(AppCaller appCaller, string message)
         {
             //创建IoC异常
             var exception = new WarningException(message);
 
             //设置调用信息
-            SetAppCaller(caller, exception);
+            SetAppCaller(appCaller, exception);
 
             return exception;
         }
@@ -266,17 +266,17 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取IoCException
         /// </summary>
-        /// <param name="caller"></param>
+        /// <param name="appCaller"></param>
         /// <param name="message"></param>
         /// <param name="inner"></param>
         /// <returns></returns>
-        public static IoCException GetException(AppCaller caller, string message, Exception inner)
+        public static IoCException GetException(AppCaller appCaller, string message, Exception inner)
         {
             //创建IoC异常
             var exception = new IoCException(message, inner);
 
             //设置调用信息
-            SetAppCaller(caller, exception);
+            SetAppCaller(appCaller, exception);
 
             return exception;
         }
@@ -288,17 +288,17 @@ namespace MySoft.IoC
         /// <summary>
         /// 设置调用信息
         /// </summary>
-        /// <param name="caller"></param>
+        /// <param name="appCaller"></param>
         /// <param name="error"></param>
-        private static void SetAppCaller(AppCaller caller, IoCException error)
+        private static void SetAppCaller(AppCaller appCaller, IoCException error)
         {
-            error.ApplicationName = caller.AppName;
-            error.ServiceName = caller.ServiceName;
-            error.ErrorHeader = string.Format("App【{0}】occurs error, comes from {1}({2}).", caller.AppName, caller.HostName, caller.IPAddress);
+            error.ApplicationName = appCaller.AppName;
+            error.ServiceName = appCaller.ServiceName;
+            error.ErrorHeader = string.Format("App【{0}】occurs error, comes from {1}({2}).", appCaller.AppName, appCaller.HostName, appCaller.IPAddress);
 
-            if (!string.IsNullOrEmpty(caller.AppPath))
+            if (!string.IsNullOrEmpty(appCaller.AppPath))
             {
-                error.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", error.ErrorHeader, caller.AppPath);
+                error.ErrorHeader = string.Format("{0}\r\nApplication Path: {1}", error.ErrorHeader, appCaller.AppPath);
             }
         }
 

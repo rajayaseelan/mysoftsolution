@@ -51,9 +51,9 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// 实例化CallEventArgs
         /// </summary>
-        public CallEventArgs(AppCaller caller)
+        public CallEventArgs(AppCaller appCaller)
         {
-            this.Caller = caller;
+            this.Caller = appCaller;
         }
     }
 }

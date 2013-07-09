@@ -14,6 +14,7 @@ namespace MySoft.IoC
     internal class ServiceCaller : IDisposable
     {
         private readonly IServiceContainer container;
+        private readonly CastleServiceConfiguration config;
         private IDictionary<string, Type> callbackTypes;
         private Semaphore semaphore;
         private TimeSpan timeout;
@@ -25,8 +26,10 @@ namespace MySoft.IoC
         /// <param name="container"></param>
         public ServiceCaller(CastleServiceConfiguration config, IServiceContainer container)
         {
-            this.callbackTypes = new Dictionary<string, Type>();
+            this.config = config;
             this.container = container;
+
+            this.callbackTypes = new Dictionary<string, Type>();
             this.semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
             this.timeout = TimeSpan.FromSeconds(config.Timeout);
 
@@ -66,7 +69,7 @@ namespace MySoft.IoC
                 //解析服务
                 var service = ParseService(appCaller);
 
-                using (var caller = new AsyncCaller(service))
+                using (var caller = new AsyncCaller(service, config.CacheType))
                 {
                     //获取上下文
                     var context = GetOperationContext(channel, appCaller);
@@ -96,23 +99,23 @@ namespace MySoft.IoC
         /// <param name="channel"></param>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private OperationContext GetOperationContext(IScsServerClient channel, AppCaller caller)
+        private OperationContext GetOperationContext(IScsServerClient channel, AppCaller appCaller)
         {
             //实例化当前上下文
             Type callbackType = null;
 
             lock (callbackTypes)
             {
-                if (callbackTypes.ContainsKey(caller.ServiceName))
+                if (callbackTypes.ContainsKey(appCaller.ServiceName))
                 {
-                    callbackType = callbackTypes[caller.ServiceName];
+                    callbackType = callbackTypes[appCaller.ServiceName];
                 }
             }
 
             return new OperationContext(channel, callbackType)
             {
                 Container = container,
-                Caller = caller
+                Caller = appCaller
             };
         }
 
@@ -121,9 +124,9 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private IService ParseService(AppCaller caller)
+        private IService ParseService(AppCaller appCaller)
         {
-            string serviceKey = "Service_" + caller.ServiceName;
+            string serviceKey = "Service_" + appCaller.ServiceName;
 
             //判断服务是否存在
             if (container.Kernel.HasComponent(serviceKey))
@@ -132,10 +135,10 @@ namespace MySoft.IoC
             }
             else
             {
-                string body = string.Format("The server not find matching service ({0}).", caller.ServiceName);
+                string body = string.Format("The server not find matching service ({0}).", appCaller.ServiceName);
 
                 //获取异常
-                throw IoCHelper.GetException(caller, body);
+                throw IoCHelper.GetException(appCaller, body);
             }
         }
 

@@ -27,9 +27,9 @@ namespace MySoft.IoC.Logger
         /// <summary>
         /// 实例化RecordEventArgs
         /// </summary>
-        public RecordEventArgs(AppCaller caller)
+        public RecordEventArgs(AppCaller appCaller)
         {
-            this.Caller = caller;
+            this.Caller = appCaller;
         }
     }
 }
