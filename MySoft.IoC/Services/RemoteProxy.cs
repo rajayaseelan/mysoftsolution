@@ -124,7 +124,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //消息Id
-                var messageId = reqMsg.TransactionId.ToString();
+                var messageId = Guid.NewGuid().ToString();
 
                 using (var waitResult = new WaitResult())
                 {
@@ -139,7 +139,7 @@ namespace MySoft.IoC.Services
                         //等待信号响应
                         if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))
                         {
-                            return GetTimeoutResponse(reqMsg);
+                            throw GetTimeoutException(reqMsg);
                         }
 
                         //返回响应的消息
@@ -163,13 +163,13 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetTimeoutResponse(RequestMessage reqMsg)
+        private Exception GetTimeoutException(RequestMessage reqMsg)
         {
             var title = string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
                , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, node.Timeout * 1000, reqMsg.Parameters.ToString());
 
             //获取异常
-            return IoCHelper.GetResponse(reqMsg, new TimeoutException(title));
+            return new TimeoutException(title);
         }
 
         #region IService 成员

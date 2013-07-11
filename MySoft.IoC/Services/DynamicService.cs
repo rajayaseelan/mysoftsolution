@@ -73,7 +73,6 @@ namespace MySoft.IoC.Services
         {
             var resMsg = new ResponseMessage
             {
-                TransactionId = reqMsg.TransactionId,
                 ServiceName = reqMsg.ServiceName,
                 MethodName = reqMsg.MethodName
             };

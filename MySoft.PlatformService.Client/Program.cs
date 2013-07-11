@@ -394,7 +394,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -582,11 +582,12 @@ namespace MySoft.PlatformService.Client
                     //var users = service.GetUsers();
                     //var str = service.GetUsersString();
 
-                    watch.Stop();
-
                     Interlocked.Increment(ref counter);
 
-                    Console.WriteLine("¡¾" + counter + "¡¿times => " + users.Count + " timeout: " + watch.ElapsedMilliseconds + " ms.");
+                    Console.WriteLine(DateTime.Now + "¡¾" + counter + "¡¿times => " + users.Count + " timeout: "
+                                    + watch.ElapsedMilliseconds + " ms. " + Thread.CurrentThread.ManagedThreadId);
+
+                    watch.Stop();
 
                     //if (value != null)
                     //{

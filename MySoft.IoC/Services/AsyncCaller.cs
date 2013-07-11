@@ -1,5 +1,4 @@
-﻿using MySoft.Cache;
-using MySoft.IoC.Messages;
+﻿using MySoft.IoC.Messages;
 using System;
 
 namespace MySoft.IoC.Services
@@ -33,22 +32,14 @@ namespace MySoft.IoC.Services
             //Invoke响应
             var ar = handler.BeginDoTask(context, reqMsg, null, null);
 
-            try
-            {
-                //超时返回
-                if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
-                {
-                    //取消任务
-                    handler.CancelTask(ar);
-                }
-
-                return handler.EndDoTask(ar);
-            }
-            catch (Exception ex)
+            //超时返回
+            if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
             {
                 //获取超时异常
-                throw GetTimeoutException(reqMsg, timeout, ex);
+                throw GetTimeoutException(reqMsg, timeout);
             }
+
+            return handler.EndDoTask(ar);
         }
 
         /// <summary>
@@ -68,15 +59,14 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <param name="timeout"></param>
-        /// <param name="ex"></param>
         /// <returns></returns>
-        private Exception GetTimeoutException(RequestMessage reqMsg, TimeSpan timeout, Exception ex)
+        private Exception GetTimeoutException(RequestMessage reqMsg, TimeSpan timeout)
         {
             var title = string.Format("Async invoke method ({0}, {1}) timeout ({2}) ms.",
                                         reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
 
             //获取异常
-            throw new TimeoutException(title, ex);
+            throw new TimeoutException(title);
         }
 
         /// <summary>

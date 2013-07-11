@@ -150,6 +150,8 @@ namespace MySoft.PlatformService.UserService
 
         public IList<UserInfo> GetUsers()
         {
+            //Thread.Sleep(6 * 1000);
+
             //throw new Exception("出错了！");
 
             var list = new List<UserInfo>();
@@ -160,17 +162,19 @@ namespace MySoft.PlatformService.UserService
                 list.Add(new UserInfo { Name = "test_" + count, Description = "test_" + count + "_" + Thread.CurrentThread.ManagedThreadId });
             }
 
-            Console.WriteLine("{0} => {1}", DateTime.Now, Thread.CurrentThread.ManagedThreadId);
+            //Console.WriteLine("{0} => {1}", DateTime.Now, Thread.CurrentThread.ManagedThreadId);
             //int value = new Random().Next(1, 10);
 
-            if (Thread.CurrentThread.ManagedThreadId % 2 == 0)
-            {
-                throw new Exception("出错了！");
-            }
-            else if (Thread.CurrentThread.ManagedThreadId % 3 == 0)
-            {
-                Thread.Sleep(5 * 1000);
-            }
+            //if (Thread.CurrentThread.ManagedThreadId % 2 == 0)
+            //{
+            //    throw new Exception("出错了！");
+            //}
+            //else if (Thread.CurrentThread.ManagedThreadId % 3 == 0)
+            //{
+            //Thread.Sleep(5 * 1000);
+            //}
+
+            Console.WriteLine("{0} => {1}", DateTime.Now, Thread.CurrentThread.ManagedThreadId);
 
             return list;
         }

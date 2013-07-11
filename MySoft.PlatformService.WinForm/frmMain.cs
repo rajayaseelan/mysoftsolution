@@ -23,8 +23,8 @@ namespace MySoft.PlatformService.WinForm
         {
             InitializeComponent();
 
-            CastleFactory.Create().OnError += new ErrorLogEventHandler(frmMain_OnError);
-            CastleFactory.Create().OnDisconnected += new EventHandler<ConnectEventArgs>(frmMain_OnDisconnected);
+            CastleFactory.Create().OnError += error => SimpleLog.Instance.WriteLogForDir("Client", error);
+            CastleFactory.Create().OnDisconnected += frmMain_OnDisconnected;
         }
 
         void frmMain_OnDisconnected(object sender, ConnectEventArgs e)
@@ -61,17 +61,6 @@ namespace MySoft.PlatformService.WinForm
             }
         }
 
-        void frmMain_OnError(Exception error)
-        {
-            lock (_syncLock)
-            {
-                this.Invoke(new Action(() =>
-                {
-                    ShowError(error);
-                }));
-            }
-        }
-
         /// <summary>
         /// 发送错误邮件
         /// </summary>
@@ -85,12 +74,14 @@ namespace MySoft.PlatformService.WinForm
                 HostName = DnsHelper.GetHostName(),
                 IPAddress = DnsHelper.GetIPAddress()
             };
+
             var ex = new IoCException(message, inner)
             {
                 ApplicationName = appClient.AppName,
                 ServiceName = "MySoft.PlatformService.WinForm",
                 ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", appClient.AppName, appClient.HostName, appClient.IPAddress)
             };
+
             SimpleLog.Instance.WriteLogWithSendMail(ex, emails);
         }
 
@@ -179,7 +170,6 @@ namespace MySoft.PlatformService.WinForm
                     }
                     catch (Exception ex)
                     {
-                        SimpleLog.Instance.WriteLogForDir("Client", ex);
                         ShowError(ex);
                     }
                 }
@@ -196,7 +186,6 @@ namespace MySoft.PlatformService.WinForm
                         }
                         catch (Exception ex)
                         {
-                            SimpleLog.Instance.WriteLogForDir("Client", ex);
                             ShowError(ex);
                         }
                     }
@@ -247,7 +236,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -719,6 +707,8 @@ namespace MySoft.PlatformService.WinForm
                     return;
             }
 
+            defaultNode = node;
+
             listAssembly.Items.Clear();
             listService.Items.Clear();
             listMethod.Items.Clear();
@@ -768,7 +758,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
                 return;
             }
@@ -791,8 +780,6 @@ namespace MySoft.PlatformService.WinForm
             }
 
             listAssembly.Invalidate();
-
-            defaultNode = node;
         }
 
         void InitAppTypes(IStatusService s)
@@ -915,7 +902,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -936,7 +922,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -994,7 +979,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -1080,7 +1064,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -1123,7 +1106,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -1158,7 +1140,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -1179,7 +1160,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -1200,7 +1180,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -1221,7 +1200,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -1242,7 +1220,6 @@ namespace MySoft.PlatformService.WinForm
             }
             catch (Exception ex)
             {
-                SimpleLog.Instance.WriteLogForDir("Client", ex);
                 ShowError(ex);
             }
         }
@@ -1268,10 +1245,12 @@ namespace MySoft.PlatformService.WinForm
         {
             foreach (var app in apps)
             {
-                try { service.SubscribeApp(app); }
+                try
+                {
+                    service.SubscribeApp(app);
+                }
                 catch (Exception ex)
                 {
-                    SimpleLog.Instance.WriteLogForDir("Client", ex);
                     ShowError(ex);
                 }
             }

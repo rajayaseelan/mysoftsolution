@@ -29,9 +29,9 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
 
                 return socket;
             }
-            catch (SocketException socketException)
+            catch (SocketException ex)
             {
-                if (socketException.ErrorCode != 10035)
+                if (ex.ErrorCode != 10035)
                 {
                     socket.Close();
                     throw;

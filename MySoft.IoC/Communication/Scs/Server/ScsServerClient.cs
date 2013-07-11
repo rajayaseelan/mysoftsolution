@@ -162,6 +162,11 @@ namespace MySoft.IoC.Communication.Scs.Server
         /// <param name="message">Message to be sent</param>
         public void SendMessage(IScsMessage message)
         {
+            if (CommunicationState != CommunicationStates.Connected)
+            {
+                throw new CommunicationStateException("Client is not connected to the server.");
+            }
+
             _communicationChannel.SendMessage(message);
         }
 

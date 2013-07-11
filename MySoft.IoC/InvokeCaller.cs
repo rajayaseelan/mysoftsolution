@@ -49,7 +49,6 @@ namespace MySoft.IoC
                 MethodName = message.MethodName,                            //方法名称
                 EnableCache = config.EnableCache,                           //是否缓存
                 CacheTime = message.CacheTime,                              //缓存时间
-                TransactionId = Guid.NewGuid(),                             //Json字符串
                 RespType = ResponseType.Json                                //数据类型
             };
 

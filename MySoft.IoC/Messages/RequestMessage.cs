@@ -10,24 +10,7 @@ namespace MySoft.IoC.Messages
     {
         private string serviceName;
         private string methodName;
-        private Guid transactionId;
         private ParameterCollection parameters = new ParameterCollection();
-
-        /// <summary>
-        /// Gets or sets the transaction id.
-        /// </summary>
-        /// <value>The transaction id.</value>
-        public Guid TransactionId
-        {
-            get
-            {
-                return transactionId;
-            }
-            set
-            {
-                transactionId = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the name of the service.

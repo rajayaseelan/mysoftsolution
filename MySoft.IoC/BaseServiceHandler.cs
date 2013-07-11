@@ -61,7 +61,6 @@ namespace MySoft.IoC
 
                     resMsg = new ResponseMessage
                     {
-                        TransactionId = resMsg.TransactionId,
                         ServiceName = resMsg.ServiceName,
                         MethodName = resMsg.MethodName,
                         Parameters = resMsg.Parameters,
@@ -103,6 +102,12 @@ namespace MySoft.IoC
                     var resMsg = caller.SyncRun(context, reqMsg);
 
                     elapsedTime = watch.ElapsedMilliseconds;
+
+                    //如果时间为0
+                    if (resMsg.ElapsedTime == 0)
+                    {
+                        resMsg.ElapsedTime = elapsedTime;
+                    }
 
                     //写日志结束
                     call.EndCall(reqMsg, resMsg, watch.ElapsedMilliseconds);

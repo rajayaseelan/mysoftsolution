@@ -118,7 +118,7 @@ namespace MySoft.IoC
                     var data = e.Message as ScsCallbackMessage;
                     var value = new CallbackMessageEventArgs
                     {
-                        MessageId = messageId,
+                        MessageId = e.Message.RepliedMessageId,
                         Request = reqMsg,
                         Message = data.MessageValue
                     };
@@ -131,7 +131,7 @@ namespace MySoft.IoC
                     //获取响应消息
                     var value = new ResponseMessageEventArgs
                     {
-                        MessageId = messageId,
+                        MessageId = e.Message.RepliedMessageId,
                         Request = reqMsg,
                         Message = GetResponseMessage(e)
                     };

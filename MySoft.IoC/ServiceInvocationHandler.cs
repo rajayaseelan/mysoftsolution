@@ -74,7 +74,6 @@ namespace MySoft.IoC
                 ServiceName = typeof(T).FullName,                           //服务名称
                 MethodName = method.ToString(),                             //方法名称
                 EnableCache = config.EnableCache,                           //是否缓存
-                TransactionId = Guid.NewGuid(),                             //传输ID号
                 MethodInfo = method,                                        //设置调用方法
                 Parameters = collection,                                    //设置参数
                 RespType = ResponseType.Binary                              //数据类型
