@@ -5,6 +5,9 @@ namespace MySoft.IoC.Services.Tasks
 {
     internal class AsyncResult<TResult> : AsyncResultNoResult
     {
+        // Field set current thread
+        public Thread CurrentThread { get; set; }
+
         // Field set when operation completes
         private TResult m_result = default(TResult);
 

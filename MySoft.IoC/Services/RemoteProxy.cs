@@ -2,6 +2,7 @@ using MySoft.IoC.Messages;
 using MySoft.Logger;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -25,6 +26,7 @@ namespace MySoft.IoC.Services
         #endregion
 
         private IDictionary<string, WaitResult> hashtable;
+        private Semaphore semaphore;
         private ServiceRequestPool pool;
         private ServerNode node;
         private ILog logger;
@@ -40,6 +42,7 @@ namespace MySoft.IoC.Services
             this.node = node;
             this.logger = logger;
             this.hashtable = new Dictionary<string, WaitResult>();
+            this.semaphore = new Semaphore(node.MaxPool, node.MaxPool);
 
             if (subscribed)
             {
@@ -114,47 +117,71 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public virtual ResponseMessage CallService(RequestMessage reqMsg)
         {
-            var reqProxy = pool.Pop();
-
-            if (reqProxy == null)
-            {
-                throw new WarningException("Service request exceeds the maximum number of pool.");
-            }
+            //请求一个控制器
+            semaphore.WaitOne();
 
             try
             {
-                //消息Id
-                var messageId = Guid.NewGuid().ToString();
+                var reqProxy = pool.Pop();
 
-                using (var waitResult = new WaitResult())
+                if (reqProxy == null)
                 {
-                    //添加信号量对象
-                    lock (hashtable) hashtable[messageId] = waitResult;
+                    throw new WarningException("Service request exceeds the maximum number of pool.");
+                }
 
-                    try
-                    {
-                        //发送消息
-                        reqProxy.SendRequest(messageId, reqMsg);
+                try
+                {
+                    //消息Id
+                    var messageId = Guid.NewGuid().ToString();
 
-                        //等待信号响应
-                        if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))
-                        {
-                            throw GetTimeoutException(reqMsg);
-                        }
-
-                        //返回响应的消息
-                        return waitResult.Message;
-                    }
-                    finally
-                    {
-                        //移除信号量对象
-                        lock (hashtable) hashtable.Remove(messageId);
-                    }
+                    //获取响应信息
+                    return GetResponse(reqProxy, messageId, reqMsg);
+                }
+                finally
+                {
+                    pool.Push(reqProxy);
                 }
             }
             finally
             {
-                pool.Push(reqProxy);
+                //释放一个控制器
+                semaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// 获取响应信息
+        /// </summary>
+        /// <param name="reqProxy"></param>
+        /// <param name="messageId"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponse(ServiceRequest reqProxy, string messageId, RequestMessage reqMsg)
+        {
+            using (var waitResult = new WaitResult())
+            {
+                //添加信号量对象
+                lock (hashtable) hashtable[messageId] = waitResult;
+
+                try
+                {
+                    //发送请求
+                    reqProxy.SendRequest(messageId, reqMsg);
+
+                    //等待信号响应
+                    if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))
+                    {
+                        throw GetTimeoutException(reqMsg);
+                    }
+
+                    //返回响应的消息
+                    return waitResult.Message;
+                }
+                finally
+                {
+                    //移除信号量对象
+                    lock (hashtable) hashtable.Remove(messageId);
+                }
             }
         }
 

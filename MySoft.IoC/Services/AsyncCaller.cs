@@ -1,5 +1,6 @@
 ﻿using MySoft.IoC.Messages;
 using System;
+using System.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -32,14 +33,21 @@ namespace MySoft.IoC.Services
             //Invoke响应
             var ar = handler.BeginDoTask(context, reqMsg, null, null);
 
-            //超时返回
-            if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
+            try
+            {
+                //超时返回
+                if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
+                {
+                    handler.CancelTask(ar);
+                }
+
+                return handler.EndDoTask(ar);
+            }
+            catch (ThreadStateException ex)
             {
                 //获取超时异常
-                throw GetTimeoutException(reqMsg, timeout);
+                throw GetTimeoutException(reqMsg, timeout, ex);
             }
-
-            return handler.EndDoTask(ar);
         }
 
         /// <summary>
@@ -55,18 +63,19 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 获取超时响应信息
+        /// 获取系统异常响应信息
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <param name="timeout"></param>
+        /// <param name="innerException"></param>
         /// <returns></returns>
-        private Exception GetTimeoutException(RequestMessage reqMsg, TimeSpan timeout)
+        private Exception GetTimeoutException(RequestMessage reqMsg, TimeSpan timeout, Exception innerException)
         {
-            var title = string.Format("Async invoke method ({0}, {1}) timeout ({2}) ms.",
+            var title = string.Format("Server async invoke method ({0}, {1}) timeout ({2}) ms.",
                                         reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
 
             //获取异常
-            throw new TimeoutException(title);
+            throw new TimeoutException(title, innerException);
         }
 
         /// <summary>

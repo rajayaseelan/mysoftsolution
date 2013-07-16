@@ -150,7 +150,8 @@ namespace MySoft.PlatformService.UserService
 
         public IList<UserInfo> GetUsers()
         {
-            //Thread.Sleep(6 * 1000);
+            throw new BusinessException("业务异常");
+            //Thread.Sleep(30 * 1000);
 
             //throw new Exception("出错了！");
 

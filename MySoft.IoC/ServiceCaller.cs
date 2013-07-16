@@ -74,11 +74,7 @@ namespace MySoft.IoC
                     //获取上下文
                     var context = GetOperationContext(channel, appCaller);
 
-                    //判断是否为状态服务
-                    if (reqMsg.ServiceName == typeof(IStatusService).FullName)
-                        return caller.SyncRun(context, reqMsg);
-                    else
-                        return caller.AsyncRun(context, reqMsg, timeout);
+                    return caller.AsyncRun(context, reqMsg, timeout);
                 }
             }
             catch (Exception ex)
