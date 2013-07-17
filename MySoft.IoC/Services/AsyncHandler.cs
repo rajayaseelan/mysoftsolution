@@ -1,7 +1,6 @@
 ﻿using MySoft.Cache;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services.Tasks;
-using MySoft.Threading;
 using System;
 using System.Collections;
 using System.Threading;
@@ -55,8 +54,11 @@ namespace MySoft.IoC.Services
             //定义委托
             var ar = new AsyncResult<ResponseMessage>(callback, state);
 
-            //开始线程处理
-            ManagedThreadPool.QueueUserWorkItem(DoTaskOnAsync, new ArrayList { ar, context, reqMsg });
+            using (var afc = ExecutionContext.SuppressFlow())
+            {
+                //开始线程处理
+                ThreadPool.QueueUserWorkItem(DoTaskOnAsync, new ArrayList { ar, context, reqMsg });
+            }
 
             return ar;
         }
