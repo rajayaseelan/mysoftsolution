@@ -1,7 +1,7 @@
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Threading;
 
 namespace MySoft.IoC.Services
@@ -25,7 +25,7 @@ namespace MySoft.IoC.Services
 
         #endregion
 
-        private IDictionary<string, WaitResult> hashtable;
+        private Hashtable hashtable = Hashtable.Synchronized(new Hashtable());
         private Semaphore semaphore;
         private ServiceRequestPool pool;
         private ServerNode node;
@@ -41,7 +41,6 @@ namespace MySoft.IoC.Services
         {
             this.node = node;
             this.logger = logger;
-            this.hashtable = new Dictionary<string, WaitResult>();
             this.semaphore = new Semaphore(node.MaxPool, node.MaxPool);
 
             if (subscribed)
@@ -101,12 +100,14 @@ namespace MySoft.IoC.Services
         /// <param name="e"></param>
         public virtual void MessageCallback(object sender, ResponseMessageEventArgs e)
         {
-            lock (hashtable)
+            if (hashtable.ContainsKey(e.MessageId))
             {
-                if (hashtable.ContainsKey(e.MessageId))
-                {
-                    hashtable[e.MessageId].Set(e.Message);
-                }
+                //设置响应信息
+                var waitResult = hashtable[e.MessageId] as WaitResult;
+
+                hashtable.Remove(e.MessageId);
+
+                waitResult.Set(e.Message);
             }
         }
 
@@ -122,25 +123,11 @@ namespace MySoft.IoC.Services
 
             try
             {
-                var reqProxy = pool.Pop();
+                //消息Id
+                var messageId = Guid.NewGuid().ToString();
 
-                if (reqProxy == null)
-                {
-                    throw new WarningException("Service request exceeds the maximum number of pool.");
-                }
-
-                try
-                {
-                    //消息Id
-                    var messageId = Guid.NewGuid().ToString();
-
-                    //获取响应信息
-                    return GetResponse(reqProxy, messageId, reqMsg);
-                }
-                finally
-                {
-                    pool.Push(reqProxy);
-                }
+                //获取响应信息
+                return GetResponse(messageId, reqMsg);
             }
             finally
             {
@@ -152,26 +139,32 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取响应信息
         /// </summary>
-        /// <param name="reqProxy"></param>
         /// <param name="messageId"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(ServiceRequest reqProxy, string messageId, RequestMessage reqMsg)
+        private ResponseMessage GetResponse(string messageId, RequestMessage reqMsg)
         {
             using (var waitResult = new WaitResult())
             {
                 //添加信号量对象
-                lock (hashtable) hashtable[messageId] = waitResult;
+                hashtable[messageId] = waitResult;
+
+                var reqProxy = GetServiceProxy();
 
                 try
                 {
                     //发送请求
                     reqProxy.SendRequest(messageId, reqMsg);
 
+                    var timeout = TimeSpan.FromSeconds(node.Timeout);
+
                     //等待信号响应
-                    if (!waitResult.WaitOne(TimeSpan.FromSeconds(node.Timeout)))
+                    if (!waitResult.WaitOne(timeout))
                     {
-                        throw GetTimeoutException(reqMsg);
+                        var ex = GetTimeoutException(reqMsg, timeout);
+
+                        //设置超时响应
+                        waitResult.Set(IoCHelper.GetResponse(reqMsg, ex));
                     }
 
                     //返回响应的消息
@@ -180,20 +173,42 @@ namespace MySoft.IoC.Services
                 finally
                 {
                     //移除信号量对象
-                    lock (hashtable) hashtable.Remove(messageId);
+                    if (hashtable.ContainsKey(messageId))
+                    {
+                        hashtable.Remove(messageId);
+                    }
+
+                    pool.Push(reqProxy);
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取代理
+        /// </summary>
+        /// <returns></returns>
+        private ServiceRequest GetServiceProxy()
+        {
+            var reqProxy = pool.Pop();
+
+            if (reqProxy == null)
+            {
+                throw new WarningException("Service request exceeds the maximum number of pool.");
+            }
+
+            return reqProxy;
         }
 
         /// <summary>
         /// 获取超时响应信息
         /// </summary>
         /// <param name="reqMsg"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        private Exception GetTimeoutException(RequestMessage reqMsg)
+        private Exception GetTimeoutException(RequestMessage reqMsg, TimeSpan timeout)
         {
             var title = string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
-               , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, node.Timeout * 1000, reqMsg.Parameters.ToString());
+               , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds, reqMsg.Parameters.ToString());
 
             //获取异常
             return new TimeoutException(title);

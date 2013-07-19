@@ -1,5 +1,4 @@
-﻿using MySoft.Cache;
-using MySoft.IoC.Configuration;
+﻿using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using System;

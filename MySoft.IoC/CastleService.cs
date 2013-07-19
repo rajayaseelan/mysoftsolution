@@ -47,9 +47,6 @@ namespace MySoft.IoC
         /// <param name="config"></param>
         public CastleService(CastleServiceConfiguration config)
         {
-            ServicePointManager.DefaultConnectionLimit = config.MaxCaller;
-            ServicePointManager.Expect100Continue = false;
-
             this.config = config;
 
             if (string.Compare(config.Host, "any", true) == 0)
@@ -111,6 +108,10 @@ namespace MySoft.IoC
 
             //发布日志
             PublishService(status.GetServiceList());
+
+            //http控制
+            ServicePointManager.DefaultConnectionLimit = config.MaxCaller;
+            ServicePointManager.Expect100Continue = false;
         }
 
         /// <summary>

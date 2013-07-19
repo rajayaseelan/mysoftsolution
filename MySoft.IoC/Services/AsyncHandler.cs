@@ -1,8 +1,8 @@
 ﻿using MySoft.Cache;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services.Tasks;
 using System;
 using System.Collections;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 
 namespace MySoft.IoC.Services
@@ -52,86 +52,9 @@ namespace MySoft.IoC.Services
         public IAsyncResult BeginDoTask(OperationContext context, RequestMessage reqMsg, AsyncCallback callback, object state)
         {
             //定义委托
-            var ar = new AsyncResult<ResponseMessage>(callback, state);
+            var func = new Func<OperationContext, RequestMessage, ResponseMessage>(DoTask);
 
-            using (var afc = ExecutionContext.SuppressFlow())
-            {
-                //开始线程处理
-                ThreadPool.QueueUserWorkItem(DoTaskOnAsync, new ArrayList { ar, context, reqMsg });
-            }
-
-            return ar;
-        }
-
-        /// <summary>
-        /// 执行方法
-        /// </summary>
-        /// <param name="state"></param>
-        private void DoTaskOnAsync(object state)
-        {
-            var arr = state as ArrayList;
-
-            var _ar = arr[0] as AsyncResult<ResponseMessage>;
-
-            var _context = arr[1] as OperationContext;
-            var _reqMsg = arr[2] as RequestMessage;
-
-            try
-            {
-                _ar.CurrentThread = Thread.CurrentThread;
-
-                //同步执行
-                var resMsg = DoTask(_context, _reqMsg);
-
-                _ar.SetAsCompleted(resMsg, false);
-            }
-            catch (Exception ex)
-            {
-                _ar.SetAsCompleted(ex, false);
-            }
-        }
-
-        /// <summary>
-        /// 取消任务
-        /// </summary>
-        /// <param name="ar"></param>
-        public void CancelTask(IAsyncResult ar)
-        {
-            try
-            {
-                //异步委托
-                var _ar = ar as AsyncResult<ResponseMessage>;
-
-                //结束线程
-                if (_ar.CurrentThread != null)
-                {
-                    AbortThread(_ar.CurrentThread);
-                }
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
-
-        /// <summary>
-        /// 结束线程
-        /// </summary>
-        /// <param name="t"></param>
-        private void AbortThread(Thread t)
-        {
-            var state = t.ThreadState & (ThreadState.Unstarted |
-                                    ThreadState.WaitSleepJoin |
-                                    ThreadState.Stopped);
-
-            if (state == ThreadState.Running)
-            {
-                t.Abort();
-            }
-            else if (state == ThreadState.WaitSleepJoin)
-            {
-                t.Interrupt();
-            }
+            return func.BeginInvoke(context, reqMsg, callback, state);
         }
 
         /// <summary>
@@ -144,10 +67,12 @@ namespace MySoft.IoC.Services
             try
             {
                 //异步委托
-                var _ar = ar as AsyncResult<ResponseMessage>;
+                var @delegate = (ar as AsyncResult).AsyncDelegate;
 
                 //异步回调
-                return _ar.EndInvoke();
+                var func = @delegate as Func<OperationContext, RequestMessage, ResponseMessage>;
+
+                return func.EndInvoke(ar);
             }
             finally
             {
@@ -172,15 +97,10 @@ namespace MySoft.IoC.Services
                 //响应结果，清理资源
                 return service.CallService(reqMsg);
             }
-            catch (ThreadInterruptedException ex)
+            catch (Exception ex)
             {
-                throw new ThreadStateException("The current request thread is interrupted!", ex);
-            }
-            catch (ThreadAbortException ex)
-            {
-                Thread.ResetAbort();
-
-                throw new ThreadStateException("The current request thread is aborted!", ex);
+                //获取异常响应
+                return IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
             {

@@ -1,6 +1,5 @@
 ﻿using MySoft.IoC.Messages;
 using System;
-using System.Threading;
 
 namespace MySoft.IoC.Services
 {
@@ -30,23 +29,42 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage AsyncRun(OperationContext context, RequestMessage reqMsg, TimeSpan timeout)
         {
-            //Invoke响应
-            var ar = handler.BeginDoTask(context, reqMsg, null, null);
-
-            try
+            using (var waitResult = new WaitResult())
             {
+                //Invoke响应
+                handler.BeginDoTask(context, reqMsg, AsyncCallback, waitResult);
+
                 //超时返回
-                if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
+                if (!waitResult.WaitOne(timeout))
                 {
-                    handler.CancelTask(ar);
+                    //获取超时异常
+                    var ex = GetTimeoutException(reqMsg, timeout);
+
+                    //设置超时响应
+                    waitResult.Set(IoCHelper.GetResponse(reqMsg, ex));
                 }
 
-                return handler.EndDoTask(ar);
+                return waitResult.Message;
             }
-            catch (ThreadStateException ex)
+        }
+
+        /// <summary>
+        /// 异步回调
+        /// </summary>
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
+        {
+            try
             {
-                //获取超时异常
-                throw GetTimeoutException(reqMsg, timeout, ex);
+                var waitResult = ar.AsyncState as WaitResult;
+
+                var resMsg = handler.EndDoTask(ar);
+
+                waitResult.Set(resMsg);
+            }
+            catch (Exception ex)
+            {
+                //TODO
             }
         }
 
@@ -67,15 +85,14 @@ namespace MySoft.IoC.Services
         /// </summary>
         /// <param name="reqMsg"></param>
         /// <param name="timeout"></param>
-        /// <param name="innerException"></param>
         /// <returns></returns>
-        private Exception GetTimeoutException(RequestMessage reqMsg, TimeSpan timeout, Exception innerException)
+        private Exception GetTimeoutException(RequestMessage reqMsg, TimeSpan timeout)
         {
-            var title = string.Format("Server async invoke method ({0}, {1}) timeout ({2}) ms.",
-                                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds);
+            var title = string.Format("Server async invoke method ({0}, {1}) timeout ({2}) ms.\r\nParameters => {3}",
+                                        reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds, reqMsg.Parameters.ToString());
 
             //获取异常
-            throw new TimeoutException(title, innerException);
+            throw new TimeoutException(title);
         }
 
         /// <summary>

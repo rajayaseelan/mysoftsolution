@@ -31,7 +31,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The default pool number.
         /// </summary>
-        public const int DEFAULT_CLIENT_MAXPOOL = 10; //默认为10
+        public const int DEFAULT_CLIENT_MAXPOOL = 30; //默认为30
 
         /// <summary>
         /// The current framework version.

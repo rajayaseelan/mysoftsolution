@@ -78,12 +78,14 @@ namespace MySoft.IoC.Services
             };
 
             //解析服务
-            var instance = container.Resolve(serviceType);
+            object instance = null;
 
             try
             {
                 //参数赋值
                 object[] parameters = IoCHelper.CreateParameters(callMethod, reqMsg.Parameters);
+
+                instance = container.Resolve(serviceType);
 
                 //调用对应的服务
                 resMsg.Value = callMethod.FastInvoke(instance, parameters);

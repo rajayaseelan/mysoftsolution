@@ -38,25 +38,31 @@ namespace MySoft.Logger
         /// <summary>
         /// 启动写日志线程
         /// </summary>
-        private void WorkThreadStart(object state)
+        private void DoWork(object state)
         {
             while (true)
             {
-                //等待100毫秒
-                Thread.Sleep(100);
+                //等待10毫秒
+                Thread.Sleep(10);
 
-                LogInfo item = null;
-
-                lock (logqueue)
+                try
                 {
-                    if (logqueue.Count == 0) continue;
+                    LogInfo item = null;
 
-                    item = logqueue.Dequeue();
-                }
+                    lock (logqueue)
+                    {
+                        //判断日志数
+                        if (logqueue.Count == 0)
+                        {
+                            Thread.Sleep(100);
 
-                if (item != null)
-                {
-                    try
+                            continue;
+                        }
+
+                        item = logqueue.Dequeue();
+                    }
+
+                    if (item != null)
                     {
                         string dirPath = Path.GetDirectoryName(item.FilePath);
                         if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
@@ -66,25 +72,10 @@ namespace MySoft.Logger
                         else
                             File.WriteAllText(item.FilePath, item.Log, Encoding.UTF8);
                     }
-                    catch (ThreadInterruptedException ex) { }
-                    catch (ThreadAbortException ex)
-                    {
-                        Thread.ResetAbort();
-                    }
-                    catch (Exception ex)
-                    {
-                        //TODO:
-                        try
-                        {
-                            var message = string.Format("[{0}] => {1}{2}{3}{2}", DateTime.Now, ex.ToString(),
-                                    Environment.NewLine, string.Empty.PadRight(150, '='));
-
-                            File.AppendAllText(item.FilePath + ".err", message, Encoding.UTF8);
-                        }
-                        catch
-                        {
-                        }
-                    }
+                }
+                catch (Exception ex)
+                {
+                    //TODO
                 }
             }
         }
@@ -111,7 +102,7 @@ namespace MySoft.Logger
             this.logqueue = new Queue<LogInfo>();
 
             //启动生成文件线程
-            ThreadPool.QueueUserWorkItem(WorkThreadStart);
+            ThreadPool.QueueUserWorkItem(DoWork);
         }
 
         /// <summary>
@@ -146,7 +137,7 @@ namespace MySoft.Logger
         {
             if (ex == null) return;
 
-            string filePath = Path.Combine(Path.Combine(basedir, "ErrorLogs"), dir);
+            string filePath = Path.Combine(Path.Combine(basedir, "ErrorLogs"), dir.TrimStart('\\'));
             filePath = Path.Combine(filePath, DateTime.Now.ToString("yyyy-MM-dd"));
 
             var appName = GetApplicationName(ex);
@@ -188,7 +179,7 @@ namespace MySoft.Logger
         {
             if (string.IsNullOrEmpty(log)) return;
 
-            string filePath = Path.Combine(Path.Combine(basedir, "Logs"), dir);
+            string filePath = Path.Combine(Path.Combine(basedir, "Logs"), dir.TrimStart('\\'));
             filePath = Path.Combine(filePath, string.Format("{0}.log", DateTime.Now.ToString("yyyy-MM-dd")));
 
             WriteFileLog(filePath, log, false, false);
@@ -258,7 +249,7 @@ namespace MySoft.Logger
         /// <param name="log"></param>
         public void WriteLogForFile(string fileName, string log)
         {
-            string filePath = Path.Combine(basedir, fileName);
+            string filePath = Path.Combine(basedir, fileName.TrimStart('\\'));
             WriteFileLog(filePath, log, false, false);
         }
 

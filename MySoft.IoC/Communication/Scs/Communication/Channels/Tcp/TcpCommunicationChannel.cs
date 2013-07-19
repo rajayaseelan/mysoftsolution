@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 2 * 1024; //2KB
+        private const int ReceiveBufferSize = 2 * 1024; //4KB
 
         #region Public properties
 
@@ -223,8 +223,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             if (!_running)
             {
-                DisposeAsyncSEA(e);
-
                 return;
             }
 
@@ -235,20 +233,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     LastReceivedMessageTime = DateTime.Now;
 
-                    try
-                    {
-                        //Receive buffer data.
-                        OnBufferReceived(e.Buffer, e.BytesTransferred);
+                    //Receive buffer data.
+                    OnBufferReceived(e.Buffer, e.BytesTransferred);
 
-                        //Clear buffer.
-                        Array.Clear(e.Buffer, 0, e.BytesTransferred);
-                    }
-                    catch (Exception ex)
-                    {
-                        OnMessageError(ex);
-
-                        throw;
-                    }
+                    //Clear buffer.
+                    Array.Clear(e.Buffer, 0, e.BytesTransferred);
 
                     if (_running)
                     {
