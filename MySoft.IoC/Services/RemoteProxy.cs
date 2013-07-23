@@ -105,8 +105,6 @@ namespace MySoft.IoC.Services
                 //设置响应信息
                 var waitResult = hashtable[e.MessageId] as WaitResult;
 
-                hashtable.Remove(e.MessageId);
-
                 waitResult.Set(e.Message);
             }
         }
@@ -129,6 +127,10 @@ namespace MySoft.IoC.Services
                 //获取响应信息
                 return GetResponse(messageId, reqMsg);
             }
+            catch (Exception ex)
+            {
+                return IoCHelper.GetResponse(reqMsg, ex);
+            }
             finally
             {
                 //释放一个控制器
@@ -144,27 +146,48 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage GetResponse(string messageId, RequestMessage reqMsg)
         {
+            var reqProxy = pool.Pop();
+
+            if (reqProxy == null)
+            {
+                throw new WarningException("Service request exceeds the maximum number of pool.");
+            }
+
+            try
+            {
+                //发送请求
+                reqProxy.SendRequest(messageId, reqMsg);
+
+                //获取结果
+                return GetResult(messageId, reqMsg);
+            }
+            finally
+            {
+                pool.Push(reqProxy);
+            }
+        }
+
+        /// <summary>
+        /// 获取结果
+        /// </summary>
+        /// <param name="messageId"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResult(string messageId, RequestMessage reqMsg)
+        {
             using (var waitResult = new WaitResult())
             {
                 //添加信号量对象
                 hashtable[messageId] = waitResult;
 
-                var reqProxy = GetServiceProxy();
-
                 try
                 {
-                    //发送请求
-                    reqProxy.SendRequest(messageId, reqMsg);
-
                     var timeout = TimeSpan.FromSeconds(node.Timeout);
 
                     //等待信号响应
                     if (!waitResult.WaitOne(timeout))
                     {
-                        var ex = GetTimeoutException(reqMsg, timeout);
-
-                        //设置超时响应
-                        waitResult.Set(IoCHelper.GetResponse(reqMsg, ex));
+                        throw GetTimeoutException(reqMsg, timeout);
                     }
 
                     //返回响应的消息
@@ -173,30 +196,9 @@ namespace MySoft.IoC.Services
                 finally
                 {
                     //移除信号量对象
-                    if (hashtable.ContainsKey(messageId))
-                    {
-                        hashtable.Remove(messageId);
-                    }
-
-                    pool.Push(reqProxy);
+                    hashtable.Remove(messageId);
                 }
             }
-        }
-
-        /// <summary>
-        /// 获取代理
-        /// </summary>
-        /// <returns></returns>
-        private ServiceRequest GetServiceProxy()
-        {
-            var reqProxy = pool.Pop();
-
-            if (reqProxy == null)
-            {
-                throw new WarningException("Service request exceeds the maximum number of pool.");
-            }
-
-            return reqProxy;
         }
 
         /// <summary>
@@ -207,7 +209,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private Exception GetTimeoutException(RequestMessage reqMsg, TimeSpan timeout)
         {
-            var title = string.Format("【{0}:{1}】 => Call remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
+            var title = string.Format("【{0}:{1}】 => Invoking remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
                , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds, reqMsg.Parameters.ToString());
 
             //获取异常

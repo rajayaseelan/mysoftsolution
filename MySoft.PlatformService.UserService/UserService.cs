@@ -150,17 +150,21 @@ namespace MySoft.PlatformService.UserService
 
         public IList<UserInfo> GetUsers()
         {
-            Console.WriteLine("{0} => {1}", DateTime.Now, Thread.CurrentThread.ManagedThreadId);
+            throw new BusinessException("业务异常");
 
-            if (Thread.CurrentThread.ManagedThreadId % 5 == 0)
-            {
-                Thread.Sleep(10 * 1000);
-            }
-            else
-            {
-                //throw new BusinessException("业务异常");
-                Thread.Sleep(5 * 1000);
-            }
+            Thread.Sleep(5 * 1000);
+
+            //Console.WriteLine("{0} => {1}", DateTime.Now, Thread.CurrentThread.ManagedThreadId);
+
+            //if (Thread.CurrentThread.ManagedThreadId % 5 == 0)
+            //{
+            //    Thread.Sleep(10 * 1000);
+            //}
+            //else
+            //{
+            //    throw new BusinessException("业务异常");
+            //    Thread.Sleep(5 * 1000);
+            //}
 
             //throw new Exception("出错了！");
 

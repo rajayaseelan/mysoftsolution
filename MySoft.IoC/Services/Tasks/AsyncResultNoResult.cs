@@ -116,6 +116,7 @@ namespace MySoft.IoC.Services.Tasks
                     c_StatePending;
             }
         }
+
         #endregion
     }
 }
