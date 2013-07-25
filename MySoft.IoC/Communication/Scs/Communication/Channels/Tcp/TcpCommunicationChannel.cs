@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 2 * 1024; //4KB
+        private const int ReceiveBufferSize = 4 * 1024; //4KB
 
         #region Public properties
 
@@ -69,6 +69,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             // Disable the Nagle Algorithm for this tcp socket.  
             this._clientSocket.NoDelay = true;
+            this._clientSocket.SendTimeout = 1000;
+            this._clientSocket.ReceiveTimeout = 1000;
 
             this._receiveBuffer = new byte[ReceiveBufferSize];
 
@@ -223,6 +225,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             if (!_running)
             {
+                DisposeAsyncSEA(e);
+
                 return;
             }
 
@@ -236,20 +240,14 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     //Receive buffer data.
                     OnBufferReceived(e.Buffer, e.BytesTransferred);
 
-                    //Clear buffer.
-                    Array.Clear(e.Buffer, 0, e.BytesTransferred);
-
-                    if (_running)
+                    //Receive all bytes to the remote application
+                    if (!_clientSocket.ReceiveAsync(e))
                     {
-                        //Receive all bytes to the remote application
-                        if (!_clientSocket.ReceiveAsync(e))
-                        {
 #if DEBUG
                             IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] {1} receiving message...", DateTime.Now, (_fromServer ? "[Server]" : "[Client]"));
 #endif
 
-                            (this as ICommunicationProtocol).ReceiveCompleted(e);
-                        }
+                        (this as ICommunicationProtocol).ReceiveCompleted(e);
                     }
                 }
                 else

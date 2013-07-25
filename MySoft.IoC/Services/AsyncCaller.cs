@@ -1,7 +1,5 @@
 ﻿using MySoft.Cache;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Services.Tasks;
-using MySoft.Threading;
 using System;
 using System.Collections;
 using System.Threading;
@@ -9,13 +7,21 @@ using System.Threading;
 namespace MySoft.IoC.Services
 {
     /// <summary>
+    /// 异步方法调用
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="reqMsg"></param>
+    /// <returns></returns>
+    internal delegate ResponseMessage AsyncMethodCaller(OperationContext context, RequestMessage reqMsg);
+
+    /// <summary>
     /// 异步调用器
     /// </summary>
     internal class AsyncCaller : IDisposable
     {
         private IService service;
         private ServiceCacheType type;
-        private IAsyncResult ar;
+        private AsyncMethodCaller caller;
 
         /// <summary>
         /// 实例化AsyncCaller
@@ -26,7 +32,7 @@ namespace MySoft.IoC.Services
         {
             this.service = service;
             this.type = type;
-            this.ar = new AsyncResult<ResponseMessage>(null, null);
+            this.caller = new AsyncMethodCaller(SyncRun);
         }
 
         /// <summary>
@@ -39,7 +45,7 @@ namespace MySoft.IoC.Services
         public ResponseMessage AsyncRun(OperationContext context, RequestMessage reqMsg, TimeSpan timeout)
         {
             //异步请求
-            ManagedThreadPool.QueueUserWorkItem(WaitCallback, new ArrayList { context, reqMsg });
+            var ar = caller.BeginInvoke(context, reqMsg, null, null);
 
             //超时返回
             if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
@@ -47,8 +53,16 @@ namespace MySoft.IoC.Services
                 throw new TimeoutException(string.Format("The current request timeout {0} ms!", timeout.TotalMilliseconds));
             }
 
-            //异步响应
-            return (ar as AsyncResult<ResponseMessage>).EndInvoke();
+            try
+            {
+                //异步响应
+                return caller.EndInvoke(ar);
+            }
+            finally
+            {
+                //释放资源
+                ar.AsyncWaitHandle.Close();
+            }
         }
 
         /// <summary>
@@ -59,45 +73,13 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage SyncRun(OperationContext context, RequestMessage reqMsg)
         {
-            try
-            {
-                if (NeedCacheResult(reqMsg))
-                    return GetResponseFromCache(context, reqMsg);
-                else
-                    return GetResponseFromService(context, reqMsg);
-            }
-            catch (Exception ex)
-            {
-                //获取异常响应信息
-                return IoCHelper.GetResponse(reqMsg, ex);
-            }
+            if (NeedCacheResult(reqMsg))
+                return GetResponseFromCache(context, reqMsg);
+            else
+                return GetResponseFromService(context, reqMsg);
         }
 
         #region 私有方法
-
-        /// <summary>
-        /// 异步响应
-        /// </summary>
-        /// <param name="state"></param>
-        private void WaitCallback(object state)
-        {
-            var handler = ar as AsyncResult<ResponseMessage>;
-
-            try
-            {
-                var arr = state as ArrayList;
-                var _context = arr[0] as OperationContext;
-                var _reqMsg = arr[1] as RequestMessage;
-
-                var resMsg = SyncRun(_context, _reqMsg);
-
-                handler.SetAsCompleted(resMsg, false);
-            }
-            catch (Exception ex)
-            {
-                handler.SetAsCompleted(ex, false);
-            }
-        }
 
         /// <summary>
         /// 获取响应从本地缓存
@@ -223,7 +205,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
-            this.ar = null;
+            this.caller = null;
         }
     }
 }

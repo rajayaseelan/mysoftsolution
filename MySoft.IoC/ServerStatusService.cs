@@ -1,4 +1,5 @@
 ﻿using MySoft.IoC.Callback;
+using MySoft.IoC.Communication.Scs.Communication;
 using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
@@ -173,6 +174,9 @@ namespace MySoft.IoC
 
             var epServer = server.EndPoint as ScsTcpEndPoint;
             var items = server.Clients.GetAllItems();
+
+            //移除未连接的客户端
+            items.RemoveAll(p => p.CommunicationState == CommunicationStates.Disconnected);
 
             var list1 = items.Where(p => p.UserToken != null).ToList();
             var list2 = items.Where(p => p.UserToken == null).ToList();
