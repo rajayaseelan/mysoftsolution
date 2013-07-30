@@ -13,11 +13,6 @@ namespace MySoft.IoC.Messages
         public string MessageId { get; set; }
 
         /// <summary>
-        /// 请求消息
-        /// </summary>
-        public RequestMessage Request { get; set; }
-
-        /// <summary>
         /// 响应的消息
         /// </summary>
         public CallbackMessage Message { get; set; }

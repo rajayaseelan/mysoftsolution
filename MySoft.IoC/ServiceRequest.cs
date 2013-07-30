@@ -18,7 +18,6 @@ namespace MySoft.IoC
         private IScsClient client;
         private ServerNode node;
         private string messageId;
-        private RequestMessage reqMsg;
         private bool subscribed;
 
         /// <summary>
@@ -53,7 +52,6 @@ namespace MySoft.IoC
         public void SendRequest(string messageId, RequestMessage reqMsg)
         {
             this.messageId = messageId;
-            this.reqMsg = reqMsg;
 
             //如果连接断开，直接抛出异常
             if (client.CommunicationState != CommunicationStates.Connected)
@@ -119,7 +117,6 @@ namespace MySoft.IoC
                     var value = new CallbackMessageEventArgs
                     {
                         MessageId = e.Message.RepliedMessageId,
-                        Request = reqMsg,
                         Message = data.MessageValue
                     };
 
@@ -132,7 +129,6 @@ namespace MySoft.IoC
                     var value = new ResponseMessageEventArgs
                     {
                         MessageId = e.Message.RepliedMessageId,
-                        Request = reqMsg,
                         Message = GetResponseMessage(e)
                     };
 
@@ -175,14 +171,10 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         private void client_MessageError(object sender, ErrorEventArgs e)
         {
-            //输出错误信息
-            var resMsg = IoCHelper.GetResponse(reqMsg, e.Error);
-
             var value = new ResponseMessageEventArgs
             {
                 MessageId = messageId,
-                Request = reqMsg,
-                Message = resMsg
+                Error = e.Error
             };
 
             //把数据发送到客户端

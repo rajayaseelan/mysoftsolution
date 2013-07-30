@@ -41,7 +41,7 @@ namespace MySoft.IoC.Services
         {
             this.node = node;
             this.logger = logger;
-            this.semaphore = new Semaphore(node.MaxPool, node.MaxPool);
+            this.semaphore = new Semaphore(node.MaxCaller, node.MaxCaller);
 
             if (subscribed)
             {
@@ -52,10 +52,10 @@ namespace MySoft.IoC.Services
             }
             else
             {
-                this.pool = new ServiceRequestPool(node.MaxPool);
+                this.pool = new ServiceRequestPool(node.MaxCaller);
 
                 //最大池为100
-                for (int i = 0; i < node.MaxPool; i++)
+                for (int i = 0; i < node.MaxCaller; i++)
                 {
                     //加入队列
                     pool.Push(new ServiceRequest(this, node, false));
@@ -105,7 +105,10 @@ namespace MySoft.IoC.Services
                 //设置响应信息
                 var waitResult = hashtable[e.MessageId] as WaitResult;
 
-                waitResult.Set(e.Message);
+                if (e.Error != null)
+                    waitResult.Set(e.Error);
+                else
+                    waitResult.Set(e.Message);
             }
         }
 
@@ -175,7 +178,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage GetResult(string messageId, RequestMessage reqMsg)
         {
-            using (var waitResult = new WaitResult())
+            using (var waitResult = new WaitResult(reqMsg))
             {
                 //添加信号量对象
                 hashtable[messageId] = waitResult;

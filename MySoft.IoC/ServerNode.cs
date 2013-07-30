@@ -14,7 +14,7 @@ namespace MySoft.IoC
         private int port = 8888;
         private string key = "default";
         private bool compress = false;
-        private int maxpool = ServiceConfig.DEFAULT_CLIENT_MAXPOOL;
+        private int maxCaller = ServiceConfig.DEFAULT_CLIENT_MAXCALLER;
         private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
         private ResponseType resptype = ResponseType.Binary;
 
@@ -84,13 +84,13 @@ namespace MySoft.IoC
         }
 
         /// <summary>
-        /// Gets or sets the maxpool.
+        /// Gets or sets the maxCaller.
         /// </summary>
-        [XmlElement("maxpool")]
-        public int MaxPool
+        [XmlElement("maxCaller")]
+        public int MaxCaller
         {
-            get { return maxpool; }
-            set { maxpool = value; }
+            get { return maxCaller; }
+            set { maxCaller = value; }
         }
 
         /// <summary>

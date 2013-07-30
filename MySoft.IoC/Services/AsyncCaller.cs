@@ -2,6 +2,7 @@
 using MySoft.IoC.Messages;
 using System;
 using System.Collections;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 
 namespace MySoft.IoC.Services
@@ -44,19 +45,42 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public ResponseMessage AsyncRun(OperationContext context, RequestMessage reqMsg, TimeSpan timeout)
         {
-            //异步请求
-            var ar = caller.BeginInvoke(context, reqMsg, null, null);
-
-            //超时返回
-            if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
+            using (var waitResult = new WaitResult(reqMsg))
             {
-                throw new TimeoutException(string.Format("The current request timeout {0} ms!", timeout.TotalMilliseconds));
+                //异步请求
+                caller.BeginInvoke(context, reqMsg, AsyncCallback, waitResult);
+
+                //超时返回
+                if (!waitResult.WaitOne(timeout))
+                {
+                    throw new TimeoutException(string.Format("The current request timeout {0} ms!", timeout.TotalMilliseconds));
+                }
+
+                return waitResult.Message;
             }
+        }
+
+        /// <summary>
+        /// 异步回调
+        /// </summary>
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
+        {
+            var waitResult = ar.AsyncState as WaitResult;
 
             try
             {
+                var @delegate = (ar as AsyncResult).AsyncDelegate;
+                var func = @delegate as AsyncMethodCaller;
+
                 //异步响应
-                return caller.EndInvoke(ar);
+                var resMsg = func.EndInvoke(ar);
+
+                waitResult.Set(resMsg);
+            }
+            catch (Exception ex)
+            {
+                waitResult.Set(ex);
             }
             finally
             {

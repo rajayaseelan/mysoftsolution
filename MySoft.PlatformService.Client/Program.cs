@@ -10,6 +10,8 @@ using MySoft.IoC.Logger;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
 using MySoft.PlatformService.UserService;
+using System.Xml.Serialization;
+using System.Linq;
 
 namespace MySoft.PlatformService.Client
 {
@@ -30,8 +32,34 @@ namespace MySoft.PlatformService.Client
         #endregion
     }
 
+    [XmlRoot("Package")]
+    public class ResponsePackage<T>
+    {
+        //[XmlElement("Response")]
+        public T[] Response { get; set; }
+
+        [XmlIgnore]
+        public T Value
+        {
+            set { Response = new T[] { value }; }
+            get { return Response.FirstOrDefault(); }
+        }
+    }
+
+    [XmlRoot("User")]
+    public class User
+    {
+        [XmlElement("Id")]
+        public string Id { get; set; }
+        [XmlElement("Name")]
+        public string Name { get; set; }
+    }
+
     class Program
     {
+
+        #region TEST
+
         ////写线程将数据写入myData
         //static int myData = 0;
 
@@ -78,6 +106,8 @@ namespace MySoft.PlatformService.Client
         //    }
         //}
 
+        #endregion
+
         private static readonly object syncobj = new object();
         private static int counter = 0;
 
@@ -91,6 +121,22 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+
+            var obj = new ResponsePackage<User>
+            {
+                Value = new User
+                {
+                    Id = "my181",
+                    Name = "毛勇"
+                }
+            };
+
+            var xml = SerializationManager.SerializeXml(obj, Encoding.GetEncoding("utf-16"));
+
+            var obj1 = SerializationManager.DeserializeXml<ResponsePackage<User>>(xml);
+
+            var xml2 = xml;
+
             var guid = Guid.NewGuid();
 
             //var aa = CoreHelper.GetTypeDefaultValue(typeof(void));
@@ -394,7 +440,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -545,6 +591,12 @@ namespace MySoft.PlatformService.Client
                     Stopwatch watch = Stopwatch.StartNew();
 
                     var users = service.GetUsers();
+
+                    //var xml = SerializationManager.SerializeXml(users, Encoding.GetEncoding(936));
+
+                    //var obj = SerializationManager.DeserializeXml<IList<UserInfo>>(xml);
+
+                    //Console.WriteLine(xml);
                     //users.Clear();
 
                     //int length = 1;

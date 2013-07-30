@@ -13,9 +13,9 @@ namespace MySoft.IoC.Messages
         public string MessageId { get; set; }
 
         /// <summary>
-        /// 请求消息
+        /// 请求异常信息
         /// </summary>
-        public RequestMessage Request { get; set; }
+        public Exception Error { get; set; }
 
         /// <summary>
         /// 响应的消息
