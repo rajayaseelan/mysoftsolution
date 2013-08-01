@@ -212,16 +212,20 @@ namespace MySoft.Cache
             lock (GetSyncRoot(key))
             {
                 //从内存获取
-                internalObject = CacheHelper.Get<T>(key);
+                var tempObject = CacheHelper.Get(key);
 
                 //判断是否过期
-                if (internalObject == null)
+                if (tempObject == null)
                 {
                     //获取更新对象
                     if (type == LocalCacheType.Memory)
                         internalObject = SyncGetUpdateObject(type, key, timeout, func, state, pred);
                     else
                         internalObject = AsyncGetUpdateObject(type, key, timeout, func, state, pred);
+                }
+                else
+                {
+                    internalObject = (T)tempObject;
                 }
             }
 

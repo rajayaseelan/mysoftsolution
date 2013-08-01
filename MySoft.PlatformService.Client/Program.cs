@@ -122,22 +122,22 @@ namespace MySoft.PlatformService.Client
         static void Main(string[] args)
         {
 
-            var obj = new ResponsePackage<User>
-            {
-                Value = new User
-                {
-                    Id = "my181",
-                    Name = "Ã«ÓÂ"
-                }
-            };
+            //var obj = new ResponsePackage<User>
+            //{
+            //    Value = new User
+            //    {
+            //        Id = "my181",
+            //        Name = "Ã«ÓÂ"
+            //    }
+            //};
 
-            var xml = SerializationManager.SerializeXml(obj, Encoding.GetEncoding("utf-16"));
+            //var xml = SerializationManager.SerializeXml(obj, Encoding.GetEncoding("utf-16"));
 
-            var obj1 = SerializationManager.DeserializeXml<ResponsePackage<User>>(xml);
+            //var obj1 = SerializationManager.DeserializeXml<ResponsePackage<User>>(xml);
 
-            var xml2 = xml;
+            //var xml2 = xml;
 
-            var guid = Guid.NewGuid();
+            //var guid = Guid.NewGuid();
 
             //var aa = CoreHelper.GetTypeDefaultValue(typeof(void));
 
@@ -440,7 +440,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
