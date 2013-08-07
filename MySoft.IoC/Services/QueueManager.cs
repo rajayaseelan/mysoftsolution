@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySoft.IoC.Messages;
+using System;
 using System.Collections.Generic;
 
 namespace MySoft.IoC.Services
@@ -8,14 +9,14 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class QueueManager
     {
-        private Queue<ChannelResult> queues;
+        private Queue<WaitResult> queues;
 
         /// <summary>
         /// 实例化QueueManager
         /// </summary>
         public QueueManager()
         {
-            this.queues = new Queue<ChannelResult>();
+            this.queues = new Queue<WaitResult>();
         }
 
         /// <summary>
@@ -36,7 +37,7 @@ namespace MySoft.IoC.Services
         /// 添加到队列
         /// </summary>
         /// <param name="result"></param>
-        public void Add(ChannelResult result)
+        public void Add(WaitResult result)
         {
             lock (this.queues)
             {
@@ -47,10 +48,10 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 设置响应信息
         /// </summary>
-        /// <param name="item"></param>
-        public void Set(ResponseItem item)
+        /// <param name="resMsg"></param>
+        public void Set(ResponseMessage resMsg)
         {
-            if (item == null) return;
+            if (resMsg == null) return;
 
             lock (this.queues)
             {
@@ -59,7 +60,7 @@ namespace MySoft.IoC.Services
                     while (queues.Count > 0)
                     {
                         var result = queues.Dequeue();
-                        result.Set(item);
+                        result.Set(resMsg);
                     }
                 }
                 catch (Exception ex)
