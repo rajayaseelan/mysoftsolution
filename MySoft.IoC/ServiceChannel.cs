@@ -1,4 +1,5 @@
-﻿using MySoft.IoC.Communication.Scs.Communication.Messages;
+﻿using Amib.Threading;
+using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using System;
@@ -46,13 +47,23 @@ namespace MySoft.IoC
         /// <param name="resMsg"></param>
         private void SetMessageError(ResponseMessage resMsg)
         {
-            //如果是Json方式调用，则需要处理异常
-            if (reqMsg.InvokeMethod && resMsg.IsError)
+            if (resMsg.IsError)
             {
-                //获取最底层异常信息
-                var error = ErrorHelper.GetInnerException(resMsg.Error);
+                var error = resMsg.Error;
 
-                resMsg.Error = new Exception(error.Message);
+                //如果是Json方式调用，则需要处理异常
+                if (reqMsg.InvokeMethod)
+                {
+                    //获取最底层异常信息
+                    error = ErrorHelper.GetInnerException(error);
+
+                    resMsg.Error = new Exception(error.Message);
+                }
+                else if (resMsg.Error is WorkItemResultException)
+                {
+                    //返回内部的异常
+                    resMsg.Error = error.InnerException;
+                }
             }
         }
     }

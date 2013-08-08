@@ -249,6 +249,7 @@ namespace MySoft.IoC
             catch (Exception ex) { }
             finally
             {
+                caller.Dispose();
                 container.Dispose();
             }
         }

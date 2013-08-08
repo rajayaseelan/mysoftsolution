@@ -89,7 +89,7 @@ namespace MySoft.IoC
 
             try
             {
-                using (var caller = new AsyncCaller(service, config.CacheType))
+                using (var caller = new SyncCaller(service))
                 {
                     //写日志开始
                     call.BeginCall(reqMsg);
@@ -98,7 +98,7 @@ namespace MySoft.IoC
                     var context = GetOperationContext(reqMsg);
 
                     //同步调用服务
-                    var resMsg = caller.SyncRun(context, reqMsg);
+                    var resMsg = caller.Invoke(context, reqMsg);
 
                     elapsedTime = watch.ElapsedMilliseconds;
 

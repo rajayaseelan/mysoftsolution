@@ -18,7 +18,6 @@ namespace MySoft.IoC.Configuration
         private Type apiResolverType;
         private Type nodeResolverType;
         private bool compress = false;
-        private ServiceCacheType cacheType = ServiceCacheType.File;
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;            //默认记录6小时
         private int maxCaller = ServiceConfig.DEFAULT_SERVER_MAXCALLER;         //默认并发数为100
         private int timeout = ServiceConfig.DEFAULT_SERVER_TIMEOUT;             //默认超时时间为15秒
@@ -68,9 +67,6 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["maxCaller"] != null && attribute["maxCaller"].Value.Trim() != string.Empty)
                 maxCaller = Convert.ToInt32(attribute["maxCaller"].Value);
-
-            if (attribute["cacheType"] != null && attribute["cacheType"].Value.Trim() != string.Empty)
-                cacheType = (ServiceCacheType)Enum.Parse(typeof(ServiceCacheType), attribute["cacheType"].Value, true);
 
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
@@ -205,15 +201,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return maxCaller; }
             set { maxCaller = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the cacheType
-        /// </summary>
-        public ServiceCacheType CacheType
-        {
-            get { return cacheType; }
-            set { cacheType = value; }
         }
     }
 }

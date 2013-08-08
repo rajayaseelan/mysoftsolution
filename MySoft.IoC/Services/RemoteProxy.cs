@@ -159,10 +159,10 @@ namespace MySoft.IoC.Services
             try
             {
                 //发送请求
-                reqProxy.SendRequest(messageId, reqMsg);
+                var func = new Action<string, RequestMessage>(reqProxy.SendRequest);
 
                 //获取结果
-                return GetResult(messageId, reqMsg);
+                return GetResult(func, messageId, reqMsg);
             }
             finally
             {
@@ -173,10 +173,11 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取结果
         /// </summary>
+        /// <param name="func"></param>
         /// <param name="messageId"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResult(string messageId, RequestMessage reqMsg)
+        private ResponseMessage GetResult(Action<string, RequestMessage> func, string messageId, RequestMessage reqMsg)
         {
             using (var waitResult = new WaitResult(reqMsg))
             {
@@ -185,6 +186,8 @@ namespace MySoft.IoC.Services
 
                 try
                 {
+                    func.Invoke(messageId, reqMsg);
+
                     var timeout = TimeSpan.FromSeconds(node.Timeout);
 
                     //等待信号响应

@@ -160,7 +160,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\IServiceCallback.cs" />
-    <Compile Include="Services\ServiceCacheType.cs" />
     <Compile Include="Services\ServiceDiscoverFacility.cs" />
     <Compile Include="Messages\Status\AppCaller.cs" />
     <Compile Include="Messages\Status\AppClient.cs" />
@@ -196,6 +195,7 @@
     <Compile Include="Services\RemoteProxy.cs" />
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
+    <Compile Include="Services\SyncCaller.cs" />
     <Compile Include="Services\WaitResult.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
     <Compile Include="Messages\Status\CallInfo.cs" />

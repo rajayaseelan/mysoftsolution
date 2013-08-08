@@ -18,7 +18,6 @@ namespace MySoft.IoC.Configuration
         private string appname;                                                 //host名称
         private bool throwError = true;                                         //抛出异常
         private bool enableCache = true;                                        //是否缓存
-        private ServiceCacheType cacheType = ServiceCacheType.Memory;
 
         /// <summary>
         /// 实例化CastleFactoryConfiguration
@@ -73,9 +72,6 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["enableCache"] != null && attribute["enableCache"].Value.Trim() != string.Empty)
                 enableCache = Convert.ToBoolean(attribute["enableCache"].Value);
-
-            if (attribute["cacheType"] != null && attribute["cacheType"].Value.Trim() != string.Empty)
-                cacheType = (ServiceCacheType)Enum.Parse(typeof(ServiceCacheType), attribute["cacheType"].Value, true);
 
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
@@ -201,15 +197,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return enableCache; }
             set { enableCache = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the cacheType
-        /// </summary>
-        public ServiceCacheType CacheType
-        {
-            get { return cacheType; }
-            set { cacheType = value; }
         }
 
         /// <summary>

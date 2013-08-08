@@ -1,4 +1,5 @@
-﻿using MySoft.IoC.Communication.Scs.Server;
+﻿using Amib.Threading;
+using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
@@ -16,8 +17,9 @@ namespace MySoft.IoC
         private readonly IServiceContainer container;
         private readonly CastleServiceConfiguration config;
         private IDictionary<string, Type> callbackTypes;
+        private IDictionary<string, AsyncCaller> asyncCallers;
+        private SmartThreadPool smart;
         private Semaphore semaphore;
-        private TimeSpan timeout;
 
         /// <summary>
         /// 初始化ServiceCaller
@@ -30,14 +32,23 @@ namespace MySoft.IoC
             this.container = container;
 
             this.callbackTypes = new Dictionary<string, Type>();
+            this.asyncCallers = new Dictionary<string, AsyncCaller>();
             this.semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
-            this.timeout = TimeSpan.FromSeconds(config.Timeout);
+
+            this.smart = new SmartThreadPool(10 * 1000, config.MaxCaller, 0);
+            this.smart.Start();
 
             //初始化服务
-            Init(container, config);
+            InitTypes(container, config);
+
+            //初始化调用器
+            var services = container.Kernel.ResolveAll<IService>();
+            var timeout = TimeSpan.FromSeconds(config.Timeout);
+
+            InitCaller(services, timeout);
         }
 
-        private void Init(IServiceContainer container, CastleServiceConfiguration config)
+        private void InitTypes(IServiceContainer container, CastleServiceConfiguration config)
         {
             callbackTypes[typeof(IStatusService).FullName] = typeof(IStatusListener);
             var types = container.GetServiceTypes<ServiceContractAttribute>();
@@ -49,6 +60,22 @@ namespace MySoft.IoC
                 {
                     callbackTypes[type.FullName] = contract.CallbackType;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 初始化调用器
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="timeout"></param>
+        private void InitCaller(IService[] services, TimeSpan timeout)
+        {
+            foreach (var service in services)
+            {
+                //队列化异步调用器
+                var group = smart.CreateWorkItemsGroup(Environment.ProcessorCount);
+                var caller = new AsyncCaller(group, service, timeout);
+                asyncCallers[service.ServiceName] = caller;
             }
         }
 
@@ -67,15 +94,12 @@ namespace MySoft.IoC
             try
             {
                 //解析服务
-                var service = ParseService(appCaller);
+                var caller = GetAsyncCaller(appCaller);
 
-                using (var caller = new AsyncCaller(service, config.CacheType))
-                {
-                    //获取上下文
-                    var context = GetOperationContext(channel, appCaller);
+                //获取上下文
+                var context = GetOperationContext(channel, appCaller);
 
-                    return caller.AsyncRun(context, reqMsg, timeout);
-                }
+                return caller.Invoke(context, reqMsg);
             }
             catch (Exception ex)
             {
@@ -100,12 +124,9 @@ namespace MySoft.IoC
             //实例化当前上下文
             Type callbackType = null;
 
-            lock (callbackTypes)
+            if (callbackTypes.ContainsKey(appCaller.ServiceName))
             {
-                if (callbackTypes.ContainsKey(appCaller.ServiceName))
-                {
-                    callbackType = callbackTypes[appCaller.ServiceName];
-                }
+                callbackType = callbackTypes[appCaller.ServiceName];
             }
 
             return new OperationContext(channel, callbackType)
@@ -118,16 +139,14 @@ namespace MySoft.IoC
         /// <summary>
         /// Gets the service.
         /// </summary>
-        /// <param name="caller"></param>
+        /// <param name="appCaller"></param>
         /// <returns></returns>
-        private IService ParseService(AppCaller appCaller)
+        private AsyncCaller GetAsyncCaller(AppCaller appCaller)
         {
-            string serviceKey = "Service_" + appCaller.ServiceName;
-
             //判断服务是否存在
-            if (container.Kernel.HasComponent(serviceKey))
+            if (asyncCallers.ContainsKey(appCaller.ServiceName))
             {
-                return container.Resolve<IService>(serviceKey);
+                return asyncCallers[appCaller.ServiceName];
             }
             else
             {
@@ -142,7 +161,23 @@ namespace MySoft.IoC
 
         public void Dispose()
         {
-            callbackTypes.Clear();
+            try
+            {
+                foreach (var caller in asyncCallers.Values)
+                {
+                    caller.Dispose();
+                }
+
+                asyncCallers.Clear();
+                callbackTypes.Clear();
+
+                smart.Shutdown();
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                smart.Dispose();
+            }
         }
 
         #endregion
