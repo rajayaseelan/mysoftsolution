@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MySoft.Mail;
+using System;
 using System.Configuration;
 using System.IO;
 using System.Text;
-using System.Threading;
-using MySoft.Mail;
 
 namespace MySoft.Logger
 {
     /// <summary>
     /// 简单日志管理类(按日期生成文件)
     /// </summary>
-    public class SimpleLog : IDisposable
+    public class SimpleLog
     {
         /// <summary>
         /// 简单日志的单例 (默认路径为根目录下的Logs目录)
@@ -35,53 +33,7 @@ namespace MySoft.Logger
             Instance = new SimpleLog(dir);
         }
 
-        /// <summary>
-        /// 启动写日志线程
-        /// </summary>
-        private void DoWork(object state)
-        {
-            while (true)
-            {
-                //等待10毫秒
-                Thread.Sleep(10);
-
-                try
-                {
-                    LogInfo item = null;
-
-                    lock (logqueue)
-                    {
-                        //判断日志数
-                        if (logqueue.Count == 0)
-                        {
-                            Thread.Sleep(100);
-
-                            continue;
-                        }
-
-                        item = logqueue.Dequeue();
-                    }
-
-                    if (item != null)
-                    {
-                        string dirPath = Path.GetDirectoryName(item.FilePath);
-                        if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
-
-                        if (item.IsAppend)
-                            File.AppendAllText(item.FilePath, item.Log, Encoding.UTF8);
-                        else
-                            File.WriteAllText(item.FilePath, item.Log, Encoding.UTF8);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    //TODO
-                }
-            }
-        }
-
         private string basedir;
-        private Queue<LogInfo> logqueue;
 
         /// <summary>
         /// 设置基准路径
@@ -95,26 +47,10 @@ namespace MySoft.Logger
         /// <summary>
         /// 实例化简单日志组件
         /// </summary>
-        /// <param name="basedir">日志存储根目录，下面会自动创建Log与ErrorLog文件夹</param>
+        /// <param name="basedir">日志存储根目录，下面会自动创建Logs与ErrorLogs文件夹</param>
         public SimpleLog(string basedir)
         {
             this.basedir = basedir;
-            this.logqueue = new Queue<LogInfo>();
-
-            //启动生成文件线程
-            ThreadPool.QueueUserWorkItem(DoWork);
-        }
-
-        /// <summary>
-        /// 写日志
-        /// </summary>
-        /// <param name="info"></param>
-        private void Write(LogInfo info)
-        {
-            lock (logqueue)
-            {
-                logqueue.Enqueue(info);
-            }
         }
 
         #region 自动创建文件
@@ -159,7 +95,10 @@ namespace MySoft.Logger
 
             //获取内部异常
             if (ex.InnerException != null)
-                errorName = ex.InnerException.GetType().Name;
+            {
+                var inner = ErrorHelper.GetInnerException(ex);
+                errorName = inner.GetType().Name;
+            }
 
             return errorName;
         }
@@ -334,6 +273,8 @@ namespace MySoft.Logger
             SmtpMail.Instance.SendExceptionAsync(ex, title, to);
         }
 
+        #region 私有方法
+
         /// <summary>
         /// 获取App标题
         /// </summary>
@@ -379,6 +320,10 @@ namespace MySoft.Logger
             else
                 return null;
         }
+
+        #endregion
+
+        #region 静态方法
 
         /// <summary>
         /// 写文件日志静态方法（传入文件绝对路径与文件内容）
@@ -432,23 +377,37 @@ namespace MySoft.Logger
             var loginfo = new LogInfo { FilePath = filePath, Log = log, IsAppend = !coverFile };
 
             //将信息入队列
-            Instance.Write(loginfo);
+            var func = new Action<LogInfo>(WriteLogForItem);
+
+            //开始异步调用
+            func.BeginInvoke(loginfo, null, null);
+        }
+
+        /// <summary>
+        /// 写日志
+        /// </summary>
+        /// <param name="item"></param>
+        private static void WriteLogForItem(LogInfo item)
+        {
+            if (item == null) return;
+
+            try
+            {
+                string dirPath = Path.GetDirectoryName(item.FilePath);
+                if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+
+                if (item.IsAppend)
+                    File.AppendAllText(item.FilePath, item.Log, Encoding.UTF8);
+                else
+                    File.WriteAllText(item.FilePath, item.Log, Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                //TODO
+            }
         }
 
         #endregion
-
-        #region IDisposable 成员
-
-        /// <summary>
-        /// 清理日志
-        /// </summary>
-        public void Dispose()
-        {
-            lock (logqueue)
-            {
-                logqueue.Clear();
-            }
-        }
 
         #endregion
 

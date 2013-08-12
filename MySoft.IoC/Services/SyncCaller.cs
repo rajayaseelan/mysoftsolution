@@ -130,7 +130,7 @@ namespace MySoft.IoC.Services
             if (resMsg is ResponseBuffer) return false;
 
             //如果符合条件，则缓存 
-            return !resMsg.IsError;
+            return !resMsg.IsError && resMsg.Count > 0;
         }
 
         /// <summary>

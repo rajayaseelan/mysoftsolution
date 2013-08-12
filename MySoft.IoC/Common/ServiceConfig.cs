@@ -21,7 +21,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The client default max caller
         /// </summary>
-        public const int DEFAULT_CLIENT_MAXCALLER = 30; //默认并发数30
+        public const int DEFAULT_CLIENT_MAXCALLER = 10; //默认并发数10
 
         /// <summary>
         /// The default client call timeout number. 

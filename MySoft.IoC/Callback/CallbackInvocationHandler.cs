@@ -3,8 +3,6 @@ using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using System;
-using System.Collections;
-using System.Threading;
 
 namespace MySoft.IoC.Callback
 {
@@ -13,52 +11,52 @@ namespace MySoft.IoC.Callback
     /// </summary>
     internal class CallbackInvocationHandler : IProxyInvocationHandler
     {
-        private Queue _queue;
         private Type _callType;
         private IScsServerClient _channel;
+        private Func<IScsMessage, bool> _func;
 
         public CallbackInvocationHandler(Type callType, IScsServerClient channel)
         {
             this._callType = callType;
             this._channel = channel;
-            this._queue = Queue.Synchronized(new Queue());
-
-            ThreadPool.QueueUserWorkItem(DoWork);
+            this._func = new Func<IScsMessage, bool>(Send);
         }
 
         /// <summary>
-        /// 定时任务
+        /// 发送消息
         /// </summary>
-        /// <param name="state"></param>
-        private void DoWork(object state)
+        /// <param name="message"></param>
+        private bool Send(IScsMessage message)
         {
-            while (!_channel.Canceled)
+            try
             {
-                Thread.Sleep(100);
-
-                if (_queue.Count == 0) continue;
-
-                try
+                if (message != null)
                 {
-                    var message = _queue.Dequeue() as IScsMessage;
-
-                    if (message != null)
-                    {
-                        //发送回调数据
-                        _channel.SendMessage(message);
-                    }
+                    //发送回调数据
+                    _channel.SendMessage(message);
                 }
-                catch (Exception ex)
-                {
 
-                }
+                return true;
             }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
 
-            //清除并断开连接
-            _queue.Clear();
+        /// <summary>
+        /// 异步回调
+        /// </summary>
+        /// <param name="ar"></param>
+        /// <returns></returns>
+        private void AsyncCallback(IAsyncResult ar)
+        {
+            var completed = _func.EndInvoke(ar);
 
-            Thread.Sleep(TimeSpan.FromSeconds(1));
-            _channel.Disconnect();
+            if (!completed)
+            {
+                _channel.Disconnect();
+            }
         }
 
         #region IProxyInvocationHandler 成员
@@ -88,7 +86,8 @@ namespace MySoft.IoC.Callback
             //回发消息
             IScsMessage scsMessage = new ScsCallbackMessage(message);
 
-            _queue.Enqueue(scsMessage);
+            //开始异步调用
+            _func.BeginInvoke(scsMessage, AsyncCallback, null);
 
             //返回null
             return null;

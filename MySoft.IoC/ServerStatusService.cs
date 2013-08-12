@@ -561,7 +561,6 @@ namespace MySoft.IoC
             var callback = OperationContext.Current.GetCallbackChannel<IStatusListener>();
             var channel = OperationContext.Current.Channel;
 
-            channel.Canceled = false;
             MessageCenter.Instance.AddListener(new MessageListener(channel, callback, options, subscribeTypes));
         }
 
@@ -575,7 +574,6 @@ namespace MySoft.IoC
             if (listener == null)
                 throw new WarningException("Please enable to subscribe.");
 
-            channel.Canceled = true;
             MessageCenter.Instance.RemoveListener(listener);
         }
 

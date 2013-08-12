@@ -63,11 +63,6 @@ namespace MySoft.IoC.Communication.Scs.Server
         public object UserToken { get; set; }
 
         /// <summary>
-        /// Get or set callback cancel.
-        /// </summary>
-        public bool Canceled { get; set; }
-
-        /// <summary>
         /// Gets/sets wire protocol that is used while reading and writing messages.
         /// </summary>
         public IScsWireProtocol WireProtocol

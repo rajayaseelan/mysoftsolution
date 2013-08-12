@@ -36,11 +36,6 @@ namespace MySoft.IoC.Communication.Scs.Server
         object UserToken { get; set; }
 
         /// <summary>
-        /// Callback cancel.
-        /// </summary>
-        bool Canceled { get; set; }
-
-        /// <summary>
         /// Disconnects from server.
         /// </summary>
         void Disconnect();

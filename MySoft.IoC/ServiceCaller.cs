@@ -35,7 +35,16 @@ namespace MySoft.IoC
             this.asyncCallers = new Dictionary<string, AsyncCaller>();
             this.semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
 
-            this.smart = new SmartThreadPool(10 * 1000, config.MaxCaller, 0);
+            var stp = new STPStartInfo
+            {
+                ThreadPoolName = "ServiceCaller",
+                ThreadPriority = ThreadPriority.Highest,
+                IdleTimeout = 1000,
+                MaxWorkerThreads = config.MaxCaller,
+                MinWorkerThreads = 0
+            };
+
+            this.smart = new SmartThreadPool(stp);
             this.smart.Start();
 
             //初始化服务
@@ -74,6 +83,7 @@ namespace MySoft.IoC
             {
                 //队列化异步调用器
                 var group = smart.CreateWorkItemsGroup(Environment.ProcessorCount);
+
                 var caller = new AsyncCaller(group, service, timeout);
                 asyncCallers[service.ServiceName] = caller;
             }

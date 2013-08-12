@@ -121,7 +121,6 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
-
             //var obj = new ResponsePackage<User>
             //{
             //    Value = new User
@@ -440,7 +439,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
