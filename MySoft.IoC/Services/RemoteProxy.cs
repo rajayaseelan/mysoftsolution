@@ -186,6 +186,7 @@ namespace MySoft.IoC.Services
 
                 try
                 {
+                    //发送请求
                     func.Invoke(messageId, reqMsg);
 
                     var timeout = TimeSpan.FromSeconds(node.Timeout);
@@ -215,7 +216,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private Exception GetTimeoutException(RequestMessage reqMsg, TimeSpan timeout)
         {
-            var title = string.Format("【{0}:{1}】 => Invoking remote service ({2}, {3}) timeout ({4}) ms.\r\nParameters => {5}"
+            var title = string.Format("【{0}:{1}】 => Remote service ({2}, {3}) invoking timeout ({4}) ms.\r\nParameters => {5}"
                , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds, reqMsg.Parameters.ToString());
 
             //获取异常

@@ -40,8 +40,9 @@ namespace MySoft.IoC
                 ThreadPoolName = "ServiceCaller",
                 ThreadPriority = ThreadPriority.Highest,
                 IdleTimeout = 1000,
-                MaxWorkerThreads = config.MaxCaller,
-                MinWorkerThreads = 0
+                MaxWorkerThreads = Math.Max(30, config.MaxCaller),
+                MinWorkerThreads = 10,
+                StartSuspended = true
             };
 
             this.smart = new SmartThreadPool(stp);
@@ -81,10 +82,7 @@ namespace MySoft.IoC
         {
             foreach (var service in services)
             {
-                //队列化异步调用器
-                var group = smart.CreateWorkItemsGroup(Environment.ProcessorCount);
-
-                var caller = new AsyncCaller(group, service, timeout);
+                var caller = new AsyncCaller(smart, service, timeout);
                 asyncCallers[service.ServiceName] = caller;
             }
         }
@@ -173,14 +171,10 @@ namespace MySoft.IoC
         {
             try
             {
-                foreach (var caller in asyncCallers.Values)
-                {
-                    caller.Dispose();
-                }
-
                 asyncCallers.Clear();
                 callbackTypes.Clear();
 
+                smart.Cancel(true);
                 smart.Shutdown();
             }
             catch (Exception ex) { }

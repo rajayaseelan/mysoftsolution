@@ -9,7 +9,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 同步调用器
     /// </summary>
-    internal class SyncCaller : IDisposable
+    internal class SyncCaller
     {
         private IService service;
 
@@ -154,13 +154,5 @@ namespace MySoft.IoC.Services
         }
 
         #endregion
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        public virtual void Dispose()
-        {
-            //TODO
-        }
     }
 }

@@ -9,20 +9,19 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class AsyncCaller : SyncCaller
     {
-        private IWorkItemsGroup group;
+        private IWorkItemsGroup smart;
         private TimeSpan timeout;
 
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
-        /// <param name="group"></param>
+        /// <param name="smart"></param>
         /// <param name="service"></param>
         /// <param name="timeout"></param>
-        public AsyncCaller(IWorkItemsGroup group, IService service, TimeSpan timeout)
+        public AsyncCaller(IWorkItemsGroup smart, IService service, TimeSpan timeout)
             : base(service)
         {
-            this.group = group;
-            this.group.Start();
+            this.smart = smart;
             this.timeout = timeout;
         }
 
@@ -35,9 +34,9 @@ namespace MySoft.IoC.Services
         public override ResponseMessage Invoke(OperationContext context, RequestMessage reqMsg)
         {
             //开始异步任务
-            var worker = group.QueueWorkItem<OperationContext, RequestMessage, ResponseMessage>(base.Invoke, context, reqMsg);
+            var worker = smart.QueueWorkItem<OperationContext, RequestMessage, ResponseMessage>(base.Invoke, context, reqMsg);
 
-            if (!group.WaitForIdle(timeout))
+            if (!smart.WaitForIdle(timeout))
             {
                 worker.Cancel(true);
 
@@ -46,20 +45,6 @@ namespace MySoft.IoC.Services
 
             //结果
             return worker.Result;
-        }
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        public override void Dispose()
-        {
-            try
-            {
-                this.group.Cancel(true);
-            }
-            catch (Exception ex)
-            {
-            }
         }
     }
 }

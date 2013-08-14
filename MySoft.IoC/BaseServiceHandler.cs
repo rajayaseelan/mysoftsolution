@@ -89,30 +89,18 @@ namespace MySoft.IoC
 
             try
             {
-                using (var caller = new SyncCaller(service))
-                {
-                    //写日志开始
-                    call.BeginCall(reqMsg);
+                //写日志开始
+                call.BeginCall(reqMsg);
 
-                    //获取上下文
-                    var context = GetOperationContext(reqMsg);
+                //获取响应
+                var resMsg = GetResponse(reqMsg);
 
-                    //同步调用服务
-                    var resMsg = caller.Invoke(context, reqMsg);
+                elapsedTime = watch.ElapsedMilliseconds;
 
-                    elapsedTime = watch.ElapsedMilliseconds;
+                //写日志结束
+                call.EndCall(reqMsg, resMsg, elapsedTime);
 
-                    //如果时间为0
-                    if (resMsg.ElapsedTime == 0)
-                    {
-                        resMsg.ElapsedTime = elapsedTime;
-                    }
-
-                    //写日志结束
-                    call.EndCall(reqMsg, resMsg, watch.ElapsedMilliseconds);
-
-                    return resMsg;
-                }
+                return resMsg;
             }
             finally
             {
@@ -121,6 +109,22 @@ namespace MySoft.IoC
                     watch.Stop();
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取响应信息
+        /// </summary>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponse(RequestMessage reqMsg)
+        {
+            //同步调用服务
+            var caller = new SyncCaller(service);
+
+            //获取上下文
+            var context = GetOperationContext(reqMsg);
+
+            return caller.Invoke(context, reqMsg);
         }
 
         /// <summary>

@@ -12,6 +12,7 @@ using MySoft.Logger;
 using MySoft.PlatformService.UserService;
 using System.Xml.Serialization;
 using System.Linq;
+using Amib.Threading;
 
 namespace MySoft.PlatformService.Client
 {
@@ -121,6 +122,8 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            //var result = group.QueueWorkItem<(new WorkItemCallback(state =>{return state;}),null,new PostExecuteWorkItemCallback())
+
             //var obj = new ResponsePackage<User>
             //{
             //    Value = new User
@@ -439,7 +442,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 50; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
@@ -584,11 +587,10 @@ namespace MySoft.PlatformService.Client
             while (true)
             {
                 var service = CastleFactory.Create().GetChannel<IUserService>();
+                Stopwatch watch = Stopwatch.StartNew();
 
                 try
                 {
-                    Stopwatch watch = Stopwatch.StartNew();
-
                     var users = service.GetUsers();
 
                     //var xml = SerializationManager.SerializeXml(users, Encoding.GetEncoding(936));
@@ -638,8 +640,6 @@ namespace MySoft.PlatformService.Client
                     Console.WriteLine(DateTime.Now + "¡¾" + counter + "¡¿times => " + users.Count + " timeout: "
                                     + watch.ElapsedMilliseconds + " ms. " + Thread.CurrentThread.ManagedThreadId);
 
-                    watch.Stop();
-
                     //if (value != null)
                     //{
                     //    Console.WriteLine("¡¾" + counter + "¡¿times => " + value.Name.Length + " timeout: " + watch.ElapsedMilliseconds + " ms.");
@@ -657,15 +657,22 @@ namespace MySoft.PlatformService.Client
                 }
                 catch (TimeoutException ex)
                 {
-                    SimpleLog.Instance.WriteLogForDir("Timeout", ex);
+                    //SimpleLog.Instance.WriteLogForDir("Timeout", ex);
 
                     string msg = ErrorHelper.GetInnerException(ex).Message;
-                    Console.WriteLine("[{0}] {1}", DateTime.Now, msg);
+                    Console.WriteLine("[{0}] {1}  timeout: {2} ms.", DateTime.Now, msg, watch.ElapsedMilliseconds);
                 }
                 catch (Exception ex)
                 {
                     string msg = ErrorHelper.GetInnerException(ex).Message;
                     Console.WriteLine("[{0}] {1}", DateTime.Now, msg);
+                }
+                finally
+                {
+                    if (watch.IsRunning)
+                    {
+                        watch.Stop();
+                    }
                 }
             }
         }
