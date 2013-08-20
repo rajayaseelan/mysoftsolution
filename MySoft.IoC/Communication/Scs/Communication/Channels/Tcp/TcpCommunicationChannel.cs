@@ -15,7 +15,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 2 * 1024; //2KB
+        private const int ReceiveBufferSize = 1024; //1KB
 
         #region Public properties
 
@@ -69,8 +69,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             // Disable the Nagle Algorithm for this tcp socket.  
             this._clientSocket.NoDelay = true;
-            this._clientSocket.SendTimeout = 1000;
-            this._clientSocket.ReceiveTimeout = 1000;
 
             this._receiveBuffer = new byte[ReceiveBufferSize];
 

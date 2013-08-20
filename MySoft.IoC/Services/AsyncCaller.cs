@@ -1,6 +1,6 @@
-﻿using Amib.Threading;
-using MySoft.IoC.Messages;
+﻿using MySoft.IoC.Messages;
 using System;
+using System.Collections;
 
 namespace MySoft.IoC.Services
 {
@@ -9,19 +9,18 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class AsyncCaller : SyncCaller
     {
-        private IWorkItemsGroup smart;
+        private TaskPool pool;
         private TimeSpan timeout;
 
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
-        /// <param name="smart"></param>
         /// <param name="service"></param>
         /// <param name="timeout"></param>
-        public AsyncCaller(IWorkItemsGroup smart, IService service, TimeSpan timeout)
+        public AsyncCaller(IService service, TimeSpan timeout)
             : base(service)
         {
-            this.smart = smart;
+            this.pool = new TaskPool(10, 1, 2);
             this.timeout = timeout;
         }
 
@@ -33,18 +32,53 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public override ResponseMessage Invoke(OperationContext context, RequestMessage reqMsg)
         {
-            //开始异步任务
-            var worker = smart.QueueWorkItem<OperationContext, RequestMessage, ResponseMessage>(base.Invoke, context, reqMsg);
-
-            if (!smart.WaitForIdle(timeout))
+            using (var waitResult = new WaitResult(reqMsg))
             {
-                worker.Cancel(true);
+                //开始一个异步任务
+                pool.AddTaskItem(WorkCallback, new ArrayList { waitResult, context, reqMsg });
 
-                throw new TimeoutException(string.Format("The current request timeout {0} ms!", timeout.TotalMilliseconds));
+                if (!waitResult.WaitOne(timeout))
+                {
+                    throw new TimeoutException(string.Format("The current request timeout {0} ms!", timeout.TotalMilliseconds));
+                }
+
+                return waitResult.Message;
             }
+        }
 
-            //结果
-            return worker.Result;
+        /// <summary>
+        /// 回调处理
+        /// </summary>
+        /// <param name="state"></param>
+        private void WorkCallback(object state)
+        {
+            if (state == null) return;
+            var arr = state as ArrayList;
+
+            var waitResult = arr[0] as WaitResult;
+
+            try
+            {
+                var context = arr[1] as OperationContext;
+                var reqMsg = arr[2] as RequestMessage;
+
+                //调用基类方法
+                var resMsg = base.Invoke(context, reqMsg);
+
+                waitResult.Set(resMsg);
+            }
+            catch (Exception ex)
+            {
+                waitResult.Set(ex);
+            }
+        }
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public override void Dispose()
+        {
+            pool.Dispose();
         }
     }
 }

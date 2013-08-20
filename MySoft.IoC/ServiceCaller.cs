@@ -1,5 +1,4 @@
-﻿using Amib.Threading;
-using MySoft.IoC.Communication.Scs.Server;
+﻿using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
@@ -18,7 +17,6 @@ namespace MySoft.IoC
         private readonly CastleServiceConfiguration config;
         private IDictionary<string, Type> callbackTypes;
         private IDictionary<string, AsyncCaller> asyncCallers;
-        private SmartThreadPool smart;
         private Semaphore semaphore;
 
         /// <summary>
@@ -34,19 +32,6 @@ namespace MySoft.IoC
             this.callbackTypes = new Dictionary<string, Type>();
             this.asyncCallers = new Dictionary<string, AsyncCaller>();
             this.semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
-
-            var stp = new STPStartInfo
-            {
-                ThreadPoolName = "ServiceCaller",
-                ThreadPriority = ThreadPriority.Highest,
-                IdleTimeout = 1000,
-                MaxWorkerThreads = Math.Max(30, config.MaxCaller),
-                MinWorkerThreads = 10,
-                StartSuspended = true
-            };
-
-            this.smart = new SmartThreadPool(stp);
-            this.smart.Start();
 
             //初始化服务
             InitTypes(container, config);
@@ -82,7 +67,7 @@ namespace MySoft.IoC
         {
             foreach (var service in services)
             {
-                var caller = new AsyncCaller(smart, service, timeout);
+                var caller = new AsyncCaller(service, timeout);
                 asyncCallers[service.ServiceName] = caller;
             }
         }
@@ -171,16 +156,18 @@ namespace MySoft.IoC
         {
             try
             {
-                asyncCallers.Clear();
-                callbackTypes.Clear();
-
-                smart.Cancel(true);
-                smart.Shutdown();
+                //清理资源
+                foreach (var kvp in asyncCallers)
+                {
+                    var caller = kvp.Value;
+                    caller.Dispose();
+                }
             }
             catch (Exception ex) { }
             finally
             {
-                smart.Dispose();
+                asyncCallers.Clear();
+                callbackTypes.Clear();
             }
         }
 

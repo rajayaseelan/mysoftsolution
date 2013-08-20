@@ -119,12 +119,13 @@ namespace MySoft.IoC
         private ResponseMessage GetResponse(RequestMessage reqMsg)
         {
             //同步调用服务
-            var caller = new SyncCaller(service);
+            using (var caller = new SyncCaller(service))
+            {
+                //获取上下文
+                var context = GetOperationContext(reqMsg);
 
-            //获取上下文
-            var context = GetOperationContext(reqMsg);
-
-            return caller.Invoke(context, reqMsg);
+                return caller.Invoke(context, reqMsg);
+            }
         }
 
         /// <summary>

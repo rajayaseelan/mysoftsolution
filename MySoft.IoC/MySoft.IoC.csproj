@@ -196,6 +196,7 @@
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
     <Compile Include="Services\SyncCaller.cs" />
+    <Compile Include="Services\TaskPool.cs" />
     <Compile Include="Services\WaitResult.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
     <Compile Include="Messages\Status\CallInfo.cs" />

@@ -9,7 +9,7 @@ namespace MySoft.IoC.Services
     /// <summary>
     /// 同步调用器
     /// </summary>
-    internal class SyncCaller
+    internal class SyncCaller : IDisposable
     {
         private IService service;
 
@@ -82,31 +82,52 @@ namespace MySoft.IoC.Services
             var type = reqMsg.Parameters.Count == 0 ? LocalCacheType.File : LocalCacheType.Memory;
 
             //获取内存缓存
-            return CacheHelper<ResponseMessage>.Get(type, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
+            var resMsg = CacheHelper<ResponseMessage>.Get(type, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
             {
                 var arr = state as ArrayList;
                 var _context = arr[0] as OperationContext;
                 var _reqMsg = arr[1] as RequestMessage;
 
-                //同步请求响应数据
-                var resMsg = GetResponseFromService(_context, _reqMsg);
-
-                if (CheckResponse(resMsg))
-                {
-                    resMsg = new ResponseBuffer
-                    {
-                        ServiceName = resMsg.ServiceName,
-                        MethodName = resMsg.MethodName,
-                        Parameters = resMsg.Parameters,
-                        ElapsedTime = resMsg.ElapsedTime,
-                        Error = resMsg.Error,
-                        Buffer = IoCHelper.SerializeObject(resMsg.Value)
-                    };
-                }
-
-                return resMsg;
+                //获取响应数据
+                return GetResponse(_context, _reqMsg);
 
             }, new ArrayList { context, reqMsg }, p => p is ResponseBuffer);
+
+            //临时缓存处理，减小压力
+            if (resMsg != null && resMsg.Count == 0)
+            {
+                //如果数据为0，则缓存30秒
+                CacheHelper.Insert(cacheKey, resMsg, 30);
+            }
+
+            return resMsg;
+        }
+
+        /// <summary>
+        /// 获取响应数据
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
+        {
+            //同步请求响应数据
+            var resMsg = GetResponseFromService(context, reqMsg);
+
+            if (CheckResponse(resMsg))
+            {
+                resMsg = new ResponseBuffer
+                {
+                    ServiceName = resMsg.ServiceName,
+                    MethodName = resMsg.MethodName,
+                    Parameters = resMsg.Parameters,
+                    ElapsedTime = resMsg.ElapsedTime,
+                    Error = resMsg.Error,
+                    Buffer = IoCHelper.SerializeObject(resMsg.Value)
+                };
+            }
+
+            return resMsg;
         }
 
         /// <summary>
@@ -154,5 +175,13 @@ namespace MySoft.IoC.Services
         }
 
         #endregion
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public virtual void Dispose()
+        {
+            //TODO
+        }
     }
 }
