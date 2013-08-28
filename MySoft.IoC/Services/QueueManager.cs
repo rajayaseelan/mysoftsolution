@@ -78,5 +78,28 @@ namespace MySoft.IoC.Services
                 }
             }
         }
+
+        /// <summary>
+        /// 设置响应信息
+        /// </summary>
+        /// <param name="error"></param>
+        public void Set(Exception error)
+        {
+            lock (this.queues)
+            {
+                try
+                {
+                    while (queues.Count > 0)
+                    {
+                        var result = queues.Dequeue();
+                        result.Set(error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    queues.Clear();
+                }
+            }
+        }
     }
 }

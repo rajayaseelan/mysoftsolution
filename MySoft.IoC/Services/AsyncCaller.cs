@@ -23,7 +23,7 @@ namespace MySoft.IoC.Services
         public AsyncCaller(IService service, int concurrency, TimeSpan timeout)
             : base(service)
         {
-            this.pool = new TaskPool(concurrency, 1, 1);
+            this.pool = new TaskPool(concurrency, 0, 2);
             this.queues = new Dictionary<string, QueueManager>();
             this.timeout = timeout;
         }
@@ -98,58 +98,31 @@ namespace MySoft.IoC.Services
 
             //解析数据
             var manager = arr[0] as QueueManager;
-            var context = arr[1] as OperationContext;
-            var reqMsg = arr[2] as RequestMessage;
-            ResponseMessage resMsg = null;
+            if (manager == null) return;
 
             try
             {
+                var context = arr[1] as OperationContext;
+                var reqMsg = arr[2] as RequestMessage;
+
                 //获取响应信息
-                resMsg = GetResponse(manager.Count, context, reqMsg);
+                var resMsg = base.Invoke(context, reqMsg);
+
+                manager.Set(resMsg);
             }
             catch (Exception ex)
             {
-                //获取异常响应
-                resMsg = IoCHelper.GetResponse(reqMsg, ex);
+                //设置异常
+                manager.Set(ex);
             }
             finally
             {
                 lock (queues)
                 {
-                    manager.Set(resMsg);
-
                     //移除对应的Key
                     queues.Remove(manager.Key);
                 }
             }
-        }
-
-        /// <summary>
-        /// 获取响应信息
-        /// </summary>
-        /// <param name="queueCount"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponse(int queueCount, OperationContext context, RequestMessage reqMsg)
-        {
-            //获取响应信息
-            var resMsg = base.Invoke(context, reqMsg);
-
-            if (queueCount > 1 && !(resMsg is ResponseBuffer))
-            {
-                resMsg = new ResponseBuffer
-                {
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Error = resMsg.Error,
-                    Buffer = IoCHelper.SerializeObject(resMsg.Value)
-                };
-            }
-
-            return resMsg;
         }
 
         /// <summary>

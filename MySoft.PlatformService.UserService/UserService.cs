@@ -152,41 +152,15 @@ namespace MySoft.PlatformService.UserService
         {
             //throw new BusinessException("业务异常");
 
-            Thread.Sleep(5 * 1000);
-
-            //Console.WriteLine("{0} => {1}", DateTime.Now, Thread.CurrentThread.ManagedThreadId);
-
-            //if (Thread.CurrentThread.ManagedThreadId % 5 == 0)
-            //{
-            //    Thread.Sleep(10 * 1000);
-            //}
-            //else
-            //{
-            //    throw new BusinessException("业务异常");
-            //    Thread.Sleep(5 * 1000);
-            //}
-
-            //throw new Exception("出错了！");
+            Thread.Sleep(1000);
 
             var list = new List<UserInfo>();
 
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 10000; i++)
             {
                 var count = new Random(Guid.NewGuid().GetHashCode()).Next(1, 100) * new Random(Guid.NewGuid().GetHashCode()).Next(1, 100);
                 list.Add(new UserInfo { Name = "test_" + count, Description = "test_" + count + "_" + Thread.CurrentThread.ManagedThreadId });
             }
-
-            //Console.WriteLine("{0} => {1}", DateTime.Now, Thread.CurrentThread.ManagedThreadId);
-            //int value = new Random().Next(1, 10);
-
-            //if (Thread.CurrentThread.ManagedThreadId % 2 == 0)
-            //{
-            //    throw new Exception("出错了！");
-            //}
-            //else if (Thread.CurrentThread.ManagedThreadId % 3 == 0)
-            //{
-            //Thread.Sleep(5 * 1000);
-            //}
 
             return list;
         }

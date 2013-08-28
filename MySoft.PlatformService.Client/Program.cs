@@ -442,7 +442,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 30; i++)
             {
                 Thread thread = new Thread(DoWork1);
                 thread.Start(e);
