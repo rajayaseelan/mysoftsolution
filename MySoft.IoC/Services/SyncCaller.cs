@@ -93,13 +93,6 @@ namespace MySoft.IoC.Services
 
             }, new ArrayList { context, reqMsg }, p => p is ResponseBuffer);
 
-            //临时缓存处理，减小压力
-            if (resMsg != null && resMsg.Count == 0)
-            {
-                //如果数据为0，则缓存30秒
-                CacheHelper.Insert(cacheKey, resMsg, 30);
-            }
-
             return resMsg;
         }
 
@@ -148,10 +141,11 @@ namespace MySoft.IoC.Services
         private bool CheckResponse(ResponseMessage resMsg)
         {
             if (resMsg == null) return false;
+            if (resMsg.IsError) return false;
             if (resMsg is ResponseBuffer) return false;
 
             //如果符合条件，则缓存 
-            return !resMsg.IsError && resMsg.Count > 0;
+            return resMsg.Count >= 0;
         }
 
         /// <summary>

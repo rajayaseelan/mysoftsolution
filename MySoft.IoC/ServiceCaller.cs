@@ -67,7 +67,7 @@ namespace MySoft.IoC
         {
             foreach (var service in services)
             {
-                var caller = new AsyncCaller(service, timeout);
+                var caller = new AsyncCaller(service, 30, timeout);
                 asyncCallers[service.ServiceName] = caller;
             }
         }

@@ -9,14 +9,25 @@ namespace MySoft.IoC.Services
     /// </summary>
     internal class QueueManager
     {
+        private string queueKey;
         private Queue<WaitResult> queues;
 
         /// <summary>
         /// 实例化QueueManager
         /// </summary>
-        public QueueManager()
+        /// <param name="queueKey"></param>
+        public QueueManager(string queueKey)
         {
+            this.queueKey = queueKey;
             this.queues = new Queue<WaitResult>();
+        }
+
+        /// <summary>
+        /// 获取队列Key
+        /// </summary>
+        public string Key
+        {
+            get { return queueKey; }
         }
 
         /// <summary>
@@ -51,8 +62,6 @@ namespace MySoft.IoC.Services
         /// <param name="resMsg"></param>
         public void Set(ResponseMessage resMsg)
         {
-            if (resMsg == null) return;
-
             lock (this.queues)
             {
                 try

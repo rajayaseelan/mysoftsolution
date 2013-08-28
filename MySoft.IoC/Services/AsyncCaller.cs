@@ -11,21 +11,8 @@ namespace MySoft.IoC.Services
     internal class AsyncCaller : SyncCaller
     {
         private TimeSpan timeout;
-        private bool isQueueTask;
         private TaskPool pool;
         private IDictionary<string, QueueManager> queues;
-
-        /// <summary>
-        /// 实例化AsyncCaller
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="timeout"></param>
-        public AsyncCaller(IService service, TimeSpan timeout)
-            : base(service)
-        {
-            this.timeout = timeout;
-            this.isQueueTask = false;
-        }
 
         /// <summary>
         /// 实例化AsyncCaller
@@ -39,7 +26,6 @@ namespace MySoft.IoC.Services
             this.pool = new TaskPool(concurrency, 1, 1);
             this.queues = new Dictionary<string, QueueManager>();
             this.timeout = timeout;
-            this.isQueueTask = true;
         }
 
         /// <summary>
@@ -50,12 +36,6 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public override ResponseMessage Invoke(OperationContext context, RequestMessage reqMsg)
         {
-            //异步处理
-            if (!isQueueTask)
-            {
-                return AsyncInvoke(context, reqMsg);
-            }
-
             using (var waitResult = new WaitResult(reqMsg))
             {
                 bool isRunTask;
@@ -75,33 +55,6 @@ namespace MySoft.IoC.Services
 
                 return waitResult.Message;
             }
-        }
-
-        /// <summary>
-        /// 异步调用
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage AsyncInvoke(OperationContext context, RequestMessage reqMsg)
-        {
-            var func = new Func<OperationContext, RequestMessage, ResponseMessage>((_context, _reqMsg) =>
-            {
-                return base.Invoke(_context, _reqMsg);
-            });
-
-            //开始异步调用
-            var ar = func.BeginInvoke(context, reqMsg, null, null);
-
-            //判断是否超时
-            if (!ar.AsyncWaitHandle.WaitOne(timeout, false))
-            {
-                throw new TimeoutException(string.Format("The current request timeout {0} ms!", timeout.TotalMilliseconds));
-            }
-
-            //关闭句柄
-            ar.AsyncWaitHandle.Close();
-            return func.EndInvoke(ar);
         }
 
         /// <summary>
@@ -152,7 +105,7 @@ namespace MySoft.IoC.Services
             try
             {
                 //获取响应信息
-                resMsg = base.Invoke(context, reqMsg);
+                resMsg = GetResponse(manager.Count, context, reqMsg);
             }
             catch (Exception ex)
             {
@@ -161,43 +114,42 @@ namespace MySoft.IoC.Services
             }
             finally
             {
-                //设置响应
-                SetResponse(manager, reqMsg, resMsg);
+                lock (queues)
+                {
+                    manager.Set(resMsg);
+
+                    //移除对应的Key
+                    queues.Remove(manager.Key);
+                }
             }
         }
 
         /// <summary>
-        /// 设置响应
+        /// 获取响应信息
         /// </summary>
-        /// <param name="manager"></param>
+        /// <param name="queueCount"></param>
+        /// <param name="context"></param>
         /// <param name="reqMsg"></param>
-        /// <param name="resMsg"></param>
-        private void SetResponse(QueueManager manager, RequestMessage reqMsg, ResponseMessage resMsg)
+        /// <returns></returns>
+        private ResponseMessage GetResponse(int queueCount, OperationContext context, RequestMessage reqMsg)
         {
-            if (manager.Count > 1)
+            //获取响应信息
+            var resMsg = base.Invoke(context, reqMsg);
+
+            if (queueCount > 1 && !(resMsg is ResponseBuffer))
             {
-                //非invoke请求。
-                if (!reqMsg.InvokeMethod && !(resMsg is ResponseBuffer))
+                resMsg = new ResponseBuffer
                 {
-                    resMsg = new ResponseBuffer
-                    {
-                        ServiceName = resMsg.ServiceName,
-                        MethodName = resMsg.MethodName,
-                        Parameters = resMsg.Parameters,
-                        ElapsedTime = resMsg.ElapsedTime,
-                        Error = resMsg.Error,
-                        Buffer = IoCHelper.SerializeObject(resMsg.Value)
-                    };
-                }
+                    ServiceName = resMsg.ServiceName,
+                    MethodName = resMsg.MethodName,
+                    Parameters = resMsg.Parameters,
+                    ElapsedTime = resMsg.ElapsedTime,
+                    Error = resMsg.Error,
+                    Buffer = IoCHelper.SerializeObject(resMsg.Value)
+                };
             }
 
-            lock (queues)
-            {
-                manager.Set(resMsg);
-
-                //移除对应的Key
-                queues.Remove(manager.Key);
-            }
+            return resMsg;
         }
 
         /// <summary>
@@ -205,11 +157,8 @@ namespace MySoft.IoC.Services
         /// </summary>
         public override void Dispose()
         {
-            if (isQueueTask)
-            {
-                queues.Clear();
-                pool.Dispose();
-            }
+            queues.Clear();
+            pool.Dispose();
         }
     }
 }

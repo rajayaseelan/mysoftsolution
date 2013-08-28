@@ -124,6 +124,7 @@ namespace MySoft.IoC
                 //获取上下文
                 var context = GetOperationContext(reqMsg);
 
+                //异步调用
                 return caller.Invoke(context, reqMsg);
             }
         }

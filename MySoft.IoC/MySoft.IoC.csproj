@@ -160,6 +160,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\IServiceCallback.cs" />
+    <Compile Include="Services\QueueManager.cs" />
     <Compile Include="Services\ServiceDiscoverFacility.cs" />
     <Compile Include="Messages\Status\AppCaller.cs" />
     <Compile Include="Messages\Status\AppClient.cs" />
