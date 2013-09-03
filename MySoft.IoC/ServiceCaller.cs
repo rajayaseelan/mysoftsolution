@@ -68,8 +68,7 @@ namespace MySoft.IoC
             foreach (var service in services)
             {
                 //实例化调用器
-                var concurrency = Environment.ProcessorCount;
-                var caller = new AsyncCaller(service, concurrency, timeout);
+                var caller = new AsyncCaller(service, timeout);
                 asyncCallers[service.ServiceName] = caller;
             }
         }

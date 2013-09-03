@@ -5,6 +5,7 @@ using MySoft.IoC.Communication.Scs.Communication.Messages;
 using MySoft.IoC.Messages;
 using MySoft.IoC.Services;
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 
 namespace MySoft.IoC
@@ -12,12 +13,12 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务请求类
     /// </summary>
-    internal class ServiceRequest : IDisposable
+    internal class ServiceRequest
     {
         private IServiceCallback callback;
         private IScsClient client;
         private ServerNode node;
-        private string messageId;
+        private IList<string> messageIds;
         private bool subscribed;
 
         /// <summary>
@@ -31,6 +32,7 @@ namespace MySoft.IoC
             this.callback = callback;
             this.node = node;
             this.subscribed = subscribed;
+            this.messageIds = new List<string>();
 
             this.client = ScsClientFactory.CreateClient(new ScsTcpEndPoint(node.IP, node.Port));
             this.client.KeepAlive = subscribed;
@@ -51,7 +53,7 @@ namespace MySoft.IoC
         /// <returns></returns>
         public void SendRequest(string messageId, RequestMessage reqMsg)
         {
-            this.messageId = messageId;
+            this.messageIds.Add(messageId);
 
             //如果连接断开，直接抛出异常
             if (client.CommunicationState != CommunicationStates.Connected)
@@ -97,8 +99,13 @@ namespace MySoft.IoC
                 Subscribed = subscribed
             });
 
+            //实例化异常
+            var message = string.Format("Connect to server ({0}:{1}) error！Server node : {2} -> ({3}){4}"
+                                    , node.IP, node.Port, node.Key, error.ErrorCode, error.SocketErrorCode);
+            var ex = new WarningException((int)SocketError.ConnectionReset, message, error);
+
             //断开时响应错误信息
-            client_MessageError(sender, new ErrorEventArgs(error));
+            client_MessageError(sender, new ErrorEventArgs(ex));
         }
 
         private void client_MessageSent(object sender, MessageEventArgs e)
@@ -108,60 +115,35 @@ namespace MySoft.IoC
 
         private void client_MessageReceived(object sender, MessageEventArgs e)
         {
-            try
+            //移除消息Id
+            messageIds.Remove(e.Message.RepliedMessageId);
+
+            if (e.Message is ScsCallbackMessage)
             {
-                if (e.Message is ScsCallbackMessage)
+                //消息类型转换
+                var data = e.Message as ScsCallbackMessage;
+                var value = new CallbackMessageEventArgs
                 {
-                    //消息类型转换
-                    var data = e.Message as ScsCallbackMessage;
-                    var value = new CallbackMessageEventArgs
-                    {
-                        MessageId = e.Message.RepliedMessageId,
-                        Message = data.MessageValue
-                    };
+                    MessageId = e.Message.RepliedMessageId,
+                    Message = data.MessageValue
+                };
 
-                    //回调消息
-                    callback.MessageCallback(this, value);
-                }
-                else
-                {
-                    //获取响应消息
-                    var value = new ResponseMessageEventArgs
-                    {
-                        MessageId = e.Message.RepliedMessageId,
-                        Message = GetResponseMessage(e)
-                    };
-
-                    //把数据发送到客户端
-                    callback.MessageCallback(this, value);
-                }
+                //回调消息
+                callback.MessageCallback(this, value);
             }
-            catch (Exception ex)
-            {
-                //写异常日志
-                client_MessageError(sender, new ErrorEventArgs(ex));
-            }
-        }
-
-        /// <summary>
-        /// 获取响应消息
-        /// </summary>
-        /// <param name="e"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponseMessage(MessageEventArgs e)
-        {
-            //定义消息
-            ResponseMessage resMsg = null;
-
-            if (e.Message is ScsResultMessage)
+            else if (e.Message is ScsResultMessage)
             {
                 //消息类型转换
                 var data = e.Message as ScsResultMessage;
+                var value = new ResponseMessageEventArgs
+                {
+                    MessageId = e.Message.RepliedMessageId,
+                    Message = data.MessageValue as ResponseMessage
+                };
 
-                resMsg = data.MessageValue as ResponseMessage;
+                //把数据发送到客户端
+                callback.MessageCallback(this, value);
             }
-
-            return resMsg;
         }
 
         /// <summary>
@@ -171,14 +153,20 @@ namespace MySoft.IoC
         /// <param name="e"></param>
         private void client_MessageError(object sender, ErrorEventArgs e)
         {
-            var value = new ResponseMessageEventArgs
+            foreach (var messageId in new List<string>(messageIds))
             {
-                MessageId = messageId,
-                Error = e.Error
-            };
+                //移除消息Id
+                messageIds.Remove(messageId);
 
-            //把数据发送到客户端
-            callback.MessageCallback(this, value);
+                var value = new ResponseMessageEventArgs
+                {
+                    MessageId = messageId,
+                    Error = e.Error
+                };
+
+                //把数据发送到客户端
+                callback.MessageCallback(this, value);
+            }
         }
 
         /// <summary>
@@ -207,8 +195,8 @@ namespace MySoft.IoC
             this.client.MessageSent -= client_MessageSent;
             this.client.MessageReceived -= client_MessageReceived;
             this.client.MessageError -= client_MessageError;
-
             this.client.Disconnect();
+            this.client = null;
         }
     }
 }

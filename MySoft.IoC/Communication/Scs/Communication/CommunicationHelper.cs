@@ -12,7 +12,13 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// </summary>
         private const int MaxCommunicationCount = 10000;
 
+        /// <summary>
+        /// Size of the buffer that is used to send bytes from TCP socket.
+        /// </summary>
+        private const int ReceiveBufferSize = 4 * 1024; //4KB
+
         private static SocketAsyncEventArgsPool pool;
+        private static BufferManager bufferManager;
 
         /// <summary>
         /// 实例化CommunicationHelper
@@ -20,10 +26,15 @@ namespace MySoft.IoC.Communication.Scs.Communication
         static CommunicationHelper()
         {
             pool = new SocketAsyncEventArgsPool(MaxCommunicationCount);
+            bufferManager = new BufferManager(MaxCommunicationCount * ReceiveBufferSize, ReceiveBufferSize);
+            bufferManager.InitBuffer();
 
             for (int i = 0; i < MaxCommunicationCount; i++)
             {
-                pool.Push(new TcpSocketAsyncEventArgs());
+                var sae = new TcpSocketAsyncEventArgs();
+                bufferManager.SetBuffer(sae);
+
+                pool.Push(sae);
             }
         }
 
@@ -51,10 +62,15 @@ namespace MySoft.IoC.Communication.Scs.Communication
             lock (pool)
             {
                 var item = pool.Pop();
+                if (item == null) return null;
+
+                if (item.Buffer == null)
+                {
+                    bufferManager.SetBuffer(item);
+                }
 
                 var tcpitem = item as TcpSocketAsyncEventArgs;
                 if (tcpitem == null) return null;
-
                 tcpitem.Channel = channel;
 
                 return item;
@@ -71,9 +87,17 @@ namespace MySoft.IoC.Communication.Scs.Communication
 
             lock (pool)
             {
+                if (item.Buffer != null)
+                {
+                    item.AcceptSocket = null;
+                    item.RemoteEndPoint = null;
+                    item.UserToken = null;
+
+                    bufferManager.FreeBuffer(item);
+                }
+
                 var tcpitem = item as TcpSocketAsyncEventArgs;
                 if (tcpitem == null || tcpitem.Channel == null) return;
-
                 tcpitem.Channel = null;
 
                 pool.Push(item);

@@ -18,12 +18,11 @@ namespace MySoft.IoC.Services
         /// 实例化AsyncCaller
         /// </summary>
         /// <param name="service"></param>
-        /// <param name="concurrency"></param>
         /// <param name="timeout"></param>
-        public AsyncCaller(IService service, int concurrency, TimeSpan timeout)
+        public AsyncCaller(IService service, TimeSpan timeout)
             : base(service)
         {
-            this.pool = new TaskPool(concurrency, 0, 2);
+            this.pool = new TaskPool(Environment.ProcessorCount * 2, 0, 2);
             this.queues = new Dictionary<string, QueueManager>();
             this.timeout = timeout;
         }
@@ -40,6 +39,7 @@ namespace MySoft.IoC.Services
             {
                 bool isRunTask;
 
+                //获取队列管理
                 var manager = GetManager(context.Caller, waitResult, out isRunTask);
 
                 if (isRunTask)
@@ -50,10 +50,83 @@ namespace MySoft.IoC.Services
 
                 if (!waitResult.WaitOne(timeout))
                 {
+                    //设置为结束
+                    waitResult.Cancel();
+
                     throw new TimeoutException(string.Format("The current request timeout {0} ms!", timeout.TotalMilliseconds));
                 }
 
                 return waitResult.Message;
+            }
+        }
+
+        /// <summary>
+        /// 回调处理
+        /// </summary>
+        /// <param name="state"></param>
+        private void WorkCallback(object state)
+        {
+            if (state == null) return;
+
+            var arr = state as ArrayList;
+
+            //解析数据
+            var manager = arr[0] as QueueManager;
+
+            try
+            {
+                //获取数据
+                var context = arr[1] as OperationContext;
+                var reqMsg = arr[2] as RequestMessage;
+
+                //调用服务
+                var resMsg = AsyncRun(manager, context, reqMsg);
+
+                manager.Set(resMsg);
+            }
+            catch (Exception ex)
+            {
+                manager.Set(ex);
+            }
+        }
+
+        /// <summary>
+        /// 异步调用方法
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="context"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage AsyncRun(QueueManager manager, OperationContext context, RequestMessage reqMsg)
+        {
+            try
+            {
+                //调用基类的方法
+                var resMsg = base.Invoke(context, reqMsg);
+
+                //处理符合条件的数据
+                if (manager.Count > 1 && resMsg.Value != null)
+                {
+                    resMsg = new ResponseBuffer
+                    {
+                        ServiceName = resMsg.ServiceName,
+                        MethodName = resMsg.MethodName,
+                        Parameters = resMsg.Parameters,
+                        ElapsedTime = resMsg.ElapsedTime,
+                        Error = resMsg.Error,
+                        Buffer = IoCHelper.SerializeObject(resMsg.Value)
+                    };
+                }
+
+                return resMsg;
+            }
+            finally
+            {
+                //移除指定的值
+                lock (queues)
+                {
+                    queues.Remove(manager.Key);
+                }
             }
         }
 
@@ -88,50 +161,12 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 回调处理
-        /// </summary>
-        /// <param name="state"></param>
-        private void WorkCallback(object state)
-        {
-            if (state == null) return;
-            var arr = state as ArrayList;
-
-            //解析数据
-            var manager = arr[0] as QueueManager;
-            if (manager == null) return;
-
-            try
-            {
-                var context = arr[1] as OperationContext;
-                var reqMsg = arr[2] as RequestMessage;
-
-                //获取响应信息
-                var resMsg = base.Invoke(context, reqMsg);
-
-                manager.Set(resMsg);
-            }
-            catch (Exception ex)
-            {
-                //设置异常
-                manager.Set(ex);
-            }
-            finally
-            {
-                lock (queues)
-                {
-                    //移除对应的Key
-                    queues.Remove(manager.Key);
-                }
-            }
-        }
-
-        /// <summary>
         /// 清理资源
         /// </summary>
         public override void Dispose()
         {
-            queues.Clear();
-            pool.Dispose();
+            this.queues.Clear();
+            this.pool.Dispose();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace MySoft.IoC.Communication.Scs.Client.Tcp
 {
@@ -20,31 +21,58 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
         public static Socket ConnectToServer(EndPoint endPoint, int timeoutMs)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            var _manualReset = new ManualResetEvent(false);
+
+            var e = new SocketAsyncEventArgs();
+            e.Completed += IO_Completed;
+            e.RemoteEndPoint = endPoint;
+            e.AcceptSocket = socket;
+            e.UserToken = _manualReset;
+
+            if (!socket.ConnectAsync(e))
+            {
+                IO_Completed(null, e);
+            }
+
+            if (!_manualReset.WaitOne(timeoutMs, false))
+            {
+                throw new TimeoutException("The host failed to connect. Timeout occured.");
+            }
+
+            return socket;
+        }
+
+        /// <summary>
+        /// IO_Completed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        static void IO_Completed(object sender, SocketAsyncEventArgs e)
+        {
             try
             {
-                socket.Blocking = false;
-                socket.Connect(endPoint);
-                socket.Blocking = true;
-                socket.NoDelay = true;
-
-                return socket;
+                if (e.SocketError == SocketError.Success)
+                {
+                    if (e.LastOperation == SocketAsyncOperation.Connect)
+                    {
+                        var _manualReset = e.UserToken as ManualResetEvent;
+                        _manualReset.Set();
+                    }
+                }
+                else
+                {
+                    //close socket.
+                    e.AcceptSocket.Close();
+                }
             }
-            catch (SocketException ex)
+            catch (Exception ex) { }
+            finally
             {
-                if (ex.ErrorCode != 10035)
-                {
-                    socket.Close();
-                    throw;
-                }
-
-                if (!socket.Poll(timeoutMs * 1000, SelectMode.SelectWrite))
-                {
-                    socket.Close();
-                    throw new TimeoutException("The host failed to connect. Timeout occured.");
-                }
-
-                socket.Blocking = true;
-                return socket;
+                e.RemoteEndPoint = null;
+                e.AcceptSocket = null;
+                e.UserToken = null;
+                e.Dispose();
             }
         }
     }

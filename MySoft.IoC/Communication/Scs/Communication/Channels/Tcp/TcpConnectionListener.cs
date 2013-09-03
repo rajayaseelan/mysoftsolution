@@ -1,4 +1,5 @@
 ﻿using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -19,12 +20,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <summary>
         /// Server socket to listen incoming connection requests.
         /// </summary>
-        private TcpListener _listenerSocket;
-
-        /// <summary>
-        /// The thread to listen socket
-        /// </summary>
-        private Thread _thread;
+        private Socket _listenerSocket;
 
         /// <summary>
         /// A flag to control thread's running
@@ -47,8 +43,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             StartSocket();
             _running = true;
-            _thread = new Thread(DoListenAsThread);
-            _thread.Start();
+            StartAcceptSocket();
         }
 
         /// <summary>
@@ -71,8 +66,9 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             if (!string.IsNullOrEmpty(_endPoint.IpAddress))
                 bindAddress = IPAddress.Parse(_endPoint.IpAddress);
 
-            _listenerSocket = new TcpListener(bindAddress, _endPoint.TcpPort);
-            _listenerSocket.Start();
+            _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _listenerSocket.Bind(new IPEndPoint(bindAddress, _endPoint.TcpPort));
+            _listenerSocket.Listen(64);
         }
 
         /// <summary>
@@ -82,11 +78,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             try
             {
-                _listenerSocket.Stop();
+                _listenerSocket.Close();
             }
-            catch
+            catch (Exception ex) { }
+            finally
             {
-
+                _listenerSocket = null;
             }
         }
 
@@ -94,41 +91,85 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Entrance point of the thread.
         /// This method is used by the thread to listen incoming requests.
         /// </summary>
-        private void DoListenAsThread()
+        private void StartAcceptSocket()
         {
-            while (_running)
+            if (!_running) return;
+
+            try
             {
+                var e = new SocketAsyncEventArgs();
+                e.Completed += IO_Completed;
+
+                if (!_listenerSocket.AcceptAsync(e))
+                {
+                    IO_Completed(null, e);
+                }
+            }
+            catch
+            {
+                //Disconnect, wait for a while and connect again.
+                StopSocket();
+
+                Thread.Sleep(1000);
+
+                if (!_running)
+                {
+                    return;
+                }
+
                 try
                 {
-                    var clientSocket = _listenerSocket.AcceptSocket();
-                    if (clientSocket.Connected)
-                    {
-                        var channel = new TcpCommunicationChannel(clientSocket, true);
-
-                        OnCommunicationChannelConnected(channel);
-                    }
+                    StartSocket();
                 }
                 catch
                 {
-                    //Disconnect, wait for a while and connect again.
-                    StopSocket();
 
-                    Thread.Sleep(1000);
-
-                    if (!_running)
-                    {
-                        return;
-                    }
-
-                    try
-                    {
-                        StartSocket();
-                    }
-                    catch
-                    {
-
-                    }
                 }
+            }
+        }
+
+        /// <summary>
+        /// IO_Completed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void IO_Completed(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.SocketError == SocketError.Success)
+            {
+                if (e.LastOperation == SocketAsyncOperation.Accept)
+                {
+                    //Async accept socket.
+                    ThreadPool.QueueUserWorkItem(AcceptCompleted, e);
+                }
+            }
+
+            StartAcceptSocket();
+        }
+
+        /// <summary>
+        /// Accept completed.
+        /// </summary>
+        /// <param name="state"></param>
+        void AcceptCompleted(object state)
+        {
+            if (state == null) return;
+
+            var e = state as SocketAsyncEventArgs;
+
+            try
+            {
+                var clientSocket = e.AcceptSocket;
+                if (clientSocket.Connected)
+                {
+                    OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket, true));
+                }
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                e.AcceptSocket = null;
+                e.Dispose();
             }
         }
     }

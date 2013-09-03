@@ -58,7 +58,8 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="message"></param>
         public IoCException(string message)
-            : base(ExceptionType.IoCException, string.Format("[{0}] {1}", DnsHelper.GetIPAddress(), message)) { }
+            : base(ExceptionType.IoCException, string.Format("[{0}] {1}", DnsHelper.GetIPAddress(), message))
+        { }
 
         /// <summary>
         /// 内嵌异常的构造方法
@@ -66,7 +67,8 @@ namespace MySoft.IoC
         /// <param name="message"></param>
         /// <param name="ex"></param>
         public IoCException(string message, Exception ex)
-            : base(ExceptionType.IoCException, message, ex) { }
+            : base(ExceptionType.IoCException, string.Format("[{0}] {1}", DnsHelper.GetIPAddress(), message), ex)
+        { }
 
         /// <summary>
         /// 构造函数

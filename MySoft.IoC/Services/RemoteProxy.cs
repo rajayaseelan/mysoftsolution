@@ -149,36 +149,6 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private ResponseMessage GetResponse(string messageId, RequestMessage reqMsg)
         {
-            var reqProxy = pool.Pop();
-
-            if (reqProxy == null)
-            {
-                throw new WarningException("Service request exceeds the maximum number of pool.");
-            }
-
-            try
-            {
-                //发送请求
-                var func = new Action<string, RequestMessage>(reqProxy.SendRequest);
-
-                //获取结果
-                return GetResult(func, messageId, reqMsg);
-            }
-            finally
-            {
-                pool.Push(reqProxy);
-            }
-        }
-
-        /// <summary>
-        /// 获取结果
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="messageId"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResult(Action<string, RequestMessage> func, string messageId, RequestMessage reqMsg)
-        {
             using (var waitResult = new WaitResult(reqMsg))
             {
                 //添加信号量对象
@@ -186,8 +156,8 @@ namespace MySoft.IoC.Services
 
                 try
                 {
-                    //发送请求
-                    func.Invoke(messageId, reqMsg);
+                    //发送消息
+                    SendMessage(messageId, reqMsg);
 
                     var timeout = TimeSpan.FromSeconds(node.Timeout);
 
@@ -209,6 +179,27 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="messageId"></param>
+        /// <param name="reqMsg"></param>
+        private void SendMessage(string messageId, RequestMessage reqMsg)
+        {
+            //获取请求代理
+            var reqProxy = pool.Pop();
+
+            try
+            {
+                //发送请求
+                reqProxy.SendRequest(messageId, reqMsg);
+            }
+            finally
+            {
+                pool.Push(reqProxy);
+            }
+        }
+
+        /// <summary>
         /// 获取超时响应信息
         /// </summary>
         /// <param name="reqMsg"></param>
@@ -216,7 +207,7 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         private Exception GetTimeoutException(RequestMessage reqMsg, TimeSpan timeout)
         {
-            var title = string.Format("【{0}:{1}】 => Remote service ({2}, {3}) invoking timeout ({4}) ms.\r\nParameters => {5}"
+            var title = string.Format("【{0}:{1}】 => Remote service ({2}, {3}) invoke timeout ({4}) ms.\r\nParameters => {5}"
                , node.IP, node.Port, reqMsg.ServiceName, reqMsg.MethodName, (int)timeout.TotalMilliseconds, reqMsg.Parameters.ToString());
 
             //获取异常

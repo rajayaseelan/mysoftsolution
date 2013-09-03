@@ -1,5 +1,3 @@
-using MySoft.Cache;
-using MySoft.IoC.Services;
 using System;
 using System.Configuration;
 using System.Xml;

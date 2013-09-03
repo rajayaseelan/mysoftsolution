@@ -25,36 +25,14 @@ namespace MySoft.IoC.Communication.Scs.Communication
             {
                 switch (e.LastOperation)
                 {
-                    case SocketAsyncOperation.Send:
-                        Channel.SendCompleted(e);
-                        break;
                     case SocketAsyncOperation.Receive:
-                        Channel.ReceiveCompleted(e);
+                        Channel.Received(e);
                         break;
                     default:
                         throw new ArgumentException("The last operation completed on the socket was not a receive or send.");
                 }
             }
             catch (Exception ex)
-            {
-                DisposeAsyncSEA(e);
-            }
-        }
-
-        /// <summary>
-        /// Dispose socket event args.
-        /// </summary>
-        /// <param name="e"></param>
-        private void DisposeAsyncSEA(SocketAsyncEventArgs e)
-        {
-            try
-            {
-                e.AcceptSocket = null;
-                e.UserToken = null;
-                e.SetBuffer(null, 0, 0);
-            }
-            catch (Exception ex) { }
-            finally
             {
                 CommunicationHelper.Push(e);
             }

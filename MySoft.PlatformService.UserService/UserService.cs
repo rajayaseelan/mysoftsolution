@@ -152,7 +152,7 @@ namespace MySoft.PlatformService.UserService
         {
             //throw new BusinessException("业务异常");
 
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
 
             var list = new List<UserInfo>();
 

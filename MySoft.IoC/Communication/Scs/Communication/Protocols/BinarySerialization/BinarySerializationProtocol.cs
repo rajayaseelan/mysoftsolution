@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerialization
 {
@@ -66,10 +69,12 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
                 throw new CommunicationException("Message is too big (" + messageLength + " bytes). Max allowed length is " + MaxMessageLength + " bytes.");
             }
 
+            message.MessageLength = messageLength;
+
             //Create a byte array including the length of the message (4 bytes) and serialized message content
             var bytes = new byte[messageLength + 4];
             WriteInt32(bytes, 0, messageLength);
-            Buffer.BlockCopy(serializedMessage, 0, bytes, 4, messageLength);
+            Array.Copy(serializedMessage, 0, bytes, 4, messageLength);
 
             //Return serialized message by this protocol
             return bytes;
@@ -128,7 +133,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         /// </returns>
         protected virtual byte[] SerializeMessage(IScsMessage message)
         {
-            return SerializationManager.SerializeBin(message);
+            using (var memoryStream = new MemoryStream())
+            {
+                new BinaryFormatter().Serialize(memoryStream, message);
+                return memoryStream.ToArray();
+            }
         }
 
         /// <summary>
@@ -144,7 +153,21 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         protected virtual IScsMessage DeserializeMessage(byte[] bytes)
         {
             //Create a MemoryStream to convert bytes to a stream
-            return SerializationManager.DeserializeBin<IScsMessage>(bytes);
+            using (var deserializeMemoryStream = new MemoryStream(bytes))
+            {
+                //Go to head of the stream
+                deserializeMemoryStream.Position = 0;
+
+                //Deserialize the message
+                var binaryFormatter = new BinaryFormatter
+                {
+                    AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple,
+                    Binder = new DeserializationAppDomainBinder()
+                };
+
+                //Return the deserialized message
+                return (IScsMessage)binaryFormatter.Deserialize(deserializeMemoryStream);
+            }
         }
 
         #endregion
@@ -204,6 +227,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
 
             //Read bytes of serialized message and deserialize it
             var serializedMessageBytes = ReadByteArray(_receiveMemoryStream, messageLength);
+            messages.Add(DeserializeMessage(serializedMessageBytes));
 
             //Read remaining bytes to an array
             var remainingBytes = ReadByteArray(_receiveMemoryStream, (int)(_receiveMemoryStream.Length - (4 + messageLength)));
@@ -212,10 +236,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             _receiveMemoryStream = new MemoryStream();
             _receiveMemoryStream.Write(remainingBytes, 0, remainingBytes.Length);
 
-            messages.Add(DeserializeMessage(serializedMessageBytes));
-
             //Return true to re-call this method to try to read next message
-            return (_receiveMemoryStream.Length > 4);
+            return (remainingBytes.Length > 4);
         }
 
         /// <summary>
@@ -257,8 +279,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
         {
             var buffer = new byte[length];
             var totalRead = 0;
-            //var bufferStream = new BufferedStream(stream);
-
             while (totalRead < length)
             {
                 var read = stream.Read(buffer, totalRead, length - totalRead);
@@ -271,6 +291,25 @@ namespace MySoft.IoC.Communication.Scs.Communication.Protocols.BinarySerializati
             }
 
             return buffer;
+        }
+
+        #endregion
+
+        #region Nested classes
+
+        /// <summary>
+        /// This class is used in deserializing to allow deserializing objects that are defined
+        /// in assemlies that are load in runtime (like PlugIns).
+        /// </summary>
+        protected sealed class DeserializationAppDomainBinder : SerializationBinder
+        {
+            public override Type BindToType(string assemblyName, string typeName)
+            {
+                var toAssemblyName = assemblyName.Split(',')[0];
+                return (from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                        where assembly.FullName.Split(',')[0] == toAssemblyName
+                        select assembly.GetType(typeName)).FirstOrDefault();
+            }
         }
 
         #endregion

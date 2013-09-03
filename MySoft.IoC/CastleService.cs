@@ -400,26 +400,18 @@ namespace MySoft.IoC
             if (resMsg == null) return;
 
             //调用参数
-            CallEventArgs callArgs = null;
+            var callArgs = new CallEventArgs(appCaller)
+            {
+                ElapsedTime = resMsg.ElapsedTime,
+                Count = resMsg.Count,
+                Value = resMsg.Value,
+                Error = resMsg.Error
+            };
 
+            //如果是Buffer数据
             if (resMsg is ResponseBuffer)
             {
-                callArgs = new CallEventArgs(appCaller)
-                {
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Count = resMsg.Count,
-                    Value = (resMsg as ResponseBuffer).Buffer
-                };
-            }
-            else
-            {
-                callArgs = new CallEventArgs(appCaller)
-                {
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Count = resMsg.Count,
-                    Value = resMsg.Value,
-                    Error = resMsg.Error
-                };
+                callArgs.Value = (resMsg as ResponseBuffer).Buffer;
             }
 
             //异步调用

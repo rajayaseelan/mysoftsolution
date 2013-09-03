@@ -66,6 +66,9 @@
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IServiceRecorder.cs" />
     <Compile Include="Common\RecordEventArgs.cs" />
+    <Compile Include="Communication\Scs\Communication\BufferManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Communication\Scs\Communication\CommunicationHelper.cs">
       <SubType>Code</SubType>
     </Compile>

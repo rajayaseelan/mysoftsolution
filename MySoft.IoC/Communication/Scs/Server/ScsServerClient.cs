@@ -125,10 +125,11 @@ namespace MySoft.IoC.Communication.Scs.Server
         public ScsServerClient(ICommunicationChannel communicationChannel)
         {
             _communicationChannel = communicationChannel;
+
+            _communicationChannel.Disconnected += CommunicationChannel_Disconnected;
             _communicationChannel.MessageReceived += CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent += CommunicationChannel_MessageSent;
             _communicationChannel.MessageError += CommunicationChannel_MessageError;
-            _communicationChannel.Disconnected += CommunicationChannel_Disconnected;
         }
 
         void CommunicationChannel_MessageError(object sender, ErrorEventArgs e)
@@ -178,10 +179,10 @@ namespace MySoft.IoC.Communication.Scs.Server
         {
             OnDisconnected();
 
+            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
             _communicationChannel.MessageReceived -= CommunicationChannel_MessageReceived;
             _communicationChannel.MessageSent -= CommunicationChannel_MessageSent;
             _communicationChannel.MessageError -= CommunicationChannel_MessageError;
-            _communicationChannel.Disconnected -= CommunicationChannel_Disconnected;
             _communicationChannel = null;
         }
 

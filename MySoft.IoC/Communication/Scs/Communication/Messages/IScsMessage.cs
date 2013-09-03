@@ -16,8 +16,8 @@
         string RepliedMessageId { get; set; }
 
         /// <summary>
-        /// Total data size.
+        /// Total message size.
         /// </summary>
-        int DataLength { get; set; }
+        int MessageLength { get; set; }
     }
 }

@@ -27,7 +27,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Messages
         /// <summary>
         /// Total data size.
         /// </summary>
-        public int DataLength { get; set; }
+        public int MessageLength { get; set; }
 
         /// <summary>
         /// Creates a new ScsMessage.
