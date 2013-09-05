@@ -36,17 +36,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         private readonly Socket _clientSocket;
 
-        private bool _fromServer;
-
         /// <summary>
         /// A flag to control thread's running
         /// </summary>
         private volatile bool _running;
-
-        /// <summary>
-        /// This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private readonly object _syncLock;
 
         #endregion
 
@@ -56,16 +49,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// Creates a new TcpCommunicationChannel object.
         /// </summary>
         /// <param name="clientSocket">A connected Socket object that is
-        /// <param name="fromServer">Message to be sent</param>
         /// used to communicate over network</param>
-        public TcpCommunicationChannel(Socket clientSocket, bool fromServer)
+        public TcpCommunicationChannel(Socket clientSocket)
         {
             this._clientSocket = clientSocket;
-            this._fromServer = fromServer;
 
             // Disable the Nagle Algorithm for this tcp socket.  
             this._clientSocket.NoDelay = true;
-            this._syncLock = new object();
 
             var endPoint = _clientSocket.RemoteEndPoint as IPEndPoint;
             this._remoteEndPoint = new ScsTcpEndPoint(endPoint.Address.ToString(), endPoint.Port);
@@ -123,6 +113,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             //Socket receive messages event args.
             var _receiveEventArgs = CommunicationHelper.Pop(this);
+            _receiveEventArgs.AcceptSocket = _clientSocket;
 
             try
             {
@@ -130,10 +121,10 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 if (!_clientSocket.ReceiveAsync(_receiveEventArgs))
                 {
 #if DEBUG
-                    IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] {1} receiving message...", DateTime.Now, (_fromServer ? "[Server]" : "[Client]"));
+                    IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] receiving message...", DateTime.Now);
 #endif
 
-                    (this as ICommunicationProtocol).Received(_receiveEventArgs);
+                    (this as ICommunicationProtocol).ReceiveCompleted(_receiveEventArgs);
                 }
             }
             catch (Exception ex)
@@ -152,38 +143,59 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="message">Message to be sent</param>
         protected override void SendMessageInternal(IScsMessage message)
         {
+            //Create a byte array from message according to current protocol
+            var messageBytes = WireProtocol.GetBytes(message);
+
+            #region sync send buffer.
+
             //Send message
-            var totalSent = 0;
+            //var totalSent = 0;
 
-            lock (_syncLock)
+            //Send all bytes to the remote application
+            //while (totalSent < messageBytes.Length)
+            //{
+            //    var sent = _clientSocket.Send(messageBytes, totalSent, messageBytes.Length - totalSent, SocketFlags.None);
+            //    if (sent <= 0)
+            //    {
+            //        throw new CommunicationException("Message could not be sent via TCP socket. Only " + totalSent + " bytes of " + messageBytes.Length + " bytes are sent.");
+            //    }
+
+            //    totalSent += sent;
+            //}
+
+            //LastSentMessageTime = DateTime.Now;
+
+            //OnMessageSent(message);
+
+            #endregion
+
+            //Socket send messages event args.
+            var _sendEventArgs = CommunicationHelper.Pop(this);
+            _sendEventArgs.AcceptSocket = _clientSocket;
+
+            try
             {
-                //Create a byte array from message according to current protocol
-                var messageBytes = WireProtocol.GetBytes(message);
+                //create message buffer.
+                var messageBuffer = new MessageBuffer(message, messageBytes, _sendEventArgs.Count);
+                messageBuffer.SetBuffer(_sendEventArgs);
 
-                try
+                //Send all bytes to the remote application
+                if (!_clientSocket.SendAsync(_sendEventArgs))
                 {
-                    //Send all bytes to the remote application
-                    while (totalSent < messageBytes.Length)
-                    {
-                        var sent = _clientSocket.Send(messageBytes, totalSent, messageBytes.Length - totalSent, SocketFlags.None);
-                        if (sent <= 0)
-                        {
-                            throw new CommunicationException("Message could not be sent via TCP socket. Only " + totalSent + " bytes of " + messageBytes.Length + " bytes are sent.");
-                        }
+#if DEBUG
+                    IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] sending message...", DateTime.Now);
+#endif
 
-                        totalSent += sent;
-                    }
-
-                    LastSentMessageTime = DateTime.Now;
-
-                    OnMessageSent(message);
+                    (this as ICommunicationProtocol).SendCompleted(_sendEventArgs);
                 }
-                catch (Exception ex)
-                {
-                    Disconnect();
+            }
+            catch (Exception ex)
+            {
+                CommunicationHelper.Push(_sendEventArgs);
 
-                    throw;
-                }
+                Disconnect();
+
+                throw;
             }
         }
 
@@ -192,12 +204,65 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         #region Private methods
 
         /// <summary>
+        /// On send completed.
+        /// </summary>
+        /// <param name="e"></param>
+        void ICommunicationProtocol.SendCompleted(SocketAsyncEventArgs e)
+        {
+            if (!_running)
+            {
+                CommunicationHelper.Push(e);
+                return;
+            }
+
+            //Get message buffer.
+            var messageBuffer = e.UserToken as MessageBuffer;
+
+            int count = messageBuffer.SetBuffer(e);
+            if (count > 0)
+            {
+                try
+                {
+                    //Send all bytes to the remote application
+                    if (!e.AcceptSocket.SendAsync(e))
+                    {
+#if DEBUG
+                        IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] sending message...", DateTime.Now);
+#endif
+
+                        (this as ICommunicationProtocol).SendCompleted(e);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    CommunicationHelper.Push(e);
+
+                    Disconnect();
+                }
+            }
+            else
+            {
+                LastSentMessageTime = DateTime.Now;
+                OnMessageSent(messageBuffer.Message);
+
+                messageBuffer.Dispose();
+                CommunicationHelper.Push(e);
+            }
+        }
+
+        /// <summary>
         /// This method is used as callback method in _clientSocket's BeginReceive method.
         /// It reveives bytes from socker.
         /// </summary>
         /// <param name="e">Asyncronous call result</param>
-        void ICommunicationProtocol.Received(SocketAsyncEventArgs e)
+        void ICommunicationProtocol.ReceiveCompleted(SocketAsyncEventArgs e)
         {
+            if (!_running)
+            {
+                CommunicationHelper.Push(e);
+                return;
+            }
+
             try
             {
                 //Receive data success.
@@ -209,13 +274,13 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                     OnBufferReceived(e.Buffer, e.Offset, e.BytesTransferred);
 
                     //Receive all bytes to the remote application
-                    if (!_clientSocket.ReceiveAsync(e))
+                    if (!e.AcceptSocket.ReceiveAsync(e))
                     {
 #if DEBUG
-                            IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] {1} receiving message...", DateTime.Now, (_fromServer ? "[Server]" : "[Client]"));
+                        IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] receiving message...", DateTime.Now);
 #endif
 
-                        (this as ICommunicationProtocol).Received(e);
+                        (this as ICommunicationProtocol).ReceiveCompleted(e);
                     }
                 }
                 else
