@@ -355,7 +355,7 @@ namespace MySoft
             }
         }
 
-        private static readonly IDictionary<string, XmlSerializer> cacheSerializer = new Dictionary<string, XmlSerializer>();
+        private static readonly IDictionary<Type, XmlSerializer> cacheSerializer = new Dictionary<Type, XmlSerializer>();
 
         /// <summary>
         /// 获取序列化器
@@ -364,16 +364,17 @@ namespace MySoft
         /// <returns></returns>
         public static XmlSerializer GetSerializer(Type type)
         {
-            var key = type.ToString();
-
-            XmlSerializer serializer;
-            if (!cacheSerializer.TryGetValue(key, out serializer))
+            lock (cacheSerializer)
             {
-                serializer = new XmlSerializer(type);
-                cacheSerializer.Add(key, serializer);
-            }
+                XmlSerializer serializer;
+                if (!cacheSerializer.TryGetValue(type, out serializer))
+                {
+                    serializer = new XmlSerializer(type);
+                    cacheSerializer[type] = serializer;
+                }
 
-            return serializer;
+                return serializer;
+            }
         }
 
         /// <summary>

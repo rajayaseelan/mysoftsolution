@@ -102,6 +102,7 @@ namespace MySoft.IoC.Services
         /// </summary>
         public void Dispose()
         {
+            this.reqMsg = null;
             this.ev.Close();
         }
 

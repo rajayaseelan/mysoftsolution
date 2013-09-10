@@ -51,7 +51,7 @@ namespace MySoft.IoC
         /// <param name="messageId"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        public void SendRequest(string messageId, RequestMessage reqMsg)
+        public void Send(string messageId, RequestMessage reqMsg)
         {
             this.messageIds.Add(messageId);
 

@@ -22,7 +22,7 @@ namespace MySoft.IoC.Services
         public AsyncCaller(IService service, TimeSpan timeout)
             : base(service)
         {
-            this.pool = new TaskPool(Environment.ProcessorCount * 2, 0, 2);
+            this.pool = new TaskPool(Environment.ProcessorCount, 1, 2);
             this.queues = new Dictionary<string, QueueManager>();
             this.timeout = timeout;
         }
@@ -104,8 +104,8 @@ namespace MySoft.IoC.Services
                 //调用基类的方法
                 var resMsg = base.Invoke(context, reqMsg);
 
-                //处理符合条件的数据
-                if (manager.Count > 1 && resMsg.Value != null)
+                //处理符合条件的数据，大于100时也进行数据压缩
+                if (resMsg.Value != null && (manager.Count > 1 || resMsg.Count > 100))
                 {
                     resMsg = new ResponseBuffer
                     {

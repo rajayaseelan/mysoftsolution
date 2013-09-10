@@ -124,14 +124,22 @@ namespace MySoft.IoC.Services
 
             try
             {
-                //消息Id
-                var messageId = Guid.NewGuid().ToString();
+                //获取请求代理
+                var reqProxy = pool.Pop();
 
-                //获取响应信息
-                return GetResponse(messageId, reqMsg);
+                try
+                {
+                    //获取响应信息
+                    return GetResponse(reqProxy, reqMsg);
+                }
+                finally
+                {
+                    pool.Push(reqProxy);
+                }
             }
             catch (Exception ex)
             {
+                //获取异常
                 return IoCHelper.GetResponse(reqMsg, ex);
             }
             finally
@@ -144,20 +152,23 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取响应信息
         /// </summary>
-        /// <param name="messageId"></param>
+        /// <param name="reqProxy"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(string messageId, RequestMessage reqMsg)
+        private ResponseMessage GetResponse(ServiceRequest reqProxy, RequestMessage reqMsg)
         {
             using (var waitResult = new WaitResult(reqMsg))
             {
+                //消息Id
+                var messageId = Guid.NewGuid().ToString();
+
                 //添加信号量对象
                 hashtable[messageId] = waitResult;
 
                 try
                 {
-                    //发送消息
-                    SendMessage(messageId, reqMsg);
+                    //发送请求
+                    reqProxy.Send(messageId, reqMsg);
 
                     var timeout = TimeSpan.FromSeconds(node.Timeout);
 
@@ -175,27 +186,6 @@ namespace MySoft.IoC.Services
                     //移除信号量对象
                     hashtable.Remove(messageId);
                 }
-            }
-        }
-
-        /// <summary>
-        /// 发送消息
-        /// </summary>
-        /// <param name="messageId"></param>
-        /// <param name="reqMsg"></param>
-        private void SendMessage(string messageId, RequestMessage reqMsg)
-        {
-            //获取请求代理
-            var reqProxy = pool.Pop();
-
-            try
-            {
-                //发送请求
-                reqProxy.SendRequest(messageId, reqMsg);
-            }
-            finally
-            {
-                pool.Push(reqProxy);
             }
         }
 

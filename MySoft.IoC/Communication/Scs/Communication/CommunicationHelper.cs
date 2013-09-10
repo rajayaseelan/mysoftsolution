@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
 
 namespace MySoft.IoC.Communication.Scs.Communication
 {
@@ -15,7 +16,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int ReceiveBufferSize = 4 * 1024; //4KB
+        private const int BufferSize = 2 * 1024; //2KB
 
         private static SocketAsyncEventArgsPool pool;
         private static BufferManager bufferManager;
@@ -26,7 +27,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         static CommunicationHelper()
         {
             pool = new SocketAsyncEventArgsPool(MaxCommunicationCount);
-            bufferManager = new BufferManager(MaxCommunicationCount * ReceiveBufferSize, ReceiveBufferSize);
+            bufferManager = new BufferManager(MaxCommunicationCount * BufferSize, BufferSize);
             bufferManager.InitBuffer();
 
             for (int i = 0; i < MaxCommunicationCount; i++)
@@ -73,6 +74,10 @@ namespace MySoft.IoC.Communication.Scs.Communication
                 if (tcpitem == null) return null;
                 tcpitem.Channel = channel;
 
+#if DEBUG
+                IoCHelper.WriteLine(ConsoleColor.DarkRed, "[{0}] pop tcp socket event async count: {1}", DateTime.Now, CommunicationHelper.Count);
+#endif
+
                 return item;
             }
         }
@@ -90,7 +95,6 @@ namespace MySoft.IoC.Communication.Scs.Communication
                 if (item.Buffer != null)
                 {
                     item.AcceptSocket = null;
-                    item.RemoteEndPoint = null;
                     item.UserToken = null;
 
                     bufferManager.FreeBuffer(item);
@@ -101,6 +105,10 @@ namespace MySoft.IoC.Communication.Scs.Communication
                 tcpitem.Channel = null;
 
                 pool.Push(item);
+
+#if DEBUG
+                IoCHelper.WriteLine(ConsoleColor.DarkRed, "[{0}] push tcp socket event async count: {1}", DateTime.Now, CommunicationHelper.Count);
+#endif
             }
         }
     }

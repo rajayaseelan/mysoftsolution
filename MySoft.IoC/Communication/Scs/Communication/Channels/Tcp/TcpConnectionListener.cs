@@ -162,7 +162,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 var clientSocket = e.AcceptSocket;
                 if (clientSocket.Connected)
                 {
-                    OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket, true));
+                    OnCommunicationChannelConnected(new TcpCommunicationChannel(clientSocket));
                 }
             }
             catch (Exception ex) { }

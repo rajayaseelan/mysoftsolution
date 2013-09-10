@@ -25,8 +25,11 @@ namespace MySoft.IoC.Communication.Scs.Communication
             {
                 switch (e.LastOperation)
                 {
+                    case SocketAsyncOperation.Send:
+                        Channel.SendCompleted(e);
+                        break;
                     case SocketAsyncOperation.Receive:
-                        Channel.Received(e);
+                        Channel.ReceiveCompleted(e);
                         break;
                     default:
                         throw new ArgumentException("The last operation completed on the socket was not a receive or send.");

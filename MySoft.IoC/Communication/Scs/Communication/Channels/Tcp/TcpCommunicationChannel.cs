@@ -170,14 +170,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             #endregion
 
             //Socket send messages event args.
-            var _sendEventArgs = CommunicationHelper.Pop(this);
+            var _sendEventArgs = new TcpSocketAsyncEventArgs();
             _sendEventArgs.AcceptSocket = _clientSocket;
+            _sendEventArgs.UserToken = message;
+            _sendEventArgs.Channel = this;
 
             try
             {
-                //create message buffer.
-                var messageBuffer = new MessageBuffer(message, messageBytes, _sendEventArgs.Count);
-                messageBuffer.SetBuffer(_sendEventArgs);
+                //Set message buffer.
+                _sendEventArgs.SetBuffer(messageBytes, 0, messageBytes.Length);
 
                 //Send all bytes to the remote application
                 if (!_clientSocket.SendAsync(_sendEventArgs))
@@ -191,7 +192,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             catch (Exception ex)
             {
-                CommunicationHelper.Push(_sendEventArgs);
+                Dispose(_sendEventArgs);
 
                 Disconnect();
 
@@ -209,44 +210,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         void ICommunicationProtocol.SendCompleted(SocketAsyncEventArgs e)
         {
-            if (!_running)
-            {
-                CommunicationHelper.Push(e);
-                return;
-            }
-
-            //Get message buffer.
-            var messageBuffer = e.UserToken as MessageBuffer;
-
-            int count = messageBuffer.SetBuffer(e);
-            if (count > 0)
-            {
-                try
-                {
-                    //Send all bytes to the remote application
-                    if (!e.AcceptSocket.SendAsync(e))
-                    {
-#if DEBUG
-                        IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] sending message...", DateTime.Now);
-#endif
-
-                        (this as ICommunicationProtocol).SendCompleted(e);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CommunicationHelper.Push(e);
-
-                    Disconnect();
-                }
-            }
-            else
+            try
             {
                 LastSentMessageTime = DateTime.Now;
-                OnMessageSent(messageBuffer.Message);
 
-                messageBuffer.Dispose();
-                CommunicationHelper.Push(e);
+                OnMessageSent(e.UserToken as IScsMessage);
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                Dispose(e);
             }
         }
 
@@ -257,12 +230,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e">Asyncronous call result</param>
         void ICommunicationProtocol.ReceiveCompleted(SocketAsyncEventArgs e)
         {
-            if (!_running)
-            {
-                CommunicationHelper.Push(e);
-                return;
-            }
-
             try
             {
                 //Receive data success.
@@ -318,6 +285,26 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             {
                 OnMessageReceived(message);
             }
+        }
+
+        /// <summary>
+        /// Dispose resource.
+        /// </summary>
+        /// <param name="e"></param>
+        private void Dispose(SocketAsyncEventArgs e)
+        {
+            if (e == null) return;
+
+            if (e is TcpSocketAsyncEventArgs)
+            {
+                (e as TcpSocketAsyncEventArgs).Channel = null;
+            }
+
+            e.AcceptSocket = null;
+            e.UserToken = null;
+            e.SetBuffer(null, 0, 0);
+
+            e.Dispose();
         }
 
         #endregion
