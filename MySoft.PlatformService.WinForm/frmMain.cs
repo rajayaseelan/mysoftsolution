@@ -418,9 +418,9 @@ namespace MySoft.PlatformService.WinForm
                 if (methods.ContainsKey(key))
                 {
                     var method = methods[key];
-                    SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", method.ServiceName, method.Method.FullName, defaultNode), () =>
+                    SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", method.Service.FullName, method.Method.FullName, defaultNode), () =>
                     {
-                        frmInvoke frm = new frmInvoke(defaultNode, method.ServiceName, method.Method);
+                        frmInvoke frm = new frmInvoke(checkBox5.Checked, defaultNode, method.Service, method.Method);
                         return frm;
                     });
                 }
@@ -595,7 +595,7 @@ namespace MySoft.PlatformService.WinForm
 
                 SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", service.FullName, method.FullName, defaultNode), () =>
                 {
-                    frmInvoke frm = new frmInvoke(defaultNode, service.FullName, method);
+                    frmInvoke frm = new frmInvoke(checkBox5.Checked, defaultNode, service, method);
                     return frm;
                 });
             }
@@ -744,7 +744,7 @@ namespace MySoft.PlatformService.WinForm
                         string key = string.Format("【{0}】{1}", s.FullName, methodName);
                         methods[key] = new InvokeService
                         {
-                            ServiceName = s.FullName,
+                            Service = s,
                             Method = m
                         };
                     }
@@ -1006,7 +1006,7 @@ namespace MySoft.PlatformService.WinForm
 
             SingletonMul.Show(string.Format("FORM_{0}_{1}_{2}", service.FullName, method.FullName, defaultNode), () =>
             {
-                frmInvoke frm = new frmInvoke(defaultNode, service.FullName, method, caller.Parameters);
+                frmInvoke frm = new frmInvoke(checkBox5.Checked, defaultNode, service, method, caller.Parameters);
                 return frm;
             });
         }

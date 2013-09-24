@@ -4,7 +4,6 @@ using MySoft.IoC.Communication.Scs.Communication.EndPoints.Tcp;
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Nodes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,11 +22,6 @@ namespace MySoft.IoC
         /// 刷新处理
         /// </summary>
         public event EventHandler OnRefresh;
-
-        /// <summary>
-        /// 服务节点
-        /// </summary>
-        public event ServerNodeEventHandler OnServerNode;
 
         private const int DefaultDisconnectionAttemptTimeout = 5 * 60000; //5 minutes.
 
@@ -697,25 +691,6 @@ namespace MySoft.IoC
             {
                 OnRefresh(container, EventArgs.Empty);
             }
-        }
-
-        /// <summary>
-        /// 获取服务节点
-        /// </summary>
-        /// <param name="nodeKey"></param>
-        /// <param name="serviceName"></param>
-        /// <returns></returns>
-        public IList<ServerNode> GetServerNodes(string nodeKey, string serviceName)
-        {
-            if (OnServerNode != null)
-            {
-                return OnServerNode(container, new NodeEventArgs(nodeKey)
-                {
-                    ServiceName = serviceName
-                });
-            }
-
-            return new List<ServerNode>();
         }
     }
 }

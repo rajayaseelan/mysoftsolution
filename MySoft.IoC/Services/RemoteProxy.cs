@@ -124,23 +124,12 @@ namespace MySoft.IoC.Services
 
             try
             {
-                //获取请求代理
-                var reqProxy = pool.Pop();
+                var resMsg = GetResult(reqMsg);
 
-                try
-                {
-                    //获取响应信息
-                    return GetResponse(reqProxy, reqMsg);
-                }
-                finally
-                {
-                    pool.Push(reqProxy);
-                }
-            }
-            catch (Exception ex)
-            {
-                //获取异常
-                return IoCHelper.GetResponse(reqMsg, ex);
+                //抛出异常
+                if (resMsg.IsError) throw resMsg.Error;
+
+                return resMsg;
             }
             finally
             {
@@ -150,26 +139,47 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 获取响应信息
+        /// 获取结果
         /// </summary>
-        /// <param name="reqProxy"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(ServiceRequest reqProxy, RequestMessage reqMsg)
+        private ResponseMessage GetResult(RequestMessage reqMsg)
         {
-            using (var waitResult = new WaitResult(reqMsg))
+            //获取请求代理
+            var reqProxy = pool.Pop();
+
+            try
             {
                 //消息Id
                 var messageId = Guid.NewGuid().ToString();
 
+                //发送请求
+                reqProxy.Send(messageId, reqMsg);
+
+                //获取响应信息
+                return GetResponse(messageId, reqMsg);
+            }
+            finally
+            {
+                pool.Push(reqProxy);
+            }
+        }
+
+        /// <summary>
+        /// 获取响应信息
+        /// </summary>
+        /// <param name="messageId"></param>
+        /// <param name="reqMsg"></param>
+        /// <returns></returns>
+        private ResponseMessage GetResponse(string messageId, RequestMessage reqMsg)
+        {
+            using (var waitResult = new WaitResult(reqMsg))
+            {
                 //添加信号量对象
                 hashtable[messageId] = waitResult;
 
                 try
                 {
-                    //发送请求
-                    reqProxy.Send(messageId, reqMsg);
-
                     var timeout = TimeSpan.FromSeconds(node.Timeout);
 
                     //等待信号响应

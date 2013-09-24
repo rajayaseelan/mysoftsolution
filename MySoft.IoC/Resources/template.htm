@@ -1,0 +1,215 @@
+﻿<style>
+    @charset "utf-8";
+
+    body {
+        margin: 0 auto;
+        padding: 0;
+        font-size: 12px;
+        line-height: 14px;
+        font-family: Verdana;
+        background-color: #fff;
+    }
+
+    p {
+        color: #000;
+        margin: 26px;
+        font-size: 14px;
+    }
+
+    ul {
+        margin-left: 20px;
+    }
+
+    li {
+        font-size: 14px;
+    }
+
+    .title {
+        color: #77B353;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    img {
+        border: 0;
+    }
+
+    a:link {
+        color: #005E95;
+        text-decoration: underline;
+        font-weight: bold;
+    }
+
+    a:visited {
+        color: #005E95;
+        text-decoration: underline;
+    }
+
+    a:hover {
+        color: #005E95;
+        text-decoration: underline;
+    }
+
+    a:active {
+        color: #005E95;
+        text-decoration: underline;
+    }
+
+    table.tbl1 {
+    }
+
+    .tbl1 tr {
+        height: 27px;
+        font-size: 12px;
+    }
+
+        .tbl1 tr.header {
+            font-size: 12px;
+            background: 0;
+            background-color: #F2F6F9;
+            height: 36px;
+            font-weight: bold;
+            color: #555;
+        }
+
+            .tbl1 tr.header td.h_l {
+                text-align: left;
+                width: 15px;
+                padding: 0;
+            }
+
+            .tbl1 tr.header td.h_r {
+                text-align: left;
+                width: 15px;
+                padding: 0;
+            }
+
+    .tbl1 td {
+        padding: 0 5px;
+    }
+
+        .tbl1 td.nopadding {
+            padding: 0;
+        }
+
+    .up_rate_1 {
+        color: #28AB17;
+    }
+
+    .up_rate_2 {
+        color: #FF9900;
+    }
+
+    .up_rate_3 {
+        color: #FF0000;
+    }
+
+    .resp_time_1 {
+        color: #28AB17;
+    }
+
+    .resp_time_2 {
+        color: #FF9900;
+    }
+
+    .resp_time_3 {
+        color: #33CCFF;
+    }
+
+    .resp_time_4 {
+        color: #FF0000;
+    }
+
+    .diff_up {
+        color: #AA0033;
+    }
+
+    .diff_down {
+        color: #008000;
+    }
+
+    a.menu:link {
+        color: #919D18;
+        text-decoration: none;
+    }
+
+    a.menu:visited {
+        color: #919D18;
+        text-decoration: none;
+    }
+
+    a.menu:hover {
+        color: #919D18;
+        text-decoration: underline;
+    }
+
+    a.menu:active {
+        color: #919D18;
+        text-decoration: none;
+    }
+</style>
+
+<style type="text/css">
+    .monitor_isp_status_2 {
+        color: #FF9900;
+    }
+
+    .monitor_isp_status_1 {
+        color: #28AB17;
+    }
+
+    .monitor_isp_status_0 {
+        color: #FF0000;
+    }
+
+    .status_1 {
+        color: #28AB17;
+    }
+
+    .status_0 {
+        color: #FF0000;
+    }
+
+    .resp_time_1 {
+        color: #28AB17;
+    }
+
+    .resp_time_2 {
+        color: #FF9900;
+    }
+
+    .resp_time_3 {
+        color: #33CCFF;
+    }
+
+    .resp_time_4 {
+        color: #FF0000;
+    }
+</style>
+
+
+<p class="title">$title</p>
+<!-- 故障恢复通知 -->
+<p>服务监控 $body</p>
+<!-- [交易系统 - ( default -> 127.0.0.1:9982 )] 于 2013年09月23日 10:10:34 恢复可用 (操作成功完成。) -->
+<p style="display:$display;">故障持续$timeout</p>
+<!-- 5分钟 -->
+<p>以下是监控项目相关信息：</p>
+
+<table class="tbl1" width="700" style="margin-left: 20px;" border="0" cellspacing="0" cellpadding="0">
+    <tr class="header monitor_isp_status_0">
+        <td style="width: 100px;">项目名称</td>
+        <td class="resp_time_2">$client</td>
+        <!-- 监控客户端 (v4.0) -->
+    </tr>
+    <tr class="header monitor_isp_status_1">
+        <td style="width: 100px;">项目路径</td>
+        <td class="resp_time_3">$path</td>
+        <!-- E:\SOURCE_SVN\MySoftSolution\branches\MySoftSolution_20120621_v3.5\MySoft.PlatformService.WinForm\bin\Debug -->
+    </tr>
+    <tr class="header monitor_isp_status_2">
+        <td style="width: 100px;">状态信息</td>
+        <td class="resp_time_4">$status</td>
+        <!-- maoyong-pc (10.0.16.100 => 127.0.0.1:9982) 连接成功 -->
+    </tr>
+</table>

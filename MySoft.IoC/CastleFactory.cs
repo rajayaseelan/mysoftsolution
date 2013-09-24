@@ -1,10 +1,9 @@
-using MySoft.Cache;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Nodes;
 using MySoft.IoC.Services;
 using MySoft.Logger;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,6 +24,7 @@ namespace MySoft.IoC
         private IServiceContainer container;
         private IDictionary<string, IService> proxies;
         private IServiceCall call;
+        private IServerNodeResolver nodeResolver;
 
         /// <summary>
         /// Gets the service container.
@@ -39,43 +39,45 @@ namespace MySoft.IoC
         protected CastleFactory(CastleFactoryConfiguration config)
         {
             this.config = config;
-            this.container = new SimpleServiceContainer(config.Type);
+            this.container = new SimpleServiceContainer(config.ServerType);
+            this.proxies = new Dictionary<string, IService>();
+
+            //判断是否配置了NodeResolverType
+            this.nodeResolver = Create<IServerNodeResolver>(config.ResolverType) ?? new DefaultNodeResolver();
 
             container.OnLog += (log, type) =>
             {
                 if (this.OnLog != null) OnLog(log, type);
             };
+
             container.OnError += error =>
             {
                 if (OnError != null) OnError(error);
                 else SimpleLog.Instance.WriteLog(error);
             };
+        }
 
-            this.proxies = new Dictionary<string, IService>();
-
-            if (config.Nodes.Count > 0)
+        /// <summary>
+        /// 创建指定类型的实例
+        /// </summary>
+        /// <typeparam name="InterfaceType"></typeparam>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private InterfaceType Create<InterfaceType>(Type type)
+            where InterfaceType : class
+        {
+            try
             {
-                foreach (var p in config.Nodes)
+                if (type != null && typeof(InterfaceType).IsAssignableFrom(type))
                 {
-                    RemoteProxy proxy = null;
-                    if (p.Value.RespType == ResponseType.Json)
-                        proxy = new InvokeProxy(p.Value, container);
-                    else
-                        proxy = new RemoteProxy(p.Value, container, false);
-
-                    proxy.OnConnected += (sender, args) =>
-                    {
-                        if (OnConnected != null) OnConnected(sender, args);
-                    };
-                    proxy.OnDisconnected += (sender, args) =>
-                    {
-                        if (OnDisconnected != null) OnDisconnected(sender, args);
-                    };
-
-                    this.proxies[p.Key.ToLower()] = proxy;
+                    return Activator.CreateInstance(type) as InterfaceType;
                 }
             }
+            catch
+            {
+            }
 
+            return default(InterfaceType);
         }
 
         #region 创建单例
@@ -112,7 +114,7 @@ namespace MySoft.IoC
                                 config = new CastleFactoryConfiguration
                                 {
                                     AppName = "InternalServer",
-                                    Type = CastleFactoryType.Remote,
+                                    ServerType = CastleFactoryType.Remote,
                                     ThrowError = true
                                 };
                         }
@@ -125,44 +127,32 @@ namespace MySoft.IoC
             return singleton;
         }
 
-        #endregion
-
-        #endregion
-
-        #region Get Service
-
-        /// <summary>
-        /// 获取默认的节点
-        /// </summary>
-        /// <returns></returns>
-        public ServerNode GetDefaultNode()
-        {
-            return GetServerNode(config.DefaultKey);
-        }
-
-        /// <summary>
-        /// 通过nodeKey查找节点
-        /// </summary>
-        /// <param name="nodeKey"></param>
-        /// <returns></returns>
-        public ServerNode GetServerNode(string nodeKey)
-        {
-            if (proxies.Count == 0)
-            {
-                throw new WarningException("Not find any server node.");
-            }
-
-            return GetServerNodes().FirstOrDefault(p => string.Compare(p.Key, nodeKey, true) == 0);
-        }
-
         /// <summary>
         /// 获取所有远程节点
         /// </summary>
         /// <returns></returns>
         public IList<ServerNode> GetServerNodes()
         {
-            return proxies.Values.Cast<RemoteProxy>().Select(p => p.Node).ToList();
+            IList<ServerNode> nodes = new List<ServerNode>();
+
+            if (nodeResolver != null)
+            {
+                nodes = nodeResolver.GetAllServerNode();
+            }
+
+            if (nodes.Count == 0)
+            {
+                nodes = config.Nodes.Values.ToList();
+            }
+
+            return nodes;
         }
+
+        #endregion
+
+        #endregion
+
+        #region Get Service
 
         /// <summary>
         /// 注册接口调用依赖
@@ -194,22 +184,11 @@ namespace MySoft.IoC
             //获取本地服务
             IService service = GetLocalService<IServiceInterfaceType>();
 
-            ServerNode node = null;
+            //获取节点
+            var type = typeof(IServiceInterfaceType);
+            var nodes = GetServerNodesFromConfig(service, nodeKey, type.Assembly.FullName, type.FullName);
 
-            if (service == null)
-            {
-                var nodes = GetCacheServerNodes(nodeKey, typeof(IServiceInterfaceType).FullName);
-
-                if (nodes.Count == 0)
-                {
-                    throw new WarningException(string.Format("Did not find the server node【{0}】.", nodeKey));
-                }
-
-                var index = new Random().Next(0, nodes.Count);
-                node = nodes[index];
-            }
-
-            return GetChannel<IServiceInterfaceType>(service, node);
+            return GetChannel<IServiceInterfaceType>(service, nodes);
         }
 
         /// <summary>
@@ -231,20 +210,15 @@ namespace MySoft.IoC
         /// </summary>
         /// <typeparam name="IServiceInterfaceType"></typeparam>
         /// <param name="service"></param>
-        /// <param name="node"></param>
+        /// <param name="nodes"></param>
         /// <returns></returns>
-        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService service, ServerNode node)
+        private IServiceInterfaceType GetChannel<IServiceInterfaceType>(IService service, params ServerNode[] nodes)
             where IServiceInterfaceType : class
         {
             if (service == null)
             {
-                if (node == null)
-                {
-                    throw new WarningException("Server node can't for empty.");
-                }
-
                 //获取代理服务
-                service = GetProxyService(node);
+                service = GetProxyService(nodes);
             }
 
             //返回通道服务
@@ -254,37 +228,53 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取代理服务
         /// </summary>
-        /// <param name="node"></param>
+        /// <param name="nodes"></param>
         /// <returns></returns>
-        private IService GetProxyService(ServerNode node)
+        private IService GetProxyService(params ServerNode[] nodes)
         {
-            if (!proxies.ContainsKey(node.Key.ToLower()))
+            if (nodes.Count() == 0)
+            {
+                throw new WarningException("Proxy server node can't for empty.");
+            }
+
+            var nodeKey = nodes.First().Key.ToLower();
+
+            if (!proxies.ContainsKey(nodeKey))
             {
                 lock (syncRoot)
                 {
-                    if (!proxies.ContainsKey(node.Key.ToLower()))
+                    if (!proxies.ContainsKey(nodeKey))
                     {
-                        RemoteProxy proxy = null;
-                        if (node.RespType == ResponseType.Json)
-                            proxy = new InvokeProxy(node, container);
-                        else
-                            proxy = new RemoteProxy(node, container, false);
+                        var remoteProxies = new List<RemoteProxy>();
 
-                        proxy.OnConnected += (sender, args) =>
+                        foreach (var node in nodes)
                         {
-                            if (OnConnected != null) OnConnected(sender, args);
-                        };
-                        proxy.OnDisconnected += (sender, args) =>
-                        {
-                            if (OnDisconnected != null) OnDisconnected(sender, args);
-                        };
+                            RemoteProxy proxy = null;
+                            if (node.RespType == ResponseType.Json)
+                                proxy = new InvokeProxy(node, container);
+                            else
+                                proxy = new RemoteProxy(node, container, false);
 
-                        proxies[node.Key.ToLower()] = proxy;
+                            proxy.OnConnected += (sender, args) =>
+                            {
+                                if (OnConnected != null) OnConnected(sender, args);
+                            };
+
+                            proxy.OnDisconnected += (sender, args) =>
+                            {
+                                if (OnDisconnected != null) OnDisconnected(sender, args);
+                            };
+
+                            remoteProxies.Add(proxy);
+                        }
+
+                        //实例化服务代理
+                        proxies[nodeKey] = new ServiceProxy(nodeKey, remoteProxies);
                     }
                 }
             }
 
-            return proxies[node.Key.ToLower()];
+            return proxies[nodeKey];
         }
 
         /// <summary>
@@ -345,39 +335,6 @@ namespace MySoft.IoC
         /// 获取回调发布服务
         /// </summary>
         /// <typeparam name="IPublishService"></typeparam>
-        /// <param name="callback"></param>
-        /// <returns></returns>
-        public IPublishService GetChannel<IPublishService>(object callback)
-            where IPublishService : class
-        {
-            return GetChannel<IPublishService>(config.DefaultKey, callback);
-        }
-
-        /// <summary>
-        /// 获取回调发布服务
-        /// </summary>
-        /// <typeparam name="IPublishService"></typeparam>
-        /// <param name="nodeKey"></param>
-        /// <param name="callback"></param>
-        /// <returns></returns>
-        public IPublishService GetChannel<IPublishService>(string nodeKey, object callback)
-            where IPublishService : class
-        {
-            var nodes = GetCacheServerNodes(nodeKey, typeof(IPublishService).FullName);
-
-            if (nodes.Count == 0)
-            {
-                throw new WarningException(string.Format("Did not find the server node【{0}】.", nodeKey));
-            }
-
-            var index = new Random().Next(0, nodes.Count);
-            return GetChannel<IPublishService>(nodes[index], callback);
-        }
-
-        /// <summary>
-        /// 获取回调发布服务
-        /// </summary>
-        /// <typeparam name="IPublishService"></typeparam>
         /// <param name="node"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
@@ -389,7 +346,11 @@ namespace MySoft.IoC
                 throw new WarningException("Server node can't for empty.");
             }
 
-            if (callback == null) throw new IoCException("Callback cannot be the null.");
+            if (callback == null)
+            {
+                throw new IoCException("Callback cannot be the null.");
+            }
+
             var contract = CoreHelper.GetMemberAttribute<ServiceContractAttribute>(typeof(IPublishService));
             if (contract != null && contract.CallbackType != null)
             {
@@ -441,22 +402,10 @@ namespace MySoft.IoC
             //获取本地服务
             IService service = GetLocalService(message.ServiceName);
 
-            ServerNode node = null;
+            //获取节点
+            var nodes = GetServerNodesFromConfig(service, nodeKey, string.Empty, message.ServiceName);
 
-            if (service == null)
-            {
-                var nodes = GetCacheServerNodes(nodeKey, message.ServiceName);
-
-                if (nodes.Count == 0)
-                {
-                    throw new WarningException(string.Format("Did not find the server node【{0}】.", nodeKey));
-                }
-
-                var index = new Random().Next(0, nodes.Count);
-                node = nodes[index];
-            }
-
-            return Invoke(service, node, message);
+            return Invoke(service, message, nodes);
         }
 
         /// <summary>
@@ -470,27 +419,22 @@ namespace MySoft.IoC
             //获取本地服务
             IService service = GetLocalService(message.ServiceName);
 
-            return Invoke(service, node, message);
+            return Invoke(service, message, node);
         }
 
         /// <summary>
         /// 响应服务
         /// </summary>
         /// <param name="service"></param>
-        /// <param name="node"></param>
         /// <param name="message"></param>
+        /// <param name="nodes"></param>
         /// <returns></returns>
-        private InvokeData Invoke(IService service, ServerNode node, InvokeMessage message)
+        private InvokeData Invoke(IService service, InvokeMessage message, params ServerNode[] nodes)
         {
             if (service == null)
             {
-                if (node == null)
-                {
-                    throw new WarningException("Server node can't for empty.");
-                }
-
                 //获取代理服务
-                service = GetProxyService(node);
+                service = GetProxyService(nodes);
             }
 
             //调用分布式服务
@@ -548,7 +492,7 @@ namespace MySoft.IoC
             IService service = default(IService);
 
             //如果是本地配置，则抛出异常
-            if (config.Type != CastleFactoryType.Remote)
+            if (config.ServerType != CastleFactoryType.Remote)
             {
                 var serviceKey = "Service_" + serviceName;
 
@@ -561,7 +505,7 @@ namespace MySoft.IoC
 
                 if (service == null)
                 {
-                    if (config.Type == CastleFactoryType.Local)
+                    if (config.ServerType == CastleFactoryType.Local)
                     {
                         throw new WarningException(string.Format("The local not find matching service ({0}).", serviceName));
                     }
@@ -574,83 +518,60 @@ namespace MySoft.IoC
         /// <summary>
         /// 获取服务节点
         /// </summary>
+        /// <param name="service"></param>
         /// <param name="nodeKey"></param>
+        /// <param name="assemblyName"></param>
         /// <param name="serviceName"></param>
         /// <returns></returns>
-        private IList<ServerNode> GetCacheServerNodes(string nodeKey, string serviceName)
+        private ServerNode[] GetServerNodesFromConfig(IService service, string nodeKey, string assemblyName, string serviceName)
         {
-            //获取服务节点
-            if (proxies.Count > 0)
+            IList<ServerNode> nodes = new List<ServerNode>();
+
+            //如果存在本地服务，则跳过
+            if (service != null) return nodes.ToArray();
+
+            if (nodeResolver != null)
             {
-                var node = GetServerNode(nodeKey);
-                if (node != null) return new ServerNode[] { node };
+                if (!string.IsNullOrEmpty(assemblyName))
+                {
+                    assemblyName = assemblyName.Split(',')[0];
+                }
+
+                var @namespace = string.Empty;
+
+                if (!string.IsNullOrEmpty(serviceName))
+                {
+                    //取命名空间
+                    var arr = serviceName.Split('.');
+                    @namespace = string.Join(".", arr, 0, arr.Length - 1);
+                }
+
+                //获取服务节点
+                nodes = nodeResolver.GetServerNodes(assemblyName, @namespace);
+            }
+
+            //获取服务节点
+            if (nodes.Count == 0)
+            {
+                //获取匹配的节点
+                var tmpNodes = GetServerNodes();
+
+                if (tmpNodes.Count == 0)
+                {
+                    throw new WarningException("Not find any server node.");
+                }
+
+                nodes = tmpNodes.Where(p => string.Compare(p.Key, nodeKey, true) == 0).ToList();
             };
 
-            if (!string.IsNullOrEmpty(config.ProxyServer))
+            //如果没有合适的节点，返回null
+            if (nodes.Count == 0)
             {
-                return GetServerNodes(nodeKey, serviceName);
+                throw new WarningException(string.Format("Did not find the server node【{0}】.", nodeKey));
             }
 
             //返回空列表
-            return new ServerNode[0];
-        }
-
-        /// <summary>
-        /// 获取节点列表
-        /// </summary>
-        /// <param name="nodeKey"></param>
-        /// <param name="serviceName"></param>
-        /// <returns></returns>
-        private IList<ServerNode> GetServerNodes(string nodeKey, string serviceName)
-        {
-            var cacheKey = string.Format("{0}${1}", config.ProxyServer, nodeKey);
-
-            //从缓存中获取节点（缓存1小时）
-            return CacheHelper<IList<ServerNode>>.Get(LocalCacheType.File, cacheKey, TimeSpan.FromHours(1)
-                                                , state =>
-                                                {
-                                                    var arr = state as ArrayList;
-                                                    var key = Convert.ToString(arr[0]);
-                                                    var name = Convert.ToString(arr[1]);
-
-                                                    //获取节点
-                                                    return GetServerNodesFromChannel(key, name);
-
-                                                }, new ArrayList { nodeKey, serviceName });
-        }
-
-        /// <summary>
-        /// 获取服务节点列表
-        /// </summary>
-        /// <param name="nodeKey"></param>
-        /// <param name="serviceName"></param>
-        /// <returns></returns>
-        private IList<ServerNode> GetServerNodesFromChannel(string nodeKey, string serviceName)
-        {
-            try
-            {
-                var arr = config.ProxyServer.Split('|');
-
-                var server = ServerNode.Parse(arr[0]);
-                server.Timeout = 30;
-
-                if (arr.Length > 1)
-                {
-                    server.Compress = Convert.ToBoolean(arr[1]);
-                }
-
-                if (server != null)
-                {
-                    return GetChannel<IStatusService>(server).GetServerNodes(nodeKey, serviceName);
-                }
-            }
-            catch (Exception ex)
-            {
-                //TODO
-            }
-
-            //返回空列表
-            return new ServerNode[0];
+            return nodes.ToArray();
         }
 
         #endregion

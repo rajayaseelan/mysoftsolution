@@ -14,6 +14,15 @@ namespace MySoft.PlatformService.WinForm
     public delegate InvokeData AsyncMethodCaller(InvokeMessage message);
 
     /// <summary>
+    /// 异步方法调用
+    /// </summary>
+    /// <param name="method"></param>
+    /// <param name="instance"></param>
+    /// <param name="parameter"></param>
+    /// <returns></returns>
+    public delegate BinaryResponse AsyncDoMethod(System.Reflection.MethodInfo method, object instance, object[] parameter);
+
+    /// <summary>
     /// 调用响应
     /// </summary>
     [Serializable]
@@ -55,5 +64,17 @@ namespace MySoft.PlatformService.WinForm
         {
             get { return Exception != null; }
         }
+    }
+
+    /// <summary>
+    /// 调用响应
+    /// </summary>
+    [Serializable]
+    public class BinaryResponse : InvokeResponse
+    {
+        /// <summary>
+        /// 数据
+        /// </summary>
+        public new object Value { get; set; }
     }
 }

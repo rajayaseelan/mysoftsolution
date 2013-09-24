@@ -24,6 +24,7 @@ namespace MySoft.IoC
         /// 订阅服务
         /// </summary>
         /// <param name="options">订阅选项</param>
+        /// <param name="subscribeTypes"></param>
         void Subscribe(SubscribeOptions options, params string[] subscribeTypes);
 
         /// <summary>
@@ -108,13 +109,5 @@ namespace MySoft.IoC
         /// </summary>
         /// <returns></returns>
         void RefreshWebAPI();
-
-        /// <summary>
-        /// 获取服务节点
-        /// </summary>
-        /// <param name="nodeKey"></param>
-        /// <param name="serviceName"></param>
-        /// <returns></returns>
-        IList<ServerNode> GetServerNodes(string nodeKey, string serviceName);
     }
 }

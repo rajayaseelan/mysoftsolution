@@ -13,6 +13,9 @@ using MySoft.PlatformService.UserService;
 using System.Xml.Serialization;
 using System.Linq;
 using Amib.Threading;
+using System.Xml;
+using System.Collections;
+using Newtonsoft.Json.Linq;
 
 namespace MySoft.PlatformService.Client
 {
@@ -31,6 +34,14 @@ namespace MySoft.PlatformService.Client
         }
 
         #endregion
+    }
+
+    [XmlRoot(IsNullable = true)]
+    public class User
+    {
+        [XmlElement(IsNullable = true)]
+        public string Id { get; set; }
+        public string Name { get; set; }
     }
 
     class Program

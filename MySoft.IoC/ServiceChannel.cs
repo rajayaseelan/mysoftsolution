@@ -2,6 +2,7 @@
 using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
 using System;
+using System.Runtime.Serialization;
 
 namespace MySoft.IoC
 {
@@ -31,9 +32,40 @@ namespace MySoft.IoC
         /// <param name="resMsg"></param>
         public void SendResponse(string messageId, ResponseMessage resMsg)
         {
-            //设置异常消息
-            SetMessageError(resMsg);
+            try
+            {
+                //设置异常消息
+                SetMessageError(resMsg);
 
+                //发送消息
+                SendMessage(messageId, resMsg);
+            }
+            catch (SerializationException ex)
+            {
+                //创建一个新响应消息
+                var errMsg = new ResponseMessage
+                {
+                    ServiceName = resMsg.ServiceName,
+                    MethodName = resMsg.MethodName,
+                    Parameters = resMsg.Parameters,
+                    ElapsedTime = resMsg.ElapsedTime,
+                    Error = ex
+                };
+
+                //发送消息
+                SendMessage(messageId, errMsg);
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="messageId"></param>
+        /// <param name="resMsg"></param>
+        private void SendMessage(string messageId, ResponseMessage resMsg)
+        {
             IScsMessage message = new ScsResultMessage(resMsg, messageId);
 
             //发送消息

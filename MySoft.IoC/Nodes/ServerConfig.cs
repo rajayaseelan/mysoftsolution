@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Xml.Serialization;
 
 namespace MySoft.IoC.Nodes
@@ -7,27 +8,61 @@ namespace MySoft.IoC.Nodes
     /// 服务配置
     /// </summary>
     [Serializable]
-    [XmlRoot("serverconfig")]
+    [XmlRoot("serverConfig")]
     public class ServerConfig
     {
         /// <summary>
-        /// 默认节点
+        /// 配置节点
         /// </summary>
-        [XmlAttribute("default")]
-        public string DefaultKey { get; set; }
+        [XmlArray("nodeConfigs")]
+        [XmlArrayItem("nodeConfig", typeof(NodeConfig))]
+        public NodeConfigCollection Configs { get; set; }
 
         /// <summary>
         /// 服务节点
         /// </summary>
-        [XmlElement("serverNode", Type = typeof(ServerNode))]
-        public ServerNode[] Nodes { get; set; }
+        [XmlArray("serverNodes")]
+        [XmlArrayItem("serverNode", typeof(ServerNode))]
+        public ServerNodeCollection Nodes { get; set; }
 
         /// <summary>
         /// 实例化ServerConfig
         /// </summary>
         public ServerConfig()
         {
-            this.Nodes = new ServerNode[0];
+            this.Configs = new NodeConfigCollection();
+            this.Nodes = new ServerNodeCollection();
+        }
+    }
+
+    /// <summary>
+    /// ServerNode集合
+    /// </summary>
+    [Serializable]
+    public class ServerNodeCollection : CollectionBase
+    {
+        /// <summary>
+        /// Adds a new ServerNode to the collection.
+        /// </summary>
+        /// <param name="r">A ServerNode instance.</param>
+        public virtual void Add(ServerNode r)
+        {
+            this.InnerList.Add(r);
+        }
+
+        /// <summary>
+        /// Gets or sets a ServerNode at a specified ordinal index.
+        /// </summary>
+        public ServerNode this[int index]
+        {
+            get
+            {
+                return (ServerNode)this.InnerList[index];
+            }
+            set
+            {
+                this.InnerList[index] = value;
+            }
         }
     }
 }

@@ -5,7 +5,6 @@ using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
-using MySoft.IoC.Nodes;
 using MySoft.Logger;
 using MySoft.Net.Http;
 using System;
@@ -78,21 +77,14 @@ namespace MySoft.IoC
             {
                 //设置默认的解析器
                 IHttpApiResolver apiResolver = null;
-                IServerNodeResolver nodeResolver = null;
 
                 //判断是否配置了ApiResolverType
                 apiResolver = Create<IHttpApiResolver>(config.ApiResolverType) ?? new DefaultApiResolver();
-
-                //判断是否配置了NodeResolverType
-                nodeResolver = Create<IServerNodeResolver>(config.NodeResolverType) ?? new DefaultNodeResolver();
 
                 var httpCaller = new HttpServiceCaller(config, container);
 
                 //刷新服务委托
                 status.OnRefresh += (sender, args) => httpCaller.InitCaller(apiResolver);
-
-                //获取服务节点
-                status.OnServerNode += (sender, args) => nodeResolver.GetServerNodes(args.NodeKey, args.ServiceName);
 
                 //初始化调用器
                 httpCaller.InitCaller(apiResolver);

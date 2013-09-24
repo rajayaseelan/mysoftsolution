@@ -14,7 +14,6 @@ namespace MySoft.IoC.Configuration
         private int httpPort = 8080;
         private bool httpEnabled = false;
         private Type apiResolverType;
-        private Type nodeResolverType;
         private bool compress = false;
         private int recordHours = ServiceConfig.DEFAULT_RECORD_HOUR;            //默认记录6小时
         private int maxCaller = ServiceConfig.DEFAULT_SERVER_MAXCALLER;         //默认并发数为100
@@ -81,19 +80,7 @@ namespace MySoft.IoC.Configuration
                     try
                     {
                         var typeName = childattribute["type"].Value;
-                        apiResolverType = Type.GetType(typeName);
-                    }
-                    catch (Exception ex)
-                    {
-                        //TODO
-                    }
-                }
-                else if (child.Name == "nodeResolver") //加载node解析器
-                {
-                    try
-                    {
-                        var typeName = childattribute["type"].Value;
-                        nodeResolverType = Type.GetType(typeName);
+                        apiResolverType = Type.GetType(typeName, true);
                     }
                     catch (Exception ex)
                     {
@@ -130,15 +117,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return apiResolverType; }
             set { apiResolverType = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the nodeResolverType
-        /// </summary>
-        public Type NodeResolverType
-        {
-            get { return nodeResolverType; }
-            set { nodeResolverType = value; }
         }
 
         #endregion

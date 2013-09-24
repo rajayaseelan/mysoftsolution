@@ -1,20 +1,23 @@
-﻿using System;
+﻿using MySoft.IoC;
+using MySoft.IoC.Messages;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
-using MySoft.IoC;
-using MySoft.IoC.Messages;
-using Newtonsoft.Json.Linq;
 
 namespace MySoft.PlatformService.WinForm
 {
     public partial class frmInvoke : Form
     {
+        private bool isReflection;
+        private ServiceInfo serviceInfo;
+        private MethodInfo methodInfo;
         private string serviceName;
         private string methodName;
         private int cacheTime;
@@ -24,22 +27,25 @@ namespace MySoft.PlatformService.WinForm
         private string paramValue;
         private int timeout;
 
-        public frmInvoke(ServerNode node, string serviceName, MethodInfo method)
+        public frmInvoke(bool isReflection, ServerNode node, ServiceInfo service, MethodInfo method)
         {
             InitializeComponent();
 
+            this.isReflection = isReflection;
             this.node = node;
             this.timeout = node.Timeout;
             this.node.Timeout = 30;
-            this.serviceName = serviceName;
+            this.serviceInfo = service;
+            this.methodInfo = method;
+            this.serviceName = service.FullName;
             this.methodName = method.FullName;
             this.cacheTime = method.CacheTime;
             this.parameters = method.Parameters;
             this.txtParameters = new Dictionary<string, TextBox>();
         }
 
-        public frmInvoke(ServerNode node, string serviceName, MethodInfo method, string paramValue)
-            : this(node, serviceName, method)
+        public frmInvoke(bool isReflection, ServerNode node, ServiceInfo service, MethodInfo method, string paramValue)
+            : this(isReflection, node, service, method)
         {
             this.paramValue = paramValue;
         }
@@ -50,7 +56,7 @@ namespace MySoft.PlatformService.WinForm
 
             //自动生成列
             gridDataQuery.AutoGenerateColumns = true;
-            webBrowser1.Url = new Uri("about:blank");
+            webBrowser1.Navigate(new Uri("about:blank"));
             webBrowser1.ScriptErrorsSuppressed = true;
 
             lblServiceName.Text = serviceName;
@@ -235,6 +241,228 @@ namespace MySoft.PlatformService.WinForm
                 }
             }
 
+            if (isReflection)
+            {
+                //Bin方式调用 
+                BinaryInvoke(jValue);
+            }
+            else
+            {
+                //Json方式调用
+                JsonInvoke(jValue);
+            }
+        }
+
+        #region binary方式调用
+
+        /// <summary>
+        /// Bin方式调用
+        /// </summary>
+        /// <param name="jValue"></param>
+        private void BinaryInvoke(JObject jValue)
+        {
+            var info = new AppDomainSetup();
+            info.LoaderOptimization = LoaderOptimization.SingleDomain;
+
+            var domain = AppDomain.CreateDomain("Service Invoke", null, info);
+
+            try
+            {
+                var assembly = domain.Load(serviceInfo.Assembly);
+                var type = assembly.GetType(serviceInfo.FullName, true);
+
+                //获取执行实例
+                var instance = CastleFactory.Create() as object;
+                var method = instance.GetType().GetMethod("GetChannel", new Type[] { typeof(ServerNode) });
+                instance = method.MakeGenericMethod(type).Invoke(instance, new object[] { node });
+
+                //执行方法
+                method = CoreHelper.GetMethodFromType(type, methodInfo.FullName);
+                var parameters = IoCHelper.CreateParameters(method, jValue.ToString());
+                var values = parameters.Values.ToArray();
+
+                //异步调用
+                var func = new AsyncDoMethod(DoMethod);
+                func.BeginInvoke(method, instance, values, DoMethodComplete, domain);
+            }
+            catch (Exception ex)
+            {
+                AppDomain.Unload(domain);
+
+                //设置控件焦点
+                SetControlFocus(false);
+
+                var errMsg = ErrorHelper.GetInnerException(ex).Message;
+                MessageBox.Show(errMsg, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 执行方法
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="instance"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        private BinaryResponse DoMethod(System.Reflection.MethodInfo method, object instance, object[] parameters)
+        {
+            var watch = Stopwatch.StartNew();
+
+            try
+            {
+                var value = method.Invoke(instance, parameters);
+
+                //获取返回参数
+                var collection = new ParameterCollection();
+                IoCHelper.SetRefParameters(method, parameters, collection);
+
+                return new BinaryResponse
+                {
+                    Value = value,
+                    Count = GetCount(value),
+                    OutParameters = collection.ToString(),
+                    ElapsedTime = watch.ElapsedMilliseconds,
+                    ElapsedMilliseconds = watch.ElapsedMilliseconds
+                };
+            }
+            catch (Exception ex)
+            {
+                return new BinaryResponse
+                {
+                    ElapsedTime = watch.ElapsedMilliseconds,
+                    ElapsedMilliseconds = watch.ElapsedMilliseconds,
+                    Exception = ErrorHelper.GetInnerException(ex)
+                };
+            }
+            finally
+            {
+                if (watch.IsRunning)
+                {
+                    watch.Stop();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取记录数
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        private int GetCount(object val)
+        {
+            if (val == null) return 0;
+
+            try
+            {
+                if (val is ICollection)
+                {
+                    return (val as ICollection).Count;
+                }
+                else if (val is Array)
+                {
+                    return (val as Array).Length;
+                }
+                else if (val is DataTable)
+                {
+                    return (val as DataTable).Rows.Count;
+                }
+                else if (val is DataSet)
+                {
+                    var ds = val as DataSet;
+                    if (ds.Tables.Count > 0)
+                    {
+                        int count = 0;
+                        foreach (DataTable table in ds.Tables)
+                        {
+                            count += table.Rows.Count;
+                        }
+                        return count;
+                    }
+                }
+                else if (val is InvokeData)
+                {
+                    return (val as InvokeData).Count;
+                }
+
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// 服务调用完成
+        /// </summary>
+        /// <param name="ar"></param>
+        private void DoMethodComplete(IAsyncResult ar)
+        {
+            var domain = ar.AsyncState as AppDomain;
+
+            try
+            {
+                var _ar = ar as System.Runtime.Remoting.Messaging.AsyncResult;
+                var func = _ar.AsyncDelegate as AsyncDoMethod;
+
+                var value = func.EndInvoke(ar);
+
+                var response = new InvokeResponse(value)
+                {
+                    Value = SerializationManager.SerializeJson(value.Value),
+                    Exception = value.Exception,
+                    ElapsedMilliseconds = value.ElapsedMilliseconds
+                };
+
+                if (!value.IsError)
+                {
+                    InvokeMethod(new Action<object>(table =>
+                    {
+                        if (table is IDictionary)
+                        {
+                            table = (table as IDictionary).Values;
+                        }
+
+                        gridDataQuery.DataSource = new BindingSource(table, null);
+                        gridDataQuery.Refresh();
+
+                    }), value.Value);
+
+                    //获取DataView数据
+                    InvokeMethod(new Action<string>(json =>
+                    {
+                        var token = JContainer.Parse(json);
+
+                        if (!token.HasValues)
+                        {
+                            var html = token.ToString();
+                            SetWebBrowser(html);
+                        }
+                        else
+                        {
+                            SetWebBrowser(string.Empty);
+                        }
+                    }), response.Value);
+                }
+
+                InvokeResponse(response);
+            }
+            finally
+            {
+                AppDomain.Unload(domain);
+
+                ar.AsyncWaitHandle.Close();
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Json方式调用
+        /// </summary>
+        /// <param name="jValue"></param>
+        private void JsonInvoke(JObject jValue)
+        {
             //提交的参数信息
             string parameter = jValue.ToString(Newtonsoft.Json.Formatting.Indented);
             var message = new InvokeMessage
@@ -247,13 +475,11 @@ namespace MySoft.PlatformService.WinForm
 
             //启用线程进行数据填充
             var caller = new AsyncMethodCaller(AsyncCaller);
-            var ar = caller.BeginInvoke(message, AsyncComplete, caller);
+            caller.BeginInvoke(message, AsyncComplete, caller);
         }
 
         private InvokeData AsyncCaller(InvokeMessage message)
         {
-            InvokeResponse data;
-
             //开始计时
             var watch = Stopwatch.StartNew();
 
@@ -261,17 +487,27 @@ namespace MySoft.PlatformService.WinForm
             {
                 //调用服务
                 var invokeData = CastleFactory.Create().Invoke(node, message);
-                data = new InvokeResponse(invokeData);
+                var data = new InvokeResponse(invokeData);
+                data.ElapsedMilliseconds = watch.ElapsedMilliseconds;
+
+                return data;
             }
             catch (Exception ex)
             {
-                data = new InvokeResponse { Exception = ex };
+                return new InvokeResponse
+                {
+                    ElapsedTime = watch.ElapsedMilliseconds,
+                    ElapsedMilliseconds = watch.ElapsedMilliseconds,
+                    Exception = ex
+                };
             }
-
-            watch.Stop();
-            data.ElapsedMilliseconds = watch.ElapsedMilliseconds;
-
-            return data;
+            finally
+            {
+                if (watch.IsRunning)
+                {
+                    watch.Stop();
+                }
+            }
         }
 
         private void AsyncComplete(IAsyncResult ar)
@@ -284,54 +520,101 @@ namespace MySoft.PlatformService.WinForm
                 var value = caller.EndInvoke(ar);
                 var data = value as InvokeResponse;
 
-                SetInvokeResponse(data);
+                if (!data.IsError)
+                {
+                    InvokeTable(data.Value);
+                }
+
+                InvokeResponse(data);
             }
             catch (Exception ex) { }
             finally
             {
                 ar.AsyncWaitHandle.Close();
             }
-
-            //清理资源
-            GC.Collect();
         }
 
-        private void SetInvokeResponse(InvokeResponse data)
+        /// <summary>
+        /// 填充DataTable
+        /// </summary>
+        /// <param name="json"></param>
+        private void InvokeTable(string json)
         {
-            InvokeMethod(new Action(() =>
+            var container = JContainer.Parse(json);
+
+            //获取DataView数据
+            InvokeMethod(new Action<JToken>(token =>
             {
-                if (data.IsError)
+                if (!token.HasValues)
                 {
-                    richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", data.Exception.Message);
+                    gridDataQuery.DataSource = null;
+                    gridDataQuery.Refresh();
+                    var html = token.ToString();
+                    SetWebBrowser(html);
+                }
+                else
+                {
+                    //获取DataView数据
+                    var table = GetDataTable(token);
+                    gridDataQuery.DataSource = table;
+                    gridDataQuery.Refresh();
+                    SetWebBrowser(string.Empty);
+                }
+            }), container);
+        }
+
+        private void InvokeResponse(InvokeResponse data)
+        {
+            InvokeMethod(new Action<InvokeResponse>(response =>
+            {
+                if (response.IsError)
+                {
+                    richTextBox1.Text = string.Format("【Error】 =>\r\n{0}", response.Exception.Message);
+                    richTextBox1.Refresh();
                 }
                 else
                 {
                     richTextBox1.Text = string.Format("【InvokeValue】({0} rows) =>\r\n{1}\r\n\r\n【OutParameters】 =>\r\n{2}",
-                                        data.Count, data.Value, data.OutParameters);
+                                        response.Count, response.Value, response.OutParameters);
                     richTextBox1.Refresh();
                 }
 
-                label5.Text = string.Format("{0} / {1} ms.  Row(s): {2}.  Size: {3}.", data.ElapsedMilliseconds,
-                            data.ElapsedTime, data.Count, GetDataSize(data.Value));
+                //设置控件焦点
+                SetControlFocus(true);
+
+                label5.Text = string.Format("{0} / {1} ms.  Row(s): {2}.  Size: {3}.", response.ElapsedMilliseconds,
+                            response.ElapsedTime, response.Count, GetDataSize(response.Value));
 
                 label5.Refresh();
+            }), data);
+        }
 
-                button1.Enabled = true;
+        /// <summary>
+        /// 设置控件焦点
+        /// </summary>
+        private void SetControlFocus(bool success)
+        {
+            button1.Enabled = true;
 
-                if (txtParameters.Count > 0)
-                {
-                    var p = txtParameters.Values.FirstOrDefault();
-                    p.Focus();
-                }
-                else
-                {
-                    button1.Focus();
-                }
-            }));
-
-            if (!data.IsError)
+            if (txtParameters.Count > 0)
             {
-                ThreadPool.QueueUserWorkItem(InvokeTable, data);
+                var p = txtParameters.Values.FirstOrDefault();
+                p.Focus();
+            }
+            else
+            {
+                button1.Focus();
+            }
+
+            if (success)
+            {
+                label5.Text = "接口调用已成功完成！";
+                label5.Refresh();
+            }
+            else
+            {
+                label5.Text = "接口调用失败！";
+                label5.Refresh();
             }
         }
 
@@ -363,55 +646,32 @@ namespace MySoft.PlatformService.WinForm
             }
         }
 
-        private void InvokeTable(object state)
-        {
-            var invokeData = state as InvokeData;
-            var container = JContainer.Parse(invokeData.Value);
-
-            //获取DataView数据
-            InvokeMethod(new Action(() =>
-            {
-                if (!container.HasValues)
-                {
-                    gridDataQuery.DataSource = null;
-                    var html = container.ToString();
-                    SetWebBrowser(html);
-                }
-                else
-                {
-                    //获取DataView数据
-                    var table = GetDataTable(container);
-                    gridDataQuery.DataSource = table;
-                    SetWebBrowser(string.Empty);
-                }
-            }));
-        }
-
         /// <summary>
         /// 设置浏览器
         /// </summary>
         /// <param name="html"></param>
         private void SetWebBrowser(string html)
         {
+            if (this.IsDisposed) return;
             if (webBrowser1.IsBusy) return;
 
-            webBrowser1.Url = new Uri("about:blank");
-            webBrowser1.DocumentCompleted += (sender, e) =>
+            try
             {
-                if (this.IsDisposed) return;
+                webBrowser1.Navigate(new Uri("about:blank"));
 
-                try
-                {
-                    webBrowser1.Document.GetElementsByTagName("body")[0].InnerHtml = string.Empty;
-                    webBrowser1.Document.Write(html);
-                }
-                catch
-                {
-                }
-            };
+                while (webBrowser1.ReadyState != WebBrowserReadyState.Complete)
+                { Application.DoEvents(); }
+
+                webBrowser1.Document.Encoding = "utf-8";
+                webBrowser1.Document.Write(html);
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
-        private void InvokeMethod(Action action)
+        private void InvokeMethod<T>(Action<T> action, T state)
         {
             if (this.IsDisposed) return;
 
@@ -419,11 +679,11 @@ namespace MySoft.PlatformService.WinForm
             {
                 if (this.InvokeRequired)
                 {
-                    this.Invoke(action);
+                    this.BeginInvoke(action, state);
                 }
                 else
                 {
-                    action();
+                    action(state);
                 }
             }
             catch

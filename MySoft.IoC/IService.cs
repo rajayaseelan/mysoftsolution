@@ -12,6 +12,7 @@ namespace MySoft.IoC
         /// </summary>
         /// <value>The name of the service.</value>
         string ServiceName { get; }
+
         /// <summary>
         /// Calls the service.
         /// </summary>

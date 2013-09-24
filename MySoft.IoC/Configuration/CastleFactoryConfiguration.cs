@@ -11,8 +11,9 @@ namespace MySoft.IoC.Configuration
     public class CastleFactoryConfiguration : ConfigurationBase
     {
         private IDictionary<string, ServerNode> nodes;
-        private CastleFactoryType type = CastleFactoryType.Local;
-        private string defaultKey, proxyServer;                                 //代理服务
+        private CastleFactoryType serverType = CastleFactoryType.Local;
+        private Type resolverType;
+        private string defaultKey;                                              //代理服务
         private string appname;                                                 //host名称
         private bool throwError = true;                                         //抛出异常
         private bool enableCache = true;                                        //是否缓存
@@ -54,16 +55,13 @@ namespace MySoft.IoC.Configuration
             XmlAttributeCollection attribute = xmlnode.Attributes;
 
             if (attribute["type"] != null && attribute["type"].Value.Trim() != string.Empty)
-                type = (CastleFactoryType)Enum.Parse(typeof(CastleFactoryType), attribute["type"].Value, true);
+                serverType = (CastleFactoryType)Enum.Parse(typeof(CastleFactoryType), attribute["type"].Value, true);
 
             if (attribute["throwError"] != null && attribute["throwError"].Value.Trim() != string.Empty)
                 throwError = Convert.ToBoolean(attribute["throwError"].Value);
 
             if (attribute["default"] != null && attribute["default"].Value.Trim() != string.Empty)
                 defaultKey = attribute["default"].Value;
-
-            if (attribute["proxy"] != null && attribute["proxy"].Value.Trim() != string.Empty)
-                proxyServer = attribute["proxy"].Value;
 
             if (attribute["appname"] != null && attribute["appname"].Value.Trim() != string.Empty)
                 appname = attribute["appname"].Value;
@@ -109,9 +107,21 @@ namespace MySoft.IoC.Configuration
 
                     nodes[node.Key] = node;
                 }
+                else if (child.Name == "nodeResolver") //加载node解析器
+                {
+                    try
+                    {
+                        var typeName = childattribute["type"].Value;
+                        resolverType = System.Type.GetType(typeName, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO
+                    }
+                }
             }
 
-            if (type != CastleFactoryType.Local)
+            if (serverType != CastleFactoryType.Local)
             {
                 //如果app名称为空
                 if (string.IsNullOrEmpty(appname))
@@ -120,9 +130,9 @@ namespace MySoft.IoC.Configuration
                 }
 
                 //判断是否配置了服务信息
-                if (string.IsNullOrEmpty(proxyServer))
+                if (resolverType == null)
                 {
-                    if (type != CastleFactoryType.None)
+                    if (serverType != CastleFactoryType.None)
                     {
                         if (nodes.Count == 0)
                             throw new WarningException("Not configure any server node.");
@@ -141,10 +151,10 @@ namespace MySoft.IoC.Configuration
         /// Gets or sets the type.
         /// </summary>
         /// <value>The type.</value>
-        public CastleFactoryType Type
+        public CastleFactoryType ServerType
         {
-            get { return type; }
-            set { type = value; }
+            get { return serverType; }
+            set { serverType = value; }
         }
 
         /// <summary>
@@ -168,16 +178,6 @@ namespace MySoft.IoC.Configuration
         }
 
         /// <summary>
-        /// Gets or sets the proxy
-        /// </summary>
-        /// <value>The proxy.</value>
-        public string ProxyServer
-        {
-            get { return proxyServer; }
-            set { proxyServer = value; }
-        }
-
-        /// <summary>
         /// Gets or sets the throwError
         /// </summary>
         /// <value>The throwError.</value>
@@ -195,6 +195,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return enableCache; }
             set { enableCache = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the nodeResolverType
+        /// </summary>
+        public Type ResolverType
+        {
+            get { return resolverType; }
+            set { resolverType = value; }
         }
 
         /// <summary>

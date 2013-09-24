@@ -109,7 +109,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>51098</DevelopmentServerPort>
+          <DevelopmentServerPort>57870</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://openapi.mysoft.com</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>

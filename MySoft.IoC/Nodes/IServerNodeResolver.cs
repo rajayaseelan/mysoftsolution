@@ -8,11 +8,17 @@ namespace MySoft.IoC.Nodes
     public interface IServerNodeResolver
     {
         /// <summary>
+        /// 获取所有节点
+        /// </summary>
+        /// <returns></returns>
+        IList<ServerNode> GetAllServerNode();
+
+        /// <summary>
         /// 获取服务器节点
         /// </summary>
-        /// <param name="nodeKey"></param>
-        /// <param name="serviceName"></param>
+        /// <param name="assemblyName"></param>
+        /// <param name="namespace"></param>
         /// <returns></returns>
-        IList<ServerNode> GetServerNodes(string nodeKey, string serviceName);
+        IList<ServerNode> GetServerNodes(string assemblyName, string @namespace);
     }
 }

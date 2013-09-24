@@ -50,11 +50,6 @@ namespace MySoft.IoC.Messages
             set
             {
                 _value = value;
-
-                if (_count < 0)
-                {
-                    _count = GetCount(_value);
-                }
             }
         }
 
@@ -163,7 +158,7 @@ namespace MySoft.IoC.Messages
                 }
                 else if (val is InvokeData)
                 {
-                    return (_value as InvokeData).Count;
+                    return (val as InvokeData).Count;
                 }
 
                 return 1;

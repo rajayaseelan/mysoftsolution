@@ -50,6 +50,8 @@
             this.退订此服务UToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer5 = new System.Windows.Forms.SplitContainer();
             this.listMethod = new ListControls.MessageListBox();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.checkBox5 = new System.Windows.Forms.CheckBox();
             this.panel4 = new System.Windows.Forms.Panel();
             this.autoCompleteTextbox1 = new MySoft.PlatformService.WinForm.AutoCompleteTextbox();
             this.label14 = new System.Windows.Forms.Label();
@@ -138,6 +140,7 @@
             this.splitContainer5.Panel1.SuspendLayout();
             this.splitContainer5.Panel2.SuspendLayout();
             this.splitContainer5.SuspendLayout();
+            this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.splitContainer7.Panel1.SuspendLayout();
@@ -386,13 +389,14 @@
             // splitContainer5.Panel1
             // 
             this.splitContainer5.Panel1.Controls.Add(this.listMethod);
+            this.splitContainer5.Panel1.Controls.Add(this.panel3);
             this.splitContainer5.Panel1.Controls.Add(this.panel4);
             // 
             // splitContainer5.Panel2
             // 
             this.splitContainer5.Panel2.Controls.Add(this.richTextBox3);
             this.splitContainer5.Size = new System.Drawing.Size(577, 489);
-            this.splitContainer5.SplitterDistance = 315;
+            this.splitContainer5.SplitterDistance = 401;
             this.splitContainer5.TabIndex = 0;
             // 
             // listMethod
@@ -405,8 +409,27 @@
             this.listMethod.Name = "listMethod";
             this.listMethod.SelectedIndex = -1;
             this.listMethod.SelectedItem = null;
-            this.listMethod.Size = new System.Drawing.Size(573, 279);
+            this.listMethod.Size = new System.Drawing.Size(573, 334);
             this.listMethod.TabIndex = 12;
+            // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.checkBox5);
+            this.panel3.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel3.Location = new System.Drawing.Point(0, 366);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(573, 31);
+            this.panel3.TabIndex = 14;
+            // 
+            // checkBox5
+            // 
+            this.checkBox5.AutoSize = true;
+            this.checkBox5.Location = new System.Drawing.Point(9, 9);
+            this.checkBox5.Name = "checkBox5";
+            this.checkBox5.Size = new System.Drawing.Size(324, 16);
+            this.checkBox5.TabIndex = 3;
+            this.checkBox5.Text = "使用反射方式调用，需要引入接口与实体对应的程序集。";
+            this.checkBox5.UseVisualStyleBackColor = true;
             // 
             // panel4
             // 
@@ -449,7 +472,7 @@
             this.richTextBox3.Location = new System.Drawing.Point(0, 0);
             this.richTextBox3.Name = "richTextBox3";
             this.richTextBox3.ReadOnly = true;
-            this.richTextBox3.Size = new System.Drawing.Size(573, 166);
+            this.richTextBox3.Size = new System.Drawing.Size(573, 80);
             this.richTextBox3.TabIndex = 15;
             this.richTextBox3.Text = "";
             // 
@@ -1269,6 +1292,8 @@
             this.splitContainer5.Panel1.ResumeLayout(false);
             this.splitContainer5.Panel2.ResumeLayout(false);
             this.splitContainer5.ResumeLayout(false);
+            this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
             this.tabPage1.ResumeLayout(false);
@@ -1405,5 +1430,7 @@
         private System.Windows.Forms.ToolStripMenuItem 刷新WebAPI服务AToolStripMenuItem;
         private System.Windows.Forms.TabPage tabPage5;
         private System.Windows.Forms.TabPage tabPage6;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.CheckBox checkBox5;
     }
 }

@@ -101,7 +101,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>51103</DevelopmentServerPort>
+          <DevelopmentServerPort>57878</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://webapi.mysoft.com</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>

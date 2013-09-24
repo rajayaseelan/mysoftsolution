@@ -39,20 +39,13 @@ namespace MySoft.IoC
         /// <returns></returns>
         public ResponseMessage CallService(RequestMessage reqMsg)
         {
-            long elapsedTime = -1;
-
-            //定义响应的消息
-            var resMsg = GetResponse(reqMsg, ref elapsedTime);
-
-            //如果有异常，向外抛出
-            if (resMsg.IsError)
+            try
             {
-                if (container != null) container.WriteError(resMsg.Error);
+                long elapsedTime = -1;
 
-                throw resMsg.Error;
-            }
-            else
-            {
+                //定义响应的消息
+                var resMsg = GetResponse(reqMsg, ref elapsedTime);
+
                 if (resMsg is ResponseBuffer)
                 {
                     //反序列化对象
@@ -71,9 +64,18 @@ namespace MySoft.IoC
 
                 //设置耗时时间
                 resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, elapsedTime);
-            }
 
-            return resMsg;
+                return resMsg;
+            }
+            catch (Exception ex)
+            {
+                if (container != null)
+                {
+                    container.WriteError(ex);
+                }
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -101,6 +103,17 @@ namespace MySoft.IoC
                 call.EndCall(reqMsg, resMsg, elapsedTime);
 
                 return resMsg;
+            }
+            catch (Exception ex)
+            {
+                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
+
+                elapsedTime = watch.ElapsedMilliseconds;
+
+                //写日志结束
+                call.EndCall(reqMsg, resMsg, elapsedTime);
+
+                throw;
             }
             finally
             {

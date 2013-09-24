@@ -43,27 +43,6 @@ namespace MySoft.IoC
         { }
 
         /// <summary>
-        /// 普通异常的构造方法
-        /// </summary>
-        /// <param name="code"></param>
-        /// <param name="message"></param>
-        /// <param name="inner"></param>
-        public WarningException(int code, string message, Exception inner)
-            : base(message, inner)
-        {
-            this.WarningCode = code;
-        }
-
-        /// <summary>
-        /// 普通异常的构造方法
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="inner"></param>
-        public WarningException(string message, Exception inner)
-            : base(message, inner)
-        { }
-
-        /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="info">存储对象序列化和反序列化所需的全部数据</param>

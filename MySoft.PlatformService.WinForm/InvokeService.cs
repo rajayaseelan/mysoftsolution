@@ -14,7 +14,7 @@ namespace MySoft.PlatformService.WinForm
         /// <summary>
         /// 服务名称
         /// </summary>
-        public string ServiceName { get; set; }
+        public ServiceInfo Service { get; set; }
 
         /// <summary>
         /// 方法名称

@@ -192,7 +192,7 @@
             this.plParameters.AutoScroll = true;
             this.plParameters.Location = new System.Drawing.Point(25, 159);
             this.plParameters.Name = "plParameters";
-            this.plParameters.Size = new System.Drawing.Size(293, 209);
+            this.plParameters.Size = new System.Drawing.Size(293, 216);
             this.plParameters.TabIndex = 1;
             // 
             // lblMethodName

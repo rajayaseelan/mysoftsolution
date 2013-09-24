@@ -99,13 +99,8 @@ namespace MySoft.IoC
                 Subscribed = subscribed
             });
 
-            //实例化异常
-            var message = string.Format("Connect to server ({0}:{1}) error！Server node : {2} -> ({3}){4}"
-                                    , node.IP, node.Port, node.Key, error.ErrorCode, error.SocketErrorCode);
-            var ex = new WarningException((int)SocketError.ConnectionReset, message, error);
-
             //断开时响应错误信息
-            client_MessageError(sender, new ErrorEventArgs(ex));
+            client_MessageError(sender, new ErrorEventArgs(error));
         }
 
         private void client_MessageSent(object sender, MessageEventArgs e)
@@ -179,9 +174,9 @@ namespace MySoft.IoC
                 //连接到服务器
                 client.Connect();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw new WarningException((int)SocketError.NotConnected, string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> {3}", node.IP, node.Port, node.Key, e.Message));
+                throw new SocketException((int)SocketError.NotConnected);
             }
         }
 

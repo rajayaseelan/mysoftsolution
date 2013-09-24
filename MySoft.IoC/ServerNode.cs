@@ -18,7 +18,10 @@ namespace MySoft.IoC
         private int timeout = ServiceConfig.DEFAULT_CLIENT_TIMEOUT;
         private ResponseType resptype = ResponseType.Binary;
 
-        private ServerNode() { }
+        public ServerNode()
+        {
+            this.Connected = true;
+        }
 
         /// <summary>
         /// Gets the key.
@@ -36,7 +39,7 @@ namespace MySoft.IoC
 
                 return key;
             }
-            internal set { key = value; }
+            set { key = value; }
         }
 
         /// <summary>
@@ -103,6 +106,11 @@ namespace MySoft.IoC
             get { return resptype; }
             set { resptype = value; }
         }
+
+        /// <summary>
+        /// 是否可连接
+        /// </summary>
+        internal bool Connected { get; set; }
 
         /// <summary>
         /// 返回一个远程节点
