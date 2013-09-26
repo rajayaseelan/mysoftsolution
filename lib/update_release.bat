@@ -14,8 +14,8 @@ copy ..\MySoft.Core\bin\Release\MySoft.Core.dll /Y
 copy ..\MySoft.IoC\bin\Release\MySoft.IoC.dll /Y
 copy ..\MySoft.Web\bin\Release\MySoft.Web.dll /Y
 copy ..\MySoft.RESTful\bin\Release\MySoft.RESTful.dll /Y
-copy ..\MySoft.PlatformService.IoC\bin\Release\MySoft.PlatformService.IoC.dll /Y
 copy ..\MySoft.PlatformService\bin\Release\MySoft.PlatformService.exe /Y
+copy ..\MySoft.PlatformService.Installer\bin\Release\MySoft.PlatformService.Installer.exe /Y
 
 copy ..\MySoft.Common\bin\Release\MySoft.Common.xml /Y
 copy ..\MySoft.Cache\bin\Release\MySoft.Cache.xml /Y
@@ -30,7 +30,6 @@ copy ..\MySoft.Core\bin\Release\MySoft.Core.xml /Y
 copy ..\MySoft.IoC\bin\Release\MySoft.IoC.xml /Y
 copy ..\MySoft.Web\bin\Release\MySoft.Web.xml /Y
 copy ..\MySoft.RESTful\bin\Release\MySoft.RESTful.xml /Y
-copy ..\MySoft.PlatformService.IoC\bin\Release\MySoft.PlatformService.IoC.xml /Y
 copy ..\MySoft.PlatformService\bin\Release\MySoft.PlatformService.xml /Y
 
 copy ..\MySoft.Tools.EntityDesign\bin\Release\MySoft.Tools.EntityDesign.exe /Y
