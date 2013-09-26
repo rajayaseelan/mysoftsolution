@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using MySoft.Data;
+﻿using MySoft.Data;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.DataReport.Models;
 using MySoft.IoC.Logger;
 using MySoft.Logger;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Timers;
 
 namespace MySoft.IoC.DataReport
 {
@@ -30,56 +30,64 @@ namespace MySoft.IoC.DataReport
             this.calls = new SortedList<string, IList<RecordEventArgs>>();
             if (timeout > 0) this.timeout = timeout;
 
-            ThreadPool.QueueUserWorkItem(TimerSaveCalling);
+            var timer = new Timer(TimeSpan.FromMinutes(1).TotalMilliseconds);
+            timer.AutoReset = true;
+            timer.Elapsed += timer_Elapsed;
+            timer.Start();
+        }
+
+        private void timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            try
+            {
+                (sender as Timer).Stop();
+
+                //定时保存数据
+                TimerSaveCalling();
+            }
+            catch (Exception ex)
+            {
+                SimpleLog.Instance.WriteLogForDir("SaveCaller", ex);
+            }
+            finally
+            {
+                (sender as Timer).Start();
+            }
         }
 
         /// <summary>
         /// 定时记录
         /// </summary>
-        /// <param name="state"></param>
-        private void TimerSaveCalling(object state)
+        private void TimerSaveCalling()
         {
-            while (true)
+            IList<RecordEventArgs> records = null;
+            string callKey = null;
+
+            lock (calls)
             {
-                //1分钟保存一次
-                Thread.Sleep(TimeSpan.FromMinutes(1));
-
-                try
+                if (calls.Count > 0)
                 {
-                    IList<RecordEventArgs> records = null;
-                    string callKey = null;
+                    callKey = calls.Keys.ElementAtOrDefault(0);
 
-                    lock (calls)
+                    if (!string.IsNullOrEmpty(callKey))
                     {
-                        if (calls.Count > 0)
-                        {
-                            callKey = calls.Keys.ElementAtOrDefault(0);
-
-                            if (!string.IsNullOrEmpty(callKey))
-                            {
-                                records = calls[callKey];
-                                calls.Remove(callKey);
-                            }
-                        }
-                    }
-
-                    //记录统计数据
-                    if (records != null && records.Count > 0)
-                    {
-                        var count = SaveCaller(callKey, records);
-
-                        if (count == -1) //存储失败，重新加入队列中
-                        {
-                            lock (calls)
-                            {
-                                calls[callKey] = records;
-                            }
-                        }
+                        records = calls[callKey];
+                        calls.Remove(callKey);
                     }
                 }
-                catch (Exception ex)
+            }
+
+            //记录统计数据
+            if (records != null && records.Count > 0)
+            {
+                var count = SaveCaller(callKey, records);
+
+                if (count == -1) //存储失败，重新加入队列中
                 {
-                    SimpleLog.Instance.WriteLogForDir("SaveCaller", ex);
+                    lock (calls)
+                    {
+                        calls[callKey] = records;
+                    }
                 }
             }
         }
@@ -108,7 +116,7 @@ namespace MySoft.IoC.DataReport
             {
                 AddError(e);
             }
-            else if (e.ElapsedTime > timeout)
+            else if (e.ElapsedTime >= timeout)
             {
                 AddTimeout(e);
             }
@@ -160,6 +168,7 @@ namespace MySoft.IoC.DataReport
                 ServiceName = e.Caller.ServiceName,
                 MethodName = e.Caller.MethodName,
                 Parameters = e.Caller.Parameters,
+                RowCount = e.Count,
                 CallTime = e.Caller.CallTime,
                 ElapsedTime = e.ElapsedTime,
                 ServerHostName = e.ServerHostName,
@@ -195,6 +204,8 @@ namespace MySoft.IoC.DataReport
                 RowCount = p.Sum(c => c.Count),
                 CallCount = p.Count(),
                 ElapsedTime = p.Sum(c => c.ElapsedTime),
+                TimeoutCallCount = p.Count(c => c.ElapsedTime >= timeout),
+                TimeoutElapsedTime = p.Where(c => c.ElapsedTime >= timeout).Sum(c => c.ElapsedTime),
                 ServerHostName = p.Max(c => c.ServerHostName),
                 ServerIPAddress = p.Key.ServerIPAddress,
                 ServerPort = p.Key.ServerPort,
@@ -250,6 +261,8 @@ namespace MySoft.IoC.DataReport
                     catch
                     {
                         dbTrans.Rollback();
+
+                        throw;
                     }
                 }
 

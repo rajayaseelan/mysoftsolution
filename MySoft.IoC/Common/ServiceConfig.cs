@@ -4,7 +4,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务配置
     /// </summary>
-    public class ServiceConfig
+    public static class ServiceConfig
     {
         #region Const Members
 
@@ -16,12 +16,12 @@ namespace MySoft.IoC
         /// <summary>
         /// The server default max caller
         /// </summary>
-        public const int DEFAULT_SERVER_MAXCALLER = 1000; //默认并发数1000
+        public const int DEFAULT_SERVER_MAXCALLER = 100; //默认并发数100
 
         /// <summary>
         /// The client default max caller
         /// </summary>
-        public const int DEFAULT_CLIENT_MAXCALLER = 100; //默认并发数100
+        public const int DEFAULT_CLIENT_MAXCALLER = 30; //默认并发数30
 
         /// <summary>
         /// The default client call timeout number. 
@@ -36,7 +36,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The current framework version.
         /// </summary>
-        public const string CURRENT_FRAMEWORK_VERSION = "v4.0"; //当前版本
+        public const string CURRENT_FRAMEWORK_VERSION = "v4.2"; //当前版本
 
         #endregion
     }

@@ -1,4 +1,8 @@
-﻿using System;
+﻿using MySoft.Logger;
+using MySoft.RESTful.Business;
+using MySoft.RESTful.Utils;
+using MySoft.Security;
+using System;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.IO;
@@ -8,10 +12,6 @@ using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 using System.Text;
 using System.Web;
-using MySoft.Logger;
-using MySoft.RESTful.Business;
-using MySoft.RESTful.Utils;
-using MySoft.Security;
 
 namespace MySoft.RESTful
 {
@@ -260,7 +260,6 @@ namespace MySoft.RESTful
             }
             else
             {
-
                 //进行认证处理
                 RESTfulResult authResult = new RESTfulResult { Code = (int)HttpStatusCode.OK };
 
@@ -283,60 +282,11 @@ namespace MySoft.RESTful
                 //认证成功
                 if (authResult.Code == (int)HttpStatusCode.OK)
                 {
-                    if (user == null)
-                    {
-                        //认证成功，设置上下文
-                        AuthorizeContext.Current = new AuthorizeContext { Token = token };
-                    }
-                    else
-                    {
-                        //认证成功，设置上下文
-                        AuthorizeContext.Current = new AuthorizeContext
-                        {
-                            Token = token,
-                            UserName = user.UserName,
-                            UserState = user.UserState
-                        };
-                    }
+                    //设置上下文
+                    SetAuthorizeContext(token, user);
 
-                    try
-                    {
-                        Type retType;
-
-                        //响应服务
-                        result = Context.Invoke(kind, method, nvget, nvpost, out retType);
-
-                        //设置返回成功
-                        response.StatusCode = HttpStatusCode.OK;
-
-                        //xml方式需要进行数据包装
-                        if (format == ParameterFormat.Xml)
-                        {
-                            //如果是值类型，则以对象方式返回
-                            if (retType.IsValueType || retType == typeof(string))
-                            {
-                                result = new RESTfulResponse { Value = result };
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        RESTfulResult ret;
-                        var errorMessage = GetErrorMessage(ex, kind, method, nvget, nvpost, out ret);
-
-                        result = ret;
-
-                        //重新定义一个异常
-                        var error = new Exception(errorMessage, ex);
-
-                        //记录错误日志
-                        SimpleLog.Instance.WriteLogForDir("RESTfulError\\" + kind, error);
-                    }
-                    finally
-                    {
-                        //使用完后清理上下文
-                        AuthorizeContext.Current = null;
-                    }
+                    //响应数据
+                    result = InvokeResponse(format, kind, method, nvget, nvpost);
                 }
                 else
                 {
@@ -346,6 +296,86 @@ namespace MySoft.RESTful
 
             ISerializer serializer = SerializerFactory.Create(format);
             return serializer.Serialize(result);
+        }
+
+        /// <summary>
+        /// 响应数据
+        /// </summary>
+        /// <param name="format"></param>
+        /// <param name="kind"></param>
+        /// <param name="method"></param>
+        /// <param name="nvget"></param>
+        /// <param name="nvpost"></param>
+        /// <returns></returns>
+        private object InvokeResponse(ParameterFormat format, string kind, string method, NameValueCollection nvget, NameValueCollection nvpost)
+        {
+            object result = null;
+            var response = WebOperationContext.Current.OutgoingResponse;
+
+            try
+            {
+                Type retType;
+
+                //响应服务
+                result = Context.Invoke(kind, method, nvget, nvpost, out retType);
+
+                //设置返回成功
+                response.StatusCode = HttpStatusCode.OK;
+
+                //xml方式需要进行数据包装
+                if (format == ParameterFormat.Xml)
+                {
+                    //如果是值类型，则以对象方式返回
+                    if (retType.IsValueType || retType == typeof(string))
+                    {
+                        result = new RESTfulResponse { Value = result };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                RESTfulResult ret;
+                var errorMessage = GetErrorMessage(ex, kind, method, nvget, nvpost, out ret);
+
+                result = ret;
+
+                //重新定义一个异常
+                var error = new Exception(errorMessage, ex);
+
+                //记录错误日志
+                SimpleLog.Instance.WriteLogForDir("RESTfulError\\" + kind, error);
+            }
+            finally
+            {
+                //使用完后清理上下文
+                AuthorizeContext.Current = null;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 设置上下文
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="user"></param>
+        private void SetAuthorizeContext(AuthorizeToken token, AuthorizeUser user)
+        {
+            if (user == null)
+            {
+                //认证成功，设置上下文
+                AuthorizeContext.Current = new AuthorizeContext { Token = token };
+            }
+            else
+            {
+                //认证成功，设置上下文
+                AuthorizeContext.Current = new AuthorizeContext
+                {
+                    Token = token,
+                    UserName = user.UserName,
+                    UserState = user.UserState
+                };
+            }
         }
 
         /// <summary>

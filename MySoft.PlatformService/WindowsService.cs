@@ -129,6 +129,7 @@ namespace MySoft.PlatformService
                     var endPoint = service.Server.EndPoint as ScsTcpEndPoint;
                     var res = new RecordEventArgs(e.Caller)
                     {
+                        MessageId = e.MessageId,
                         Error = e.Error,
                         Count = e.Count,
                         ElapsedTime = e.ElapsedTime,

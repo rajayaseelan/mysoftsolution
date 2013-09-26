@@ -296,6 +296,10 @@ namespace MySoft.IoC.HttpProxy
                     response.StatusCode = HttpStatusCode.BadRequest;
                     jsonString = SerializationManager.SerializeJson(new { Code = (int)response.StatusCode, Message = ex.Message });
                 }
+                finally
+                {
+                    AuthorizeContext.Current = null;
+                }
             }
 
             //转换成utf8返回
@@ -477,17 +481,26 @@ namespace MySoft.IoC.HttpProxy
                 AuthorizeType = AuthorizeType.User
             };
 
-            //认证成功，设置上下文
-            AuthorizeContext.Current = new AuthorizeContext { Token = token };
-
             try
             {
                 var user = Authorize(token);
                 response.StatusCode = HttpStatusCode.OK;
 
-                //认证信息
-                AuthorizeContext.Current.UserName = user.UserName;
-                AuthorizeContext.Current.UserState = user.UserState;
+                if (user == null)
+                {
+                    //认证成功，设置上下文
+                    AuthorizeContext.Current = new AuthorizeContext { Token = token };
+                }
+                else
+                {
+                    //认证成功，设置上下文
+                    AuthorizeContext.Current = new AuthorizeContext
+                    {
+                        Token = token,
+                        UserName = user.UserName,
+                        UserState = user.UserState
+                    };
+                }
 
                 return new HttpProxyResult { Code = (int)response.StatusCode, Message = "Authentication request success." };
             }

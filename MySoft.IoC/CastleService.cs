@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -261,6 +260,7 @@ namespace MySoft.IoC
 
             try
             {
+                e.Channel.MessageSent += Channel_MessageSent;
                 e.Channel.MessageReceived += Channel_MessageReceived;
                 e.Channel.MessageError += Channel_MessageError;
 
@@ -277,6 +277,16 @@ namespace MySoft.IoC
         }
 
         /// <summary>
+        /// 消息发送成功
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Channel_MessageSent(object sender, MessageEventArgs e)
+        {
+            //TODO
+        }
+
+        /// <summary>
         /// 断开链接
         /// </summary>
         /// <param name="sender"></param>
@@ -287,6 +297,7 @@ namespace MySoft.IoC
 
             try
             {
+                e.Channel.MessageSent -= Channel_MessageSent;
                 e.Channel.MessageReceived -= Channel_MessageReceived;
                 e.Channel.MessageError -= Channel_MessageError;
 
@@ -370,7 +381,7 @@ namespace MySoft.IoC
                 var resMsg = caller.HandleResponse(channel, appCaller, reqMsg);
 
                 //数据计数
-                DataCounter(appCaller, resMsg);
+                DataCounter(messageId, appCaller, resMsg);
 
                 //发送消息
                 client.SendResponse(messageId, resMsg);
@@ -385,15 +396,17 @@ namespace MySoft.IoC
         /// <summary>
         /// 数据计数
         /// </summary>
+        /// <param name="messageId"></param>
         /// <param name="appCaller"></param>
         /// <param name="resMsg"></param>
-        private void DataCounter(AppCaller appCaller, ResponseMessage resMsg)
+        private void DataCounter(string messageId, AppCaller appCaller, ResponseMessage resMsg)
         {
             if (resMsg == null) return;
 
             //调用参数
             var callArgs = new CallEventArgs(appCaller)
             {
+                MessageId = messageId,
                 ElapsedTime = resMsg.ElapsedTime,
                 Count = resMsg.Count,
                 Value = resMsg.Value,
@@ -407,7 +420,8 @@ namespace MySoft.IoC
             }
 
             //异步调用
-            ThreadPool.QueueUserWorkItem(AsyncCounter, callArgs);
+            var func = new Action<CallEventArgs>(AsyncCounter);
+            func.BeginInvoke(callArgs, null, null);
         }
 
         /// <summary>
@@ -437,13 +451,11 @@ namespace MySoft.IoC
         /// <summary>
         /// 同步调用方法
         /// </summary>
-        /// <param name="state"></param>
-        private void AsyncCounter(object state)
+        /// <param name="callArgs"></param>
+        private void AsyncCounter(CallEventArgs callArgs)
         {
             try
             {
-                var callArgs = state as CallEventArgs;
-
                 //响应消息
                 MessageCenter.Instance.Notify(callArgs);
 

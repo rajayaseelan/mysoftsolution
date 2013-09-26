@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MySoft.RESTful.Utils;
 using System.Net;
 
 namespace MySoft.RESTful.Business.Pool

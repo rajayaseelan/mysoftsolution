@@ -1,17 +1,15 @@
-﻿using System;
+﻿using Castle.Core;
+using Castle.Core.Internal;
+using Castle.Core.Resource;
+using Castle.Windsor;
+using Castle.Windsor.Configuration.Interpreters;
+using MySoft.Logger;
+using MySoft.RESTful.Business.Pool;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using Castle.Core;
-using Castle.Core.Internal;
-using Castle.Core.Resource;
-using Castle.Windsor;
-using MySoft.IoC;
-using MySoft.Logger;
-using MySoft.RESTful.Business.Pool;
-using Castle.Windsor.Configuration.Interpreters;
 
 namespace MySoft.RESTful.Business.Register
 {

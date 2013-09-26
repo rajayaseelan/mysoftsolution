@@ -159,44 +159,44 @@
             this.toolStripSeparator2,
             this.tsmiClear});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(118, 104);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(116, 104);
             this.contextMenuStrip1.Text = "全选(&A)";
             // 
             // tsmiSelectAll
             // 
             this.tsmiSelectAll.Name = "tsmiSelectAll";
-            this.tsmiSelectAll.Size = new System.Drawing.Size(117, 22);
+            this.tsmiSelectAll.Size = new System.Drawing.Size(115, 22);
             this.tsmiSelectAll.Text = "全选(&A)";
             this.tsmiSelectAll.Click += new System.EventHandler(this.tsmiSelectAll_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(114, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(112, 6);
             // 
             // tsmiCopy
             // 
             this.tsmiCopy.Name = "tsmiCopy";
-            this.tsmiCopy.Size = new System.Drawing.Size(117, 22);
+            this.tsmiCopy.Size = new System.Drawing.Size(115, 22);
             this.tsmiCopy.Text = "复制(&C)";
             this.tsmiCopy.Click += new System.EventHandler(this.tsmiCopy_Click);
             // 
             // tsmiPaste
             // 
             this.tsmiPaste.Name = "tsmiPaste";
-            this.tsmiPaste.Size = new System.Drawing.Size(117, 22);
+            this.tsmiPaste.Size = new System.Drawing.Size(115, 22);
             this.tsmiPaste.Text = "粘贴(&V)";
             this.tsmiPaste.Click += new System.EventHandler(this.tsmiPaste_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(114, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(112, 6);
             // 
             // tsmiClear
             // 
             this.tsmiClear.Name = "tsmiClear";
-            this.tsmiClear.Size = new System.Drawing.Size(117, 22);
+            this.tsmiClear.Size = new System.Drawing.Size(115, 22);
             this.tsmiClear.Text = "清除(&D)";
             this.tsmiClear.Click += new System.EventHandler(this.tsmiClear_Click);
             // 
@@ -388,9 +388,9 @@
             this.radioSql2005.AutoSize = true;
             this.radioSql2005.Location = new System.Drawing.Point(85, 3);
             this.radioSql2005.Name = "radioSql2005";
-            this.radioSql2005.Size = new System.Drawing.Size(71, 16);
+            this.radioSql2005.Size = new System.Drawing.Size(77, 16);
             this.radioSql2005.TabIndex = 34;
-            this.radioSql2005.Text = "SQL 2005";
+            this.radioSql2005.Text = "SQL 2000+";
             this.radioSql2005.UseVisualStyleBackColor = true;
             // 
             // radioSql

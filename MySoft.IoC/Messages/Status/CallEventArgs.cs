@@ -9,6 +9,11 @@ namespace MySoft.IoC.Messages
     public abstract class BaseEventArgs : EventArgs
     {
         /// <summary>
+        /// 消息Id
+        /// </summary>
+        public string MessageId { get; set; }
+
+        /// <summary>
         /// 调用参数信息
         /// </summary>
         public AppCaller Caller { get; internal set; }

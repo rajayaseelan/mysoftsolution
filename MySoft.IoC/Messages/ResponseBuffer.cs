@@ -1,7 +1,6 @@
-﻿using MySoft.IoC.Messages;
-using System;
+﻿using System;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Messages
 {
     /// <summary>
     /// 缓存项

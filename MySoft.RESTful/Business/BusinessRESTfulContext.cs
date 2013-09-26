@@ -1,4 +1,8 @@
-﻿using System;
+﻿using MySoft.RESTful.Business.Pool;
+using MySoft.RESTful.Business.Register;
+using MySoft.RESTful.Utils;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -9,10 +13,6 @@ using System.Net;
 using System.Reflection;
 using System.ServiceModel.Web;
 using System.Text;
-using MySoft.RESTful.Business.Pool;
-using MySoft.RESTful.Business.Register;
-using MySoft.RESTful.Utils;
-using Newtonsoft.Json;
 
 namespace MySoft.RESTful.Business
 {
@@ -152,22 +152,22 @@ namespace MySoft.RESTful.Business
 
                 var appCaller = new AppCaller
                 {
+                    UserName = AuthorizeContext.Current.UserName,
+                    ClientIP = CoreHelper.GetClientIP(),
+                    RequestUrl = AuthorizeContext.Current.Token.RequestUri.ToString(),
                     Service = metadata.Service,
                     Method = metadata.Method,
                     Parameters = arguments,
-                    AppData = new AppData
-                    {
-                        Kind = kind,
-                        Method = method,
-                        Parameters = jobj.ToString(Formatting.Indented)
-                    }
+                    ApiKind = kind,
+                    ApiMethod = method,
+                    ApiParameters = jobj.ToString(Formatting.None)
                 };
 
                 //开始调用
                 controller.BeginCall(appCaller);
 
                 instance = register.Resolve(metadata.Service);
-                var value = metadata.Method.FastInvoke(instance, arguments);
+                var value = controller.CallService(appCaller, instance);
 
                 //结束调用
                 controller.EndCall(appCaller, value, watch.ElapsedMilliseconds);

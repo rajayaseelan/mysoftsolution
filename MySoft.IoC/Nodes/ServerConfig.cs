@@ -12,6 +12,12 @@ namespace MySoft.IoC.Nodes
     public class ServerConfig
     {
         /// <summary>
+        /// 版本号
+        /// </summary>
+        [XmlAttribute("version")]
+        public string Version { get; set; }
+
+        /// <summary>
         /// 配置节点
         /// </summary>
         [XmlArray("nodeConfigs")]
@@ -30,6 +36,7 @@ namespace MySoft.IoC.Nodes
         /// </summary>
         public ServerConfig()
         {
+            this.Version = "v1.0";
             this.Configs = new NodeConfigCollection();
             this.Nodes = new ServerNodeCollection();
         }

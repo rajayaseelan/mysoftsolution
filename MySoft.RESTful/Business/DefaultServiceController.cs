@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MySoft.Logger;
+using System;
 using System.Configuration;
-using MySoft.Logger;
 
 namespace MySoft.RESTful.Business
 {
@@ -13,6 +13,9 @@ namespace MySoft.RESTful.Business
 
         #region IServiceController 成员
 
+        /// <summary>
+        /// 默认服务控制器
+        /// </summary>
         public DefaultServiceController()
         {
             try
@@ -26,6 +29,17 @@ namespace MySoft.RESTful.Business
         }
 
         /// <summary>
+        /// 处理耗时时间
+        /// </summary>
+        public int LongProcessTime
+        {
+            get
+            {
+                return longProcessTime;
+            }
+        }
+
+        /// <summary>
         /// 开始调用
         /// </summary>
         /// <param name="caller"></param>
@@ -35,18 +49,29 @@ namespace MySoft.RESTful.Business
         }
 
         /// <summary>
+        /// 调用方法
+        /// </summary>
+        /// <param name="caller"></param>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public virtual object CallService(AppCaller caller, object instance)
+        {
+            return caller.Method.FastInvoke(instance, caller.Parameters);
+        }
+
+        /// <summary>
         /// 结束调用
         /// </summary>
         /// <param name="caller"></param>
         /// <param name="value"></param>
         /// <param name="elapsedTime"></param>
-        public virtual void EndCall(AppCaller caller, object value, long elapsedTime)
+        public void EndCall(AppCaller caller, object value, long elapsedTime)
         {
             //记录10毫秒以上的处理
             if (longProcessTime > 10 && elapsedTime > longProcessTime)
             {
                 var log = string.Format("Process business ({0}, {1}) elapsed time: {3} ms.\r\nParameters: ({2})",
-                    caller.AppData.Kind, caller.AppData.Method, caller.AppData.Parameters, elapsedTime);
+                    caller.ApiKind, caller.ApiMethod, caller.ApiParameters, elapsedTime);
 
                 SimpleLog.Instance.WriteLogForDir("BusinessProcess", log);
             }

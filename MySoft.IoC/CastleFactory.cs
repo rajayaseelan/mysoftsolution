@@ -42,8 +42,11 @@ namespace MySoft.IoC
             this.container = new SimpleServiceContainer(config.ServerType);
             this.proxies = new Dictionary<string, IService>();
 
-            //≈–∂œ «∑Ò≈‰÷√¡ÀNodeResolverType
-            this.nodeResolver = Create<IServerNodeResolver>(config.ResolverType) ?? new DefaultNodeResolver();
+            if (config.EnableProxy)
+            {
+                //≈–∂œ «∑Ò≈‰÷√¡ÀNodeResolverType
+                this.nodeResolver = Create<IServerNodeResolver>(config.ResolverType) ?? new DefaultNodeResolver();
+            }
 
             container.OnLog += (log, type) =>
             {

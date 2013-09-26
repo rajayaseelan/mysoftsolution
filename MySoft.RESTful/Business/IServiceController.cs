@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-
+﻿
 namespace MySoft.RESTful.Business
 {
     /// <summary>
@@ -17,6 +12,14 @@ namespace MySoft.RESTful.Business
         /// <param name="caller"></param>
         /// <returns></returns>
         void BeginCall(AppCaller caller);
+
+        /// <summary>
+        /// 调用方法
+        /// </summary>
+        /// <param name="caller"></param>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        object CallService(AppCaller caller, object instance);
 
         /// <summary>
         /// 结束调用

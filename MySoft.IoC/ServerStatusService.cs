@@ -9,7 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Threading;
+using System.Timers;
 
 namespace MySoft.IoC
 {
@@ -46,64 +46,98 @@ namespace MySoft.IoC
             this.statuslist = new TimeStatusCollection(config.RecordHours * 3600);
 
             //启动定义推送线程
-            ThreadPool.QueueUserWorkItem(DoPushWork);
+            var timer1 = new Timer(TimeSpan.FromSeconds(5).TotalMilliseconds);
+            timer1.AutoReset = true;
+            timer1.Elapsed += timer1_Elapsed;
+            timer1.Start();
 
             //启动自动检测线程
-            ThreadPool.QueueUserWorkItem(DoCheckWork);
+            var timer2 = new Timer(TimeSpan.FromMinutes(1).TotalMilliseconds);
+            timer2.AutoReset = true;
+            timer2.Elapsed += timer2_Elapsed;
+            timer2.Start();
         }
 
-        void DoPushWork(object state)
+        private void timer1_Elapsed(object sender, ElapsedEventArgs e)
         {
-            while (true)
+            try
             {
-                //每秒推送一次
-                Thread.Sleep(TimeSpan.FromSeconds(1));
+                (sender as Timer).Stop();
 
-                try
-                {
-                    //响应定时信息
-                    if (statuslist.Count > 0 && MessageCenter.Instance.Count > 0)
-                    {
-                        var status = GetServerStatus();
-                        MessageCenter.Instance.Notify(status);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    //TODO
-                    container.WriteError(ex);
-                }
+                //推荐消息
+                DoPushWork();
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                (sender as Timer).Start();
             }
         }
 
-        void DoCheckWork(object state)
+        private void timer2_Elapsed(object sender, ElapsedEventArgs e)
         {
-            while (true)
+            try
             {
-                //每1分钟检测一次
-                Thread.Sleep(TimeSpan.FromMinutes(1));
+                (sender as Timer).Stop();
 
-                try
+                //检测状态
+                DoCheckWork();
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                (sender as Timer).Start();
+            }
+        }
+
+        /// <summary>
+        /// 推荐消息
+        /// </summary>
+        private void DoPushWork()
+        {
+            try
+            {
+                if (statuslist.Count == 0) return;
+
+                //响应定时信息
+                if (statuslist.Count > 0 && MessageCenter.Instance.Count > 0)
                 {
-                    if (server.Clients.Count == 0) continue;
+                    var status = GetServerStatus();
+                    MessageCenter.Instance.Notify(status);
+                }
+            }
+            catch (Exception ex)
+            {
+                //TODO
+                container.WriteError(ex);
+            }
+        }
 
-                    var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
+        /// <summary>
+        /// 检测状态
+        /// </summary>
+        private void DoCheckWork()
+        {
+            try
+            {
+                if (server.Clients.Count == 0) return;
 
-                    //断开超时的连接
-                    foreach (var channel in server.Clients.GetAllItems())
+                var lastMinute = DateTime.Now.AddMilliseconds(-DefaultDisconnectionAttemptTimeout);
+
+                //断开超时的连接
+                foreach (var channel in server.Clients.GetAllItems())
+                {
+                    //判断是否超时
+                    if (channel.LastReceivedMessageTime < lastMinute && channel.LastSentMessageTime < lastMinute)
                     {
-                        //判断是否超时
-                        if (channel.LastReceivedMessageTime < lastMinute && channel.LastSentMessageTime < lastMinute)
-                        {
-                            channel.Disconnect();
-                        }
+                        channel.Disconnect();
                     }
                 }
-                catch (Exception ex)
-                {
-                    //TODO
-                    container.WriteError(ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                //TODO
+                container.WriteError(ex);
             }
         }
 

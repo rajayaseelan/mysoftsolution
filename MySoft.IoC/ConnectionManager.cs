@@ -8,7 +8,7 @@ using System.Net.Mail;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
-using System.Threading;
+using System.Timers;
 
 namespace MySoft.IoC
 {
@@ -33,55 +33,72 @@ namespace MySoft.IoC
                 templateHTML = sr.ReadToEnd();
             }
 
-            ThreadPool.QueueUserWorkItem(CheckConnect);
+            var timer = new Timer(TimeSpan.FromSeconds(30).TotalMilliseconds);
+            timer.AutoReset = true;
+            timer.Elapsed += timer_Elapsed;
+            timer.Start();
         }
 
-        static void CheckConnect(object state)
+        private static void timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            while (true)
+            try
             {
-                Thread.Sleep(TimeSpan.FromSeconds(30));
+                (sender as Timer).Stop();
 
-                //检测连接状态
-                foreach (var server in new List<AppNode>(nodes))
+                //检测连接
+                CheckConnect();
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                (sender as Timer).Start();
+            }
+        }
+
+        /// <summary>
+        /// 检测连接
+        /// </summary>
+        private static void CheckConnect()
+        {
+            //检测连接状态
+            foreach (var server in new List<AppNode>(nodes))
+            {
+                var node = server.Node;
+                var client = server.Client;
+
+                if (CheckConnected(node))
                 {
-                    var node = server.Node;
-                    var client = server.Client;
+                    //移除节点
+                    lock (nodes) nodes.Remove(server);
 
-                    if (CheckConnected(node))
-                    {
-                        //移除节点
-                        lock (nodes) nodes.Remove(server);
+                    //改变连接状态
+                    node.Connected = true;
 
-                        //改变连接状态
-                        node.Connected = true;
+                    var ex = new SocketException((int)SocketError.Success);
+                    var subject = string.Format("监控项目 [{0} - ( {1} -> {2}:{3} )] 恢复可用",
+                                            client.AppName, node.Key, node.IP, node.Port);
 
-                        var ex = new SocketException((int)SocketError.Success);
-                        var subject = string.Format("监控项目 [{0} - ( {1} -> {2}:{3} )] 恢复可用",
-                                                client.AppName, node.Key, node.IP, node.Port);
+                    var _title = "故障恢复通知";
+                    var _body = string.Format("[{0} - ( {1} -> {2}:{3} )] 于 {4} 恢复可用 ({5})",
+                                               client.AppName, node.Key, node.IP, node.Port,
+                                               DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss"),
+                                               ex.Message);
+                    var _client = string.Format("{0} ({1})", client.AppName, client.AppVersion);
+                    var _display = "normal";
+                    var _timeout = GetDateTime(DateTime.Now - server.AddTime);
+                    var _path = client.AppPath;
+                    var _status = string.Format("{0} ({1} => {2}:{3}) 连接成功",
+                                               client.HostName, client.IPAddress, node.IP, node.Port);
 
-                        var _title = "故障恢复通知";
-                        var _body = string.Format("[{0} - ( {1} -> {2}:{3} )] 于 {4} 恢复可用 ({5})",
-                                                   client.AppName, node.Key, node.IP, node.Port,
-                                                   DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss"),
-                                                   ex.Message);
-                        var _client = string.Format("{0} ({1})", client.AppName, client.AppVersion);
-                        var _display = "normal";
-                        var _timeout = GetDateTime(DateTime.Now - server.AddTime);
-                        var _path = client.AppPath;
-                        var _status = string.Format("{0} ({1} => {2}:{3}) 连接成功",
-                                                   client.HostName, client.IPAddress, node.IP, node.Port);
+                    subject = string.Format("{0} - 故障持续{1}", subject, _timeout);
 
-                        subject = string.Format("{0} - 故障持续{1}", subject, _timeout);
+                    //替换模板
+                    var body = templateHTML.Replace("$title", _title).Replace("$body", _body)
+                                            .Replace("$client", _client).Replace("$timeout", _timeout)
+                                            .Replace("$display", _display)
+                                            .Replace("$path", _path).Replace("$status", _status);
 
-                        //替换模板
-                        var body = templateHTML.Replace("$title", _title).Replace("$body", _body)
-                                                .Replace("$client", _client).Replace("$timeout", _timeout)
-                                                .Replace("$display", _display)
-                                                .Replace("$path", _path).Replace("$status", _status);
-
-                        SendMail(node, subject, body);
-                    }
+                    SendMail(node, subject, body);
                 }
             }
         }

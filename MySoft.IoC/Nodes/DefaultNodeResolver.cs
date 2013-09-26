@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Timers;
 
 namespace MySoft.IoC.Nodes
 {
@@ -22,6 +23,35 @@ namespace MySoft.IoC.Nodes
         public DefaultNodeResolver()
         {
             this.config = InitServerConfig();
+
+            //检测服务节点
+            try { CheckServerNode(); }
+            catch { }
+
+            var timer = new Timer(TimeSpan.FromMinutes(10).TotalMilliseconds);
+            timer.AutoReset = true;
+            timer.Elapsed += timer_Elapsed;
+            timer.Start();
+        }
+
+        private void timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            try
+            {
+                (sender as Timer).Stop();
+
+                //检测服务节点
+                CheckServerNode();
+            }
+            catch (Exception ex)
+            {
+                //写错误日志
+                SimpleLog.Instance.WriteLogForDir("serverConfig", ex);
+            }
+            finally
+            {
+                (sender as Timer).Start();
+            }
         }
 
         #region IServerNodeResolver 成员
@@ -50,18 +80,21 @@ namespace MySoft.IoC.Nodes
                 //如果存在节点
                 var configs = config.Configs.Cast<NodeConfig>();
                 Func<NodeConfig, bool> func = null;
+                Func<NodeConfig, bool> where = null;
 
                 if (!string.IsNullOrEmpty(assemblyName))
                 {
+                    where = new Func<NodeConfig, bool>(p => !string.IsNullOrEmpty(p.AssemblyName));
                     func = new Func<NodeConfig, bool>(p => string.Compare(p.AssemblyName, assemblyName, true) == 0);
                 }
                 else if (!string.IsNullOrEmpty(@namespace))
                 {
+                    where = new Func<NodeConfig, bool>(p => !string.IsNullOrEmpty(p.Namespace));
                     func = new Func<NodeConfig, bool>(p => string.Compare(p.Namespace, @namespace, true) == 0);
                 }
 
                 //获取节点配置
-                var conf = configs.FirstOrDefault(func);
+                var conf = configs.Where(where).FirstOrDefault(func);
                 if (conf == null) return new List<ServerNode>();
 
                 //返回符合条件的第一个Key
@@ -72,21 +105,30 @@ namespace MySoft.IoC.Nodes
             return new List<ServerNode>();
         }
 
+        #endregion
+
         /// <summary>
-        /// 读取xml文件内容
+        /// 读取xml配置文件
         /// </summary>
+        /// <param name="fromRemote"></param>
         /// <returns></returns>
-        protected virtual string GetXmlFileString()
+        protected virtual ServerConfig GetXmlFileConfig(bool fromRemote)
         {
             //配置文件
             var fileName = CoreHelper.GetFullPath("/config/serverConfig.xml");
+            var xml = string.Empty;
 
-            if (!File.Exists(fileName))
+            if (fromRemote || !File.Exists(fileName))
             {
                 try
                 {
                     //从远程读取
-                    return new HttpHelper().Reader("http://inc.fund123.cn/config/serverConfig.xml");
+                    xml = new HttpHelper().Reader("http://www.fund123.cn/config/serverConfig.xml");
+
+                    if (!xml.ToLower().StartsWith("<?xml"))
+                    {
+                        xml = string.Empty;
+                    }
                 }
                 catch (WebException ex)
                 {
@@ -96,27 +138,36 @@ namespace MySoft.IoC.Nodes
             }
             else
             {
-                return File.ReadAllText(fileName, Encoding.UTF8);
+                //从本地读取xml
+                xml = File.ReadAllText(fileName, Encoding.UTF8);
             }
+
+            if (!string.IsNullOrEmpty(xml))
+            {
+                //获取xml文件内容
+                return SerializationManager.DeserializeXml<ServerConfig>(xml);
+            }
+
+            return null;
         }
 
         /// <summary>
         /// 初始化服务节点
         /// </summary>
         /// <returns></returns>
-        protected virtual ServerConfig InitServerConfig()
+        private ServerConfig InitServerConfig()
         {
             var config = new ServerConfig();
 
             try
             {
-                //获取xml文件内容
-                var xml = GetXmlFileString();
+                //从文件读取xml
+                var tmpConfig = GetXmlFileConfig(false);
 
-                if (!string.IsNullOrEmpty(xml))
+                if (tmpConfig != null)
                 {
-                    var tmpConfig = SerializationManager.DeserializeXml<ServerConfig>(xml);
                     config.Configs = tmpConfig.Configs;
+                    config.Version = tmpConfig.Version;
 
                     foreach (ServerNode node in tmpConfig.Nodes)
                     {
@@ -140,6 +191,22 @@ namespace MySoft.IoC.Nodes
             return config;
         }
 
-        #endregion
+        /// <summary>
+        /// 检测服务节点
+        /// </summary>
+        private void CheckServerNode()
+        {
+            //判断版本号，如果版本大于当前版本，则替换之
+            var tmpConfig = GetXmlFileConfig(true);
+
+            if (tmpConfig != null)
+            {
+                if (tmpConfig.Nodes.Count > 0
+                    && string.Compare(tmpConfig.Version, config.Version, true) > 0)
+                {
+                    this.config = tmpConfig;
+                }
+            }
+        }
     }
 }

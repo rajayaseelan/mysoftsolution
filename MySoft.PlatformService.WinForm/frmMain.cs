@@ -16,7 +16,6 @@ namespace MySoft.PlatformService.WinForm
     {
         private ServerNode defaultNode;
         private WebBrowser webBrowser1, webBrowser2;
-        private System.Windows.Forms.Timer formTimer;
         private readonly object _syncLock = new object();
 
         public frmMain()
@@ -50,39 +49,14 @@ namespace MySoft.PlatformService.WinForm
 
                         listConnect.Invalidate();
 
-                        //发送错误邮件
-                        string errorMessage = string.Format("{0} - {1}", e.Error.ErrorCode, e.Error.Message);
-                        SendErrorMail(errorMessage, e.Error);
+                        string errorMessage = string.Format("({0}){1}", e.Error.ErrorCode, e.Error.Message);
+                        errorMessage = string.Format("{0}\r\n\r\n异常：{1}", args.LineHeader, errorMessage);
 
                         //显示错误
-                        ShowError(new Exception(args.LineHeader));
+                        ShowError(errorMessage);
                     }));
                 }
             }
-        }
-
-        /// <summary>
-        /// 发送错误邮件
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="inner"></param>
-        private void SendErrorMail(string message, Exception inner)
-        {
-            var appClient = new AppClient
-            {
-                AppName = "监控客户端",
-                HostName = DnsHelper.GetHostName(),
-                IPAddress = DnsHelper.GetIPAddress()
-            };
-
-            var ex = new IoCException(message, inner)
-            {
-                ApplicationName = appClient.AppName,
-                ServiceName = "MySoft.PlatformService.WinForm",
-                ErrorHeader = string.Format("Application【{0}】occurs error. ==> Comes from {1}({2}).", appClient.AppName, appClient.HostName, appClient.IPAddress)
-            };
-
-            SimpleLog.Instance.WriteLogWithSendMail(ex, emails);
         }
 
         private IStatusService service;
@@ -375,7 +349,6 @@ namespace MySoft.PlatformService.WinForm
             rich.AppendText(caller.Parameters);
         }
 
-        private string[] emails;
         private void frmMain_Load(object sender, EventArgs e)
         {
             listAssembly.SelectedIndexChanged += new EventHandler(listAssembly_SelectedIndexChanged);
@@ -396,23 +369,13 @@ namespace MySoft.PlatformService.WinForm
             comboBox1.DataSource = CastleFactory.Create().GetServerNodes();
             autoCompleteTextbox1.KeyPress += new KeyPressEventHandler(autoCompleteTextbox1_KeyPress);
 
-            //解析邮件地址
-            var receivedEmail = ConfigurationManager.AppSettings["ReceivedEmail"];
-            if (string.IsNullOrEmpty(receivedEmail)) receivedEmail = "test@163.com";
-            emails = receivedEmail.Split('|', ',', ';');
-
-            formTimer = new System.Windows.Forms.Timer();
-            formTimer.Interval = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
-            formTimer.Tick += new EventHandler(timer_Tick);
-            formTimer.Start();
-
             InitBrowser();
         }
 
         void autoCompleteTextbox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             //按回车
-            if (e.KeyChar == 13)
+            if (e.KeyChar == (int)Keys.Enter)
             {
                 var key = autoCompleteTextbox1.Text.Trim();
                 if (methods.ContainsKey(key))
@@ -629,7 +592,6 @@ namespace MySoft.PlatformService.WinForm
                 webBrowser2 = new WebBrowser();
                 webBrowser2.ScriptErrorsSuppressed = true;
                 webBrowser2.Dock = DockStyle.Fill;
-                webBrowser2.Navigating += new WebBrowserNavigatingEventHandler(webBrowser2_Navigating);
                 webBrowser2.Navigate(url1);
                 tabPage4.Controls.Add(webBrowser2);
                 //webBrowser2.AllowNavigation = false;
@@ -663,34 +625,6 @@ namespace MySoft.PlatformService.WinForm
                 tabPage6.Controls.Add(webBrowser);
                 webBrowser.Navigate(url3);
             }
-        }
-
-        void webBrowser2_Navigating(object sender, WebBrowserNavigatingEventArgs e)
-        {
-            formTimer.Tag = e.Url;
-        }
-
-        void timer_Tick(object sender, EventArgs e)
-        {
-            formTimer.Stop();
-
-            var webBrowser = new WebBrowser();
-            webBrowser.ScriptErrorsSuppressed = true;
-            webBrowser.Dock = DockStyle.Fill;
-            webBrowser.Navigating += new WebBrowserNavigatingEventHandler(webBrowser2_Navigating);
-            webBrowser.Navigated += new WebBrowserNavigatedEventHandler(webBrowser2_Navigated);
-            webBrowser.Navigate(formTimer.Tag as Uri);
-
-            formTimer.Start();
-        }
-
-        void webBrowser2_Navigated(object sender, WebBrowserNavigatedEventArgs e)
-        {
-            webBrowser2.Dispose();
-            webBrowser2 = sender as WebBrowser;
-
-            tabPage4.Controls.Clear();
-            tabPage4.Controls.Add(webBrowser2);
         }
 
         /// <summary>
@@ -1238,7 +1172,12 @@ namespace MySoft.PlatformService.WinForm
 
         void ShowError(Exception ex)
         {
-            MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            ShowError(ex.Message);
+        }
+
+        void ShowError(string errorMessage)
+        {
+            MessageBox.Show(errorMessage, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         void frm_OnCallback(string[] apps)

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using MySoft.RESTful.Utils;
 
 namespace MySoft.RESTful.Business.Pool
 {

@@ -62,7 +62,7 @@
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="BaseServiceHandler.cs" />
-    <Compile Include="Common\ResponseBuffer.cs" />
+    <Compile Include="Messages\ResponseBuffer.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IServiceRecorder.cs" />
     <Compile Include="Common\RecordEventArgs.cs" />
