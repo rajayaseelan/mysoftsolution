@@ -42,25 +42,25 @@ namespace MySoft.Data
         /// </summary>
         public static readonly ValidateResult Default = new ValidateResult();
 
-        private IList<InvalidValue> invalidValues;
+        private IList<InvalidValue> values;
 
         /// <summary>
         /// 实例化ValidateResult
         /// </summary>
         private ValidateResult()
         {
-            this.invalidValues = new List<InvalidValue>();
+            this.values = new List<InvalidValue>();
         }
 
         /// <summary>
         /// 实例化ValidateResult
         /// </summary>
-        /// <param name="invalidValues"></param>
-        public ValidateResult(IList<InvalidValue> invalidValues)
+        /// <param name="values"></param>
+        public ValidateResult(IList<InvalidValue> values)
             : this()
         {
-            if (invalidValues != null)
-                this.invalidValues = invalidValues;
+            if (values != null)
+                this.values = values;
         }
 
         /// <summary>
@@ -70,22 +70,22 @@ namespace MySoft.Data
         {
             get
             {
-                return invalidValues.Count == 0;
+                return values.Count == 0;
             }
         }
 
         /// <summary>
         /// 消息列表
         /// </summary>
-        public IList<InvalidValue> InvalidValues
+        public IList<InvalidValue> Values
         {
             get
             {
-                return invalidValues;
+                return values;
             }
             private set
             {
-                invalidValues = value;
+                values = value;
             }
         }
     }

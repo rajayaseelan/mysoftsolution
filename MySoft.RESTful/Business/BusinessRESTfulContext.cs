@@ -166,6 +166,7 @@ namespace MySoft.RESTful.Business
                 //开始调用
                 controller.BeginCall(appCaller);
 
+                //解析服务
                 instance = register.Resolve(metadata.Service);
                 var value = controller.CallService(appCaller, instance);
 

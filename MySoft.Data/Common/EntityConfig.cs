@@ -14,7 +14,12 @@ namespace MySoft.Data
     [Serializable]
     public class EntityConfig
     {
+        /// <summary>
+        /// 配置实例
+        /// </summary>
         public static EntityConfig Instance = new EntityConfig();
+
+        private const int TIME_OUT = 60;
         private TableSetting[] _Settings;
         private EntityConfig()
         {
@@ -72,7 +77,7 @@ namespace MySoft.Data
             //如果设置为空返回null
             if (_Settings == null || _Settings.Length == 0)
             {
-                return 60;
+                return TIME_OUT;
             }
 
             //通过Namespace与ClassName来获取映射的表名
@@ -80,26 +85,26 @@ namespace MySoft.Data
             string ClassName = typeof(T).Name;
 
             var settings = new List<TableSetting>(_Settings);
-            TableSetting setting = settings.Find(p => p.Namespace == Namespace);
+            TableSetting setting = settings.Find(p => string.Compare(p.Namespace, Namespace, true) == 0);
             if (setting != null)
             {
                 if (setting.Mappings != null && setting.Mappings.Length > 0)
                 {
                     //查询mapping的表名
                     var mappings = new List<TableMapping>(setting.Mappings);
-                    TableMapping mapping = mappings.Find(p => p.ClassName == ClassName);
+                    TableMapping mapping = mappings.Find(p => string.Compare(p.ClassName, ClassName, true) == 0);
                     if (mapping != null)
                     {
                         return mapping.Timeout;
                     }
 
-                    return 60;
+                    return TIME_OUT;
                 }
 
-                return 60;
+                return TIME_OUT;
             }
 
-            return 60;
+            return TIME_OUT;
         }
 
         /// <summary>
@@ -123,7 +128,7 @@ namespace MySoft.Data
 
             Table table = new Table(tableName);
             var settings = new List<TableSetting>(_Settings);
-            TableSetting setting = settings.Find(p => p.Namespace == Namespace);
+            TableSetting setting = settings.Find(p => string.Compare(p.Namespace, Namespace, true) == 0);
             if (setting != null)
             {
                 table.Prefix = setting.Prefix;
@@ -133,7 +138,7 @@ namespace MySoft.Data
                 {
                     //查询mapping的表名
                     var mappings = new List<TableMapping>(setting.Mappings);
-                    TableMapping mapping = mappings.Find(p => p.ClassName == ClassName);
+                    TableMapping mapping = mappings.Find(p => string.Compare(p.ClassName, ClassName, true) == 0);
                     if (mapping != null)
                     {
                         if (!string.IsNullOrEmpty(mapping.MappingName))
@@ -172,20 +177,20 @@ namespace MySoft.Data
 
             Field field = new Field(fieldName);
             var settings = new List<TableSetting>(_Settings);
-            var setting = settings.Find(p => p.Namespace == Namespace);
+            var setting = settings.Find(p => string.Compare(p.Namespace, Namespace, true) == 0);
             if (setting != null)
             {
                 if (setting.Mappings != null && setting.Mappings.Length > 0)
                 {
                     //查询mapping的表名
                     var mappings = new List<TableMapping>(setting.Mappings);
-                    var mapping = mappings.Find(p => p.ClassName == ClassName);
+                    var mapping = mappings.Find(p => string.Compare(p.ClassName, ClassName, true) == 0);
                     if (mapping != null)
                     {
                         if (mapping.Mappings != null && mapping.Mappings.Length > 0)
                         {
                             var fmappings = new List<FieldMapping>(mapping.Mappings);
-                            var fmapping = fmappings.Find(p => p.PropertyName == propertyName);
+                            var fmapping = fmappings.Find(p => string.Compare(p.PropertyName, propertyName, true) == 0);
                             if (fmapping != null)
                             {
                                 field = new Field(fmapping.MappingName);

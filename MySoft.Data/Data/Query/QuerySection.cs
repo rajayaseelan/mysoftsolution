@@ -1188,7 +1188,7 @@ namespace MySoft.Data
             if (dbProvider.Cache != null)
             {
                 //如果key里面出现(0=0)，则不进行缓存，没办法，为了及时性做一个特殊约定
-                if (!cacheKey.Contains("(0=0)"))
+                if (!cacheKey.Replace(" ", "").Contains("(0=0)"))
                 {
                     int timeout = EntityConfig.Instance.GetTableTimeout<CacheType>();
                     dbProvider.Cache.AddCache(key, obj, timeout);
@@ -1203,7 +1203,7 @@ namespace MySoft.Data
         #region 返回分页信息
 
         /// <summary>
-        /// 
+        /// 返回DataPage
         /// </summary>
         /// <param name="pageSize"></param>
         /// <param name="pageIndex"></param>
@@ -1215,6 +1215,23 @@ namespace MySoft.Data
             view.CurrentPageIndex = pageIndex;
             view.RowCount = page.RowCount;
             view.DataSource = page.ToList(pageIndex);
+            return view;
+        }
+
+        /// <summary>
+        /// 返回DataPage
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <returns></returns>
+        public DataPage<IList<TResult>> ToListPage<TResult>(int pageSize, int pageIndex)
+            where TResult : class
+        {
+            DataPage<IList<TResult>> view = new DataPage<IList<TResult>>(pageSize);
+            PageSection<T> page = GetPage(pageSize);
+            view.CurrentPageIndex = pageIndex;
+            view.RowCount = page.RowCount;
+            view.DataSource = page.ToReader(pageIndex).ConvertTo<TResult>();
             return view;
         }
 

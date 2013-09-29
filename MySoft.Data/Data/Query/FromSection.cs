@@ -479,6 +479,24 @@ namespace MySoft.Data
 
         #region 返回分页信息
 
+        /// <summary>
+        /// 返回DataPage
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <returns></returns>
+        public DataPage<IList<TResult>> ToListPage<TResult>(int pageSize, int pageIndex)
+            where TResult : class
+        {
+            return query.ToListPage<TResult>(pageSize, pageIndex);
+        }
+
+        /// <summary>
+        /// 返回DataPage
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <returns></returns>
         public DataPage<IList<T>> ToListPage(int pageSize, int pageIndex)
         {
             return query.ToListPage(pageSize, pageIndex);

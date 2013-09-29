@@ -1222,7 +1222,7 @@ namespace MySoft.Data
             if (!result.IsSuccess)
             {
                 List<string> msgs = new List<string>();
-                foreach (var msg in result.InvalidValues)
+                foreach (var msg in result.Values)
                 {
                     msgs.Add(msg.Field.PropertyName + " : " + msg.Message);
                 }

@@ -87,6 +87,7 @@ namespace MySoft.Data
         #endregion
 
         DataPage<IList<T>> ToListPage(int pageSize, int pageIndex);
+        DataPage<IList<TResult>> ToListPage<TResult>(int pageSize, int pageIndex) where TResult : class;
         DataPage<DataTable> ToTablePage(int pageSize, int pageIndex);
         DataPage<DataSet> ToDataSetPage(int pageSize, int pageIndex);
     }
