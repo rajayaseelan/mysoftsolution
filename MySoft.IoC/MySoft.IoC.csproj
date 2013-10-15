@@ -62,6 +62,7 @@
     <Compile Include="Aspect\InnerInvocation.cs" />
     <Compile Include="Aspect\InterceptorSelector.cs" />
     <Compile Include="BaseServiceHandler.cs" />
+    <Compile Include="Communication\Scs\Communication\Channels\Tcp\MessageBuffer.cs" />
     <Compile Include="Messages\ResponseBuffer.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\IServiceRecorder.cs" />
@@ -161,6 +162,7 @@
     <Compile Include="ServiceCaller.cs" />
     <Compile Include="ServiceProxy.cs" />
     <Compile Include="Services\AsyncCaller.cs" />
+    <Compile Include="Services\AsyncContext.cs" />
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -36,12 +36,16 @@ namespace MySoft.PlatformService.Client
         #endregion
     }
 
-    [XmlRoot(IsNullable = true)]
-    public class User
+    public class UserA
     {
-        [XmlElement(IsNullable = true)]
-        public string Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
+    }
+
+    public class UserB
+    {
+        public int Id1 { get; set; }
+        public string Name1 { get; set; }
     }
 
     class Program
@@ -58,6 +62,13 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            //var user = new UserA { Id = 1, Name = "test" };
+            //var mappings = PropertyMapping.Create("Id>Id1", "Name|Name1");
+            //var userb = CoreHelper.ConvertType<UserA, UserB>(user, null);
+
+            //Console.WriteLine(userb.Id1 + "|" + userb.Name1);
+            //Console.ReadLine();
+
             CastleFactory.Create().OnError += Program_OnError;
             CastleFactory.Create().Register(new ServiceCall());
 

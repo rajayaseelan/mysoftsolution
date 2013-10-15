@@ -1,6 +1,7 @@
 ﻿using MySoft.Logger;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -16,6 +17,7 @@ namespace MySoft.IoC.Nodes
     public class DefaultNodeResolver : IServerNodeResolver
     {
         private ServerConfig config;
+        private string serverConfigPath = "/config/serverConfig.xml";
 
         /// <summary>
         /// 实例化DefaultNodeResolver
@@ -24,11 +26,18 @@ namespace MySoft.IoC.Nodes
         {
             this.config = InitServerConfig();
 
+            var path = ConfigurationManager.AppSettings["serverConfigPath"];
+            if (!string.IsNullOrEmpty(path))
+            {
+                this.serverConfigPath = path;
+            }
+
             //检测服务节点
             try { CheckServerNode(); }
             catch { }
 
-            var timer = new Timer(TimeSpan.FromMinutes(10).TotalMilliseconds);
+            //5分钟检测一次
+            var timer = new Timer(TimeSpan.FromMinutes(5).TotalMilliseconds);
             timer.AutoReset = true;
             timer.Elapsed += timer_Elapsed;
             timer.Start();
@@ -115,7 +124,7 @@ namespace MySoft.IoC.Nodes
         protected virtual ServerConfig GetXmlFileConfig(bool fromRemote)
         {
             //配置文件
-            var fileName = CoreHelper.GetFullPath("/config/serverConfig.xml");
+            var fileName = CoreHelper.GetFullPath(serverConfigPath);
             var xml = string.Empty;
 
             if (fromRemote || !File.Exists(fileName))
@@ -123,7 +132,8 @@ namespace MySoft.IoC.Nodes
                 try
                 {
                     //从远程读取
-                    xml = new HttpHelper().Reader("http://www.fund123.cn/config/serverConfig.xml");
+                    var url = string.Format("{0}{1}", "http://www.fund123.cn", serverConfigPath);
+                    xml = new HttpHelper().Reader(url);
 
                     if (!xml.ToLower().StartsWith("<?xml"))
                     {

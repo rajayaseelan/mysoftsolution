@@ -81,7 +81,7 @@ namespace MySoft.Data.UnitTest
             string fieldName = "userid"; // TODO: 初始化为适当的值
             DbField target = new DbField(fieldName); // TODO: 初始化为适当的值
             string actual;
-            actual = target.Name;
+            actual = target.OriginalName;
             Assert.AreEqual(actual, fieldName);
             //Assert.Inconclusive("验证此测试方法的正确性。");
         }

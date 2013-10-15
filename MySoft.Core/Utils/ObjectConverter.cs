@@ -25,8 +25,19 @@ namespace MySoft
         /// <returns></returns>
         public IList<TResult> ToList<TResult>()
         {
+            return ToList<TResult>(null);
+        }
+
+        /// <summary>
+        /// 转换成对象列表
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="mappings"></param>
+        /// <returns></returns>
+        public IList<TResult> ToList<TResult>(params PropertyMapping[] mappings)
+        {
             if (items.Count == 0) return new List<TResult>();
-            return items.ConvertAll<TResult>(p => CoreHelper.ConvertType<T, TResult>(p));
+            return items.ConvertAll<TResult>(p => CoreHelper.ConvertType<T, TResult>(p, mappings));
         }
 
         #region IDisposable 成员
@@ -57,11 +68,23 @@ namespace MySoft
         /// <summary>
         /// 转换成单个对象
         /// </summary>
+        /// <typeparam name="TResult"></typeparam>
         /// <returns></returns>
         public TResult ToObject<TResult>()
         {
+            return ToObject<TResult>(null);
+        }
+
+        /// <summary>
+        /// 转换成单个对象
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="mappings"></param>
+        /// <returns></returns>
+        public TResult ToObject<TResult>(params PropertyMapping[] mappings)
+        {
             if (item == null) return default(TResult);
-            return CoreHelper.ConvertType<T, TResult>(item);
+            return CoreHelper.ConvertType<T, TResult>(item, mappings);
         }
 
         #region IDisposable 成员

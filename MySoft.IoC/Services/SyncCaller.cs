@@ -81,17 +81,20 @@ namespace MySoft.IoC.Services
             //参数为0，文件缓存
             var type = reqMsg.Parameters.Count == 0 ? LocalCacheType.File : LocalCacheType.Memory;
 
+            var _context = new RequestContext { Context = context, Request = reqMsg };
+
             //获取内存缓存
             var resMsg = CacheHelper<ResponseMessage>.Get(type, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
             {
-                var arr = state as ArrayList;
-                var _context = arr[0] as OperationContext;
-                var _reqMsg = arr[1] as RequestMessage;
+                if (state == null) return null;
+
+                //解析上下文
+                var rc = state as RequestContext;
 
                 //获取响应数据
-                return GetResponse(_context, _reqMsg);
+                return GetResponse(rc.Context, rc.Request);
 
-            }, new ArrayList { context, reqMsg }, p => p is ResponseBuffer);
+            }, _context, p => !p.IsError);
 
             return resMsg;
         }
@@ -107,7 +110,7 @@ namespace MySoft.IoC.Services
             //同步请求响应数据
             var resMsg = GetResponseFromService(context, reqMsg);
 
-            if (CheckResponse(resMsg))
+            if (resMsg.Count > 0)
             {
                 resMsg = new ResponseBuffer
                 {
@@ -131,21 +134,6 @@ namespace MySoft.IoC.Services
         private bool NeedCacheResult(RequestMessage reqMsg)
         {
             return reqMsg.EnableCache && reqMsg.CacheTime > 0;
-        }
-
-        /// <summary>
-        /// 检测响应是否有效
-        /// </summary>
-        /// <param name="resMsg"></param>
-        /// <returns></returns>
-        private bool CheckResponse(ResponseMessage resMsg)
-        {
-            if (resMsg == null) return false;
-            if (resMsg.IsError) return false;
-            if (resMsg is ResponseBuffer) return false;
-
-            //如果符合条件，则缓存 
-            return resMsg.Count > 0;
         }
 
         /// <summary>

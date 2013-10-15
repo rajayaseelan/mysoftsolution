@@ -170,33 +170,54 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             #endregion
 
             //Socket send messages event args.
-            var _sendEventArgs = new TcpSocketAsyncEventArgs();
+            var _sendEventArgs = CommunicationHelper.Pop(this);
             _sendEventArgs.AcceptSocket = _clientSocket;
-            _sendEventArgs.UserToken = message;
-            _sendEventArgs.Channel = this;
 
-            try
+            //Create message buffer.
+            var _messageBuffer = new MessageBuffer(message, messageBytes, CommunicationHelper.BufferSize);
+
+            //Send message async.
+            SendBufferAsync(_messageBuffer, _sendEventArgs);
+        }
+
+        /// <summary>
+        /// Send message async.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="e"></param>
+        private bool SendBufferAsync(MessageBuffer message, SocketAsyncEventArgs e)
+        {
+            //Set message buffer.
+            if (message.SetBuffer(e))
             {
-                //Set message buffer.
-                _sendEventArgs.SetBuffer(messageBytes, 0, messageBytes.Length);
-
-                //Send all bytes to the remote application
-                if (!_clientSocket.SendAsync(_sendEventArgs))
+                try
                 {
+                    //Send all bytes to the remote application
+                    if (!_clientSocket.SendAsync(e))
+                    {
 #if DEBUG
                     IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] sending message...", DateTime.Now);
 #endif
 
-                    (this as ICommunicationProtocol).SendCompleted(_sendEventArgs);
+                        (this as ICommunicationProtocol).SendCompleted(e);
+                    }
+
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    CommunicationHelper.Push(e);
+
+                    Disconnect();
+
+                    throw;
                 }
             }
-            catch (Exception ex)
+            else
             {
-                Dispose(_sendEventArgs);
+                CommunicationHelper.Push(e);
 
-                Disconnect();
-
-                throw;
+                return true;
             }
         }
 
@@ -210,16 +231,22 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         void ICommunicationProtocol.SendCompleted(SocketAsyncEventArgs e)
         {
+            var _messageBuffer = e.UserToken as MessageBuffer;
+            var _message = _messageBuffer.Message;
+
             try
             {
-                LastSentMessageTime = DateTime.Now;
+                //Send buffer.
+                if (SendBufferAsync(_messageBuffer, e))
+                {
+                    LastSentMessageTime = DateTime.Now;
 
-                OnMessageSent(e.UserToken as IScsMessage);
+                    OnMessageSent(_message);
+                }
             }
-            catch (Exception ex) { }
-            finally
+            catch (Exception ex)
             {
-                Dispose(e);
+                //TODO
             }
         }
 
@@ -271,40 +298,30 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="bytesTransferred"></param>
         private void OnBufferReceived(byte[] buffer, int offset, int bytesTransferred)
         {
-            //Copy received bytes to a new byte array
-            var receivedBytes = new byte[bytesTransferred];
-
-            //Copy buffer.
-            Buffer.BlockCopy(buffer, offset, receivedBytes, 0, bytesTransferred);
-
-            //Read messages according to current wire protocol
-            var messages = WireProtocol.CreateMessages(receivedBytes);
-
-            //Raise MessageReceived event for all received messages
-            foreach (var message in messages)
+            try
             {
-                OnMessageReceived(message);
+                //Copy received bytes to a new byte array
+                var receivedBytes = new byte[bytesTransferred];
+
+                //Copy buffer.
+                Buffer.BlockCopy(buffer, offset, receivedBytes, 0, bytesTransferred);
+
+                //Read messages according to current wire protocol
+                var messages = WireProtocol.CreateMessages(receivedBytes);
+
+                //Raise MessageReceived event for all received messages
+                foreach (var message in messages)
+                {
+                    OnMessageReceived(message);
+                }
             }
-        }
-
-        /// <summary>
-        /// Dispose resource.
-        /// </summary>
-        /// <param name="e"></param>
-        private void Dispose(SocketAsyncEventArgs e)
-        {
-            if (e == null) return;
-
-            if (e is TcpSocketAsyncEventArgs)
+            catch (Exception ex)
             {
-                (e as TcpSocketAsyncEventArgs).Channel = null;
+                //Message error.
+                OnMessageError(ex);
+
+                throw;
             }
-
-            e.AcceptSocket = null;
-            e.UserToken = null;
-            e.SetBuffer(null, 0, 0);
-
-            e.Dispose();
         }
 
         #endregion

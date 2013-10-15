@@ -1,6 +1,5 @@
 ﻿using MySoft.IoC.Messages;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace MySoft.IoC.Services
@@ -45,7 +44,14 @@ namespace MySoft.IoC.Services
                 if (isRunTask)
                 {
                     //开始一个异步任务
-                    pool.AddTaskItem(WorkCallback, new ArrayList { manager, context, reqMsg });
+                    var _context = new AsyncContext
+                    {
+                        Manager = manager,
+                        Context = context,
+                        Request = reqMsg
+                    };
+
+                    pool.AddTaskItem(WorkCallback, _context);
                 }
 
                 if (!waitResult.WaitOne(timeout))
@@ -68,25 +74,19 @@ namespace MySoft.IoC.Services
         {
             if (state == null) return;
 
-            var arr = state as ArrayList;
-
-            //解析数据
-            var manager = arr[0] as QueueManager;
+            //解析上下文
+            var ac = state as AsyncContext;
 
             try
             {
-                //获取数据
-                var context = arr[1] as OperationContext;
-                var reqMsg = arr[2] as RequestMessage;
-
                 //调用服务
-                var resMsg = AsyncRun(manager, context, reqMsg);
+                var resMsg = AsyncRun(ac.Manager, ac.Context, ac.Request);
 
-                manager.Set(resMsg);
+                ac.Manager.Set(resMsg);
             }
             catch (Exception ex)
             {
-                manager.Set(ex);
+                ac.Manager.Set(ex);
             }
         }
 
@@ -105,7 +105,7 @@ namespace MySoft.IoC.Services
                 var resMsg = base.Invoke(context, reqMsg);
 
                 //处理符合条件的数据，大于100时也进行数据压缩
-                if (resMsg.Value != null && (manager.Count > 1 || resMsg.Count > 100))
+                if (manager.Count > 1)
                 {
                     resMsg = new ResponseBuffer
                     {

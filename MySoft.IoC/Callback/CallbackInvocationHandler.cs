@@ -51,11 +51,19 @@ namespace MySoft.IoC.Callback
         /// <returns></returns>
         private void AsyncCallback(IAsyncResult ar)
         {
-            var completed = _func.EndInvoke(ar);
-
-            if (!completed)
+            try
             {
-                _channel.Disconnect();
+                var completed = _func.EndInvoke(ar);
+
+                if (!completed)
+                {
+                    _channel.Disconnect();
+                }
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                ar.AsyncWaitHandle.Close();
             }
         }
 

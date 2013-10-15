@@ -269,10 +269,13 @@ namespace MySoft.Data
             where T : Entity
         {
             WhereClip where = null;
+
             List<FieldValue> list = CoreHelper.CreateInstance<T>().GetFieldValues();
+            int pkCount = list.FindAll(p => p.IsPrimaryKey).Count;
+            if (pkCount == 0) return where;
+
             pkValues = CheckAndReturnValues(pkValues);
 
-            int pkCount = list.FindAll(p => p.IsPrimaryKey).Count;
             if (pkValues.Length != pkCount)
             {
                 throw new DataException("传入的数据与主键无法对应，应该传入【" + pkCount + "】个主键值！");

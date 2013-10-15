@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
 
 namespace MySoft.IoC.Communication.Scs.Communication
 {
@@ -15,10 +16,15 @@ namespace MySoft.IoC.Communication.Scs.Communication
         /// <summary>
         /// Size of the buffer that is used to send bytes from TCP socket.
         /// </summary>
-        private const int BufferSize = 2 * 1024; //2KB
+        private const int BUFFERSIZE = 2 * 1024; //2KB
 
         private static SocketAsyncEventArgsPool pool;
         private static BufferManager bufferManager;
+
+        /// <summary>
+        /// Buffer size.
+        /// </summary>
+        public static int BufferSize { get { return BUFFERSIZE; } }
 
         /// <summary>
         /// 实例化CommunicationHelper
@@ -26,7 +32,7 @@ namespace MySoft.IoC.Communication.Scs.Communication
         static CommunicationHelper()
         {
             pool = new SocketAsyncEventArgsPool(MaxCommunicationCount);
-            bufferManager = new BufferManager(MaxCommunicationCount * BufferSize, BufferSize);
+            bufferManager = new BufferManager(MaxCommunicationCount * BUFFERSIZE, BUFFERSIZE);
             bufferManager.InitBuffer();
 
             for (int i = 0; i < MaxCommunicationCount; i++)
@@ -91,11 +97,17 @@ namespace MySoft.IoC.Communication.Scs.Communication
 
             lock (pool)
             {
+                if (item.UserToken != null && item.UserToken is IDisposable)
+                {
+                    //Dispose resource.
+                    ((IDisposable)item.UserToken).Dispose();
+                }
+
+                item.AcceptSocket = null;
+                item.UserToken = null;
+
                 if (item.Buffer != null)
                 {
-                    item.AcceptSocket = null;
-                    item.UserToken = null;
-
                     bufferManager.FreeBuffer(item);
                 }
 

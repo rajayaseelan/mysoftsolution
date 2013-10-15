@@ -32,7 +32,7 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
 
             if (!socket.ConnectAsync(e))
             {
-                IO_Completed(null, e);
+                IO_Completed(socket, e);
             }
 
             if (!_manualReset.WaitOne(timeoutMs, false))
@@ -69,6 +69,7 @@ namespace MySoft.IoC.Communication.Scs.Client.Tcp
             catch (Exception ex) { }
             finally
             {
+                e.Completed -= IO_Completed;
                 e.RemoteEndPoint = null;
                 e.AcceptSocket = null;
                 e.UserToken = null;

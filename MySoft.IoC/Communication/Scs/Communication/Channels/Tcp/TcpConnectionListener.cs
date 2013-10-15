@@ -95,18 +95,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             if (!_running) return;
 
+            var e = new SocketAsyncEventArgs();
+            e.Completed += IO_Completed;
+
             try
             {
-                var e = new SocketAsyncEventArgs();
-                e.Completed += IO_Completed;
-
                 if (!_listenerSocket.AcceptAsync(e))
                 {
-                    IO_Completed(null, e);
+                    IO_Completed(_listenerSocket, e);
                 }
             }
             catch
             {
+                Dispose(e);
+
                 //Disconnect, wait for a while and connect again.
                 StopSocket();
 
@@ -168,9 +170,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             catch (Exception ex) { }
             finally
             {
-                e.AcceptSocket = null;
-                e.Dispose();
+                Dispose(e);
             }
+        }
+
+        /// <summary>
+        /// Dispose resource.
+        /// </summary>
+        /// <param name="e"></param>
+        private void Dispose(SocketAsyncEventArgs e)
+        {
+            e.Completed -= IO_Completed;
+            e.AcceptSocket = null;
+
+            e.Dispose();
         }
     }
 }

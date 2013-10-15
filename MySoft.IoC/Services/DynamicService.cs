@@ -55,7 +55,7 @@ namespace MySoft.IoC.Services
             ResolveParameters(callMethod, reqMsg);
 
             //调用方法
-            var resMsg = InvokeMethod(callMethod, reqMsg);
+            var resMsg = Invoke(callMethod, reqMsg);
 
             //处理消息
             HandleMessage(reqMsg, resMsg);
@@ -69,7 +69,7 @@ namespace MySoft.IoC.Services
         /// <param name="callMethod"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage InvokeMethod(System.Reflection.MethodInfo callMethod, RequestMessage reqMsg)
+        private ResponseMessage Invoke(System.Reflection.MethodInfo callMethod, RequestMessage reqMsg)
         {
             var resMsg = new ResponseMessage
             {

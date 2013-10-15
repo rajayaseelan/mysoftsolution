@@ -582,8 +582,16 @@ namespace MySoft.PlatformService.WinForm
                 //设置控件焦点
                 SetControlFocus(true);
 
-                label5.Text = string.Format("{0} / {1} ms.  Row(s): {2}.  Size: {3}.", response.ElapsedMilliseconds,
-                            response.ElapsedTime, response.Count, GetDataSize(response.Value));
+                if (response.ElapsedMilliseconds == response.ElapsedTime)
+                {
+                    label5.Text = string.Format("{0} ms.  Row(s): {1}.  Size: {2}.",
+                                response.ElapsedTime, response.Count, GetDataSize(response.Value));
+                }
+                else
+                {
+                    label5.Text = string.Format("{0} / {1} ms.  Row(s): {2}.  Size: {3}.", response.ElapsedMilliseconds,
+                                response.ElapsedTime, response.Count, GetDataSize(response.Value));
+                }
 
                 label5.Refresh();
             }), data);

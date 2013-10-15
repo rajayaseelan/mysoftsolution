@@ -526,15 +526,16 @@ namespace MySoft
         /// </summary>
         /// <typeparam name="TInput"></typeparam>
         /// <typeparam name="TOutput"></typeparam>
-        /// <param name="obj"></param>
+        /// <param name="item"></param>
+        /// <param name="mappings"></param>
         /// <returns></returns>
-        public static TOutput ConvertType<TInput, TOutput>(TInput obj)
+        public static TOutput ConvertType<TInput, TOutput>(TInput item, params PropertyMapping[] mappings)
         {
-            if (obj == null) return default(TOutput);
+            if (item == null) return default(TOutput);
 
-            if (obj is TOutput && typeof(TOutput).IsInterface)
+            if (item is TOutput && typeof(TOutput).IsInterface)
             {
-                return (TOutput)(obj as object);
+                return (TOutput)(item as object);
             }
             else
             {
@@ -545,7 +546,7 @@ namespace MySoft
                     //t = CoreHelper.CreateInstance<TOutput>();
                     if (typeof(TOutput) == typeof(TInput))
                     {
-                        t = CreateInstance<TOutput>(obj.GetType());
+                        t = CreateInstance<TOutput>(item.GetType());
                     }
                     else
                     {
@@ -557,36 +558,47 @@ namespace MySoft
                     throw new MySoftException(string.Format("创建类型对象【{0}】出错，可能不存在构造函数！", typeof(TOutput).FullName), ex);
                 }
 
-                foreach (PropertyInfo p in GetPropertiesFromType<TOutput>())
+                foreach (PropertyInfo pi in GetPropertiesFromType<TOutput>())
                 {
+                    var toPropertyName = pi.Name;
+                    if (mappings != null && mappings.Length > 0)
+                    {
+                        //查询映射关系名称
+                        var mapping = mappings.FirstOrDefault(p => string.Compare(p.To, toPropertyName, true) == 0);
+                        if (mapping != null)
+                        {
+                            toPropertyName = mapping.From;
+                        }
+                    }
+
                     object value = null;
-                    if (obj is NameValueCollection)
+                    if (item is NameValueCollection)
                     {
-                        NameValueCollection reader = obj as NameValueCollection;
-                        if (reader[p.Name] == null) continue;
-                        value = reader[p.Name];
+                        NameValueCollection reader = item as NameValueCollection;
+                        if (reader[toPropertyName] == null) continue;
+                        value = reader[toPropertyName];
                     }
-                    else if (obj is IDictionary)
+                    else if (item is IDictionary)
                     {
-                        IDictionary reader = obj as IDictionary;
-                        if (!reader.Contains(p.Name)) continue;
-                        if (reader[p.Name] == null) continue;
-                        value = reader[p.Name];
+                        IDictionary reader = item as IDictionary;
+                        if (!reader.Contains(toPropertyName)) continue;
+                        if (reader[toPropertyName] == null) continue;
+                        value = reader[toPropertyName];
                     }
-                    else if (obj is DataRow)
+                    else if (item is DataRow)
                     {
-                        DataRow row = obj as DataRow;
-                        if (!Contains(row, p.Name)) continue;
-                        if (row.IsNull(p.Name)) continue;
-                        value = row[p.Name];
+                        DataRow row = item as DataRow;
+                        if (!Contains(row, toPropertyName)) continue;
+                        if (row.IsNull(toPropertyName)) continue;
+                        value = row[toPropertyName];
                     }
                     else
                     {
-                        value = GetPropertyValue(obj, p.Name);
+                        value = GetPropertyValue(item, toPropertyName);
                     }
 
                     if (value == null) continue;
-                    SetPropertyValue(t, p, value);
+                    SetPropertyValue(t, pi, value);
                 }
 
                 return t;

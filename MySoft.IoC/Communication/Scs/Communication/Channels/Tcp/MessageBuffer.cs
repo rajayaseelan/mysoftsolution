@@ -44,14 +44,15 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        public int SetBuffer(SocketAsyncEventArgs e)
+        public bool SetBuffer(SocketAsyncEventArgs e)
         {
             e.UserToken = this;
-            int count = (int)(stream.Length - stream.Position);
 
-            if (count > bufferSize) count = bufferSize;
+            int count = (int)(stream.Length - stream.Position);
             if (count > 0)
             {
+                count = Math.Min(count, bufferSize);
+
                 //读取到缓冲区
                 stream.Read(buffer, 0, count);
 
@@ -62,9 +63,11 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     e.SetBuffer(e.Offset, count);
                 }
+
+                return true;
             }
 
-            return count;
+            return false;
         }
 
         /// <summary>
