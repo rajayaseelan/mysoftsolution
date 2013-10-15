@@ -97,12 +97,6 @@ namespace MySoft.IoC.Communication.Scs.Communication
 
             lock (pool)
             {
-                if (item.UserToken != null && item.UserToken is IDisposable)
-                {
-                    //Dispose resource.
-                    ((IDisposable)item.UserToken).Dispose();
-                }
-
                 item.AcceptSocket = null;
                 item.UserToken = null;
 

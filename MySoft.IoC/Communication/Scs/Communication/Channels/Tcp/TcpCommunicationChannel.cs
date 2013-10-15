@@ -187,16 +187,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// <param name="e"></param>
         private bool SendBufferAsync(MessageBuffer message, SocketAsyncEventArgs e)
         {
-            //Set message buffer.
-            if (message.SetBuffer(e))
+            try
             {
-                try
+                //Set message buffer.
+                if (message.SetBuffer(e))
                 {
                     //Send all bytes to the remote application
-                    if (!_clientSocket.SendAsync(e))
+                    if (!e.AcceptSocket.SendAsync(e))
                     {
 #if DEBUG
-                    IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] sending message...", DateTime.Now);
+                        IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] sending message...", DateTime.Now);
 #endif
 
                         (this as ICommunicationProtocol).SendCompleted(e);
@@ -204,24 +204,20 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
                     return false;
                 }
-                catch (Exception ex)
+                else
                 {
-                    message.Dispose();
-
                     CommunicationHelper.Push(e);
 
-                    Disconnect();
-
-                    throw;
+                    return true;
                 }
             }
-            else
+            catch (Exception ex)
             {
-                message.Dispose();
-
                 CommunicationHelper.Push(e);
 
-                return true;
+                Disconnect();
+
+                throw;
             }
         }
 
@@ -236,7 +232,6 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         void ICommunicationProtocol.SendCompleted(SocketAsyncEventArgs e)
         {
             var _messageBuffer = e.UserToken as MessageBuffer;
-            var _message = _messageBuffer.Message;
 
             try
             {
@@ -245,7 +240,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 {
                     LastSentMessageTime = DateTime.Now;
 
-                    OnMessageSent(_message);
+                    OnMessageSent(_messageBuffer.Message);
                 }
             }
             catch (Exception ex)
