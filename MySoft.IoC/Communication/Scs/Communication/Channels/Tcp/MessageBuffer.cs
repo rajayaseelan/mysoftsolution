@@ -75,9 +75,16 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         /// </summary>
         public void Dispose()
         {
-            this.message = null;
-            this.buffer = null;
-            this.stream.Dispose();
+            try
+            {
+                this.message = null;
+                this.buffer = null;
+                this.stream.Dispose();
+            }
+            catch (Exception ex)
+            {
+                //TODO
+            }
         }
     }
 }

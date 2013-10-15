@@ -206,6 +206,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
                 }
                 catch (Exception ex)
                 {
+                    message.Dispose();
+
                     CommunicationHelper.Push(e);
 
                     Disconnect();
@@ -215,6 +217,8 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             }
             else
             {
+                message.Dispose();
+
                 CommunicationHelper.Push(e);
 
                 return true;
