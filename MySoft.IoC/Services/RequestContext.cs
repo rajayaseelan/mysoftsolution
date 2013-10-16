@@ -21,4 +21,15 @@ namespace MySoft.IoC.Services
         /// </summary>
         public RequestMessage Request { get; set; }
     }
+
+    /// <summary>
+    /// 异步上下文
+    /// </summary>
+    internal class AsyncContext : RequestContext
+    {
+        /// <summary>
+        /// Queue manager.
+        /// </summary>
+        public QueueManager Manager { get; set; }
+    }
 }

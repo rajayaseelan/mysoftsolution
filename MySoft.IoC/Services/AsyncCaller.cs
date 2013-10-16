@@ -1,6 +1,8 @@
 ﻿using MySoft.IoC.Messages;
+using MySoft.Security;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace MySoft.IoC.Services
 {
@@ -9,7 +11,7 @@ namespace MySoft.IoC.Services
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    internal delegate ResponseMessage AsyncMethodCaller(RequestContext context);
+    internal delegate ResponseMessage AsyncMethodCaller(AsyncContext context);
 
     /// <summary>
     /// 异步调用器
@@ -28,7 +30,8 @@ namespace MySoft.IoC.Services
         public AsyncCaller(IService service, TimeSpan timeout)
             : base(service)
         {
-            this.caller = new AsyncMethodCaller(p => base.Invoke(p.Context, p.Request));
+            this.caller = new AsyncMethodCaller(AsyncRun);
+
             this.queues = new Dictionary<string, QueueManager>();
             this.timeout = timeout;
         }
@@ -51,14 +54,15 @@ namespace MySoft.IoC.Services
                 if (isRunTask)
                 {
                     //开始一个异步任务
-                    var _context = new RequestContext
+                    var _context = new AsyncContext
                     {
+                        Manager = manager,
                         Context = context,
                         Request = reqMsg
                     };
 
                     //开始异步调用
-                    caller.BeginInvoke(_context, WorkCallback, manager);
+                    caller.BeginInvoke(_context, AsyncCallback, manager);
                 }
 
                 if (!waitResult.WaitOne(timeout))
@@ -74,49 +78,19 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 回调处理
+        /// 异步调用
         /// </summary>
-        /// <param name="ar"></param>
-        private void WorkCallback(IAsyncResult ar)
-        {
-            if (ar.AsyncState == null) return;
-
-            //处理队列管理器
-            var manager = ar.AsyncState as QueueManager;
-
-            try
-            {
-                //获取响应信息
-                var resMsg = GetResponse(manager, ar);
-
-                manager.Set(resMsg);
-            }
-            catch (Exception ex)
-            {
-                manager.Set(ex);
-            }
-            finally
-            {
-                //关闭句柄
-                ar.AsyncWaitHandle.Close();
-            }
-        }
-
-        /// <summary>
-        /// 获取响应信息
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="ar"></param>
+        /// <param name="ac"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(QueueManager manager, IAsyncResult ar)
+        private ResponseMessage AsyncRun(AsyncContext ac)
         {
             try
             {
-                //调用服务
-                var resMsg = caller.EndInvoke(ar);
+                //调用基类服务
+                var resMsg = base.Invoke(ac.Context, ac.Request);
 
-                //处理符合条件的数据，大于100时也进行数据压缩
-                if (manager.Count > 1 && !(resMsg is ResponseBuffer))
+                //处理符合条件的数据
+                if (ac.Manager.Count > 1 && !(resMsg is ResponseBuffer))
                 {
                     resMsg = new ResponseBuffer
                     {
@@ -136,8 +110,37 @@ namespace MySoft.IoC.Services
                 //移除指定的值
                 lock (queues)
                 {
-                    queues.Remove(manager.Key);
+                    queues.Remove(ac.Manager.Key);
                 }
+            }
+        }
+
+        /// <summary>
+        /// 回调处理
+        /// </summary>
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
+        {
+            if (ar.AsyncState == null) return;
+
+            //处理队列管理器
+            var manager = ar.AsyncState as QueueManager;
+
+            try
+            {
+                //调用服务
+                var resMsg = caller.EndInvoke(ar);
+
+                manager.Set(resMsg);
+            }
+            catch (Exception ex)
+            {
+                manager.Set(ex);
+            }
+            finally
+            {
+                //关闭句柄
+                ar.AsyncWaitHandle.Close();
             }
         }
 
@@ -151,7 +154,8 @@ namespace MySoft.IoC.Services
         private QueueManager GetManager(AppCaller caller, WaitResult waitResult, out bool isRunTask)
         {
             //获取queueKey值
-            var queueKey = string.Format("{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
+            var key = string.Format("{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
+            var queueKey = MD5.HexHash(Encoding.Default.GetBytes(key));
 
             lock (queues)
             {
