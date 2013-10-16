@@ -117,25 +117,26 @@ namespace MySoft.IoC
         /// <returns>The result.</returns>
         private ResponseMessage InvokeRequest(RequestMessage reqMsg)
         {
-            try
-            {
-                return CallService(reqMsg);
-            }
-            catch (Exception ex)
-            {
-                if (ex is BusinessException) throw;
+            var resMsg = CallService(reqMsg);
 
-                if (config.ThrowError)
+            if (resMsg.IsError)
+            {
+                if (resMsg.Error is BusinessException)
+                {
+                    //业务异常直接抛出
+                    throw resMsg.Error;
+                }
+                else if (config.ThrowError)
                 {
                     //判断是否有自定义异常
                     if (errors.ContainsKey(reqMsg.MethodName))
                         throw new BusinessException(errors[reqMsg.MethodName]);
                     else
-                        throw;
+                        throw resMsg.Error;
                 }
             }
 
-            return null;
+            return resMsg;
         }
 
         #endregion

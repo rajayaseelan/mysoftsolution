@@ -48,26 +48,33 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             e.UserToken = this;
 
-            int count = (int)(stream.Length - stream.Position);
-            if (count > 0)
+            try
             {
-                count = Math.Min(count, bufferSize);
-
-                //读取到缓冲区
-                stream.Read(buffer, 0, count);
-
-                //set buffer offset.
-                Buffer.BlockCopy(buffer, 0, e.Buffer, e.Offset, count);
-
-                if (count < e.Count)
+                int count = (int)(stream.Length - stream.Position);
+                if (count > 0)
                 {
-                    e.SetBuffer(e.Offset, count);
+                    count = Math.Min(count, bufferSize);
+
+                    //读取到缓冲区
+                    stream.Read(buffer, 0, count);
+
+                    //set buffer offset.
+                    Buffer.BlockCopy(buffer, 0, e.Buffer, e.Offset, count);
+
+                    if (count < e.Count)
+                    {
+                        e.SetBuffer(e.Offset, count);
+                    }
+
+                    return true;
                 }
 
-                return true;
+                return false;
             }
-
-            return false;
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
         /// <summary>

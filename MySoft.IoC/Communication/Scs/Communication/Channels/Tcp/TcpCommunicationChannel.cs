@@ -176,39 +176,29 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
             //Create message buffer.
             var _messageBuffer = new MessageBuffer(message, messageBytes, CommunicationHelper.BufferSize);
 
+            //Set message buffer.
+            _messageBuffer.SetBuffer(_sendEventArgs);
+
             //Send message async.
-            SendBufferAsync(_messageBuffer, _sendEventArgs);
+            SendBufferAsync(_sendEventArgs);
         }
 
         /// <summary>
         /// Send message async.
         /// </summary>
-        /// <param name="message"></param>
         /// <param name="e"></param>
-        private bool SendBufferAsync(MessageBuffer message, SocketAsyncEventArgs e)
+        private void SendBufferAsync(SocketAsyncEventArgs e)
         {
             try
             {
-                //Set message buffer.
-                if (message.SetBuffer(e))
+                //Send all bytes to the remote application
+                if (!e.AcceptSocket.SendAsync(e))
                 {
-                    //Send all bytes to the remote application
-                    if (!e.AcceptSocket.SendAsync(e))
-                    {
 #if DEBUG
                         IoCHelper.WriteLine(ConsoleColor.DarkGray, "[{0}] sending message...", DateTime.Now);
 #endif
 
-                        (this as ICommunicationProtocol).SendCompleted(e);
-                    }
-
-                    return false;
-                }
-                else
-                {
-                    CommunicationHelper.Push(e);
-
-                    return true;
+                    (this as ICommunicationProtocol).SendCompleted(e);
                 }
             }
             catch (Exception ex)
@@ -233,19 +223,28 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
         {
             var _messageBuffer = e.UserToken as MessageBuffer;
 
-            try
+            //Set buffer.
+            if (_messageBuffer.SetBuffer(e))
             {
                 //Send buffer.
-                if (SendBufferAsync(_messageBuffer, e))
-                {
-                    LastSentMessageTime = DateTime.Now;
+                SendBufferAsync(e);
 
-                    OnMessageSent(_messageBuffer.Message);
-                }
+                return;
             }
-            catch (Exception ex)
+
+            try
             {
-                //TODO
+                //On completed.
+                LastSentMessageTime = DateTime.Now;
+
+                OnMessageSent(_messageBuffer.Message);
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                _messageBuffer.Dispose();
+
+                CommunicationHelper.Push(e);
             }
         }
 

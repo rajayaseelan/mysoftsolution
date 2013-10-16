@@ -57,10 +57,14 @@ namespace MySoft.IoC
             //给参数赋值
             reqMsg.Parameters["InvokeParameter"] = message.Parameters;
 
+            //调用远程服务
             var resMsg = CallService(reqMsg);
 
             if (resMsg != null)
             {
+                //抛出异常
+                if (resMsg.IsError) throw resMsg.Error;
+
                 return resMsg.Value as InvokeData;
             }
 

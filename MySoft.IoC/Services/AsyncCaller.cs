@@ -5,12 +5,19 @@ using System.Collections.Generic;
 namespace MySoft.IoC.Services
 {
     /// <summary>
+    /// 异步调用委托
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    internal delegate ResponseMessage AsyncMethodCaller(RequestContext context);
+
+    /// <summary>
     /// 异步调用器
     /// </summary>
     internal class AsyncCaller : SyncCaller
     {
         private TimeSpan timeout;
-        private TaskPool pool;
+        private AsyncMethodCaller caller;
         private IDictionary<string, QueueManager> queues;
 
         /// <summary>
@@ -21,7 +28,7 @@ namespace MySoft.IoC.Services
         public AsyncCaller(IService service, TimeSpan timeout)
             : base(service)
         {
-            this.pool = new TaskPool(Environment.ProcessorCount, 1, 2);
+            this.caller = new AsyncMethodCaller(p => base.Invoke(p.Context, p.Request));
             this.queues = new Dictionary<string, QueueManager>();
             this.timeout = timeout;
         }
@@ -44,14 +51,14 @@ namespace MySoft.IoC.Services
                 if (isRunTask)
                 {
                     //开始一个异步任务
-                    var _context = new AsyncContext
+                    var _context = new RequestContext
                     {
-                        Manager = manager,
                         Context = context,
                         Request = reqMsg
                     };
 
-                    pool.AddTaskItem(WorkCallback, _context);
+                    //开始异步调用
+                    caller.BeginInvoke(_context, WorkCallback, manager);
                 }
 
                 if (!waitResult.WaitOne(timeout))
@@ -69,43 +76,47 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 回调处理
         /// </summary>
-        /// <param name="state"></param>
-        private void WorkCallback(object state)
+        /// <param name="ar"></param>
+        private void WorkCallback(IAsyncResult ar)
         {
-            if (state == null) return;
+            if (ar.AsyncState == null) return;
 
-            //解析上下文
-            var ac = state as AsyncContext;
+            //处理队列管理器
+            var manager = ar.AsyncState as QueueManager;
 
             try
             {
-                //调用服务
-                var resMsg = AsyncRun(ac.Manager, ac.Context, ac.Request);
+                //获取响应信息
+                var resMsg = GetResponse(manager, ar);
 
-                ac.Manager.Set(resMsg);
+                manager.Set(resMsg);
             }
             catch (Exception ex)
             {
-                ac.Manager.Set(ex);
+                manager.Set(ex);
+            }
+            finally
+            {
+                //关闭句柄
+                ar.AsyncWaitHandle.Close();
             }
         }
 
         /// <summary>
-        /// 异步调用方法
+        /// 获取响应信息
         /// </summary>
         /// <param name="manager"></param>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
+        /// <param name="ar"></param>
         /// <returns></returns>
-        private ResponseMessage AsyncRun(QueueManager manager, OperationContext context, RequestMessage reqMsg)
+        private ResponseMessage GetResponse(QueueManager manager, IAsyncResult ar)
         {
             try
             {
-                //调用基类的方法
-                var resMsg = base.Invoke(context, reqMsg);
+                //调用服务
+                var resMsg = caller.EndInvoke(ar);
 
                 //处理符合条件的数据，大于100时也进行数据压缩
-                if (manager.Count > 1)
+                if (manager.Count > 1 && !(resMsg is ResponseBuffer))
                 {
                     resMsg = new ResponseBuffer
                     {
@@ -154,10 +165,10 @@ namespace MySoft.IoC.Services
 
                 //添加到队列
                 queues[queueKey].Add(waitResult);
-
-                //返回队列服务
-                return queues[queueKey];
             }
+
+            //返回队列服务
+            return queues[queueKey];
         }
 
         /// <summary>
@@ -165,8 +176,12 @@ namespace MySoft.IoC.Services
         /// </summary>
         public override void Dispose()
         {
-            this.queues.Clear();
-            this.pool.Dispose();
+            lock (queues)
+            {
+                this.queues.Clear();
+            }
+
+            this.caller = null;
         }
     }
 }

@@ -164,7 +164,7 @@
     <Compile Include="ServiceCaller.cs" />
     <Compile Include="ServiceProxy.cs" />
     <Compile Include="Services\AsyncCaller.cs" />
-    <Compile Include="Services\AsyncContext.cs" />
+    <Compile Include="Services\RequestContext.cs" />
     <Compile Include="Services\InvokeProxy.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -206,7 +206,6 @@
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
     <Compile Include="Services\SyncCaller.cs" />
-    <Compile Include="Services\TaskPool.cs" />
     <Compile Include="Services\Tasks\AsyncResult.cs" />
     <Compile Include="Services\Tasks\AsyncResultNoResult.cs" />
     <Compile Include="Services\WaitResult.cs" />

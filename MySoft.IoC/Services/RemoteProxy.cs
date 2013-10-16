@@ -124,44 +124,29 @@ namespace MySoft.IoC.Services
 
             try
             {
-                var resMsg = GetResult(reqMsg);
+                //获取请求代理
+                var reqProxy = pool.Pop();
 
-                //抛出异常
-                if (resMsg.IsError) throw resMsg.Error;
+                try
+                {
+                    //消息Id
+                    var messageId = Guid.NewGuid().ToString();
 
-                return resMsg;
+                    //发送请求
+                    reqProxy.Send(messageId, reqMsg);
+
+                    //获取响应信息
+                    return GetResponse(messageId, reqMsg);
+                }
+                finally
+                {
+                    pool.Push(reqProxy);
+                }
             }
             finally
             {
                 //释放一个控制器
                 semaphore.Release();
-            }
-        }
-
-        /// <summary>
-        /// 获取结果
-        /// </summary>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResult(RequestMessage reqMsg)
-        {
-            //获取请求代理
-            var reqProxy = pool.Pop();
-
-            try
-            {
-                //消息Id
-                var messageId = Guid.NewGuid().ToString();
-
-                //发送请求
-                reqProxy.Send(messageId, reqMsg);
-
-                //获取响应信息
-                return GetResponse(messageId, reqMsg);
-            }
-            finally
-            {
-                pool.Push(reqProxy);
             }
         }
 

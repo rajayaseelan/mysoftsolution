@@ -21,16 +21,23 @@ namespace MySoft.IoC.Communication.Scs.Communication
         {
             if (Channel == null) return;
 
-            switch (e.LastOperation)
+            try
             {
-                case SocketAsyncOperation.Send:
-                    Channel.SendCompleted(e);
-                    break;
-                case SocketAsyncOperation.Receive:
-                    Channel.ReceiveCompleted(e);
-                    break;
-                default:
-                    throw new ArgumentException("The last operation completed on the socket was not a receive or send.");
+                switch (e.LastOperation)
+                {
+                    case SocketAsyncOperation.Send:
+                        Channel.SendCompleted(e);
+                        break;
+                    case SocketAsyncOperation.Receive:
+                        Channel.ReceiveCompleted(e);
+                        break;
+                    default:
+                        throw new ArgumentException("The last operation completed on the socket was not a receive or send.");
+                }
+            }
+            catch (Exception ex)
+            {
+                //TODO
             }
         }
     }

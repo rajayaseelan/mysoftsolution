@@ -46,35 +46,53 @@ namespace MySoft.IoC
                 //定义响应的消息
                 var resMsg = GetResponse(reqMsg, ref elapsedTime);
 
-                if (resMsg is ResponseBuffer)
+                if (resMsg.IsError)
                 {
-                    //反序列化对象
-                    var buffer = (resMsg as ResponseBuffer).Buffer;
-
-                    resMsg = new ResponseMessage
-                    {
-                        ServiceName = resMsg.ServiceName,
-                        MethodName = resMsg.MethodName,
-                        Parameters = resMsg.Parameters,
-                        ElapsedTime = resMsg.ElapsedTime,
-                        Error = resMsg.Error,
-                        Value = IoCHelper.DeserializeObject(buffer)
-                    };
+                    //写错误日志
+                    WriteError(resMsg.Error);
                 }
+                else
+                {
+                    if (resMsg is ResponseBuffer)
+                    {
+                        //反序列化对象
+                        var buffer = (resMsg as ResponseBuffer).Buffer;
 
-                //设置耗时时间
-                resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, elapsedTime);
+                        resMsg = new ResponseMessage
+                        {
+                            ServiceName = resMsg.ServiceName,
+                            MethodName = resMsg.MethodName,
+                            Parameters = resMsg.Parameters,
+                            ElapsedTime = resMsg.ElapsedTime,
+                            Error = resMsg.Error,
+                            Value = IoCHelper.DeserializeObject(buffer)
+                        };
+                    }
+
+                    //设置耗时时间
+                    resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, elapsedTime);
+                }
 
                 return resMsg;
             }
             catch (Exception ex)
             {
-                if (container != null)
-                {
-                    container.WriteError(ex);
-                }
+                //写错误日志
+                WriteError(ex);
 
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// 写错误日志
+        /// </summary>
+        /// <param name="ex"></param>
+        private void WriteError(Exception ex)
+        {
+            if (container != null)
+            {
+                container.WriteError(ex);
             }
         }
 
@@ -103,17 +121,6 @@ namespace MySoft.IoC
                 call.EndCall(reqMsg, resMsg, elapsedTime);
 
                 return resMsg;
-            }
-            catch (Exception ex)
-            {
-                var resMsg = IoCHelper.GetResponse(reqMsg, ex);
-
-                elapsedTime = watch.ElapsedMilliseconds;
-
-                //写日志结束
-                call.EndCall(reqMsg, resMsg, elapsedTime);
-
-                throw;
             }
             finally
             {

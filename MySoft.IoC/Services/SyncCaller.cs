@@ -94,7 +94,7 @@ namespace MySoft.IoC.Services
                 //获取响应数据
                 return GetResponse(rc.Context, rc.Request);
 
-            }, _context, p => !p.IsError);
+            }, _context, p => p is ResponseBuffer);
 
             return resMsg;
         }
@@ -110,7 +110,7 @@ namespace MySoft.IoC.Services
             //同步请求响应数据
             var resMsg = GetResponseFromService(context, reqMsg);
 
-            if (resMsg.Count > 0)
+            if (resMsg.Count > 0 && !(resMsg is ResponseBuffer))
             {
                 resMsg = new ResponseBuffer
                 {
