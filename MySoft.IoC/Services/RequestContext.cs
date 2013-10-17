@@ -28,8 +28,8 @@ namespace MySoft.IoC.Services
     internal class AsyncContext : RequestContext
     {
         /// <summary>
-        /// Queue manager.
+        /// Queue key.
         /// </summary>
-        public QueueManager Manager { get; set; }
+        public string QueueKey { get; set; }
     }
 }

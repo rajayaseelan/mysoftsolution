@@ -110,7 +110,7 @@ namespace MySoft.IoC.Services
             //同步请求响应数据
             var resMsg = GetResponseFromService(context, reqMsg);
 
-            if (resMsg.Count > 0 && !(resMsg is ResponseBuffer))
+            if (!(resMsg is ResponseBuffer) && !resMsg.IsError && resMsg.Count > 0)
             {
                 resMsg = new ResponseBuffer
                 {

@@ -56,7 +56,7 @@ namespace MySoft.IoC.Services
                     //开始一个异步任务
                     var _context = new AsyncContext
                     {
-                        Manager = manager,
+                        QueueKey = manager.Key,
                         Context = context,
                         Request = reqMsg
                     };
@@ -87,30 +87,14 @@ namespace MySoft.IoC.Services
             try
             {
                 //调用基类服务
-                var resMsg = base.Invoke(ac.Context, ac.Request);
-
-                //处理符合条件的数据
-                if (ac.Manager.Count > 1 && !(resMsg is ResponseBuffer))
-                {
-                    resMsg = new ResponseBuffer
-                    {
-                        ServiceName = resMsg.ServiceName,
-                        MethodName = resMsg.MethodName,
-                        Parameters = resMsg.Parameters,
-                        ElapsedTime = resMsg.ElapsedTime,
-                        Error = resMsg.Error,
-                        Buffer = IoCHelper.SerializeObject(resMsg.Value)
-                    };
-                }
-
-                return resMsg;
+                return base.Invoke(ac.Context, ac.Request);
             }
             finally
             {
                 //移除指定的值
                 lock (queues)
                 {
-                    queues.Remove(ac.Manager.Key);
+                    queues.Remove(ac.QueueKey);
                 }
             }
         }
