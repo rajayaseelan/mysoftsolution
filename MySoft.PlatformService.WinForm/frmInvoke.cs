@@ -24,6 +24,7 @@ namespace MySoft.PlatformService.WinForm
         private ServerNode node;
         private IList<ParameterInfo> parameters;
         private IDictionary<string, TextBox> txtParameters;
+        private IDictionary<string, CheckBox> checkParameters;
         private string paramValue;
         private int timeout;
 
@@ -42,6 +43,7 @@ namespace MySoft.PlatformService.WinForm
             this.cacheTime = method.CacheTime;
             this.parameters = method.Parameters;
             this.txtParameters = new Dictionary<string, TextBox>();
+            this.checkParameters = new Dictionary<string, CheckBox>();
         }
 
         public frmInvoke(bool isReflection, ServerNode node, ServiceInfo service, MethodInfo method, string paramValue)
@@ -78,8 +80,6 @@ namespace MySoft.PlatformService.WinForm
                 int countHeight = 0;
                 foreach (var parameter in parameters)
                 {
-                    if (parameter.IsByRef && parameter.IsOut) continue;
-
                     Panel p = new Panel();
                     p.Top = (index++) * 48 + countHeight;
                     p.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
@@ -88,7 +88,7 @@ namespace MySoft.PlatformService.WinForm
                     //p.BorderStyle = BorderStyle.Fixed3D;
 
                     Label l = new Label();
-                    l.Text = "【" + parameter.Name + "】 => " + parameter.TypeName;
+                    l.Text = "  【" + parameter.Name + "】 => " + parameter.TypeName;
                     l.Dock = DockStyle.Top;
                     l.AutoSize = false;
                     //l.BorderStyle = BorderStyle.Fixed3D;
@@ -111,6 +111,9 @@ namespace MySoft.PlatformService.WinForm
                         });
                     }
 
+                    Panel tp = new Panel();
+                    tp.Dock = DockStyle.Fill;
+
                     TextBox t = new TextBox();
                     t.Dock = DockStyle.Fill;
 
@@ -124,9 +127,30 @@ namespace MySoft.PlatformService.WinForm
                     }
 
                     t.Tag = parameter;
-                    p.Controls.Add(t);
+
+                    CheckBox c = new CheckBox();
+                    c.AutoSize = true;
+                    c.Dock = DockStyle.Left;
+                    c.Checked = true;
+                    c.CheckedChanged += (_sender, _e) =>
+                    {
+                        t.Enabled = c.Checked;
+                    };
+
+                    tp.Controls.Add(c);
+                    tp.Controls.Add(t);
+
+                    if (parameter.IsByRef && parameter.IsOut)
+                    {
+                        c.Checked = false;
+                        t.Text = "输出参数";
+                        tp.Enabled = false;
+                    }
+
+                    p.Controls.Add(tp);
 
                     l.SendToBack();
+                    c.SendToBack();
 
                     if (!parameter.IsPrimitive)
                     {
@@ -138,6 +162,7 @@ namespace MySoft.PlatformService.WinForm
 
                     plParameters.Controls.Add(p);
                     txtParameters[parameter.Name] = t;
+                    checkParameters[parameter.Name] = c;
                 }
             }
             else
@@ -204,9 +229,23 @@ namespace MySoft.PlatformService.WinForm
         {
             if (txtParameters.Count > 0)
             {
-                if (MessageBox.Show("请确认参数是否全部填写正确！", "系统提示",
-                    MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
+                var list = new List<string>();
+                foreach (var kvp in txtParameters)
+                {
+                    //检测数据是否有效
+                    if (checkParameters[kvp.Key].Checked && string.IsNullOrEmpty(kvp.Value.Text.Trim()))
+                    {
+                        list.Add(kvp.Key);
+                    }
+                }
+
+                if (list.Count > 0)
+                {
+                    MessageBox.Show(string.Format("参数【{0}】值不能为空！", string.Join("、", list.ToArray()))
+                    , "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
                     return;
+                }
             }
 
             button1.Enabled = false;
@@ -217,10 +256,12 @@ namespace MySoft.PlatformService.WinForm
             var jValue = new JObject();
             if (txtParameters.Count > 0)
             {
-                foreach (var p in txtParameters)
+                foreach (var kvp in txtParameters)
                 {
-                    var text = p.Value.Text.Trim();
-                    var info = p.Value.Tag as ParameterInfo;
+                    if (!checkParameters[kvp.Key].Checked) continue;
+
+                    var text = kvp.Value.Text.Trim();
+                    var info = kvp.Value.Tag as ParameterInfo;
                     if (info.IsPrimitive)
                     {
                         //如果字符串包含引号，则不处理。
@@ -232,11 +273,11 @@ namespace MySoft.PlatformService.WinForm
 
                     try
                     {
-                        jValue[p.Key] = JToken.Parse(text);
+                        jValue[kvp.Key] = JToken.Parse(text);
                     }
                     catch
                     {
-                        jValue[p.Key] = text;
+                        jValue[kvp.Key] = text;
                     }
                 }
             }

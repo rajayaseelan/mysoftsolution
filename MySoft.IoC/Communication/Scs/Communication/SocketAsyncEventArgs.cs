@@ -9,6 +9,20 @@ namespace MySoft.IoC.Communication.Scs.Communication
     internal class TcpSocketAsyncEventArgs : SocketAsyncEventArgs
     {
         /// <summary>
+        /// 实例化TcpSocketAsyncEventArgs
+        /// </summary>
+        public TcpSocketAsyncEventArgs() { }
+
+        /// <summary>
+        /// 实例化TcpSocketAsyncEventArgs
+        /// </summary>
+        /// <param name="channel"></param>
+        public TcpSocketAsyncEventArgs(ICommunicationProtocol channel)
+        {
+            this.Channel = channel;
+        }
+
+        /// <summary>
         /// 回调通道
         /// </summary>
         public ICommunicationProtocol Channel { get; set; }
