@@ -241,6 +241,9 @@ namespace MySoft.PlatformService.WinForm
 
                 if (list.Count > 0)
                 {
+                    //设置第一个文本框焦点
+                    txtParameters[list[0]].Focus();
+
                     MessageBox.Show(string.Format("参数【{0}】值不能为空！", string.Join("、", list.ToArray()))
                     , "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
