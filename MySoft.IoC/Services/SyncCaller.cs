@@ -91,37 +91,17 @@ namespace MySoft.IoC.Services
                 //解析上下文
                 var rc = state as RequestContext;
 
-                //获取响应数据
-                return GetResponse(rc.Context, rc.Request);
+                //同步请求响应数据
+                var response = GetResponseFromService(rc.Context, rc.Request);
+
+                if (!(response is ResponseBuffer) && !response.IsError && response.Count > 0)
+                {
+                    response = new ResponseBuffer(response);
+                }
+
+                return response;
 
             }, _context, p => p is ResponseBuffer);
-
-            return resMsg;
-        }
-
-        /// <summary>
-        /// 获取响应数据
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="reqMsg"></param>
-        /// <returns></returns>
-        private ResponseMessage GetResponse(OperationContext context, RequestMessage reqMsg)
-        {
-            //同步请求响应数据
-            var resMsg = GetResponseFromService(context, reqMsg);
-
-            if (!(resMsg is ResponseBuffer) && !resMsg.IsError && resMsg.Count > 0)
-            {
-                resMsg = new ResponseBuffer
-                {
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Error = resMsg.Error,
-                    Buffer = IoCHelper.SerializeObject(resMsg.Value)
-                };
-            }
 
             return resMsg;
         }

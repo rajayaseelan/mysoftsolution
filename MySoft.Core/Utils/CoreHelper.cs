@@ -527,6 +527,19 @@ namespace MySoft
         /// <typeparam name="TInput"></typeparam>
         /// <typeparam name="TOutput"></typeparam>
         /// <param name="item"></param>
+        /// <returns></returns>
+        public static TOutput ConvertType<TInput, TOutput>(TInput item)
+        {
+            return ConvertType<TInput, TOutput>(item, null);
+        }
+
+        /// <summary>
+        /// 从对象obj中获取值传给当前实体,TOutput必须为class或接口
+        /// TInput可以为class、NameValueCollection、IDictionary、IRowReader、DataRow
+        /// </summary>
+        /// <typeparam name="TInput"></typeparam>
+        /// <typeparam name="TOutput"></typeparam>
+        /// <param name="item"></param>
         /// <param name="mappings"></param>
         /// <returns></returns>
         public static TOutput ConvertType<TInput, TOutput>(TInput item, params PropertyMapping[] mappings)

@@ -98,6 +98,10 @@ namespace MySoft.IoC.Messages
 
                 return _count;
             }
+            internal set
+            {
+                _count = value;
+            }
         }
 
         /// <summary>
