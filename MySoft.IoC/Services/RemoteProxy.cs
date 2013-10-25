@@ -108,7 +108,7 @@ namespace MySoft.IoC.Services
                 if (e.Error != null)
                     waitResult.Set(e.Error);
                 else
-                    waitResult.Set(e.Message);
+                    waitResult.Set(e.Response);
             }
         }
 
@@ -174,7 +174,7 @@ namespace MySoft.IoC.Services
                     }
 
                     //返回响应的消息
-                    return waitResult.Message;
+                    return waitResult.Response;
                 }
                 finally
                 {

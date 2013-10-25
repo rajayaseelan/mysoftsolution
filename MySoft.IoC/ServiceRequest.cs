@@ -133,7 +133,7 @@ namespace MySoft.IoC
                 var value = new ResponseMessageEventArgs
                 {
                     MessageId = e.Message.RepliedMessageId,
-                    Message = data.MessageValue as ResponseMessage
+                    Response = data.MessageValue as ResponseMessage
                 };
 
                 //把数据发送到客户端

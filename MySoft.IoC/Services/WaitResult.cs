@@ -17,7 +17,7 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 消息对象
         /// </summary>
-        public ResponseMessage Message
+        public ResponseMessage Response
         {
             get { return resMsg; }
         }

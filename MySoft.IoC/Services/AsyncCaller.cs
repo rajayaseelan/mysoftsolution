@@ -73,7 +73,7 @@ namespace MySoft.IoC.Services
                     throw new TimeoutException(string.Format("The current request timeout {0} ms!", timeout.TotalMilliseconds));
                 }
 
-                return waitResult.Message;
+                return waitResult.Response;
             }
         }
 

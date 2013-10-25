@@ -88,6 +88,7 @@
     <Compile Include="Nodes\IServerNodeResolver.cs" />
     <Compile Include="Nodes\NodeConfig.cs" />
     <Compile Include="Nodes\ServerConfig.cs" />
+    <Compile Include="MessageItem.cs" />
     <Compile Include="ServiceChannel.cs" />
     <Compile Include="IServerConnect.cs" />
     <Compile Include="Communication\Scs\Client\ClientReConnecter.cs" />
@@ -220,6 +221,7 @@
     <Compile Include="Messages\Status\TimeStatus.cs" />
     <Compile Include="SubscribeOptions.cs" />
     <Compile Include="ResponseType.cs" />
+    <Compile Include="TaskPool.cs" />
     <Compile Include="WarningException.cs" />
   </ItemGroup>
   <ItemGroup>

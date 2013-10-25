@@ -27,6 +27,7 @@ namespace MySoft.IoC
         private ScsTcpEndPoint epServer;
         private ServerStatusService status;
         private ServiceCaller caller;
+        private TaskPool pool;
 
         /// <summary>
         /// Gets the service container.
@@ -70,6 +71,7 @@ namespace MySoft.IoC
 
             //实例化调用者
             this.caller = new ServiceCaller(config, container);
+            this.pool = new TaskPool(Environment.ProcessorCount, 2, 2);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -242,6 +244,7 @@ namespace MySoft.IoC
             {
                 caller.Dispose();
                 container.Dispose();
+                pool.Dispose();
             }
         }
 
@@ -370,9 +373,6 @@ namespace MySoft.IoC
         /// <param name="reqMsg"></param>
         private void SendResponse(IScsServerClient channel, string messageId, RequestMessage reqMsg)
         {
-            //实例化上下文
-            var client = new ServiceChannel(channel, reqMsg);
-
             try
             {
                 var appCaller = CreateCaller(reqMsg);
@@ -383,8 +383,41 @@ namespace MySoft.IoC
                 //数据计数
                 DataCounter(messageId, appCaller, resMsg);
 
+                var msgItem = new MessageItem
+                {
+                    MessageId = messageId,
+                    Channel = channel,
+                    Request = reqMsg,
+                    Response = resMsg
+                };
+
+                //添加到发送队列
+                pool.AddTaskItem(WaitCallback, msgItem);
+            }
+            catch (Exception ex)
+            {
+                //写异常日志
+                container.WriteError(ex);
+            }
+        }
+
+        /// <summary>
+        /// 等等响应
+        /// </summary>
+        /// <param name="state"></param>
+        private void WaitCallback(object state)
+        {
+            if (state == null) return;
+
+            try
+            {
+                var msgItem = state as MessageItem;
+
+                //实例化上下文
+                var client = new ServiceChannel(msgItem.Channel, msgItem.Request);
+
                 //发送消息
-                client.SendResponse(messageId, resMsg);
+                client.SendResponse(msgItem.MessageId, msgItem.Response);
             }
             catch (Exception ex)
             {

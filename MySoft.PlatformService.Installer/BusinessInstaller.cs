@@ -88,7 +88,7 @@ namespace MySoft.PlatformService.Installer
                     }
                     break;
                 default:
-                    spi.Account = ServiceAccount.NetworkService;
+                    spi.Account = ServiceAccount.LocalSystem;
                     break;
             }
 

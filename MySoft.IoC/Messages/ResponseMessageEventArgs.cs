@@ -20,6 +20,6 @@ namespace MySoft.IoC.Messages
         /// <summary>
         /// 响应的消息
         /// </summary>
-        public ResponseMessage Message { get; set; }
+        public ResponseMessage Response { get; set; }
     }
 }
