@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -53,8 +54,9 @@ namespace MySoft.IoC.HttpServer
         /// <summary>
         /// 生成文档
         /// </summary>
+        /// <param name="infos"></param>
         /// <returns></returns>
-        public string MakeDocument()
+        public string MakeDocument(IList<HttpCallerInfo> infos)
         {
             string uri = string.Format("tcp://{0}:{1}/", IPAddress.Loopback, port);
             var html = htmlTemplate.Replace("${uri}", uri);
@@ -62,6 +64,18 @@ namespace MySoft.IoC.HttpServer
             StringBuilder sbUrl = new StringBuilder();
             var service = container.Resolve<IStatusService>();
             var list = service.GetServiceList();
+
+            if (infos != null && infos.Count > 0)
+            {
+                var tmpServices = list.Where(p => infos.Any(c => c.Service.ToString() == p.FullName));
+                foreach (var item in tmpServices)
+                {
+                    item.Methods = item.Methods.Where(p => infos.Any(c => c.Method.ToString() == p.FullName)).ToList();
+                }
+
+                list = tmpServices.ToList();
+            }
+
             html = html.Replace("${count}", string.Format("{0}/{1}", list.Count, list.Sum(p => p.Methods.Count)));
 
             foreach (var s in list)

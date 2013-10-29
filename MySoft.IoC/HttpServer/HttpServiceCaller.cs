@@ -116,10 +116,11 @@ namespace MySoft.IoC.HttpServer
         /// 获取服务文档
         /// </summary>
         /// <returns></returns>
-        public string GetTcpDocument()
+        public string GetTcpDocument(bool isAll)
         {
             var doc = new TcpDocument(container, config.Port);
-            return doc.MakeDocument();
+            var items = isAll ? null : callers.ToValueList();
+            return doc.MakeDocument(items);
         }
 
         /// <summary>

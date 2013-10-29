@@ -7,10 +7,6 @@ namespace MySoft.IoC
     public enum CastleFactoryType
     {
         /// <summary>
-        /// None
-        /// </summary>
-        None,
-        /// <summary>
         /// Local
         /// </summary>
         Local,
@@ -21,6 +17,10 @@ namespace MySoft.IoC
         /// <summary>
         /// LocalRemote
         /// </summary>
-        LocalRemote
+        LocalRemote,
+        /// <summary>
+        /// 代理模式
+        /// </summary>
+        Proxy
     }
 }

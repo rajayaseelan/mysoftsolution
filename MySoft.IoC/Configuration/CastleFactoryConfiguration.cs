@@ -17,7 +17,6 @@ namespace MySoft.IoC.Configuration
         private string appname;                                                 //host名称
         private bool throwError = true;                                         //抛出异常
         private bool enableCache = true;                                        //是否缓存
-        private bool enableProxy = false;                                       //启用代理
 
         /// <summary>
         /// 实例化CastleFactoryConfiguration
@@ -69,9 +68,6 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["enableCache"] != null && attribute["enableCache"].Value.Trim() != string.Empty)
                 enableCache = Convert.ToBoolean(attribute["enableCache"].Value);
-
-            if (attribute["enableProxy"] != null && attribute["enableProxy"].Value.Trim() != string.Empty)
-                enableProxy = Convert.ToBoolean(attribute["enableProxy"].Value);
 
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
@@ -136,7 +132,7 @@ namespace MySoft.IoC.Configuration
                 //判断是否配置了服务信息
                 if (resolverType == null)
                 {
-                    if (serverType != CastleFactoryType.None)
+                    if (serverType != CastleFactoryType.Proxy)
                     {
                         if (nodes.Count == 0)
                             throw new WarningException("Not configure any server node.");
@@ -199,16 +195,6 @@ namespace MySoft.IoC.Configuration
         {
             get { return enableCache; }
             set { enableCache = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the enableProxy
-        /// </summary>
-        /// <value>The enableProxy.</value>
-        public bool EnableProxy
-        {
-            get { return enableProxy; }
-            set { enableProxy = value; }
         }
 
         /// <summary>

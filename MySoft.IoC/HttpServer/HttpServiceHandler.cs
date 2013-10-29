@@ -66,7 +66,14 @@ namespace MySoft.IoC.HttpServer
                 //发送服务帮助信息
                 response.ContentType = "text/html;charset=utf-8";
                 response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_OK;
-                SendResponse(response, caller.GetTcpDocument());
+                SendResponse(response, caller.GetTcpDocument(false));
+            }
+            else if (request.URI.ToLower() == "/alltcp")
+            {
+                //发送服务帮助信息
+                response.ContentType = "text/html;charset=utf-8";
+                response.StatusAndReason = HTTPServerResponse.HTTPStatus.HTTP_OK;
+                SendResponse(response, caller.GetTcpDocument(true));
             }
             else if (request.URI.ToLower().IndexOf("/help/") == 0)
             {

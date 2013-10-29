@@ -67,7 +67,7 @@ namespace MySoft.IoC.Nodes
                 var xml = string.Empty;
 
                 //检测服务节点
-                if (CheckServerNode(out xml))
+                if (CheckServerNode(serverConfigPath, out xml))
                 {
                     //配置文件
                     var fileName = CoreHelper.GetFullPath(serverConfigPath);
@@ -174,12 +174,13 @@ namespace MySoft.IoC.Nodes
         /// <summary>
         /// 检测服务节点
         /// </summary>
+        /// <param name="configPath"></param>
         /// <param name="xml"></param>
         /// <returns></returns>
-        private bool CheckServerNode(out string xml)
+        private bool CheckServerNode(string configPath, out string xml)
         {
             //判断版本号，如果版本大于当前版本，则替换之
-            var tmpConfig = GetConfigFromRemote(serverConfigPath, out xml);
+            var tmpConfig = GetConfigFromRemote(configPath, out xml);
 
             if (tmpConfig != null)
             {

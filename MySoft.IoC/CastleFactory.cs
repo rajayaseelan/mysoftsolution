@@ -42,7 +42,7 @@ namespace MySoft.IoC
             this.container = new SimpleServiceContainer(config.ServerType);
             this.proxies = new Dictionary<string, IService>();
 
-            if (config.EnableProxy)
+            if (config.ServerType == CastleFactoryType.Proxy)
             {
                 //判断是否配置了NodeResolverType
                 this.nodeResolver = Create<IServerNodeResolver>(config.ResolverType) ?? new DefaultNodeResolver();
@@ -138,7 +138,7 @@ namespace MySoft.IoC
         {
             IList<ServerNode> nodes = new List<ServerNode>();
 
-            if (config.EnableProxy && nodeResolver != null)
+            if (config.ServerType == CastleFactoryType.Proxy && nodeResolver != null)
             {
                 nodes = nodeResolver.GetAllServerNode();
             }
@@ -271,7 +271,7 @@ namespace MySoft.IoC
                             remoteProxies.Add(proxy);
                         }
 
-                        if (config.EnableProxy)
+                        if (config.ServerType == CastleFactoryType.Proxy)
                         {
                             //实例化服务代理
                             proxies[nodeKey] = new ServiceProxy(nodeKey, remoteProxies);
@@ -541,7 +541,7 @@ namespace MySoft.IoC
             //如果存在本地服务，则跳过
             if (service != null) return nodes.ToArray();
 
-            if (config.EnableProxy && nodeResolver != null)
+            if (config.ServerType == CastleFactoryType.Proxy && nodeResolver != null)
             {
                 if (!string.IsNullOrEmpty(assemblyName))
                 {

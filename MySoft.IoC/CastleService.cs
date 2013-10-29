@@ -71,7 +71,9 @@ namespace MySoft.IoC
 
             //实例化调用者
             this.caller = new ServiceCaller(config, container);
-            this.pool = new TaskPool(Environment.ProcessorCount, 2, 2);
+
+            var processorCount = Environment.ProcessorCount;
+            this.pool = new TaskPool(processorCount * 2, processorCount, 2);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
