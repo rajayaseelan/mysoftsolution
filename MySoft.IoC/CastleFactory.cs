@@ -138,7 +138,7 @@ namespace MySoft.IoC
         {
             IList<ServerNode> nodes = new List<ServerNode>();
 
-            if (nodeResolver != null)
+            if (config.EnableProxy && nodeResolver != null)
             {
                 nodes = nodeResolver.GetAllServerNode();
             }
@@ -271,8 +271,16 @@ namespace MySoft.IoC
                             remoteProxies.Add(proxy);
                         }
 
-                        //实例化服务代理
-                        proxies[nodeKey] = new ServiceProxy(nodeKey, remoteProxies);
+                        if (config.EnableProxy)
+                        {
+                            //实例化服务代理
+                            proxies[nodeKey] = new ServiceProxy(nodeKey, remoteProxies);
+                        }
+                        else
+                        {
+                            //非代理服务取第一个节点
+                            proxies[nodeKey] = remoteProxies[0];
+                        }
                     }
                 }
             }
@@ -533,7 +541,7 @@ namespace MySoft.IoC
             //如果存在本地服务，则跳过
             if (service != null) return nodes.ToArray();
 
-            if (nodeResolver != null)
+            if (config.EnableProxy && nodeResolver != null)
             {
                 if (!string.IsNullOrEmpty(assemblyName))
                 {

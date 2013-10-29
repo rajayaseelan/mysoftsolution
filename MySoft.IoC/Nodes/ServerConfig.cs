@@ -36,7 +36,7 @@ namespace MySoft.IoC.Nodes
         /// </summary>
         public ServerConfig()
         {
-            this.Version = "v1.0";
+            this.Version = "v0.1";
             this.Configs = new NodeConfigCollection();
             this.Nodes = new ServerNodeCollection();
         }
