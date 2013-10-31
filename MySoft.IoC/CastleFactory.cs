@@ -271,16 +271,8 @@ namespace MySoft.IoC
                             remoteProxies.Add(proxy);
                         }
 
-                        if (config.ServerType == CastleFactoryType.Proxy)
-                        {
-                            //实例化服务代理
-                            proxies[nodeKey] = new ServiceProxy(nodeKey, remoteProxies);
-                        }
-                        else
-                        {
-                            //非代理服务取第一个节点
-                            proxies[nodeKey] = remoteProxies[0];
-                        }
+                        //实例化服务代理
+                        proxies[nodeKey] = new ServiceProxy(nodeKey, remoteProxies);
                     }
                 }
             }
