@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Linq;
-using System.Threading;
 
 namespace MySoft.Cache
 {
@@ -20,50 +18,6 @@ namespace MySoft.Cache
         public QueueCache(ICacheStrategy cache)
         {
             this.cache = cache;
-
-            //启动线程存储缓存
-            ThreadPool.QueueUserWorkItem(SaveCache);
-        }
-
-        /// <summary>
-        /// 保存Queue数据
-        /// </summary>
-        /// <param name="state"></param>
-        private void SaveCache(object state)
-        {
-            while (true)
-            {
-                if (hashtable.Count > 0)
-                {
-                    //获取CacheKey
-                    var cacheKey = string.Empty;
-
-                    try { cacheKey = hashtable.Keys.Cast<string>().FirstOrDefault(); }
-                    catch { }
-
-                    if (string.IsNullOrEmpty(cacheKey)) continue;
-
-                    try
-                    {
-                        var item = hashtable[cacheKey] as QueueItem;
-
-                        //保存值
-                        if (item != null && cache != null)
-                        {
-                            try { cache.AddObject(item.Key, item.Value, DateTime.Now.Add(item.TimeSpan)); }
-                            catch { }
-                        }
-                    }
-                    catch (Exception ex) { }
-                    finally
-                    {
-                        hashtable.Remove(cacheKey);
-                    }
-                }
-
-                //暂停1秒
-                Thread.Sleep(100);
-            }
         }
 
         /// <summary>
@@ -80,17 +34,7 @@ namespace MySoft.Cache
                 return item.Value;
             }
 
-            //内存中缓存30秒以提高性能
-            var value = CacheHelper.Get(cacheKey);
-
-            if (value == null)
-            {
-                value = cache.GetObject(cacheKey);
-
-                CacheHelper.Insert(cacheKey, value, 30);
-            }
-
-            return value;
+            return cache.GetObject(cacheKey);
         }
 
         /// <summary>
@@ -118,6 +62,35 @@ namespace MySoft.Cache
                 Value = cacheValue,
                 TimeSpan = timeSpan
             };
+
+            //异步调用
+            new Action<string>(AsyncRun).BeginInvoke(cacheKey, null, null);
+        }
+
+        /// <summary>
+        /// 异步调用
+        /// </summary>
+        /// <param name="key"></param>
+        private void AsyncRun(string key)
+        {
+            if (!hashtable.ContainsKey(key)) return;
+
+            try
+            {
+                var item = hashtable[key] as QueueItem;
+
+                //保存值
+                if (item != null && cache != null)
+                {
+                    try { cache.AddObject(item.Key, item.Value, DateTime.Now.Add(item.TimeSpan)); }
+                    catch { }
+                }
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                hashtable.Remove(key);
+            }
         }
 
         /// <summary>
@@ -130,8 +103,6 @@ namespace MySoft.Cache
             {
                 hashtable.Remove(cacheKey);
             }
-
-            CacheHelper.Remove(cacheKey);
 
             cache.RemoveObject(cacheKey);
         }

@@ -13,18 +13,18 @@ namespace MySoft.Cache
         /// <summary>
         /// 添加指定ID的对象(关联指定文件组)
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
         /// <param name="files"></param>
-        void AddObjectWithFileChange(string objId, object o, string[] files);
+        void AddObjectWithFileChange(string key, object o, string[] files);
 
         /// <summary>
         /// 添加指定ID的对象(关联指定键值组)
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
         /// <param name="dependKey"></param>
-        void AddObjectWithDepend(string objId, object o, string[] dependKey);
+        void AddObjectWithDepend(string key, object o, string[] dependKey);
 
         #endregion
 
@@ -33,18 +33,18 @@ namespace MySoft.Cache
         /// <summary>
         /// 添加指定ID的对象(关联指定文件组)
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
         /// <param name="files"></param>
-        void AddObjectWithFileChange(string objId, object o, TimeSpan expires, string[] files);
+        void AddObjectWithFileChange(string key, object o, TimeSpan expires, string[] files);
 
         /// <summary>
         /// 添加指定ID的对象(关联指定键值组)
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
         /// <param name="dependKey"></param>
-        void AddObjectWithDepend(string objId, object o, TimeSpan expires, string[] dependKey);
+        void AddObjectWithDepend(string key, object o, TimeSpan expires, string[] dependKey);
 
         #endregion
     }
@@ -69,9 +69,9 @@ namespace MySoft.Cache
         /// <summary>
         /// 设置过期时间
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="datetime"></param>
-        void SetExpired(string objId, DateTime datetime);
+        void SetExpired(string key, DateTime datetime);
 
         /// <summary>
         /// 到期时间
@@ -83,9 +83,9 @@ namespace MySoft.Cache
         /// <summary>
         /// 添加指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
-        void AddObject(string objId, object o);
+        void AddObject(string key, object o);
 
         #endregion
 
@@ -94,40 +94,40 @@ namespace MySoft.Cache
         /// <summary>
         /// 添加指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
         /// <param name="expires"></param>
-        void AddObject(string objId, object o, TimeSpan expires);
+        void AddObject(string key, object o, TimeSpan expires);
 
         /// <summary>
         /// 添加指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
         /// <param name="datetime"></param>
-        void AddObject(string objId, object o, DateTime datetime);
+        void AddObject(string key, object o, DateTime datetime);
 
         #endregion
 
         /// <summary>
         /// 移除指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
-        void RemoveObject(string objId);
+        /// <param name="key"></param>
+        void RemoveObject(string key);
 
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        object GetObject(string objId);
+        object GetObject(string key);
 
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        T GetObject<T>(string objId);
+        T GetObject<T>(string key);
 
         /// <summary>
         /// 返回指定ID的对象
@@ -203,22 +203,22 @@ namespace MySoft.Cache
         /// <summary>
         /// 移除指定Key的对象
         /// </summary>
-        /// <param name="objIds"></param>
-        void RemoveObjects(IList<string> objIds);
+        /// <param name="keys"></param>
+        void RemoveObjects(IList<string> keys);
 
         /// <summary>
         /// 返回指定Key的对象
         /// </summary>
-        /// <param name="objIds"></param>
+        /// <param name="keys"></param>
         /// <returns></returns>
-        IDictionary<string, object> GetObjects(IList<string> objIds);
+        IDictionary<string, object> GetObjects(IList<string> keys);
 
         /// <summary>
         /// 返回指定Key的对象
         /// </summary>
-        /// <param name="objIds"></param>
+        /// <param name="keys"></param>
         /// <returns></returns>
-        IDictionary<string, T> GetObjects<T>(IList<string> objIds);
+        IDictionary<string, T> GetObjects<T>(IList<string> keys);
 
         /// <summary>
         /// 返回指定正则表达式的对象

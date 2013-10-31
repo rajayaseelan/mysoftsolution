@@ -16,17 +16,17 @@ namespace MySoft.Cache
         /// <summary>
         /// 移除对象
         /// </summary>
-        /// <param name="objId"></param>
-        public static void Remove(string objId)
+        /// <param name="key"></param>
+        public static void Remove(string key)
         {
             lock (lockObject)
             {
-                if (objId == null || objId.Length == 0)
+                if (key == null || key.Length == 0)
                 {
                     return;
                 }
 
-                webCache.Remove(objId);
+                webCache.Remove(key);
             }
         }
 
@@ -37,9 +37,9 @@ namespace MySoft.Cache
         {
             lock (lockObject)
             {
-                foreach (string objId in AllKeys)
+                foreach (string key in AllKeys)
                 {
-                    webCache.Remove(objId);
+                    webCache.Remove(key);
                 }
             }
         }
@@ -55,14 +55,14 @@ namespace MySoft.Cache
                 lock (lockObject)
                 {
                     IDictionaryEnumerator cacheEnum = webCache.GetEnumerator();
-                    IList<string> objIds = new List<string>();
+                    IList<string> keys = new List<string>();
 
                     while (cacheEnum.MoveNext())
                     {
-                        objIds.Add(cacheEnum.Key.ToString());
+                        keys.Add(cacheEnum.Key.ToString());
                     }
 
-                    return objIds;
+                    return keys;
                 }
             }
         }
@@ -100,11 +100,11 @@ namespace MySoft.Cache
         /// <summary>
         /// 设置过期时间
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="datetime"></param>
-        public override void SetExpired(string objId, DateTime datetime)
+        public override void SetExpired(string key, DateTime datetime)
         {
-            if (objId == null || objId.Length == 0)
+            if (key == null || key.Length == 0)
             {
                 return;
             }
@@ -112,21 +112,21 @@ namespace MySoft.Cache
             lock (lockObject)
             {
                 //重新加入到缓存中
-                var value = GetObject(objId);
+                var value = GetObject(key);
                 if (value == null) return;
 
-                AddObject(objId, value, datetime);
+                AddObject(key, value, datetime);
             }
         }
 
         /// <summary>
         /// 加入当前对象到缓存中
         /// </summary>
-        /// <param name="objId">对象的键值</param>
+        /// <param name="key">对象的键值</param>
         /// <param name="o">缓存的对象</param>
-        public override void AddObject(string objId, object o)
+        public override void AddObject(string key, object o)
         {
-            if (objId == null || objId.Length == 0 || o == null)
+            if (key == null || key.Length == 0 || o == null)
             {
                 return;
             }
@@ -137,11 +137,11 @@ namespace MySoft.Cache
 
                 if (Timeout <= 0)
                 {
-                    webCache.Insert(GetInputKey(objId), o, null, System.Web.Caching.Cache.NoAbsoluteExpiration, TimeSpan.Zero, System.Web.Caching.CacheItemPriority.Normal, callBack);
+                    webCache.Insert(GetInputKey(key), o, null, System.Web.Caching.Cache.NoAbsoluteExpiration, TimeSpan.Zero, System.Web.Caching.CacheItemPriority.Normal, callBack);
                 }
                 else
                 {
-                    webCache.Insert(GetInputKey(objId), o, null, DateTime.Now.AddSeconds(Timeout), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
+                    webCache.Insert(GetInputKey(key), o, null, DateTime.Now.AddSeconds(Timeout), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
                 }
             }
         }
@@ -149,21 +149,21 @@ namespace MySoft.Cache
         /// <summary>
         /// 加入当前对象到缓存中
         /// </summary>
-        /// <param name="objId">对象的键值</param>
+        /// <param name="key">对象的键值</param>
         /// <param name="o">缓存的对象</param>
-        public override void AddObject(string objId, object o, TimeSpan expires)
+        public override void AddObject(string key, object o, TimeSpan expires)
         {
-            AddObject(objId, o, DateTime.Now.Add(expires));
+            AddObject(key, o, DateTime.Now.Add(expires));
         }
 
         /// <summary>
         /// 加入当前对象到缓存中
         /// </summary>
-        /// <param name="objId">对象的键值</param>
+        /// <param name="key">对象的键值</param>
         /// <param name="o">缓存的对象</param>
-        public override void AddObject(string objId, object o, DateTime datetime)
+        public override void AddObject(string key, object o, DateTime datetime)
         {
-            if (objId == null || objId.Length == 0 || o == null)
+            if (key == null || key.Length == 0 || o == null)
             {
                 return;
             }
@@ -172,19 +172,19 @@ namespace MySoft.Cache
             {
                 CacheItemRemovedCallback callBack = new CacheItemRemovedCallback(onRemove);
 
-                webCache.Insert(GetInputKey(objId), o, null, datetime, System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
+                webCache.Insert(GetInputKey(key), o, null, datetime, System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
             }
         }
 
         /// <summary>
         /// 加入当前对象到缓存中,并对相关文件建立依赖
         /// </summary>
-        /// <param name="objId">对象的键值</param>
+        /// <param name="key">对象的键值</param>
         /// <param name="o">缓存的对象</param>
         /// <param name="files">监视的路径文件</param>
-        public void AddObjectWithFileChange(string objId, object o, string[] files)
+        public void AddObjectWithFileChange(string key, object o, string[] files)
         {
-            if (objId == null || objId.Length == 0 || o == null)
+            if (key == null || key.Length == 0 || o == null)
             {
                 return;
             }
@@ -197,11 +197,11 @@ namespace MySoft.Cache
 
                 if (Timeout <= 0)
                 {
-                    webCache.Insert(GetInputKey(objId), o, dep, System.Web.Caching.Cache.NoAbsoluteExpiration, System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
+                    webCache.Insert(GetInputKey(key), o, dep, System.Web.Caching.Cache.NoAbsoluteExpiration, System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
                 }
                 else
                 {
-                    webCache.Insert(GetInputKey(objId), o, dep, System.DateTime.Now.AddSeconds(Timeout), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
+                    webCache.Insert(GetInputKey(key), o, dep, System.DateTime.Now.AddSeconds(Timeout), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
                 }
             }
         }
@@ -210,12 +210,12 @@ namespace MySoft.Cache
         /// <summary>
         /// 加入当前对象到缓存中,并使用依赖键
         /// </summary>
-        /// <param name="objId">对象的键值</param>
+        /// <param name="key">对象的键值</param>
         /// <param name="o">缓存的对象</param>
         /// <param name="dependKey">依赖关联的键值</param>
-        public void AddObjectWithDepend(string objId, object o, string[] dependKey)
+        public void AddObjectWithDepend(string key, object o, string[] dependKey)
         {
-            if (objId == null || objId.Length == 0 || o == null)
+            if (key == null || key.Length == 0 || o == null)
             {
                 return;
             }
@@ -228,11 +228,11 @@ namespace MySoft.Cache
 
                 if (Timeout <= 0)
                 {
-                    webCache.Insert(GetInputKey(objId), o, dep, System.Web.Caching.Cache.NoAbsoluteExpiration, System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
+                    webCache.Insert(GetInputKey(key), o, dep, System.Web.Caching.Cache.NoAbsoluteExpiration, System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
                 }
                 else
                 {
-                    webCache.Insert(GetInputKey(objId), o, dep, System.DateTime.Now.AddSeconds(Timeout), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
+                    webCache.Insert(GetInputKey(key), o, dep, System.DateTime.Now.AddSeconds(Timeout), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
                 }
             }
         }
@@ -240,12 +240,12 @@ namespace MySoft.Cache
         /// <summary>
         /// 加入当前对象到缓存中,并对相关文件建立依赖
         /// </summary>
-        /// <param name="objId">对象的键值</param>
+        /// <param name="key">对象的键值</param>
         /// <param name="o">缓存的对象</param>
         /// <param name="files">监视的路径文件</param>
-        public void AddObjectWithFileChange(string objId, object o, TimeSpan expires, string[] files)
+        public void AddObjectWithFileChange(string key, object o, TimeSpan expires, string[] files)
         {
-            if (objId == null || objId.Length == 0 || o == null)
+            if (key == null || key.Length == 0 || o == null)
             {
                 return;
             }
@@ -256,7 +256,7 @@ namespace MySoft.Cache
 
                 CacheDependency dep = new CacheDependency(files, DateTime.Now);
 
-                webCache.Insert(GetInputKey(objId), o, dep, System.DateTime.Now.Add(expires), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
+                webCache.Insert(GetInputKey(key), o, dep, System.DateTime.Now.Add(expires), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
             }
         }
 
@@ -264,12 +264,12 @@ namespace MySoft.Cache
         /// <summary>
         /// 加入当前对象到缓存中,并使用依赖键
         /// </summary>
-        /// <param name="objId">对象的键值</param>
+        /// <param name="key">对象的键值</param>
         /// <param name="o">缓存的对象</param>
         /// <param name="dependKey">依赖关联的键值</param>
-        public void AddObjectWithDepend(string objId, object o, TimeSpan expires, string[] dependKey)
+        public void AddObjectWithDepend(string key, object o, TimeSpan expires, string[] dependKey)
         {
-            if (objId == null || objId.Length == 0 || o == null)
+            if (key == null || key.Length == 0 || o == null)
             {
                 return;
             }
@@ -280,17 +280,17 @@ namespace MySoft.Cache
 
                 CacheDependency dep = new CacheDependency(null, dependKey, DateTime.Now);
 
-                webCache.Insert(GetInputKey(objId), o, dep, System.DateTime.Now.Add(expires), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
+                webCache.Insert(GetInputKey(key), o, dep, System.DateTime.Now.Add(expires), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Normal, callBack);
             }
         }
 
         /// <summary>
         /// 建立回调委托的一个实例
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="val"></param>
         /// <param name="reason"></param>
-        public void onRemove(string objId, object val, CacheItemRemovedReason reason)
+        public void onRemove(string key, object val, CacheItemRemovedReason reason)
         {
             //移除缓存事件
             switch (reason)
@@ -307,9 +307,9 @@ namespace MySoft.Cache
             }
 
             //如需要使用缓存日志,则需要使用下面代码
-            //myLogVisitor.WriteLog(this,objId,val,reason);
+            //myLogVisitor.WriteLog(this,key,val,reason);
 
-            //SimpleLog.Instance.WriteLogForDir("Cache", reason.ToString() + "：" + objId);
+            //SimpleLog.Instance.WriteLogForDir("Cache", reason.ToString() + "：" + key);
             //MemoryManager.FlushMemory();
         }
 
@@ -318,60 +318,60 @@ namespace MySoft.Cache
         /// <summary>
         /// 删除缓存对象
         /// </summary>
-        /// <param name="objId">对象的关键字</param>
-        public override void RemoveObject(string objId)
+        /// <param name="key">对象的关键字</param>
+        public override void RemoveObject(string key)
         {
-            if (objId == null || objId.Length == 0)
+            if (key == null || key.Length == 0)
             {
                 return;
             }
 
             lock (lockObject)
             {
-                webCache.Remove(GetInputKey(objId));
+                webCache.Remove(GetInputKey(key));
             }
         }
 
         /// <summary>
         /// 返回一个指定的对象
         /// </summary>
-        /// <param name="objId">对象的关键字</param>
+        /// <param name="key">对象的关键字</param>
         /// <returns>对象</returns>
-        public override object GetObject(string objId)
+        public override object GetObject(string key)
         {
-            if (objId == null || objId.Length == 0)
+            if (key == null || key.Length == 0)
             {
                 return null;
             }
 
             lock (lockObject)
             {
-                return webCache.Get(GetInputKey(objId));
+                return webCache.Get(GetInputKey(key));
             }
         }
 
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public override T GetObject<T>(string objId)
+        public override T GetObject<T>(string key)
         {
-            if (objId == null || objId.Length == 0)
+            if (key == null || key.Length == 0)
             {
                 return default(T);
             }
 
             lock (lockObject)
             {
-                return (T)GetObject(GetInputKey(objId));
+                return (T)GetObject(GetInputKey(key));
             }
         }
 
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
         public override object GetMatchObject(string regularExpression)
         {
@@ -385,7 +385,7 @@ namespace MySoft.Cache
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
         public override T GetMatchObject<T>(string regularExpression)
         {
@@ -417,15 +417,15 @@ namespace MySoft.Cache
             lock (lockObject)
             {
                 IDictionaryEnumerator cacheEnum = webCache.GetEnumerator();
-                List<string> objIds = new List<string>();
+                List<string> keys = new List<string>();
 
                 while (cacheEnum.MoveNext())
                 {
-                    objIds.Add(cacheEnum.Key.ToString());
+                    keys.Add(cacheEnum.Key.ToString());
                 }
 
-                objIds.RemoveAll(objId => !objId.StartsWith(prefix));
-                return objIds.ConvertAll<string>(objId => GetOutputKey(objId));
+                keys.RemoveAll(key => !key.StartsWith(prefix));
+                return keys.ConvertAll<string>(key => GetOutputKey(key));
             }
         }
 
@@ -480,15 +480,15 @@ namespace MySoft.Cache
                     return new List<string>();
                 }
 
-                IList<string> objIds = new List<string>();
+                IList<string> keys = new List<string>();
                 Regex regex = new Regex(regularExpression, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
 
-                foreach (var objId in GetAllKeys())
+                foreach (var key in GetAllKeys())
                 {
-                    if (regex.IsMatch(objId)) objIds.Add(objId);
+                    if (regex.IsMatch(key)) keys.Add(key);
                 }
 
-                return objIds;
+                return keys;
             }
         }
 
@@ -530,22 +530,22 @@ namespace MySoft.Cache
         {
             lock (lockObject)
             {
-                var objIds = GetKeys(regularExpression);
-                RemoveObjects(objIds);
+                var keys = GetKeys(regularExpression);
+                RemoveObjects(keys);
             }
         }
 
         /// <summary>
         /// 移除多个对象
         /// </summary>
-        /// <param name="objIds"></param>
-        public override void RemoveObjects(IList<string> objIds)
+        /// <param name="keys"></param>
+        public override void RemoveObjects(IList<string> keys)
         {
             lock (lockObject)
             {
-                foreach (string objId in objIds)
+                foreach (string key in keys)
                 {
-                    RemoveObject(GetInputKey(objId));
+                    RemoveObject(GetInputKey(key));
                 }
             }
         }
@@ -553,20 +553,20 @@ namespace MySoft.Cache
         /// <summary>
         /// 获取多个对象
         /// </summary>
-        /// <param name="objIds"></param>
+        /// <param name="keys"></param>
         /// <returns></returns>
-        public override IDictionary<string, object> GetObjects(IList<string> objIds)
+        public override IDictionary<string, object> GetObjects(IList<string> keys)
         {
             lock (lockObject)
             {
                 IDictionary<string, object> cacheData = new Dictionary<string, object>();
-                foreach (string objId in objIds)
+                foreach (string key in keys)
                 {
-                    var data = GetObject(GetInputKey(objId));
+                    var data = GetObject(GetInputKey(key));
                     if (data != null)
-                        cacheData.Add(objId, data);
+                        cacheData.Add(key, data);
                     else
-                        cacheData.Add(objId, null);
+                        cacheData.Add(key, null);
                 }
 
                 return cacheData;
@@ -577,20 +577,20 @@ namespace MySoft.Cache
         /// 获取多个对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="objIds"></param>
+        /// <param name="keys"></param>
         /// <returns></returns>
-        public override IDictionary<string, T> GetObjects<T>(IList<string> objIds)
+        public override IDictionary<string, T> GetObjects<T>(IList<string> keys)
         {
             lock (lockObject)
             {
                 IDictionary<string, T> cacheData = new Dictionary<string, T>();
-                foreach (string objId in objIds)
+                foreach (string key in keys)
                 {
-                    var data = GetObject<T>(GetInputKey(objId));
+                    var data = GetObject<T>(GetInputKey(key));
                     if (data != null)
-                        cacheData.Add(objId, data);
+                        cacheData.Add(key, data);
                     else
-                        cacheData.Add(objId, default(T));
+                        cacheData.Add(key, default(T));
                 }
 
                 return cacheData;

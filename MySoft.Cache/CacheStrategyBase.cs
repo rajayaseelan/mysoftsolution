@@ -46,27 +46,27 @@ namespace MySoft.Cache
         /// <summary>
         /// 获取输入的Key
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        internal protected string GetInputKey(string objId)
+        internal protected string GetInputKey(string key)
         {
-            if (string.IsNullOrEmpty(objId)) return objId;
-            if (objId.StartsWith(prefix)) return objId;
+            if (string.IsNullOrEmpty(key)) return key;
+            if (key.StartsWith(prefix)) return key;
 
-            return string.Format("{0}{1}", prefix, objId);
+            return string.Format("{0}{1}", prefix, key);
         }
 
         /// <summary>
         /// 获取输出的Key
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        internal protected string GetOutputKey(string objId)
+        internal protected string GetOutputKey(string key)
         {
-            if (string.IsNullOrEmpty(objId)) return objId;
-            if (!objId.StartsWith(prefix)) return objId;
+            if (string.IsNullOrEmpty(key)) return key;
+            if (!key.StartsWith(prefix)) return key;
 
-            return objId.Substring(prefix.Length);
+            return key.Substring(prefix.Length);
         }
 
         #region ICacheStrategy 成员
@@ -74,52 +74,52 @@ namespace MySoft.Cache
         /// <summary>
         /// 设置过期时间
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="datetime"></param>
-        public abstract void SetExpired(string objId, DateTime datetime);
+        public abstract void SetExpired(string key, DateTime datetime);
 
         /// <summary>
         /// 添加指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
-        public abstract void AddObject(string objId, object o);
+        public abstract void AddObject(string key, object o);
 
         /// <summary>
         /// 添加指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
         /// <param name="expires"></param>
-        public abstract void AddObject(string objId, object o, TimeSpan expires);
+        public abstract void AddObject(string key, object o, TimeSpan expires);
 
         /// <summary>
         /// 添加指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
         /// <param name="datetime"></param>
-        public abstract void AddObject(string objId, object o, DateTime datetime);
+        public abstract void AddObject(string key, object o, DateTime datetime);
 
         /// <summary>
         /// 移除指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
-        public abstract void RemoveObject(string objId);
+        /// <param name="key"></param>
+        public abstract void RemoveObject(string key);
 
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public abstract object GetObject(string objId);
+        public abstract object GetObject(string key);
 
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public abstract T GetObject<T>(string objId);
+        public abstract T GetObject<T>(string key);
 
         /// <summary>
         /// 返回指定ID的对象
@@ -193,23 +193,23 @@ namespace MySoft.Cache
         /// <summary>
         /// 移除多个对象
         /// </summary>
-        /// <param name="objIds"></param>
-        public abstract void RemoveObjects(IList<string> objIds);
+        /// <param name="keys"></param>
+        public abstract void RemoveObjects(IList<string> keys);
 
         /// <summary>
         /// 获取多个对象
         /// </summary>
-        /// <param name="objIds"></param>
+        /// <param name="keys"></param>
         /// <returns></returns>
-        public abstract IDictionary<string, object> GetObjects(IList<string> objIds);
+        public abstract IDictionary<string, object> GetObjects(IList<string> keys);
 
         /// <summary>
         /// 获取多个对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="objIds"></param>
+        /// <param name="keys"></param>
         /// <returns></returns>
-        public abstract IDictionary<string, T> GetObjects<T>(IList<string> objIds);
+        public abstract IDictionary<string, T> GetObjects<T>(IList<string> keys);
 
         /// <summary>
         /// 返回指定正则表达式的对象

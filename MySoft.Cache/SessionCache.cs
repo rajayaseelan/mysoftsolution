@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Linq;
-using System.Threading;
 
 namespace MySoft.Cache
 {
@@ -20,58 +18,25 @@ namespace MySoft.Cache
         public SessionCache(ICacheStrategy cache)
         {
             this.cache = cache;
-
-            //启动线程存储缓存
-            ThreadPool.QueueUserWorkItem(SaveCache);
         }
 
         /// <summary>
-        /// 保存Queue数据
-        /// </summary>
-        /// <param name="state"></param>
-        private void SaveCache(object state)
-        {
-            while (true)
-            {
-                if (hashtable.Count > 0)
-                {
-                    //获取CacheKey
-                    var cacheKey = string.Empty;
-
-                    try { cacheKey = hashtable.Keys.Cast<string>().FirstOrDefault(); }
-                    catch { }
-
-                    if (string.IsNullOrEmpty(cacheKey)) continue;
-
-                    try
-                    {
-                        var item = hashtable[cacheKey] as SessionItem;
-
-                        //保存值
-                        if (item != null && cache != null)
-                        {
-                            try { cache.SetExpired(item.Key, DateTime.Now.Add(item.TimeSpan)); }
-                            catch { }
-                        }
-                    }
-                    catch (Exception ex) { }
-                    finally
-                    {
-                        hashtable.Remove(cacheKey);
-                    }
-                }
-
-                //暂停1秒
-                Thread.Sleep(100);
-            }
-        }
-
-        /// <summary>
-        /// 获取值
+        /// 获取值（默认保持20分钟）
         /// </summary>
         /// <param name="cacheKey"></param>
         /// <returns></returns>
         public object Get(string cacheKey)
+        {
+            return Get(cacheKey, TimeSpan.FromMinutes(20));
+        }
+
+        /// <summary>
+        /// 获取值（指定保持时间）
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="timeSpan"></param>
+        /// <returns></returns>
+        public object Get(string cacheKey, TimeSpan timeSpan)
         {
             //如果key存在，则不保存
             if (!hashtable.ContainsKey(cacheKey))
@@ -80,21 +45,17 @@ namespace MySoft.Cache
 
                 if (value != null)
                 {
-                    //获取过期时间
-                    var timeSpanKey = string.Format("SessionCache_{0}", cacheKey);
-                    var timeSpan = CacheHelper.Get(timeSpanKey);
-
-                    if (timeSpan != null)
+                    var item = new SessionItem
                     {
-                        var item = new SessionItem
-                        {
-                            Key = cacheKey,
-                            TimeSpan = (TimeSpan)timeSpan,
-                            Value = value
-                        };
+                        Key = cacheKey,
+                        TimeSpan = (TimeSpan)timeSpan,
+                        Value = value
+                    };
 
-                        hashtable[cacheKey] = item;
-                    }
+                    hashtable[cacheKey] = item;
+
+                    //异步调用
+                    new Action<string>(AsyncRun).BeginInvoke(cacheKey, null, null);
                 }
             }
 
@@ -105,6 +66,32 @@ namespace MySoft.Cache
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// 异步调用
+        /// </summary>
+        /// <param name="key"></param>
+        private void AsyncRun(string key)
+        {
+            if (!hashtable.ContainsKey(key)) return;
+
+            try
+            {
+                var item = hashtable[key] as SessionItem;
+
+                //保存值
+                if (item != null && cache != null)
+                {
+                    try { cache.SetExpired(item.Key, DateTime.Now.Add(item.TimeSpan)); }
+                    catch { }
+                }
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                hashtable.Remove(key);
+            }
         }
 
         /// <summary>
@@ -128,10 +115,6 @@ namespace MySoft.Cache
         {
             //存入缓存
             cache.AddObject(cacheKey, cacheValue, timeSpan);
-
-            //记录过期时间
-            var timeSpanKey = string.Format("SessionCache_{0}", cacheKey);
-            CacheHelper.Insert(timeSpanKey, timeSpan, (int)TimeSpan.FromDays(1).TotalSeconds);
         }
 
         /// <summary>
@@ -144,9 +127,6 @@ namespace MySoft.Cache
             {
                 hashtable.Remove(cacheKey);
             }
-
-            var timeSpanKey = string.Format("SessionCache_{0}", cacheKey);
-            CacheHelper.Remove(timeSpanKey);
 
             cache.RemoveObject(cacheKey);
         }

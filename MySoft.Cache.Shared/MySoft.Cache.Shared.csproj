@@ -33,6 +33,10 @@
     <DocumentationFile>bin\Release\MySoft.Cache.Shared.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\CacheLib\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="SharedCache.WinServiceCommon">
       <HintPath>..\lib\SharedCache.WinServiceCommon.dll</HintPath>
     </Reference>

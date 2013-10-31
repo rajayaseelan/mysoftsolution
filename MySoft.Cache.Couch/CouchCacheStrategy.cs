@@ -38,20 +38,20 @@ namespace MySoft.Cache
         /// <summary>
         /// 实例化分布式缓存
         /// </summary>
-        /// <param name="sectionName"></param>
-        public CouchCacheStrategy(string sectionName)
-            : base(sectionName)
+        /// <param name="bucketName"></param>
+        public CouchCacheStrategy(string bucketName)
+            : base(bucketName)
         {
             //默认配置节名称为couchbase
-            if (string.IsNullOrEmpty(sectionName))
+            if (string.IsNullOrEmpty(bucketName))
             {
-                sectionName = "couchbase";
+                bucketName = "couchbase";
             }
 
-            var config = (ICouchbaseClientConfiguration)ConfigurationManager.GetSection(sectionName);
+            var config = (ICouchbaseClientConfiguration)ConfigurationManager.GetSection(bucketName);
             if (config == null)
             {
-                throw new KeyNotFoundException("未找到名称为 [" + sectionName + "] 的配置节！");
+                throw new KeyNotFoundException("未找到名称为 [" + bucketName + "] 的配置节！");
             }
 
             //实例化CouchbaseClient
@@ -63,29 +63,29 @@ namespace MySoft.Cache
         /// <summary>
         /// 设置过期时间
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="datetime"></param>
-        public override void SetExpired(string objId, DateTime datetime)
+        public override void SetExpired(string key, DateTime datetime)
         {
-            if (objId == null || objId.Length == 0)
+            if (key == null || key.Length == 0)
             {
                 return;
             }
 
             lock (lockObject)
             {
-                dataCache.Touch(GetInputKey(objId), datetime);
+                dataCache.Touch(GetInputKey(key), datetime);
             }
         }
 
         /// <summary>
         /// 添加指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
-        public override void AddObject(string objId, object o)
+        public override void AddObject(string key, object o)
         {
-            if (objId == null || objId.Length == 0 || o == null)
+            if (key == null || key.Length == 0 || o == null)
             {
                 return;
             }
@@ -94,36 +94,36 @@ namespace MySoft.Cache
             {
                 if (Timeout <= 0)
                 {
-                    dataCache.Store(StoreMode.Add, GetInputKey(objId), o);
+                    dataCache.Store(StoreMode.Add, GetInputKey(key), o);
                 }
                 else
                 {
-                    dataCache.Store(StoreMode.Add, GetInputKey(objId), o, DateTime.Now.AddSeconds(Timeout));
+                    dataCache.Store(StoreMode.Add, GetInputKey(key), o, DateTime.Now.AddSeconds(Timeout));
                 }
 
                 //处理本地缓存
-                if (localCache != null) localCache.AddObject(objId, o, localTimeSpan);
+                if (localCache != null) localCache.AddObject(key, o, localTimeSpan);
             }
         }
 
         /// <summary>
         /// 添加指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
-        public override void AddObject(string objId, object o, TimeSpan expires)
+        public override void AddObject(string key, object o, TimeSpan expires)
         {
-            AddObject(objId, o, DateTime.Now.Add(expires));
+            AddObject(key, o, DateTime.Now.Add(expires));
         }
 
         /// <summary>
         /// 添加指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <param name="o"></param>
-        public override void AddObject(string objId, object o, DateTime datetime)
+        public override void AddObject(string key, object o, DateTime datetime)
         {
-            if (objId == null || objId.Length == 0 || o == null)
+            if (key == null || key.Length == 0 || o == null)
             {
                 return;
             }
@@ -132,46 +132,46 @@ namespace MySoft.Cache
             {
                 if (Timeout > 0)
                 {
-                    dataCache.Store(StoreMode.Add, GetInputKey(objId), o, datetime);
+                    dataCache.Store(StoreMode.Add, GetInputKey(key), o, datetime);
                 }
                 else
                 {
-                    dataCache.Store(StoreMode.Add, GetInputKey(objId), o);
+                    dataCache.Store(StoreMode.Add, GetInputKey(key), o);
                 }
 
                 //处理本地缓存
-                if (localCache != null) localCache.AddObject(objId, o, localTimeSpan);
+                if (localCache != null) localCache.AddObject(key, o, localTimeSpan);
             }
         }
 
         /// <summary>
         /// 移除指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
-        public override void RemoveObject(string objId)
+        /// <param name="key"></param>
+        public override void RemoveObject(string key)
         {
-            if (objId == null || objId.Length == 0)
+            if (key == null || key.Length == 0)
             {
                 return;
             }
 
             lock (lockObject)
             {
-                dataCache.Remove(GetInputKey(objId));
+                dataCache.Remove(GetInputKey(key));
 
                 //处理本地缓存
-                if (localCache != null) localCache.RemoveObject(objId);
+                if (localCache != null) localCache.RemoveObject(key);
             }
         }
 
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public override object GetObject(string objId)
+        public override object GetObject(string key)
         {
-            if (objId == null || objId.Length == 0)
+            if (key == null || key.Length == 0)
             {
                 return null;
             }
@@ -183,16 +183,16 @@ namespace MySoft.Cache
                 //处理本地缓存
                 if (localCache != null)
                 {
-                    returnObject = localCache.GetObject(objId);
+                    returnObject = localCache.GetObject(key);
                     if (returnObject != null) return returnObject;
                 }
 
-                returnObject = dataCache.Get(GetInputKey(objId));
+                returnObject = dataCache.Get(GetInputKey(key));
 
                 //添加到本地缓存
                 if (returnObject != null && localCache != null)
                 {
-                    localCache.AddObject(objId, returnObject, localTimeSpan);
+                    localCache.AddObject(key, returnObject, localTimeSpan);
                 }
 
                 return returnObject;
@@ -202,17 +202,17 @@ namespace MySoft.Cache
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public override T GetObject<T>(string objId)
+        public override T GetObject<T>(string key)
         {
-            return (T)GetObject(objId);
+            return (T)GetObject(key);
         }
 
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
         public override object GetMatchObject(string regularExpression)
         {
@@ -222,7 +222,7 @@ namespace MySoft.Cache
         /// <summary>
         /// 返回指定ID的对象
         /// </summary>
-        /// <param name="objId"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
         public override T GetMatchObject<T>(string regularExpression)
         {
@@ -333,18 +333,18 @@ namespace MySoft.Cache
         /// <summary>
         /// 移除多个对象
         /// </summary>
-        /// <param name="objIds"></param>
-        public override void RemoveObjects(IList<string> objIds)
+        /// <param name="keys"></param>
+        public override void RemoveObjects(IList<string> keys)
         {
             lock (lockObject)
             {
-                var objIdList = new List<string>(objIds);
-                objIdList = objIdList.ConvertAll<string>(objId => GetInputKey(objId));
+                var objIdList = new List<string>(keys);
+                objIdList = objIdList.ConvertAll<string>(key => GetInputKey(key));
                 objIdList = (from item in objIdList select item).Distinct().ToList();
 
-                foreach (var objId in objIdList)
+                foreach (var key in objIdList)
                 {
-                    dataCache.Remove(objId);
+                    dataCache.Remove(key);
                 }
             }
         }
@@ -352,24 +352,24 @@ namespace MySoft.Cache
         /// <summary>
         /// 获取多个对象
         /// </summary>
-        /// <param name="objIds"></param>
+        /// <param name="keys"></param>
         /// <returns></returns>
-        public override IDictionary<string, object> GetObjects(IList<string> objIds)
+        public override IDictionary<string, object> GetObjects(IList<string> keys)
         {
             lock (lockObject)
             {
-                var objIdList = new List<string>(objIds);
-                objIdList = objIdList.ConvertAll<string>(objId => GetInputKey(objId));
+                var objIdList = new List<string>(keys);
+                objIdList = objIdList.ConvertAll<string>(key => GetInputKey(key));
                 objIdList = (from item in objIdList select item).Distinct().ToList();
 
                 var dictCache = dataCache.Get(objIdList);
                 IDictionary<string, object> cacheData = new Dictionary<string, object>();
-                foreach (var objId in objIdList)
+                foreach (var key in objIdList)
                 {
-                    if (dictCache.ContainsKey(objId))
-                        cacheData.Add(objId, dictCache[objId]);
+                    if (dictCache.ContainsKey(key))
+                        cacheData.Add(key, dictCache[key]);
                     else
-                        cacheData.Add(objId, null);
+                        cacheData.Add(key, null);
                 }
 
                 return cacheData;
@@ -380,24 +380,24 @@ namespace MySoft.Cache
         /// 获取多个对象
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="objIds"></param>
+        /// <param name="keys"></param>
         /// <returns></returns>
-        public override IDictionary<string, T> GetObjects<T>(IList<string> objIds)
+        public override IDictionary<string, T> GetObjects<T>(IList<string> keys)
         {
             lock (lockObject)
             {
-                var objIdList = new List<string>(objIds);
-                objIdList = objIdList.ConvertAll<string>(objId => GetInputKey(objId));
+                var objIdList = new List<string>(keys);
+                objIdList = objIdList.ConvertAll<string>(key => GetInputKey(key));
                 objIdList = (from item in objIdList select item).Distinct().ToList();
 
                 var dictCache = dataCache.Get(objIdList);
                 IDictionary<string, T> cacheData = new Dictionary<string, T>();
-                foreach (var objId in objIdList)
+                foreach (var key in objIdList)
                 {
-                    if (dictCache.ContainsKey(objId))
-                        cacheData.Add(objId, (T)dictCache[objId]);
+                    if (dictCache.ContainsKey(key))
+                        cacheData.Add(key, (T)dictCache[key]);
                     else
-                        cacheData.Add(objId, default(T));
+                        cacheData.Add(key, default(T));
                 }
 
                 return cacheData;
