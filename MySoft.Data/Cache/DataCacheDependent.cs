@@ -38,7 +38,7 @@ namespace MySoft.Data.Cache
             if (cacheTime > 0)
             {
                 //组合CacheKey
-                cacheKey = string.Format("{0}_{1}_{2}", connectName, typeof(T).FullName, cacheKey);
+                cacheKey = string.Format("{0}${1}${2}", connectName, typeof(T).FullName, cacheKey);
                 strategy.Insert(cacheKey, cacheValue, TimeSpan.FromSeconds(cacheTime));
             }
         }
@@ -51,7 +51,7 @@ namespace MySoft.Data.Cache
         public void RemoveCache<T>(string cacheKey)
         {
             //组合CacheKey
-            cacheKey = string.Format("{0}_{1}_{2}", connectName, typeof(T).FullName, cacheKey);
+            cacheKey = string.Format("{0}${1}${2}", connectName, typeof(T).FullName, cacheKey);
             strategy.Remove(cacheKey);
         }
         /// <summary>
@@ -64,7 +64,7 @@ namespace MySoft.Data.Cache
         public T GetCache<T>(string cacheKey)
         {
             //组合CacheKey
-            cacheKey = string.Format("{0}_{1}_{2}", connectName, typeof(T).FullName, cacheKey);
+            cacheKey = string.Format("{0}${1}${2}", connectName, typeof(T).FullName, cacheKey);
             return strategy.Get<T>(cacheKey);
         }
 

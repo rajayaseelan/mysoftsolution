@@ -98,19 +98,6 @@ namespace MySoft.RESTful.SDK
                 list.Add(string.Format("{0}={1}", p.Name, p.Value));
             }
 
-            //添加Token参数
-            if (parameter.Token != null)
-            {
-                list.Add(string.Format("tokenID={0}", parameter.Token.TokenId));
-                if (parameter.Token.Parameters.Count > 0)
-                {
-                    foreach (var p in parameter.Token.Parameters)
-                    {
-                        list.Add(string.Format("{0}={1}", p.Name, p.Value));
-                    }
-                }
-            }
-
             if (list.Count > 0)
                 return string.Format("{0}?{1}", value, string.Join("&", list.ToArray())).ToLower();
             else
@@ -167,6 +154,20 @@ namespace MySoft.RESTful.SDK
                 {
                     request.ContentType = "application/x-www-form-urlencoded";
                     request.Method = parameter.HttpMethod.ToString();
+
+                    var list = new List<string>();
+
+                    //添加Token参数
+                    if (parameter.Token != null && parameter.Token.Headers.Count > 0)
+                    {
+                        foreach (var p in parameter.Token.Headers)
+                        {
+                            list.Add(string.Format("{0}=\"{1}\"", p.Name, p.Value));
+                        }
+
+                        var value = string.Format("{0} {1}", parameter.Token.Name, string.Join(",", list.ToArray()));
+                        request.Headers.Add(parameter.Token.Key, value);
+                    }
 
                     var sb = new StringBuilder();
                     foreach (var kvp in parameter.DataObject)

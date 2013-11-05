@@ -8,41 +8,42 @@ namespace MySoft.RESTful.SDK
     public class Token
     {
         /// <summary>
-        /// TokenID
+        /// Key
         /// </summary>
-        public string TokenId { get; set; }
+        public string Key { get; set; }
+
+        /// <summary>
+        /// Name
+        /// </summary>
+        public string Name { get; set; }
 
         /// <summary>
         /// 参数集合
         /// </summary>
-        public ApiParameterCollection Parameters { get; set; }
+        public ApiParameterCollection Headers { get; set; }
 
         /// <summary>
         /// 实例化Token
         /// </summary>
-        public Token()
+        /// <param name="key"></param>
+        /// <param name="name"></param>
+        public Token(string key, string name)
         {
-            this.TokenId = Guid.NewGuid().ToString();
-            this.Parameters = new ApiParameterCollection();
-        }
-
-        /// <summary>
-        /// 实例化Token
-        /// </summary>
-        /// <param name="tokenId"></param>
-        public Token(string tokenId)
-        {
-            this.TokenId = tokenId;
-            this.Parameters = new ApiParameterCollection();
+            this.Key = key;
+            this.Name = name;
+            this.Headers = new ApiParameterCollection();
         }
 
         /// <summary>
         /// 解析一个参数
         /// </summary>
+        /// <param name="key"></param>
+        /// <param name="name"></param>
         /// <param name="urlParameter"></param>
-        public static Token Parse(string urlParameter)
+        /// <returns></returns>
+        public static Token Parse(string key, string name, string urlParameter)
         {
-            Token token = new Token();
+            Token token = new Token(key, name);
             var items = urlParameter.Split('&');
             foreach (var item in items)
             {
@@ -60,7 +61,7 @@ namespace MySoft.RESTful.SDK
         /// <returns></returns>
         public ApiParameter Find(string name)
         {
-            return this.Parameters.Find(p => p.Name == name);
+            return this.Headers.Find(p => p.Name == name);
         }
 
         /// <summary>
@@ -70,7 +71,7 @@ namespace MySoft.RESTful.SDK
         /// <param name="value"></param>
         public void AddParameter(string name, object value)
         {
-            this.Parameters.Add(name, value);
+            this.Headers.Add(name, value);
         }
 
         /// <summary>

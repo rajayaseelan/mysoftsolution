@@ -89,7 +89,7 @@ namespace MySoft.RESTful.SDK
         /// <returns></returns>
         public IServiceInterfaceType GetChannel<IServiceInterfaceType>()
         {
-            return GetChannel<IServiceInterfaceType>(new Token());
+            return GetChannel<IServiceInterfaceType>(null);
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace MySoft.RESTful.SDK
         /// <returns></returns>
         public TResult Invoke<TResult>(string name, HttpMethod method)
         {
-            return Invoke<TResult>(name, new Token(), method);
+            return Invoke<TResult>(name, (Token)null, method);
         }
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace MySoft.RESTful.SDK
         /// <returns></returns>
         public TResult Invoke<TResult>(string name, IDictionary<string, object> item, HttpMethod method)
         {
-            return Invoke<TResult>(name, item, new Token(), method);
+            return Invoke<TResult>(name, item, (Token)null, method);
         }
 
         /// <summary>
@@ -286,7 +286,7 @@ namespace MySoft.RESTful.SDK
         /// <returns></returns>
         public TResult Invoke<TResult>(string name, object item, HttpMethod method)
         {
-            return Invoke<TResult>(name, item, new Token(), method);
+            return Invoke<TResult>(name, item, (Token)null, method);
         }
 
         /// <summary>

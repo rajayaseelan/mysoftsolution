@@ -286,7 +286,7 @@ namespace MySoft.RESTful
                     SetAuthorizeContext(token, user);
 
                     //响应数据
-                    result = InvokeResponse(format, kind, method, nvget, nvpost);
+                    result = InvokeResponse(format, kind, method, token);
                 }
                 else
                 {
@@ -304,10 +304,9 @@ namespace MySoft.RESTful
         /// <param name="format"></param>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="nvget"></param>
-        /// <param name="nvpost"></param>
+        /// <param name="token"></param>
         /// <returns></returns>
-        private object InvokeResponse(ParameterFormat format, string kind, string method, NameValueCollection nvget, NameValueCollection nvpost)
+        private object InvokeResponse(ParameterFormat format, string kind, string method, AuthorizeToken token)
         {
             object result = null;
             var response = WebOperationContext.Current.OutgoingResponse;
@@ -317,7 +316,7 @@ namespace MySoft.RESTful
                 Type retType;
 
                 //响应服务
-                result = Context.Invoke(kind, method, nvget, nvpost, out retType);
+                result = Context.Invoke(kind, method, token.Parameters, token.Values, out retType);
 
                 //设置返回成功
                 response.StatusCode = HttpStatusCode.OK;
@@ -335,7 +334,7 @@ namespace MySoft.RESTful
             catch (Exception ex)
             {
                 RESTfulResult ret;
-                var errorMessage = GetErrorMessage(ex, kind, method, nvget, nvpost, out ret);
+                var errorMessage = GetErrorMessage(ex, kind, method, token.Headers, token.Values, out ret);
 
                 result = ret;
 
@@ -455,9 +454,11 @@ namespace MySoft.RESTful
         /// <param name="exception"></param>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="parameters"></param>
+        /// <param name="nvheader"></param>
+        /// <param name="nvpost"></param>
+        /// <param name="ret"></param>
         /// <returns></returns>
-        private string GetErrorMessage(Exception exception, string kind, string method, NameValueCollection nvget, NameValueCollection nvpost, out RESTfulResult ret)
+        private string GetErrorMessage(Exception exception, string kind, string method, NameValueCollection nvheader, NameValueCollection nvpost, out RESTfulResult ret)
         {
             var response = WebOperationContext.Current.OutgoingResponse;
             var request = WebOperationContext.Current.IncomingRequest;
@@ -490,7 +491,7 @@ namespace MySoft.RESTful
             //设置返回值
             ret = new RESTfulResult { Code = code, Message = errorMsg };
 
-            return GetMessage(request.Method, ret.Code, ret.Message, kind, method, nvget, nvpost);
+            return GetMessage(request.Method, ret.Code, ret.Message, kind, method, nvheader, nvpost);
         }
 
         /// <summary>
@@ -513,12 +514,12 @@ namespace MySoft.RESTful
 
             if (httpMethod.ToUpper() == "POST")
             {
-                errorMessage = string.Format("{0}\r\n\tGET Parameters:{1}\r\n\tPOST Parameters:{2}",
+                errorMessage = string.Format("{0}\r\n\tHeader Parameters:{1}\r\n\tPOST Parameters:{2}",
                                                 errorMessage, GetParameters(nvget), GetParameters(nvpost));
             }
             else
             {
-                errorMessage = string.Format("{0}\r\n\tGET Parameters:{1}", errorMessage, GetParameters(nvget));
+                errorMessage = string.Format("{0}\r\n\tHeader Parameters:{1}", errorMessage, GetParameters(nvget));
             }
 
             //加上认证的用户名

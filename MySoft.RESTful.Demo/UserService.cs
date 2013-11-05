@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections;
+using System.ComponentModel;
 
 namespace MySoft.RESTful.Demo
 {
@@ -27,7 +28,7 @@ namespace MySoft.RESTful.Demo
         /// </summary>
         /// <returns></returns>
         [PublishMethod("getuser", Description = "获取一个用户")]
-        User GetUser(string name);
+        User GetUser([Description("文档")] string name);
 
         /// <summary>
         /// 获取一组用户
@@ -41,14 +42,14 @@ namespace MySoft.RESTful.Demo
         /// </summary>
         /// <returns></returns>
         [PublishMethod("addusers", Description = "添加一组用户")]
-        int AddUsers(IList<User> users);
+        int AddUsers([Description("文档")] IList<User> users);
 
         /// <summary>
         /// 获取用户名
         /// </summary>
         /// <returns></returns>
         [PublishMethod("getusername", Description = "获取用户名")]
-        string GetUserName(int id);
+        string GetUserName([Description("文档")] int id);
     }
 
     /// <summary>
