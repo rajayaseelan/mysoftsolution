@@ -51,7 +51,7 @@ namespace MySoft
         #region GET方式
 
         /// <summary>
-        /// 读取指定的url的数据，默认缓存1分钟
+        /// 读取指定的url的数据，默认不缓存
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
