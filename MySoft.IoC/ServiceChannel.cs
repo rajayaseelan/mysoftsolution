@@ -9,7 +9,7 @@ namespace MySoft.IoC
     /// <summary>
     /// 服务通道
     /// </summary>
-    internal class ServiceChannel
+    internal class ServiceChannel : IDisposable
     {
         private IScsServerClient channel;
         private RequestMessage reqMsg;
@@ -43,14 +43,7 @@ namespace MySoft.IoC
             catch (SerializationException ex)
             {
                 //创建一个新响应消息
-                var errMsg = new ResponseMessage
-                {
-                    ServiceName = resMsg.ServiceName,
-                    MethodName = resMsg.MethodName,
-                    Parameters = resMsg.Parameters,
-                    ElapsedTime = resMsg.ElapsedTime,
-                    Error = ex
-                };
+                var errMsg = IoCHelper.GetResponse(reqMsg, ex);
 
                 //发送消息
                 SendMessage(messageId, errMsg);
@@ -86,6 +79,12 @@ namespace MySoft.IoC
                 //返回通用异常信息
                 resMsg.Error = new Exception(error.Message);
             }
+        }
+
+        public void Dispose()
+        {
+            this.channel = null;
+            this.reqMsg = null;
         }
     }
 }

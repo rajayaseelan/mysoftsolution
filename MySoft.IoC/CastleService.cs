@@ -416,10 +416,11 @@ namespace MySoft.IoC
                 var msgItem = state as MessageItem;
 
                 //实例化上下文
-                var client = new ServiceChannel(msgItem.Channel, msgItem.Request);
-
-                //发送消息
-                client.SendResponse(msgItem.MessageId, msgItem.Response);
+                using (var client = new ServiceChannel(msgItem.Channel, msgItem.Request))
+                {
+                    //发送消息
+                    client.SendResponse(msgItem.MessageId, msgItem.Response);
+                }
             }
             catch (Exception ex)
             {
