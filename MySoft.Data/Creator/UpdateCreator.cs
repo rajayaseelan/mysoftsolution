@@ -12,14 +12,6 @@ namespace MySoft.Data
         /// <summary>
         /// 创建一个新的更新器
         /// </summary>
-        public static UpdateCreator NewCreator()
-        {
-            return new UpdateCreator();
-        }
-
-        /// <summary>
-        /// 创建一个新的更新器
-        /// </summary>
         public static UpdateCreator NewCreator(string tableName)
         {
             return new UpdateCreator(tableName);
@@ -34,15 +26,6 @@ namespace MySoft.Data
         }
 
         private List<FieldValue> fvlist;
-
-        /// <summary>
-        /// 实例化UpdateCreator
-        /// </summary>
-        private UpdateCreator()
-            : base()
-        {
-            this.fvlist = new List<FieldValue>();
-        }
 
         /// <summary>
         /// 实例化UpdateCreator

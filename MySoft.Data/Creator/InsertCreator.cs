@@ -12,14 +12,6 @@ namespace MySoft.Data
         /// <summary>
         /// 创建一个新的插入器
         /// </summary>
-        public static InsertCreator NewCreator()
-        {
-            return new InsertCreator();
-        }
-
-        /// <summary>
-        /// 创建一个新的插入器
-        /// </summary>
         public static InsertCreator NewCreator(string tableName)
         {
             return new InsertCreator(tableName);
@@ -36,15 +28,6 @@ namespace MySoft.Data
         private Field identityField;
         private string sequenceName;
         private List<FieldValue> fvlist;
-
-        /// <summary>
-        /// 实例化InsertCreator
-        /// </summary>
-        private InsertCreator()
-            : base()
-        {
-            this.fvlist = new List<FieldValue>();
-        }
 
         /// <summary>
         /// 实例化InsertCreator

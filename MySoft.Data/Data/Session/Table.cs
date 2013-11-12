@@ -31,8 +31,6 @@ namespace MySoft.Data
     [Serializable]
     public class Table : ITable
     {
-        private static readonly IDictionary<Type, Table> dictTable = new Dictionary<Type, Table>();
-
         /// <summary>
         /// 实例化一个表
         /// </summary>
@@ -146,20 +144,7 @@ namespace MySoft.Data
         public static Table GetTable<T>()
             where T : Entity
         {
-            if (dictTable.ContainsKey(typeof(T)))
-            {
-                return dictTable[typeof(T)];
-            }
-            else
-            {
-                lock (dictTable)
-                {
-                    Table table = CoreHelper.CreateInstance<T>().GetTable();
-                    dictTable[typeof(T)] = table;
-                }
-
-                return dictTable[typeof(T)];
-            }
+            return EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>()).GetTable();
         }
 
         /// <summary>

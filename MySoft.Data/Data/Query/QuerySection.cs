@@ -391,7 +391,7 @@ namespace MySoft.Data
         public virtual QuerySection<TSub> SubQuery<TSub>(string aliasName)
             where TSub : Entity
         {
-            TSub entity = CoreHelper.CreateInstance<TSub>();
+            TSub entity = EntityCache<TSub>.Get(() => CoreHelper.CreateInstance<TSub>());
             var tableName = entity.GetTable().Name;
             if (aliasName != null) tableName = string.Format("__[{0}]__", aliasName);
 

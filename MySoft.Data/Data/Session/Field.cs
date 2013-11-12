@@ -1,7 +1,8 @@
+using MySoft.Data.Design;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using MySoft.Data.Design;
 
 namespace MySoft.Data
 {
@@ -686,6 +687,23 @@ namespace MySoft.Data
         }
 
         #region 函数处理
+
+        /// <summary>
+        /// 函数处理
+        /// </summary>
+        /// <param name="function"></param>
+        /// <param name="fieldNames"></param>
+        /// <returns></returns>
+        public static Field Func(string function, params string[] fieldNames)
+        {
+            Field[] fields = null;
+            if (fieldNames != null && fieldNames.Length > 0)
+            {
+                fields = fieldNames.Select(p => new Field(p)).ToArray();
+            }
+
+            return Func(function, fields);
+        }
 
         /// <summary>
         /// 函数处理

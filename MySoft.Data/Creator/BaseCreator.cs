@@ -18,16 +18,8 @@ namespace MySoft.Data
         /// <summary>
         /// 实例化TableCreator
         /// </summary>
-        protected TableCreator()
-        {
-        }
-
-        /// <summary>
-        /// 实例化TableCreator
-        /// </summary>
         /// <param name="tableName"></param>
         protected TableCreator(string tableName, string aliasName)
-            : this()
         {
             this.table = new Table(tableName).As(aliasName);
         }
@@ -37,7 +29,6 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="table"></param>
         protected TableCreator(Table table)
-            : this()
         {
             this.table = table;
         }
@@ -86,14 +77,6 @@ namespace MySoft.Data
         where TCreator : class
     {
         private IList<WhereClip> whereList;
-
-        /// <summary>
-        /// 实例化BaseCreator
-        /// </summary>
-        protected WhereCreator()
-        {
-            this.whereList = new List<WhereClip>();
-        }
 
         /// <summary>
         /// 实例化BaseCreator

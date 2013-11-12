@@ -18,7 +18,7 @@ namespace MySoft.Data
         public FieldValueCollection(IDictionary<string, object> dictValues)
         {
             fvValues = new Dictionary<Field, object>();
-            T entity = CoreHelper.CreateInstance<T>();
+            T entity = EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>());
             foreach (var kv in dictValues)
             {
                 var field = entity.As<IEntityBase>().GetField(kv.Key);

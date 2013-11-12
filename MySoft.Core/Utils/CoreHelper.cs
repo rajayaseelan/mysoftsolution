@@ -556,7 +556,6 @@ namespace MySoft
 
                 try
                 {
-                    //t = CoreHelper.CreateInstance<TOutput>();
                     if (typeof(TOutput) == typeof(TInput))
                     {
                         t = CreateInstance<TOutput>(item.GetType());

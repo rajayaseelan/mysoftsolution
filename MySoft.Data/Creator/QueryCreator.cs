@@ -23,14 +23,6 @@ namespace MySoft.Data
         /// <summary>
         /// 创建一个新的查询器（条件为全部，排序为默认)
         /// </summary>
-        public static QueryCreator NewCreator()
-        {
-            return new QueryCreator();
-        }
-
-        /// <summary>
-        /// 创建一个新的查询器（条件为全部，排序为默认)
-        /// </summary>
         public static QueryCreator NewCreator(string tableName)
         {
             return new QueryCreator(tableName, null);
@@ -57,20 +49,10 @@ namespace MySoft.Data
         private List<Field> fieldList;
 
         /// <summary>
-        /// 实例化QueryCreater
-        /// </summary>
-        private QueryCreator()
-            : base()
-        {
-            this.orderList = new List<OrderByClip>();
-            this.fieldList = new List<Field>();
-            this.joinTables = new Dictionary<string, TableJoin>();
-        }
-
-        /// <summary>
         /// 实例化QueryCreator
         /// </summary>
         /// <param name="tableName"></param>
+        /// <param name="aliasName"></param>
         private QueryCreator(string tableName, string aliasName)
             : base(tableName, aliasName)
         {

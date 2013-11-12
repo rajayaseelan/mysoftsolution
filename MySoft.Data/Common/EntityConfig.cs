@@ -203,4 +203,39 @@ namespace MySoft.Data
             return field;
         }
     }
+
+    /// <summary>
+    /// Entity cache
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    internal static class EntityCache<T>
+        where T : Entity
+    {
+        private static IDictionary<Type, T> m_cache = new Dictionary<Type, T>();
+
+        public static T Get(Func<T> func)
+        {
+            var key = typeof(T);
+
+            lock (m_cache)
+            {
+                if (m_cache.ContainsKey(key))
+                {
+                    return m_cache[key];
+                }
+            }
+
+            T value = func();
+
+            if (value != null)
+            {
+                lock (m_cache)
+                {
+                    m_cache[key] = value;
+                }
+            }
+
+            return value;
+        }
+    }
 }

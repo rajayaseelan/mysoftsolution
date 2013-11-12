@@ -39,7 +39,6 @@ namespace MySoft.Data
 
                 try
                 {
-                    //t = CoreHelper.CreateInstance<TOutput>();
                     if (typeof(TOutput) == typeof(TInput))
                     {
                         t = CoreHelper.CreateInstance<TOutput>(obj.GetType());
@@ -270,7 +269,7 @@ namespace MySoft.Data
         {
             WhereClip where = null;
 
-            List<FieldValue> list = CoreHelper.CreateInstance<T>().GetFieldValues();
+            List<FieldValue> list = EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>()).GetFieldValues();
             int pkCount = list.FindAll(p => p.IsPrimaryKey).Count;
             if (pkCount == 0) return where;
 

@@ -12,14 +12,6 @@ namespace MySoft.Data
         /// <summary>
         /// 创建一个新的删除器
         /// </summary>
-        public static DeleteCreator NewCreator()
-        {
-            return new DeleteCreator();
-        }
-
-        /// <summary>
-        /// 创建一个新的删除器
-        /// </summary>
         public static DeleteCreator NewCreator(string tableName)
         {
             return new DeleteCreator(tableName);
@@ -31,14 +23,6 @@ namespace MySoft.Data
         public static DeleteCreator NewCreator(Table table)
         {
             return new DeleteCreator(table);
-        }
-
-        /// <summary>
-        /// 实例化DeleteCreator
-        /// </summary>
-        private DeleteCreator()
-            : base()
-        {
         }
 
         /// <summary>

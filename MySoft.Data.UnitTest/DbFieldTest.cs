@@ -103,7 +103,7 @@ namespace MySoft.Data.UnitTest
         [TestMethod]
         public void QueryCreatorTest()
         {
-            var qc = QueryCreator.NewCreator().From("document")
+            var qc = QueryCreator.NewCreator("document")
                 .Join("document_attr", "document.did = document_attr.did")
                 .Join("document_content", "document.did = document_content.did")
                 .AddField("document", "*")
