@@ -140,6 +140,18 @@ namespace MySoft.Data
         /// <summary>
         /// 返回一个Table实例
         /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static Table GetTable<T>(T t)
+            where T : Entity
+        {
+            if (t == null) return null;
+            return t.GetTable();
+        }
+
+        /// <summary>
+        /// 返回一个Table实例
+        /// </summary>
         /// <returns></returns>
         public static Table GetTable<T>()
             where T : Entity
