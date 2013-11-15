@@ -4,6 +4,49 @@ using System.Collections.Generic;
 namespace MySoft.Data
 {
     /// <summary>
+    /// 查询创建器
+    /// </summary>
+    [Serializable]
+    public class QueryCreator<T> : QueryCreator, IQueryCreator<T>
+        where T : Entity
+    {
+        private QueryCreator(Table table) : base(table) { }
+
+        /// <summary>
+        /// 创建一个新的更新器
+        /// </summary>
+        public static QueryCreator<T> NewCreator()
+        {
+            return new QueryCreator<T>(Table.GetTable<T>());
+        }
+
+        /// <summary>
+        /// 关联表信息
+        /// </summary>
+        /// <typeparam name="TJoin"></typeparam>
+        /// <param name="where"></param>
+        /// <returns></returns>
+        public QueryCreator<T> Join<TJoin>(WhereClip where)
+            where TJoin : Entity
+        {
+            return base.Join(Table.GetTable<TJoin>(), where) as QueryCreator<T>;
+        }
+
+        /// <summary>
+        /// 关联表信息
+        /// </summary>
+        /// <typeparam name="TJoin"></typeparam>
+        /// <param name="joinType"></param>
+        /// <param name="where"></param>
+        /// <returns></returns>
+        public QueryCreator<T> Join<TJoin>(JoinType joinType, WhereClip where)
+            where TJoin : Entity
+        {
+            return base.Join(joinType, Table.GetTable<TJoin>(), where) as QueryCreator<T>;
+        }
+    }
+
+    /// <summary>
     /// TableJoin
     /// </summary>
     [Serializable]
@@ -65,7 +108,7 @@ namespace MySoft.Data
         /// 实例化QueryCreator
         /// </summary>
         /// <param name="table"></param>
-        private QueryCreator(Table table)
+        protected QueryCreator(Table table)
             : base(table)
         {
             this.orderList = new List<OrderByClip>();

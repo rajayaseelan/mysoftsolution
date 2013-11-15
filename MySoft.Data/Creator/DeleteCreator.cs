@@ -7,6 +7,24 @@ namespace MySoft.Data
     /// 删除创建器
     /// </summary>
     [Serializable]
+    public class DeleteCreator<T> : DeleteCreator, IDeleteCreator<T>
+        where T : Entity
+    {
+        private DeleteCreator(Table table) : base(table) { }
+
+        /// <summary>
+        /// 创建一个新的更新器
+        /// </summary>
+        public static DeleteCreator<T> NewCreator()
+        {
+            return new DeleteCreator<T>(Table.GetTable<T>());
+        }
+    }
+
+    /// <summary>
+    /// 删除创建器
+    /// </summary>
+    [Serializable]
     public class DeleteCreator : WhereCreator<DeleteCreator>, IDeleteCreator
     {
         /// <summary>
@@ -38,7 +56,7 @@ namespace MySoft.Data
         /// 实例化DeleteCreator
         /// </summary>
         /// <param name="table"></param>
-        private DeleteCreator(Table table)
+        protected DeleteCreator(Table table)
             : base(table)
         {
         }

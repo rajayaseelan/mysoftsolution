@@ -5,14 +5,7 @@ using System.Text;
 
 namespace MySoft.Data
 {
-    interface ITableCreator<TCreator>
-        where TCreator : class
-    {
-        TCreator From(Table table);
-        TCreator From(string tableName);
-    }
-
-    interface IWhereCreator<TCreator> : ITableCreator<TCreator>
+    interface IWhereCreator<TCreator>
         where TCreator : class
     {
         TCreator AddWhere(Field field, object value);

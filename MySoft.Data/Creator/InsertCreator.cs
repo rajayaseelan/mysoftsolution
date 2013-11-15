@@ -7,6 +7,52 @@ namespace MySoft.Data
     /// 插入创建器
     /// </summary>
     [Serializable]
+    public class InsertCreator<T> : InsertCreator, IInsertCreator<T>
+        where T : Entity
+    {
+        private InsertCreator(Table table) : base(table) { }
+
+        /// <summary>
+        /// 创建一个新的更新器
+        /// </summary>
+        public static InsertCreator<T> NewCreator()
+        {
+            return new InsertCreator<T>(Table.GetTable<T>());
+        }
+
+        #region 设置表信息
+
+        /// <summary>
+        /// 设置实体信息
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public InsertCreator<T> Set(T entity)
+        {
+            //获取需要插入的值
+            this.fvlist = entity.GetFieldValues();
+            this.fvlist.RemoveAll(fv => fv.IsChanged);
+
+            this.sequenceName = entity.SequenceName;
+
+            this.fvlist.ForEach(fv =>
+            {
+                if (fv.IsIdentity)
+                {
+                    this.identityField = fv.Field;
+                }
+            });
+
+            return this as InsertCreator<T>;
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// 插入创建器
+    /// </summary>
+    [Serializable]
     public class InsertCreator : TableCreator<InsertCreator>, IInsertCreator
     {
         /// <summary>
@@ -25,9 +71,9 @@ namespace MySoft.Data
             return new InsertCreator(table);
         }
 
-        private Field identityField;
-        private string sequenceName;
-        private List<FieldValue> fvlist;
+        protected Field identityField;
+        protected string sequenceName;
+        protected List<FieldValue> fvlist;
 
         /// <summary>
         /// 实例化InsertCreator
@@ -43,7 +89,7 @@ namespace MySoft.Data
         /// 实例化InsertCreator
         /// </summary>
         /// <param name="table"></param>
-        private InsertCreator(Table table)
+        protected InsertCreator(Table table)
             : base(table)
         {
             this.fvlist = new List<FieldValue>();
@@ -79,35 +125,6 @@ namespace MySoft.Data
             {
                 return fvlist;
             }
-        }
-
-        #endregion
-
-        #region 设置表信息
-
-        /// <summary>
-        /// 设置实体信息
-        /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public InsertCreator SetEntity<T>(T entity)
-            where T : Entity
-        {
-            //获取需要插入的值
-            this.fvlist = entity.GetFieldValues();
-            this.fvlist.RemoveAll(fv => fv.IsChanged);
-
-            this.sequenceName = entity.SequenceName;
-
-            this.fvlist.ForEach(fv =>
-            {
-                if (fv.IsIdentity)
-                {
-                    this.identityField = fv.Field;
-                }
-            });
-
-            return this.From(Table.GetTable<T>());
         }
 
         #endregion

@@ -2,6 +2,12 @@
 
 namespace MySoft.Data
 {
+    interface IUpdateCreator<T> : IUpdateCreator
+        where T : Entity
+    {
+        UpdateCreator<T> Set(T entity, bool useKeyWhere);
+    }
+
     interface IUpdateCreator : IWhereCreator<UpdateCreator>
     {
         UpdateCreator AddUpdate(IDictionary<string, object> dict);
@@ -12,6 +18,5 @@ namespace MySoft.Data
         UpdateCreator AddUpdate(Field[] fields, object[] values);
         UpdateCreator RemoveUpdate(params string[] fieldNames);
         UpdateCreator RemoveUpdate(params Field[] fields);
-        UpdateCreator SetEntity<T>(T entity, bool useKeyWhere) where T : Entity;
     }
 }

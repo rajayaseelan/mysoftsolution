@@ -1,6 +1,13 @@
 ﻿
 namespace MySoft.Data
 {
+    interface IQueryCreator<T> : IQueryCreator
+        where T : Entity
+    {
+        QueryCreator<T> Join<TJoin>(WhereClip where) where TJoin : Entity;
+        QueryCreator<T> Join<TJoin>(JoinType joinType, WhereClip where) where TJoin : Entity;
+    }
+
     interface IQueryCreator : IWhereCreator<QueryCreator>
     {
         QueryCreator AddField(string tableName, string fieldName);

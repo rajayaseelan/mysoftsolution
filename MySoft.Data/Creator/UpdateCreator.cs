@@ -6,6 +6,54 @@ namespace MySoft.Data
     /// <summary>
     /// 更新创建器
     /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [Serializable]
+    public class UpdateCreator<T> : UpdateCreator, IUpdateCreator<T>
+        where T : Entity
+    {
+        private UpdateCreator(Table table) : base(table) { }
+
+        /// <summary>
+        /// 创建一个新的更新器
+        /// </summary>
+        public static UpdateCreator<T> NewCreator()
+        {
+            return new UpdateCreator<T>(Table.GetTable<T>());
+        }
+
+        #region 设置表信息
+
+        /// <summary>
+        /// 设置表和实体信息
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="useKeyWhere"></param>
+        /// <returns></returns>
+        public UpdateCreator<T> Set(T entity, bool useKeyWhere)
+        {
+            //获取需要更新的值
+            this.fvlist = entity.GetFieldValues();
+            this.fvlist.RemoveAll(fv => !fv.IsChanged || fv.IsIdentity || fv.IsPrimaryKey);
+
+            if (useKeyWhere)
+            {
+                WhereClip where = DataHelper.GetPkWhere<T>(base.table, entity);
+
+                //返回加入值及条件的对象
+                return this.AddWhere(where) as UpdateCreator<T>;
+            }
+            else
+            {
+                return this as UpdateCreator<T>;
+            }
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// 更新创建器
+    /// </summary>
     [Serializable]
     public class UpdateCreator : WhereCreator<UpdateCreator>, IUpdateCreator
     {
@@ -25,7 +73,7 @@ namespace MySoft.Data
             return new UpdateCreator(table);
         }
 
-        private List<FieldValue> fvlist;
+        protected List<FieldValue> fvlist;
 
         /// <summary>
         /// 实例化UpdateCreator
@@ -41,7 +89,7 @@ namespace MySoft.Data
         /// 实例化UpdateCreator
         /// </summary>
         /// <param name="table"></param>
-        private UpdateCreator(Table table)
+        protected UpdateCreator(Table table)
             : base(table)
         {
             this.fvlist = new List<FieldValue>();
@@ -63,37 +111,6 @@ namespace MySoft.Data
             get
             {
                 return fvlist.ConvertAll<object>(fv => { return fv.Value; }).ToArray();
-            }
-        }
-
-        #endregion
-
-        #region 设置表信息
-
-        /// <summary>
-        /// 设置表和实体信息
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entity"></param>
-        /// <param name="useKeyWhere"></param>
-        /// <returns></returns>
-        public UpdateCreator SetEntity<T>(T entity, bool useKeyWhere)
-            where T : Entity
-        {
-            //获取需要更新的值
-            this.fvlist = entity.GetFieldValues();
-            this.fvlist.RemoveAll(fv => !fv.IsChanged || fv.IsIdentity || fv.IsPrimaryKey);
-
-            if (useKeyWhere)
-            {
-                WhereClip where = DataHelper.GetPkWhere<T>(entity.GetTable(), entity);
-
-                //返回加入值及条件的对象
-                return this.From(Table.GetTable<T>()).AddWhere(where);
-            }
-            else
-            {
-                return this.From(Table.GetTable<T>());
             }
         }
 

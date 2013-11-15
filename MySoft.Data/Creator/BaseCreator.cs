@@ -10,10 +10,10 @@ namespace MySoft.Data
     /// </summary>
     /// <typeparam name="TCreator"></typeparam>
     [Serializable]
-    public abstract class TableCreator<TCreator> : ITableCreator<TCreator>
+    public abstract class TableCreator<TCreator>
         where TCreator : class
     {
-        private Table table;
+        protected Table table;
 
         /// <summary>
         /// 实例化TableCreator
@@ -43,30 +43,6 @@ namespace MySoft.Data
                 return table;
             }
         }
-
-        #region 设置表信息
-
-        /// <summary>
-        /// 设置表名
-        /// </summary>
-        /// <param name="tableName"></param>
-        public TCreator From(string tableName)
-        {
-            this.table = new Table(tableName);
-            return this as TCreator;
-        }
-
-        /// <summary>
-        /// 设置表信息
-        /// </summary>
-        /// <param name="table"></param>
-        public TCreator From(Table table)
-        {
-            this.table = table;
-            return this as TCreator;
-        }
-
-        #endregion
     }
 
     /// <summary>
