@@ -16,6 +16,8 @@ namespace MySoft.RESTful.Web
     {
         protected override AuthorizeUser Authorize(AuthorizeToken token)
         {
+            throw new AuthorizeException("fsdfasdf");
+
             return new AuthorizeUser
             {
                 UserName = "my181"

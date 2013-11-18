@@ -70,7 +70,7 @@ namespace MySoft.RESTful
             }
             else
             {
-                string result = GetResponseString(ParameterFormat.Json, kind, method, query, null);
+                string result = GetResponseString(ParameterFormat.Json, kind, method, null);
                 result = string.Format("{0}({1});", jsoncallback, result ?? "{}");
                 return new MemoryStream(Encoding.UTF8.GetBytes(result));
             }
@@ -124,7 +124,7 @@ namespace MySoft.RESTful
             }
             else
             {
-                result = GetResponseString(ParameterFormat.Jsonp, kind, method, query, null);
+                result = GetResponseString(ParameterFormat.Jsonp, kind, method, null);
                 response.ContentType = "text/javascript;charset=utf-8";
                 result = string.Format("{0}({1});", callback, result ?? "{}");
             }
@@ -191,9 +191,8 @@ namespace MySoft.RESTful
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
-            var query = request.UriTemplateMatch.QueryParameters;
 
-            NameValueCollection nvs = null;
+            NameValueCollection post = null;
             if (stream != null)
             {
                 //接收流内部数据
@@ -201,10 +200,10 @@ namespace MySoft.RESTful
                 string streamValue = sr.ReadToEnd();
 
                 //转换成NameValueCollection
-                nvs = ParameterHelper.ConvertCollection(streamValue);
+                post = ParameterHelper.ConvertCollection(streamValue);
             }
 
-            string result = GetResponseString(format, kind, method, query, nvs);
+            string result = GetResponseString(format, kind, method, post);
             if (string.IsNullOrEmpty(result)) return new MemoryStream();
 
             //转换成buffer
@@ -234,13 +233,12 @@ namespace MySoft.RESTful
             return new MemoryStream(buffer);
         }
 
-        private string GetResponseString(ParameterFormat format, string kind, string method, NameValueCollection nvget, NameValueCollection nvpost)
+        private string GetResponseString(ParameterFormat format, string kind, string method, NameValueCollection post)
         {
             var request = WebOperationContext.Current.IncomingRequest;
             var response = WebOperationContext.Current.OutgoingResponse;
 
-            if (nvget == null) nvget = request.UriTemplateMatch.QueryParameters;
-            if (nvpost == null) nvpost = new NameValueCollection();
+            if (post == null) post = new NameValueCollection();
 
             if (format == ParameterFormat.Json)
                 response.ContentType = "application/json;charset=utf-8";
@@ -268,8 +266,8 @@ namespace MySoft.RESTful
                                 RequestUri = GetRequestUri(),
                                 Method = request.Method,
                                 Headers = request.Headers,
-                                Parameters = nvget,
-                                Values = nvpost,
+                                Parameters = request.UriTemplateMatch.QueryParameters,
+                                Values = post,
                                 Cookies = GetCookies(),
                                 AuthorizeType = Context.IsAuthorized(kind, method)
                             };
@@ -334,7 +332,7 @@ namespace MySoft.RESTful
             catch (Exception ex)
             {
                 RESTfulResult ret;
-                var errorMessage = GetErrorMessage(ex, kind, method, token.Headers, token.Values, out ret);
+                var errorMessage = GetErrorMessage(ex, kind, method, token, out ret);
 
                 result = ret;
 
@@ -429,7 +427,7 @@ namespace MySoft.RESTful
             //未认证写错误日志
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var message = GetMessage(request.Method, ret.Code, ret.Message, kind, method, token.Parameters, token.Values);
+                var message = GetMessage(request.Method, ret.Code, ret.Message, kind, method, token);
 
                 SimpleLog.Instance.WriteLogForDir("AuthError", new Exception(message, innerException));
             }
@@ -454,11 +452,10 @@ namespace MySoft.RESTful
         /// <param name="exception"></param>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="nvheader"></param>
-        /// <param name="nvpost"></param>
+        /// <param name="token"></param>
         /// <param name="ret"></param>
         /// <returns></returns>
-        private string GetErrorMessage(Exception exception, string kind, string method, NameValueCollection nvheader, NameValueCollection nvpost, out RESTfulResult ret)
+        private string GetErrorMessage(Exception exception, string kind, string method, AuthorizeToken token, out RESTfulResult ret)
         {
             var response = WebOperationContext.Current.OutgoingResponse;
             var request = WebOperationContext.Current.IncomingRequest;
@@ -491,7 +488,7 @@ namespace MySoft.RESTful
             //设置返回值
             ret = new RESTfulResult { Code = code, Message = errorMsg };
 
-            return GetMessage(request.Method, ret.Code, ret.Message, kind, method, nvheader, nvpost);
+            return GetMessage(request.Method, ret.Code, ret.Message, kind, method, token);
         }
 
         /// <summary>
@@ -502,24 +499,28 @@ namespace MySoft.RESTful
         /// <param name="message"></param>
         /// <param name="kind"></param>
         /// <param name="method"></param>
-        /// <param name="nvget"></param>
-        /// <param name="nvpost"></param>
+        /// <param name="token"></param>
         /// <returns></returns>
-        private string GetMessage(string httpMethod, int code, string message, string kind, string method, NameValueCollection nvget, NameValueCollection nvpost)
+        private string GetMessage(string httpMethod, int code, string message, string kind, string method, AuthorizeToken token)
         {
             var errorMessage = string.Format("\r\n\tCode:[{0}]\r\n\tError:[{1}]\r\n\tMethod:[{2}.{3}]", code, message, kind, method);
 
             //请求地址
             errorMessage = string.Format("{0}\r\n\tRequest Uri:{1}", errorMessage, GetRequestUri());
 
+            var header = token.Headers;
+            var get = token.Parameters;
+            var post = token.Values;
+
             if (httpMethod.ToUpper() == "POST")
             {
-                errorMessage = string.Format("{0}\r\n\tHeader Parameters:{1}\r\n\tPOST Parameters:{2}",
-                                                errorMessage, GetParameters(nvget), GetParameters(nvpost));
+                errorMessage = string.Format("{0}\r\n\tHeader Parameters:{1}\r\n\tGET Parameters:{2}\r\n\tPOST Parameters:{3}",
+                                            errorMessage, GetParameters(header), GetParameters(get), GetParameters(post));
             }
             else
             {
-                errorMessage = string.Format("{0}\r\n\tHeader Parameters:{1}", errorMessage, GetParameters(nvget));
+                errorMessage = string.Format("{0}\r\n\tHeader Parameters:{1}\r\n\tGET Parameters:{2}",
+                                            errorMessage, GetParameters(header), GetParameters(get));
             }
 
             //加上认证的用户名
