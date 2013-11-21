@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using System.Reflection;
+﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace MySoft.PlatformService.WinForm
 {

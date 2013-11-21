@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
+﻿using MySoft.Logger;
+using System;
 using System.Threading;
-using MySoft.Logger;
+using System.Windows.Forms;
 
 namespace MySoft.PlatformService.WinForm
 {

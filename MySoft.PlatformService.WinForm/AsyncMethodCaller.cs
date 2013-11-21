@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MySoft.IoC.Messages;
+﻿using MySoft.IoC.Messages;
+using System;
 
 namespace MySoft.PlatformService.WinForm
 {

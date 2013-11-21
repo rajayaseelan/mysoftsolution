@@ -14,7 +14,6 @@
 //  Changed by R. Lelieveld, SimVA GmbH.
 //
 // ////////////////////////////////////////////////////////////////////////////
-using System;
 using System.Collections;
 
 namespace ListControls

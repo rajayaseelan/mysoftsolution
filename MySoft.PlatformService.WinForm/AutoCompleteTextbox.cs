@@ -1,11 +1,9 @@
 ﻿namespace MySoft.PlatformService.WinForm
 {
     using System;
-    using System.Collections;           // if you would like to use ArrayList insted
+    // if you would like to use ArrayList insted
     using System.Collections.Generic;   // here we use Generic Type List<string>
-    using System.Diagnostics;
     using System.Drawing;
-    using System.Linq;
     using System.Windows.Forms;
 
     // the component is derived from a TextBox 

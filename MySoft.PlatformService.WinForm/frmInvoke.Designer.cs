@@ -40,6 +40,9 @@
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.label11 = new System.Windows.Forms.Label();
             this.plParameters = new System.Windows.Forms.Panel();
             this.lblMethodName = new System.Windows.Forms.Label();
             this.lblServiceName = new System.Windows.Forms.Label();
@@ -75,15 +78,15 @@
             this.panel1.Controls.Add(this.button2);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 392);
+            this.panel1.Location = new System.Drawing.Point(0, 466);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(732, 48);
+            this.panel1.Size = new System.Drawing.Size(834, 48);
             this.panel1.TabIndex = 0;
             // 
             // numericUpDown1
             // 
             this.numericUpDown1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.numericUpDown1.Location = new System.Drawing.Point(468, 14);
+            this.numericUpDown1.Location = new System.Drawing.Point(570, 14);
             this.numericUpDown1.Maximum = new decimal(new int[] {
             60,
             0,
@@ -110,7 +113,7 @@
             this.checkBox1.AutoSize = true;
             this.checkBox1.Checked = true;
             this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox1.Location = new System.Drawing.Point(423, 17);
+            this.checkBox1.Location = new System.Drawing.Point(525, 17);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(108, 16);
             this.checkBox1.TabIndex = 3;
@@ -141,7 +144,7 @@
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button2.Location = new System.Drawing.Point(645, 13);
+            this.button2.Location = new System.Drawing.Point(747, 13);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 1;
@@ -152,7 +155,7 @@
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(552, 13);
+            this.button1.Location = new System.Drawing.Point(654, 13);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(87, 23);
             this.button1.TabIndex = 0;
@@ -170,6 +173,9 @@
             // splitContainer1.Panel1
             // 
             this.splitContainer1.Panel1.BackColor = System.Drawing.SystemColors.Window;
+            this.splitContainer1.Panel1.Controls.Add(this.linkLabel1);
+            this.splitContainer1.Panel1.Controls.Add(this.comboBox1);
+            this.splitContainer1.Panel1.Controls.Add(this.label11);
             this.splitContainer1.Panel1.Controls.Add(this.plParameters);
             this.splitContainer1.Panel1.Controls.Add(this.lblMethodName);
             this.splitContainer1.Panel1.Controls.Add(this.lblServiceName);
@@ -180,9 +186,43 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
-            this.splitContainer1.Size = new System.Drawing.Size(732, 392);
-            this.splitContainer1.SplitterDistance = 342;
+            this.splitContainer1.Size = new System.Drawing.Size(834, 466);
+            this.splitContainer1.SplitterDistance = 334;
             this.splitContainer1.TabIndex = 1;
+            // 
+            // linkLabel1
+            // 
+            this.linkLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.LinkColor = System.Drawing.Color.Green;
+            this.linkLabel1.Location = new System.Drawing.Point(233, 438);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(77, 12);
+            this.linkLabel1.TabIndex = 18;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "设置JSON数据";
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(98, 433);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(119, 20);
+            this.comboBox1.TabIndex = 17;
+            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            // 
+            // label11
+            // 
+            this.label11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(26, 437);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(77, 12);
+            this.label11.TabIndex = 16;
+            this.label11.Text = "服务器节点：";
             // 
             // plParameters
             // 
@@ -192,7 +232,7 @@
             this.plParameters.AutoScroll = true;
             this.plParameters.Location = new System.Drawing.Point(25, 159);
             this.plParameters.Name = "plParameters";
-            this.plParameters.Size = new System.Drawing.Size(293, 216);
+            this.plParameters.Size = new System.Drawing.Size(285, 257);
             this.plParameters.TabIndex = 1;
             // 
             // lblMethodName
@@ -201,7 +241,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblMethodName.Location = new System.Drawing.Point(23, 89);
             this.lblMethodName.Name = "lblMethodName";
-            this.lblMethodName.Size = new System.Drawing.Size(295, 42);
+            this.lblMethodName.Size = new System.Drawing.Size(287, 42);
             this.lblMethodName.TabIndex = 0;
             this.lblMethodName.Text = "label1";
             this.toolTip1.SetToolTip(this.lblMethodName, "双击复制内容到剪切板");
@@ -213,7 +253,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblServiceName.Location = new System.Drawing.Point(23, 36);
             this.lblServiceName.Name = "lblServiceName";
-            this.lblServiceName.Size = new System.Drawing.Size(295, 28);
+            this.lblServiceName.Size = new System.Drawing.Size(287, 28);
             this.lblServiceName.TabIndex = 0;
             this.lblServiceName.Text = "label1";
             this.toolTip1.SetToolTip(this.lblServiceName, "双击复制内容到剪切板");
@@ -258,7 +298,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(386, 392);
+            this.tabControl1.Size = new System.Drawing.Size(496, 466);
             this.tabControl1.TabIndex = 2;
             // 
             // tabPage1
@@ -267,7 +307,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Size = new System.Drawing.Size(378, 366);
+            this.tabPage1.Size = new System.Drawing.Size(488, 440);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "JSON数据";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -280,7 +320,7 @@
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(378, 366);
+            this.richTextBox1.Size = new System.Drawing.Size(488, 440);
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = "";
             // 
@@ -290,7 +330,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Size = new System.Drawing.Size(378, 366);
+            this.tabPage2.Size = new System.Drawing.Size(488, 440);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "表格数据";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -324,7 +364,7 @@
             this.gridDataQuery.Location = new System.Drawing.Point(0, 0);
             this.gridDataQuery.Name = "gridDataQuery";
             this.gridDataQuery.RowTemplate.Height = 23;
-            this.gridDataQuery.Size = new System.Drawing.Size(378, 366);
+            this.gridDataQuery.Size = new System.Drawing.Size(488, 440);
             this.gridDataQuery.TabIndex = 2;
             this.gridDataQuery.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.gridDataQuery_RowPostPaint);
             // 
@@ -334,7 +374,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(378, 366);
+            this.tabPage3.Size = new System.Drawing.Size(488, 440);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "HTML内容";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -345,7 +385,7 @@
             this.webBrowser1.Location = new System.Drawing.Point(0, 0);
             this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
             this.webBrowser1.Name = "webBrowser1";
-            this.webBrowser1.Size = new System.Drawing.Size(378, 366);
+            this.webBrowser1.Size = new System.Drawing.Size(488, 440);
             this.webBrowser1.TabIndex = 0;
             // 
             // frmInvoke
@@ -354,7 +394,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.button2;
-            this.ClientSize = new System.Drawing.Size(732, 440);
+            this.ClientSize = new System.Drawing.Size(834, 514);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -403,5 +443,8 @@
         private System.Windows.Forms.WebBrowser webBrowser1;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.LinkLabel linkLabel1;
     }
 }

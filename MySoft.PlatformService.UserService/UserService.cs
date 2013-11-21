@@ -6,11 +6,12 @@ using System.Threading;
 using MySoft.IoC;
 using MySoft.IoC.Aspect;
 using System.Collections.Specialized;
+using Castle.Core;
 
 namespace MySoft.PlatformService.UserService
 {
-    //[AspectProxy(typeof(AspectLog))]
-    public class UserService : IUserService, IInitializable, IStartable
+    [AspectProxy(typeof(AspectLog))]
+    public class UserService : TypeInitializable, IUserService
     {
         //private DateTime startTime;
         //public UserService()
@@ -187,26 +188,10 @@ namespace MySoft.PlatformService.UserService
         /// <summary>
         /// 初始化
         /// </summary>
-        public void Initialize()
+        protected override void Initialize()
         {
             //throw new NotImplementedException();
             Console.WriteLine("{0}: Initialize...", DateTime.Now);
-        }
-
-        #endregion
-
-        #region IStartable 成员
-
-        public void Start()
-        {
-            //throw new NotImplementedException();
-            //Console.WriteLine("{0}: Start...", DateTime.Now);
-        }
-
-        public void Stop()
-        {
-            //throw new NotImplementedException();
-            //Console.WriteLine("{0}: Stop...", DateTime.Now);
         }
 
         #endregion

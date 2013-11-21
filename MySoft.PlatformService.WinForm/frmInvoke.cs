@@ -13,6 +13,8 @@ using System.Windows.Forms;
 
 namespace MySoft.PlatformService.WinForm
 {
+    public delegate void JsonCallback(string json);
+
     public partial class frmInvoke : Form
     {
         private bool isReflection;
@@ -54,7 +56,13 @@ namespace MySoft.PlatformService.WinForm
 
         private void frmInvoke_Load(object sender, EventArgs e)
         {
-            this.Text += string.Format("【当前服务器节点({0}:{1})】", node.IP, node.Port);
+            var nodes = CastleFactory.Create().GetServerNodes();
+            var nodeKey = node.Key;
+
+            comboBox1.DisplayMember = "Key";
+            comboBox1.ValueMember = "Key";
+            comboBox1.DataSource = nodes;
+            comboBox1.SelectedIndex = nodes.ToList().FindIndex(p => p.Key == nodeKey);
 
             //自动生成列
             gridDataQuery.AutoGenerateColumns = true;
@@ -93,7 +101,6 @@ namespace MySoft.PlatformService.WinForm
                     l.AutoSize = false;
                     //l.BorderStyle = BorderStyle.Fixed3D;
                     l.TextAlign = ContentAlignment.MiddleLeft;
-                    p.Controls.Add(l);
 
                     if (!parameter.IsPrimitive || parameter.IsEnum)
                     {
@@ -109,6 +116,44 @@ namespace MySoft.PlatformService.WinForm
                         {
                             richTextBox1.Text = text;
                         });
+                    }
+
+                    Control _c = l;
+
+                    if (!parameter.IsPrimitive && !parameter.IsOut)
+                    {
+                        Panel _lp = new Panel();
+                        //_lp.BorderStyle = BorderStyle.Fixed3D;
+                        _lp.Dock = DockStyle.Top;
+                        _lp.Height = l.Height;
+
+                        LinkLabel _ll = new LinkLabel();
+                        _ll.AutoSize = false;
+                        _ll.Width = 60;
+                        _ll.TextAlign = ContentAlignment.MiddleRight;
+                        _ll.Dock = DockStyle.Right;
+                        _ll.Text = "设置参数";
+                        _ll.LinkClicked += (_sender, _e) =>
+                        {
+                            frmParameter frm = new frmParameter(parameter);
+                            frm.OnCallback += (json) =>
+                            {
+                                txtParameters[parameter.Name].Text = json;
+                            };
+                            frm.ShowDialog();
+                        };
+
+                        l.Dock = DockStyle.Fill;
+                        _lp.Controls.Add(_ll);
+                        _lp.Controls.Add(l);
+
+                        _c = _lp;
+
+                        p.Controls.Add(_lp);
+                    }
+                    else
+                    {
+                        p.Controls.Add(l);
                     }
 
                     Panel tp = new Panel();
@@ -149,15 +194,17 @@ namespace MySoft.PlatformService.WinForm
 
                     p.Controls.Add(tp);
 
-                    l.SendToBack();
+                    _c.SendToBack();
                     c.SendToBack();
 
-                    if (!parameter.IsPrimitive)
+                    if (!parameter.IsPrimitive && !parameter.IsOut)
                     {
-                        t.Multiline = true;
-                        p.Height += 50;
+                        var h = parameter.SubParameters.Count == 0 ? 60 : 100;
 
-                        countHeight += 50;
+                        t.Multiline = true;
+                        p.Height += h;
+
+                        countHeight += h;
                     }
 
                     plParameters.Controls.Add(p);
@@ -168,6 +215,7 @@ namespace MySoft.PlatformService.WinForm
             else
             {
                 label3.Visible = false;
+                linkLabel1.Visible = false;
             }
         }
 
@@ -225,6 +273,15 @@ namespace MySoft.PlatformService.WinForm
             }
         }
 
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox1.SelectedIndex < 0) return;
+            node = comboBox1.Items[comboBox1.SelectedIndex] as ServerNode;
+            numericUpDown1_ValueChanged(null, null);
+
+            this.Text = string.Format("分布式服务调用【当前服务器节点({0}:{1})】", node.IP, node.Port);
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             if (txtParameters.Count > 0)
@@ -241,9 +298,6 @@ namespace MySoft.PlatformService.WinForm
 
                 if (list.Count > 0)
                 {
-                    //设置第一个文本框焦点
-                    txtParameters[list[0]].Focus();
-
                     MessageBox.Show(string.Format("参数【{0}】值不能为空！", string.Join("、", list.ToArray()))
                     , "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
@@ -944,6 +998,40 @@ namespace MySoft.PlatformService.WinForm
             catch (Exception ex)
             {
             }
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            frmJSON frm = new frmJSON();
+            frm.OnCallback += (json) =>
+            {
+                JObject obj = new JObject();
+                if (!string.IsNullOrEmpty(json))
+                {
+                    try
+                    {
+                        obj = JObject.Parse(json);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("解析数据出错：" + ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                        return;
+                    }
+                }
+
+                foreach (var p in txtParameters)
+                {
+                    var _p = p.Value.Tag as ParameterInfo;
+                    if (obj[_p.Name] != null)
+                    {
+                        if (_p.IsOut) continue;
+                        p.Value.Text = obj[_p.Name].ToString();
+                    }
+                }
+            };
+
+            frm.ShowDialog();
         }
     }
 }

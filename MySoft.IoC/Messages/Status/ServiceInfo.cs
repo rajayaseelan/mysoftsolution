@@ -176,6 +176,11 @@ namespace MySoft.IoC.Messages
         /// </summary>
         public IList<ParameterInfo> SubParameters { get; set; }
 
+        /// <summary>
+        /// 是否集合类型
+        /// </summary>
+        public bool IsCollection { get; set; }
+
         public ParameterInfo()
         {
             this.SubParameters = new List<ParameterInfo>();

@@ -366,6 +366,7 @@ namespace MySoft.PlatformService.WinForm
             checkedListBox2.Items.Clear();
 
             comboBox1.DisplayMember = "Key";
+            comboBox1.ValueMember = "Key";
             comboBox1.DataSource = CastleFactory.Create().GetServerNodes();
             autoCompleteTextbox1.KeyPress += new KeyPressEventHandler(autoCompleteTextbox1_KeyPress);
 

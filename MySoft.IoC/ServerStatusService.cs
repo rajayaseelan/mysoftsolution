@@ -339,6 +339,7 @@ namespace MySoft.IoC
                                 IsOut = p.IsOut,
                                 IsEnum = p.ParameterType.IsEnum,
                                 IsPrimitive = CheckPrimitive(p.ParameterType),
+                                IsCollection = CheckCollection(p.ParameterType),
                                 SubParameters = GetSubParameters(p.ParameterType)
                             };
 
@@ -403,7 +404,8 @@ namespace MySoft.IoC
                         IsByRef = p.PropertyType.IsByRef,
                         IsOut = false,
                         IsEnum = p.PropertyType.IsEnum,
-                        IsPrimitive = CheckPrimitive(p.PropertyType)
+                        IsPrimitive = CheckPrimitive(p.PropertyType),
+                        IsCollection = CheckCollection(p.PropertyType)
                     };
 
                     if (p.PropertyType != type)

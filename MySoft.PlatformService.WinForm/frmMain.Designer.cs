@@ -396,7 +396,7 @@
             // 
             this.splitContainer5.Panel2.Controls.Add(this.richTextBox3);
             this.splitContainer5.Size = new System.Drawing.Size(577, 489);
-            this.splitContainer5.SplitterDistance = 401;
+            this.splitContainer5.SplitterDistance = 402;
             this.splitContainer5.TabIndex = 0;
             // 
             // listMethod
@@ -409,17 +409,17 @@
             this.listMethod.Name = "listMethod";
             this.listMethod.SelectedIndex = -1;
             this.listMethod.SelectedItem = null;
-            this.listMethod.Size = new System.Drawing.Size(573, 334);
+            this.listMethod.Size = new System.Drawing.Size(573, 335);
             this.listMethod.TabIndex = 12;
             // 
             // panel3
             // 
             this.panel3.Controls.Add(this.checkBox5);
             this.panel3.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel3.Location = new System.Drawing.Point(0, 366);
+            this.panel3.Location = new System.Drawing.Point(0, 367);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(573, 31);
-            this.panel3.TabIndex = 14;
+            this.panel3.TabIndex = 16;
             // 
             // checkBox5
             // 
@@ -472,7 +472,7 @@
             this.richTextBox3.Location = new System.Drawing.Point(0, 0);
             this.richTextBox3.Name = "richTextBox3";
             this.richTextBox3.ReadOnly = true;
-            this.richTextBox3.Size = new System.Drawing.Size(573, 80);
+            this.richTextBox3.Size = new System.Drawing.Size(573, 79);
             this.richTextBox3.TabIndex = 15;
             this.richTextBox3.Text = "";
             // 
