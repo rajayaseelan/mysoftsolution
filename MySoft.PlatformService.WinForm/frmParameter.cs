@@ -81,6 +81,8 @@ namespace MySoft.PlatformService.WinForm
             var random = new Random();
             panel1.Controls.Clear();
 
+            var panels = new List<Panel>();
+
             if (parameter.SubParameters.Count == 0)
             {
                 var color = Color.FromArgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
@@ -89,8 +91,7 @@ namespace MySoft.PlatformService.WinForm
                     var cp = CreateChildPanel(parameter.Name);
                     cp.BackColor = color;
 
-                    //添加控件
-                    panel1.Controls.Add(cp);
+                    panels.Add(cp);
                 }
             }
             else
@@ -105,8 +106,7 @@ namespace MySoft.PlatformService.WinForm
                             var cp = CreateChildPanel(_pp.Name);
                             cp.BackColor = color;
 
-                            //添加控件
-                            panel1.Controls.Add(cp);
+                            panels.Add(cp);
                         }
                     }
                 }
@@ -118,16 +118,21 @@ namespace MySoft.PlatformService.WinForm
                         var cp = CreateChildPanel(_pp.Name);
                         cp.BackColor = color;
 
-                        //添加控件
-                        panel1.Controls.Add(cp);
+                        panels.Add(cp);
                     }
                 }
             }
+
+            //添加控件
+            panel1.SuspendLayout();
+            panel1.Controls.AddRange(panels.ToArray());
 
             for (int i = panel1.Controls.Count - 1; i >= 0; i--)
             {
                 panel1.Controls[i].SendToBack();
             }
+
+            panel1.ResumeLayout();
         }
 
         /// <summary>
