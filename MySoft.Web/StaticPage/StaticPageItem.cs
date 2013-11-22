@@ -805,18 +805,23 @@ namespace MySoft.Web
                                     var list = arr[0] as List<UpdateItem>;
                                     var reset = arr[1] as AutoResetEvent;
 
-                                    var errors = Update(updateTime, list);
-
-                                    //添加到异常列表
-                                    if (errors.Count > 0)
+                                    try
                                     {
-                                        lock (updateErrorList)
+                                        var errors = Update(updateTime, list);
+
+                                        //添加到异常列表
+                                        if (errors.Count > 0)
                                         {
-                                            updateErrorList.AddRange(errors);
+                                            lock (updateErrorList)
+                                            {
+                                                updateErrorList.AddRange(errors);
+                                            }
                                         }
                                     }
-
-                                    reset.Set();
+                                    finally
+                                    {
+                                        reset.Set();
+                                    }
                                 }, new ArrayList { updateItems, events[index] });
                             }
 

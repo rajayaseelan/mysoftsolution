@@ -78,13 +78,10 @@ namespace MySoft.IoC.Services
             //获取cacheKey
             var cacheKey = GetCacheKey(reqMsg, context.Caller);
 
-            //参数为0，文件缓存
-            var type = reqMsg.Parameters.Count == 0 ? LocalCacheType.File : LocalCacheType.Memory;
-
             var _context = new RequestContext { Context = context, Request = reqMsg };
 
             //获取内存缓存
-            var resMsg = CacheHelper<ResponseMessage>.Get(type, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
+            var resMsg = CacheHelper<ResponseMessage>.Get(LocalCacheType.Memory, cacheKey, TimeSpan.FromSeconds(reqMsg.CacheTime), state =>
             {
                 if (state == null) return null;
 
