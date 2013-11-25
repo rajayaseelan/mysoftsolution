@@ -135,7 +135,8 @@ namespace MySoft.PlatformService.WinForm
                         _ll.Text = "设置参数";
                         _ll.LinkClicked += (_sender, _e) =>
                         {
-                            frmParameter frm = new frmParameter(parameter);
+                            var jvalue = txtParameters[parameter.Name].Text.Trim();
+                            frmParameter frm = new frmParameter(parameter, jvalue);
                             frm.OnCallback += (json) =>
                             {
                                 txtParameters[parameter.Name].Text = json;

@@ -1,4 +1,5 @@
 ﻿using MySoft.IoC.Messages;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,9 +13,25 @@ namespace MySoft.PlatformService.WinForm
         public event JsonCallback OnCallback;
 
         private ParameterInfo parameter;
-        public frmParameter(ParameterInfo parameter)
+        private JToken token;
+        public frmParameter(ParameterInfo parameter, string json)
         {
             this.parameter = parameter;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(json))
+                {
+                    if (parameter.SubParameters.Count == 0 || parameter.IsCollection)
+                        token = JArray.Parse(json);
+                    else
+                        token = JObject.Parse(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("解析数据失败！" + ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
             InitializeComponent();
         }
@@ -26,6 +43,7 @@ namespace MySoft.PlatformService.WinForm
             if (parameter.SubParameters.Count == 0)
             {
                 numericUpDown1.Value = 5;
+                numericUpDown1.Maximum = 30;
                 CreatePanel(5);
             }
             else
@@ -39,7 +57,6 @@ namespace MySoft.PlatformService.WinForm
                 {
                     label2.Visible = false;
                     numericUpDown1.Visible = false;
-
                     CreatePanel(1);
                 }
             }
@@ -82,13 +99,22 @@ namespace MySoft.PlatformService.WinForm
             panel1.Controls.Clear();
 
             var panels = new List<Panel>();
-
             if (parameter.SubParameters.Count == 0)
             {
                 var color = Color.FromArgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
                 for (int i = 0; i < count; i++)
                 {
-                    var cp = CreateChildPanel(parameter.Name);
+                    var value = string.Empty;
+                    if (token != null)
+                    {
+                        var arr = token as JArray;
+                        if (arr != null && arr.Count > i)
+                        {
+                            value = arr[i].Value<string>();
+                        }
+                    }
+
+                    var cp = CreateChildPanel(parameter.Name, value);
                     cp.BackColor = color;
 
                     panels.Add(cp);
@@ -103,10 +129,32 @@ namespace MySoft.PlatformService.WinForm
                         var color = Color.FromArgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
                         foreach (var _pp in parameter.SubParameters)
                         {
-                            var cp = CreateChildPanel(_pp.Name);
+                            var value = string.Empty;
+                            if (token != null)
+                            {
+                                var arr = token as JArray;
+                                if (arr != null && arr.Count > i)
+                                {
+                                    if (arr[i][_pp.Name] != null)
+                                    {
+                                        value = arr[i][_pp.Name].Value<string>();
+                                    }
+                                }
+                            }
+
+                            var cp = CreateChildPanel(_pp.Name, value);
                             cp.BackColor = color;
 
                             panels.Add(cp);
+                        }
+
+                        if (i < count)
+                        {
+                            var _p = new Panel();
+                            _p.Dock = DockStyle.Top;
+                            _p.Height = 8;
+
+                            panels.Add(_p);
                         }
                     }
                 }
@@ -115,7 +163,13 @@ namespace MySoft.PlatformService.WinForm
                     var color = Color.FromArgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
                     foreach (var _pp in parameter.SubParameters)
                     {
-                        var cp = CreateChildPanel(_pp.Name);
+                        var value = string.Empty;
+                        if (token != null && token[_pp.Name] != null)
+                        {
+                            value = token[_pp.Name].Value<string>();
+                        }
+
+                        var cp = CreateChildPanel(_pp.Name, value);
                         cp.BackColor = color;
 
                         panels.Add(cp);
@@ -139,8 +193,9 @@ namespace MySoft.PlatformService.WinForm
         /// 创建子Panel
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        private Panel CreateChildPanel(string name)
+        private Panel CreateChildPanel(string name, string value)
         {
             var _p = new Panel();
             _p.Dock = DockStyle.Top;
@@ -148,6 +203,7 @@ namespace MySoft.PlatformService.WinForm
             var _t = new TextBox();
             _t.Name = "txt_" + name;
             _t.Dock = DockStyle.Fill;
+            _t.Text = value;
 
             var _l = new Label();
             _l.Dock = DockStyle.Left;
@@ -178,7 +234,9 @@ namespace MySoft.PlatformService.WinForm
                 var list = new List<string>();
                 foreach (var txt in txts)
                 {
-                    var text = txt.Controls.Cast<Control>().First(p => p is TextBox);
+                    var text = txt.Controls.Cast<Control>().FirstOrDefault(p => p is TextBox);
+                    if (text == null) continue;
+
                     if (!string.IsNullOrEmpty(text.Text.Trim()))
                     {
                         list.Add(text.Text.Trim());
@@ -197,7 +255,8 @@ namespace MySoft.PlatformService.WinForm
 
                     foreach (var txt in txts)
                     {
-                        var text = txt.Controls.Cast<Control>().First(p => p is TextBox);
+                        var text = txt.Controls.Cast<Control>().FirstOrDefault(p => p is TextBox);
+                        if (text == null) continue;
 
                         var _key = text.Name.Replace("txt_", "");
                         if (dict.ContainsKey(_key))
@@ -216,9 +275,10 @@ namespace MySoft.PlatformService.WinForm
                     var dict = new Dictionary<string, string>();
                     foreach (var txt in txts)
                     {
-                        var text = txt.Controls.Cast<Control>().First(p => p is TextBox);
-                        var _key = text.Name.Replace("txt_", "");
+                        var text = txt.Controls.Cast<Control>().FirstOrDefault(p => p is TextBox);
+                        if (text == null) continue;
 
+                        var _key = text.Name.Replace("txt_", "");
                         dict[_key] = text.Text.Trim();
                     }
 
