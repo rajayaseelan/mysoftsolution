@@ -23,7 +23,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-#if !(SILVERLIGHT || PORTABLE40 || PORTABLE || NETFX_CORE)
+#if !(NET20 || NET35 || PORTABLE40)
 using System;
 using System.Collections.Generic;
 #if NET20
@@ -39,17 +39,17 @@ namespace Newtonsoft.Json.Serialization
   /// <summary>
   /// Get and set values for a <see cref="MemberInfo"/> using dynamic methods.
   /// </summary>
-  public class DynamicValueProvider : IValueProvider
+  public class ExpressionValueProvider : IValueProvider
   {
     private readonly MemberInfo _memberInfo;
     private Func<object, object> _getter;
     private Action<object, object> _setter;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DynamicValueProvider"/> class.
+    /// Initializes a new instance of the <see cref="ExpressionValueProvider"/> class.
     /// </summary>
     /// <param name="memberInfo">The member info.</param>
-    public DynamicValueProvider(MemberInfo memberInfo)
+    public ExpressionValueProvider(MemberInfo memberInfo)
     {
       ValidationUtils.ArgumentNotNull(memberInfo, "memberInfo");
       _memberInfo = memberInfo;
@@ -65,7 +65,7 @@ namespace Newtonsoft.Json.Serialization
       try
       {
         if (_setter == null)
-          _setter = DynamicReflectionDelegateFactory.Instance.CreateSet<object>(_memberInfo);
+          _setter = ExpressionReflectionDelegateFactory.Instance.CreateSet<object>(_memberInfo);
 
 #if DEBUG
         // dynamic method doesn't check whether the type is 'legal' to set
@@ -99,7 +99,7 @@ namespace Newtonsoft.Json.Serialization
       try
       {
         if (_getter == null)
-          _getter = DynamicReflectionDelegateFactory.Instance.CreateGet<object>(_memberInfo);
+          _getter = ExpressionReflectionDelegateFactory.Instance.CreateGet<object>(_memberInfo);
 
         return _getter(target);
       }

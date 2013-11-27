@@ -34,6 +34,7 @@ namespace Newtonsoft.Json
   /// </summary>
   public enum MemberSerialization
   {
+#pragma warning disable 1584,1711,1572,1581,1580,1574
     /// <summary>
     /// All public members are serialized by default. Members can be excluded using <see cref="JsonIgnoreAttribute"/> or <see cref="NonSerializedAttribute"/>.
     /// This is the default member serialization mode.
@@ -50,5 +51,6 @@ namespace Newtonsoft.Json
     /// and setting IgnoreSerializableAttribute on <see cref="DefaultContractResolver"/> to false.
     /// </summary>
     Fields
+#pragma warning restore 1584,1711,1572,1581,1580,1574
   }
 }

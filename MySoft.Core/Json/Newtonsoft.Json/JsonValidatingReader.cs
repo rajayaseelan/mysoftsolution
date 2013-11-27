@@ -25,6 +25,9 @@
 
 using System;
 using System.Collections.Generic;
+#if !(NET20 || NET35 || SILVERLIGHT || PORTABLE40 || PORTABLE)
+using System.Numerics;
+#endif
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Utilities;
@@ -52,6 +55,10 @@ namespace Newtonsoft.Json
 
       public string CurrentPropertyName { get; set; }
       public int ArrayItemCount { get; set; }
+      public bool IsUniqueArray { get; set; }
+      public bool IsEnum { get; set; }
+      public IList<JToken> UniqueArrayItems { get; set; }
+      public JTokenWriter CurrentItemWriter { get; set; }
 
       public IList<JsonSchemaModel> Schemas
       {
@@ -74,6 +81,12 @@ namespace Newtonsoft.Json
         _schemas = schemas;
 
         _requiredProperties = schemas.SelectMany<JsonSchemaModel, string>(GetRequiredProperties).Distinct().ToDictionary(p => p, p => false);
+
+        if (tokenType == JTokenType.Array && schemas.Any(s => s.UniqueItems))
+        {
+          IsUniqueArray = true;
+          UniqueArrayItems = new List<JToken>();
+        }
       }
 
       private IEnumerable<string> GetRequiredProperties(JsonSchemaModel schema)
@@ -83,6 +96,7 @@ namespace Newtonsoft.Json
 
         return schema.Properties.Where(p => p.Value.Required).Select(p => p.Key);
       }
+
     }
 
     private readonly JsonReader _reader;
@@ -97,7 +111,7 @@ namespace Newtonsoft.Json
     public event ValidationEventHandler ValidationEventHandler;
 
     /// <summary>
-    /// Gets the text value of the current Json token.
+    /// Gets the text value of the current JSON token.
     /// </summary>
     /// <value></value>
     public override object Value
@@ -133,7 +147,7 @@ namespace Newtonsoft.Json
     }
 
     /// <summary>
-    /// Gets the type of the current Json token.
+    /// Gets the type of the current JSON token.
     /// </summary>
     /// <value></value>
     public override JsonToken TokenType
@@ -142,7 +156,7 @@ namespace Newtonsoft.Json
     }
 
     /// <summary>
-    /// Gets the Common Language Runtime (CLR) type for the current Json token.
+    /// Gets the Common Language Runtime (CLR) type for the current JSON token.
     /// </summary>
     /// <value></value>
     public override Type ValueType
@@ -166,12 +180,14 @@ namespace Newtonsoft.Json
       return poppedScope;
     }
 
-    private IEnumerable<JsonSchemaModel> CurrentSchemas
+    private IList<JsonSchemaModel> CurrentSchemas
     {
       get { return _currentScope.Schemas; }
     }
 
-    private IEnumerable<JsonSchemaModel> CurrentMemberSchemas
+    private static readonly IList<JsonSchemaModel> EmptySchemaList = new List<JsonSchemaModel>();
+
+    private IList<JsonSchemaModel> CurrentMemberSchemas
     {
       get
       {
@@ -179,7 +195,7 @@ namespace Newtonsoft.Json
           return new List<JsonSchemaModel>(new [] { _model });
 
         if (_currentScope.Schemas == null || _currentScope.Schemas.Count == 0)
-          return Enumerable.Empty<JsonSchemaModel>();
+          return EmptySchemaList;
 
         switch (_currentScope.TokenType)
         {
@@ -219,30 +235,31 @@ namespace Newtonsoft.Json
           case JTokenType.Array:
             {
               IList<JsonSchemaModel> schemas = new List<JsonSchemaModel>();
-              
+
               foreach (JsonSchemaModel schema in CurrentSchemas)
               {
-                if (!CollectionUtils.IsNullOrEmpty(schema.Items))
+                if (!schema.PositionalItemsValidation)
                 {
-                  if (schema.Items.Count == 1)
-                  {
+                  if (schema.Items != null && schema.Items.Count > 0)
                     schemas.Add(schema.Items[0]);
-                  }
-                  else
+                }
+                else
+                {
+                  if (schema.Items != null && schema.Items.Count > 0)
                   {
                     if (schema.Items.Count > (_currentScope.ArrayItemCount - 1))
                       schemas.Add(schema.Items[_currentScope.ArrayItemCount - 1]);
                   }
-                }
 
-                if (schema.AllowAdditionalProperties && schema.AdditionalProperties != null)
-                  schemas.Add(schema.AdditionalProperties);
+                  if (schema.AllowAdditionalItems && schema.AdditionalItems != null)
+                    schemas.Add(schema.AdditionalItems);
+                }
               }
 
               return schemas;
             }
           case JTokenType.Constructor:
-            return Enumerable.Empty<JsonSchemaModel>();
+            return EmptySchemaList;
           default:
             throw new ArgumentOutOfRangeException("TokenType", "Unexpected token type: {0}".FormatWith(CultureInfo.InvariantCulture, _currentScope.TokenType));
         }
@@ -307,22 +324,10 @@ namespace Newtonsoft.Json
       get { return _reader; }
     }
 
-    private void ValidateInEnumAndNotDisallowed(JsonSchemaModel schema)
+    private void ValidateNotDisallowed(JsonSchemaModel schema)
     {
       if (schema == null)
         return;
-
-      JToken value = new JValue(_reader.Value);
-
-      if (schema.Enum != null)
-      {
-        StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
-        value.WriteTo(new JsonTextWriter(sw));
- 
-        if (!schema.Enum.ContainsValue(value, new JTokenEqualityComparer()))
-          RaiseError("Value {0} is not defined in enum.".FormatWith(CultureInfo.InvariantCulture, sw.ToString()),
-                     schema);
-      }
 
       JsonSchemaType? currentNodeType = GetCurrentNodeSchemaType();
       if (currentNodeType != null)
@@ -456,6 +461,9 @@ namespace Newtonsoft.Json
       {
         JsonSchemaModelBuilder builder = new JsonSchemaModelBuilder();
         _model = builder.Build(_schema);
+
+        if (!JsonWriter.IsStartToken(_reader.TokenType))
+          Push(new SchemaScope(JTokenType.None, CurrentMemberSchemas));
       }
 
       switch (_reader.TokenType)
@@ -464,25 +472,32 @@ namespace Newtonsoft.Json
           ProcessValue();
           IList<JsonSchemaModel> objectSchemas = CurrentMemberSchemas.Where(ValidateObject).ToList();
           Push(new SchemaScope(JTokenType.Object, objectSchemas));
+          WriteToken(CurrentSchemas);
           break;
         case JsonToken.StartArray:
           ProcessValue();
           IList<JsonSchemaModel> arraySchemas = CurrentMemberSchemas.Where(ValidateArray).ToList();
           Push(new SchemaScope(JTokenType.Array, arraySchemas));
+          WriteToken(CurrentSchemas);
           break;
         case JsonToken.StartConstructor:
+          ProcessValue();
           Push(new SchemaScope(JTokenType.Constructor, null));
+          WriteToken(CurrentSchemas);
           break;
         case JsonToken.PropertyName:
+          WriteToken(CurrentSchemas);
           foreach (JsonSchemaModel schema in CurrentSchemas)
           {
             ValidatePropertyName(schema);
           }
           break;
         case JsonToken.Raw:
+          ProcessValue();
           break;
         case JsonToken.Integer:
           ProcessValue();
+          WriteToken(CurrentMemberSchemas);
           foreach (JsonSchemaModel schema in CurrentMemberSchemas)
           {
             ValidateInteger(schema);
@@ -490,6 +505,7 @@ namespace Newtonsoft.Json
           break;
         case JsonToken.Float:
           ProcessValue();
+          WriteToken(CurrentMemberSchemas);
           foreach (JsonSchemaModel schema in CurrentMemberSchemas)
           {
             ValidateFloat(schema);
@@ -497,6 +513,7 @@ namespace Newtonsoft.Json
           break;
         case JsonToken.String:
           ProcessValue();
+          WriteToken(CurrentMemberSchemas);
           foreach (JsonSchemaModel schema in CurrentMemberSchemas)
           {
             ValidateString(schema);
@@ -504,6 +521,7 @@ namespace Newtonsoft.Json
           break;
         case JsonToken.Boolean:
           ProcessValue();
+          WriteToken(CurrentMemberSchemas);
           foreach (JsonSchemaModel schema in CurrentMemberSchemas)
           {
             ValidateBoolean(schema);
@@ -511,14 +529,14 @@ namespace Newtonsoft.Json
           break;
         case JsonToken.Null:
           ProcessValue();
+          WriteToken(CurrentMemberSchemas);
           foreach (JsonSchemaModel schema in CurrentMemberSchemas)
           {
             ValidateNull(schema);
           }
           break;
-        case JsonToken.Undefined:
-          break;
         case JsonToken.EndObject:
+          WriteToken(CurrentSchemas);
           foreach (JsonSchemaModel schema in CurrentSchemas)
           {
             ValidateEndObject(schema);
@@ -526,6 +544,7 @@ namespace Newtonsoft.Json
           Pop();
           break;
         case JsonToken.EndArray:
+          WriteToken(CurrentSchemas);
           foreach (JsonSchemaModel schema in CurrentSchemas)
           {
             ValidateEndArray(schema);
@@ -533,17 +552,74 @@ namespace Newtonsoft.Json
           Pop();
           break;
         case JsonToken.EndConstructor:
+          WriteToken(CurrentSchemas);
           Pop();
           break;
+        case JsonToken.Undefined:
         case JsonToken.Date:
         case JsonToken.Bytes:
           // these have no equivalent in JSON schema
+          WriteToken(CurrentMemberSchemas);
           break;
         case JsonToken.None:
           // no content, do nothing
           break;
         default:
           throw new ArgumentOutOfRangeException();
+      }
+    }
+
+    private void WriteToken(IList<JsonSchemaModel> schemas)
+    {
+      foreach (SchemaScope schemaScope in _stack)
+      {
+        bool isInUniqueArray = (schemaScope.TokenType == JTokenType.Array && schemaScope.IsUniqueArray && schemaScope.ArrayItemCount > 0);
+
+        if (isInUniqueArray || schemaScope.IsEnum || schemas.Any(s => s.Enum != null))
+        {
+          if (schemaScope.CurrentItemWriter == null)
+          {
+            if (JsonWriter.IsEndToken(_reader.TokenType))
+              continue;
+
+            schemaScope.CurrentItemWriter = new JTokenWriter();
+          }
+
+          schemaScope.CurrentItemWriter.WriteToken(_reader, false);
+
+          // finished writing current item
+          if (schemaScope.CurrentItemWriter.Top == 0 && _reader.TokenType != JsonToken.PropertyName)
+          {
+            JToken finishedItem = schemaScope.CurrentItemWriter.Token;
+
+            // start next item with new writer
+            schemaScope.CurrentItemWriter = null;
+
+            if (isInUniqueArray)
+            {
+              if (schemaScope.UniqueArrayItems.Contains(finishedItem, JToken.EqualityComparer))
+                RaiseError("Non-unique array item at index {0}.".FormatWith(CultureInfo.InvariantCulture, schemaScope.ArrayItemCount - 1), schemaScope.Schemas.First(s => s.UniqueItems));
+
+              schemaScope.UniqueArrayItems.Add(finishedItem);
+            }
+            else if (schemaScope.IsEnum || schemas.Any(s => s.Enum != null))
+            {
+              foreach (JsonSchemaModel schema in schemas)
+              {
+                if (schema.Enum != null)
+                {
+                  if (!schema.Enum.ContainsValue(finishedItem, JToken.EqualityComparer))
+                  {
+                    StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
+                    finishedItem.WriteTo(new JsonTextWriter(sw));
+
+                    RaiseError("Value {0} is not defined in enum.".FormatWith(CultureInfo.InvariantCulture, sw.ToString()), schema);
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
 
@@ -586,7 +662,7 @@ namespace Newtonsoft.Json
       if (!TestType(schema, JsonSchemaType.Null))
         return;
 
-      ValidateInEnumAndNotDisallowed(schema);
+      ValidateNotDisallowed(schema);
     }
 
     private void ValidateBoolean(JsonSchemaModel schema)
@@ -597,7 +673,7 @@ namespace Newtonsoft.Json
       if (!TestType(schema, JsonSchemaType.Boolean))
         return;
 
-      ValidateInEnumAndNotDisallowed(schema);
+      ValidateNotDisallowed(schema);
     }
 
     private void ValidateString(JsonSchemaModel schema)
@@ -608,7 +684,7 @@ namespace Newtonsoft.Json
       if (!TestType(schema, JsonSchemaType.String))
         return;
 
-      ValidateInEnumAndNotDisallowed(schema);
+      ValidateNotDisallowed(schema);
 
       string value = _reader.Value.ToString();
 
@@ -636,28 +712,48 @@ namespace Newtonsoft.Json
       if (!TestType(schema, JsonSchemaType.Integer))
         return;
 
-      ValidateInEnumAndNotDisallowed(schema);
+      ValidateNotDisallowed(schema);
       
-      long value = Convert.ToInt64(_reader.Value, CultureInfo.InvariantCulture);
+      object value = _reader.Value;
 
       if (schema.Maximum != null)
       {
-        if (value > schema.Maximum)
+        if (JValue.Compare(JTokenType.Integer, value, schema.Maximum) > 0)
           RaiseError("Integer {0} exceeds maximum value of {1}.".FormatWith(CultureInfo.InvariantCulture, value, schema.Maximum), schema);
-        if (schema.ExclusiveMaximum && value == schema.Maximum)
+        if (schema.ExclusiveMaximum && JValue.Compare(JTokenType.Integer, value, schema.Maximum) == 0)
           RaiseError("Integer {0} equals maximum value of {1} and exclusive maximum is true.".FormatWith(CultureInfo.InvariantCulture, value, schema.Maximum), schema);
       }
 
       if (schema.Minimum != null)
       {
-        if (value < schema.Minimum)
+        if (JValue.Compare(JTokenType.Integer, value, schema.Minimum) < 0)
           RaiseError("Integer {0} is less than minimum value of {1}.".FormatWith(CultureInfo.InvariantCulture, value, schema.Minimum), schema);
-        if (schema.ExclusiveMinimum && value == schema.Minimum)
+        if (schema.ExclusiveMinimum && JValue.Compare(JTokenType.Integer, value, schema.Minimum) == 0)
           RaiseError("Integer {0} equals minimum value of {1} and exclusive minimum is true.".FormatWith(CultureInfo.InvariantCulture, value, schema.Minimum), schema);
       }
 
-      if (schema.DivisibleBy != null && !IsZero(value % schema.DivisibleBy.Value))
-        RaiseError("Integer {0} is not evenly divisible by {1}.".FormatWith(CultureInfo.InvariantCulture, JsonConvert.ToString(value), schema.DivisibleBy), schema);
+      if (schema.DivisibleBy != null)
+      {
+        bool notDivisible;
+#if !(NET20 || NET35 || SILVERLIGHT || PORTABLE40 || PORTABLE)
+        if (value is BigInteger)
+        {
+          // not that this will lose any decimal point on DivisibleBy
+          // so manually raise an error if DivisibleBy is not an integer and value is not zero
+          BigInteger i = (BigInteger)value;
+          bool divisibleNonInteger = !Math.Abs(schema.DivisibleBy.Value - Math.Truncate(schema.DivisibleBy.Value)).Equals(0);
+          if (divisibleNonInteger)
+            notDivisible = i != 0;
+          else
+            notDivisible = i % new BigInteger(schema.DivisibleBy.Value) != 0;
+        }
+        else
+#endif
+        notDivisible = !IsZero(Convert.ToInt64(value, CultureInfo.InvariantCulture) % schema.DivisibleBy.Value);
+
+        if (notDivisible)
+          RaiseError("Integer {0} is not evenly divisible by {1}.".FormatWith(CultureInfo.InvariantCulture, JsonConvert.ToString(value), schema.DivisibleBy), schema);
+      }
     }
 
     private void ProcessValue()
@@ -668,8 +764,14 @@ namespace Newtonsoft.Json
 
         foreach (JsonSchemaModel currentSchema in CurrentSchemas)
         {
-          if (currentSchema != null && currentSchema.Items != null && currentSchema.Items.Count > 1 && _currentScope.ArrayItemCount >= currentSchema.Items.Count)
+          // if there is positional validation and the array index is past the number of item validation schemas and there is no additonal items then error
+          if (currentSchema != null
+            && currentSchema.PositionalItemsValidation
+            && !currentSchema.AllowAdditionalItems
+            && (currentSchema.Items == null || _currentScope.ArrayItemCount - 1 >= currentSchema.Items.Count))
+          {
             RaiseError("Index {0} has not been defined and the schema does not allow additional items.".FormatWith(CultureInfo.InvariantCulture, _currentScope.ArrayItemCount), currentSchema);
+          }
         }
       }
     }
@@ -682,7 +784,7 @@ namespace Newtonsoft.Json
       if (!TestType(schema, JsonSchemaType.Float))
         return;
 
-      ValidateInEnumAndNotDisallowed(schema);
+      ValidateNotDisallowed(schema);
       
       double value = Convert.ToDouble(_reader.Value, CultureInfo.InvariantCulture);
 
@@ -702,8 +804,18 @@ namespace Newtonsoft.Json
           RaiseError("Float {0} equals minimum value of {1} and exclusive minimum is true.".FormatWith(CultureInfo.InvariantCulture, JsonConvert.ToString(value), schema.Minimum), schema);
       }
 
-      if (schema.DivisibleBy != null && !IsZero(value % schema.DivisibleBy.Value))
-        RaiseError("Float {0} is not evenly divisible by {1}.".FormatWith(CultureInfo.InvariantCulture, JsonConvert.ToString(value), schema.DivisibleBy), schema);
+      if (schema.DivisibleBy != null)
+      {
+        double remainder = FloatingPointRemainder(value, schema.DivisibleBy.Value);
+
+        if (!IsZero(remainder))
+          RaiseError("Float {0} is not evenly divisible by {1}.".FormatWith(CultureInfo.InvariantCulture, JsonConvert.ToString(value), schema.DivisibleBy), schema);
+      }
+    }
+
+    private static double FloatingPointRemainder(double dividend, double divisor)
+    {
+      return dividend - Math.Floor(dividend/divisor)*divisor;
     }
 
     private static bool IsZero(double value)

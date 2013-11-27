@@ -23,31 +23,26 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-#if !(SILVERLIGHT || NETFX_CORE || PORTABLE || PORTABLE40)
-using System;
-
-namespace Newtonsoft.Json.Serialization
+namespace Newtonsoft.Json
 {
   /// <summary>
-  /// Contract details for a <see cref="Type"/> used by the <see cref="JsonSerializer"/>.
+  /// Specifies float format handling options when writing special floating point numbers, e.g. <see cref="F:System.Double.NaN"/>,
+  /// <see cref="F:System.Double.PositiveInfinity"/> and <see cref="F:System.Double.NegativeInfinity"/> with <see cref="JsonWriter"/>.
   /// </summary>
-  public class JsonISerializableContract : JsonContainerContract
+  public enum FloatFormatHandling
   {
     /// <summary>
-    /// Gets or sets the ISerializable object constructor.
+    /// Write special floating point values as strings in JSON, e.g. "NaN", "Infinity", "-Infinity".
     /// </summary>
-    /// <value>The ISerializable object constructor.</value>
-    public ObjectConstructor<object> ISerializableCreator { get; set; }
-
+    String,
     /// <summary>
-    /// Initializes a new instance of the <see cref="JsonISerializableContract"/> class.
+    /// Write special floating point values as symbols in JSON, e.g. NaN, Infinity, -Infinity.
+    /// Note that this will produce non-valid JSON.
     /// </summary>
-    /// <param name="underlyingType">The underlying type for the contract.</param>
-    public JsonISerializableContract(Type underlyingType)
-      : base(underlyingType)
-    {
-      ContractType = JsonContractType.Serializable;
-    }
+    Symbol,
+    /// <summary>
+    /// Write special floating point values as the property's default value in JSON, e.g. 0.0 for a <see cref="System.Double"/> property, null for a <see cref="System.Nullable{Double}"/> property.
+    /// </summary>
+    DefaultValue
   }
 }
-#endif

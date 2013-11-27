@@ -35,7 +35,7 @@ namespace Newtonsoft.Json
   /// <summary>
   /// The exception thrown when an error occurs during Json serialization or deserialization.
   /// </summary>
-#if !(SILVERLIGHT || WINDOWS_PHONE || NETFX_CORE || PORTABLE)
+#if !(SILVERLIGHT || WINDOWS_PHONE || NETFX_CORE || PORTABLE40 || PORTABLE)
   [Serializable]
 #endif
   public class JsonException : Exception
@@ -68,7 +68,7 @@ namespace Newtonsoft.Json
     {
     }
 
-#if !(WINDOWS_PHONE || SILVERLIGHT || NETFX_CORE || PORTABLE)
+#if !(WINDOWS_PHONE || SILVERLIGHT || NETFX_CORE || PORTABLE40 || PORTABLE)
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonException"/> class.
     /// </summary>
@@ -81,5 +81,12 @@ namespace Newtonsoft.Json
     {
     }
 #endif
+
+    internal static JsonException Create(IJsonLineInfo lineInfo, string path, string message)
+    {
+      message = JsonPosition.FormatMessage(lineInfo, path, message);
+
+      return new JsonException(message);
+    }
   }
 }

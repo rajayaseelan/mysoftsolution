@@ -43,7 +43,7 @@ namespace Newtonsoft.Json.Serialization
 
       int IEqualityComparer<object>.GetHashCode(object obj)
       {
-#if !(NETFX_CORE || PORTABLE)
+#if !(NETFX_CORE)
         // put objects in a bucket based on their reference
         return RuntimeHelpers.GetHashCode(obj);
 #else
@@ -128,7 +128,8 @@ namespace Newtonsoft.Json.Serialization
         TraceWriter.Trace(TraceLevel.Error, message, ex);
       }
 
-      if (contract != null)
+      // attribute method is non-static so don't invoke if no object
+      if (contract != null && currentObject != null)
         contract.InvokeOnError(currentObject, Serializer.Context, errorContext);
 
       if (!errorContext.Handled)
