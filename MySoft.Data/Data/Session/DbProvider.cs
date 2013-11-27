@@ -513,7 +513,7 @@ namespace MySoft.Data
             where T : Entity
         {
             retVal = null;
-            T entity = EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>());
+            T entity = EntityCache<T>.Create();
 
             int returnValue = 0;
             DbCommand cmd = CreateInsert<T>(table, fvlist, identityfield, autoIncrementName);
@@ -572,7 +572,7 @@ namespace MySoft.Data
         internal DbCommand CreateInsert<T>(Table table, List<FieldValue> fvlist, Field identityfield, string autoIncrementName)
             where T : Entity
         {
-            T entity = EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>());
+            T entity = EntityCache<T>.Create();
 
             if (entity.GetReadOnly())
             {
@@ -665,7 +665,7 @@ namespace MySoft.Data
         internal DbCommand CreateDelete<T>(Table table, WhereClip where)
             where T : Entity
         {
-            T entity = EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>());
+            T entity = EntityCache<T>.Create();
 
             if (entity.GetReadOnly())
             {
@@ -706,7 +706,7 @@ namespace MySoft.Data
         internal DbCommand CreateUpdate<T>(Table table, List<FieldValue> fvlist, WhereClip where)
             where T : Entity
         {
-            T entity = EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>());
+            T entity = EntityCache<T>.Create();
 
             if (entity.GetReadOnly())
             {

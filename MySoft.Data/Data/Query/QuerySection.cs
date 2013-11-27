@@ -391,7 +391,7 @@ namespace MySoft.Data
         public virtual QuerySection<TSub> SubQuery<TSub>(string aliasName)
             where TSub : Entity
         {
-            TSub entity = EntityCache<TSub>.Get(() => CoreHelper.CreateInstance<TSub>());
+            TSub entity = EntityCache<TSub>.Create();
             var tableName = entity.GetTable().Name;
             if (aliasName != null) tableName = string.Format("__[{0}]__", aliasName);
 
@@ -985,7 +985,7 @@ namespace MySoft.Data
 
                         while (reader.Read())
                         {
-                            TResult entity = CoreHelper.CreateInstance<TResult>();
+                            TResult entity = EntityCache<TResult>.New();
                             entity.SetDbValues(reader);
                             entity.Attach();
                             list.Add(entity);

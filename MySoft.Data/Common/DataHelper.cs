@@ -269,7 +269,7 @@ namespace MySoft.Data
         {
             WhereClip where = null;
 
-            List<FieldValue> list = EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>()).GetFieldValues();
+            List<FieldValue> list = EntityCache<T>.Create().GetFieldValues();
             int pkCount = list.FindAll(p => p.IsPrimaryKey).Count;
             if (pkCount == 0) return where;
 

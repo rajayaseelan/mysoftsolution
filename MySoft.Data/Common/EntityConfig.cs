@@ -213,6 +213,28 @@ namespace MySoft.Data
     {
         private static IDictionary<Type, T> m_cache = new Dictionary<Type, T>();
 
+        /// <summary>
+        /// 创建缓存对象
+        /// </summary>
+        /// <returns></returns>
+        public static T Create()
+        {
+            return Get(() => New());
+        }
+
+        /// <summary>
+        /// 创建一个新对象
+        /// </summary>
+        public static T New()
+        {
+            return CoreHelper.CreateInstance<T>();
+        }
+
+        /// <summary>
+        /// 获取缓存对象
+        /// </summary>
+        /// <param name="func"></param>
+        /// <returns></returns>
         public static T Get(Func<T> func)
         {
             var key = typeof(T);

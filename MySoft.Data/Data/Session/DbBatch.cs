@@ -237,7 +237,7 @@ namespace MySoft.Data
             int val = 0;
             retVal = null;
 
-            T entity = EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>());
+            T entity = EntityCache<T>.Create();
             if (useBatch)
             {
                 DbCommand cmd = dbProvider.CreateInsert<T>(table, fvlist, entity.IdentityField, entity.SequenceName);

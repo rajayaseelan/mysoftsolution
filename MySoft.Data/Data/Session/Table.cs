@@ -156,7 +156,7 @@ namespace MySoft.Data
         public static Table GetTable<T>()
             where T : Entity
         {
-            return EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>()).GetTable();
+            return EntityCache<T>.Create().GetTable();
         }
 
         /// <summary>

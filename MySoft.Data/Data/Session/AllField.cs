@@ -30,8 +30,7 @@ namespace MySoft.Data
         {
             get
             {
-                return EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>())
-                        .As<IEntityBase>().GetField(propertyName);
+                return EntityCache<T>.Create().As<IEntityBase>().GetField(propertyName);
             }
         }
     }

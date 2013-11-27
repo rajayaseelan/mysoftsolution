@@ -51,7 +51,7 @@ namespace MySoft.Data
 
         internal void InitForm(Table table, string aliasName)
         {
-            var entity = EntityCache<T>.Get(() => CoreHelper.CreateInstance<T>());
+            var entity = EntityCache<T>.Create();
             table = table ?? entity.GetTable();
 
             table.As(aliasName);
@@ -745,7 +745,7 @@ namespace MySoft.Data
             //将TableRelation的对象添加到当前节
             this.entities.AddRange(relation.GetFromSection().TableEntities);
 
-            TJoin entity = EntityCache<TJoin>.Get(() => CoreHelper.CreateInstance<TJoin>());
+            TJoin entity = EntityCache<TJoin>.Create();
             var table = entity.GetTable().As(aliasName);
 
             if ((IField)query.PagingField == null)
@@ -783,7 +783,7 @@ namespace MySoft.Data
         private FromSection<T> Join<TJoin>(Table table, string aliasName, WhereClip onWhere, JoinType joinType)
             where TJoin : Entity
         {
-            TJoin entity = EntityCache<TJoin>.Get(() => CoreHelper.CreateInstance<TJoin>());
+            TJoin entity = EntityCache<TJoin>.Create();
             table = table ?? entity.GetTable();
             table.As(aliasName);
 
