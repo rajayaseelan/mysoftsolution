@@ -16,73 +16,33 @@ namespace MySoft.IoC.Nodes
     public class DefaultNodeResolver : IServerNodeResolver
     {
         private ServerConfig config;
-        private string serverConfigPath = "/config/serverConfig.xml";
+        private bool isRemote;
+        private string serverConfigPath;
 
         /// <summary>
         /// 实例化DefaultNodeResolver
         /// </summary>
-        public DefaultNodeResolver()
+        public DefaultNodeResolver(string path)
         {
-            var path = ConfigurationManager.AppSettings["serverConfigPath"];
             if (!string.IsNullOrEmpty(path))
             {
-                this.serverConfigPath = path;
+                if (File.Exists(path) || path.StartsWith("http://"))
+                {
+                    this.serverConfigPath = path;
+
+                    if (path.StartsWith("http://"))
+                        isRemote = true;
+                }
+                else
+                    this.serverConfigPath = CoreHelper.GetFullPath(path);
+            }
+            else
+            {
+                this.serverConfigPath = CoreHelper.GetFullPath("/config/serverConfig.xml");
             }
 
             //初始化配置
-            this.config = GetServerConfig();
-
-            //检测更新
-            CheckConfigUpdate();
-
-            //10分钟检测一次
-            var timer = new Timer(TimeSpan.FromMinutes(10).TotalMilliseconds);
-            timer.AutoReset = true;
-            timer.Elapsed += timer_Elapsed;
-            timer.Start();
-        }
-
-        private void timer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            try
-            {
-                (sender as Timer).Stop();
-
-                //检测更新
-                CheckConfigUpdate();
-            }
-            finally
-            {
-                (sender as Timer).Start();
-            }
-        }
-
-        /// <summary>
-        /// 检测更新
-        /// </summary>
-        private void CheckConfigUpdate()
-        {
-            try
-            {
-                var xml = string.Empty;
-
-                //检测服务节点
-                if (CheckServerNode(serverConfigPath, out xml))
-                {
-                    //配置文件
-                    var fileName = CoreHelper.GetFullPath(serverConfigPath);
-                    var dir = Path.GetDirectoryName(fileName);
-                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
-                    //写配置文件
-                    File.WriteAllText(fileName, xml);
-                }
-            }
-            catch (Exception ex)
-            {
-                //写错误日志
-                SimpleLog.Instance.WriteLogForDir("serverConfig", ex);
-            }
+            this.config = GetServerConfig(serverConfigPath);
         }
 
         #region IServerNodeResolver 成员
@@ -142,18 +102,20 @@ namespace MySoft.IoC.Nodes
         /// <summary>
         /// 获取服务节点
         /// </summary>
+        /// <param name="configPath"></param>
         /// <returns></returns>
-        protected virtual ServerConfig GetServerConfig()
+        private ServerConfig GetServerConfig(string configPath)
         {
             try
             {
-                //配置文件
-                var fileName = CoreHelper.GetFullPath(serverConfigPath);
-
-                if (File.Exists(fileName))
+                if (isRemote)
+                {
+                    return GetConfigFromRemote(configPath);
+                }
+                else if (File.Exists(configPath))
                 {
                     //从本地读取xml
-                    var xml = File.ReadAllText(fileName, Encoding.UTF8);
+                    var xml = File.ReadAllText(configPath, Encoding.UTF8);
 
                     if (!string.IsNullOrEmpty(xml))
                     {
@@ -165,52 +127,23 @@ namespace MySoft.IoC.Nodes
             catch (Exception ex)
             {
                 //写错误日志
-                SimpleLog.Instance.WriteLogForDir("serverConfig", ex);
+                SimpleLog.Instance.WriteLogForDir("ServerConfig", ex);
             }
 
             return new ServerConfig();
         }
 
         /// <summary>
-        /// 检测服务节点
-        /// </summary>
-        /// <param name="configPath"></param>
-        /// <param name="xml"></param>
-        /// <returns></returns>
-        private bool CheckServerNode(string configPath, out string xml)
-        {
-            //判断版本号，如果版本大于当前版本，则替换之
-            var tmpConfig = GetConfigFromRemote(configPath, out xml);
-
-            if (tmpConfig != null)
-            {
-                if (tmpConfig.Nodes.Count > 0
-                    && string.Compare(tmpConfig.Version, config.Version, true) > 0)
-                {
-                    this.config = tmpConfig;
-
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// 读取xml配置文件
         /// </summary>
         /// <param name="configPath"></param>
-        /// <param name="xml"></param>
         /// <returns></returns>
-        private ServerConfig GetConfigFromRemote(string configPath, out string xml)
+        private ServerConfig GetConfigFromRemote(string configPath)
         {
-            xml = string.Empty;
-
             try
             {
                 //从远程读取
-                var url = string.Format("{0}{1}", "http://www.fund123.cn", configPath);
-                xml = new HttpHelper().Reader(url);
+                var xml = new HttpHelper().Reader(configPath);
 
                 if (!xml.ToLower().StartsWith("<?xml"))
                 {

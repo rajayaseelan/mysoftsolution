@@ -45,7 +45,7 @@ namespace MySoft.IoC
             if (config.ServerType == CastleFactoryType.Proxy)
             {
                 //判断是否配置了NodeResolverType
-                this.nodeResolver = Create<IServerNodeResolver>(config.ResolverType) ?? new DefaultNodeResolver();
+                this.nodeResolver = Create<IServerNodeResolver>(config.ResolverType, config.ProxyPath) ?? new DefaultNodeResolver(config.ProxyPath);
             }
 
             container.OnLog += (log, type) =>
@@ -56,7 +56,7 @@ namespace MySoft.IoC
             container.OnError += error =>
             {
                 if (OnError != null) OnError(error);
-                else SimpleLog.Instance.WriteLog(error);
+                else SimpleLog.Instance.WriteLogForDir("CastleFactory", error);
             };
         }
 
@@ -65,15 +65,16 @@ namespace MySoft.IoC
         /// </summary>
         /// <typeparam name="InterfaceType"></typeparam>
         /// <param name="type"></param>
+        /// <param name="args"></param>
         /// <returns></returns>
-        private InterfaceType Create<InterfaceType>(Type type)
+        private InterfaceType Create<InterfaceType>(Type type, params object[] args)
             where InterfaceType : class
         {
             try
             {
                 if (type != null && typeof(InterfaceType).IsAssignableFrom(type))
                 {
-                    return Activator.CreateInstance(type) as InterfaceType;
+                    return Activator.CreateInstance(type, args) as InterfaceType;
                 }
             }
             catch
@@ -138,12 +139,11 @@ namespace MySoft.IoC
         {
             IList<ServerNode> nodes = new List<ServerNode>();
 
-            if (config.ServerType == CastleFactoryType.Proxy && nodeResolver != null)
+            if (nodeResolver != null)
             {
                 nodes = nodeResolver.GetAllServerNode();
             }
-
-            if (nodes.Count == 0)
+            else
             {
                 nodes = config.Nodes.Values.ToList();
             }
@@ -533,7 +533,7 @@ namespace MySoft.IoC
             //如果存在本地服务，则跳过
             if (service != null) return nodes.ToArray();
 
-            if (config.ServerType == CastleFactoryType.Proxy && nodeResolver != null)
+            if (nodeResolver != null)
             {
                 if (!string.IsNullOrEmpty(assemblyName))
                 {

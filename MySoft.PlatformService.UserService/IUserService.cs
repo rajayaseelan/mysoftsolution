@@ -1,13 +1,8 @@
-﻿using System;
+﻿using MySoft.IoC;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using MySoft.Remoting;
-using System.Data;
-using MySoft.IoC;
-using MySoft.RESTful;
-using System.Net;
-using System.Runtime.Serialization;
 using System.Collections.Specialized;
+using System.Runtime.Serialization;
 
 namespace MySoft.PlatformService.UserService
 {

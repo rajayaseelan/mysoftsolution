@@ -211,7 +211,7 @@ namespace MySoft
         /// <returns></returns>
         public static string SerializeXml(object obj)
         {
-            return SerializeXml(obj, Encoding.Unicode);
+            return SerializeXml(obj, Encoding.UTF8);
         }
 
         /// <summary>
@@ -249,7 +249,7 @@ namespace MySoft
         /// <returns></returns>
         public static T DeserializeXml<T>(string data)
         {
-            return DeserializeXml<T>(data, Encoding.Unicode);
+            return DeserializeXml<T>(data, Encoding.UTF8);
         }
 
         /// <summary>
@@ -260,7 +260,7 @@ namespace MySoft
         /// <returns></returns>
         public static object DeserializeXml(Type returnType, string data)
         {
-            return DeserializeXml(returnType, data, Encoding.Unicode);
+            return DeserializeXml(returnType, data, Encoding.UTF8);
         }
 
         /// <summary>

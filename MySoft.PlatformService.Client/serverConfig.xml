@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<serverConfig version="v1.0">
+<serverConfig>
   <nodeConfigs>
     <nodeConfig assemblyName="MySoft.PlatformService.UserService" key="default1" />
   </nodeConfigs>
   <serverNodes>
     <serverNode key="default1" ip="127.0.0.1" port="9982" />
-    <serverNode key="default1" ip="127.0.0.1" port="9983" />
+    <!--<serverNode key="default1" ip="127.0.0.1" port="9983" />-->
   </serverNodes>
 </serverConfig>

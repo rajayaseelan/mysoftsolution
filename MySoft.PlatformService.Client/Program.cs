@@ -62,6 +62,14 @@ namespace MySoft.PlatformService.Client
 
         static void Main(string[] args)
         {
+            //var xml1 = SerializationManager.SerializeXml(new User { Id = 1, Name = "asdfsdf" });
+            //var xml2 = SerializationManager.SerializeXml(new User { Id = 1, Name = "asdfsdf" }, Encoding.GetEncoding(936));
+
+            //var obj = SerializationManager.DeserializeXml<User>(xml1);
+            //Console.WriteLine(xml1);
+            //Console.WriteLine(xml2);
+            //Console.ReadLine();
+
             //var user = new UserA { Id = 1, Name = "test" };
             //var mappings = PropertyMapping.Create("Id>Id1", "Name|Name1");
             //var userb = CoreHelper.ConvertType<UserA, UserB>(user, null);

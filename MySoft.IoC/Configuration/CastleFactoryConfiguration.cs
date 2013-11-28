@@ -12,8 +12,9 @@ namespace MySoft.IoC.Configuration
     {
         private IDictionary<string, ServerNode> nodes;
         private CastleFactoryType serverType = CastleFactoryType.Local;
-        private Type resolverType;
-        private string defaultKey;                                              //代理服务
+        private Type resolverType;                                              //代理服务
+        private string proxyPath;                                               //代理地址
+        private string defaultKey;
         private string appname;                                                 //host名称
         private bool throwError = true;                                         //抛出异常
         private bool enableCache = true;                                        //是否缓存
@@ -68,6 +69,9 @@ namespace MySoft.IoC.Configuration
 
             if (attribute["enableCache"] != null && attribute["enableCache"].Value.Trim() != string.Empty)
                 enableCache = Convert.ToBoolean(attribute["enableCache"].Value);
+
+            if (attribute["proxyPath"] != null && attribute["proxyPath"].Value.Trim() != string.Empty)
+                proxyPath = attribute["proxyPath"].Value;
 
             foreach (XmlNode child in xmlnode.ChildNodes)
             {
@@ -204,6 +208,15 @@ namespace MySoft.IoC.Configuration
         {
             get { return resolverType; }
             set { resolverType = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the proxyPath
+        /// </summary>
+        public string ProxyPath
+        {
+            get { return proxyPath; }
+            set { proxyPath = value; }
         }
 
         /// <summary>

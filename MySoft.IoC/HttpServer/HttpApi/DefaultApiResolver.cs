@@ -49,7 +49,7 @@ namespace MySoft.IoC.HttpServer
                 catch (Exception ex)
                 {
                     //写错误日志
-                    SimpleLog.Instance.WriteLogForDir("httpapi", ex);
+                    SimpleLog.Instance.WriteLogForDir("HttpAPI", ex);
                 }
             }
 
