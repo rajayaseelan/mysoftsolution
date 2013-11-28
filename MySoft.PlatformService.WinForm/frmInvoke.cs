@@ -59,6 +59,8 @@ namespace MySoft.PlatformService.WinForm
             var nodes = CastleFactory.Create().GetServerNodes();
             var nodeKey = node.Key;
 
+            checkBox2.Checked = isReflection;
+
             comboBox1.DisplayMember = "Key";
             comboBox1.ValueMember = "Key";
             comboBox1.DataSource = nodes;
@@ -1033,6 +1035,11 @@ namespace MySoft.PlatformService.WinForm
             };
 
             frm.ShowDialog();
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            this.isReflection = checkBox2.Checked;
         }
     }
 }
