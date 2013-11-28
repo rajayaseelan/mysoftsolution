@@ -338,7 +338,7 @@ namespace MySoft
         /// <summary>
         /// 转换成JSON值
         /// </summary>
-        /// <param name="info"></param>
+        /// <param name="type"></param>
         /// <param name="jsonString"></param>
         /// <returns></returns>
         public static object ConvertJsonValue(Type type, string jsonString)
@@ -460,6 +460,8 @@ namespace MySoft
         /// <returns></returns>
         public static T[] GetMemberAttributes<T>(MemberInfo member)
         {
+            if (member == null) return null;
+
             object[] attrs = member.GetCustomAttributes(typeof(T), false);
             if (attrs != null && attrs.Length > 0)
             {
@@ -476,6 +478,8 @@ namespace MySoft
         /// <returns></returns>
         public static T GetMemberAttribute<T>(MemberInfo member)
         {
+            if (member == null) return default(T);
+
             object[] attrs = member.GetCustomAttributes(typeof(T), false);
             if (attrs != null && attrs.Length > 0)
             {

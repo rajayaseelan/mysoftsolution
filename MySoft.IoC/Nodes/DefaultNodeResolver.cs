@@ -91,7 +91,7 @@ namespace MySoft.IoC.Nodes
         /// 获取所有节点
         /// </summary>
         /// <returns></returns>
-        public IList<ServerNode> GetAllServerNode()
+        public virtual IList<ServerNode> GetAllServerNode()
         {
             return config.Nodes.Cast<ServerNode>().ToList();
         }
@@ -102,7 +102,7 @@ namespace MySoft.IoC.Nodes
         /// <param name="assemblyName"></param>
         /// <param name="namespace"></param>
         /// <returns></returns>
-        public IList<ServerNode> GetServerNodes(string assemblyName, string @namespace)
+        public virtual IList<ServerNode> GetServerNodes(string assemblyName, string @namespace)
         {
             if (config.Nodes.Count == 0) return new List<ServerNode>();
 

@@ -18,50 +18,6 @@ namespace MySoft
     /// </summary>
     public static class SerializationManager
     {
-        #region Nested Types
-
-        /// <summary>
-        /// The serialize delegate.
-        /// </summary>
-        /// <param name="obj">obj to be serialized.</param>
-        /// <returns></returns>
-        public delegate string TypeSerializeHandler(object obj);
-        /// <summary>
-        /// The deserialize delegate.
-        /// </summary>
-        /// <param name="data">the data to be deserialied.</param>
-        /// <returns></returns>
-        public delegate object TypeDeserializeHandler(string data);
-
-        #endregion
-
-        private static IDictionary<Type, KeyValuePair<TypeSerializeHandler, TypeDeserializeHandler>> handlers = new Dictionary<Type, KeyValuePair<TypeSerializeHandler, TypeDeserializeHandler>>();
-
-        static SerializationManager()
-        {
-            InitDefaultSerializeHandlers();
-        }
-
-        #region 数据系列化
-
-        /// <summary>
-        /// 将对象系列化成二进制
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public static byte[] SerializeBin(object obj)
-        {
-            if (obj == null) return new byte[0];
-
-            using (var memoryStream = new MemoryStream())
-            {
-                //Serialize the message
-                new BinaryFormatter().Serialize(memoryStream, obj);
-
-                return memoryStream.ToArray();
-            }
-        }
-
         /// <summary>
         /// 将对象系列化成字符串
         /// </summary>
@@ -81,11 +37,7 @@ namespace MySoft
         /// <returns></returns>
         public static string SerializeJson(object obj, bool indented, params JsonConverter[] converters)
         {
-            var format = indented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
-            if (converters == null || converters.Length == 0)
-                return JsonConvert.SerializeObject(obj, format, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
-            else
-                return JsonConvert.SerializeObject(obj, format, converters);
+            return SerializeJson(obj, indented, null, converters);
         }
 
         #region 支持Contract解析的方法
@@ -94,6 +46,8 @@ namespace MySoft
         /// 将对象系列化成字符串
         /// </summary>
         /// <param name="obj"></param>
+        /// <param name="resolver"></param>
+        /// <param name="converters"></param>
         /// <returns></returns>
         public static string SerializeJson(object obj, IContractResolver resolver, params JsonConverter[] converters)
         {
@@ -105,18 +59,118 @@ namespace MySoft
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="indented"></param>
+        /// <param name="resolver"></param>
         /// <param name="converters"></param>
         /// <returns></returns>
         public static string SerializeJson(object obj, bool indented, IContractResolver resolver, params JsonConverter[] converters)
         {
             var format = indented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
-            if (converters == null || converters.Length == 0)
-                return JsonConvert.SerializeObject(obj, format, new JsonSerializerSettings { ContractResolver = resolver, Converters = new[] { new Newtonsoft.Json.Converters.IsoDateTimeConverter() } });
-            else
-                return JsonConvert.SerializeObject(obj, format, new JsonSerializerSettings { ContractResolver = resolver, Converters = converters });
+
+            return JsonConvert.SerializeObject(obj, format, GetJsonSerializerSettings(resolver, converters));
         }
 
         #endregion
+
+        /// <summary>
+        /// 将字符串反系列化成对象
+        /// </summary>
+        /// <param name="returnType"></param>
+        /// <param name="data"></param>
+        /// <param name="converters"></param>
+        /// <returns></returns>
+        public static object DeserializeJson(Type returnType, string data, params JsonConverter[] converters)
+        {
+            return DeserializeJson(returnType, data, null, converters);
+        }
+
+        /// <summary>
+        /// 将字符串反系列化成对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <param name="converters"></param>
+        /// <returns></returns>
+        public static T DeserializeJson<T>(string data, params JsonConverter[] converters)
+        {
+            return (T)DeserializeJson(typeof(T), data, converters);
+        }
+
+        /// <summary>
+        /// 将字符串反系列化成对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <param name="anonymousObject"></param>
+        /// <param name="converters"></param>
+        /// <returns></returns>
+        public static T DeserializeJson<T>(string data, T anonymousObject, params JsonConverter[] converters)
+        {
+            return DeserializeJson<T>(data, converters);
+        }
+
+        #region 支持Contract解析的方法
+
+        /// <summary>
+        /// 将字符串反系列化成对象
+        /// </summary>
+        /// <param name="returnType"></param>
+        /// <param name="data"></param>
+        /// <param name="resolver"></param>
+        /// <param name="converters"></param>
+        /// <returns></returns>
+        public static object DeserializeJson(Type returnType, string data, IContractResolver resolver, params JsonConverter[] converters)
+        {
+            if (string.IsNullOrEmpty(data)) return null;
+
+            return JsonConvert.DeserializeObject(data, returnType, GetJsonSerializerSettings(resolver, converters));
+        }
+
+        /// <summary>
+        /// 将字符串反系列化成对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <param name="resolver"></param>
+        /// <param name="converters"></param>
+        /// <returns></returns>
+        public static T DeserializeJson<T>(string data, IContractResolver resolver, params JsonConverter[] converters)
+        {
+            return (T)DeserializeJson(typeof(T), data, resolver, converters);
+        }
+
+        /// <summary>
+        /// 将字符串反系列化成对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <param name="anonymousObject"></param>
+        /// <param name="resolver"></param>
+        /// <param name="converters"></param>
+        /// <returns></returns>
+        public static T DeserializeJson<T>(string data, T anonymousObject, IContractResolver resolver, params JsonConverter[] converters)
+        {
+            return DeserializeJson<T>(data, resolver, converters);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 将对象系列化成二进制
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static byte[] SerializeBin(object obj)
+        {
+            if (obj == null) return new byte[0];
+
+            using (var memoryStream = new MemoryStream())
+            {
+                //Serialize the message
+                new BinaryFormatter().Serialize(memoryStream, obj);
+
+                return memoryStream.ToArray();
+            }
+        }
 
         /// <summary>
         /// 将数据反系列化成对象
@@ -151,103 +205,20 @@ namespace MySoft
         }
 
         /// <summary>
-        /// 将字符串反系列化成对象
-        /// </summary>
-        /// <param name="returnType"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static object DeserializeJson(Type returnType, string data, params JsonConverter[] converters)
-        {
-            if (string.IsNullOrEmpty(data)) return null;
-
-            if (converters == null || converters.Length == 0)
-                return JsonConvert.DeserializeObject(data, returnType, new Newtonsoft.Json.Converters.IsoDateTimeConverter());
-            else
-                return JsonConvert.DeserializeObject(data, returnType, converters);
-        }
-
-        /// <summary>
-        /// 将字符串反系列化成对象
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static T DeserializeJson<T>(string data, params JsonConverter[] converters)
-        {
-            return (T)DeserializeJson(typeof(T), data, converters);
-        }
-
-        /// <summary>
-        /// 将字符串反系列化成对象
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="data"></param>
-        /// <param name="anonymousObject"></param>
-        /// <returns></returns>
-        public static T DeserializeJson<T>(string data, T anonymousObject, params JsonConverter[] converters)
-        {
-            return DeserializeJson<T>(data, converters);
-        }
-
-        #region 支持Contract解析的方法
-
-        /// <summary>
-        /// 将字符串反系列化成对象
-        /// </summary>
-        /// <param name="returnType"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static object DeserializeJson(Type returnType, string data, IContractResolver resolver, params JsonConverter[] converters)
-        {
-            if (string.IsNullOrEmpty(data)) return null;
-
-            if (converters == null || converters.Length == 0)
-                return JsonConvert.DeserializeObject(data, returnType, new JsonSerializerSettings { ContractResolver = resolver, Converters = new[] { new Newtonsoft.Json.Converters.IsoDateTimeConverter() } });
-            else
-                return JsonConvert.DeserializeObject(data, returnType, new JsonSerializerSettings { ContractResolver = resolver, Converters = converters });
-        }
-
-        /// <summary>
-        /// 将字符串反系列化成对象
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static T DeserializeJson<T>(string data, IContractResolver resolver, params JsonConverter[] converters)
-        {
-            return (T)DeserializeJson(typeof(T), data, resolver, converters);
-        }
-
-        /// <summary>
-        /// 将字符串反系列化成对象
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="data"></param>
-        /// <param name="anonymousObject"></param>
-        /// <returns></returns>
-        public static T DeserializeJson<T>(string data, T anonymousObject, IContractResolver resolver, params JsonConverter[] converters)
-        {
-            return DeserializeJson<T>(data, resolver, converters);
-        }
-
-        #endregion
-
-        #endregion
-
-        /// <summary>
         /// Serializes the specified obj.
         /// </summary>
         /// <param name="obj">The obj.</param>
         /// <returns></returns>
         public static string SerializeXml(object obj)
         {
-            return SerializeXml(obj, Encoding.Default);
+            return SerializeXml(obj, Encoding.Unicode);
         }
 
         /// <summary>
         /// Serializes the specified obj.
         /// </summary>
         /// <param name="obj">The obj.</param>
+        /// <param name="encoding">The obj.</param>
         /// <returns></returns>
         public static string SerializeXml(object obj, Encoding encoding)
         {
@@ -256,36 +227,17 @@ namespace MySoft
                 return null;
             }
 
-            if (handlers.ContainsKey(obj.GetType()))
+            using (var ms = new MemoryStream())
+            using (XmlTextWriter xw = new XmlTextWriter(ms, encoding))
             {
-                return handlers[obj.GetType()].Key(obj);
-            }
-            else
-            {
-                var namespaces = new XmlSerializerNamespaces();
-                namespaces.Add("", "");
+                xw.Formatting = System.Xml.Formatting.Indented;
+                XmlSerializer serializer = GetSerializer(obj.GetType());
 
-                if (encoding == Encoding.Default)
-                {
-                    StringBuilder sb = new StringBuilder();
-                    using (StringWriter sw = new StringWriter(sb))
-                    {
-                        XmlSerializer serializer = GetSerializer(obj.GetType());
-                        serializer.Serialize(sw, obj, namespaces);
-                        return sb.ToString();
-                    }
-                }
-                else
-                {
-                    using (MemoryStream ms = new MemoryStream())
-                    using (XmlTextWriter xw = new XmlTextWriter(ms, encoding))
-                    {
-                        xw.Formatting = System.Xml.Formatting.Indented;
-                        XmlSerializer serializer = GetSerializer(obj.GetType());
-                        serializer.Serialize(xw, obj, namespaces);
-                        return encoding.GetString(ms.ToArray());
-                    }
-                }
+                var ns = new XmlSerializerNamespaces();
+                ns.Add("", "");
+
+                serializer.Serialize(xw, obj, ns);
+                return encoding.GetString(ms.ToArray());
             }
         }
 
@@ -297,7 +249,7 @@ namespace MySoft
         /// <returns></returns>
         public static T DeserializeXml<T>(string data)
         {
-            return DeserializeXml<T>(data, Encoding.Default);
+            return DeserializeXml<T>(data, Encoding.Unicode);
         }
 
         /// <summary>
@@ -308,7 +260,7 @@ namespace MySoft
         /// <returns></returns>
         public static object DeserializeXml(Type returnType, string data)
         {
-            return DeserializeXml(returnType, data, Encoding.Default);
+            return DeserializeXml(returnType, data, Encoding.Unicode);
         }
 
         /// <summary>
@@ -335,23 +287,11 @@ namespace MySoft
                 return null;
             }
 
-            if (encoding == Encoding.Default)
+            using (MemoryStream ms = new MemoryStream(encoding.GetBytes(data)))
+            using (XmlReader xr = XmlReader.Create(ms))
             {
-                using (StringReader sr = new StringReader(data))
-                {
-                    XmlSerializer serializer = GetSerializer(returnType);
-                    return serializer.Deserialize(sr);
-                }
-            }
-            else
-            {
-                using (MemoryStream ms = new MemoryStream(encoding.GetBytes(data)))
-                using (StreamReader sr = new StreamReader(ms, encoding))
-                using (XmlReader xr = XmlReader.Create(sr))
-                {
-                    XmlSerializer serializer = GetSerializer(returnType);
-                    return serializer.Deserialize(xr);
-                }
+                XmlSerializer serializer = GetSerializer(returnType);
+                return serializer.Deserialize(xr);
             }
         }
 
@@ -378,141 +318,26 @@ namespace MySoft
         }
 
         /// <summary>
-        /// Registers the serialize handler.
+        /// GetJsonSerializerSettings
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="serializeHandler">The serialize handler.</param>
-        /// <param name="deserializeHandler">The deserialize handler.</param>
-        public static void RegisterSerializeHandler(Type type, TypeSerializeHandler serializeHandler, TypeDeserializeHandler deserializeHandler)
+        /// <param name="resolver"></param>
+        /// <param name="converters"></param>
+        /// <returns></returns>
+        private static JsonSerializerSettings GetJsonSerializerSettings(IContractResolver resolver, JsonConverter[] converters)
         {
-            lock (handlers)
+            if (converters == null || converters.Length == 0) converters = null;
+
+            var settings = new JsonSerializerSettings
             {
-                if (handlers.ContainsKey(type))
-                {
-                    handlers[type] = new KeyValuePair<TypeSerializeHandler, TypeDeserializeHandler>(serializeHandler, deserializeHandler);
-                }
-                else
-                {
-                    handlers.Add(type, new KeyValuePair<TypeSerializeHandler, TypeDeserializeHandler>(serializeHandler, deserializeHandler));
-                }
-            }
+                ContractResolver = resolver,
+                Converters = converters,
+                DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat,
+                DateTimeZoneHandling = DateTimeZoneHandling.Unspecified,
+                DateParseHandling = DateParseHandling.None,
+                DateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fff"
+            };
+
+            return settings;
         }
-
-        /// <summary>
-        /// Unregisters the serialize handler.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        public static void UnregisterSerializeHandler(Type type)
-        {
-            lock (handlers)
-            {
-                if (handlers.ContainsKey(type))
-                {
-                    handlers.Remove(type);
-                }
-            }
-        }
-
-        #region InitDefaultSerializeHandlers
-
-        private static void InitDefaultSerializeHandlers()
-        {
-            RegisterSerializeHandler(typeof(string), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadString));
-            RegisterSerializeHandler(typeof(int), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadInt));
-            RegisterSerializeHandler(typeof(long), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadLong));
-            RegisterSerializeHandler(typeof(short), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadShort));
-            RegisterSerializeHandler(typeof(byte), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadByte));
-            RegisterSerializeHandler(typeof(bool), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadBool));
-            RegisterSerializeHandler(typeof(decimal), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadDecimal));
-            RegisterSerializeHandler(typeof(char), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadChar));
-            RegisterSerializeHandler(typeof(sbyte), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadSbyte));
-            RegisterSerializeHandler(typeof(float), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadFloat));
-            RegisterSerializeHandler(typeof(double), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadDouble));
-            RegisterSerializeHandler(typeof(byte[]), new TypeSerializeHandler(ByteArrayToString), new TypeDeserializeHandler(LoadByteArray));
-            RegisterSerializeHandler(typeof(Guid), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadGuid));
-            RegisterSerializeHandler(typeof(DateTime), new TypeSerializeHandler(ToString), new TypeDeserializeHandler(LoadDateTime));
-        }
-
-        private static string ToString(object obj)
-        {
-            return obj.ToString();
-        }
-
-        private static object LoadString(string data)
-        {
-            return data;
-        }
-
-        private static object LoadInt(string data)
-        {
-            return int.Parse(data);
-        }
-
-        private static object LoadLong(string data)
-        {
-            return long.Parse(data);
-        }
-
-        private static object LoadShort(string data)
-        {
-            return short.Parse(data);
-        }
-
-        private static object LoadByte(string data)
-        {
-            return byte.Parse(data);
-        }
-
-        private static object LoadBool(string data)
-        {
-            return bool.Parse(data);
-        }
-
-        private static object LoadDecimal(string data)
-        {
-            return decimal.Parse(data);
-        }
-
-        private static object LoadChar(string data)
-        {
-            return char.Parse(data);
-        }
-
-        private static object LoadSbyte(string data)
-        {
-            return sbyte.Parse(data);
-        }
-
-        private static object LoadFloat(string data)
-        {
-            return float.Parse(data);
-        }
-
-        private static object LoadDouble(string data)
-        {
-            return double.Parse(data);
-        }
-
-        private static string ByteArrayToString(object obj)
-        {
-            return Convert.ToBase64String((byte[])obj);
-        }
-
-        private static object LoadByteArray(string data)
-        {
-            return Convert.FromBase64String(data);
-        }
-
-        private static object LoadGuid(string data)
-        {
-            return new Guid(data);
-        }
-
-        private static object LoadDateTime(string data)
-        {
-            return DateTime.Parse(data);
-        }
-
-        #endregion
     }
 }
