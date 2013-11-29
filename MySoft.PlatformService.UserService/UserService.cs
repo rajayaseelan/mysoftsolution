@@ -32,6 +32,8 @@ namespace MySoft.PlatformService.UserService
         //[AspectSwitcher(true, Description = "获取用户")]
         User IUserService.GetUser(int id)
         {
+            Thread.Sleep(5000);
+
             //throw new ApplicationException("出错了！");
 
             var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');

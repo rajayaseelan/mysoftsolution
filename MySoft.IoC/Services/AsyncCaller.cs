@@ -168,8 +168,6 @@ namespace MySoft.IoC.Services
             {
                 this.queues.Clear();
             }
-
-            this.caller = null;
         }
     }
 }
