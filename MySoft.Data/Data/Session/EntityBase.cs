@@ -58,9 +58,7 @@ namespace MySoft.Data
                     SourceList<EntityBase> list = new SourceList<EntityBase>();
                     list.Add(this);
 
-                    DataTable dt = list.GetDataTable(this.GetType());
-                    ISourceTable table = new SourceTable(dt);
-                    return table[0];
+                    return list.ToTable()[0];
                 }
                 catch (Exception ex)
                 {
