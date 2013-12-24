@@ -144,6 +144,27 @@ namespace MySoft
         /// Post指定url的数据
         /// </summary>
         /// <param name="url"></param>
+        /// <returns></returns>
+        public string Poster(string url)
+        {
+            return Poster(url, (string)null);
+        }
+
+        /// <summary>
+        /// Post指定url的数据
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public string Poster(string url, WebHeaderCollection header)
+        {
+            return Poster(url, null, header);
+        }
+
+        /// <summary>
+        /// Post指定url的数据
+        /// </summary>
+        /// <param name="url"></param>
         /// <param name="value"></param>
         /// <returns></returns>
         public string Poster(string url, string value)
@@ -165,12 +186,12 @@ namespace MySoft
 
             if (header != null) request.Headers = header;
 
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.Method = "POST";
+
             //将数据写入请求流
             if (!string.IsNullOrEmpty(value))
             {
-                request.ContentType = "application/x-www-form-urlencoded";
-                request.Method = "POST";
-
                 var buffer = encoding.GetBytes(value);
 
                 //设置流长度
