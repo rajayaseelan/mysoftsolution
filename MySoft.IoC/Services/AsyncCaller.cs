@@ -141,6 +141,9 @@ namespace MySoft.IoC.Services
             var key = string.Format("{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
             var queueKey = MD5.HexHash(Encoding.Default.GetBytes(key));
 
+            //定义QueueManager
+            QueueManager manager = null;
+
             lock (queues)
             {
                 if (!queues.ContainsKey(queueKey))
@@ -148,15 +151,17 @@ namespace MySoft.IoC.Services
                     queues[queueKey] = new QueueManager(queueKey);
                 }
 
-                //判断是否运行任务
-                isRunTask = queues[queueKey].Count == 0;
-
-                //添加到队列
-                queues[queueKey].Add(waitResult);
+                manager = queues[queueKey];
             }
 
+            //判断是否运行任务
+            isRunTask = manager.Count == 0;
+
+            //添加到队列
+            manager.Add(waitResult);
+
             //返回队列服务
-            return queues[queueKey];
+            return manager;
         }
 
         /// <summary>
