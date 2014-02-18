@@ -204,8 +204,6 @@
     <Compile Include="Services\BaseService.cs" />
     <Compile Include="Services\DynamicService.cs" />
     <Compile Include="Services\SyncCaller.cs" />
-    <Compile Include="Services\Tasks\AsyncResult.cs" />
-    <Compile Include="Services\Tasks\AsyncResultNoResult.cs" />
     <Compile Include="Services\WaitResult.cs" />
     <Compile Include="SimpleServiceContainer.cs" />
     <Compile Include="Messages\Status\CallInfo.cs" />
