@@ -168,16 +168,6 @@
             响应的消息
             </summary>
         </member>
-        <member name="T:MySoft.IoC.IStartable">
-            <summary>
-            自启动接口
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.IInitializable">
-            <summary>
-            初始化接口
-            </summary>
-        </member>
         <member name="T:MySoft.IoC.Aspect.IInvocation">
             <summary>
             Aspect调用接口
@@ -191,6 +181,31 @@
         <member name="P:MySoft.IoC.Aspect.IInvocation.Description">
             <summary>
             操作描述信息
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.TypeInitializable">
+            <summary>
+            类型初始化时处理的实例
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.TypeInitializable.Initialize">
+            <summary>
+            初始化接口
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.TypeInitializable.Castle#Core#IInitializable#Initialize">
+            <summary>
+            初始化接口
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.TypeInitializable.Castle#Core#IStartable#Start">
+            <summary>
+            开始接口
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.TypeInitializable.Castle#Core#IStartable#Stop">
+            <summary>
+            结束接口
             </summary>
         </member>
         <member name="T:MySoft.IoC.Aspect.InnerInvocation">
@@ -305,6 +320,12 @@
             <param name="reqMsg"></param>
             <returns></returns>
         </member>
+        <member name="M:MySoft.IoC.BaseServiceHandler.WriteError(System.Exception)">
+            <summary>
+            写错误日志
+            </summary>
+            <param name="ex"></param>
+        </member>
         <member name="M:MySoft.IoC.BaseServiceHandler.GetResponse(MySoft.IoC.Messages.RequestMessage,System.Int64@)">
             <summary>
             获取响应信息
@@ -404,6 +425,12 @@
             Gets the message.
             </summary>
             <value>The message.</value>
+        </member>
+        <member name="M:MySoft.IoC.Messages.ResponseBuffer.#ctor(MySoft.IoC.Messages.ResponseMessage)">
+            <summary>
+            实例化ResponseBuffer
+            </summary>
+            <param name="resMsg"></param>
         </member>
         <member name="P:MySoft.IoC.Messages.ResponseBuffer.Buffer">
             <summary>
@@ -516,7 +543,7 @@
             Max communication count.
             </summary>
         </member>
-        <member name="F:MySoft.IoC.Communication.Scs.Communication.CommunicationHelper.BufferSize">
+        <member name="F:MySoft.IoC.Communication.Scs.Communication.CommunicationHelper.BUFFERSIZE">
             <summary>
             Size of the buffer that is used to send bytes from TCP socket.
             </summary>
@@ -538,6 +565,11 @@
             Push SocketAsyncEventArgs.
             </summary>
             <returns></returns>
+        </member>
+        <member name="P:MySoft.IoC.Communication.Scs.Communication.CommunicationHelper.BufferSize">
+            <summary>
+            Buffer size.
+            </summary>
         </member>
         <member name="P:MySoft.IoC.Communication.Scs.Communication.CommunicationHelper.Count">
             <summary>
@@ -565,6 +597,17 @@
             <summary>
             Tcp socket async event args.
             </summary>
+        </member>
+        <member name="M:MySoft.IoC.Communication.Scs.Communication.TcpSocketAsyncEventArgs.#ctor">
+            <summary>
+            实例化TcpSocketAsyncEventArgs
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Communication.Scs.Communication.TcpSocketAsyncEventArgs.#ctor(MySoft.IoC.Communication.Scs.Communication.ICommunicationProtocol)">
+            <summary>
+            实例化TcpSocketAsyncEventArgs
+            </summary>
+            <param name="channel"></param>
         </member>
         <member name="M:MySoft.IoC.Communication.Scs.Communication.TcpSocketAsyncEventArgs.OnCompleted(System.Net.Sockets.SocketAsyncEventArgs)">
             <summary>
@@ -770,7 +813,7 @@
             请求异常信息
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Messages.ResponseMessageEventArgs.Message">
+        <member name="P:MySoft.IoC.Messages.ResponseMessageEventArgs.Response">
             <summary>
             响应的消息
             </summary>
@@ -799,7 +842,7 @@
             <param name="namespace"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Nodes.DefaultNodeResolver.#ctor">
+        <member name="M:MySoft.IoC.Nodes.DefaultNodeResolver.#ctor(System.String)">
             <summary>
             实例化DefaultNodeResolver
             </summary>
@@ -818,33 +861,30 @@
             <param name="namespace"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Nodes.DefaultNodeResolver.GetXmlFileConfig(System.Boolean)">
+        <member name="M:MySoft.IoC.Nodes.DefaultNodeResolver.GetServerConfig(System.String)">
+            <summary>
+            获取服务节点
+            </summary>
+            <param name="configPath"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Nodes.DefaultNodeResolver.GetConfigFromRemote(System.String)">
             <summary>
             读取xml配置文件
             </summary>
-            <param name="fromRemote"></param>
+            <param name="configPath"></param>
             <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Nodes.DefaultNodeResolver.InitServerConfig">
-            <summary>
-            初始化服务节点
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Nodes.DefaultNodeResolver.CheckServerNode">
-            <summary>
-            检测服务节点
-            </summary>
         </member>
         <member name="T:MySoft.IoC.HttpServer.TcpDocument">
             <summary>
             API文档类
             </summary>
         </member>
-        <member name="M:MySoft.IoC.HttpServer.TcpDocument.MakeDocument">
+        <member name="M:MySoft.IoC.HttpServer.TcpDocument.MakeDocument(System.Collections.Generic.IList{MySoft.IoC.HttpServer.HttpCallerInfo})">
             <summary>
             生成文档
             </summary>
+            <param name="infos"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.IoC.HttpServer.TcpDocument.GetItemDocument(MySoft.IoC.Messages.ServiceInfo)">
@@ -900,11 +940,6 @@
             实例化ServerConfig
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Nodes.ServerConfig.Version">
-            <summary>
-            版本号
-            </summary>
-        </member>
         <member name="P:MySoft.IoC.Nodes.ServerConfig.Configs">
             <summary>
             配置节点
@@ -929,6 +964,31 @@
         <member name="P:MySoft.IoC.Nodes.ServerNodeCollection.Item(System.Int32)">
             <summary>
             Gets or sets a ServerNode at a specified ordinal index.
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.MessageItem">
+            <summary>
+            发送消息项
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.MessageItem.MessageId">
+            <summary>
+            消息Id
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.MessageItem.Channel">
+            <summary>
+            发送对象
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.MessageItem.Request">
+            <summary>
+            请求信息
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.MessageItem.Response">
+            <summary>
+            响应信息
             </summary>
         </member>
         <member name="T:MySoft.IoC.ServiceChannel">
@@ -1598,6 +1658,12 @@
             </summary>
             <param name="message">Message to be sent</param>
         </member>
+        <member name="M:MySoft.IoC.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.Dispose(System.Net.Sockets.SocketAsyncEventArgs)">
+            <summary>
+            Dispose socket args resource.
+            </summary>
+            <param name="e"></param>
+        </member>
         <member name="M:MySoft.IoC.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.MySoft#IoC#Communication#Scs#Communication#ICommunicationProtocol#SendCompleted(System.Net.Sockets.SocketAsyncEventArgs)">
             <summary>
             On send completed.
@@ -1618,12 +1684,6 @@
             <param name="buffer"></param>
             <param name="offset"></param>
             <param name="bytesTransferred"></param>
-        </member>
-        <member name="M:MySoft.IoC.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.Dispose(System.Net.Sockets.SocketAsyncEventArgs)">
-            <summary>
-            Dispose resource.
-            </summary>
-            <param name="e"></param>
         </member>
         <member name="P:MySoft.IoC.Communication.Scs.Communication.Channels.Tcp.TcpCommunicationChannel.RemoteEndPoint">
             <summary>
@@ -1695,6 +1755,12 @@
             Accept completed.
             </summary>
             <param name="state"></param>
+        </member>
+        <member name="M:MySoft.IoC.Communication.Scs.Communication.Channels.Tcp.TcpConnectionListener.Dispose(System.Net.Sockets.SocketAsyncEventArgs)">
+            <summary>
+            Dispose resource.
+            </summary>
+            <param name="e"></param>
         </member>
         <member name="T:MySoft.IoC.Communication.Scs.Communication.CommunicationException">
             <summary>
@@ -3259,7 +3325,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.HttpServer.HttpServiceCaller.GetTcpDocument">
+        <member name="M:MySoft.IoC.HttpServer.HttpServiceCaller.GetTcpDocument(System.Boolean)">
             <summary>
             获取服务文档
             </summary>
@@ -3876,6 +3942,13 @@
             服务名称
             </summary>
         </member>
+        <member name="T:MySoft.IoC.Services.AsyncMethodCaller">
+            <summary>
+            异步调用委托
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
         <member name="T:MySoft.IoC.Services.AsyncCaller">
             <summary>
             异步调用器
@@ -3916,26 +3989,11 @@
             <param name="reqMsg"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Services.SyncCaller.GetResponse(MySoft.IoC.OperationContext,MySoft.IoC.Messages.RequestMessage)">
-            <summary>
-            获取响应数据
-            </summary>
-            <param name="context"></param>
-            <param name="reqMsg"></param>
-            <returns></returns>
-        </member>
         <member name="M:MySoft.IoC.Services.SyncCaller.NeedCacheResult(MySoft.IoC.Messages.RequestMessage)">
             <summary>
             判断是否需要缓存
             </summary>
             <param name="reqMsg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.SyncCaller.CheckResponse(MySoft.IoC.Messages.ResponseMessage)">
-            <summary>
-            检测响应是否有效
-            </summary>
-            <param name="resMsg"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.IoC.Services.SyncCaller.GetCacheKey(MySoft.IoC.Messages.RequestMessage,MySoft.IoC.Messages.AppCaller)">
@@ -3966,20 +4024,18 @@
             <param name="reqMsg"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.IoC.Services.AsyncCaller.WorkCallback(System.Object)">
+        <member name="M:MySoft.IoC.Services.AsyncCaller.AsyncRun(MySoft.IoC.Services.AsyncContext)">
+            <summary>
+            异步调用
+            </summary>
+            <param name="ac"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.IoC.Services.AsyncCaller.AsyncCallback(System.IAsyncResult)">
             <summary>
             回调处理
             </summary>
-            <param name="state"></param>
-        </member>
-        <member name="M:MySoft.IoC.Services.AsyncCaller.AsyncRun(MySoft.IoC.Services.QueueManager,MySoft.IoC.OperationContext,MySoft.IoC.Messages.RequestMessage)">
-            <summary>
-            异步调用方法
-            </summary>
-            <param name="manager"></param>
-            <param name="context"></param>
-            <param name="reqMsg"></param>
-            <returns></returns>
+            <param name="ar"></param>
         </member>
         <member name="M:MySoft.IoC.Services.AsyncCaller.GetManager(MySoft.IoC.Messages.AppCaller,MySoft.IoC.Services.WaitResult,System.Boolean@)">
             <summary>
@@ -3993,6 +4049,31 @@
         <member name="M:MySoft.IoC.Services.AsyncCaller.Dispose">
             <summary>
             清理资源
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Services.RequestContext">
+            <summary>
+            请求上下文
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.RequestContext.Context">
+            <summary>
+            操作上下文
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.RequestContext.Request">
+            <summary>
+            请求对象
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Services.AsyncContext">
+            <summary>
+            异步上下文
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Services.AsyncContext.QueueKey">
+            <summary>
+            Queue key.
             </summary>
         </member>
         <member name="T:MySoft.IoC.Services.InvokeProxy">
@@ -4077,13 +4158,6 @@
         <member name="M:MySoft.IoC.Services.RemoteProxy.CallService(MySoft.IoC.Messages.RequestMessage)">
             <summary>
             调用方法
-            </summary>
-            <param name="reqMsg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:MySoft.IoC.Services.RemoteProxy.GetResult(MySoft.IoC.Messages.RequestMessage)">
-            <summary>
-            获取结果
             </summary>
             <param name="reqMsg"></param>
             <returns></returns>
@@ -5107,12 +5181,13 @@
             </summary>
             <param name="config">The container.</param>
         </member>
-        <member name="M:MySoft.IoC.CastleFactory.Create``1(System.Type)">
+        <member name="M:MySoft.IoC.CastleFactory.Create``1(System.Type,System.Object[])">
             <summary>
             创建指定类型的实例
             </summary>
             <typeparam name="InterfaceType"></typeparam>
             <param name="type"></param>
+            <param name="args"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.IoC.CastleFactory.Create">
@@ -5363,6 +5438,12 @@
             <param name="messageId"></param>
             <param name="reqMsg"></param>
         </member>
+        <member name="M:MySoft.IoC.CastleService.WaitCallback(System.Object)">
+            <summary>
+            等等响应
+            </summary>
+            <param name="state"></param>
+        </member>
         <member name="M:MySoft.IoC.CastleService.DataCounter(System.String,MySoft.IoC.Messages.AppCaller,MySoft.IoC.Messages.ResponseMessage)">
             <summary>
             数据计数
@@ -5494,15 +5575,14 @@
             </summary>
             <value>The enableCache.</value>
         </member>
-        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.EnableProxy">
-            <summary>
-            Gets or sets the enableProxy
-            </summary>
-            <value>The enableProxy.</value>
-        </member>
         <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.ResolverType">
             <summary>
             Gets or sets the nodeResolverType
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.ProxyPath">
+            <summary>
+            Gets or sets the proxyPath
             </summary>
         </member>
         <member name="P:MySoft.IoC.Configuration.CastleFactoryConfiguration.Nodes">
@@ -5521,11 +5601,6 @@
             Service facrory type
             </summary>
         </member>
-        <member name="F:MySoft.IoC.CastleFactoryType.None">
-            <summary>
-            None
-            </summary>
-        </member>
         <member name="F:MySoft.IoC.CastleFactoryType.Local">
             <summary>
             Local
@@ -5539,6 +5614,11 @@
         <member name="F:MySoft.IoC.CastleFactoryType.LocalRemote">
             <summary>
             LocalRemote
+            </summary>
+        </member>
+        <member name="F:MySoft.IoC.CastleFactoryType.Proxy">
+            <summary>
+            代理模式
             </summary>
         </member>
         <member name="T:MySoft.IoC.Configuration.CastleServiceConfiguration">
@@ -5914,7 +5994,7 @@
             <param name="reqMsg">The MSG.</param>
             <returns>The msg.</returns>
         </member>
-        <member name="M:MySoft.IoC.Services.DynamicService.InvokeMethod(System.Reflection.MethodInfo,MySoft.IoC.Messages.RequestMessage)">
+        <member name="M:MySoft.IoC.Services.DynamicService.Invoke(System.Reflection.MethodInfo,MySoft.IoC.Messages.RequestMessage)">
             <summary>
             调用方法
             </summary>
@@ -5935,107 +6015,6 @@
             </summary>
             <param name="reqMsg"></param>
             <param name="resMsg"></param>
-        </member>
-        <member name="T:MySoft.IoC.Services.TaskPool">
-            <summary>
-            Task池
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.TaskPool.#ctor(System.Int32)">
-            <summary>
-            初始化线程池
-            </summary>
-            <param name="_max"></param>
-        </member>
-        <member name="M:MySoft.IoC.Services.TaskPool.#ctor(System.Int32,System.Int32)">
-            <summary>
-            初始化线程池
-            </summary>
-            <param name="_max"></param>
-            <param name="_min"></param>
-        </member>
-        <member name="M:MySoft.IoC.Services.TaskPool.#ctor(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            初始化线程池
-            </summary>
-            <param name="_max"></param>
-            <param name="_min"></param>
-            <param name="_increment"></param>
-        </member>
-        <member name="M:MySoft.IoC.Services.TaskPool.InitPool">
-            <summary>
-            初始化池
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.TaskPool.t_WorkComplete(MySoft.IoC.Services.Task)">
-            <summary>
-            线程执行完毕后的触发事件 
-            </summary>
-            <param name="obj"></param>
-        </member>
-        <member name="M:MySoft.IoC.Services.TaskPool.AddTaskItem(System.Threading.WaitCallback,System.Object)">
-            <summary>
-            添加工作委托的方法 
-            </summary>
-            <param name="TaskItem"></param>
-            <param name="Context"></param>
-        </member>
-        <member name="M:MySoft.IoC.Services.TaskPool.Dispose">
-            <summary>
-            回收资源 
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.Services.TaskPool.Waititem">
-            <summary>
-            存储等待队列的类 
-            </summary>
-        </member>
-        <member name="T:MySoft.IoC.Services.Task">
-            <summary>
-            线程包装器类 
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.Task.#ctor">
-            <summary>
-            初始化包装器
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.Task.Active">
-            <summary>
-            唤醒线程
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.Task.SetWorkItem(System.Threading.WaitCallback,System.Object)">
-            <summary>
-            设置执行委托和状态对象 
-            </summary>
-            <param name="action"></param>
-            <param name="context"></param>
-        </member>
-        <member name="M:MySoft.IoC.Services.Task.Work">
-            <summary>
-            线程体包装方法 
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.Task.Close">
-            <summary>
-            关闭线程 
-            </summary>
-        </member>
-        <member name="M:MySoft.IoC.Services.Task.Dispose">
-            <summary>
-            回收资源 
-            </summary>
-        </member>
-        <member name="E:MySoft.IoC.Services.Task.WorkComplete">
-            <summary>
-            线程完成一次操作的事件 
-            </summary>
-        </member>
-        <member name="P:MySoft.IoC.Services.Task.Key">
-            <summary>
-            用于字典的Key 
-            </summary>
         </member>
         <member name="T:MySoft.IoC.Services.WaitResult">
             <summary>
@@ -6079,7 +6058,7 @@
             清理资源
             </summary>
         </member>
-        <member name="P:MySoft.IoC.Services.WaitResult.Message">
+        <member name="P:MySoft.IoC.Services.WaitResult.Response">
             <summary>
             消息对象
             </summary>
@@ -6524,6 +6503,11 @@
             子参数信息
             </summary>
         </member>
+        <member name="P:MySoft.IoC.Messages.ParameterInfo.IsCollection">
+            <summary>
+            是否集合类型
+            </summary>
+        </member>
         <member name="T:MySoft.IoC.Messages.EnumInfo">
             <summary>
             枚举信息
@@ -6833,6 +6817,107 @@
         <member name="F:MySoft.IoC.ResponseType.Json">
             <summary>
             Json格式
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.TaskPool">
+            <summary>
+            Task池
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.TaskPool.#ctor(System.Int32)">
+            <summary>
+            初始化线程池
+            </summary>
+            <param name="_max"></param>
+        </member>
+        <member name="M:MySoft.IoC.TaskPool.#ctor(System.Int32,System.Int32)">
+            <summary>
+            初始化线程池
+            </summary>
+            <param name="_max"></param>
+            <param name="_min"></param>
+        </member>
+        <member name="M:MySoft.IoC.TaskPool.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            初始化线程池
+            </summary>
+            <param name="_max"></param>
+            <param name="_min"></param>
+            <param name="_increment"></param>
+        </member>
+        <member name="M:MySoft.IoC.TaskPool.InitPool">
+            <summary>
+            初始化池
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.TaskPool.t_WorkComplete(MySoft.IoC.Task)">
+            <summary>
+            线程执行完毕后的触发事件 
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="M:MySoft.IoC.TaskPool.AddTaskItem(System.Threading.WaitCallback,System.Object)">
+            <summary>
+            添加工作委托的方法 
+            </summary>
+            <param name="TaskItem"></param>
+            <param name="Context"></param>
+        </member>
+        <member name="M:MySoft.IoC.TaskPool.Dispose">
+            <summary>
+            回收资源 
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.TaskPool.Waititem">
+            <summary>
+            存储等待队列的类 
+            </summary>
+        </member>
+        <member name="T:MySoft.IoC.Task">
+            <summary>
+            线程包装器类 
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Task.#ctor">
+            <summary>
+            初始化包装器
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Task.Active">
+            <summary>
+            唤醒线程
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Task.SetWorkItem(System.Threading.WaitCallback,System.Object)">
+            <summary>
+            设置执行委托和状态对象 
+            </summary>
+            <param name="action"></param>
+            <param name="context"></param>
+        </member>
+        <member name="M:MySoft.IoC.Task.Work">
+            <summary>
+            线程体包装方法 
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Task.Close">
+            <summary>
+            关闭线程 
+            </summary>
+        </member>
+        <member name="M:MySoft.IoC.Task.Dispose">
+            <summary>
+            回收资源 
+            </summary>
+        </member>
+        <member name="E:MySoft.IoC.Task.WorkComplete">
+            <summary>
+            线程完成一次操作的事件 
+            </summary>
+        </member>
+        <member name="P:MySoft.IoC.Task.Key">
+            <summary>
+            用于字典的Key 
             </summary>
         </member>
         <member name="T:MySoft.IoC.WarningException">

@@ -60,21 +60,21 @@
             <summary>
             设置过期时间
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="datetime"></param>
         </member>
         <member name="M:MySoft.Cache.ICacheStrategy.AddObject(System.String,System.Object)">
             <summary>
             添加指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
         </member>
         <member name="M:MySoft.Cache.ICacheStrategy.AddObject(System.String,System.Object,System.TimeSpan)">
             <summary>
             添加指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
             <param name="expires"></param>
         </member>
@@ -82,7 +82,7 @@
             <summary>
             添加指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
             <param name="datetime"></param>
         </member>
@@ -90,20 +90,20 @@
             <summary>
             移除指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
         </member>
         <member name="M:MySoft.Cache.ICacheStrategy.GetObject(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.ICacheStrategy.GetObject``1(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.ICacheStrategy.GetMatchObject(System.String)">
@@ -179,20 +179,20 @@
             <summary>
             移除指定Key的对象
             </summary>
-            <param name="objIds"></param>
+            <param name="keys"></param>
         </member>
         <member name="M:MySoft.Cache.ICacheStrategy.GetObjects(System.Collections.Generic.IList{System.String})">
             <summary>
             返回指定Key的对象
             </summary>
-            <param name="objIds"></param>
+            <param name="keys"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.ICacheStrategy.GetObjects``1(System.Collections.Generic.IList{System.String})">
             <summary>
             返回指定Key的对象
             </summary>
-            <param name="objIds"></param>
+            <param name="keys"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.ICacheStrategy.GetMatchObjects(System.String)">
@@ -234,35 +234,35 @@
             <summary>
             获取输入的Key
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.GetOutputKey(System.String)">
             <summary>
             获取输出的Key
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.SetExpired(System.String,System.DateTime)">
             <summary>
             设置过期时间
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="datetime"></param>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.AddObject(System.String,System.Object)">
             <summary>
             添加指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.AddObject(System.String,System.Object,System.TimeSpan)">
             <summary>
             添加指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
             <param name="expires"></param>
         </member>
@@ -270,7 +270,7 @@
             <summary>
             添加指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
             <param name="datetime"></param>
         </member>
@@ -278,20 +278,20 @@
             <summary>
             移除指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.GetObject(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.GetObject``1(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.GetMatchObject(System.String)">
@@ -367,13 +367,13 @@
             <summary>
             移除多个对象
             </summary>
-            <param name="objIds"></param>
+            <param name="keys"></param>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.GetObjects(System.Collections.Generic.IList{System.String})">
             <summary>
             获取多个对象
             </summary>
-            <param name="objIds"></param>
+            <param name="keys"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.GetObjects``1(System.Collections.Generic.IList{System.String})">
@@ -381,7 +381,7 @@
             获取多个对象
             </summary>
             <typeparam name="T"></typeparam>
-            <param name="objIds"></param>
+            <param name="keys"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.CacheStrategyBase.GetMatchObjects(System.String)">
@@ -427,7 +427,7 @@
             <summary>
             添加指定ID的对象(关联指定文件组)
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
             <param name="files"></param>
         </member>
@@ -435,7 +435,7 @@
             <summary>
             添加指定ID的对象(关联指定键值组)
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
             <param name="dependKey"></param>
         </member>
@@ -443,7 +443,7 @@
             <summary>
             添加指定ID的对象(关联指定文件组)
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
             <param name="files"></param>
         </member>
@@ -451,7 +451,7 @@
             <summary>
             添加指定ID的对象(关联指定键值组)
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
             <param name="dependKey"></param>
         </member>
@@ -475,7 +475,7 @@
             <summary>
             移除对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.Clear">
             <summary>
@@ -497,35 +497,35 @@
             <summary>
             设置过期时间
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="datetime"></param>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.AddObject(System.String,System.Object)">
             <summary>
             加入当前对象到缓存中
             </summary>
-            <param name="objId">对象的键值</param>
+            <param name="key">对象的键值</param>
             <param name="o">缓存的对象</param>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.AddObject(System.String,System.Object,System.TimeSpan)">
             <summary>
             加入当前对象到缓存中
             </summary>
-            <param name="objId">对象的键值</param>
+            <param name="key">对象的键值</param>
             <param name="o">缓存的对象</param>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.AddObject(System.String,System.Object,System.DateTime)">
             <summary>
             加入当前对象到缓存中
             </summary>
-            <param name="objId">对象的键值</param>
+            <param name="key">对象的键值</param>
             <param name="o">缓存的对象</param>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.AddObjectWithFileChange(System.String,System.Object,System.String[])">
             <summary>
             加入当前对象到缓存中,并对相关文件建立依赖
             </summary>
-            <param name="objId">对象的键值</param>
+            <param name="key">对象的键值</param>
             <param name="o">缓存的对象</param>
             <param name="files">监视的路径文件</param>
         </member>
@@ -533,7 +533,7 @@
             <summary>
             加入当前对象到缓存中,并使用依赖键
             </summary>
-            <param name="objId">对象的键值</param>
+            <param name="key">对象的键值</param>
             <param name="o">缓存的对象</param>
             <param name="dependKey">依赖关联的键值</param>
         </member>
@@ -541,7 +541,7 @@
             <summary>
             加入当前对象到缓存中,并对相关文件建立依赖
             </summary>
-            <param name="objId">对象的键值</param>
+            <param name="key">对象的键值</param>
             <param name="o">缓存的对象</param>
             <param name="files">监视的路径文件</param>
         </member>
@@ -549,7 +549,7 @@
             <summary>
             加入当前对象到缓存中,并使用依赖键
             </summary>
-            <param name="objId">对象的键值</param>
+            <param name="key">对象的键值</param>
             <param name="o">缓存的对象</param>
             <param name="dependKey">依赖关联的键值</param>
         </member>
@@ -557,7 +557,7 @@
             <summary>
             建立回调委托的一个实例
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="val"></param>
             <param name="reason"></param>
         </member>
@@ -565,34 +565,34 @@
             <summary>
             删除缓存对象
             </summary>
-            <param name="objId">对象的关键字</param>
+            <param name="key">对象的关键字</param>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.GetObject(System.String)">
             <summary>
             返回一个指定的对象
             </summary>
-            <param name="objId">对象的关键字</param>
+            <param name="key">对象的关键字</param>
             <returns>对象</returns>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.GetObject``1(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.GetMatchObject(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.GetMatchObject``1(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.RemoveAllObjects">
@@ -654,13 +654,13 @@
             <summary>
             移除多个对象
             </summary>
-            <param name="objIds"></param>
+            <param name="keys"></param>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.GetObjects(System.Collections.Generic.IList{System.String})">
             <summary>
             获取多个对象
             </summary>
-            <param name="objIds"></param>
+            <param name="keys"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.GetObjects``1(System.Collections.Generic.IList{System.String})">
@@ -668,7 +668,7 @@
             获取多个对象
             </summary>
             <typeparam name="T"></typeparam>
-            <param name="objIds"></param>
+            <param name="keys"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.LocalCacheStrategy.GetMatchObjects(System.String)">
@@ -712,12 +712,6 @@
             </summary>
             <param name="cache"></param>
         </member>
-        <member name="M:MySoft.Cache.QueueCache.SaveCache(System.Object)">
-            <summary>
-            保存Queue数据
-            </summary>
-            <param name="state"></param>
-        </member>
         <member name="M:MySoft.Cache.QueueCache.Get(System.String)">
             <summary>
             获取值
@@ -740,6 +734,12 @@
             <param name="cacheKey"></param>
             <param name="cacheValue"></param>
             <param name="timeSpan"></param>
+        </member>
+        <member name="M:MySoft.Cache.QueueCache.AsyncRun(System.String)">
+            <summary>
+            异步调用
+            </summary>
+            <param name="key"></param>
         </member>
         <member name="M:MySoft.Cache.QueueCache.Remove(System.String)">
             <summary>
@@ -778,18 +778,26 @@
             </summary>
             <param name="cache"></param>
         </member>
-        <member name="M:MySoft.Cache.SessionCache.SaveCache(System.Object)">
-            <summary>
-            保存Queue数据
-            </summary>
-            <param name="state"></param>
-        </member>
         <member name="M:MySoft.Cache.SessionCache.Get(System.String)">
             <summary>
-            获取值
+            获取值（默认保持20分钟）
             </summary>
             <param name="cacheKey"></param>
             <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.SessionCache.Get(System.String,System.TimeSpan)">
+            <summary>
+            获取值（指定保持时间）
+            </summary>
+            <param name="cacheKey"></param>
+            <param name="timeSpan"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MySoft.Cache.SessionCache.AsyncRun(System.String)">
+            <summary>
+            异步调用
+            </summary>
+            <param name="key"></param>
         </member>
         <member name="M:MySoft.Cache.SessionCache.Get``1(System.String)">
             <summary>

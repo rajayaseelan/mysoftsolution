@@ -1,0 +1,520 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DevDefined.OAuth</name>
+    </assembly>
+    <members>
+        <member name="T:DevDefined.OAuth.GuidNonceGenerator">
+            <summary>
+            Generates unique nonces (via Guids) to let the server detect duplicated requests.
+            </summary>
+        </member>
+        <member name="T:DevDefined.OAuth.INonceGenerator">
+            <summary>
+            Generates a nonce, which should be unique for the selected consumer (i.e. never generated
+            by subsequent calls to <see cref="M:DevDefined.OAuth.INonceGenerator.GenerateNonce(DevDefined.OAuth.Framework.IOAuthContext)"/>)
+            </summary>
+        </member>
+        <member name="P:DevDefined.OAuth.Consumer.ConsumerRequest.Timeout">
+            <summary>
+            Override the default request timeout in milliseconds.
+            Sets the <see cref="P:System.Net.HttpWebRequest.Timeout"/> property.
+            </summary>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.ClientCertEnabledConsumerRequest.#ctor(DevDefined.OAuth.Consumer.ICertificateFactory,DevDefined.OAuth.Framework.IOAuthContext,DevDefined.OAuth.Consumer.IOAuthConsumerContext,DevDefined.OAuth.Framework.IToken)">
+            <summary>
+            Initializes a new instance of the <see cref="T:DevDefined.OAuth.Consumer.ClientCertEnabledConsumerRequest"/> class.
+            </summary>
+            <param name="certificateFactory">The certificate factory.</param>
+            <param name="context">The context.</param>
+            <param name="consumerContext">The consumer context.</param>
+            <param name="token">The token.</param>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.ClientCertEnabledConsumerRequest.ToWebRequest">
+            <summary>
+            Converts the current ConsumerRequest to an HttpWebRequest
+            </summary>
+            <returns>Return an HttpWebRequest with a client certificate attached.</returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.IConsumerRequestFactory.CreateConsumerRequest(DevDefined.OAuth.Framework.IOAuthContext,DevDefined.OAuth.Consumer.IOAuthConsumerContext,DevDefined.OAuth.Framework.IToken)">
+            <summary>
+            Creates the consumer request.
+            </summary>
+            <param name="context">The context.</param>
+            <param name="consumerContext">The consumer context.</param>
+            <param name="token">The token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.ClientCertEnabledConsumerRequestFactory.#ctor(DevDefined.OAuth.Consumer.ICertificateFactory)">
+            <summary>
+            Initializes a new instance of the <see cref="T:DevDefined.OAuth.Consumer.ClientCertEnabledConsumerRequestFactory"/> class.
+            </summary>
+            <param name="certificateFactory">The certificate factory.</param>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.ClientCertEnabledConsumerRequestFactory.CreateConsumerRequest(DevDefined.OAuth.Framework.IOAuthContext,DevDefined.OAuth.Consumer.IOAuthConsumerContext,DevDefined.OAuth.Framework.IToken)">
+            <summary>
+            Creates the consumer request.
+            </summary>
+            <param name="context">The context.</param>
+            <param name="consumerContext">The consumer context.</param>
+            <param name="token">The token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.ConsumerRequestExtensions.WithTimeout(DevDefined.OAuth.Consumer.IConsumerRequest,System.Int32)">
+            <summary>
+            Override the default request timeout in milliseconds.
+            Sets the <see cref="P:System.Net.HttpWebRequest.Timeout"/> property.
+            </summary>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.LocalFileCertificateFactory.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:DevDefined.OAuth.Consumer.LocalFileCertificateFactory"/> class.
+            </summary>
+            <param name="filename">The filename.</param>
+            <param name="password">The password.</param>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.LocalFileCertificateFactory.CreateCertificate">
+            <summary>
+            Creates the certificate.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.LocalFileCertificateFactory.GetMatchingCertificateCount">
+            <summary>
+            Counts the matching certificates.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:DevDefined.OAuth.Consumer.LocalMachineCertificateFactory">
+            <summary>
+            Creates X509 certificates from the Local Computer certificate sture based on the certificate subject.
+            </summary>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.LocalMachineCertificateFactory.#ctor(System.String,System.Security.Cryptography.X509Certificates.X509FindType)">
+            <summary>
+            Initializes a new instance of the <see cref="T:DevDefined.OAuth.Consumer.LocalMachineCertificateFactory"/> class.
+            </summary>
+            <param name="certificateSubject">The certificate subject.</param>
+            <param name="findType"></param>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.LocalMachineCertificateFactory.CreateCertificate">
+            <summary>
+            Creates the certificate.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.LocalMachineCertificateFactory.GetMatchingCertificateCount">
+            <summary>
+            Counts the matching certificates.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.LocalMachineCertificateFactory.RemoteCertificateValidationCallback(System.Object,System.Security.Cryptography.X509Certificates.X509Certificate,System.Security.Cryptography.X509Certificates.X509Chain,System.Net.Security.SslPolicyErrors)">
+            <summary>
+            Remotes the certificate validation callback.
+            </summary>
+            <param name="sender">The sender.</param>
+            <param name="certificate">The certificate.</param>
+            <param name="chain">The chain.</param>
+            <param name="sslPolicyErrors">The SSL policy errors.</param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.LocalMachineCertificateFactory.GetCertificateCollection">
+            <summary>
+            Gets the certificate collection.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:DevDefined.OAuth.Consumer.IOAuthConsumerContext">
+            <summary>
+            A consumer context is used to identify a consumer, and to sign a context on behalf 
+            of a consumer using an optional supplied token.
+            </summary>
+        </member>
+        <member name="M:DevDefined.OAuth.Consumer.WebExceptionHelper.TryWrapException(DevDefined.OAuth.Framework.IOAuthContext,System.Net.WebException,DevDefined.OAuth.Framework.OAuthException@,System.Action{System.String})">
+            <summary>
+            Will attempt to wrap the exception, returning true if the exception was wrapped, or returning false if it was not (in which case
+            the original exception should be thrown).
+            </summary>
+            <param name="requestContext"></param>
+            <param name="webEx"></param>
+            <param name="authException"></param>
+            <returns><c>true</c>, if the authException should be throw, <c>false</c> if the original web exception should be thrown</returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Framework.BoundParameter.#ctor(System.String,DevDefined.OAuth.Framework.OAuthContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:DevDefined.OAuth.Framework.BoundParameter"/> class.
+            </summary>
+            <param name="name">The name.</param>
+            <param name="context">The context.</param>
+        </member>
+        <member name="P:DevDefined.OAuth.Framework.BoundParameter.Value">
+            <summary>
+            Gets or sets the value.
+            </summary>
+            <value>The value.</value>
+        </member>
+        <member name="P:DevDefined.OAuth.Framework.BoundParameter.Collection">
+            <summary>
+            Gets the collection.
+            </summary>
+            <value>The collection.</value>
+        </member>
+        <member name="M:DevDefined.OAuth.Framework.CertificateUtility.LoadCertificateFromStrings(System.String,System.String)">
+            <summary>
+            Loads a certificate given both it's private and public keys - generally used to 
+            load keys provided on the OAuth wiki's for verification of implementation correctness.
+            </summary>
+            <param name="privateKey"></param>
+            <param name="certificate"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Framework.UriUtility.GetQueryParameters(System.String)">
+            <summary>
+            Extracts all the parameters from the supplied encoded parameters. 
+            </summary>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Framework.UriUtility.GetHeaderParameters(System.String)">
+            <summary>
+            Extracts all the parameters from the supplied encoded parameters. 
+            </summary>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Framework.UriUtility.FormatQueryString(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Formats a set of query parameters, as per query string encoding.
+            </summary>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Framework.UriUtility.FormatQueryString(System.Collections.Specialized.NameValueCollection)">
+            <summary>
+            Formats a set of query parameters, as per query string encoding.
+            </summary>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Framework.UriUtility.FormatParameters(System.String,System.Uri,System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Takes an http method, url and a set of parameters and formats them as a signature base as per the OAuth core spec.
+            </summary>
+            <param name="httpMethod"></param>
+            <param name="url"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Framework.UriUtility.NormalizeRequestParameters(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Normalizes a sequence of key/value pair parameters as per the OAuth core specification.
+            </summary>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Framework.UriUtility.NormalizeUri(System.Uri)">
+            <summary>
+            Normalizes a Url according to the OAuth specification (this ensures http or https on a default port is not displayed
+            with the :XXX following the host in the url).
+            </summary>
+            <param name="uri"></param>
+            <returns></returns>
+        </member>
+        <member name="T:DevDefined.OAuth.Provider.Inspectors.OAuth10AInspector">
+            <summary>
+            This inspector implements additional behavior required by the 1.0a version of OAuth.
+            </summary>
+        </member>
+        <member name="T:DevDefined.OAuth.Storage.Basic.AccessToken">
+            <summary>
+            Simple access token model, this would hold information required to enforce policies such as expiration, and association
+            with a user accout or other information regarding the information the consumer has been granted access to.
+            </summary>
+        </member>
+        <member name="T:DevDefined.OAuth.Storage.Basic.InMemoryTokenRepository`1">
+            <summary>
+            In-Memory implementation of a token repository
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:DevDefined.OAuth.Storage.Basic.ITokenRepository`1">
+            <summary>
+            A simplistic repository for access and request of token models - the example implementation of
+            <see cref="T:DevDefined.OAuth.Storage.ITokenStore"/> relies on this repository - normally you would make use of repositories
+            wired up to your domain model i.e. NHibernate, Entity Framework etc.
+            </summary>    
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.Basic.ITokenRepository`1.GetToken(System.String)">
+            <summary>
+            Gets an existing token from the underlying store
+            </summary>
+            <param name="token"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.Basic.ITokenRepository`1.SaveToken(`0)">
+            <summary>
+            Saves the token in the underlying store
+            </summary>
+            <param name="token"></param>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.CreateRequestToken(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Creates a request token for the consumer.
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.CreateAccessToken(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Create an access token using xAuth.
+            </summary>
+            <param name="context">The context.</param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.ConsumeRequestToken(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Should consume a use of the request token, throwing a <see cref="T:DevDefined.OAuth.Framework.OAuthException"/> on failure.
+            </summary>
+            <param name="requestContext"></param>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.ConsumeAccessToken(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Should consume a use of an access token, throwing a <see cref="T:DevDefined.OAuth.Framework.OAuthException"/> on failure.
+            </summary>
+            <param name="accessContext"></param>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.GetAccessTokenAssociatedWithRequestToken(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Get the access token associated with a request token.
+            </summary>
+            <param name="requestContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.GetStatusOfRequestForAccess(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Returns the status for a request to access a consumers resources.
+            </summary>
+            <param name="requestContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.GetCallbackUrlForToken(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Returns the callback url that is stored against this token.
+            </summary>
+            <param name="requestContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.GetVerificationCodeForRequestToken(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Retrieves the verification code for a token
+            </summary>
+            <param name="requestContext"></param>
+            <returns>verification code</returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.GetRequestTokenSecret(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Gets the token secret for the supplied request token
+            </summary>
+            <param name="context"></param>
+            <returns>token secret</returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.GetAccessTokenSecret(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Gets the token secret for the supplied access token
+            </summary>
+            <param name="context"></param>
+            <returns>token secret</returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.ITokenStore.RenewAccessToken(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+                Renews the access token.
+            </summary>
+            <param name="requestContext">The request context.</param>
+            <returns>Return a new access token with the same oauth_session_handle as the near-expired session token</returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.Basic.SimpleTokenStore.CreateAccessToken(DevDefined.OAuth.Framework.IOAuthContext)">
+            <summary>
+            Create an access token using xAuth.
+            </summary>
+            <param name="context">The context.</param>
+            <returns></returns>
+        </member>
+        <member name="T:DevDefined.OAuth.Storage.Basic.RequestToken">
+            <summary>
+            Simple request token model, this provides information about a request token which has been issued, including
+            who it was issued to, if the token has been used up (a request token should only be presented once), and 
+            the associated access token (if a user has granted access to a consumer i.e. given them access).
+            </summary>
+        </member>
+        <member name="T:DevDefined.OAuth.Storage.INonceStore">
+            <summary>
+            A nonce store is used to avoid requests being "replayed".
+            </summary>
+        </member>
+        <member name="M:DevDefined.OAuth.Storage.INonceStore.RecordNonceAndCheckIsUnique(DevDefined.OAuth.Framework.IConsumer,System.String)">
+            <summary>
+            Will record the none and check if it's unique.
+            </summary>
+            <param name="consumer">The consumer associated with the nonce</param>
+            <param name="nonce">The nonce string itself</param>
+            <returns><c>true</c> if the nonce is unique, <c>false</c> if the nonce has been presented before</returns>
+        </member>
+        <member name="T:DevDefined.OAuth.Testing.TestNonceStore">
+            <summary>
+            A simple nonce store that just tracks all nonces by consumer key in memory.
+            </summary>
+        </member>
+        <member name="T:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter">
+            <summary>
+            Pendent
+            </summary>
+        </member>
+        <member name="M:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.#ctor(System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter"/> class.
+            </summary>
+            <param name="target">The target.</param>
+        </member>
+        <member name="M:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.Contains(System.Object)">
+            <summary>
+            Determines whether the <see cref="T:System.Collections.IDictionary"/> object contains an element with the specified key.
+            </summary>
+            <param name="key">The key to locate in the <see cref="T:System.Collections.IDictionary"/> object.</param>
+            <returns>
+            true if the <see cref="T:System.Collections.IDictionary"/> contains an element with the key; otherwise, false.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            	<paramref name="key"/> is null. </exception>
+        </member>
+        <member name="M:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.Add(System.Object,System.Object)">
+            <summary>
+            Adds an element with the provided key and value to the <see cref="T:System.Collections.IDictionary"/> object.
+            </summary>
+            <param name="key">The <see cref="T:System.Object"/> to use as the key of the element to add.</param>
+            <param name="value">The <see cref="T:System.Object"/> to use as the value of the element to add.</param>
+            <exception cref="T:System.ArgumentNullException">
+            	<paramref name="key"/> is null. </exception>
+            <exception cref="T:System.ArgumentException">An element with the same key already exists in the <see cref="T:System.Collections.IDictionary"/> object. </exception>
+            <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.IDictionary"/> is read-only.-or- The <see cref="T:System.Collections.IDictionary"/> has a fixed size. </exception>
+        </member>
+        <member name="M:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.Clear">
+            <summary>
+            Removes all elements from the <see cref="T:System.Collections.IDictionary"/> object.
+            </summary>
+            <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.IDictionary"/> object is read-only. </exception>
+        </member>
+        <member name="M:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.System#Collections#IDictionary#GetEnumerator">
+            <summary>
+            Returns an <see cref="T:System.Collections.IDictionaryEnumerator"/> object for the <see cref="T:System.Collections.IDictionary"/> object.
+            </summary>
+            <returns>
+            An <see cref="T:System.Collections.IDictionaryEnumerator"/> object for the <see cref="T:System.Collections.IDictionary"/> object.
+            </returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.Remove(System.Object)">
+            <summary>
+            Removes the element with the specified key from the <see cref="T:System.Collections.IDictionary"/> object.
+            </summary>
+            <param name="key">The key of the element to remove.</param>
+            <exception cref="T:System.ArgumentNullException">
+            	<paramref name="key"/> is null. </exception>
+            <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.IDictionary"/> object is read-only.-or- The <see cref="T:System.Collections.IDictionary"/> has a fixed size. </exception>
+        </member>
+        <member name="M:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.CopyTo(System.Array,System.Int32)">
+            <summary>
+            Copies the elements of the <see cref="T:System.Collections.ICollection"/> to an <see cref="T:System.Array"/>, starting at a particular <see cref="T:System.Array"/> index.
+            </summary>
+            <param name="array">The one-dimensional <see cref="T:System.Array"/> that is the destination of the elements copied from <see cref="T:System.Collections.ICollection"/>. The <see cref="T:System.Array"/> must have zero-based indexing.</param>
+            <param name="index">The zero-based index in <paramref name="array"/> at which copying begins.</param>
+            <exception cref="T:System.ArgumentNullException">
+            	<paramref name="array"/> is null. </exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            	<paramref name="index"/> is less than zero. </exception>
+            <exception cref="T:System.ArgumentException">
+            	<paramref name="array"/> is multidimensional.-or- <paramref name="index"/> is equal to or greater than the length of <paramref name="array"/>.-or- The number of elements in the source <see cref="T:System.Collections.ICollection"/> is greater than the available space from <paramref name="index"/> to the end of the destination <paramref name="array"/>. </exception>
+            <exception cref="T:System.ArgumentException">The type of the source <see cref="T:System.Collections.ICollection"/> cannot be cast automatically to the type of the destination <paramref name="array"/>. </exception>
+        </member>
+        <member name="M:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.GetEnumerator">
+            <summary>
+            Returns an enumerator that iterates through a collection.
+            </summary>
+            <returns>
+            An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
+            </returns>
+        </member>
+        <member name="P:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.Item(System.Object)">
+            <summary>
+            Gets or sets the <see cref="T:System.Object"/> with the specified key.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.Keys">
+            <summary>
+            Gets an <see cref="T:System.Collections.ICollection"/> object containing the keys of the <see cref="T:System.Collections.IDictionary"/> object.
+            </summary>
+            <value></value>
+            <returns>An <see cref="T:System.Collections.ICollection"/> object containing the keys of the <see cref="T:System.Collections.IDictionary"/> object.</returns>
+        </member>
+        <member name="P:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.Values">
+            <summary>
+            Gets an <see cref="T:System.Collections.ICollection"/> object containing the values in the <see cref="T:System.Collections.IDictionary"/> object.
+            </summary>
+            <value></value>
+            <returns>An <see cref="T:System.Collections.ICollection"/> object containing the values in the <see cref="T:System.Collections.IDictionary"/> object.</returns>
+        </member>
+        <member name="P:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.IsReadOnly">
+            <summary>
+            Gets a value indicating whether the <see cref="T:System.Collections.IDictionary"/> object is read-only.
+            </summary>
+            <value></value>
+            <returns>true if the <see cref="T:System.Collections.IDictionary"/> object is read-only; otherwise, false.</returns>
+        </member>
+        <member name="P:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.IsFixedSize">
+            <summary>
+            Gets a value indicating whether the <see cref="T:System.Collections.IDictionary"/> object has a fixed size.
+            </summary>
+            <value></value>
+            <returns>true if the <see cref="T:System.Collections.IDictionary"/> object has a fixed size; otherwise, false.</returns>
+        </member>
+        <member name="P:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.Count">
+            <summary>
+            Gets the number of elements contained in the <see cref="T:System.Collections.ICollection"/>.
+            </summary>
+            <value></value>
+            <returns>The number of elements contained in the <see cref="T:System.Collections.ICollection"/>.</returns>
+        </member>
+        <member name="P:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.SyncRoot">
+            <summary>
+            Gets an object that can be used to synchronize access to the <see cref="T:System.Collections.ICollection"/>.
+            </summary>
+            <value></value>
+            <returns>An object that can be used to synchronize access to the <see cref="T:System.Collections.ICollection"/>.</returns>
+        </member>
+        <member name="P:DevDefined.OAuth.Utility.ReflectionBasedDictionaryAdapter.IsSynchronized">
+            <summary>
+            Gets a value indicating whether access to the <see cref="T:System.Collections.ICollection"/> is synchronized (thread safe).
+            </summary>
+            <value></value>
+            <returns>true if access to the <see cref="T:System.Collections.ICollection"/> is synchronized (thread safe); otherwise, false.</returns>
+        </member>
+        <member name="T:DevDefined.OAuth.Utility.UnguessableGenerator">
+            <summary>
+            A simple class which can be used to generate "unguessable" verifier values.
+            </summary>
+        </member>
+        <member name="M:DevDefined.OAuth.Utility.UnguessableGenerator.GenerateUnguessable(System.Int32)">
+            <summary>
+            Generates an unguessable string sequence of a certain length
+            </summary>
+            <param name="length"></param>
+            <returns></returns>
+        </member>
+        <member name="M:DevDefined.OAuth.Utility.UnguessableGenerator.GenerateUnguessable">
+            <summary>
+            Generates an ungessable string, defaults the length to what google uses (24 characters)
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

@@ -19,7 +19,7 @@
             <summary>
             移除对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.Clear">
             <summary>
@@ -41,62 +41,62 @@
             <summary>
             设置过期时间
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="datetime"></param>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.AddObject(System.String,System.Object)">
             <summary>
             添加指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.AddObject(System.String,System.Object,System.TimeSpan)">
             <summary>
             添加指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.AddObject(System.String,System.Object,System.DateTime)">
             <summary>
             添加指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <param name="o"></param>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.RemoveObject(System.String)">
             <summary>
             移除指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.GetObject(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.GetObject``1(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.GetMatchObject(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.GetMatchObject``1(System.String)">
             <summary>
             返回指定ID的对象
             </summary>
-            <param name="objId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.RemoveAllObjects">
@@ -158,13 +158,13 @@
             <summary>
             移除多个对象
             </summary>
-            <param name="objIds"></param>
+            <param name="keys"></param>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.GetObjects(System.Collections.Generic.IList{System.String})">
             <summary>
             获取多个对象
             </summary>
-            <param name="objIds"></param>
+            <param name="keys"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.GetObjects``1(System.Collections.Generic.IList{System.String})">
@@ -172,7 +172,7 @@
             获取多个对象
             </summary>
             <typeparam name="T"></typeparam>
-            <param name="objIds"></param>
+            <param name="keys"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.Cache.SharedCacheStrategy.GetMatchObjects(System.String)">

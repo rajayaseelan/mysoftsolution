@@ -580,15 +580,14 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.InvokeResponse(MySoft.RESTful.Utils.ParameterFormat,System.String,System.String,System.Collections.Specialized.NameValueCollection,System.Collections.Specialized.NameValueCollection)">
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.InvokeResponse(MySoft.RESTful.Utils.ParameterFormat,System.String,System.String,MySoft.RESTful.AuthorizeToken)">
             <summary>
             响应数据
             </summary>
             <param name="format"></param>
             <param name="kind"></param>
             <param name="method"></param>
-            <param name="nvget"></param>
-            <param name="nvpost"></param>
+            <param name="token"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.RESTful.DefaultRESTfulService.SetAuthorizeContext(MySoft.RESTful.AuthorizeToken,MySoft.RESTful.AuthorizeUser)">
@@ -615,17 +614,18 @@
             <param name="token"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetErrorMessage(System.Exception,System.String,System.String,System.Collections.Specialized.NameValueCollection,System.Collections.Specialized.NameValueCollection,MySoft.RESTful.RESTfulResult@)">
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetErrorMessage(System.Exception,System.String,System.String,MySoft.RESTful.AuthorizeToken,MySoft.RESTful.RESTfulResult@)">
             <summary>
             获取错误消息
             </summary>
             <param name="exception"></param>
             <param name="kind"></param>
             <param name="method"></param>
-            <param name="parameters"></param>
+            <param name="token"></param>
+            <param name="ret"></param>
             <returns></returns>
         </member>
-        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetMessage(System.String,System.Int32,System.String,System.String,System.String,System.Collections.Specialized.NameValueCollection,System.Collections.Specialized.NameValueCollection)">
+        <member name="M:MySoft.RESTful.DefaultRESTfulService.GetMessage(System.String,System.Int32,System.String,System.String,System.String,MySoft.RESTful.AuthorizeToken)">
             <summary>
             获取消息
             </summary>
@@ -634,8 +634,7 @@
             <param name="message"></param>
             <param name="kind"></param>
             <param name="method"></param>
-            <param name="nvget"></param>
-            <param name="nvpost"></param>
+            <param name="token"></param>
             <returns></returns>
         </member>
         <member name="M:MySoft.RESTful.DefaultRESTfulService.GetRequestUri">
