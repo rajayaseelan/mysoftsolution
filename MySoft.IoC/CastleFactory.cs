@@ -145,7 +145,32 @@ namespace MySoft.IoC
             }
             else
             {
-                nodes = config.Nodes.Values.ToList();
+                //获取临时节点列表
+                foreach (var _node in config.Nodes.Values)
+                {
+                    var arr = _node.IP.Split(new[] { ',', ';', '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (arr.Length > 1)
+                    {
+                        foreach (var _ip in arr)
+                        {
+                            nodes.Add(new ServerNode()
+                            {
+                                Key = _node.Key,
+                                RespType = _node.RespType,
+                                IP = _ip,
+                                Port = _node.Port,
+                                Compress = _node.Compress,
+                                Connected = _node.Connected,
+                                MaxCaller = _node.MaxCaller,
+                                Timeout = _node.Timeout
+                            });
+                        }
+                    }
+                    else
+                    {
+                        nodes.Add(_node);
+                    }
+                }
             }
 
             return nodes;

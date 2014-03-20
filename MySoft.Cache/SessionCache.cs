@@ -38,18 +38,20 @@ namespace MySoft.Cache
         /// <returns></returns>
         public object Get(string cacheKey, TimeSpan timeSpan)
         {
+            object sessionValue = null;
+
             //如果key存在，则不保存
             if (!hashtable.ContainsKey(cacheKey))
             {
-                var value = cache.GetObject(cacheKey);
+                sessionValue = cache.GetObject(cacheKey);
 
-                if (value != null)
+                if (sessionValue != null)
                 {
                     var item = new SessionItem
                     {
                         Key = cacheKey,
                         TimeSpan = (TimeSpan)timeSpan,
-                        Value = value
+                        Value = sessionValue
                     };
 
                     hashtable[cacheKey] = item;
@@ -58,14 +60,13 @@ namespace MySoft.Cache
                     new Action<string>(AsyncRun).BeginInvoke(cacheKey, null, null);
                 }
             }
-
-            //返回值
-            if (hashtable.ContainsKey(cacheKey))
+            else
             {
-                return (hashtable[cacheKey] as SessionItem).Value;
+                //从哈希表中取值
+                sessionValue = (hashtable[cacheKey] as SessionItem).Value;
             }
 
-            return null;
+            return sessionValue;
         }
 
         /// <summary>

@@ -7,6 +7,7 @@ using MySoft.IoC.Messages;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Timers;
@@ -381,6 +382,17 @@ namespace MySoft.IoC
         private bool CheckCollection(Type type)
         {
             if (type.IsByRef) type = type.GetElementType();
+
+            if (type.IsGenericType)
+            {
+                var t = type.GetGenericTypeDefinition();
+                if (typeof(IList<>).IsAssignableFrom(t) || typeof(List<>).IsAssignableFrom(t)
+                    || typeof(ICollection<>).IsAssignableFrom(t) || typeof(Collection<>).IsAssignableFrom(t)
+                    || typeof(IEnumerable<>).IsAssignableFrom(t))
+                {
+                    return true;
+                }
+            }
 
             return typeof(ICollection).IsAssignableFrom(type) ||
                     typeof(Array).IsAssignableFrom(type) ||
