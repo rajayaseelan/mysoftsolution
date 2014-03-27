@@ -1,9 +1,11 @@
-﻿using MySoft.IoC.Messages;
+﻿using MySoft.IoC.Communication.Scs.Client.Tcp;
+using MySoft.IoC.Messages;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Mail;
 using System.Net.Sockets;
 using System.Reflection;
@@ -17,88 +19,91 @@ namespace MySoft.IoC
     /// </summary>
     internal static class ConnectionManager
     {
+        /// <summary>
+        /// Timeout for connecting to a server (as milliseconds).
+        /// Default value: 15 seconds (15000 ms).
+        /// </summary>
+        /// 
+        private const int ConnectTimeout = 5000;
+
         private static IList<AppNode> nodes = new List<AppNode>();
         private static string templateHTML = string.Empty;
         private static string[] mailTo = new string[0];
 
         static ConnectionManager()
         {
-            //处理邮件地址
-            string address = ConfigurationManager.AppSettings["SendMailAddress"];
-            if (!string.IsNullOrEmpty(address)) mailTo = address.Split(',', ';', '|');
-
-            var name = "MySoft.IoC.Resources.template.htm";
-            using (var sr = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(name)))
-            {
-                templateHTML = sr.ReadToEnd();
-            }
-
-            var timer = new Timer(TimeSpan.FromSeconds(30).TotalMilliseconds);
-            timer.AutoReset = true;
-            timer.Elapsed += timer_Elapsed;
-            timer.Start();
-        }
-
-        private static void timer_Elapsed(object sender, ElapsedEventArgs e)
-        {
             try
             {
-                (sender as Timer).Stop();
+                //处理邮件地址
+                string address = ConfigurationManager.AppSettings["SendMailAddress"];
+                if (!string.IsNullOrEmpty(address)) mailTo = address.Split(',', ';', '|');
 
-                //检测连接
-                CheckConnect();
+                var name = "MySoft.IoC.Resources.template.htm";
+                using (var sr = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(name)))
+                {
+                    templateHTML = sr.ReadToEnd();
+                }
             }
-            catch (Exception ex) { }
-            finally
+            catch (Exception ex)
             {
-                (sender as Timer).Start();
             }
+
+            //定时检测连接状态
+            var timer = new TimerManager(CheckConnect);
+
+            timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout));
         }
 
         /// <summary>
         /// 检测连接
         /// </summary>
-        private static void CheckConnect()
+        private static void CheckConnect(object state)
         {
             //检测连接状态
-            foreach (var server in new List<AppNode>(nodes))
+            foreach (var server in nodes.ToArray())
             {
                 var node = server.Node;
                 var client = server.Client;
 
                 if (CheckConnected(node))
                 {
-                    //移除节点
-                    lock (nodes) nodes.Remove(server);
-
                     //改变连接状态
                     node.Connected = true;
 
-                    var ex = new SocketException((int)SocketError.Success);
-                    var subject = string.Format("监控项目 [{0} - ( {1} -> {2}:{3} )] 恢复可用",
-                                            client.AppName, node.Key, node.IP, node.Port);
+                    //移除节点
+                    lock (nodes) { nodes.Remove(server); }
 
-                    var _title = "故障恢复通知";
-                    var _body = string.Format("[{0} - ( {1} -> {2}:{3} )] 于 {4} 恢复可用 ({5})",
-                                               client.AppName, node.Key, node.IP, node.Port,
-                                               DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss"),
-                                               ex.Message);
-                    var _client = string.Format("{0} ({1})", client.AppName, client.AppVersion);
-                    var _display = "normal";
-                    var _timeout = GetDateTime(DateTime.Now - server.AddTime);
-                    var _path = client.AppPath;
-                    var _status = string.Format("{0} ({1} => {2}:{3}) 连接成功",
-                                               client.HostName, client.IPAddress, node.IP, node.Port);
+                    try
+                    {
+                        var ex = new SocketException((int)SocketError.Success);
+                        var subject = string.Format("监控项目 [{0} - ( {1} -> {2}:{3} )] 恢复可用",
+                                                client.AppName, node.Key, node.IP, node.Port);
 
-                    subject = string.Format("{0} - 故障持续{1}", subject, _timeout);
+                        var _title = "故障恢复通知";
+                        var _body = string.Format("[{0} - ( {1} -> {2}:{3} )] 于 {4} 恢复可用 ({5})",
+                                                   client.AppName, node.Key, node.IP, node.Port,
+                                                   DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss"),
+                                                   ex.Message);
+                        var _client = string.Format("{0} ({1})", client.AppName, client.AppVersion);
+                        var _display = "normal";
+                        var _timeout = GetDateTime(DateTime.Now - server.AddTime);
+                        var _path = client.AppPath;
+                        var _status = string.Format("{0} ({1} => {2}:{3}) 连接成功",
+                                                   client.HostName, client.IPAddress, node.IP, node.Port);
 
-                    //替换模板
-                    var body = templateHTML.Replace("$title", _title).Replace("$body", _body)
-                                            .Replace("$client", _client).Replace("$timeout", _timeout)
-                                            .Replace("$display", _display)
-                                            .Replace("$path", _path).Replace("$status", _status);
+                        subject = string.Format("{0} - 故障持续{1}", subject, _timeout);
 
-                    SendMail(node, subject, body);
+                        //替换模板
+                        var body = templateHTML.Replace("$title", _title).Replace("$body", _body)
+                                                .Replace("$client", _client).Replace("$timeout", _timeout)
+                                                .Replace("$display", _display)
+                                                .Replace("$path", _path).Replace("$status", _status);
+
+                        SendMail(node, subject, body);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
                 }
             }
         }
@@ -128,12 +133,10 @@ namespace MySoft.IoC
         {
             try
             {
-                using (var tcpClient = new TcpClient())
-                {
-                    tcpClient.Connect(node.IP, node.Port);
+                var endPoint = new IPEndPoint(IPAddress.Parse(node.IP), node.Port);
+                TcpHelper.ConnectToServer(endPoint, ConnectTimeout);
 
-                    return tcpClient.Connected;
-                }
+                return true;
             }
             catch (Exception ex)
             {
@@ -154,33 +157,39 @@ namespace MySoft.IoC
 
             lock (nodes)
             {
-                //不存在无效的节点同加入
-                if (!nodes.Select(p => p.Node).Any(p => p.IP == node.IP && p.Port == node.Port))
+                try
                 {
-                    nodes.Add(new AppNode { Client = client, Node = node, AddTime = DateTime.Now });
+                    //不存在无效的节点同加入
+                    if (!nodes.Select(p => p.Node).Any(p => p.IP == node.IP && p.Port == node.Port))
+                    {
+                        nodes.Add(new AppNode { Client = client, Node = node, AddTime = DateTime.Now });
 
-                    var subject = string.Format("监控项目 [{0} - ( {1} -> {2}:{3} )] 不可用",
-                                                client.AppName, node.Key, node.IP, node.Port);
+                        var subject = string.Format("监控项目 [{0} - ( {1} -> {2}:{3} )] 不可用",
+                                                    client.AppName, node.Key, node.IP, node.Port);
 
-                    var _title = "故障通知";
-                    var _body = string.Format("[{0} - ( {1} -> {2}:{3} )] 于 {4} 不可用 ({5})",
-                                               client.AppName, node.Key, node.IP, node.Port,
-                                               DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss"),
-                                               ex.Message);
-                    var _client = string.Format("{0} ({1})", client.AppName, client.AppVersion);
-                    var _display = "none";
-                    var _timeout = string.Empty;
-                    var _path = client.AppPath;
-                    var _status = string.Format("{0} ({1} => {2}:{3}) 连接失败",
-                                               client.HostName, client.IPAddress, node.IP, node.Port);
+                        var _title = "故障通知";
+                        var _body = string.Format("[{0} - ( {1} -> {2}:{3} )] 于 {4} 不可用 ({5})",
+                                                   client.AppName, node.Key, node.IP, node.Port,
+                                                   DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss"),
+                                                   ex.Message);
+                        var _client = string.Format("{0} ({1})", client.AppName, client.AppVersion);
+                        var _display = "none";
+                        var _timeout = string.Empty;
+                        var _path = client.AppPath;
+                        var _status = string.Format("{0} ({1} => {2}:{3}) 连接失败",
+                                                   client.HostName, client.IPAddress, node.IP, node.Port);
 
-                    //替换模板
-                    var body = templateHTML.Replace("$title", _title).Replace("$body", _body)
-                                            .Replace("$client", _client).Replace("$timeout", _timeout)
-                                            .Replace("$display", _display)
-                                            .Replace("$path", _path).Replace("$status", _status);
+                        //替换模板
+                        var body = templateHTML.Replace("$title", _title).Replace("$body", _body)
+                                                .Replace("$client", _client).Replace("$timeout", _timeout)
+                                                .Replace("$display", _display)
+                                                .Replace("$path", _path).Replace("$status", _status);
 
-                    SendMail(node, subject, body);
+                        SendMail(node, subject, body);
+                    }
+                }
+                catch (Exception e)
+                {
                 }
             }
         }

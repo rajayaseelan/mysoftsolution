@@ -47,54 +47,20 @@ namespace MySoft.IoC
             this.statuslist = new TimeStatusCollection(config.RecordHours * 3600);
 
             //启动定义推送线程
-            var timer1 = new Timer(TimeSpan.FromSeconds(5).TotalMilliseconds);
-            timer1.AutoReset = true;
-            timer1.Elapsed += timer1_Elapsed;
-            timer1.Start();
+            var timer1 = new TimerManager(DoPushWork);
+
+            timer1.Start(TimeSpan.FromSeconds(5));
 
             //启动自动检测线程
-            var timer2 = new Timer(TimeSpan.FromMinutes(1).TotalMilliseconds);
-            timer2.AutoReset = true;
-            timer2.Elapsed += timer2_Elapsed;
-            timer2.Start();
-        }
+            var timer2 = new TimerManager(DoCheckWork);
 
-        private void timer1_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            try
-            {
-                (sender as Timer).Stop();
-
-                //推荐消息
-                DoPushWork();
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                (sender as Timer).Start();
-            }
-        }
-
-        private void timer2_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            try
-            {
-                (sender as Timer).Stop();
-
-                //检测状态
-                DoCheckWork();
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                (sender as Timer).Start();
-            }
+            timer2.Start(TimeSpan.FromMinutes(1));
         }
 
         /// <summary>
         /// 推荐消息
         /// </summary>
-        private void DoPushWork()
+        private void DoPushWork(object state)
         {
             try
             {
@@ -117,7 +83,7 @@ namespace MySoft.IoC
         /// <summary>
         /// 检测状态
         /// </summary>
-        private void DoCheckWork()
+        private void DoCheckWork(object state)
         {
             try
             {

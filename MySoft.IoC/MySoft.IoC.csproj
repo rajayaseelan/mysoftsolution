@@ -220,6 +220,7 @@
     <Compile Include="SubscribeOptions.cs" />
     <Compile Include="ResponseType.cs" />
     <Compile Include="TaskPool.cs" />
+    <Compile Include="TimerManager.cs" />
     <Compile Include="WarningException.cs" />
   </ItemGroup>
   <ItemGroup>
