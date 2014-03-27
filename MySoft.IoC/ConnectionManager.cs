@@ -10,7 +10,6 @@ using System.Net.Mail;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
-using System.Timers;
 
 namespace MySoft.IoC
 {
