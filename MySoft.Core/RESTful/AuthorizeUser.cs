@@ -12,6 +12,11 @@ namespace MySoft.RESTful
     public class AuthorizeUser
     {
         /// <summary>
+        /// 用户Id
+        /// </summary>
+        public int UserId { get; set; }
+
+        /// <summary>
         /// 用户名称
         /// </summary>
         public string UserName { get; set; }

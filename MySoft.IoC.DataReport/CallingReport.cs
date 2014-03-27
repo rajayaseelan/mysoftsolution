@@ -6,7 +6,6 @@ using MySoft.Logger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Timers;
 
 namespace MySoft.IoC.DataReport
 {
@@ -30,35 +29,20 @@ namespace MySoft.IoC.DataReport
             this.calls = new SortedList<string, IList<RecordEventArgs>>();
             if (timeout > 0) this.timeout = timeout;
 
-            var timer = new Timer(TimeSpan.FromMinutes(1).TotalMilliseconds);
-            timer.AutoReset = true;
-            timer.Elapsed += timer_Elapsed;
-            timer.Start();
-        }
+            var timer = new TimerManager(TimerSaveCalling);
 
-        private void timer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            try
+            timer.OnError += error =>
             {
-                (sender as Timer).Stop();
+                SimpleLog.Instance.WriteLogForDir("SaveCaller", error);
+            };
 
-                //定时保存数据
-                TimerSaveCalling();
-            }
-            catch (Exception ex)
-            {
-                SimpleLog.Instance.WriteLogForDir("SaveCaller", ex);
-            }
-            finally
-            {
-                (sender as Timer).Start();
-            }
+            timer.Start(TimeSpan.FromMinutes(1));
         }
 
         /// <summary>
         /// 定时记录
         /// </summary>
-        private void TimerSaveCalling()
+        private void TimerSaveCalling(object state)
         {
             IList<RecordEventArgs> records = null;
             string callKey = null;
