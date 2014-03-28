@@ -18,16 +18,11 @@ namespace MySoft.PlatformService
     {
         private CastleService service;
         private IServiceRecorder recorder;
-        private string[] mailTo;
 
         public WindowsService()
         {
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(WindowsService_UnhandledException);
             Thread.GetDomain().UnhandledException += new UnhandledExceptionEventHandler(WindowsService_UnhandledException);
-
-            //处理邮件地址
-            string address = ConfigurationManager.AppSettings["SendMailAddress"];
-            if (!string.IsNullOrEmpty(address)) mailTo = address.Split(',', ';', '|');
 
             try
             {
@@ -52,7 +47,7 @@ namespace MySoft.PlatformService
             var config = CastleServiceConfiguration.GetConfig();
             this.service = new CastleService(config);
 
-            this.service.OnError += error => SimpleLog.Instance.WriteLogWithSendMail(error, mailTo);
+            this.service.OnError += error => SimpleLog.Instance.WriteLog(error);
             this.service.Completed += server_Completed;
 
             try
@@ -89,7 +84,7 @@ namespace MySoft.PlatformService
         void WindowsService_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var exception = e.ExceptionObject as Exception;
-            SimpleLog.Instance.WriteLogWithSendMail(exception, mailTo);
+            SimpleLog.Instance.WriteLog(exception);
         }
 
         protected override void OnStart(string[] args)
@@ -142,7 +137,7 @@ namespace MySoft.PlatformService
                 }
                 catch (Exception ex)
                 {
-                    SimpleLog.Instance.WriteLogWithSendMail(ex, mailTo);
+                    SimpleLog.Instance.WriteLog(ex);
                 }
             }
 
@@ -155,7 +150,7 @@ namespace MySoft.PlatformService
                 var error = IoCHelper.GetException(e.Caller, body, e.Error);
 
                 //写异常日志
-                SimpleLog.Instance.WriteLogWithSendMail(error, mailTo);
+                SimpleLog.Instance.WriteLog(error);
             }
         }
     }

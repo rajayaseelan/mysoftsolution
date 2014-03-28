@@ -369,6 +369,7 @@ namespace MySoft.RESTful
                 AuthorizeContext.Current = new AuthorizeContext
                 {
                     Token = token,
+                    UserId = user.UserId,
                     UserName = user.UserName,
                     UserState = user.UserState
                 };
