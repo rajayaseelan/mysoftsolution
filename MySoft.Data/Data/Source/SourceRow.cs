@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Runtime.Serialization;
 
 namespace MySoft.Data
 {
@@ -18,6 +19,16 @@ namespace MySoft.Data
         public SourceRow(DataRow row)
         {
             this.row = row;
+        }
+
+        /// <summary>
+        /// 对象序列化
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="context"></param>
+        protected SourceRow(SerializationInfo info, StreamingContext context)
+        {
+            //用于对接序列化
         }
 
         /// <summary>

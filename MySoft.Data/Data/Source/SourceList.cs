@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace MySoft.Data
 {
@@ -21,6 +22,16 @@ namespace MySoft.Data
         public ArrayList(IList<T> list)
         {
             if (list != null) this.AddRange(list);
+        }
+
+        /// <summary>
+        /// 对象序列化
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="context"></param>
+        protected ArrayList(SerializationInfo info, StreamingContext context)
+        {
+            //用于对接序列化
         }
 
         /// <summary>
@@ -126,6 +137,16 @@ namespace MySoft.Data
         public SourceList(IList<T> list)
             : base(list)
         { }
+
+        /// <summary>
+        /// 对象序列化
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="context"></param>
+        protected SourceList(SerializationInfo info, StreamingContext context)
+        {
+            //用于对接序列化
+        }
 
         #region IArrayList<T> 成员
 

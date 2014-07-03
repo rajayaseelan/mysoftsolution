@@ -14,7 +14,7 @@ namespace MySoft.IoC
     {
         public event ErrorLogEventHandler OnError;
 
-        private System.Timers.Timer timer;
+        private MySoft.IoC.Communication.Threading.Timer timer;
         private TimerCallback callback;
         private object state;
 
@@ -33,8 +33,8 @@ namespace MySoft.IoC
         /// <param name="callback"></param>
         /// <param name="state"></param>
         public TimerManager(TimerCallback callback, object state)
+            : this(callback)
         {
-            this.callback = callback;
             this.state = state;
         }
 
@@ -50,10 +50,9 @@ namespace MySoft.IoC
                 return;
             }
 
-            this.timer = new System.Timers.Timer(ts.TotalMilliseconds);
+            this.timer = new MySoft.IoC.Communication.Threading.Timer((int)ts.TotalMilliseconds);
 
             timer.Elapsed += timer_Elapsed;
-
             timer.Start();
         }
 
@@ -65,7 +64,7 @@ namespace MySoft.IoC
             timer.Stop();
         }
 
-        void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        void timer_Elapsed(object sender, EventArgs e)
         {
             if (timer == null) return;
 
@@ -93,7 +92,6 @@ namespace MySoft.IoC
             if (timer == null) return;
 
             timer.Stop();
-            timer.Dispose();
 
             timer.Elapsed -= timer_Elapsed;
             timer = null;

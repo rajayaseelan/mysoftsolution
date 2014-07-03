@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Runtime.Serialization;
 
 namespace MySoft.Data
 {
@@ -80,6 +81,16 @@ namespace MySoft.Data
         public SourceTable(string tableName)
         {
             this.TableName = tableName;
+        }
+
+        /// <summary>
+        /// 对象序列化
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="context"></param>
+        protected SourceTable(SerializationInfo info, StreamingContext context)
+        {
+            //用于对接序列化
         }
 
         /// <summary>
