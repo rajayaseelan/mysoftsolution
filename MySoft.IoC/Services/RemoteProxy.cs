@@ -2,6 +2,7 @@ using MySoft.IoC.Messages;
 using MySoft.Logger;
 using System;
 using System.Collections;
+using System.Net.Sockets;
 using System.Threading;
 
 namespace MySoft.IoC.Services
@@ -138,6 +139,10 @@ namespace MySoft.IoC.Services
                     //获取响应信息
                     return GetResponse(messageId, reqMsg);
                 }
+                catch (SocketException ex)
+                {
+                    throw GetException(node, ex);
+                }
                 finally
                 {
                     pool.Push(reqProxy);
@@ -148,6 +153,20 @@ namespace MySoft.IoC.Services
                 //释放一个控制器
                 semaphore.Release();
             }
+        }
+
+        /// <summary>
+        /// 获取通讯异常
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        private Exception GetException(ServerNode node, SocketException ex)
+        {
+            var message = string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> ({3}) {4}"
+                    , node.IP, node.Port, node.Key, ex.ErrorCode, ex.SocketErrorCode);
+
+            return new WarningException(ex.ErrorCode, message);
         }
 
         /// <summary>

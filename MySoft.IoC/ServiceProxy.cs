@@ -69,12 +69,16 @@ namespace MySoft.IoC
                 //调用服务
                 return service.CallService(reqMsg);
             }
-            catch (SocketException ex)
+            catch (WarningException ex)
             {
-                //添加连接
-                AddConnection(reqMsg, service.Node, ex);
+                //表示为SocketError
+                if (ex.WarningCode > 10000)
+                {
+                    //添加连接
+                    AddConnection(reqMsg, service.Node, ex);
+                }
 
-                throw GetException(service.Node, ex);
+                throw;
             }
         }
 
@@ -84,7 +88,7 @@ namespace MySoft.IoC
         /// <param name="reqMsg"></param>
         /// <param name="node"></param>
         /// <param name="ex"></param>
-        private void AddConnection(RequestMessage reqMsg, ServerNode node, SocketException ex)
+        private void AddConnection(RequestMessage reqMsg, ServerNode node, Exception ex)
         {
             var client = new AppClient
             {
@@ -97,20 +101,6 @@ namespace MySoft.IoC
 
             //添加节点到连接管理器
             ConnectionManager.AddNode(client, node, ex);
-        }
-
-        /// <summary>
-        /// 获取通讯异常
-        /// </summary>
-        /// <param name="node"></param>
-        /// <param name="ex"></param>
-        /// <returns></returns>
-        private Exception GetException(ServerNode node, SocketException ex)
-        {
-            var message = string.Format("Can't connect to server ({0}:{1})！Server node : {2} -> ({3}) {4}"
-                    , node.IP, node.Port, node.Key, ex.ErrorCode, ex.SocketErrorCode);
-
-            return new WarningException(ex.ErrorCode, message);
         }
     }
 }

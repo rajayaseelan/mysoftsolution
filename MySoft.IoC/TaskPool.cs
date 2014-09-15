@@ -213,16 +213,19 @@ namespace MySoft.IoC
         /// </summary>
         public void Dispose()
         {
-            //throw new NotImplementedException(); 
-            foreach (Task t in publicpool.Values)
+            lock (this)
             {
-                //关闭所有的线程 
-                using (t) { t.Close(); }
+                //throw new NotImplementedException(); 
+                foreach (Task t in publicpool.Values)
+                {
+                    //关闭所有的线程 
+                    using (t) { t.Close(); }
+                }
+                publicpool.Clear();
+                working.Clear();
+                waitlist.Clear();
+                freequeue.Clear();
             }
-            publicpool.Clear();
-            working.Clear();
-            waitlist.Clear();
-            freequeue.Clear();
         }
 
         /// <summary>

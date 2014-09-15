@@ -22,9 +22,12 @@ namespace MySoft.IoC
         /// TimerManager
         /// </summary>
         /// <param name="callback"></param>
-        public TimerManager(TimerCallback callback)
+        /// <param name="ts"></param>
+        public TimerManager(TimerCallback callback, TimeSpan ts)
         {
             this.callback = callback;
+            this.timer = new MySoft.IoC.Communication.Threading.Timer((int)ts.TotalMilliseconds);
+            this.timer.Elapsed += timer_Elapsed;
         }
 
         /// <summary>
@@ -32,8 +35,9 @@ namespace MySoft.IoC
         /// </summary>
         /// <param name="callback"></param>
         /// <param name="state"></param>
-        public TimerManager(TimerCallback callback, object state)
-            : this(callback)
+        /// <param name="ts"></param>
+        public TimerManager(TimerCallback callback, object state, TimeSpan ts)
+            : this(callback, ts)
         {
             this.state = state;
         }
@@ -42,17 +46,10 @@ namespace MySoft.IoC
         /// 启动一个时间控件
         /// </summary>
         /// <param name="ts"></param>
-        public void Start(TimeSpan ts)
+        public void Start()
         {
-            if (timer != null)
-            {
-                timer.Start();
-                return;
-            }
+            if (timer == null) return;
 
-            this.timer = new MySoft.IoC.Communication.Threading.Timer((int)ts.TotalMilliseconds);
-
-            timer.Elapsed += timer_Elapsed;
             timer.Start();
         }
 
@@ -61,6 +58,8 @@ namespace MySoft.IoC
         /// </summary>
         public void Stop()
         {
+            if (timer == null) return;
+
             timer.Stop();
         }
 

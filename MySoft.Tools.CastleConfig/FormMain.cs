@@ -120,17 +120,19 @@ namespace MySoft.Tools.CastleConfig
                     var typeInterfaces = type.GetInterfaces();
                     if (typeInterfaces.Length == 0) continue;
 
-                    var iface = typeInterfaces[0];
-                    var contract = CoreHelper.GetMemberAttribute<TAttribute>(iface);
-                    if (contract == null) continue;
+                    foreach (var iface in typeInterfaces)
+                    {
+                        var contract = CoreHelper.GetMemberAttribute<TAttribute>(iface);
+                        if (contract == null) continue;
 
-                    var obsolete = CoreHelper.GetMemberAttribute<ObsoleteAttribute>(iface);
-                    if (obsolete != null) continue;
+                        var obsolete = CoreHelper.GetMemberAttribute<ObsoleteAttribute>(iface);
+                        if (obsolete != null) continue;
 
-                    var value = string.Format(template, iface.FullName, iface.FullName, iface.Assembly.FullName.Split(',')[0],
-                        type.FullName, type.Assembly.FullName.Split(',')[0]);
+                        var value = string.Format(template, iface.FullName, iface.FullName, iface.Assembly.FullName.Split(',')[0],
+                            type.FullName, type.Assembly.FullName.Split(',')[0]);
 
-                    list.Add(value);
+                        list.Add(value);
+                    }
                 }
 
                 if (list.Count > 0)

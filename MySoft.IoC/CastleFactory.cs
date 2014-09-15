@@ -297,7 +297,10 @@ namespace MySoft.IoC
                         }
 
                         //实例化服务代理
-                        proxies[nodeKey] = new ServiceProxy(nodeKey, remoteProxies);
+                        if (remoteProxies.Count == 1)
+                            proxies[nodeKey] = remoteProxies[0];
+                        else
+                            proxies[nodeKey] = new ServiceProxy(nodeKey, remoteProxies);
                     }
                 }
             }

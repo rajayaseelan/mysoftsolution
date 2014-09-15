@@ -23,7 +23,7 @@ namespace MySoft.IoC
         /// Default value: 15 seconds (15000 ms).
         /// </summary>
         /// 
-        private const int ConnectTimeout = 5000;
+        private const int ConnectTimeout = 15000;
 
         private static IList<AppNode> nodes = new List<AppNode>();
         private static string templateHTML = string.Empty;
@@ -48,9 +48,9 @@ namespace MySoft.IoC
             }
 
             //定时检测连接状态
-            var timer = new TimerManager(CheckConnect);
+            var timer = new TimerManager(CheckConnect, TimeSpan.FromMilliseconds(ConnectTimeout / 3));
 
-            timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout));
+            timer.Start();
         }
 
         /// <summary>

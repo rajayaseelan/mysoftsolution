@@ -73,7 +73,7 @@ namespace MySoft.IoC
             this.caller = new ServiceCaller(config, container);
 
             var processorCount = Environment.ProcessorCount;
-            this.pool = new TaskPool(processorCount, processorCount / 2, 2);
+            this.pool = new TaskPool(processorCount * 2 + 2, processorCount, 2);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -103,10 +103,6 @@ namespace MySoft.IoC
 
             //发布日志
             PublishService(status.GetServiceList());
-
-            //http控制
-            ServicePointManager.DefaultConnectionLimit = config.MaxCaller;
-            ServicePointManager.Expect100Continue = false;
         }
 
         /// <summary>
