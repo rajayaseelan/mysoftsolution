@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 
 namespace MySoft.IoC
 {
@@ -27,7 +28,7 @@ namespace MySoft.IoC
         private ScsTcpEndPoint epServer;
         private ServerStatusService status;
         private ServiceCaller caller;
-        private TaskPool pool;
+        private TaskPool pool1, pool2;
 
         /// <summary>
         /// Gets the service container.
@@ -69,11 +70,12 @@ namespace MySoft.IoC
             this.status = new ServerStatusService(server, config, container);
             container.Register(typeof(IStatusService), status);
 
-            //实例化调用者
-            this.caller = new ServiceCaller(config, container);
-
             var processorCount = Environment.ProcessorCount;
-            this.pool = new TaskPool(processorCount * 2 + 2, processorCount, 2);
+            this.pool1 = new TaskPool(processorCount * 2 + 2, processorCount);
+            this.pool2 = new TaskPool(config.MaxCaller, processorCount);
+
+            //实例化调用者
+            this.caller = new ServiceCaller(pool2, config, container);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -242,7 +244,8 @@ namespace MySoft.IoC
             {
                 caller.Dispose();
                 container.Dispose();
-                pool.Dispose();
+                pool1.Dispose();
+                pool2.Dispose();
             }
         }
 
@@ -390,7 +393,7 @@ namespace MySoft.IoC
                 };
 
                 //添加到发送队列
-                pool.AddTaskItem(WaitCallback, msgItem);
+                pool1.AddTaskItem(WaitCallback, msgItem);
             }
             catch (Exception ex)
             {

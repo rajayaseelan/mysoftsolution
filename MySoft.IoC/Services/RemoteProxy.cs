@@ -130,14 +130,8 @@ namespace MySoft.IoC.Services
 
                 try
                 {
-                    //消息Id
-                    var messageId = Guid.NewGuid().ToString();
-
-                    //发送请求
-                    reqProxy.Send(messageId, reqMsg);
-
                     //获取响应信息
-                    return GetResponse(messageId, reqMsg);
+                    return GetResponse(reqProxy.Send, reqMsg);
                 }
                 catch (SocketException ex)
                 {
@@ -172,18 +166,24 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// 获取响应信息
         /// </summary>
-        /// <param name="messageId"></param>
+        /// <param name="sender"></param>
         /// <param name="reqMsg"></param>
         /// <returns></returns>
-        private ResponseMessage GetResponse(string messageId, RequestMessage reqMsg)
+        private ResponseMessage GetResponse(Action<string, RequestMessage> sender, RequestMessage reqMsg)
         {
             using (var waitResult = new WaitResult(reqMsg))
             {
+                //消息Id
+                var messageId = Guid.NewGuid().ToString();
+
                 //添加信号量对象
                 hashtable[messageId] = waitResult;
 
                 try
                 {
+                    //发送请求
+                    sender(messageId, reqMsg);
+
                     var timeout = TimeSpan.FromSeconds(node.Timeout);
 
                     //等待信号响应

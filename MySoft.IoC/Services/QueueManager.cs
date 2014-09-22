@@ -62,19 +62,14 @@ namespace MySoft.IoC.Services
         /// <param name="resMsg"></param>
         public void Set(ResponseMessage resMsg)
         {
-            lock (this.queues)
+            if (this.Count == 0) return;
+
+            lock (queues)
             {
-                try
+                while (queues.Count > 0)
                 {
-                    while (queues.Count > 0)
-                    {
-                        var result = queues.Dequeue();
-                        result.Set(resMsg);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    queues.Clear();
+                    var result = queues.Dequeue();
+                    result.Set(resMsg);
                 }
             }
         }
@@ -85,19 +80,14 @@ namespace MySoft.IoC.Services
         /// <param name="error"></param>
         public void Set(Exception error)
         {
-            lock (this.queues)
+            if (this.Count == 0) return;
+
+            lock (queues)
             {
-                try
+                while (queues.Count > 0)
                 {
-                    while (queues.Count > 0)
-                    {
-                        var result = queues.Dequeue();
-                        result.Set(error);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    queues.Clear();
+                    var result = queues.Dequeue();
+                    result.Set(error);
                 }
             }
         }

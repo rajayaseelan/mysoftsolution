@@ -29,14 +29,14 @@ namespace MySoft.IoC.DataReport
             this.calls = new SortedList<string, IList<RecordEventArgs>>();
             if (timeout > 0) this.timeout = timeout;
 
-            var timer = new TimerManager(TimerSaveCalling);
+            var timer = new TimerManager(TimeSpan.FromMinutes(1), TimerSaveCalling);
 
             timer.OnError += error =>
             {
                 SimpleLog.Instance.WriteLogForDir("SaveCaller", error);
             };
 
-            timer.Start(TimeSpan.FromMinutes(1));
+            timer.Start();
         }
 
         /// <summary>

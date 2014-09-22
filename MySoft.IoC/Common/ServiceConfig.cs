@@ -16,7 +16,7 @@ namespace MySoft.IoC
         /// <summary>
         /// The server default max caller
         /// </summary>
-        public const int DEFAULT_SERVER_MAXCALLER = 300; //默认并发数300
+        public const int DEFAULT_SERVER_MAXCALLER = 500; //默认并发数500
 
         /// <summary>
         /// The client default max caller

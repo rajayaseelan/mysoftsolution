@@ -7,33 +7,26 @@ using System.Text;
 namespace MySoft.IoC.Services
 {
     /// <summary>
-    /// 异步调用委托
-    /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    internal delegate ResponseMessage AsyncMethodCaller(AsyncContext context);
-
-    /// <summary>
     /// 异步调用器
     /// </summary>
     internal class AsyncCaller : SyncCaller
     {
         private TimeSpan timeout;
-        private AsyncMethodCaller caller;
         private IDictionary<string, QueueManager> queues;
+        private TaskPool pool;
 
         /// <summary>
         /// 实例化AsyncCaller
         /// </summary>
+        /// <param name="pool"></param>
         /// <param name="service"></param>
         /// <param name="timeout"></param>
-        public AsyncCaller(IService service, TimeSpan timeout)
+        public AsyncCaller(TaskPool pool, IService service, TimeSpan timeout)
             : base(service)
         {
-            this.caller = new AsyncMethodCaller(AsyncRun);
-
             this.queues = new Dictionary<string, QueueManager>();
             this.timeout = timeout;
+            this.pool = pool;
         }
 
         /// <summary>
@@ -56,13 +49,13 @@ namespace MySoft.IoC.Services
                     //开始一个异步任务
                     var _context = new AsyncContext
                     {
-                        QueueKey = manager.Key,
+                        Manager = manager,
                         Context = context,
                         Request = reqMsg
                     };
 
                     //开始异步调用
-                    caller.BeginInvoke(_context, AsyncCallback, manager);
+                    pool.AddTaskItem(AsyncCallback, _context);
                 }
 
                 if (!waitResult.WaitOne(timeout))
@@ -78,42 +71,22 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 异步调用
+        /// 异步处理
         /// </summary>
-        /// <param name="ac"></param>
-        /// <returns></returns>
-        private ResponseMessage AsyncRun(AsyncContext ac)
+        /// <param name="state"></param>
+        private void AsyncCallback(object state)
         {
-            try
-            {
-                //调用基类服务
-                return base.Invoke(ac.Context, ac.Request);
-            }
-            finally
-            {
-                //移除指定的值
-                lock (queues)
-                {
-                    queues.Remove(ac.QueueKey);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 回调处理
-        /// </summary>
-        /// <param name="ar"></param>
-        private void AsyncCallback(IAsyncResult ar)
-        {
-            if (ar.AsyncState == null) return;
-
             //处理队列管理器
-            var manager = ar.AsyncState as QueueManager;
+            var async = state as AsyncContext;
+            var manager = async.Manager;
 
             try
             {
                 //调用服务
-                var resMsg = caller.EndInvoke(ar);
+                var request = async.Request;
+                var context = async.Context;
+
+                var resMsg = base.Invoke(context, request);
 
                 manager.Set(resMsg);
             }
@@ -123,8 +96,11 @@ namespace MySoft.IoC.Services
             }
             finally
             {
-                //关闭句柄
-                ar.AsyncWaitHandle.Close();
+                //移除指定的值
+                lock (queues)
+                {
+                    queues.Remove(manager.Key);
+                }
             }
         }
 
@@ -141,18 +117,19 @@ namespace MySoft.IoC.Services
             var key = string.Format("{0}${1}${2}", caller.ServiceName, caller.MethodName, caller.Parameters);
             var queueKey = MD5.HexHash(Encoding.Default.GetBytes(key));
 
-            //定义QueueManager
-            QueueManager manager = null;
-
-            lock (queues)
+            if (!queues.ContainsKey(queueKey))
             {
-                if (!queues.ContainsKey(queueKey))
+                lock (queues)
                 {
-                    queues[queueKey] = new QueueManager(queueKey);
+                    if (!queues.ContainsKey(queueKey))
+                    {
+                        queues[queueKey] = new QueueManager(queueKey);
+                    }
                 }
-
-                manager = queues[queueKey];
             }
+
+            //定义QueueManager
+            var manager = queues[queueKey];
 
             //判断是否运行任务
             isRunTask = manager.Count == 0;

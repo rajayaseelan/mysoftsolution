@@ -119,7 +119,7 @@ namespace MySoft.IoC.Communication.Scs.Client
         /// <summary>
         /// Default timeout value for connecting a server.
         /// </summary>
-        private const int DefaultConnectionAttemptTimeout = 5000; //5 seconds.
+        private const int DefaultConnectionAttemptTimeout = 15000; //15 seconds.
 
         /// <summary>
         /// The communication channel that is used by client to send and receive messages.

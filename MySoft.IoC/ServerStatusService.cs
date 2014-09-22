@@ -47,12 +47,12 @@ namespace MySoft.IoC
             this.statuslist = new TimeStatusCollection(config.RecordHours * 3600);
 
             //启动定义推送线程
-            var timer1 = new TimerManager(DoPushWork, TimeSpan.FromSeconds(5));
+            var timer1 = new TimerManager(TimeSpan.FromSeconds(5), DoPushWork);
 
             timer1.Start();
 
             //启动自动检测线程
-            var timer2 = new TimerManager(DoCheckWork, TimeSpan.FromMinutes(1));
+            var timer2 = new TimerManager(TimeSpan.FromMinutes(1), DoCheckWork);
 
             timer2.Start();
         }

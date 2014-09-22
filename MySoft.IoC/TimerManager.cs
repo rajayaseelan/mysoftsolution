@@ -21,9 +21,9 @@ namespace MySoft.IoC
         /// <summary>
         /// TimerManager
         /// </summary>
-        /// <param name="callback"></param>
         /// <param name="ts"></param>
-        public TimerManager(TimerCallback callback, TimeSpan ts)
+        /// <param name="callback"></param>
+        public TimerManager(TimeSpan ts, TimerCallback callback)
         {
             this.callback = callback;
             this.timer = new MySoft.IoC.Communication.Threading.Timer((int)ts.TotalMilliseconds);
@@ -33,11 +33,11 @@ namespace MySoft.IoC
         /// <summary>
         /// TimerManager
         /// </summary>
+        /// <param name="ts"></param>
         /// <param name="callback"></param>
         /// <param name="state"></param>
-        /// <param name="ts"></param>
-        public TimerManager(TimerCallback callback, object state, TimeSpan ts)
-            : this(callback, ts)
+        public TimerManager(TimeSpan ts, TimerCallback callback, object state)
+            : this(ts, callback)
         {
             this.state = state;
         }

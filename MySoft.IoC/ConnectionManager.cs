@@ -48,7 +48,7 @@ namespace MySoft.IoC
             }
 
             //定时检测连接状态
-            var timer = new TimerManager(CheckConnect, TimeSpan.FromMilliseconds(ConnectTimeout / 3));
+            var timer = new TimerManager(TimeSpan.FromMilliseconds(ConnectTimeout / 3), CheckConnect);
 
             timer.Start();
         }

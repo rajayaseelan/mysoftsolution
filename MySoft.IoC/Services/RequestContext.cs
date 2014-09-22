@@ -30,6 +30,6 @@ namespace MySoft.IoC.Services
         /// <summary>
         /// Queue key.
         /// </summary>
-        public string QueueKey { get; set; }
+        public QueueManager Manager { get; set; }
     }
 }

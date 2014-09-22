@@ -22,9 +22,10 @@ namespace MySoft.IoC
         /// <summary>
         /// 初始化ServiceCaller
         /// </summary>
+        /// <param name="pool"></param>
         /// <param name="config"></param>
         /// <param name="container"></param>
-        public ServiceCaller(CastleServiceConfiguration config, IServiceContainer container)
+        public ServiceCaller(TaskPool pool, CastleServiceConfiguration config, IServiceContainer container)
         {
             this.config = config;
             this.container = container;
@@ -34,16 +35,16 @@ namespace MySoft.IoC
             this.semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
 
             //初始化服务
-            InitTypes(container, config);
+            InitTypes(container);
 
             //初始化调用器
             var services = container.Kernel.ResolveAll<IService>();
             var timeout = TimeSpan.FromSeconds(config.Timeout);
 
-            InitCaller(services, timeout);
+            InitCaller(pool, services, timeout);
         }
 
-        private void InitTypes(IServiceContainer container, CastleServiceConfiguration config)
+        private void InitTypes(IServiceContainer container)
         {
             callbackTypes[typeof(IStatusService).FullName] = typeof(IStatusListener);
             var types = container.GetServiceTypes<ServiceContractAttribute>();
@@ -61,14 +62,15 @@ namespace MySoft.IoC
         /// <summary>
         /// 初始化调用器
         /// </summary>
+        /// <param name="pool"></param>
         /// <param name="services"></param>
         /// <param name="timeout"></param>
-        private void InitCaller(IService[] services, TimeSpan timeout)
+        private void InitCaller(TaskPool pool, IService[] services, TimeSpan timeout)
         {
             foreach (var service in services)
             {
                 //实例化调用器
-                var caller = new AsyncCaller(service, timeout);
+                var caller = new AsyncCaller(pool, service, timeout);
                 asyncCallers[service.ServiceName] = caller;
             }
         }
@@ -113,42 +115,40 @@ namespace MySoft.IoC
         /// <param name="channel"></param>
         /// <param name="caller"></param>
         /// <returns></returns>
-        private OperationContext GetOperationContext(IScsServerClient channel, AppCaller appCaller)
+        private OperationContext GetOperationContext(IScsServerClient channel, AppCaller caller)
         {
             //实例化当前上下文
             Type callbackType = null;
 
-            if (callbackTypes.ContainsKey(appCaller.ServiceName))
+            if (callbackTypes.ContainsKey(caller.ServiceName))
             {
-                callbackType = callbackTypes[appCaller.ServiceName];
+                callbackType = callbackTypes[caller.ServiceName];
             }
 
             return new OperationContext(channel, callbackType)
             {
                 Container = container,
-                Caller = appCaller
+                Caller = caller
             };
         }
 
         /// <summary>
         /// Gets the service.
         /// </summary>
-        /// <param name="appCaller"></param>
+        /// <param name="caller"></param>
         /// <returns></returns>
-        private AsyncCaller GetAsyncCaller(AppCaller appCaller)
+        private AsyncCaller GetAsyncCaller(AppCaller caller)
         {
             //判断服务是否存在
-            if (asyncCallers.ContainsKey(appCaller.ServiceName))
+            if (asyncCallers.ContainsKey(caller.ServiceName))
             {
-                return asyncCallers[appCaller.ServiceName];
+                return asyncCallers[caller.ServiceName];
             }
-            else
-            {
-                string body = string.Format("The server not find matching service ({0}).", appCaller.ServiceName);
 
-                //获取异常
-                throw IoCHelper.GetException(appCaller, body);
-            }
+            string body = string.Format("The server not find matching service ({0}).", caller.ServiceName);
+
+            //获取异常
+            throw IoCHelper.GetException(caller, body);
         }
 
         #region IDisposable 成员
