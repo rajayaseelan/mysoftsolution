@@ -156,10 +156,9 @@ namespace MySoft.IoC.HttpProxy
                 try
                 {
                     var jobj = ParameterHelper.ConvertJObject(query, null);
-                    if (service.Authorized && !string.IsNullOrEmpty(service.AuthParameter))
-                    {
-                        jobj[service.AuthParameter] = AuthorizeContext.Current.UserName;
-                    }
+
+                    //设置认证参数
+                    SetAuthParameter(service, jobj);
 
                     //调用服务
                     jsonString = Invoke(service, jobj.ToString(Formatting.Indented));
@@ -283,10 +282,9 @@ namespace MySoft.IoC.HttpProxy
                     var nvpost = ParameterHelper.ConvertCollection(postValue);
 
                     var jobj = ParameterHelper.ConvertJObject(query, nvpost);
-                    if (service.Authorized && !string.IsNullOrEmpty(service.AuthParameter))
-                    {
-                        jobj[service.AuthParameter] = AuthorizeContext.Current.UserName;
-                    }
+
+                    //设置认证参数
+                    SetAuthParameter(service, jobj);
 
                     //调用服务
                     jsonString = Invoke(service, jobj.ToString(Formatting.Indented));
@@ -439,7 +437,7 @@ namespace MySoft.IoC.HttpProxy
             {
                 #region 进行认证处理
 
-                service = GetServiceItems().Single(p => string.Compare(p.CallerName, name, true) == 0);
+                service = GetServiceItems().First(p => string.Compare(p.CallerName, name, true) == 0);
 
                 if (service.HttpMethod == HttpMethod.POST && method == HttpMethod.GET)
                 {
@@ -497,6 +495,7 @@ namespace MySoft.IoC.HttpProxy
                     AuthorizeContext.Current = new AuthorizeContext
                     {
                         Token = token,
+                        UserId = user.UserId,
                         UserName = user.UserName,
                         UserState = user.UserState
                     };
@@ -633,6 +632,22 @@ namespace MySoft.IoC.HttpProxy
             var invokeData = CastleFactory.Create().Invoke(node, message);
 
             return invokeData.Value;
+        }
+
+        /// <summary>
+        /// 设置认证参数
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="obj"></param>
+        private void SetAuthParameter(ServiceItem service, Newtonsoft.Json.Linq.JObject obj)
+        {
+            if (service.Authorized && !string.IsNullOrEmpty(service.AuthParameter))
+            {
+                if (string.Compare("userid", service.AuthParameter, true) == 0)
+                    obj[service.AuthParameter] = AuthorizeContext.Current.UserId;
+                else
+                    obj[service.AuthParameter] = AuthorizeContext.Current.UserName;
+            }
         }
     }
 }

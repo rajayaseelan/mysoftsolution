@@ -20,6 +20,7 @@ namespace MySoft.WebAPI
         {
             return new AuthorizeUser
             {
+                UserId = 1,
                 UserName = "my181"
             };
         }

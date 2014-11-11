@@ -3,13 +3,37 @@ using MySoft.IoC;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.Messages;
 using MySoft.Logger;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MySoft.PlatformService.Console
 {
+    class UserA
+    {
+        public int id { get; set; }
+        public int age { get; set; }
+    }
+
+    class UserB
+    {
+        public int id { get; set; }
+        public string sex { get; set; }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
+            //var userlist1 = new List<UserA> { new UserA { id = 1, age = 20 }, new UserA { id = 2, age = 30 } };
+            //var userlist2 = new List<UserB> { new UserB { id = 1, sex = "aaa" }, new UserB { id = 3, sex = "bbb" } };
+
+            //var query = from p1 in userlist1
+            //            join p2 in userlist2 on p1.id equals p2.id
+            //            select new { p1.id, p1.age, p2.sex };
+
+            //var list = query.ToList();
+
+
             server_OnLog("Server ready started...", LogType.Normal);
 
             var config = CastleServiceConfiguration.GetConfig();
