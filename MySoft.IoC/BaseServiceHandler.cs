@@ -46,32 +46,27 @@ namespace MySoft.IoC
                 //定义响应的消息
                 var resMsg = GetResponse(reqMsg, ref elapsedTime);
 
-                if (resMsg.IsError)
+                //抛出异常
+                if (resMsg.IsError) throw resMsg.Error;
+
+                if (resMsg is ResponseBuffer)
                 {
-                    //写错误日志
-                    WriteError(resMsg.Error);
-                }
-                else
-                {
-                    if (resMsg is ResponseBuffer)
+                    //反序列化对象
+                    var buffer = (resMsg as ResponseBuffer).Buffer;
+
+                    resMsg = new ResponseMessage
                     {
-                        //反序列化对象
-                        var buffer = (resMsg as ResponseBuffer).Buffer;
-
-                        resMsg = new ResponseMessage
-                        {
-                            ServiceName = resMsg.ServiceName,
-                            MethodName = resMsg.MethodName,
-                            Parameters = resMsg.Parameters,
-                            ElapsedTime = resMsg.ElapsedTime,
-                            Error = resMsg.Error,
-                            Value = IoCHelper.DeserializeObject(buffer)
-                        };
-                    }
-
-                    //设置耗时时间
-                    resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, elapsedTime);
+                        ServiceName = resMsg.ServiceName,
+                        MethodName = resMsg.MethodName,
+                        Parameters = resMsg.Parameters,
+                        ElapsedTime = resMsg.ElapsedTime,
+                        Error = resMsg.Error,
+                        Value = IoCHelper.DeserializeObject(buffer)
+                    };
                 }
+
+                //设置耗时时间
+                resMsg.ElapsedTime = Math.Min(resMsg.ElapsedTime, elapsedTime);
 
                 return resMsg;
             }
@@ -138,14 +133,20 @@ namespace MySoft.IoC
         /// <returns></returns>
         private ResponseMessage GetResponse(RequestMessage reqMsg)
         {
-            //同步调用服务
-            using (var caller = new SyncCaller(service))
-            {
-                //获取上下文
-                var context = GetOperationContext(reqMsg);
+            //获取上下文
+            var context = GetOperationContext(reqMsg);
 
-                //异步调用
-                return caller.Invoke(context, reqMsg);
+            //设置上下文
+            OperationContext.Current = context;
+
+            try
+            {
+                //同步调用服务
+                return service.CallService(reqMsg);
+            }
+            finally
+            {
+                OperationContext.Current = null;
             }
         }
 

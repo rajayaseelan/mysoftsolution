@@ -5,6 +5,7 @@ using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Configuration;
 using MySoft.IoC.HttpServer;
 using MySoft.IoC.Messages;
+using MySoft.IoC.Services;
 using MySoft.Logger;
 using MySoft.Net.Http;
 using System;
@@ -27,8 +28,9 @@ namespace MySoft.IoC
         private IScsServer server;
         private ScsTcpEndPoint epServer;
         private ServerStatusService status;
-        private ServiceCaller caller;
-        private TaskPool pool1, pool2;
+        private ServiceCaller serviceCaller;
+        private AsyncCaller asyncCaller;
+        private Semaphore semaphore;
 
         /// <summary>
         /// Gets the service container.
@@ -70,12 +72,14 @@ namespace MySoft.IoC
             this.status = new ServerStatusService(server, config, container);
             container.Register(typeof(IStatusService), status);
 
+            //设置线程数
             var processorCount = Environment.ProcessorCount;
-            this.pool1 = new TaskPool(processorCount * 2 + 2, processorCount);
-            this.pool2 = new TaskPool(config.MaxCaller, processorCount);
+            ThreadPool.SetMinThreads(processorCount * 2, processorCount * 2);
 
             //实例化调用者
-            this.caller = new ServiceCaller(pool2, config, container);
+            this.serviceCaller = new ServiceCaller(container);
+            this.asyncCaller = new AsyncCaller(InvokeResponse);
+            this.semaphore = new Semaphore(config.MaxCaller, config.MaxCaller);
 
             //判断是否启用httpServer
             if (config.HttpEnabled)
@@ -242,10 +246,9 @@ namespace MySoft.IoC
             catch (Exception ex) { }
             finally
             {
-                caller.Dispose();
+                serviceCaller.Dispose();
                 container.Dispose();
-                pool1.Dispose();
-                pool2.Dispose();
+                semaphore.Close();
             }
         }
 
@@ -326,6 +329,9 @@ namespace MySoft.IoC
         {
             var channel = sender as IScsServerClient;
 
+            //进入控制
+            semaphore.WaitOne();
+
             try
             {
                 //只处理指定消息
@@ -355,8 +361,19 @@ namespace MySoft.IoC
                         PushAppClient(endPoint, client);
                     }
 
-                    //调用服务
-                    SendResponse(channel, message.RepliedMessageId, reqMsg);
+                    #region 发送请求
+
+                    var msgItem = new MessageItem
+                    {
+                        MessageId = message.RepliedMessageId,
+                        Channel = channel,
+                        Request = reqMsg
+                    };
+
+                    //开始异步调用
+                    asyncCaller.BeginInvoke(msgItem, AsyncCallback, msgItem);
+
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -364,67 +381,66 @@ namespace MySoft.IoC
                 //写异常日志
                 container.WriteError(ex);
             }
+            finally
+            {
+                //释放控制
+                semaphore.Release();
+            }
         }
 
         /// <summary>
-        /// 发送消息
+        /// 执行方法
         /// </summary>
-        /// <param name="channel"></param>
-        /// <param name="messageId"></param>
-        /// <param name="reqMsg"></param>
-        private void SendResponse(IScsServerClient channel, string messageId, RequestMessage reqMsg)
+        /// <param name="item"></param>
+        /// <returns></returns>
+        private ResponseMessage InvokeResponse(MessageItem item)
         {
             try
             {
-                var appCaller = CreateCaller(reqMsg);
+                var appCaller = CreateCaller(item.Request);
 
                 //响应消息
-                var resMsg = caller.HandleResponse(channel, appCaller, reqMsg);
+                var resMsg = serviceCaller.HandleResponse(item.Channel, appCaller, item.Request);
 
                 //数据计数
-                DataCounter(messageId, appCaller, resMsg);
+                DataCounter(item.MessageId, appCaller, resMsg);
 
-                var msgItem = new MessageItem
-                {
-                    MessageId = messageId,
-                    Channel = channel,
-                    Request = reqMsg,
-                    Response = resMsg
-                };
-
-                //添加到发送队列
-                pool1.AddTaskItem(WaitCallback, msgItem);
+                return resMsg;
             }
             catch (Exception ex)
             {
-                //写异常日志
-                container.WriteError(ex);
+                //获取异常响应信息
+                return IoCHelper.GetResponse(item.Request, ex);
             }
         }
 
         /// <summary>
-        /// 等等响应
+        /// 等待响应
         /// </summary>
-        /// <param name="state"></param>
-        private void WaitCallback(object state)
+        /// <param name="ar"></param>
+        private void AsyncCallback(IAsyncResult ar)
         {
-            if (state == null) return;
-
             try
             {
-                var msgItem = state as MessageItem;
+                var item = ar.AsyncState as MessageItem;
+
+                var resMsg = asyncCaller.EndInvoke(ar);
 
                 //实例化上下文
-                using (var client = new ServiceChannel(msgItem.Channel, msgItem.Request))
+                using (var channel = new ServiceChannel(item.Channel, item.Request))
                 {
                     //发送消息
-                    client.SendResponse(msgItem.MessageId, msgItem.Response);
+                    channel.SendResponse(item.MessageId, resMsg);
                 }
             }
             catch (Exception ex)
             {
                 //写异常日志
                 container.WriteError(ex);
+            }
+            finally
+            {
+                ar.AsyncWaitHandle.Close();
             }
         }
 
@@ -454,9 +470,8 @@ namespace MySoft.IoC
                 callArgs.Value = (resMsg as ResponseBuffer).Buffer;
             }
 
-            //异步调用
-            var func = new Action<CallEventArgs>(AsyncCounter);
-            func.BeginInvoke(callArgs, null, null);
+            //同步调用
+            SyncCounter(callArgs);
         }
 
         /// <summary>
@@ -487,7 +502,7 @@ namespace MySoft.IoC
         /// 同步调用方法
         /// </summary>
         /// <param name="callArgs"></param>
-        private void AsyncCounter(CallEventArgs callArgs)
+        private void SyncCounter(CallEventArgs callArgs)
         {
             try
             {

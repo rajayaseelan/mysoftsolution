@@ -10,7 +10,7 @@ using Castle.Core;
 
 namespace MySoft.PlatformService.UserService
 {
-    //[AspectProxy(typeof(AspectLog))]
+    [AspectProxy(typeof(AspectLog))]
     public class UserService : TypeInitializable, IUserService
     {
         //private DateTime startTime;
@@ -37,9 +37,9 @@ namespace MySoft.PlatformService.UserService
 
             //throw new ApplicationException("出错了！");
 
-            var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(100000, '#');
+            var name = DateTime.Now.ToString() + "__" + id.ToString().PadRight(1000, '#');
             var sb = new StringBuilder(name);
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
             {
                 sb.Append(name);
             }

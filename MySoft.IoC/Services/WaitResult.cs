@@ -12,7 +12,6 @@ namespace MySoft.IoC.Services
         private EventWaitHandle ev;
         private RequestMessage reqMsg;
         private ResponseMessage resMsg;
-        private bool isCompleted;
 
         /// <summary>
         /// 消息对象
@@ -53,26 +52,15 @@ namespace MySoft.IoC.Services
         }
 
         /// <summary>
-        /// 结束任务
-        /// </summary>
-        public void Cancel()
-        {
-            this.isCompleted = true;
-        }
-
-        /// <summary>
         /// 响应信号
         /// </summary>
         /// <param name="resMsg"></param>
         /// <returns></returns>
         public bool Set(ResponseMessage resMsg)
         {
-            if (isCompleted) return false;
-
             try
             {
                 this.resMsg = resMsg;
-                this.isCompleted = true;
 
                 return ev.Set();
             }
@@ -89,8 +77,6 @@ namespace MySoft.IoC.Services
         /// <returns></returns>
         public bool Set(Exception ex)
         {
-            if (isCompleted) return false;
-
             var resMsg = IoCHelper.GetResponse(reqMsg, ex);
             return Set(resMsg);
         }

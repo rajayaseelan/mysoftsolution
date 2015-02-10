@@ -506,6 +506,7 @@
     <Compile Include="Logger\IErrorLogable.cs" />
     <Compile Include="Logger\ILogable.cs" />
     <Compile Include="Utils\ObjectConverter.cs" />
+    <Compile Include="Utils\ObjectPool.cs" />
     <Compile Include="Utils\Parallel.cs" />
     <Compile Include="Utils\PropertyMapping.cs" />
     <Compile Include="Utils\SerializationManager.cs" />

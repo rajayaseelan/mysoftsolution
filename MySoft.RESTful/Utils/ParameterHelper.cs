@@ -36,18 +36,9 @@ namespace MySoft.RESTful.Utils
                 {
                     try
                     {
+                        //获取Json值
                         var json = property.Value.ToString(Formatting.None);
-                        if (string.IsNullOrEmpty(json))
-                        {
-                            //参数值为空时使用默认值
-                            args.Add(CoreHelper.GetTypeDefaultValue(type));
-                        }
-                        else
-                        {
-                            //获取Json值
-                            var jsonValue = CoreHelper.ConvertJsonValue(type, json);
-                            args.Add(jsonValue);
-                        }
+                        args.Add(CoreHelper.ConvertJsonValue(type, json));
                     }
                     catch (Exception ex)
                     {

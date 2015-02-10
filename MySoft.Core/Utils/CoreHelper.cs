@@ -343,46 +343,45 @@ namespace MySoft
         /// <returns></returns>
         public static object ConvertJsonValue(Type type, string jsonString)
         {
-            object jsonValue = null;
             if (type.IsByRef) type = type.GetElementType();
-            var originalType = type;
-
             if (type.IsEnum) type = typeof(int);
 
-            //jsonString不为null
-            if (!string.IsNullOrEmpty(jsonString))
+            //jsonString为null，返回默认值
+            if (string.IsNullOrEmpty(jsonString))
             {
-                var pType = GetPrimitiveType(type);
+                return GetTypeDefaultValue(type);
+            }
 
-                //只有基类型为值类型或者为String类型
-                if (pType.IsValueType || pType == typeof(string))
+            var originalType = type;
+            var pType = GetPrimitiveType(type);
+
+            object jsonValue = null;
+
+            //只有基类型为值类型或者为String类型
+            if (pType.IsValueType || pType == typeof(string))
+            {
+                if (type.IsArray)
                 {
-                    if (type.IsArray)
+                    if (!(jsonString.StartsWith("[") && jsonString.EndsWith("]")))
+                        jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
+                }
+                else if (type.IsGenericType)
+                {
+                    var t = type.GetGenericTypeDefinition();
+                    if (typeof(IList<>).IsAssignableFrom(t) || typeof(List<>).IsAssignableFrom(t)
+                        || typeof(ICollection<>).IsAssignableFrom(t) || typeof(Collection<>).IsAssignableFrom(t)
+                        || typeof(IEnumerable<>).IsAssignableFrom(t))
                     {
                         if (!(jsonString.StartsWith("[") && jsonString.EndsWith("]")))
                             jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
                     }
-                    else if (type.IsGenericType)
-                    {
-                        var t = type.GetGenericTypeDefinition();
-                        if (typeof(IList<>).IsAssignableFrom(t) || typeof(List<>).IsAssignableFrom(t)
-                            || typeof(ICollection<>).IsAssignableFrom(t) || typeof(Collection<>).IsAssignableFrom(t)
-                            || typeof(IEnumerable<>).IsAssignableFrom(t))
-                        {
-                            if (!(jsonString.StartsWith("[") && jsonString.EndsWith("]")))
-                                jsonString = string.Format("[{0}]", jsonString.Replace(",", "\",\""));
-                        }
-                    }
                 }
-
-                if (jsonString.Contains("new Date"))
-                    jsonValue = SerializationManager.DeserializeJson(type, jsonString, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
-                else
-                    jsonValue = SerializationManager.DeserializeJson(type, jsonString);
             }
 
-            //如果为null，获取默认值
-            if (jsonValue == null) jsonValue = GetTypeDefaultValue(type);
+            if (jsonString.Contains("new Date"))
+                jsonValue = SerializationManager.DeserializeJson(type, jsonString, new Newtonsoft.Json.Converters.JavaScriptDateTimeConverter());
+            else
+                jsonValue = SerializationManager.DeserializeJson(type, jsonString);
 
             return ConvertValue(originalType, jsonValue);
         }

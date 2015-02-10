@@ -15,8 +15,8 @@ namespace MySoft.Data
 
         DbTrans BeginTrans();
         DbTrans BeginTrans(IsolationLevel isolationLevel);
-        DbTrans SetTransaction(DbTransaction trans);
-        DbTrans SetConnection(DbConnection connection);
+        void SetTransaction(DbTransaction trans);
+        void SetConnection(DbConnection connection);
         DbTransaction BeginTransaction();
         DbTransaction BeginTransaction(IsolationLevel isolationLevel);
         DbConnection CreateConnection();

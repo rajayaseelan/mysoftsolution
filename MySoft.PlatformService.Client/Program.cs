@@ -67,7 +67,7 @@ namespace MySoft.PlatformService.Client
 
             var e = new ManualResetEvent(false);
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1; i++)
             {
                 Thread thread = new Thread(DoWork);
                 thread.Start(e);
@@ -97,7 +97,7 @@ namespace MySoft.PlatformService.Client
                 try
                 {
                     //var users = service.GetUsers();
-                    var user = service.GetUser(rand.Next(1, 10000));
+                    var user = service.GetUser(rand.Next(1, 10));
 
                     //var xml = SerializationManager.SerializeXml(users, Encoding.GetEncoding(936));
 
@@ -144,7 +144,7 @@ namespace MySoft.PlatformService.Client
                     Interlocked.Increment(ref counter);
 
                     Console.WriteLine(DateTime.Now + "¡¾" + counter + "¡¿times => " + user.Id + " timeout: "
-                                    + watch.ElapsedMilliseconds + " ms. " + Thread.CurrentThread.ManagedThreadId);
+                                    + watch.ElapsedMilliseconds + " ms. " + Thread.CurrentThread.ManagedThreadId + " length:" + user.Name.Length);
 
                     //if (value != null)
                     //{

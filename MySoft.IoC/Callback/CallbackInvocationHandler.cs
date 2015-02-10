@@ -13,58 +13,11 @@ namespace MySoft.IoC.Callback
     {
         private Type _callType;
         private IScsServerClient _channel;
-        private Func<IScsMessage, bool> _func;
 
         public CallbackInvocationHandler(Type callType, IScsServerClient channel)
         {
             this._callType = callType;
             this._channel = channel;
-            this._func = new Func<IScsMessage, bool>(Send);
-        }
-
-        /// <summary>
-        /// 发送消息
-        /// </summary>
-        /// <param name="message"></param>
-        private bool Send(IScsMessage message)
-        {
-            try
-            {
-                if (message != null)
-                {
-                    //发送回调数据
-                    _channel.SendMessage(message);
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 异步回调
-        /// </summary>
-        /// <param name="ar"></param>
-        /// <returns></returns>
-        private void AsyncCallback(IAsyncResult ar)
-        {
-            try
-            {
-                var completed = _func.EndInvoke(ar);
-
-                if (!completed)
-                {
-                    _channel.Disconnect();
-                }
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                ar.AsyncWaitHandle.Close();
-            }
         }
 
         #region IProxyInvocationHandler 成员
@@ -91,13 +44,9 @@ namespace MySoft.IoC.Callback
                 Parameters = parameters
             };
 
-            //回发消息
-            IScsMessage scsMessage = new ScsCallbackMessage(message);
+            //发送回调数据
+            _channel.SendMessage(new ScsCallbackMessage(message));
 
-            //开始异步调用
-            _func.BeginInvoke(scsMessage, AsyncCallback, null);
-
-            //返回null
             return null;
         }
 

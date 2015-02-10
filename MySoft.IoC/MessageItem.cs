@@ -1,9 +1,5 @@
 ﻿using MySoft.IoC.Communication.Scs.Server;
 using MySoft.IoC.Messages;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MySoft.IoC
 {
@@ -26,10 +22,5 @@ namespace MySoft.IoC
         /// 请求信息
         /// </summary>
         public RequestMessage Request { get; set; }
-
-        /// <summary>
-        /// 响应信息
-        /// </summary>
-        public ResponseMessage Response { get; set; }
     }
 }

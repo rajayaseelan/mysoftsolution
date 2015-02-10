@@ -68,7 +68,7 @@ namespace MySoft.IoC.Communication.Scs.Communication.Channels.Tcp
 
             _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _listenerSocket.Bind(new IPEndPoint(bindAddress, _endPoint.TcpPort));
-            _listenerSocket.Listen(64);
+            _listenerSocket.Listen(512);
         }
 
         /// <summary>

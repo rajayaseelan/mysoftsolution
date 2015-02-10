@@ -177,17 +177,17 @@ namespace MySoft.Web
                 var content = string.Empty;
 
                 //判断是否有http://
-                if (!templatePath.ToLower().StartsWith("http://"))
+                if (templatePath.ToLower().StartsWith("http://") || templatePath.ToLower().StartsWith("https://"))
+                {
+                    content = StaticPageManager.GetRemotePageString(templatePath, Encoding.UTF8, validateString);
+                }
+                else
                 {
                     var arr = templatePath.Split('?');
                     var url = arr.Length > 0 ? arr[0] : string.Empty;
                     var query = arr.Length > 1 ? arr[1] : string.Empty;
 
                     content = StaticPageManager.GetLocalPageString(url, query, Encoding.UTF8, validateString);
-                }
-                else
-                {
-                    content = StaticPageManager.GetRemotePageString(templatePath, Encoding.UTF8, validateString);
                 }
 
                 var dynamicurl = templatePath;
@@ -408,12 +408,6 @@ namespace MySoft.Web
         /// <returns></returns>
         internal static string GetRemotePageString(string templatePath, Encoding encoding, string validateString)
         {
-            //判断是否有http://
-            if (!templatePath.ToLower().StartsWith("http://"))
-            {
-                templatePath = "http://" + templatePath;
-            }
-
             //下载内容
             WebClient wc = new WebClient();
             wc.Encoding = encoding;

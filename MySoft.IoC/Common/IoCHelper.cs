@@ -181,6 +181,7 @@ namespace MySoft.IoC
                             //获取Json值
                             string value = property.Value.ToString(Newtonsoft.Json.Formatting.None);
                             object jsonValue = CoreHelper.ConvertJsonValue(p.ParameterType, value);
+
                             parameters[index] = jsonValue;
                         }
 

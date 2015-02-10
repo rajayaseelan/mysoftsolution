@@ -32,7 +32,10 @@ namespace MySoft.PlatformService.Console
             //            select new { p1.id, p1.age, p2.sex };
 
             //var list = query.ToList();
+            int works, ports, works1, ports1;
 
+            System.Threading.ThreadPool.GetMinThreads(out works, out ports);
+            System.Threading.ThreadPool.GetMaxThreads(out works1, out ports1);
 
             server_OnLog("Server ready started...", LogType.Normal);
 
@@ -44,6 +47,7 @@ namespace MySoft.PlatformService.Console
             server.Start();
 
             server_OnLog(string.Format("Tcp server host -> {0}", server.ServerUrl), LogType.Normal);
+            server_OnLog(string.Format("Server max caller -> ({0}) times/s", config.MaxCaller), LogType.Normal);
             server_OnLog(string.Format("Server publish ({0}) services.", server.ServiceCount), LogType.Normal);
             server_OnLog(string.Format("Press any key to exit and stop service..."), LogType.Normal);
 

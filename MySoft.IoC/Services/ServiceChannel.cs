@@ -4,7 +4,7 @@ using MySoft.IoC.Messages;
 using System;
 using System.Runtime.Serialization;
 
-namespace MySoft.IoC
+namespace MySoft.IoC.Services
 {
     /// <summary>
     /// 服务通道

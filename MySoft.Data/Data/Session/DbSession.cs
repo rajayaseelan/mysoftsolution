@@ -136,9 +136,9 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="trans"></param>
         /// <returns></returns>
-        public DbTrans SetTransaction(DbTransaction trans)
+        public void SetTransaction(DbTransaction trans)
         {
-            return new DbTrans(dbProvider, trans);
+            this.dbTrans = new DbTrans(dbProvider, trans);
         }
 
         /// <summary>
@@ -165,9 +165,9 @@ namespace MySoft.Data
         /// </summary>
         /// <param name="connection"></param>
         /// <returns></returns>
-        public DbTrans SetConnection(DbConnection connection)
+        public void SetConnection(DbConnection connection)
         {
-            return new DbTrans(dbProvider, connection);
+            this.dbTrans = new DbTrans(dbProvider, connection);
         }
 
         /// <summary>
